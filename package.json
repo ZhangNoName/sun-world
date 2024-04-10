@@ -1,0 +1,30 @@
+{
+  "name": "sun-world",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:blog":"pnpm -F @sun-world/blog dev",
+    "dev:icons":"pnpm -F @sun-world/icons dev",
+    "build:blog":"pnpm -F @sun-world/blog build",
+    "build:icons":"pnpm -F @sun-world/icons build",
+    "build:all":"pnpm -r exec pnpm run build:prod",
+    "build:all:staging":"pnpm -r exec pnpm run build:staging"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0"
+  }
+}
