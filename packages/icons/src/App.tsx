@@ -1,35 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/*
+ * @Author: ZhangNoName
+ * @Date: 2024-04-10 21:37:06
+ * @LastEditors: zxy 1623190186@qq..com
+ * @LastEditTime: 2024-04-11 22:52:13
+ * @FilePath: \sun-world\packages\icons\src\App.tsx
+ * @Description:
+ *
+ * Copyright (c) 2024 by ZhangNoName, All Rights Reserved.
+ */
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  return <>This is ICONS.....</>;
 }
 
-export default App
+export default App;
