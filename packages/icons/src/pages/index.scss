@@ -8,4 +8,10 @@
   font-size: 1.4rem;
   .z-home-header {
   }
+  .z-home-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 200px);
+    grid-auto-rows: 200px;
+    gap: 10px;
+  }
 }

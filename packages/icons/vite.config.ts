@@ -17,6 +17,11 @@ import path from "path";
 const resolvePath = (str: string) => path.resolve(__dirname, str);
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
   plugins: [react()],
   build: {
     lib: {
