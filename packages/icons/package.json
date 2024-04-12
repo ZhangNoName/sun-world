@@ -1,8 +1,11 @@
 {
   "name": "@sun-world/icons",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "main": "./dist/icons.es.js",
+  "module": "./dist/icons.es.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
