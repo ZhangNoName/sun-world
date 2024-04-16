@@ -6,11 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:blog": "pnpm -F @sun-world/blog dev",
-    "dev:icons": "pnpm -F @sun-world/icons dev",
+    "dev:icons": "pnpm -F @sun-world/icons-vue dev",
     "build:blog": "pnpm -F @sun-world/blog build",
-    "build:icons": "pnpm -F @sun-world/icons build",
+    "build:icons": "pnpm -F @sun-world/icons-vue build",
     "build:all": "pnpm -r exec pnpm run build:prod",
-    "build:all:staging": "pnpm -r exec pnpm run build:staging"
+    "build:all:staging": "pnpm -r exec pnpm run build:staging",
+    "icons:generate": "lerna run --scope @sun-world/icons-svg generate",
+    "icons:build": "lerna run --scope @sum-world/icons-svg build",
+    "icons:test": "lerna run --scope @sun-world/icons-svg test"
   },
   "keywords": [],
   "author": "",
