@@ -1,10 +1,13 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import "./index.scss";
 
-export const ZIconCard: FC = () => {
+interface ZIconCardProps {
+  icon: ReactNode;
+}
+export const ZIconCard: FC<ZIconCardProps> = ({ icon }) => {
   return (
     <>
-      <div className="z-icon-card-container">123456</div>
+      <div className="z-icon-card-container">{icon}</div>
     </>
   );
 };
