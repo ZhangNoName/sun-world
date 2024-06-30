@@ -1,8 +1,13 @@
 {
-  "name": "icons-vue",
+  "name": "@sun-world/icons-vue",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist/z-icons-vue.umd.js",
+  "module": "dist/z-icons-vue.es.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",

@@ -2,6 +2,7 @@
 import ZLayoutContent from "../layout/content/index.vue";
 import ZHeader from "../layout/header/index.vue";
 </script>
+
 <template>
   <div class="main-page">
     <ZHeader></ZHeader>
