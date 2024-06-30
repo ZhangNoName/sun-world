@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="AddOutlined">
 import { ref } from "vue";
 // 定义组件的 props
 const props = defineProps<{

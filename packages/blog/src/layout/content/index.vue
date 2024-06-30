@@ -1,4 +1,5 @@
 <script setup lang="ts" name="z-layout-content">
+import { AddOutlined } from "@sun-world/icons-vue";
 interface Props {
   title?: string;
   subTitle: string;
@@ -18,6 +19,7 @@ const props: Props = defineProps({
 </script>
 <template>
   <div class="z-content">{{ props }}</div>
+  <AddOutlined />
 </template>
 
 <style scoped lang="scss">

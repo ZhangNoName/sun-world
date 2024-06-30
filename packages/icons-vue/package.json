@@ -1,19 +1,25 @@
 {
   "name": "@sun-world/icons-vue",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
-  "main": "dist/z-icons-vue.umd.js",
+  "main": "dist/z-icons-vue.es.js",
   "module": "dist/z-icons-vue.es.js",
-  "files": [
-    "dist"
-  ],
+  "types": "./dist/z-icons-vue.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/z-icons-vue.es.js",
+      "require": "./dist/z-icons-vue.cjs.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -p tsconfig.json && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "peerDependencies": {
     "vue": "^3.4.21"
   },
   "devDependencies": {

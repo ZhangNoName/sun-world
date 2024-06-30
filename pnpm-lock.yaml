@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@sun-world/icons-vue':
+        specifier: workspace:^
+        version: link:packages/icons-vue
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
@@ -69,6 +73,9 @@ importers:
         specifier: ^3.4.21
         version: 3.4.21(typescript@5.4.4)
     devDependencies:
+      '@sun-world/icons-vue':
+        specifier: workspace:^
+        version: link:../icons-vue
       '@vitejs/plugin-vue':
         specifier: ^5.0.4
         version: 5.0.4(vite@5.2.0)(vue@3.4.21)

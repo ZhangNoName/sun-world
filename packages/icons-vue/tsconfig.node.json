@@ -7,7 +7,10 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "declaration": true, // 确保生成 .d.ts 文件
+    "declarationDir": "./dist", // 指定 .d.ts 文件的输出目录
+    "emitDeclarationOnly": true // 只生成声明文件
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
   "exclude": ["node_modules", "dist"]

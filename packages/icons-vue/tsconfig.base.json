@@ -8,6 +8,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declaration": true, // 确保生成 .d.ts 文件
+    "declarationDir": "./dist", // 指定 .d.ts 文件的输出目录
+    "emitDeclarationOnly": true // 只生成声明文件
   }
 }
