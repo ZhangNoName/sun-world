@@ -18,7 +18,6 @@
   width: 100%;
   height: 50px;
   margin: 0 auto;
-  background-color: antiquewhite;
   display: grid;
   grid-template-columns: 10% 4fr 3fr 50px 10%;
   grid-template-areas: "1 2 3 4 5";
