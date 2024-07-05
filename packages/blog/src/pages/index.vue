@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="mainPage">
 import ZLayoutContent from "../layout/content/index.vue";
 import ZHeader from "../layout/header/index.vue";
 </script>

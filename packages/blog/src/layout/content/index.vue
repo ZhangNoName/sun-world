@@ -1,4 +1,4 @@
-<script setup lang="ts" name="z-layout-content">
+<script setup lang="ts" name="content">
 interface Props {
   title?: string;
   subTitle: string;

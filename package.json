@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "watch": "node scripts/dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "run-p  \"watch icons-vue\" dev:blog",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
     "build:blog": "pnpm -F @sun-world/blog build",
@@ -28,9 +30,14 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "esbuild": "^0.23.0",
+    "esbuild-plugin-vue3": "^0.4.2",
+    "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "minimist": "^1.2.8",
+    "npm-run-all": "^4.1.5",
     "sass": "^1.75.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.4",
@@ -39,6 +46,7 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
-    "@sun-world/icons-vue": "workspace:^"
+    "@sun-world/icons-vue": "workspace:^",
+    "vue-i18n": "^9.13.1"
   }
 }

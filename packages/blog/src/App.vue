@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="APP">
 import MainPage from "./pages/index.vue";
 import { computed, ref } from "vue";
 const theme = ref("sun-light");
