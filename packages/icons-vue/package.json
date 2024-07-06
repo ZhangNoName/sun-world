@@ -2,13 +2,13 @@
   "name": "@sun-world/icons-vue",
   "version": "0.0.1",
   "type": "module",
-  "main": "dist/z-icons-vue.es.js",
-  "module": "dist/z-icons-vue.es.js",
-  "types": "./dist/z-icons-vue.d.ts",
+  "main": "dist/icons-vue.es.js",
+  "module": "dist/icons-vue.es.js",
+  "types": "./dist/icons-vue.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/z-icons-vue.es.js",
-      "require": "./dist/z-icons-vue.cjs.js"
+      "import": "./dist/icons-vue.es.js",
+      "require": "./dist/icons-vue.cjs.js"
     }
   },
   "scripts": {

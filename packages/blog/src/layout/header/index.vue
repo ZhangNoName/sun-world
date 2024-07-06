@@ -1,5 +1,5 @@
 <script setup lang="ts" name="header">
-import { AddOutlined, GithubFill } from "@sun-world/icons-vue";
+import { Search, QQ, GithubFill } from "@sun-world/icons-vue";
 </script>
 <template>
   <div class="z-header">
@@ -11,10 +11,13 @@ import { AddOutlined, GithubFill } from "@sun-world/icons-vue";
     <div class="right-menu">
       <div class="link-icon">
         <GithubFill></GithubFill>
+        <QQ />
         <!-- <AddOutlined></AddOutlined> -->
       </div>
     </div>
-    <div class="user-menu">3</div>
+    <div class="user-menu">
+      <Search />
+    </div>
   </div>
 </template>
 
@@ -27,16 +30,18 @@ import { AddOutlined, GithubFill } from "@sun-world/icons-vue";
   grid-template-columns: 7.5% 4fr 3fr 5rem 7.5%;
   grid-template-areas: "1 2 3 4 5";
   border-bottom: 2px solid rgb(180, 180, 180);
+  // opacity: 0;
+  background: none;
   .left-menu {
     grid-column: 2 / 3;
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 15px;
+    gap: 1.5rem;
     .logo {
       width: 5rem;
       height: 5rem;
-      background-image: url(/public/logo.png);
+      background-image: url(/logo.png);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -47,6 +52,10 @@ import { AddOutlined, GithubFill } from "@sun-world/icons-vue";
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    .link-icon {
+      display: flex;
+      gap: 1rem;
+    }
   }
   .user-menu {
     grid-column: 4 / 5;

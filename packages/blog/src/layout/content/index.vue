@@ -17,13 +17,37 @@ const props: Props = defineProps({
 });
 </script>
 <template>
-  <div class="z-content">{{ props }}</div>
+  <div class="z-content">
+    <div class="z-content-left">
+      <div class="z-content-card summary-card"></div>
+    </div>
+    <div class="z-content-right">
+      <div class="z-content-card summary-card"></div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">
 .z-content {
-  background-color: var(--main-content-bg-color);
-  width: 80%;
+  background-color: none;
+  width: 85%;
   margin: 0 auto;
+  display: grid;
+  // justify-content: space-between;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: auto;
+  gap: 1rem;
+  .z-content-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    height: 50rem;
+  }
+  .z-content-left {
+    // max-width: 31rem;
+    // background-color: aqua;
+  }
+  .z-content-right {
+    // background-color: blue;
+  }
 }
 </style>
