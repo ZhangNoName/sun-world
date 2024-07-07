@@ -36,10 +36,10 @@ import ZFooter from "@/layout/footer/index.vue";
     position: relative;
     margin-top: 6.5rem;
     height: auto;
-    min-height: calc(100vh - 35.5rem);
+    min-height: calc(100vh - 37rem);
   }
   .z-footer {
-    // margin-top: 1.5rem;
+    margin-top: 1.5rem;
     // position: absolute;
     bottom: 0;
     width: 100%;
