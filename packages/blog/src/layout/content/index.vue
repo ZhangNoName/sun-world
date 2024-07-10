@@ -1,4 +1,5 @@
 <script setup lang="ts" name="content">
+import BlogCard from "@/components/BlogCard/index.vue";
 interface Props {
   title?: string;
   subTitle: string;
@@ -19,10 +20,17 @@ const props: Props = defineProps({
 <template>
   <div class="z-content">
     <div class="z-content-left">
-      <div class="z-content-card summary-card"></div>
+      <div class="z-content-card self-card"></div>
     </div>
     <div class="z-content-right">
       <div class="z-content-card summary-card"></div>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
+      <BlogCard></BlogCard>
       <!-- <div class="z-content-card summary-card"></div> -->
     </div>
   </div>
@@ -41,8 +49,12 @@ const props: Props = defineProps({
   .z-content-card {
     background-color: white;
     border-radius: 0.5rem;
-    height: 50rem;
+    height: 10rem;
   }
+  .self-card {
+    height: 30rem;
+  }
+
   .z-content-left {
     // max-width: 31rem;
     // background-color: aqua;
