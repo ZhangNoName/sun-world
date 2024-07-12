@@ -48,7 +48,7 @@
       </div>
       <hr />
       <div class="operate">
-        <a>阅读全文</a>
+        <a>{{ $t('readMore') }}</a>
 
         <div class="last-update">
           <Calendar v-bind="iconConfig" />
