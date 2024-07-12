@@ -27,7 +27,7 @@ h1 {
 // 设置根元素的font-size，1rem = 10px
 html {
   font-size: 10px;
-  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 #app {
@@ -50,6 +50,10 @@ html {
   --blog-card-bg-color: rgb(255, 255, 255);
   --blog-card-font-color: #4a4a4a;
   --blog-card-tag-color: #7a7a7a;
+  --blog-card-border-color: white;
+  --btn-bg-color: wheat;
+  hr {
+  }
 }
 .sun-dark {
   --background-color: #000;
@@ -59,6 +63,8 @@ html {
   --blog-card-bg-color: rgba(21, 19, 19, 0.678);
   --blog-card-font-color: silver;
   --blog-card-tag-color: #7a7a7a;
+  --blog-card-border-color: white;
+  --btn-bg-color: wheat;
 }
 
 /* 设置滚动条的宽度和高度 */

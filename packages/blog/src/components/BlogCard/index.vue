@@ -1,5 +1,12 @@
 <script setup lang="ts">
-  import { Calendar, WordCount, Comment, Clock } from '@sun-world/icons-vue'
+  import {
+    Calendar,
+    WordCount,
+    Comment,
+    Clock,
+    TagSvg,
+  } from '@sun-world/icons-vue'
+  import Tag from '../Tag/index.vue'
   import { ref } from 'vue'
 
   const count = ref(0)
@@ -34,14 +41,28 @@
       <a>{{ title }}</a>
     </h1>
     <div class="body">{{ content }}</div>
-    <div class="footer">{{ byteNum }}</div>
+    <div class="footer">
+      <div class="tag">
+        <TagSvg v-bind="iconConfig" />
+        <Tag v-for="tag in tags" :key="tag" :tag="tag" :url="''" />
+      </div>
+      <hr />
+      <div class="operate">
+        <a>阅读全文</a>
+
+        <div class="last-update">
+          <Calendar v-bind="iconConfig" />
+          {{ lastUpdateTime }}
+        </div>
+      </div>
+    </div>
   </article>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
   .z-blog-card {
     margin-top: 1.5rem;
-    border-color: white;
+    border-color: var(--blog-card-border-color);
     background-color: var(--blog-card-bg-color);
     color: var(--blog-card-font-color);
     border-radius: 0.5rem;
@@ -76,11 +97,36 @@
       text-align: left;
     }
     .footer {
-      height: 3rem;
+      height: 6rem;
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 1.5rem;
+      flex-direction: column;
+      .tag {
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+      }
+      hr {
+        width: 100%;
+      }
+      .operate {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        & > :first-child {
+          background-color: var(--btn-bg-color);
+          border-radius: 0.5rem;
+          padding: 0.25rem 0.5rem;
+        }
+        .last-update {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          font-size: 1.1rem;
+          gap: 0.5rem;
+        }
+      }
     }
   }
 </style>
