@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { ref } from 'vue'
   import {
     Calendar,
     WordCount,
@@ -7,18 +8,21 @@
     TagSvg,
   } from '@sun-world/icons-vue'
   import Tag from '../Tag/index.vue'
-  import { ref } from 'vue'
+  import { BlogCardProps } from '@/type'
 
-  const count = ref(0)
-  const content = ref('文章内容的身份健康档案回复骄傲是个好地方i爱是感动犽')
-  const title = ref('这是一篇文章的标题')
-  const publishTime = ref('2024-7-10')
-  const lastUpdateTime = ref('几秒前')
-  const tags = ref(['123456', 'vue'])
-  const category = ref('技术')
-  const cover = ref('')
-  const byteNum = ref(1024)
-  const commentNum = ref(1024)
+  const props = defineProps<BlogCardProps>()
+
+  const {
+    title,
+    content,
+    publishTime,
+    lastUpdateTime,
+    tags,
+    category,
+    cover,
+    byteNum,
+    commentNum,
+  } = props
   const iconConfig = ref({
     height: '1.8rem',
     width: '1.8rem',
@@ -48,7 +52,7 @@
       </div>
       <hr />
       <div class="operate">
-        <a>{{ $t('readMore') }}</a>
+        <a>{{ $t('readMore') }}...</a>
 
         <div class="last-update">
           <Calendar v-bind="iconConfig" />
@@ -117,7 +121,7 @@
         & > :first-child {
           background-color: var(--btn-bg-color);
           border-radius: 0.5rem;
-          padding: 0.25rem 0.5rem;
+          padding: 0.25rem 1rem;
         }
         .last-update {
           display: flex;

@@ -13,6 +13,7 @@
   const updateLocalStorageValue = (e: StorageEvent) => {
     if (e.key === 'locale') {
       locale.value = e.newValue || 'zh'
+      console.log(e.newValue)
     }
   }
   onMounted(() => {

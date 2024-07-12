@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   // 定义组件的 props
-  const props = defineProps<{}>()
+  // const props = defineProps<{}>()
   const locale = ref(localStorage.getItem('locale') || 'zh')
   const changeLanguage = () => {
     localStorage.setItem('locale', locale.value == 'zh' ? 'en' : 'zh')
