@@ -1,17 +1,11 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "module": "CommonJS",
-    "target": "ES2019",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "declaration": true, // 确保生成 .d.ts 文件
-    "declarationDir": "./dist", // 指定 .d.ts 文件的输出目录
-    "emitDeclarationOnly": true // 只生成声明文件
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler", // 保持一致
+    "allowSyntheticDefaultImports": true,
+    "strict": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["vite.config.ts"]
 }

@@ -1,16 +1,13 @@
 <script setup lang="ts" name="AddOutlined">
-import { ref } from "vue";
-// 定义组件的 props
-const props = defineProps<{
-  width?: number;
-  height?: number;
-  color?: string;
-}>();
+  import { ref } from 'vue'
+  import { IconProps } from '../type'
+  // 定义组件的 props
+  const props = defineProps<IconProps>()
 
-// 默认宽高
-const defaultWidth = ref(props.width || 24);
-const defaultHeight = ref(props.height || 24);
-const color = ref(props.color || "#333");
+  // 默认宽高
+  const defaultWidth = ref(props.width || 24)
+  const defaultHeight = ref(props.height || 24)
+  const color = ref(props.color || '#333')
 </script>
 
 <template>

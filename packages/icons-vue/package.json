@@ -8,18 +8,16 @@
   "exports": {
     ".": {
       "import": "./dist/icons-vue.es.js",
-      "require": "./dist/icons-vue.cjs.js"
+      "require": "./dist/icons-vue.cjs.js",
+      "types": "./dist/icons-vue.d.ts"
     }
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -p tsconfig.json && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.21"
-  },
-  "peerDependencies": {
     "vue": "^3.4.21"
   },
   "devDependencies": {
