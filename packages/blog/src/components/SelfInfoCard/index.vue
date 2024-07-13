@@ -8,6 +8,11 @@
   import { openGithub } from '@/util'
 
   const prop = defineProps()
+  const blogNum = ref(0)
+  const seriesNum = ref(0)
+  const tagNum = ref(0)
+  const commentNum = ref(0)
+  const viewsNum = ref(0)
   const time = ref('')
   const timerRef = ref()
   const getCurrentTime = () => {
@@ -20,6 +25,7 @@
     const seconds = ('0' + now.getSeconds()).slice(-2)
     return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`
   }
+
   const updateTime = () => {
     time.value = getCurrentTime()
     timerRef.value = requestAnimationFrame(updateTime)
@@ -37,7 +43,24 @@
   <div class="self-card">
     <div class="weather"></div>
     <div class="adress">{{ time }}</div>
-    <div class="card-list"></div>
+    <div class="card-list">
+      <div class="card-item">
+        <span>{{ $t('info.paper') }}</span>
+        <span>{{ blogNum }}</span>
+      </div>
+      <div class="card-item">
+        <span>{{ $t('info.classification') }}</span>
+        <span>{{ seriesNum }}</span>
+      </div>
+      <div class="card-item">
+        <span>{{ $t('info.tag') }}</span>
+        <span>{{ tagNum }}</span>
+      </div>
+      <div class="card-item">
+        <span>{{ $t('info.views') }}</span>
+        <span>{{ viewsNum }}</span>
+      </div>
+    </div>
     <div class="icon-list">
       <GithubOutlined @click="openGithub" />
       <WeChatOutLined />
@@ -67,7 +90,24 @@
     .adress {
     }
     .card-list {
-      background-color: bisque;
+      // background-color: bisque;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      .card-item {
+        width: 5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        & > :first-child {
+          font-size: 1.1rem;
+        }
+        & > :nth-child(2) {
+          font-size: 2.8rem;
+          font-weight: 400;
+        }
+      }
     }
     .icon-list {
       // background-color: yellow;

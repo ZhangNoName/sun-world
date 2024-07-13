@@ -1,5 +1,5 @@
 <script setup lang="ts" name="APP">
-  import { onMounted } from 'vue'
+  import { getCurrentInstance, onMounted } from 'vue'
   import MainPage from './pages/index.vue'
   import { computed, ref } from 'vue'
   import { onUnmounted } from 'vue'

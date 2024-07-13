@@ -1,4 +1,11 @@
 {
   "title": "欢迎~~",
-  "readMore": "阅读更多"
+  "readMore": "阅读更多",
+  "info":{
+    "paper":"文章",
+    "classification":"分类",
+    "tag":"标签",
+    "views":"浏览量"
+  }
+
 }
