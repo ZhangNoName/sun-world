@@ -1,6 +1,7 @@
 <script setup lang="ts" name="header">
   import { Search, QQOutlined, GithubOutlined } from '@sun-world/icons-vue'
   import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
+  import { openGithub } from '@/util'
 </script>
 <template>
   <div class="z-header">
@@ -11,7 +12,7 @@
     </div>
     <div class="right-menu">
       <div class="link-icon">
-        <GithubOutlined />
+        <GithubOutlined @click="openGithub" />
         <QQOutlined />
         <Search />
         <LanguageSwitch />
@@ -59,6 +60,10 @@
       .link-icon {
         display: flex;
         gap: 1rem;
+        & > *:hover {
+          cursor: pointer;
+          background-color: var(--icon-bg-hover-color);
+        }
       }
     }
     .user-menu {

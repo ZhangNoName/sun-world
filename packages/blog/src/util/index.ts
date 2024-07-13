@@ -13,3 +13,7 @@ export function InterceptLocalStorage() {
   };
 
 }
+export const GithubAdress = 'https://github.com/ZhangNoName'
+export const openGithub = () => {
+  window.open(GithubAdress, '_blank')
+}
