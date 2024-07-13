@@ -11,16 +11,25 @@
     return 'app-container ' + theme.value
   })
   const updateLocalStorageValue = (e: StorageEvent) => {
+    // console.log('当前信息发生改变', e)
     if (e.key === 'locale') {
       locale.value = e.newValue || 'zh'
       console.log(e.newValue)
     }
   }
   onMounted(() => {
-    window.addEventListener('storage', updateLocalStorageValue)
+    console.log('app mounted')
+    window.addEventListener(
+      'localestorageChange' as any,
+      updateLocalStorageValue
+    )
   })
   onUnmounted(() => {
-    window.removeEventListener('storage', updateLocalStorageValue)
+    console.log('app Unmounted')
+    window.removeEventListener(
+      'localestorageChange' as any,
+      updateLocalStorageValue
+    )
   })
 </script>
 
