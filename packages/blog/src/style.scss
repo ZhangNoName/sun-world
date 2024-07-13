@@ -52,7 +52,15 @@ html {
   --blog-card-tag-color: #7a7a7a;
   --blog-card-border-color: white;
   --btn-bg-color: wheat;
+
+  //图标属性
+  --icon-bg-color: transparent;
+  --icon-bg-hover-color: yellow;
+
   hr {
+    color: #7a7a7a;
+    background-color: #7a7a7a;
+    opacity: 0.5;
   }
 }
 .sun-dark {
@@ -65,6 +73,14 @@ html {
   --blog-card-tag-color: #7a7a7a;
   --blog-card-border-color: white;
   --btn-bg-color: wheat;
+
+  //图标属性
+  --icon-bg-color: white;
+  --icon-bg-hover-color: yellow;
+  hr {
+    color: #7a7a7a;
+    background-color: #7a7a7a;
+  }
 }
 
 /* 设置滚动条的宽度和高度 */

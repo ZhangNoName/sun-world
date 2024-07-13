@@ -18,14 +18,12 @@
     }
   }
   onMounted(() => {
-    console.log('app mounted')
     window.addEventListener(
       'localestorageChange' as any,
       updateLocalStorageValue
     )
   })
   onUnmounted(() => {
-    console.log('app Unmounted')
     window.removeEventListener(
       'localestorageChange' as any,
       updateLocalStorageValue

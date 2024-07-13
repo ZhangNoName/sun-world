@@ -1,6 +1,7 @@
 <script setup lang="ts" name="content">
   import BlogCard from '@/components/BlogCard/index.vue'
   import { BlogListData } from './index.data'
+  import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
   interface Props {
     title?: string
     subTitle: string
@@ -21,7 +22,7 @@
 <template>
   <div class="z-content">
     <div class="z-content-left">
-      <div class="z-content-card self-card"></div>
+      <SelfInfoCard />
     </div>
     <div class="z-content-right">
       <div class="z-content-card summary-card"></div>
@@ -46,7 +47,7 @@
       height: 10rem;
     }
     .self-card {
-      height: 30rem;
+      height: 40rem;
     }
 
     .z-content-left {

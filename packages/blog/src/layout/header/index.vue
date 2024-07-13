@@ -1,5 +1,5 @@
 <script setup lang="ts" name="header">
-  import { Search, QQ, GithubFill } from '@sun-world/icons-vue'
+  import { Search, QQOutlined, GithubOutlined } from '@sun-world/icons-vue'
   import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 </script>
 <template>
@@ -11,8 +11,8 @@
     </div>
     <div class="right-menu">
       <div class="link-icon">
-        <GithubFill></GithubFill>
-        <QQ />
+        <GithubOutlined />
+        <QQOutlined />
         <Search />
         <LanguageSwitch />
         <!-- <AddOutlined></AddOutlined> -->
