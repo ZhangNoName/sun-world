@@ -2,6 +2,7 @@
   import BlogCard from '@/components/BlogCard/index.vue'
   import { BlogListData } from './index.data'
   import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
+  import WeatherCard from '@/components/WeatherCard/index.vue'
   interface Props {
     title?: string
     subTitle: string
@@ -23,6 +24,7 @@
   <div class="z-content">
     <div class="z-content-left">
       <SelfInfoCard />
+      <WeatherCard />
     </div>
     <div class="z-content-right">
       <div class="z-content-card summary-card"></div>
@@ -38,7 +40,7 @@
     margin: 0 auto;
     display: grid;
     // justify-content: space-between;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 35rem auto;
     grid-template-rows: auto;
     gap: 1rem;
     .z-content-card {
@@ -53,6 +55,9 @@
     .z-content-left {
       // max-width: 31rem;
       // background-color: aqua;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
     .z-content-right {
       // background-color: blue;

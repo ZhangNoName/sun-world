@@ -4,6 +4,7 @@
   import { computed, ref } from 'vue'
   import { onUnmounted } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { getAdressByLocation } from './util'
   const theme = ref('sun-light')
   const { locale } = useI18n()
 
@@ -18,6 +19,7 @@
     }
   }
   onMounted(() => {
+    // getAdressByLocation()
     window.addEventListener(
       'localestorageChange' as any,
       updateLocalStorageValue

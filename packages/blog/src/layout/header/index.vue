@@ -2,6 +2,30 @@
   import { Search, QQOutlined, GithubOutlined } from '@sun-world/icons-vue'
   import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
   import { openGithub } from '@/util'
+  import { onBeforeUnmount, onMounted, ref } from 'vue'
+  const time = ref('')
+  const timerRef = ref()
+  const getCurrentTime = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = ('0' + (now.getMonth() + 1)).slice(-2)
+    const day = ('0' + now.getDate()).slice(-2)
+    const hours = ('0' + now.getHours()).slice(-2)
+    const minutes = ('0' + now.getMinutes()).slice(-2)
+    const seconds = ('0' + now.getSeconds()).slice(-2)
+    // return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`
+    return `${hours}:${minutes}:${seconds}`
+  }
+  const updateTime = () => {
+    time.value = getCurrentTime()
+    timerRef.value = requestAnimationFrame(updateTime)
+  }
+  onMounted(() => {
+    timerRef.value = requestAnimationFrame(updateTime)
+  })
+  onBeforeUnmount(() => {
+    cancelAnimationFrame(timerRef.value)
+  })
 </script>
 <template>
   <div class="z-header">
@@ -19,9 +43,8 @@
         <!-- <AddOutlined></AddOutlined> -->
       </div>
     </div>
-    <div class="user-menu">
-      <!-- <Search />
-      <LanguageSwitch /> -->
+    <div class="time">
+      {{ time }}
     </div>
   </div>
 </template>
@@ -32,7 +55,7 @@
     height: 5rem;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 7.5% 4fr 3fr 5rem 7.5%;
+    grid-template-columns: 7.5% 4fr 3fr 10rem 7.5%;
     grid-template-areas: '1 2 3 4 5';
     border-bottom: 2px solid rgb(180, 180, 180);
     // opacity: 0;
@@ -66,7 +89,7 @@
         }
       }
     }
-    .user-menu {
+    .time {
       grid-column: 4 / 5;
       display: flex;
       justify-content: center;

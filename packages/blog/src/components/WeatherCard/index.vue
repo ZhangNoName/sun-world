@@ -1,11 +1,6 @@
 <script lang="ts" setup>
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-  import {
-    WeChatOutLined,
-    QQOutlined,
-    GithubOutlined,
-  } from '@sun-world/icons-vue'
-  import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
+  import { computed, ref } from 'vue'
+  import { HeFengWeatherData, CurrentLocationArea } from '@/util'
 
   const prop = defineProps()
   const blogNum = ref(0)
@@ -21,11 +16,19 @@
 </script>
 
 <template>
-  <div class="self-card">
-    <div class="avator">
-      <img src="/logo.png" alt="" />
+  <div class="weather-card">
+    <div class="weather">
+      <i :class="weatherIcon"></i>
     </div>
-    <div class="adress">一个迷人的小屋</div>
+    <div class="adress">
+      <span>
+        {{
+          // CurrentLocationArea.addressComponent.country +
+          // ' ' +
+          CurrentLocationArea.addressComponent.province
+        }}
+      </span>
+    </div>
     <div class="card-list">
       <div class="card-item">
         <span>{{ $t('info.paper') }}</span>
@@ -44,18 +47,12 @@
         <span>{{ viewsNum }}</span>
       </div>
     </div>
-    <div class="icon-list">
-      <GithubOutlined @click="openGithub" />
-      <WeChatOutLined />
-      <QQOutlined />
-    </div>
-    <hr />
-    <div class="tip">有志者，事竟成</div>
+    <div class="icon-list"></div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-  .self-card {
+  .weather-card {
     width: auto;
     height: auto;
     padding: 1.5rem;
@@ -67,16 +64,13 @@
     gap: 1.5rem;
     background-color: var(--blog-card-bg-color);
 
-    .avator {
-      img {
-        width: auto;
-        height: 100%;
-        object-fit: contain;
-        transition: all 1s ease;
-        border-radius: 50%;
-        &:hover {
-          transform: rotate(180deg);
-        }
+    .weather {
+      // background-color: pink;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      & > i {
+        font-size: 18rem;
       }
     }
     .adress {
@@ -114,18 +108,6 @@
         cursor: pointer;
         background-color: var(--icon-bg-hover-color);
       }
-    }
-    hr {
-      width: 100%;
-      align-self: center;
-      height: 0.2rem;
-      // border-radius: 0.1rem;
-      // height: max-content;
-    }
-    .tip {
-      display: flex;
-      justify-content: center; /* 水平居中 */
-      align-items: center; /* 垂直居中 */
     }
   }
 </style>
