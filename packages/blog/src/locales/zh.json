@@ -9,6 +9,8 @@
   },
   "weather": {
     "temp": "温度",
-    "feelsLike": "体感温度"
+    "feelsLike": "体感温度",
+    "humidity": "湿度",
+    "windSpeed": "风速"
   }
 }

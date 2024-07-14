@@ -9,6 +9,8 @@
   },
   "weather": {
     "temp": "Tempure",
-    "feelsLike": "FeelsLike"
+    "feelsLike": "FeelsLike",
+    "humidity": "Humidity",
+    "windSpeed": "WindSpeed"
   }
 }

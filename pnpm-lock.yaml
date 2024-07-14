@@ -11,6 +11,9 @@ importers:
       '@sun-world/icons-vue':
         specifier: workspace:^
         version: link:packages/icons-vue
+      vditor:
+        specifier: ^3.10.4
+        version: registry.npmmirror.com/vditor@3.10.4
       vue-i18n:
         specifier: ^9.13.1
         version: 9.13.1(vue@3.4.21)
@@ -10173,6 +10176,12 @@ packages:
     engines: {node: '>=0.4.0'}
     dev: true
 
+  registry.npmmirror.com/diff-match-patch@1.0.5:
+    resolution: {integrity: sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/diff-match-patch/-/diff-match-patch-1.0.5.tgz}
+    name: diff-match-patch
+    version: 1.0.5
+    dev: false
+
   registry.npmmirror.com/element-plus@2.7.7(vue@3.4.21):
     resolution: {integrity: sha512-7ucUiDAxevyBE8JbXBTe9ofHhS047VmWMLoksE45zZ08XSnhnyG7WUuk3gmDbAklfVMHedb9sEV3OovPUWt+Sw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/element-plus/-/element-plus-2.7.7.tgz}
     id: registry.npmmirror.com/element-plus/2.7.7
@@ -10865,6 +10874,14 @@ packages:
     name: varint
     version: 6.0.0
     dev: true
+
+  registry.npmmirror.com/vditor@3.10.4:
+    resolution: {integrity: sha512-NWaMom0buUvRjOCaK/jKeJEVfZNmfTgblK4+pxBoeTdiCYn5yWokcGYMh9GzHIvt5gy6FiQFc1VQvytIwyeIwA==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vditor/-/vditor-3.10.4.tgz}
+    name: vditor
+    version: 3.10.4
+    dependencies:
+      diff-match-patch: registry.npmmirror.com/diff-match-patch@1.0.5
+    dev: false
 
   registry.npmmirror.com/vue-demi@0.14.8(vue@3.4.21):
     resolution: {integrity: sha512-Uuqnk9YE9SsWeReYqK2alDI5YzciATE0r2SkA6iMAtuXvNTMNACJLJEXNXaEy94ECuBe4Sk6RzRU80kjdbIo1Q==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.8.tgz}
