@@ -1,36 +1,33 @@
-<script setup lang="ts" name="APP">
-  import { getCurrentInstance, onMounted } from 'vue'
-  import MainPage from './pages/index.vue'
-  import { computed, ref } from 'vue'
-  import { onUnmounted } from 'vue'
-  import { useI18n } from 'vue-i18n'
-  import { getAdressByLocation } from './util'
-  const theme = ref('sun-light')
-  const { locale } = useI18n()
+<script setup lang="ts">
+import { getCurrentInstance, onMounted } from 'vue'
+import MainPage from './pages/index.vue'
+import { computed, ref } from 'vue'
+import { onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getAdressByLocation } from './util'
+const theme = ref('sun-light')
+const { locale } = useI18n()
 
-  const allClass = computed(() => {
-    return 'app-container ' + theme.value
-  })
-  const updateLocalStorageValue = (e: StorageEvent) => {
-    // console.log('当前信息发生改变', e)
-    if (e.key === 'locale') {
-      locale.value = e.newValue || 'zh'
-      console.log(e.newValue)
-    }
+const allClass = computed(() => {
+  return 'app-container ' + theme.value
+})
+const updateLocalStorageValue = (e: StorageEvent) => {
+  // console.log('当前信息发生改变', e)
+  if (e.key === 'locale') {
+    locale.value = e.newValue || 'zh'
+    console.log(e.newValue)
   }
-  onMounted(() => {
-    // getAdressByLocation()
-    window.addEventListener(
-      'localestorageChange' as any,
-      updateLocalStorageValue
-    )
-  })
-  onUnmounted(() => {
-    window.removeEventListener(
-      'localestorageChange' as any,
-      updateLocalStorageValue
-    )
-  })
+}
+onMounted(() => {
+  // getAdressByLocation()
+  window.addEventListener('localestorageChange' as any, updateLocalStorageValue)
+})
+onUnmounted(() => {
+  window.removeEventListener(
+    'localestorageChange' as any,
+    updateLocalStorageValue
+  )
+})
 </script>
 
 <template>
@@ -40,11 +37,11 @@
 </template>
 
 <style scoped lang="scss">
-  .app-container {
-    width: 100%;
-    height: 100%;
-    font-size: 1.6rem;
-    color: var(--font-color);
-    background-color: var(--background-color);
-  }
+.app-container {
+  width: 100%;
+  height: 100%;
+  font-size: 1.6rem;
+  color: var(--font-color);
+  background-color: var(--background-color);
+}
 </style>

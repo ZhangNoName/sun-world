@@ -1,32 +1,39 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import {
-    Calendar,
-    WordCount,
-    Comment,
-    Clock,
-    TagSvg,
-  } from '@sun-world/icons-vue'
-  import Tag from '../Tag/index.vue'
-  import { BlogCardProps } from '@/type'
+import { ref } from 'vue'
+import {
+  Calendar,
+  WordCount,
+  Comment,
+  Clock,
+  TagSvg,
+} from '@sun-world/icons-vue'
+import Tag from '../Tag/index.vue'
+import { BlogCardProps } from '@/type'
+import { useRoute, useRouter } from 'vue-router'
+const props = defineProps<BlogCardProps>()
 
-  const props = defineProps<BlogCardProps>()
+const {
+  title,
+  content,
+  publishTime,
+  lastUpdateTime,
+  tags,
+  category,
+  cover,
+  byteNum,
+  commentNum,
+} = props
+const iconConfig = ref({
+  height: '1.8rem',
+  width: '1.8rem',
+})
 
-  const {
-    title,
-    content,
-    publishTime,
-    lastUpdateTime,
-    tags,
-    category,
-    cover,
-    byteNum,
-    commentNum,
-  } = props
-  const iconConfig = ref({
-    height: '1.8rem',
-    width: '1.8rem',
-  })
+const router = useRouter()
+const route = useRoute()
+const showBlog = () => {
+  console.log('执行跳转')
+  router.push({ path: '/blog' })
+}
 </script>
 <template>
   <article class="z-blog-card">
@@ -52,7 +59,7 @@
       </div>
       <hr />
       <div class="operate">
-        <a>{{ $t('readMore') }}...</a>
+        <a @click="showBlog">{{ $t('readMore') }}...</a>
 
         <div class="last-update">
           <Calendar v-bind="iconConfig" />
@@ -64,75 +71,75 @@
 </template>
 
 <style scoped lang="scss">
-  .z-blog-card {
-    margin-top: 1.5rem;
-    border-color: var(--blog-card-border-color);
-    background-color: var(--blog-card-bg-color);
-    color: var(--blog-card-font-color);
-    border-radius: 0.5rem;
+.z-blog-card {
+  margin-top: 1.5rem;
+  border-color: var(--blog-card-border-color);
+  background-color: var(--blog-card-bg-color);
+  color: var(--blog-card-font-color);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 1.5rem;
+  gap: 0.5rem;
+  .header {
+    font-size: 1.1rem;
+    height: 4rem;
+    color: var(--blog-card-tag-color);
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: stretch;
-    padding: 1.5rem;
+    justify-content: flex-start;
+    align-items: center;
     gap: 0.5rem;
-    .header {
-      font-size: 1.1rem;
-      height: 4rem;
-      color: var(--blog-card-tag-color);
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 0.5rem;
-      /* span {
+    /* span {
         height: 1.1rem;
         line-height: 1.1rem;
       } */
-    }
-    .title {
+  }
+  .title {
+    height: 3rem;
+    line-height: 3rem;
+    font-size: 2.8rem;
+    /* font-weight: 600; */
+    text-align: left;
+  }
+  .body {
+    min-height: 10rem;
+    text-align: left;
+  }
+  .footer {
+    height: 6rem;
+    display: flex;
+    flex-direction: column;
+    .tag {
       height: 3rem;
-      line-height: 3rem;
-      font-size: 2.8rem;
-      /* font-weight: 600; */
-      text-align: left;
-    }
-    .body {
-      min-height: 10rem;
-      text-align: left;
-    }
-    .footer {
-      height: 6rem;
       display: flex;
-      flex-direction: column;
-      .tag {
-        height: 3rem;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+    }
+    hr {
+      width: 100%;
+    }
+    .operate {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      & > :first-child {
+        background-color: var(--btn-bg-color);
+        border-radius: 0.5rem;
+        padding: 0.25rem 1rem;
+        cursor: pointer;
+      }
+      .last-update {
         display: flex;
         align-items: center;
         justify-content: flex-start;
+        font-size: 1.1rem;
         gap: 0.5rem;
-      }
-      hr {
-        width: 100%;
-      }
-      .operate {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        & > :first-child {
-          background-color: var(--btn-bg-color);
-          border-radius: 0.5rem;
-          padding: 0.25rem 1rem;
-          cursor: pointer;
-        }
-        .last-update {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          font-size: 1.1rem;
-          gap: 0.5rem;
-        }
       }
     }
   }
+}
 </style>

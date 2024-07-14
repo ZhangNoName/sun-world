@@ -17,6 +17,9 @@ importers:
       vue-i18n:
         specifier: ^9.13.1
         version: 9.13.1(vue@3.4.21)
+      vue-router:
+        specifier: ^4.4.0
+        version: registry.npmmirror.com/vue-router@4.4.0(vue@3.4.21)
     devDependencies:
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
@@ -10081,6 +10084,12 @@ packages:
     version: 0.0.16
     dev: true
 
+  registry.npmmirror.com/@vue/devtools-api@6.6.3:
+    resolution: {integrity: sha512-0MiMsFma/HqA6g3KLKn+AGpL1kgKhFWszC9U29NfpWK5LE7bjeXxySWJrOJ77hBz+TBrBQ7o4QJqbPbqbs8rJw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.3.tgz}
+    name: '@vue/devtools-api'
+    version: 6.6.3
+    dev: false
+
   registry.npmmirror.com/@vueuse/core@9.13.0(vue@3.4.21):
     resolution: {integrity: sha512-pujnclbeHWxxPRqXWmdkKV5OX4Wk4YeK7wusHqRwU0Q7EFusHoqNA/aPhB6KCh9hEqJkLAJo7bb0Lh9b+OIVzw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@vueuse/core/-/core-9.13.0.tgz}
     id: registry.npmmirror.com/@vueuse/core/9.13.0
@@ -10900,3 +10909,15 @@ packages:
     dependencies:
       vue: 3.4.21(typescript@5.4.4)
     dev: true
+
+  registry.npmmirror.com/vue-router@4.4.0(vue@3.4.21):
+    resolution: {integrity: sha512-HB+t2p611aIZraV2aPSRNXf0Z/oLZFrlygJm+sZbdJaW6lcFqEDQwnzUBXn+DApw+/QzDU/I9TeWx9izEjTmsA==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-router/-/vue-router-4.4.0.tgz}
+    id: registry.npmmirror.com/vue-router/4.4.0
+    name: vue-router
+    version: 4.4.0
+    peerDependencies:
+      vue: ^3.2.0
+    dependencies:
+      '@vue/devtools-api': registry.npmmirror.com/@vue/devtools-api@6.6.3
+      vue: 3.4.21(typescript@5.4.4)
+    dev: false
