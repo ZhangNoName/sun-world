@@ -1,10 +1,14 @@
 {
   "title": "Welcome~~",
   "readMore": "Read more",
-    "info":{
-    "paper":"paper",
-    "classification":"classification",
-    "tag":"tags",
-    "views":"views"
+  "info": {
+    "paper": "paper",
+    "classification": "classification",
+    "tag": "tags",
+    "views": "views"
+  },
+  "weather": {
+    "temp": "Tempure",
+    "feelsLike": "FeelsLike"
   }
 }

@@ -111,7 +111,7 @@ export const getAdressByLocation = (): Promise<void> => {
 
     CurrentLocationArea.addressComponent = res.data.regeocode.addressComponent;
     CurrentLocationArea.formatted_address = res.data.regeocode.formatted_address;
-    console.log('当前位置', CurrentLocationArea)
+    // console.log('当前位置', CurrentLocationArea)
   }).catch((err) => {
     console.log(err);
   })
@@ -214,7 +214,7 @@ export const getWeatherByHeFeng = (): Promise<void> => {
       const weatherData = JSON.parse(nowWeather);
       Object.assign(HeFengWeatherData, weatherData);
       // HeFengWeatherData.now = weatherData.now;
-      console.log('从内存中读取出和风天气', HeFengWeatherData);
+      // console.log('从内存中读取出和风天气', HeFengWeatherData);
       return Promise.resolve();
     }
     return Promise.resolve();
@@ -228,7 +228,7 @@ export const getWeatherByHeFeng = (): Promise<void> => {
     }
   }).then((res) => {
     Object.assign(HeFengWeatherData, res.data);
-    console.log('重新获取和风天气', HeFengWeatherData);
+    // console.log('重新获取和风天气', HeFengWeatherData);
     localStorage.setItem('hfWeather', JSON.stringify(HeFengWeatherData))
   }).catch((err) => {
     console.log(err);

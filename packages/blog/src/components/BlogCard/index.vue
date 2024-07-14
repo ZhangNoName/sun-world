@@ -118,10 +118,12 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+
         & > :first-child {
           background-color: var(--btn-bg-color);
           border-radius: 0.5rem;
           padding: 0.25rem 1rem;
+          cursor: pointer;
         }
         .last-update {
           display: flex;
