@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { getCurrentInstance, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import MainPage from './pages/index.vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getAdressByLocation } from './util'
 const theme = ref('sun-light')
 const { locale } = useI18n()
 

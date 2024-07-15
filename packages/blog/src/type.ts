@@ -13,6 +13,14 @@ export interface BlogCardProps {
   commentNum: number | string,
 }
 
+export interface CatalogItem {
+  id: string,
+  name: string,
+  level: number | string,
+  children?: CatalogItem[],
+
+}
+
 
 export interface CurrentAdress {
   addressComponent: {

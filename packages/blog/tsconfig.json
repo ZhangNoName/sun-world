@@ -7,7 +7,7 @@
     "skipLibCheck": true, // 跳过库文件的类型检查，提高编译速度
 
     /* Bundler mode */
-    "moduleResolution": "bundler", // 使用打包器模式来解析模块
+    "moduleResolution": "node", // 使用打包器模式来解析模块
     "allowImportingTsExtensions": true, // 允许导入带有 .ts 扩展名的文件
     "resolveJsonModule": true, // 允许从 .json 文件中导入模块
     "isolatedModules": true, // 每个文件作为单独的模块进行处理
