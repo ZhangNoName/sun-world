@@ -1,6 +1,7 @@
 <script lang="ts" setup name="CatalogListItem">
 import type { CatalogItem } from '@/type'
 import { computed } from 'vue'
+import { FoldSvg } from '@sun-world/icons-vue'
 // import CatalogListItem from './CatalogListItem.vue'
 
 const prop = defineProps<CatalogItem>()
@@ -11,7 +12,10 @@ const itemClass = computed(() => {
 
 <template>
   <div :class="itemClass">
+    <FoldSvg width="1.5rem" height="1.5rem" />
+    <slot name="icon"></slot>
     {{ name }}
+    <slot name="operate"></slot>
   </div>
   <template v-if="children">
     <CatalogListItem
@@ -28,4 +32,16 @@ const itemClass = computed(() => {
 import CatalogListItem from './index.vue'
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.catalog-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+}
+@for $i from 1 through 10 {
+  .catalog-level-#{$i} {
+    margin-left: #{2rem * $i};
+  }
+}
+</style>
