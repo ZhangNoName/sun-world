@@ -56,6 +56,11 @@ html {
   --icon-bg-color: transparent;
   --icon-bg-hover-color: yellow;
 
+  //目录树
+  --catalog-item-bg-color: transparent;
+  --catalog-item-hover-bg-color: #7a7a7a;
+  --catalog-item-active-bg-color: #fc0707;
+
   hr {
     color: #7a7a7a;
     background-color: #7a7a7a;
@@ -76,6 +81,10 @@ html {
   //图标属性
   --icon-bg-color: white;
   --icon-bg-hover-color: yellow;
+  //目录树
+  --catalog-item-bg-color: transparent;
+  --catalog-item-hover-bg-color: #7a7a7a;
+  --catalog-item-active-bg-color: #fc0707;
   hr {
     color: #7a7a7a;
     background-color: #7a7a7a;

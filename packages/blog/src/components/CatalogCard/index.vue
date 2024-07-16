@@ -21,5 +21,10 @@ const prop = defineProps()
 
 <style lang="scss" scoped>
 .catalog-card-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0.5rem;
 }
 </style>

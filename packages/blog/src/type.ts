@@ -1,3 +1,4 @@
+import { DefineComponent } from 'vue';
 import { HeFengWeatherKey } from './constant';
 import { CurrentLocation } from './util/index';
 export interface BlogCardProps {
@@ -18,6 +19,8 @@ export interface CatalogItem {
   name: string,
   level: number | string,
   children?: CatalogItem[],
+  isopen?: boolean;
+  icon?: DefineComponent | SVGAElement | Element
 
 }
 
