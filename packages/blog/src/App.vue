@@ -15,6 +15,8 @@ const updateLocalStorageValue = (e: StorageEvent) => {
   if (e.key === 'locale') {
     locale.value = e.newValue || 'zh'
     console.log(e.newValue)
+  } else if (e.key === 'theme') {
+    theme.value = e.newValue || 'sun-light'
   }
 }
 onMounted(() => {

@@ -60,6 +60,11 @@ html {
   --catalog-item-bg-color: transparent;
   --catalog-item-hover-bg-color: #7a7a7a;
   --catalog-item-active-bg-color: #fc0707;
+  --catalog-item-hover-color: white;
+  --catalog-item-active-color: yellow;
+
+  // 底部
+  --footer-bg-color: white;
 
   hr {
     color: #7a7a7a;
@@ -85,6 +90,10 @@ html {
   --catalog-item-bg-color: transparent;
   --catalog-item-hover-bg-color: #7a7a7a;
   --catalog-item-active-bg-color: #fc0707;
+  --catalog-item-hover-color: white;
+  --catalog-item-active-color: yellow;
+  // 底部
+  --footer-bg-color: rgba(21, 19, 19, 0.678);
   hr {
     color: #7a7a7a;
     background-color: #7a7a7a;

@@ -1,6 +1,6 @@
 <script lang="ts" setup name="CatalogListItem">
 import type { CatalogItem } from '@/type'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { FoldSvg } from '@sun-world/icons-vue'
 
 const prop = withDefaults(defineProps<CatalogItem>(), {
@@ -10,21 +10,32 @@ const prop = withDefaults(defineProps<CatalogItem>(), {
   name: '',
   isopen: true,
 })
+const domRef = ref()
+const isOpen = ref(prop.isopen)
 const itemClass = computed(() => {
   return (
-    'catalog-item catalog-level-' + prop.level + (prop.isopen ? ' open' : '')
+    'catalog-item catalog-level-' + prop.level + (isOpen.value ? ' open' : '')
   )
 })
+const changeOpen = () => {
+  isOpen.value = !isOpen.value
+}
 </script>
 
 <template>
   <div :class="itemClass">
-    <FoldSvg v-if="children" class="fold-icon" width="1.5rem" height="1.5rem" />
+    <FoldSvg
+      v-if="children"
+      @click="changeOpen"
+      class="fold-icon"
+      width="1.5rem"
+      height="1.5rem"
+    />
     <slot name="icon"></slot>
     <span>{{ name }}</span>
     <slot name="operate"></slot>
   </div>
-  <template v-if="children">
+  <template v-if="children && isOpen">
     <CatalogListItem
       v-for="item in children"
       :isopen="item.isopen"
@@ -47,18 +58,28 @@ import CatalogListItem from './index.vue'
   align-items: center;
   gap: 0.5rem;
   background-color: var(--catalog-item-bg-color);
+
+  // 禁止用户选中文本
+  user-select: none; /* 标准语法 */
+  -webkit-user-select: none; /* 针对 Webkit (Safari, Chrome) 浏览器 */
+  -moz-user-select: none; /* 针对 Mozilla (Firefox) 浏览器 */
+  -ms-user-select: none; /* 针对 IE10+ 浏览器 */
   &:hover {
     background-color: var(--catalog-item-hover-bg-color);
+    color: var(--catalog-item-hover-color);
   }
   .fold-icon {
     cursor: pointer;
-    // &:hover {
-    //   transform: rotate(90deg);
-    //   transition: all 0.5s;
-    // }
+
+    &:hover {
+      color: var(--catalog-item-hover-color) !important;
+    }
   }
 }
 .open {
+  // .catalog-item {
+  //   display: none;
+  // }
   .fold-icon {
     transform: rotate(90deg);
     // transition: all 0.5s;
