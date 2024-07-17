@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-const prop = defineProps({})
+const prop = defineProps()
 
 const theme = ref(localStorage.getItem('theme') || 'sun-light')
 const changTheme = () => {
