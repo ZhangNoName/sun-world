@@ -3,7 +3,7 @@
     "composite": true,
     "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "bundler", // 保持一致
+    "moduleResolution": "node", // 保持一致
     "allowSyntheticDefaultImports": true,
     "strict": true
   },

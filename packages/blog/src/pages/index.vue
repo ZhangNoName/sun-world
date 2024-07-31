@@ -29,7 +29,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  background-color: antiquewhite;
+  // background-color: antiquewhite;
   .z-header {
     position: fixed;
     top: 0;

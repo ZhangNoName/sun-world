@@ -7,7 +7,7 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler", // 可尝试使用 'node' 进行测试
+    "moduleResolution": "node", // 可尝试使用 'node' 进行测试
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
