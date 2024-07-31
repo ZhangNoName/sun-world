@@ -1,11 +1,18 @@
 <script setup lang="ts" name="header">
-import { Search, QQOutlined, GithubOutlined } from '@sun-world/icons-vue'
+import {
+  Search,
+  QQOutlined,
+  GithubOutlined,
+  PaperSvg,
+} from '@sun-world/icons-vue'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 const time = ref('')
 const timerRef = ref()
+const router = useRouter()
 const getCurrentTime = () => {
   const now = new Date()
   const year = now.getFullYear()
@@ -20,6 +27,13 @@ const getCurrentTime = () => {
 const updateTime = () => {
   time.value = getCurrentTime()
   timerRef.value = requestAnimationFrame(updateTime)
+}
+
+/**
+ * 路由跳转到编辑文章
+ */
+const editArticle = () => {
+  router.push({ path: '/new_article' })
 }
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
@@ -37,6 +51,7 @@ onBeforeUnmount(() => {
     </div>
     <div class="right-menu">
       <div class="link-icon">
+        <PaperSvg @click="editArticle" />
         <GithubOutlined @click="openGithub" />
         <QQOutlined />
         <Search />

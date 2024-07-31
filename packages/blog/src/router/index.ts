@@ -4,7 +4,8 @@ import Blog from '@/pages/blog/index.vue';
 
 const routes = [
   { path: '/', component: Home },
-  { path: '/blog', component: Blog }
+  { path: '/blog', component: Blog },
+  { path: '/new_article', component: Blog }
 ];
 
 const router = createRouter({

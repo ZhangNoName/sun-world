@@ -9,7 +9,7 @@ import {
 } from '@sun-world/icons-vue'
 import Tag from '../Tag/index.vue'
 import { BlogCardProps } from '@/type'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 const props = defineProps<BlogCardProps>()
 
 const {
@@ -29,7 +29,6 @@ const iconConfig = ref({
 })
 
 const router = useRouter()
-const route = useRoute()
 const showBlog = () => {
   console.log('执行跳转')
   router.push({ path: '/blog' })
