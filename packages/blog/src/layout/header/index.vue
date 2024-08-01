@@ -4,6 +4,7 @@ import {
   QQOutlined,
   GithubOutlined,
   PaperSvg,
+  AIGCSvg,
 } from '@sun-world/icons-vue'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
@@ -35,6 +36,13 @@ const updateTime = () => {
 const editArticle = () => {
   router.push({ path: '/new_article' })
 }
+/**
+ * 路由跳转到AIGC界面
+ */
+const openAI = () => {
+  const routeData = router.resolve({ path: '/aigc' })
+  window.open(routeData.href, '_blank')
+}
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
 })
@@ -51,6 +59,7 @@ onBeforeUnmount(() => {
     </div>
     <div class="right-menu">
       <div class="link-icon">
+        <AIGCSvg @click="openAI" />
         <PaperSvg @click="editArticle" />
         <GithubOutlined @click="openGithub" />
         <QQOutlined />

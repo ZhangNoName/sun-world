@@ -6,4 +6,5 @@ import Clock from './Clock.vue'
 import Comment from './Comment.vue'
 import FoldSvg from './Fold.vue'
 import PaperSvg from './Paper.vue'
-export { Search, Calendar, TagSvg, WordCount, Clock, Comment, FoldSvg, PaperSvg }
+import AIGCSvg from './Aigc.vue'
+export { Search, Calendar, TagSvg, WordCount, Clock, Comment, FoldSvg, PaperSvg, AIGCSvg }

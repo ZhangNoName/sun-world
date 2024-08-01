@@ -4,7 +4,7 @@ import MainPage from './pages/index.vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { testApi } from './service/request'
+// import { testApi } from './service/request'
 const theme = ref('sun-light')
 const { locale } = useI18n()
 
@@ -22,8 +22,9 @@ const updateLocalStorageValue = (e: StorageEvent) => {
 }
 onMounted(() => {
   // getAdressByLocation()
-  testApi()
+  // testApi()
   window.addEventListener('localestorageChange' as any, updateLocalStorageValue)
+  console.log('当前环境下的变量', import.meta.env)
 })
 onUnmounted(() => {
   window.removeEventListener(

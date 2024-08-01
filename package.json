@@ -21,6 +21,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@langchain/core": "^0.2.18",
+    "@langchain/openai": "^0.2.5",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.66",
@@ -51,6 +53,7 @@
   },
   "dependencies": {
     "@sun-world/icons-vue": "workspace:^",
+    "langchain": "^0.2.12",
     "vditor": "^3.10.4",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.4.0"
