@@ -7,7 +7,7 @@
     "skipLibCheck": true, // 跳过库文件的类型检查，提高编译速度
 
     /* Bundler mode */
-    "moduleResolution": "bundler", // 使用打包器模式来解析模块
+    "moduleResolution": "node", // 使用打包器模式来解析模块
     "allowImportingTsExtensions": true, // 允许导入带有 .ts 扩展名的文件
     "resolveJsonModule": true, // 允许从 .json 文件中导入模块
     "isolatedModules": true, // 每个文件作为单独的模块进行处理
@@ -21,10 +21,10 @@
     "noFallthroughCasesInSwitch": true, // 检查并报告 switch 语句中的 fallthrough 情况
     "baseUrl": ".", // 设置基础目录，用于解析非相对模块的导入
     "paths": {
-      "@sun-world/icons-vue": ["../icons-vue/src"], // 配置路径别名，用于导入 @sun-world/icons-vue 模块
-      "@/*": ["src/*"] // 配置路径别名，用于导入 @ 符号开头的模块
+      "@/*": ["src/*"], // 配置路径别名，用于导入 @ 符号开头的模块
+      "@sun-world/icons-vue": ["../icons-vue/src"] // 配置路径别名，用于导入 @sun-world/icons-vue 模块
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"], // 包含的文件和目录模式
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"], // 包含的文件和目录模式
   "references": [{ "path": "./tsconfig.node.json" }] // 引用其他的 tsconfig 文件，用于项目的多配置
 }

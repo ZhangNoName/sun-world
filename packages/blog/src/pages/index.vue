@@ -1,13 +1,21 @@
-<script setup lang="ts" name="mainPage">
-import ZLayoutContent from "@/layout/content/index.vue";
-import ZHeader from "@/layout/header/index.vue";
-import ZFooter from "@/layout/footer/index.vue";
+<script setup lang="ts">
+import ZHeader from '@/layout/header/index.vue'
+import ZFooter from '@/layout/footer/index.vue'
+import { RouterView } from 'vue-router'
+
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  console.log('mounted')
+})
 </script>
 
 <template>
   <div class="main-page">
     <ZHeader></ZHeader>
-    <ZLayoutContent title="1"></ZLayoutContent>
+    <div class="z-content">
+      <RouterView />
+    </div>
     <ZFooter></ZFooter>
   </div>
 </template>
@@ -21,10 +29,7 @@ import ZFooter from "@/layout/footer/index.vue";
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  // display: grid;
-  // grid-template-rows: 5rem 1fr 15rem;
-  // gap: 5px;
-  background-color: antiquewhite;
+  // background-color: antiquewhite;
   .z-header {
     position: fixed;
     top: 0;
@@ -35,8 +40,11 @@ import ZFooter from "@/layout/footer/index.vue";
   .z-content {
     position: relative;
     margin-top: 6.5rem;
+    margin: 6.5rem auto 0 auto;
     height: auto;
     min-height: calc(100vh - 37rem);
+    background-color: none;
+    width: 85%;
   }
   .z-footer {
     margin-top: 1.5rem;

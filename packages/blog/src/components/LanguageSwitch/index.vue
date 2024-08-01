@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { ref } from 'vue'
-  // 定义组件的 props
-  const props = defineProps<{}>()
+
   const locale = ref(localStorage.getItem('locale') || 'zh')
   const changeLanguage = () => {
-    localStorage.setItem('locale', locale.value == 'zh' ? 'en' : 'zh')
+    locale.value = locale.value == 'zh' ? 'en' : 'zh'
+    localStorage.setItem('locale', locale.value)
   }
 </script>
 
@@ -26,15 +26,16 @@
     transition: all 0.2s;
     position: relative;
     border-radius: 2px;
+    background-color: var(--icon-bg-color);
     &:hover {
-      background-color: var(--hover-background-color);
+      background-color: var(--icon-bg-hover-color);
       cursor: pointer;
     }
     .language-item {
       font-size: 14px;
       line-height: 1;
       position: absolute;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--icon-bg-hover-color);
     }
     .language-zh {
       left: 3px;

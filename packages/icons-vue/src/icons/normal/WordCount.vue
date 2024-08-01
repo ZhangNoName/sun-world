@@ -1,22 +1,18 @@
 <script setup lang="ts">
-  import { IconProps } from '../../type'
-  import { ref } from 'vue'
-  // 定义组件的 props
-  const props = defineProps<IconProps>()
-
-  // 默认宽高
-  const defaultWidth = ref(props.width || 24)
-  const defaultHeight = ref(props.height || 24)
-  const color = ref(props.color || '#333')
+import { IconProps } from '../../type'
+import { DefaultProps } from '../../constant'
+// 定义组件的 props
+const props = withDefaults(defineProps<IconProps>(), DefaultProps)
 </script>
 
 <template>
   <svg
-    viewBox="0 0 1024 1024"
+    class="icon"
+    viewBox="0 0 1039 1024"
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
-    :width="defaultWidth"
-    :height="defaultHeight"
+    :width="width"
+    :height="height"
   >
     <path
       d="M851.123506 952.605578V656.828685h71.394422v367.171315H1.52988V99.952191h469.163347v71.394423H72.924303v781.258964h778.199203zM922.007968 0.50996v272.318725h-71.394422V0.50996z"

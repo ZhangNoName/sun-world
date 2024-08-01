@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Monda, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -27,7 +27,6 @@ h1 {
 // 设置根元素的font-size，1rem = 10px
 html {
   font-size: 10px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 #app {
@@ -47,16 +46,34 @@ html {
   --font-color: #000;
   --font-active-color: #3273dc;
   --main-content-bg-color: rgb(154, 154, 26);
-  --blog-card-bg-color: rgb(255, 255, 255);
+  --blog-card-bg-color: rgb(217, 225, 112);
   --blog-card-font-color: #4a4a4a;
   --blog-card-tag-color: #7a7a7a;
   --blog-card-border-color: white;
   --btn-bg-color: wheat;
+
+  //图标属性
+  --icon-bg-color: transparent;
+  --icon-bg-hover-color: yellow;
+
+  //目录树
+  --catalog-item-bg-color: transparent;
+  --catalog-item-hover-bg-color: #7a7a7a;
+  --catalog-item-active-bg-color: #fc0707;
+  --catalog-item-hover-color: white;
+  --catalog-item-active-color: yellow;
+
+  // 底部
+  --footer-bg-color: white;
+
   hr {
+    color: #7a7a7a;
+    background-color: #7a7a7a;
+    opacity: 0.5;
   }
 }
 .sun-dark {
-  --background-color: #000;
+  --background-color: rgb(25, 25, 25);
   --font-color: #fff;
   --font-active-color: #3273dc;
   --main-content-bg-color: yellow;
@@ -65,6 +82,22 @@ html {
   --blog-card-tag-color: #7a7a7a;
   --blog-card-border-color: white;
   --btn-bg-color: wheat;
+
+  //图标属性
+  --icon-bg-color: white;
+  --icon-bg-hover-color: yellow;
+  //目录树
+  --catalog-item-bg-color: transparent;
+  --catalog-item-hover-bg-color: #7a7a7a;
+  --catalog-item-active-bg-color: #fc0707;
+  --catalog-item-hover-color: white;
+  --catalog-item-active-color: yellow;
+  // 底部
+  --footer-bg-color: rgba(21, 19, 19, 0.678);
+  hr {
+    color: #7a7a7a;
+    background-color: #7a7a7a;
+  }
 }
 
 /* 设置滚动条的宽度和高度 */

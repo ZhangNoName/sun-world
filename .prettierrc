@@ -2,7 +2,7 @@
   "semi": false,
   "singleQuote": true,
   "htmlWhitespaceSensitivity": "ignore",
-  "vueIndentScriptAndStyle": true,
+  "vueIndentScriptAndStyle": false,
   "trailingComma": "es5",
   "tabWidth": 2,
   "printWidth": 80

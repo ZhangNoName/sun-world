@@ -1,14 +1,7 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { IconProps } from '../../type'
-  // 定义组件的 props
-
-  const props = defineProps<IconProps>()
-
-  // 默认宽高
-  const defaultWidth = ref(props.width || 24)
-  const defaultHeight = ref(props.height || 24)
-  const color = ref(props.color || '#333')
+import { IconProps } from '../../type'
+import { DefaultProps } from '../../constant'
+const props = withDefaults(defineProps<IconProps>(), DefaultProps)
 </script>
 
 <template>
@@ -17,8 +10,8 @@
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     p-id="8095"
-    :width="defaultWidth"
-    :height="defaultHeight"
+    :width="width"
+    :height="height"
   >
     <path
       d="M512 70.4a441.6 441.6 0 1 0 0 883.2 441.6 441.6 0 0 0 0-883.2z m0 64a377.6 377.6 0 1 1 0 755.2 377.6 377.6 0 0 1 0-755.2z"

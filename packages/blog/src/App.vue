@@ -1,26 +1,36 @@
-<script setup lang="ts" name="APP">
-  import { onMounted } from 'vue'
-  import MainPage from './pages/index.vue'
-  import { computed, ref } from 'vue'
-  import { onUnmounted } from 'vue'
-  import { useI18n } from 'vue-i18n'
-  const theme = ref('sun-light')
-  const { locale } = useI18n()
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import MainPage from './pages/index.vue'
+import { computed, ref } from 'vue'
+import { onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { testApi } from './service/request'
+const theme = ref('sun-light')
+const { locale } = useI18n()
 
-  const allClass = computed(() => {
-    return 'app-container ' + theme.value
-  })
-  const updateLocalStorageValue = (e: StorageEvent) => {
-    if (e.key === 'locale') {
-      locale.value = e.newValue || 'zh'
-    }
+const allClass = computed(() => {
+  return 'app-container ' + theme.value
+})
+const updateLocalStorageValue = (e: StorageEvent) => {
+  // console.log('当前信息发生改变', e)
+  if (e.key === 'locale') {
+    locale.value = e.newValue || 'zh'
+    console.log(e.newValue)
+  } else if (e.key === 'theme') {
+    theme.value = e.newValue || 'sun-light'
   }
-  onMounted(() => {
-    window.addEventListener('storage', updateLocalStorageValue)
-  })
-  onUnmounted(() => {
-    window.removeEventListener('storage', updateLocalStorageValue)
-  })
+}
+onMounted(() => {
+  // getAdressByLocation()
+  testApi()
+  window.addEventListener('localestorageChange' as any, updateLocalStorageValue)
+})
+onUnmounted(() => {
+  window.removeEventListener(
+    'localestorageChange' as any,
+    updateLocalStorageValue
+  )
+})
 </script>
 
 <template>
@@ -30,11 +40,11 @@
 </template>
 
 <style scoped lang="scss">
-  .app-container {
-    width: 100%;
-    height: 100%;
-    font-size: 1.6rem;
-    color: var(--font-color);
-    background-color: var(--background-color);
-  }
+.app-container {
+  width: 100%;
+  height: 100%;
+  font-size: 1.6rem;
+  color: var(--font-color);
+  background-color: var(--background-color);
+}
 </style>

@@ -1,13 +1,8 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { IconProps } from '../../type'
-  // 定义组件的 props
-  const props = defineProps<IconProps>()
-
-  // 默认宽高
-  const defaultWidth = ref(props.width || 24)
-  const defaultHeight = ref(props.height || 24)
-  const color = ref(props.color || '#333')
+import { ref } from 'vue'
+import { IconProps } from '../../type'
+import { DefaultProps } from '../../constant'
+const props = withDefaults(defineProps<IconProps>(), DefaultProps)
 </script>
 
 <template>
@@ -15,8 +10,8 @@
     viewBox="0 0 1024 1024"
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
-    :width="defaultWidth"
-    :height="defaultHeight"
+    :width="width"
+    :height="height"
   >
     <path
       d="M551.4 569.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V557c0 7.7 5.1 12.8 12.8 12.8zM679.4 569.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V557c0 7.7 5.1 12.8 12.8 12.8zM423.4 569.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V557c0 7.7 5.1 12.8 12.8 12.8zM679.4 751.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V739c0 7.7 5.1 12.8 12.8 12.8zM551.4 751.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V739c0 7.7 5.1 12.8 12.8 12.8zM295.4 751.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V739c0 7.7 5.1 12.8 12.8 12.8zM295.4 569.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V557c0 7.7 5.1 12.8 12.8 12.8zM423.4 751.8h51.2c7.7 0 12.8-5.1 12.8-12.8v-51.2c0-7.7-5.1-12.8-12.8-12.8h-51.2c-7.7 0-12.8 5.1-12.8 12.8V739c0 7.7 5.1 12.8 12.8 12.8z"
