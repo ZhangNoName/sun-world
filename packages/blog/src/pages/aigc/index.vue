@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { OpenAiLangChian } from '@/aigc/openai_langchian'
-import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { OPENAI_API_KEY } from '@/constant'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { ElMessage } from 'element-plus'
 const prop = defineProps()
 const openAi = new OpenAiLangChian({
   apiKey: OPENAI_API_KEY,
@@ -11,22 +10,20 @@ const openAi = new OpenAiLangChian({
   needParser: true,
   baseUrl: 'https://apikeyplus.com/v1',
 })
-const systemTemplate = 'Translate the following into {language}:'
-const promptTemplate = ChatPromptTemplate.fromMessages([
-  ['system', systemTemplate],
-  ['user', '{text}'],
-])
-onMounted(async () => {
-  const messages = [
-    new SystemMessage('Translate the following from English into Italian'),
-    new HumanMessage('i love you!'),
-  ]
-  let res = await openAi.sendMsg(messages)
-  const result = await promptTemplate.invoke({
-    language: 'italian',
-    text: 'hi',
+
+const sendMsg = async (msg: string) => {
+  if (!msg) {
+    ElMessage.error('请输入内容')
+  }
+  let res = await openAi.sendMsg({
+    text: msg,
   })
-  console.log('返回的信息', res, result.toChatMessages())
+
+  console.log('返回的信息', res)
+}
+onMounted(async () => {
+  // sendMsg()
+  // langSmith()
 })
 </script>
 

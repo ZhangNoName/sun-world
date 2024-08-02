@@ -54,6 +54,8 @@
   "dependencies": {
     "@sun-world/icons-vue": "workspace:^",
     "langchain": "^0.2.12",
+    "langsmith": "^0.1.40",
+    "openai": "^4.53.2",
     "vditor": "^3.10.4",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.4.0"
