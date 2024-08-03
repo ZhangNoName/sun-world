@@ -42,33 +42,47 @@ html {
 // 定义主题颜色
 
 .sun-light {
-  --background-color: white;
-  --font-color: #000;
-  --font-active-color: #3273dc;
-  --main-content-bg-color: white;
-  --blog-card-bg-color: rgb(217, 225, 112);
-  --blog-card-font-color: #4a4a4a;
-  --blog-card-tag-color: #7a7a7a;
-  --blog-card-border-color: #4a4a4a;
+  // 字体
+  --font-color: #606266;
+  --font-color-active: #409eff;
+  --font-color-0: #303133;
+  --font-color-1: #606266;
+  --font-color-2: #909399;
+  --font-color-3: #a8abb2;
+  --font-color-4: #c0c4cc;
+
+  // 边框
+  --border-color: #dcdfe6;
+  --border-color-0: #cdd0d6;
+  --border-color-1: #d4d7de;
+  --border-color-2: #e4e7ed;
+  --border-color-3: #ebeef5;
+  --border-color-4: #f2f6fc;
+
+  // 填充
+  --fill-color: #f0f2f5;
+  --fill-color-0: #e7f8ff;
+  --fill-color-1: #d9ecff;
+  --fill-color-2: #c6e2ff;
+  --fill-color-3: #a0cfff;
+  --fill-color-4: #79bbff;
+  --fill-color-5: #337ecc;
+  --fill-color-6: #409eff;
+
+  // 背景
+  --bg-color: #ffffff;
+  --bg-color-0: #e7f8ff;
+  --bg-color-1: #79bbff;
+  --bg-color-2: #409eff;
+  --bg-color-hover: #a0cfff;
+  --bg-color-active: #409eff;
   --btn-bg-color: wheat;
 
   //图标属性
   --icon-bg-color: transparent;
   --icon-bg-hover-color: yellow;
 
-  //目录树
-  --catalog-item-bg-color: transparent;
-  --catalog-item-hover-bg-color: #7a7a7a;
-  --catalog-item-active-bg-color: #fc0707;
-  --catalog-item-hover-color: white;
-  --catalog-item-active-color: yellow;
-
-  // 底部
-  --footer-bg-color: white;
-
   // AIGC
-  --aigc-border-color: rgba(222, 222, 222, 1);
-  --aigc-left-bg-color: rgb(231, 248, 255);
   --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
 
   hr {
@@ -78,31 +92,42 @@ html {
   }
 }
 .sun-dark {
-  --background-color: rgb(25, 25, 25);
-  --font-color: #fff;
-  --font-active-color: #3273dc;
-  --main-content-bg-color: yellow;
-  --blog-card-bg-color: rgba(21, 19, 19, 0.678);
-  --blog-card-font-color: silver;
-  --blog-card-tag-color: #7a7a7a;
-  --blog-card-border-color: white;
-  --btn-bg-color: wheat;
+  // 字体
+  --font-color: #cfd3dc;
+  --font-color-active: #409eff;
+  --font-color-0: #e5eaf3;
+  --font-color-2: #a3a6ad;
+  --font-color-3: #8d9095;
+  --font-color-4: #6c6e72;
 
+  // 边框
+  --border-color: #4c4d4f;
+  --border-color-0: #636466;
+  --border-color-1: #58585b;
+  --border-color-2: #414243;
+  --border-color-3: #363637;
+  --border-color-4: #2b2b2c;
+
+  // 填充
+  --fill-color: #2a598a;
+  --fill-color-0: #18222c;
+  --fill-color-1: #1d3043;
+  --fill-color-2: #213d5b;
+  --fill-color-3: #2a598a;
+  --fill-color-4: #3375b9;
+  --fill-color-5: #66b1ff;
+  --fill-color-6: #409eff;
+
+  // 背景
+  --bg-color: #141414;
+  --bg-color-0: #0a0a0a;
+  --bg-color-1: #141414;
+  --bg-color-2: #1d1e1f;
   //图标属性
   --icon-bg-color: white;
   --icon-bg-hover-color: yellow;
-  //目录树
-  --catalog-item-bg-color: transparent;
-  --catalog-item-hover-bg-color: #7a7a7a;
-  --catalog-item-active-bg-color: #fc0707;
-  --catalog-item-hover-color: white;
-  --catalog-item-active-color: yellow;
-  // 底部
-  --footer-bg-color: rgba(21, 19, 19, 0.678);
 
   // AIGC
-  --aigc-border-color: rgba(222, 222, 222, 1);
-  --aigc-left-bg-color: rgb(231, 248, 255);
   --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
   hr {
     color: #7a7a7a;

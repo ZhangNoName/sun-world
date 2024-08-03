@@ -44,7 +44,7 @@ const weatherIcon = computed(() => {
         <span>{{ HeFengWeatherData.now.windDir }}</span>
         <span>
           {{ HeFengWeatherData.now.windScale }}
-           <span class="unit bottom">km/h</span>
+          <span class="unit bottom">km/h</span>
         </span>
       </div>
       <div class="card-item">
@@ -68,7 +68,7 @@ const weatherIcon = computed(() => {
   grid-template-columns: 1fr;
   grid-template-rows: 18rem 2.5rem 6rem;
   gap: 1.5rem;
-  background-color: var(--blog-card-bg-color);
+  background-color: var(--bg-color-0);
   cursor: default;
   .weather {
     // background-color: pink;

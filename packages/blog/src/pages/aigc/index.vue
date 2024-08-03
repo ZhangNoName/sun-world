@@ -61,17 +61,18 @@ onMounted(async () => {
   gap: 1rem;
   height: 75rem;
   margin: 5rem 0 2rem 0;
-  border: 1px solid var(--blog-card-border-color);
+  border: 1px solid var(--border-color);
   border-radius: 2rem;
   overflow: hidden;
   box-shadow: var(--aigc-box-shadow);
   .sidebar {
     position: relative;
     gap: 1.5rem;
-    background-color: var(--aigc-left-bg-color);
+    background-color: var(--bg-color-0);
     padding: 2rem;
     display: flex;
     flex-direction: column;
+    box-shadow: var(--aigc-box-shadow);
     .header {
       position: relative;
       padding-top: 2rem;
@@ -81,11 +82,13 @@ onMounted(async () => {
         font-size: 2rem;
         font-weight: 700;
         animation: all 0.3s ease;
+        color: var(--font-color-0);
       }
       .des {
         font-size: 1.2rem;
         font-weight: 400;
         animation: all 0.3s ease;
+        color: var(--font-color-2);
       }
       .logo {
         position: absolute;
@@ -112,8 +115,9 @@ onMounted(async () => {
       display: flex;
       align-items: center;
       opacity: 0.5;
+
       &:hover {
-        // background-color: black;
+        background-color: var(--bg-color-1);
         // content: ;
       }
     }

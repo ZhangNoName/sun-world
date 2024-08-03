@@ -41,7 +41,7 @@ onMounted(() => {
     margin: 6.5rem auto 0 auto;
     height: auto;
     min-height: calc(100vh - 37rem);
-    background-color: var(--main-content-bg-color);
+    background-color: var(--bg-color);
     width: 85%;
   }
 }

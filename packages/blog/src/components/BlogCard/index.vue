@@ -72,9 +72,9 @@ const showBlog = () => {
 <style scoped lang="scss">
 .z-blog-card {
   margin-top: 1.5rem;
-  border-color: var(--blog-card-border-color);
-  background-color: var(--blog-card-bg-color);
-  color: var(--blog-card-font-color);
+  border-color: var(--border-color);
+  background-color: var(--bg-color-0);
+  color: var(--font-color);
   border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -85,7 +85,7 @@ const showBlog = () => {
   .header {
     font-size: 1.1rem;
     height: 4rem;
-    color: var(--blog-card-tag-color);
+    color: var(--font-color-2);
     display: flex;
     justify-content: flex-start;
     align-items: center;

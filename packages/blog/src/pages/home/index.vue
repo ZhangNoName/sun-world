@@ -60,7 +60,7 @@ const props: Props = defineProps({
   .right {
     // background-color: blue;
     .summary-card {
-      background-color: var(--blog-card-bg-color);
+      background-color: var(--bg-color-0);
     }
   }
 }
