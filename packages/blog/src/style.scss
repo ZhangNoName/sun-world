@@ -42,14 +42,14 @@ html {
 // 定义主题颜色
 
 .sun-light {
-  --background-color: #fff;
+  --background-color: white;
   --font-color: #000;
   --font-active-color: #3273dc;
-  --main-content-bg-color: rgb(154, 154, 26);
+  --main-content-bg-color: white;
   --blog-card-bg-color: rgb(217, 225, 112);
   --blog-card-font-color: #4a4a4a;
   --blog-card-tag-color: #7a7a7a;
-  --blog-card-border-color: white;
+  --blog-card-border-color: #4a4a4a;
   --btn-bg-color: wheat;
 
   //图标属性
@@ -65,6 +65,11 @@ html {
 
   // 底部
   --footer-bg-color: white;
+
+  // AIGC
+  --aigc-border-color: rgba(222, 222, 222, 1);
+  --aigc-left-bg-color: rgb(231, 248, 255);
+  --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
 
   hr {
     color: #7a7a7a;
@@ -94,6 +99,11 @@ html {
   --catalog-item-active-color: yellow;
   // 底部
   --footer-bg-color: rgba(21, 19, 19, 0.678);
+
+  // AIGC
+  --aigc-border-color: rgba(222, 222, 222, 1);
+  --aigc-left-bg-color: rgb(231, 248, 255);
+  --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
   hr {
     color: #7a7a7a;
     background-color: #7a7a7a;

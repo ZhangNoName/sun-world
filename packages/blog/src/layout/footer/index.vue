@@ -47,8 +47,10 @@ const count = ref(0)
   background-color: white;
   height: 20rem;
   width: 100%;
-  /* padding: 3rem 1.5rem 6rem 1.5rem; */
   padding: 3rem 0 6rem 0;
+  margin-top: 1.5rem;
+  bottom: 0;
+
   .z-footer-content {
     margin: 0 auto;
     height: 100%;

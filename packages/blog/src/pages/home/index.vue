@@ -3,6 +3,7 @@ import BlogCard from '@/components/BlogCard/index.vue'
 import { BlogListData } from './index.data'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
+import ZFooter from '@/layout/footer/index.vue'
 interface Props {
   title?: string
   subTitle: string
@@ -31,6 +32,7 @@ const props: Props = defineProps({
       <BlogCard v-for="item in BlogListData" :key="item.id" v-bind="item" />
     </div>
   </div>
+  <ZFooter />
 </template>
 
 <style scoped lang="scss">

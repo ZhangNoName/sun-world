@@ -7,4 +7,16 @@ import Comment from './Comment.vue'
 import FoldSvg from './Fold.vue'
 import PaperSvg from './Paper.vue'
 import AIGCSvg from './Aigc.vue'
-export { Search, Calendar, TagSvg, WordCount, Clock, Comment, FoldSvg, PaperSvg, AIGCSvg }
+import DragSvg from './Drag.vue'
+export {
+  Search,
+  Calendar,
+  TagSvg,
+  WordCount,
+  Clock,
+  Comment,
+  FoldSvg,
+  PaperSvg,
+  AIGCSvg,
+  DragSvg,
+}

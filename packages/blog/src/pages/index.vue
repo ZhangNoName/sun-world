@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ZHeader from '@/layout/header/index.vue'
-import ZFooter from '@/layout/footer/index.vue'
+
 import { RouterView } from 'vue-router'
 
 import { onMounted } from 'vue'
@@ -16,7 +16,6 @@ onMounted(() => {
     <div class="z-content">
       <RouterView />
     </div>
-    <ZFooter></ZFooter>
   </div>
 </template>
 
@@ -39,18 +38,11 @@ onMounted(() => {
   }
   .z-content {
     position: relative;
-    margin-top: 6.5rem;
     margin: 6.5rem auto 0 auto;
     height: auto;
     min-height: calc(100vh - 37rem);
-    background-color: none;
+    background-color: var(--main-content-bg-color);
     width: 85%;
-  }
-  .z-footer {
-    margin-top: 1.5rem;
-    // position: absolute;
-    bottom: 0;
-    width: 100%;
   }
 }
 </style>
