@@ -8,6 +8,10 @@ import FoldSvg from './Fold.vue'
 import PaperSvg from './Paper.vue'
 import AIGCSvg from './Aigc.vue'
 import DragSvg from './Drag.vue'
+import CharacterSvg from './Character.vue'
+import DiscoverSvg from './Discover.vue'
+import AddSvg from './Add.vue'
+import SettingSvg from './Setting.vue'
 export {
   Search,
   Calendar,
@@ -19,4 +23,8 @@ export {
   PaperSvg,
   AIGCSvg,
   DragSvg,
+  CharacterSvg,
+  DiscoverSvg,
+  AddSvg,
+  SettingSvg,
 }

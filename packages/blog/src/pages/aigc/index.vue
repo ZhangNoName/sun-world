@@ -3,7 +3,14 @@ import { onMounted, ref } from 'vue'
 import { OpenAiLangChian } from '@/aigc/openai_langchian'
 import { OPENAI_API_KEY } from '@/constant'
 import { ElMessage } from 'element-plus'
-import { AIGCSvg, DragSvg } from '@sun-world/icons-vue'
+import {
+  AIGCSvg,
+  CharacterSvg,
+  DiscoverSvg,
+  DragSvg,
+  AddSvg,
+  SettingSvg,
+} from '@sun-world/icons-vue'
 import ZBtn from '@/components/ZBtn/index.vue'
 const prop = defineProps()
 const openAi = new OpenAiLangChian({
@@ -38,13 +45,41 @@ onMounted(async () => {
         <div class="logo"><AIGCSvg width="5rem" height="5rem" /></div>
       </div>
       <div class="func">
-        <ZBtn>
-          <DragSvg #icon width="1.4rem" height="1.4rem" />
-          123456
+        <ZBtn fontSize="1.2rem">
+          <CharacterSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+          面具
+        </ZBtn>
+        <ZBtn fontSize="1.2rem">
+          <DiscoverSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+          发现
         </ZBtn>
       </div>
       <div class="body"></div>
-      <div class="tail"></div>
+      <div class="tail">
+        <ZBtn>
+          <SettingSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+        </ZBtn>
+        <ZBtn fontSize="1.2rem">
+          <AddSvg #icon color="rgb(51,51,51)" width="1.6rem" height="1.6rem" />
+
+          新的聊天
+        </ZBtn>
+      </div>
       <div class="drag">
         <DragSvg width="1.4rem" height="1.4rem" />
       </div>
@@ -98,10 +133,24 @@ onMounted(async () => {
       }
     }
     .func {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 1rem;
+      .sun-btn {
+        flex-grow: 1;
+      }
     }
     .body {
+      flex: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     .tail {
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .drag {
       position: absolute;
