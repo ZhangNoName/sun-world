@@ -23,7 +23,7 @@ const weatherIcon = computed(() => {
 <template>
   <div class="self-card">
     <div class="avator">
-      <img src="/logo.png" alt="" />
+      <img src="/logo.svg" alt="" />
     </div>
     <div class="adress">一个迷人的小屋</div>
     <div class="card-list">

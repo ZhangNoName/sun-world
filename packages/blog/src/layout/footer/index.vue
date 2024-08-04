@@ -88,7 +88,7 @@ const count = ref(0)
       .logo {
         height: 80%;
         aspect-ratio: 1 / 1;
-        background-image: url(/logo.png);
+        background-image: url(/logo.svg);
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;

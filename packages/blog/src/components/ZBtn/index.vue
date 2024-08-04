@@ -13,6 +13,7 @@ interface ZBtnProps {
   bgColor?: string
   fontSize?: string
   class?: string
+  borderColor?: string
 }
 
 const prop = withDefaults(defineProps<ZBtnProps>(), {
@@ -27,6 +28,7 @@ const prop = withDefaults(defineProps<ZBtnProps>(), {
   bgColor: '',
   class: '',
   fontSize: '',
+  borderColor: '',
 })
 
 const style = computed(() => {
@@ -34,6 +36,7 @@ const style = computed(() => {
     width: prop.width,
     height: prop.height,
     backgroundColor: prop.bgColor || BgColor[prop.type],
+    borderColor: prop.borderColor || 'var(--border-color-0)',
     fontSize: prop.fontSize || BtnSize[prop.size],
   }
 })
@@ -53,7 +56,7 @@ const style = computed(() => {
   align-items: center;
   font-size: 1.6rem;
   gap: 1rem;
-  border: 1px solid var(--bg-color);
+  border: 1px solid var(--border-color-0);
   border-radius: 1rem;
   padding: 1rem;
   color: var(--font-color);

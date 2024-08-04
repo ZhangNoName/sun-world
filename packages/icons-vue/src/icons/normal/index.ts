@@ -12,6 +12,13 @@ import CharacterSvg from './Character.vue'
 import DiscoverSvg from './Discover.vue'
 import AddSvg from './Add.vue'
 import SettingSvg from './Setting.vue'
+import DeleteSvg from './Delete.vue'
+import EditSvg from './Edit.vue'
+import ExportSvg from './Export.vue'
+import FullScreenSvg from './FullScreen.vue'
+import CancelFullScreenSvg from './CancelFullScreen.vue'
+import ClearSvg from './Clear.vue'
+import RobotSvg from './Robot.vue'
 export {
   Search,
   Calendar,
@@ -27,4 +34,11 @@ export {
   DiscoverSvg,
   AddSvg,
   SettingSvg,
+  DeleteSvg,
+  EditSvg,
+  ExportSvg,
+  FullScreenSvg,
+  CancelFullScreenSvg,
+  ClearSvg,
+  RobotSvg,
 }
