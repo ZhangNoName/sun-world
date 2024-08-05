@@ -116,6 +116,7 @@ const weatherIcon = computed(() => {
           padding-bottom: 0.5rem;
           display: flex;
           align-items: flex-end;
+          font-size: 1.2rem;
         }
       }
     }

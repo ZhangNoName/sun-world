@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { getCurrentLocation } from './util'
 // import { testApi } from './service/request'
 const theme = ref('sun-light')
 const { locale } = useI18n()
@@ -14,7 +15,7 @@ const updateLocalStorageValue = (e: StorageEvent) => {
   // console.log('当前信息发生改变', e)
   if (e.key === 'locale') {
     locale.value = e.newValue || 'zh'
-    console.log(e.newValue)
+    // console.log(e.newValue)
   } else if (e.key === 'theme') {
     theme.value = e.newValue || 'sun-light'
   }
