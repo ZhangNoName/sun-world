@@ -46,6 +46,6 @@ onUnmounted(() => {
   height: 100%;
   font-size: 1.6rem;
   color: var(--font-color);
-  background-color: var(--background-color);
+  background-color: var(--bg-color);
 }
 </style>

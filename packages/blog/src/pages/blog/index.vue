@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
-
+import ZFooter from '@/layout/footer/index.vue'
 const prop = defineProps()
 </script>
 
@@ -14,6 +14,7 @@ const prop = defineProps()
     </div>
     <div class="right"></div>
   </div>
+  <ZFooter />
 </template>
 
 <style lang="scss" scoped>

@@ -1,29 +1,29 @@
 <script lang="ts" setup>
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-  import {
-    WeChatOutLined,
-    QQOutlined,
-    GithubOutlined,
-  } from '@sun-world/icons-vue'
-  import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import {
+  WeChatOutLined,
+  QQOutlined,
+  GithubOutlined,
+} from '@sun-world/icons-vue'
+import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
 
-  const prop = defineProps()
-  const blogNum = ref(0)
-  const seriesNum = ref(0)
-  const tagNum = ref(0)
-  const commentNum = ref(0)
-  const viewsNum = ref(0)
+const prop = defineProps()
+const blogNum = ref(0)
+const seriesNum = ref(0)
+const tagNum = ref(0)
+const commentNum = ref(0)
+const viewsNum = ref(0)
 
-  const weatherIcon = computed(() => {
-    console.log(HeFengWeatherData.now.icon)
-    return 'qi qi-' + HeFengWeatherData.now.icon
-  })
+const weatherIcon = computed(() => {
+  console.log(HeFengWeatherData.now.icon)
+  return 'qi qi-' + HeFengWeatherData.now.icon
+})
 </script>
 
 <template>
   <div class="self-card">
     <div class="avator">
-      <img src="/logo.png" alt="" />
+      <img src="/logo.svg" alt="" />
     </div>
     <div class="adress">一个迷人的小屋</div>
     <div class="card-list">
@@ -55,77 +55,77 @@
 </template>
 
 <style lang="scss" scoped>
-  .self-card {
-    width: auto;
-    height: auto;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 18rem 2.5rem 6rem 3rem 1rem 3rem;
+.self-card {
+  width: auto;
+  height: auto;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 18rem 2.5rem 6rem 3rem 1rem 3rem;
 
-    gap: 1.5rem;
-    background-color: var(--blog-card-bg-color);
+  gap: 1.5rem;
+  background-color: var(--bg-color-0);
 
-    .avator {
-      img {
-        width: auto;
-        height: 100%;
-        object-fit: contain;
-        transition: all 1s ease;
-        border-radius: 50%;
-        &:hover {
-          transform: rotate(180deg);
-        }
+  .avator {
+    img {
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      transition: all 1s ease;
+      border-radius: 50%;
+      &:hover {
+        transform: rotate(180deg);
       }
     }
-    .adress {
+  }
+  .adress {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-list {
+    // background-color: bisque;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    .card-item {
+      width: 5rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-    }
-    .card-list {
-      // background-color: bisque;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      .card-item {
-        width: 5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        & > :first-child {
-          font-size: 1.1rem;
-        }
-        & > :nth-child(2) {
-          font-size: 2.8rem;
-          font-weight: 400;
-        }
+      & > :first-child {
+        font-size: 1.1rem;
       }
-    }
-    .icon-list {
-      // background-color: yellow;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      & > *:hover {
-        cursor: pointer;
-        background-color: var(--icon-bg-hover-color);
+      & > :nth-child(2) {
+        font-size: 2.8rem;
+        font-weight: 400;
       }
-    }
-    hr {
-      width: 100%;
-      align-self: center;
-      height: 0.2rem;
-      // border-radius: 0.1rem;
-      // height: max-content;
-    }
-    .tip {
-      display: flex;
-      justify-content: center; /* 水平居中 */
-      align-items: center; /* 垂直居中 */
     }
   }
+  .icon-list {
+    // background-color: yellow;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    & > *:hover {
+      cursor: pointer;
+      background-color: var(--icon-bg-hover-color);
+    }
+  }
+  hr {
+    width: 100%;
+    align-self: center;
+    height: 0.2rem;
+    // border-radius: 0.1rem;
+    // height: max-content;
+  }
+  .tip {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+  }
+}
 </style>

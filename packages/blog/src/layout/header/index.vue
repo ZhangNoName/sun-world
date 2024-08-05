@@ -98,7 +98,7 @@ onBeforeUnmount(() => {
     .logo {
       width: 5rem;
       height: 5rem;
-      background-image: url(/logo.png);
+      background-image: url(/logo.svg);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
