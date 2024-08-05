@@ -63,17 +63,18 @@ const weatherIcon = computed(() => {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 18rem 2.5rem 6rem 3rem 1rem 3rem;
-
   gap: 1.5rem;
   background-color: var(--bg-color-0);
 
   .avator {
+    display: flex;
+    justify-content: center;
     img {
       width: auto;
       height: 100%;
       object-fit: contain;
       transition: all 1s ease;
-      border-radius: 50%;
+      // border-radius: 50%;
       &:hover {
         transform: rotate(180deg);
       }

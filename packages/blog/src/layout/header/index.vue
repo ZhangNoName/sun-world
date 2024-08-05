@@ -79,6 +79,10 @@ onBeforeUnmount(() => {
 .z-header {
   width: 100%;
   height: 5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 7.5% 4fr 3fr 10rem 7.5%;
@@ -87,6 +91,7 @@ onBeforeUnmount(() => {
   background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
   backdrop-filter: blur(10px); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
+
   // opacity: 0.5;
   // background: none;
   .left-menu {

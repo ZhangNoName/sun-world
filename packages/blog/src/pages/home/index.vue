@@ -4,6 +4,7 @@ import { BlogListData } from './index.data'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import ZFooter from '@/layout/footer/index.vue'
+import ZHeader from '@/layout/header/index.vue'
 interface Props {
   title?: string
   subTitle: string
@@ -22,45 +23,51 @@ const props: Props = defineProps({
 })
 </script>
 <template>
-  <div class="home-content">
-    <div class="left">
-      <SelfInfoCard />
-      <WeatherCard />
+  <div class="home-page page-container">
+    <ZHeader></ZHeader>
+
+    <div class="home-content content">
+      <div class="left">
+        <SelfInfoCard />
+        <WeatherCard />
+      </div>
+      <div class="right">
+        <div class="card summary-card"></div>
+        <BlogCard v-for="item in BlogListData" :key="item.id" v-bind="item" />
+      </div>
     </div>
-    <div class="right">
-      <div class="card summary-card"></div>
-      <BlogCard v-for="item in BlogListData" :key="item.id" v-bind="item" />
-    </div>
+    <ZFooter />
   </div>
-  <ZFooter />
 </template>
 
 <style scoped lang="scss">
-.home-content {
-  display: grid;
-  grid-template-columns: 35rem auto;
-  grid-template-rows: auto;
-  gap: 1rem;
-  .card {
-    // background-color: white;
-    border-radius: 0.5rem;
-    height: 10rem;
-  }
-  .self-card {
-    height: 40rem;
-  }
+@import '../constant.scss';
+.home-page {
+  .home-content {
+    min-height: calc(100vh - 37rem);
+    background-color: var(--bg-color);
 
-  .left {
-    // max-width: 31rem;
-    // background-color: aqua;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  .right {
-    // background-color: blue;
-    .summary-card {
-      background-color: var(--bg-color-0);
+    display: grid;
+    grid-template-columns: 35rem auto;
+    grid-template-rows: auto;
+    gap: 1rem;
+    .card {
+      // background-color: white;
+      border-radius: 0.5rem;
+      height: 10rem;
+    }
+    .left {
+      // max-width: 31rem;
+      // background-color: aqua;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .right {
+      // background-color: blue;
+      .summary-card {
+        background-color: var(--bg-color-0);
+      }
     }
   }
 }

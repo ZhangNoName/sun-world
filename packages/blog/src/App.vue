@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import MainPage from './pages/index.vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -36,7 +35,7 @@ onUnmounted(() => {
 
 <template>
   <div :class="allClass">
-    <MainPage />
+    <RouterView />
   </div>
 </template>
 
