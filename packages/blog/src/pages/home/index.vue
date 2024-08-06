@@ -5,6 +5,7 @@ import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import ZFooter from '@/layout/footer/index.vue'
 import ZHeader from '@/layout/header/index.vue'
+import { onMounted } from 'vue'
 interface Props {
   title?: string
   subTitle: string
@@ -21,6 +22,8 @@ const props: Props = defineProps({
   iconSize: { type: String, default: '24px' },
   iconBgColor: { type: String, default: '#fff' },
 })
+
+onMounted(() => {})
 </script>
 <template>
   <div class="home-page page-container">

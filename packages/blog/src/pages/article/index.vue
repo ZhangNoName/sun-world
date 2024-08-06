@@ -1,8 +1,17 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import ZHeader from '@/layout/header/index.vue'
+import ZFooter from '@/layout/footer/index.vue'
+import { BlogEditorClass } from '@/blogEditor'
+
 const prop = defineProps()
+
+const editorEle = ref()
+onMounted(() => {
+  const blogEditor = new BlogEditorClass(editorEle.value)
+  console.log(blogEditor)
+})
 </script>
 
 <template>
@@ -10,14 +19,8 @@ const prop = defineProps()
     <ZHeader></ZHeader>
 
     <div class="content">
-      <div class="left">
-        <SelfInfoCard />
-      </div>
-      <div class="right">
-        <div></div>
-      </div>
+      <div ref="editorEle" class="editor-container"></div>
     </div>
-    <ZFooter />
   </div>
 </template>
 
@@ -25,8 +28,9 @@ const prop = defineProps()
 @import '../constant.scss';
 .article-page {
   .content {
+    height: calc(100% - 10rem);
     display: grid;
-    grid-template-columns: 35rem auto;
+    grid-template-columns: auto;
     grid-template-rows: auto;
     gap: 1rem;
     .left {
