@@ -35,7 +35,7 @@ service.interceptors.request.use(
   (error) => {
     console.log(error)
     Promise.reject(error)
-  },
+  }
 )
 
 //统一响应拦截 可以格式化返回的数据，针对返回code做出统一处理
@@ -105,7 +105,7 @@ service.interceptors.response.use(
       }
     }
     return Promise.reject(error)
-  },
+  }
 )
 //axios返回格式
 interface axiosTypes<T> {
@@ -128,7 +128,7 @@ const requestHandler = <T>(
   method: 'get' | 'post' | 'put' | 'delete',
   url: string,
   params: object = {},
-  config: AxiosRequestConfig = {},
+  config: AxiosRequestConfig = {}
 ): Promise<T> => {
   let response: Promise<axiosTypes<responseTypes<T>>>
   switch (method) {
@@ -150,10 +150,10 @@ const requestHandler = <T>(
     response
       .then((res) => {
         //业务代码 可根据需求自行处理
-
+        console.log('当前响应数据', res)
         const data = res.data
         // resolve(data as any);
-        // console.log('当前数据', data);
+        console.log('当前数据', data)
         if (data.code !== 0) {
           //特定状态码 处理特定的需求
           if (data.code == 401) {

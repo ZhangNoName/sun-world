@@ -2,23 +2,41 @@
 import { onMounted, ref } from 'vue'
 import ZHeader from '@/layout/header/index.vue'
 import { BlogEditorClass } from '@/blogEditor'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElInput } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
-const prop = defineProps()
+import { getBlogById, postSaveBlog } from '@/service/request'
+const prop = defineProps({
+  id: { type: String, default: '' },
+})
 
 const editorEle = ref()
 const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
-const saveBlog = () => {
+const saveBlog = async () => {
   console.log(blogEditor.value.getContent())
   console.log('saveBlog')
   ElMessage.success('保存成功')
+  await postSaveBlog({
+    title: title.value,
+    content: blogEditor.value.getContent() || '',
+    // author: 'test',
+    // created_at: 'test'
+  }).then((res) => {
+    console.log(res)
+  })
   // blogEditor?.value.save()
 }
+
+const title = ref('')
 onMounted(() => {
   blogEditor.value.init(editorEle.value)
   // console.log(blogEditor)
   // 将blogEditor挂载到全局
   ;(window as any).blogEditor = blogEditor
+  if (prop.id) {
+    getBlogById(prop.id).then((res: any) => {
+      console.log('获取到的博客内容', res)
+    })
+  }
 })
 </script>
 
@@ -31,6 +49,14 @@ onMounted(() => {
         <div class="stastic">统计信息</div>
         <div class="btn-container"><ZBtn @click="saveBlog">保存</ZBtn></div>
       </div>
+      <ElInput
+        class="title-container"
+        placeholder="标题"
+        maxlength="100"
+        clearable
+        show-word-limit
+        v-model="title"
+      />
       <div ref="editorEle" class="editor-container"></div>
     </div>
   </div>
@@ -59,6 +85,10 @@ onMounted(() => {
         gap: 1rem;
         align-items: center;
       }
+    }
+    .title-container {
+      height: 3rem;
+      width: 100%;
     }
   }
 }
