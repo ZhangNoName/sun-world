@@ -1,6 +1,26 @@
 {
   "title": "Welcome~~",
   "readMore": "Read more",
+  "search": "Search",
+  "searchPlaceholder": "Search...",
+  "add": "Add",
+  "save": "Save",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "submit": "Submit",
+  "confirm": "Confirm",
+  "close": "Close",
+  "commit": "Commit",
+  "star": "Star",
+  "clear": "Clear",
+  "clearAll": "clearAll",
+  "settings": "Settings",
+  "export": "Export",
+  "fullScreen": "Full Screen",
+  "exitFullScreen": "Exit Full Screen",
+  "theme": "Theme",
+
   "info": {
     "paper": "paper",
     "classification": "classification",
@@ -12,5 +32,17 @@
     "feelsLike": "FeelsLike",
     "humidity": "Humidity",
     "windSpeed": "WindSpeed"
+  },
+  "aigc": {
+    "title": "AIGC",
+    "prompt": "Prompt",
+    "result": "result",
+    "send": "Send",
+    "newChat": "New Chat",
+    "mask": "Mask",
+    "find": "find",
+    "robot": "Robot",
+    "desc": "Build your own AI assistant.",
+    "stastic": "total {num} conversations"
   }
 }

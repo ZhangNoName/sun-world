@@ -47,7 +47,9 @@ onMounted(() => {
     <div class="content">
       <div class="func-bar">
         <div class="stastic">统计信息</div>
-        <div class="btn-container"><ZBtn @click="saveBlog">保存</ZBtn></div>
+        <div class="btn-container">
+          <ZBtn @click="saveBlog">{{ $t('save') }}</ZBtn>
+        </div>
       </div>
       <ElInput
         class="title-container"

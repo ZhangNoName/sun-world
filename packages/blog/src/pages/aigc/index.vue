@@ -59,8 +59,8 @@ onMounted(async () => {
     <div class="aigc-content content" :class="sidebarClass">
       <div class="sidebar">
         <div class="header">
-          <div class="title">NextChat</div>
-          <div class="des">Build your own AI assistant.</div>
+          <div class="title">{{ $t('aigc.title') }}</div>
+          <div class="des">{{ $t('aigc.desc') }}</div>
           <div class="logo"><AIGCSvg width="5rem" height="5rem" /></div>
         </div>
         <div class="func">
@@ -71,7 +71,7 @@ onMounted(async () => {
               width="1.6rem"
               height="1.6rem"
             />
-            {{ sidebarClass == 'expend' ? '面具' : null }}
+            {{ sidebarClass == 'expend' ? $t('aigc.mask') : null }}
           </ZBtn>
           <ZBtn fontSize="1.2rem">
             <DiscoverSvg
@@ -80,7 +80,7 @@ onMounted(async () => {
               width="1.6rem"
               height="1.6rem"
             />
-            {{ sidebarClass == 'expend' ? '发现' : null }}
+            {{ sidebarClass == 'expend' ? $t('aigc.find') : null }}
           </ZBtn>
         </div>
         <div class="body">
@@ -92,7 +92,7 @@ onMounted(async () => {
           ></ChannelCard>
         </div>
         <div class="tail">
-          <ZBtn>
+          <ZBtn :title="$t('settings')">
             <SettingSvg
               #icon
               color="rgb(51,51,51)"
@@ -100,14 +100,14 @@ onMounted(async () => {
               height="1.6rem"
             />
           </ZBtn>
-          <ZBtn fontSize="1.2rem">
+          <ZBtn :title="$t('add')" fontSize="1.2rem">
             <AddSvg
               #icon
               color="rgb(51,51,51)"
               width="1.6rem"
               height="1.6rem"
             />
-            {{ sidebarClass == 'expend' ? '新的聊天' : null }}
+            {{ sidebarClass == 'expend' ? $t('aigc.newChat') : null }}
           </ZBtn>
         </div>
         <div class="drag" @click="changeSidebar">
@@ -118,10 +118,16 @@ onMounted(async () => {
         <div class="header">
           <div>
             <div>测试</div>
-            <div>共18条对话</div>
+            <div>
+              {{
+                $t('aigc.stastic', {
+                  num: 18,
+                })
+              }}
+            </div>
           </div>
           <div>
-            <ZBtn>
+            <ZBtn :title="$t('search')">
               <Search
                 #icon
                 color="rgb(51,51,51)"
@@ -129,7 +135,7 @@ onMounted(async () => {
                 height="1.6rem"
               />
             </ZBtn>
-            <ZBtn>
+            <ZBtn :title="$t('edit')">
               <EditSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -137,7 +143,7 @@ onMounted(async () => {
                 height="1.6rem"
               />
             </ZBtn>
-            <ZBtn>
+            <ZBtn :title="$t('export')">
               <ExportSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -145,7 +151,7 @@ onMounted(async () => {
                 height="1.6rem"
               />
             </ZBtn>
-            <ZBtn>
+            <ZBtn :title="$t('fullScreen')">
               <FullScreenSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -158,7 +164,7 @@ onMounted(async () => {
         <div class="body"></div>
         <div class="input-panel">
           <div class="func">
-            <ZBtn>
+            <ZBtn :title="$t('settings')">
               <SettingSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -166,7 +172,7 @@ onMounted(async () => {
                 height="1.6rem"
               />
             </ZBtn>
-            <ZBtn>
+            <ZBtn :title="$t('clearAll')">
               <ClearSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -174,7 +180,7 @@ onMounted(async () => {
                 height="1.6rem"
               />
             </ZBtn>
-            <ZBtn>
+            <ZBtn :title="$t('aigc.robot')">
               <RobotSvg
                 #icon
                 color="rgb(51,51,51)"
@@ -187,14 +193,14 @@ onMounted(async () => {
             <textarea
               placeholder="Enter 发送，Shift + Enter 换行，/ 触发补全，: 触发命令"
             ></textarea>
-            <ZBtn type="primary" fontSize="1.2rem">
+            <ZBtn :title="$t('settings')" type="primary" fontSize="1.2rem">
               <SettingSvg
                 #icon
                 color="rgb(51,51,51)"
                 width="1.6rem"
                 height="1.6rem"
               />
-              发送
+              {{ $t('submit') }}
             </ZBtn>
           </label>
         </div>

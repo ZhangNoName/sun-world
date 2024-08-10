@@ -4,7 +4,7 @@ import { DeleteSvg } from '@sun-world/icons-vue'
 interface ChannelCardProps {
   title: string
   id: string | number
-  createTime: string | time
+  createTime: string
   dialogNum: string | number
 }
 const prop = withDefaults(defineProps<ChannelCardProps>(), {
@@ -19,7 +19,13 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
   <div class="channel-card">
     <div class="title">{{ title }}</div>
     <div class="info">
-      <div>{{ dialogNum }}条对话</div>
+      <div>
+        {{
+          $t('aigc.stastic', {
+            num: dialogNum,
+          })
+        }}
+      </div>
       <div>{{ createTime }}</div>
     </div>
     <div class="del">
