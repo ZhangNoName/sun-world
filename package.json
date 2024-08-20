@@ -11,7 +11,7 @@
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
     "build:blog": "pnpm -F @sun-world/blog build",
     "build:icons": "pnpm -F @sun-world/icons-vue build",
-    "build:all": "pnpm -r exec pnpm run build:prod",
+    "build:all": "pnpm -r exec pnpm run build",
     "build:all:staging": "pnpm -r exec pnpm run build:staging",
     "icons:generate": "lerna run --scope @sun-world/icons-svg generate",
     "icons:build": "lerna run --scope @sum-world/icons-svg build",

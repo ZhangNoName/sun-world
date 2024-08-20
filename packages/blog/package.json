@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
+    "build:lint": "vue-tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "vue": "^3.4.21"
   },
   "devDependencies": {
-    "@sun-world/icons-vue":"workspace:^",
+    "@sun-world/icons-vue": "workspace:^",
     "@vitejs/plugin-vue": "^5.0.4",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
