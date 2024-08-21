@@ -1,2 +1,4 @@
 node_modules
 packages/blog/src/constant.ts
+sunworld.key
+sunworld.pem
