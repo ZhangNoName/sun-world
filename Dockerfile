@@ -22,5 +22,5 @@ COPY --from=0 /app/packages/blog/dist /usr/share/nginx/html
 
 # COPY sunworld.key /etc/nginx/ssl/key.pem
 # COPY sunworld.pem /etc/nginx/ssl/cert.pem
-EXPOSE 80
+EXPOSE 8081
 CMD ["nginx", "-g", "daemon off;"]
