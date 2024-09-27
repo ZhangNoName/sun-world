@@ -1,11 +1,11 @@
 <script setup lang="ts" name="content">
 import BlogCard from '@/components/BlogCard/index.vue'
-import { BlogListData } from './index.data'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import ZFooter from '@/layout/footer/index.vue'
 import ZHeader from '@/layout/header/index.vue'
-import { onMounted } from 'vue'
+import { onMounted, reactive } from 'vue'
+import { getBlogByPage } from '@/service/request'
 interface Props {
   title?: string
   subTitle: string
@@ -22,8 +22,17 @@ const props: Props = defineProps({
   iconSize: { type: String, default: '24px' },
   iconBgColor: { type: String, default: '#fff' },
 })
-
-onMounted(() => {})
+const blogList = reactive<any[]>([])
+onMounted(() => {
+  getBlogByPage(1, 10)
+    .then((res) => {
+      console.log('返回的数据', res)
+      const data = res.data as any
+      blogList.splice(0, blogList.length, ...data.data)
+    })
+    .catch((e) => {})
+    .finally(() => {})
+})
 </script>
 <template>
   <div class="home-page page-container">
@@ -36,7 +45,8 @@ onMounted(() => {})
       </div>
       <div class="right">
         <div class="card summary-card"></div>
-        <BlogCard v-for="item in BlogListData" :key="item.id" v-bind="item" />
+
+        <BlogCard v-for="item in blogList" :key="item.id" v-bind="item" />
       </div>
     </div>
     <ZFooter />

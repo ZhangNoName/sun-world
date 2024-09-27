@@ -1,6 +1,5 @@
 import { ElMessage } from 'element-plus'
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
-
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -117,20 +116,21 @@ interface axiosTypes<T> {
 //后台响应数据格式
 //###该接口用于规定后台返回的数据格式，意为必须携带code、msg以及result
 //###而result的数据格式 由外部提供。如此即可根据不同需求，定制不同的数据格式
-interface responseTypes<T> {
+
+export interface ResponseType {
   code: number
-  ElMessage: string
-  params: T
+  data: any
+  message: string
 }
 
 //核心处理代码 将返回一个promise 调用then将可获取响应的业务数据
-const requestHandler = <T>(
+const requestHandler = (
   method: 'get' | 'post' | 'put' | 'delete',
   url: string,
   params: object = {},
   config: AxiosRequestConfig = {}
-): Promise<T> => {
-  let response: Promise<axiosTypes<responseTypes<T>>>
+): Promise<ResponseType> => {
+  let response: Promise<axiosTypes<ResponseType>>
   switch (method) {
     case 'get':
       response = service.get(url, { params: { ...params }, ...config })
@@ -146,7 +146,11 @@ const requestHandler = <T>(
       break
   }
 
-  return new Promise<T>((resolve, reject) => {
+  return new Promise<{
+    code: number
+    data: any
+    message: string
+  }>((resolve, reject) => {
     response
       .then((res) => {
         //业务代码 可根据需求自行处理
@@ -163,20 +167,9 @@ const requestHandler = <T>(
             // window.location.href = '/login';
             // navigate('/login');
           }
-
-          const e = JSON.stringify(data)
-          // ElMessage.warning(`请求错误`)
-          console.error(`请求错误：${e}`)
-          ElMessage.error(data.ElMessage)
-          //数据请求错误 使用reject将错误返回
-          reject({
-            status: false,
-            data: res,
-          } as any)
+          reject()
         } else {
-          //数据请求正确 使用resolve将结果返回
-          // console.log('请求成功', data.params);
-          resolve(data.params)
+          resolve(data)
         }
       })
       .catch((error) => {
@@ -184,10 +177,7 @@ const requestHandler = <T>(
         ElMessage.warning(`网络发生错误，请检查`)
         console.error(`网络错误：${e}`)
         // reject(error);
-        reject({
-          status: false,
-          data: error,
-        } as any)
+        reject()
       })
   })
 }
