@@ -54,44 +54,109 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="aigc-page page-container">
-    <ZHeader />
-    <div class="aigc-content content" :class="sidebarClass">
-      <div class="sidebar">
-        <div class="header">
-          <div class="title">{{ $t('aigc.title') }}</div>
-          <div class="des">{{ $t('aigc.desc') }}</div>
-          <div class="logo"><AIGCSvg width="5rem" height="5rem" /></div>
+  <div class="aigc-page page-container" :class="sidebarClass">
+    <div class="sidebar">
+      <div class="header">
+        <div class="title">{{ $t('aigc.title') }}</div>
+        <div class="des">{{ $t('aigc.desc') }}</div>
+        <div class="logo"><AIGCSvg width="5rem" height="5rem" /></div>
+      </div>
+      <div class="func">
+        <ZBtn fontSize="1.2rem">
+          <CharacterSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+          {{ sidebarClass == 'expend' ? $t('aigc.mask') : null }}
+        </ZBtn>
+        <ZBtn fontSize="1.2rem">
+          <DiscoverSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+          {{ sidebarClass == 'expend' ? $t('aigc.find') : null }}
+        </ZBtn>
+      </div>
+      <div class="body">
+        <ChannelCard
+          id="0"
+          title="测试"
+          dialogNum="100"
+          createTime="2024.8.4 12:12"
+        ></ChannelCard>
+      </div>
+      <div class="tail">
+        <ZBtn :title="$t('settings')">
+          <SettingSvg
+            #icon
+            color="rgb(51,51,51)"
+            width="1.6rem"
+            height="1.6rem"
+          />
+        </ZBtn>
+        <ZBtn :title="$t('add')" fontSize="1.2rem">
+          <AddSvg #icon color="rgb(51,51,51)" width="1.6rem" height="1.6rem" />
+          {{ sidebarClass == 'expend' ? $t('aigc.newChat') : null }}
+        </ZBtn>
+      </div>
+      <div class="drag" @click="changeSidebar">
+        <DragSvg width="1.4rem" height="1.4rem" />
+      </div>
+    </div>
+    <div class="content">
+      <div class="header">
+        <div>
+          <div>测试</div>
+          <div>
+            {{
+              $t('aigc.stastic', {
+                num: 18,
+              })
+            }}
+          </div>
         </div>
+        <div>
+          <ZBtn :title="$t('search')">
+            <Search
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
+          </ZBtn>
+          <ZBtn :title="$t('edit')">
+            <EditSvg
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
+          </ZBtn>
+          <ZBtn :title="$t('export')">
+            <ExportSvg
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
+          </ZBtn>
+          <ZBtn :title="$t('fullScreen')">
+            <FullScreenSvg
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
+          </ZBtn>
+        </div>
+      </div>
+      <div class="body"></div>
+      <div class="input-panel">
         <div class="func">
-          <ZBtn fontSize="1.2rem">
-            <CharacterSvg
-              #icon
-              color="rgb(51,51,51)"
-              width="1.6rem"
-              height="1.6rem"
-            />
-            {{ sidebarClass == 'expend' ? $t('aigc.mask') : null }}
-          </ZBtn>
-          <ZBtn fontSize="1.2rem">
-            <DiscoverSvg
-              #icon
-              color="rgb(51,51,51)"
-              width="1.6rem"
-              height="1.6rem"
-            />
-            {{ sidebarClass == 'expend' ? $t('aigc.find') : null }}
-          </ZBtn>
-        </div>
-        <div class="body">
-          <ChannelCard
-            id="0"
-            title="测试"
-            dialogNum="100"
-            createTime="2024.8.4 12:12"
-          ></ChannelCard>
-        </div>
-        <div class="tail">
           <ZBtn :title="$t('settings')">
             <SettingSvg
               #icon
@@ -100,305 +165,224 @@ onMounted(async () => {
               height="1.6rem"
             />
           </ZBtn>
-          <ZBtn :title="$t('add')" fontSize="1.2rem">
-            <AddSvg
+          <ZBtn :title="$t('clearAll')">
+            <ClearSvg
               #icon
               color="rgb(51,51,51)"
               width="1.6rem"
               height="1.6rem"
             />
-            {{ sidebarClass == 'expend' ? $t('aigc.newChat') : null }}
+          </ZBtn>
+          <ZBtn :title="$t('aigc.robot')">
+            <RobotSvg
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
           </ZBtn>
         </div>
-        <div class="drag" @click="changeSidebar">
-          <DragSvg width="1.4rem" height="1.4rem" />
-        </div>
-      </div>
-      <div class="content">
-        <div class="header">
-          <div>
-            <div>测试</div>
-            <div>
-              {{
-                $t('aigc.stastic', {
-                  num: 18,
-                })
-              }}
-            </div>
-          </div>
-          <div>
-            <ZBtn :title="$t('search')">
-              <Search
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-            <ZBtn :title="$t('edit')">
-              <EditSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-            <ZBtn :title="$t('export')">
-              <ExportSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-            <ZBtn :title="$t('fullScreen')">
-              <FullScreenSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-          </div>
-        </div>
-        <div class="body"></div>
-        <div class="input-panel">
-          <div class="func">
-            <ZBtn :title="$t('settings')">
-              <SettingSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-            <ZBtn :title="$t('clearAll')">
-              <ClearSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-            <ZBtn :title="$t('aigc.robot')">
-              <RobotSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </ZBtn>
-          </div>
-          <label for="prompt" class="prompt">
-            <textarea
-              placeholder="Enter 发送，Shift + Enter 换行，/ 触发补全，: 触发命令"
-            ></textarea>
-            <ZBtn :title="$t('settings')" type="primary" fontSize="1.2rem">
-              <SettingSvg
-                #icon
-                color="rgb(51,51,51)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-              {{ $t('submit') }}
-            </ZBtn>
-          </label>
-        </div>
+        <label for="prompt" class="prompt">
+          <textarea
+            placeholder="Enter 发送，Shift + Enter 换行，/ 触发补全，: 触发命令"
+          ></textarea>
+          <ZBtn :title="$t('settings')" type="primary" fontSize="1.2rem">
+            <SettingSvg
+              #icon
+              color="rgb(51,51,51)"
+              width="1.6rem"
+              height="1.6rem"
+            />
+            {{ $t('submit') }}
+          </ZBtn>
+        </label>
       </div>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-@import '../constant.scss';
+<style scoped>
 .aigc-page {
-  .aigc-content {
-    display: flex;
-    // gap: 1rem;
-    height: 75rem;
-    margin: 10rem auto auto;
-    border: 1px solid var(--border-color);
-    border-radius: 2rem;
-    overflow: hidden;
-    box-shadow: var(--aigc-box-shadow);
+  display: flex;
+  height: 75rem;
+  margin: 0 auto;
+  border: 1px solid var(--border-color);
+  border-radius: 2rem;
+  overflow: hidden;
+  box-shadow: var(--aigc-box-shadow);
 
-    .sidebar {
+  .sidebar {
+    position: relative;
+    gap: 1.5rem;
+    background-color: var(--bg-color-0);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    width: 30rem;
+    box-shadow: var(--aigc-box-shadow);
+    .header {
       position: relative;
-      gap: 1.5rem;
-      background-color: var(--bg-color-0);
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      width: 30rem;
-      box-shadow: var(--aigc-box-shadow);
-      .header {
-        position: relative;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        text-align: left;
-        .title {
-          font-size: 2rem;
-          font-weight: 700;
-          animation: all 0.3s ease;
-          color: var(--font-color-0);
-        }
-        .des {
-          font-size: 1.2rem;
-          font-weight: 400;
-          animation: all 0.3s ease;
-          color: var(--font-color-2);
-        }
-        .logo {
-          position: absolute;
-          right: 0;
-          bottom: 1.8rem;
-          opacity: 0.27;
-        }
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+      text-align: left;
+      .title {
+        font-size: 2rem;
+        font-weight: 700;
+        animation: all 0.3s ease;
+        color: var(--font-color-0);
       }
-      .func {
+      .des {
+        font-size: 1.2rem;
+        font-weight: 400;
+        animation: all 0.3s ease;
+        color: var(--font-color-2);
+      }
+      .logo {
+        position: absolute;
+        right: 0;
+        bottom: 1.8rem;
+        opacity: 0.27;
+      }
+    }
+    .func {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 1rem;
+      .sun-btn {
+        flex-grow: 1;
+      }
+    }
+    .body {
+      flex: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .tail {
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drag {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 1.4rem;
+      background-color: transparent;
+      cursor: ew-resize;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+
+      &:hover {
+        background-color: var(--bg-color-1);
+
+        opacity: 0.5;
+      }
+    }
+  }
+  & > .content {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    min-width: 50%;
+    .header {
+      padding: 1.4rem 2rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      & > :last-child {
         display: flex;
         justify-content: space-around;
         align-items: center;
         gap: 1rem;
-        .sun-btn {
-          flex-grow: 1;
-        }
-      }
-      .body {
-        flex: auto;
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-      .tail {
-        padding-top: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .drag {
-        position: absolute;
-        top: 0;
-        right: 0;
-        height: 100%;
-        width: 1.4rem;
-        background-color: transparent;
-        cursor: ew-resize;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        opacity: 0;
-
-        &:hover {
-          background-color: var(--bg-color-1);
-          // content: ;
-          opacity: 0.5;
-        }
       }
     }
-    & > .content {
-      flex: auto;
+    .body {
+      flex: 1 1;
+      overflow: auto;
+      overflow-x: hidden;
+      padding: 2rem 2rem 4rem;
+      position: relative;
+      overscroll-behavior: none;
+    }
+    .input-panel {
+      position: relative;
+      width: 100%;
+      padding: 1rem 2rem 2rem;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      position: relative;
-      height: 100%;
-      min-width: 50%;
-      .header {
-        padding: 1.4rem 2rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        position: relative;
+      gap: 1rem;
+      border-top: 1px solid var(--border-color);
+      box-shadow: var(--box-shadow);
+      .func {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        & > :last-child {
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          gap: 1rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        .sun-btn {
+          padding: 0.4rem 1rem;
         }
       }
-      .body {
+      .prompt {
+        cursor: text;
+        display: flex;
         flex: 1 1;
-        overflow: auto;
-        overflow-x: hidden;
-        padding: 2rem 2rem 4rem;
-        position: relative;
-        overscroll-behavior: none;
-      }
-      .input-panel {
-        position: relative;
-        width: 100%;
-        padding: 1rem 2rem 2rem;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        border-top: 1px solid var(--border-color);
-        box-shadow: var(--box-shadow);
-        .func {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1.5rem;
-          .sun-btn {
-            padding: 0.4rem 1rem;
-          }
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        textarea {
+          height: 100%;
+          width: 100%;
+          border-radius: 1rem;
+          border: none;
+          box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03);
+          background-color: var(--bg-color);
+          color: var(--font-color);
+          font-family: inherit;
+          padding: 1rem 9rem 1rem 1.4rem;
+          resize: none;
+          outline: none;
+          box-sizing: border-box;
+          min-height: 68px;
         }
-        .prompt {
-          cursor: text;
-          display: flex;
-          flex: 1 1;
-          border-radius: 10px;
-          border: 1px solid var(--border-color);
-          textarea {
-            height: 100%;
-            width: 100%;
-            border-radius: 1rem;
-            border: none;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03);
-            background-color: var(--bg-color);
-            color: var(--font-color);
-            font-family: inherit;
-            padding: 1rem 9rem 1rem 1.4rem;
-            resize: none;
-            outline: none;
-            box-sizing: border-box;
-            min-height: 68px;
-          }
-          .sun-btn {
-            // background-color: var(--font-color-0);
-            color: #fff;
-            position: absolute;
-            right: 30px;
-            bottom: 32px;
-            font-size: 1.2rem;
-          }
+        .sun-btn {
+          color: #fff;
+          position: absolute;
+          right: 30px;
+          bottom: 32px;
+          font-size: 1.2rem;
         }
       }
     }
   }
-  .hide {
-    .sidebar {
-      width: 10rem;
-      .header {
-        .title,
-        .des {
-          display: none;
-        }
-        .logo {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          // top: 50%;
-          // left: 50%;
-          // transform: translate(-50%, -50%);
-        }
+}
+.hide {
+  .sidebar {
+    width: 10rem;
+    .header {
+      .title,
+      .des {
+        display: none;
       }
-      .func {
-        flex-direction: column;
+      .logo {
+        position: relative;
+        display: flex;
+        justify-content: center;
       }
-      .tail {
-        flex-direction: column;
-        gap: 1rem;
-      }
+    }
+    .func {
+      flex-direction: column;
+    }
+    .tail {
+      flex-direction: column;
+      gap: 1rem;
     }
   }
 }

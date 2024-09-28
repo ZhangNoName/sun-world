@@ -69,7 +69,7 @@ const showBlog = () => {
   </article>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .z-blog-card {
   margin-top: 1.5rem;
   border-color: var(--border-color);

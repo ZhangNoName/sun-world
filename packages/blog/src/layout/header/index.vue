@@ -75,7 +75,7 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .z-header {
   width: 100%;
   height: 5rem;
@@ -92,8 +92,6 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(10px); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
 
-  // opacity: 0.5;
-  // background: none;
   .left-menu {
     grid-column: 2 / 3;
     display: flex;

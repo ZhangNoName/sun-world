@@ -19,7 +19,7 @@ const prop = defineProps()
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .catalog-card-container {
   display: flex;
   flex-direction: column;

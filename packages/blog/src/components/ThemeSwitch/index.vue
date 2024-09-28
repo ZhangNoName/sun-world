@@ -62,7 +62,7 @@ const changTheme = () => {
     </span>
   </div>
 </template>
-<style lang="scss">
+<style>
 .sun-light {
   .theme-switch {
     justify-content: flex-start;
@@ -91,7 +91,7 @@ const changTheme = () => {
 }
 </style>
 
-<style lang="scss" scoped>
+<style scoped>
 .theme-switch {
   width: 4rem;
   height: 2.2rem;

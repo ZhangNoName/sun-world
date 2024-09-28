@@ -8,42 +8,33 @@ const prop = defineProps()
 </script>
 
 <template>
-  <div class="blog-page page-container">
-    <ZHeader></ZHeader>
-
-    <div class="content">
-      <div class="left">
-        <CatalogCard />
-        <SelfInfoCard />
-      </div>
-      <div class="right"></div>
+  <div class="blog-page">
+    <div class="left">
+      <CatalogCard />
+      <SelfInfoCard />
     </div>
-    <ZFooter />
+    <div class="right"></div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-@import '../constant.scss';
+<style scoped>
 .blog-page {
-  .content {
-    position: relative;
-    margin: 6.5rem auto 0 auto;
-    height: auto;
-    min-height: calc(100vh - 37rem);
-    background-color: var(--bg-color);
-    width: 85%;
-    display: grid;
-    grid-template-columns: 35rem auto;
-    grid-template-rows: auto;
-    gap: 1rem;
-    .left {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .right {
-      // background-color: blue;
-    }
+  position: relative;
+  margin: 6.5rem auto 0 auto;
+  height: auto;
+  min-height: calc(100vh - 37rem);
+  background-color: var(--bg-color);
+  width: 85%;
+  display: grid;
+  grid-template-columns: 35rem auto;
+  grid-template-rows: auto;
+  gap: 1rem;
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .right {
   }
 }
 </style>

@@ -49,7 +49,7 @@ const style = computed(() => {
   </button>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .sun-btn {
   display: flex;
   justify-content: center;

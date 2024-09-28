@@ -51,34 +51,28 @@ onMounted(() => {
 
 <template>
   <div class="article-page page-container">
-    <ZHeader></ZHeader>
-
-    <div class="content">
-      <div class="func-bar">
-        <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
-        <div class="btn-container">
-          <ZBtn @click="saveBlog">{{ $t('save') }}</ZBtn>
-        </div>
+    <div class="func-bar">
+      <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
+      <div class="btn-container">
+        <ZBtn @click="saveBlog">{{ $t('save') }}</ZBtn>
       </div>
-      <ElInput
-        class="title-container"
-        placeholder="标题"
-        maxlength="100"
-        clearable
-        show-word-limit
-        v-model="title"
-      />
-      <div ref="editorEle" class="editor-container"></div>
     </div>
+    <ElInput
+      class="title-container"
+      placeholder="标题"
+      maxlength="100"
+      clearable
+      show-word-limit
+      v-model="title"
+    />
+    <div ref="editorEle" class="editor-container"></div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-@import '../constant.scss';
+<style scoped>
 .article-page {
   .content {
     height: calc(100% - 10rem);
-    // width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -104,7 +98,6 @@ onMounted(() => {
       width: 100%;
     }
     .editor-container {
-      // width: 100%;
     }
   }
 }

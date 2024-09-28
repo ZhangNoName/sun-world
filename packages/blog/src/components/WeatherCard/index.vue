@@ -58,7 +58,7 @@ const weatherIcon = computed(() => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .weather-card {
   width: auto;
   height: auto;
@@ -71,7 +71,6 @@ const weatherIcon = computed(() => {
   background-color: var(--bg-color-0);
   cursor: default;
   .weather {
-    // background-color: pink;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,7 +86,6 @@ const weatherIcon = computed(() => {
     align-items: center;
   }
   .card-list {
-    // background-color: bisque;
     display: flex;
     justify-content: space-evenly;
     align-items: center;

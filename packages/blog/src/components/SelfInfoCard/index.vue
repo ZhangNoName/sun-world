@@ -54,7 +54,7 @@ const weatherIcon = computed(() => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .self-card {
   width: auto;
   height: auto;
@@ -74,7 +74,6 @@ const weatherIcon = computed(() => {
       height: 100%;
       object-fit: contain;
       transition: all 1s ease;
-      // border-radius: 50%;
       &:hover {
         transform: rotate(180deg);
       }
@@ -87,7 +86,6 @@ const weatherIcon = computed(() => {
     align-items: center;
   }
   .card-list {
-    // background-color: bisque;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -107,7 +105,6 @@ const weatherIcon = computed(() => {
     }
   }
   .icon-list {
-    // background-color: yellow;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -120,8 +117,6 @@ const weatherIcon = computed(() => {
     width: 100%;
     align-self: center;
     height: 0.2rem;
-    // border-radius: 0.1rem;
-    // height: max-content;
   }
   .tip {
     display: flex;

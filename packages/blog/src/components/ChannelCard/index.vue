@@ -34,7 +34,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .channel-card {
   text-align: left;
   cursor: grab;

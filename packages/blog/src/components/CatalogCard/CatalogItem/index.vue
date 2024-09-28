@@ -51,7 +51,7 @@ const changeOpen = () => {
 import CatalogListItem from './index.vue'
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .catalog-item {
   display: flex;
   justify-content: flex-start;
@@ -59,7 +59,7 @@ import CatalogListItem from './index.vue'
   gap: 0.5rem;
   background-color: var(--bg-color);
 
-  // 禁止用户选中文本
+  /* 禁止用户选中文本 */
   user-select: none; /* 标准语法 */
   -webkit-user-select: none; /* 针对 Webkit (Safari, Chrome) 浏览器 */
   -moz-user-select: none; /* 针对 Mozilla (Firefox) 浏览器 */
@@ -77,17 +77,23 @@ import CatalogListItem from './index.vue'
   }
 }
 .open {
-  // .catalog-item {
-  //   display: none;
-  // }
   .fold-icon {
     transform: rotate(90deg);
-    // transition: all 0.5s;
   }
 }
-@for $i from 1 through 10 {
-  .catalog-level-#{$i} {
-    margin-left: #{2rem * $i};
-  }
+.catalog-level-1 {
+  margin-left: 2rem;
+}
+.catalog-level-2 {
+  margin-left: 4rem;
+}
+.catalog-level-3 {
+  margin-left: 6rem;
+}
+.catalog-level-4 {
+  margin-left: 8rem;
+}
+.catalog-level-5 {
+  margin-left: 10rem;
 }
 </style>
