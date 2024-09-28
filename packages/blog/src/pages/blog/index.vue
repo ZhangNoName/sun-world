@@ -2,8 +2,6 @@
 import { ref } from 'vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
-import ZFooter from '@/layout/footer/index.vue'
-import ZHeader from '@/layout/header/index.vue'
 const prop = defineProps()
 </script>
 

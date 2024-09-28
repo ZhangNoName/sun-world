@@ -1,4 +1,4 @@
-<script setup lang="ts" name="header">
+<script setup lang="ts">
 import {
   Search,
   QQOutlined,
