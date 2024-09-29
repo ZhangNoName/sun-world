@@ -5,7 +5,6 @@ import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ZHeader from './layout/header/index.vue'
 import ZFooter from './layout/footer/index.vue'
-import { getCurrentLocation } from './util'
 // import { testApi } from './service/request'
 const theme = ref('sun-light')
 const { locale } = useI18n()

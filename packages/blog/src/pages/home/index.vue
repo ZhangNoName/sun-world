@@ -2,10 +2,10 @@
 import BlogCard from '@/components/BlogCard/index.vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
-import ZFooter from '@/layout/footer/index.vue'
-import ZHeader from '@/layout/header/index.vue'
 import { onMounted, reactive } from 'vue'
 import { getBlogByPage } from '@/service/request'
+import { ElMessage } from 'element-plus'
+import { formatDate } from '@/util/function'
 interface Props {
   title?: string
   subTitle: string
@@ -23,15 +23,33 @@ const props: Props = defineProps({
   iconBgColor: { type: String, default: '#fff' },
 })
 const blogList = reactive<any[]>([])
+
 onMounted(() => {
-  return
+  // return
   getBlogByPage(1, 10)
     .then((res) => {
       console.log('返回的数据', res)
       const data = res.data as any
-      blogList.splice(0, blogList.length, ...data.data)
+      blogList.splice(
+        0,
+        blogList.length,
+        ...data.list.map((o) => {
+          return {
+            title: o.title,
+            content: o.content,
+            publishTime: formatDate(o.created_at),
+            lastUpdateTime: formatDate(o.updated_at),
+            id: o.id,
+            commentNum: o.commentNum,
+            byteNum: o.byteNum,
+          }
+        })
+      )
     })
-    .catch((e) => {})
+    .catch((e) => {
+      ElMessage.error('获取博客列表数据失败！')
+      console.log('获取博客列表数据失败', e)
+    })
     .finally(() => {})
 })
 </script>

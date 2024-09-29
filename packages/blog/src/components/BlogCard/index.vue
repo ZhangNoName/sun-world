@@ -18,10 +18,11 @@ const {
   publishTime,
   lastUpdateTime,
   tags,
-  category,
-  cover,
-  byteNum,
-  commentNum,
+  category = 'js',
+  cover = '1',
+  byteNum = 10000,
+  commentNum = 0,
+  id,
 } = props
 const iconConfig = ref({
   height: '1.8rem',
@@ -31,21 +32,24 @@ const iconConfig = ref({
 const router = useRouter()
 const showBlog = () => {
   console.log('执行跳转')
-  router.push({ path: '/blog' })
+  router.push({ path: '/blog', query: { id: id } })
 }
 </script>
 <template>
   <article class="z-blog-card">
     <div class="header">
-      <Calendar v-bind="iconConfig" />
-      <span>{{ publishTime }}</span>
-      <Comment v-bind="iconConfig" />
-      <span>{{ commentNum }}</span>
-
-      <Clock v-bind="iconConfig" />
-      <span>{{ lastUpdateTime }}</span>
-      <WordCount v-bind="iconConfig" />
-      <span>{{ byteNum }}</span>
+      <div class="tag">
+        <Calendar v-bind="iconConfig" />
+        <span>{{ publishTime }}</span>
+      </div>
+      <div class="tag">
+        <Comment v-bind="iconConfig" />
+        <span>{{ commentNum }}</span>
+      </div>
+      <div class="tag">
+        <WordCount v-bind="iconConfig" />
+        <span>{{ byteNum }}</span>
+      </div>
     </div>
     <h1 class="title">
       <a>{{ title }}</a>
@@ -89,7 +93,13 @@ const showBlog = () => {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1.5rem;
+    .tag {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+    }
     /* span {
         height: 1.1rem;
         line-height: 1.1rem;

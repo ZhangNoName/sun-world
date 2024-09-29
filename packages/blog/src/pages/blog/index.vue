@@ -2,7 +2,32 @@
 import { ref } from 'vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
-const prop = defineProps()
+import { useRoute } from 'vue-router'
+import { onMounted } from 'vue'
+import { getBlogById } from '@/service/request'
+import { ElMessage } from 'element-plus'
+interface Props {}
+const props: Props = defineProps()
+const route = useRoute()
+const id = ref<string>((route.query.id as string) || '')
+
+onMounted(() => {
+  if (!id.value) {
+    ElMessage.error('未找到相应的博客id')
+    return
+  }
+  getBlogById(id.value)
+    .then((res) => {
+      console.log('获取到的博客内容', res.data)
+    })
+    .catch((err) => {
+      console.log('获取博客内容失败', err)
+      ElMessage.error('获取博客内容失败！')
+    })
+    .finally(() => {
+      console.log('获取博客内容完成')
+    })
+})
 </script>
 
 <template>

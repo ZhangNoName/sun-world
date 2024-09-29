@@ -33,7 +33,7 @@ export const postSaveBlog = async (params: {
  * @returns {Promise<any>}
  */
 export const getBlogById = async (id: string) => {
-  const response = await request.post('/blogs/' + id)
+  const response = await request.get('/blogs/' + id)
   return response
 }
 /**
