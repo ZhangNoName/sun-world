@@ -1,11 +1,9 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import ZHeader from '@/layout/header/index.vue'
 import { BlogEditorClass } from '@/blogEditor'
 import { ElMessage, ElInput } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
 import { getBlogById, postSaveBlog } from '@/service/request'
-import { watchEffect } from 'vue'
 const prop = defineProps({
   id: { type: String, default: '' },
 })
@@ -50,7 +48,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="article-page page-container">
+  <div class="article-page">
     <div class="func-bar">
       <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
       <div class="btn-container">
@@ -71,34 +69,33 @@ onMounted(() => {
 
 <style scoped>
 .article-page {
-  .content {
-    height: calc(100% - 10rem);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  .func-bar {
+    height: 3rem;
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
     align-items: center;
-    gap: 1rem;
-    .func-bar {
-      height: 3rem;
-      width: 100%;
+    .stastic {
+      flex: 1;
+    }
+    .btn-container {
       display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
       align-items: center;
-      .stastic {
-        flex: 1;
-      }
-      .btn-container {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        align-items: center;
-      }
     }
-    .title-container {
-      height: 3rem;
-      width: 100%;
-    }
-    .editor-container {
-    }
+  }
+  .title-container {
+    height: 3rem;
+    width: 100%;
+  }
+  .editor-container {
+    flex: 1;
   }
 }
 </style>

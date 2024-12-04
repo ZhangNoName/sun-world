@@ -1,5 +1,4 @@
 import { request, ResponseType } from './http'
-
 /**
  * 测试接口
  * @returns {Promise<any>}
@@ -24,7 +23,7 @@ export const postSaveBlog = async (params: {
   author?: string
   created_at?: string
 }) => {
-  const response = await request.post('/blogs/', params)
+  const response = await request.post<ResponseType<any>>('/blogs/', params)
   return response
 }
 /**
@@ -33,7 +32,7 @@ export const postSaveBlog = async (params: {
  * @returns {Promise<any>}
  */
 export const getBlogById = async (id: string) => {
-  const response = await request.get('/blogs/' + id)
+  const response = await request.get<ResponseType<any>>('/blogs/' + id)
   return response
 }
 /**
@@ -46,7 +45,7 @@ export const getBlogByPage = async (
   page: number | string,
   pageSize: number | string
 ) => {
-  const response = await request.get('/blogs', {
+  const response = await request.get<ResponseType<any>>('/blogs', {
     page,
     pageSize,
   })

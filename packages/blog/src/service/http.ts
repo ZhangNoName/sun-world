@@ -106,31 +106,30 @@ service.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-//axios返回格式
-interface axiosTypes<T> {
+// axios返回格式
+interface AxiosTypes<T> {
   data: T
   status: number
   statusText: string
 }
 
-//后台响应数据格式
-//###该接口用于规定后台返回的数据格式，意为必须携带code、msg以及result
-//###而result的数据格式 由外部提供。如此即可根据不同需求，定制不同的数据格式
-
-export interface ResponseType {
+// 后台响应数据格式
+// 该接口用于规定后台返回的数据格式，意为必须携带 code、message 以及 data
+// 而 data 的数据格式由外部提供。如此即可根据不同需求，定制不同的数据格式
+export interface ResponseType<T = any> {
   code: number
-  data: any
   message: string
+  data: T
 }
 
-//核心处理代码 将返回一个promise 调用then将可获取响应的业务数据
-const requestHandler = (
+// 核心处理代码 将返回一个 promise 调用 then 将可获取响应的业务数据
+const requestHandler = <T>(
   method: 'get' | 'post' | 'put' | 'delete',
   url: string,
   params: object = {},
   config: AxiosRequestConfig = {}
-): Promise<ResponseType> => {
-  let response: Promise<axiosTypes<ResponseType>>
+): Promise<T> => {
+  let response: Promise<AxiosTypes<ResponseType<T>>>
   switch (method) {
     case 'get':
       response = service.get(url, { params: { ...params }, ...config })
@@ -144,40 +143,36 @@ const requestHandler = (
     case 'delete':
       response = service.delete(url, { params: { ...params }, ...config })
       break
+    default:
+      throw new Error('Invalid method')
   }
 
-  return new Promise<{
-    code: number
-    data: any
-    message: string
-  }>((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     response
       .then((res) => {
-        //业务代码 可根据需求自行处理
         console.log('当前响应数据', res)
         const data = res.data
-        // resolve(data as any);
         console.log('当前数据', data)
+
         if (data.code !== 0) {
-          //特定状态码 处理特定的需求
-          if (data.code == 401) {
+          // 特定状态码处理特定的需求
+          if (data.code === 401) {
             ElMessage.warning('您的账号已登出或超时，即将登出...')
             console.log('登录异常，执行登出...')
-            // TODO:退出登录之后清空cookie，并且跳转到登录界面
+            // TODO:退出登录之后清空 cookie，并且跳转到登录界面
             // window.location.href = '/login';
             // navigate('/login');
           }
-          reject()
+          reject(new Error(data.message || '请求失败'))
         } else {
-          resolve(data)
+          resolve(data.data) // 只返回业务数据部分
         }
       })
       .catch((error) => {
         const e = JSON.stringify(error)
-        ElMessage.warning(`网络发生错误，请检查`)
+        ElMessage.warning('网络发生错误，请检查')
         console.error(`网络错误：${e}`)
-        // reject(error);
-        reject()
+        reject(error)
       })
   })
 }

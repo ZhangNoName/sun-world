@@ -67,7 +67,7 @@ onUnmounted(() => {
     width: 85%;
     position: relative;
     margin: 6.5rem auto 0 auto;
-    height: auto;
+    flex: 1;
   }
   .footer {
   }
