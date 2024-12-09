@@ -43,6 +43,10 @@ const openAI = () => {
   const routeData = router.resolve({ path: '/aigc' })
   window.open(routeData.href, '_blank')
 }
+
+const goHome = () => {
+  router.push({ path: '/' })
+}
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
 })
@@ -53,7 +57,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="z-header">
     <div class="left-menu">
-      <div class="logo"></div>
+      <div class="logo" @click="goHome"></div>
       <div class="welcom">{{ $t('title') }}</div>
       <div class="menu-item"></div>
     </div>
@@ -105,6 +109,7 @@ onBeforeUnmount(() => {
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+      cursor: pointer;
     }
   }
   .right-menu {

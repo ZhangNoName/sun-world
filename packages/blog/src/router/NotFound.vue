@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import router from '.'
 
 const prop = defineProps({})
 const route = useRoute()
 
 onMounted(() => {
-  window.location.href = `https://sunworld.site${route.path}`
+  // window.location.href = `https://sunworld.site${route.path}`
+  router.push('/')
 })
 </script>
 

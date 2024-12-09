@@ -3,7 +3,7 @@ import BlogCard from '@/components/BlogCard/index.vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import { onMounted, reactive } from 'vue'
-import { getBlogByPage } from '@/service/request'
+import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
 interface Props {
@@ -29,11 +29,11 @@ onMounted(() => {
   getBlogByPage(1, 10)
     .then((res) => {
       console.log('返回的数据', res)
-      const data = res.data as any
+
       blogList.splice(
         0,
         blogList.length,
-        ...data.list.map((o) => {
+        ...res.list.map((o) => {
           return {
             title: o.title,
             content: o.content,
@@ -51,6 +51,14 @@ onMounted(() => {
       console.log('获取博客列表数据失败', e)
     })
     .finally(() => {})
+  getBaseInfo()
+    .then((res) => {
+      console.log('获取基本信息', res)
+    })
+    .catch((e) => {
+      ElMessage.error('获取基本信息失败！')
+      console.log('获取基本信息失败', e)
+    })
 })
 </script>
 <template>

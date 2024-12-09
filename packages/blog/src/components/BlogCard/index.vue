@@ -10,7 +10,9 @@ import {
 import Tag from '../Tag/index.vue'
 import { BlogCardProps } from '@/type'
 import { useRouter } from 'vue-router'
-const props = defineProps<BlogCardProps>()
+const props = withDefaults(defineProps<BlogCardProps>(), {
+  tags: [] as string[],
+})
 
 const {
   title,
@@ -44,11 +46,11 @@ const showBlog = () => {
       </div>
       <div class="tag">
         <Comment v-bind="iconConfig" />
-        <span>{{ commentNum }}</span>
+        <span>{{ commentNum.toLocaleString() }}</span>
       </div>
       <div class="tag">
         <WordCount v-bind="iconConfig" />
-        <span>{{ byteNum }}</span>
+        <span>{{ byteNum.toLocaleString() }}</span>
       </div>
     </div>
     <h1 class="title">

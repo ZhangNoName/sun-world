@@ -26,13 +26,21 @@ export const postSaveBlog = async (params: {
   const response = await request.post<ResponseType<any>>('/blogs/', params)
   return response
 }
+export interface BlogDeatil {
+  author: string
+  content: string
+  created_at: string
+  id: string
+  title: string
+  update_at: string
+}
 /**
  * 根据id获取博客内容
  * @param {string} id - 博客id
  * @returns {Promise<any>}
  */
 export const getBlogById = async (id: string) => {
-  const response = await request.get<ResponseType<any>>('/blogs/' + id)
+  const response = await request.get<BlogDeatil>('/blogs/' + id)
   return response
 }
 /**
@@ -45,9 +53,19 @@ export const getBlogByPage = async (
   page: number | string,
   pageSize: number | string
 ) => {
-  const response = await request.get<ResponseType<any>>('/blogs', {
+  const response = await request.get<{
+    list: any[]
+    page: number
+    page_size: number
+    total: number
+  }>('/blogs', {
     page,
     pageSize,
   })
+  return response
+}
+
+export const getBaseInfo = async () => {
+  const response = await request.get('/base')
   return response
 }

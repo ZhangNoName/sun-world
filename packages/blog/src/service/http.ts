@@ -154,7 +154,7 @@ const requestHandler = <T>(
         const data = res.data
         console.log('当前数据', data)
 
-        if (data.code !== 0) {
+        if (data.code !== 1) {
           // 特定状态码处理特定的需求
           if (data.code === 401) {
             ElMessage.warning('您的账号已登出或超时，即将登出...')
