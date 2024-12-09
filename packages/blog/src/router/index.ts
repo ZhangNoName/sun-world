@@ -3,12 +3,14 @@ import Home from '@/pages/home/index.vue'
 import Blog from '@/pages/blog/index.vue'
 import AIGC from '@/pages/aigc/index.vue'
 import NewArticle from '@/pages/article/index.vue'
+import GameTiles from '@/pages/gameTiles/index.vue'
 import NotFound from './NotFound.vue'
 const routes = [
   { path: '/', component: Home },
   { path: '/blog', component: Blog },
   { path: '/new_article', component: NewArticle },
   { path: '/aigc', component: AIGC },
+  { path: '/game_tiles', component: GameTiles },
   // 其他路由配置
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
 ]
