@@ -19,7 +19,6 @@ import {
 } from '@sun-world/icons-vue'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
-import ZHeader from '@/layout/header/index.vue'
 const prop = defineProps()
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const openAi = new OpenAiLangChian({
