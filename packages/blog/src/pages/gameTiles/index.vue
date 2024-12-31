@@ -11,6 +11,7 @@ import {
   UploadUserFile,
 } from 'element-plus'
 import { AddSvg } from '@sun-world/icons-vue'
+import { Plus } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { reactive } from 'vue'
 import { ref } from 'vue'
@@ -22,6 +23,14 @@ const tileConfig = reactive({
   width: 16,
   height: 16,
 })
+const imageUrl = ref('')
+const splitMode = ref('size')
+const tileSize = ref(25)
+const rows = ref(20)
+const cols = ref(20)
+const tiles = ref<any[]>([])
+const imageWidth = ref(0)
+const imageHeight = ref(0)
 const renderType = ref('div')
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
@@ -29,10 +38,6 @@ const fileList = ref<UploadUserFile[]>([
   {
     name: 'food.jpeg',
     url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-  },
-  {
-    name: 'plant-1.png',
-    url: '/images/plant-1.png',
   },
 ])
 const canvasConfig = computed(() => {
@@ -79,6 +84,54 @@ const readFile = (file: File) => {
 
   reader.readAsDataURL(file) // 读取文件为 data URL
 }
+const tilesContainerStyle = computed(() => ({
+  width: imageWidth.value + 'px',
+  height: imageHeight.value + 'px',
+}))
+const splitImage = () => {
+  tiles.value = []
+  if (!imageUrl.value) return
+
+  if (splitMode.value === 'size') {
+    const numCols = Math.ceil(imageWidth.value / tileSize.value)
+    const numRows = Math.ceil(imageHeight.value / tileSize.value)
+
+    for (let row = 0; row < numRows; row++) {
+      for (let col = 0; col < numCols; col++) {
+        tiles.value.push({
+          left: col * tileSize.value,
+          top: row * tileSize.value,
+          width: tileSize.value,
+          height: tileSize.value,
+        })
+      }
+    }
+  } else {
+    const tileWidth = imageWidth.value / cols.value
+    const tileHeight = imageHeight.value / rows.value
+
+    for (let row = 0; row < rows.value; row++) {
+      for (let col = 0; col < cols.value; col++) {
+        tiles.value.push({
+          left: col * tileWidth,
+          top: row * tileHeight,
+          width: tileWidth,
+          height: tileHeight,
+        })
+      }
+    }
+  }
+}
+
+const getTileStyle = (tile) => ({
+  left: tile.left + 'px',
+  top: tile.top + 'px',
+  width: tile.width + 'px',
+  height: tile.height + 'px',
+  backgroundImage: `url(${imageUrl.value})`,
+  backgroundPosition: `-${tile.left}px -${tile.top}px`,
+  backgroundSize: `${imageWidth.value}px ${imageHeight.value}px`,
+})
 </script>
 
 <template>
@@ -138,23 +191,21 @@ const readFile = (file: File) => {
           <ElUpload
             v-model:file-list="fileList"
             drag
+            :limit="1"
+            :multiple="false"
             :on-preview="handlePictureCardPreview"
             :on-remove="handleRemove"
             :before-upload="handleBeforeUpload"
             list-type="picture-card"
           >
-            <!-- c -->
-
-            <AddSvg width="2.5rem" height="2.5rem" />
-
-            <div class="upload-text">
-              拖动文件到此处或者
-              <em>点击</em>
-              上传
+            <div class="upload-dragger">
+              <el-icon><Plus /></el-icon>
+              <!-- <AddSvg width="2.5rem" height="2.5rem" /> -->
+              <div>拖动或点击上传</div>
             </div>
           </ElUpload>
           <ElDialog v-model="dialogVisible">
-            <img w-full :src="dialogImageUrl" alt="Preview Image" />
+            <img w-full :src="dialogImageUrl" />
           </ElDialog>
         </div>
         <div class="config-item"></div>
@@ -163,7 +214,6 @@ const readFile = (file: File) => {
     </div>
   </div>
 </template>
-
 <style scoped>
 .game-tiles-page {
   width: 100%;
@@ -215,10 +265,6 @@ const readFile = (file: File) => {
           align-items: center;
           gap: 0.5rem;
         }
-      }
-      .el-upload-dragger {
-        width: 100%;
-        height: 100%;
       }
     }
   }

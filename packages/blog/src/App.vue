@@ -48,7 +48,16 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
-
+<style>
+.el-upload-dragger {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 1.5rem;
+}
+</style>
 <style scoped>
 .app-container {
   width: 100%;
