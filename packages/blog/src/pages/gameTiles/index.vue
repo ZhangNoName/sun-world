@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {
+  ElButton,
   ElDialog,
   ElIcon,
   ElInputNumber,
@@ -7,6 +8,8 @@ import {
   ElSelect,
   ElUpload,
   UploadFile,
+  ElCheckboxGroup,
+  ElCheckbox,
 } from 'element-plus'
 import { AddSvg } from '@sun-world/icons-vue'
 import { Plus } from '@element-plus/icons-vue'
@@ -15,6 +18,7 @@ import { reactive } from 'vue'
 import { ref } from 'vue'
 import { onMounted } from 'vue'
 import { watch } from 'vue'
+import { saveTileImages, saveTilesAsZip } from '@/util/function'
 interface ItemType {
   left: number
   top: number
@@ -38,6 +42,7 @@ const imageHeight = ref(0)
 const renderType = ref('div')
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
+const exportOptions = ref(['all'])
 const canvasConfig = computed(() => {
   return {
     width: tileConfig.row * tileConfig.width,
@@ -77,6 +82,12 @@ const splitImage = () => {
     tiles.value.push(rowItem)
   }
 }
+
+const exportImage = () => {
+  // saveTileImages(tiles.value)
+  saveTilesAsZip(tiles.value)
+}
+
 watch(
   [imageUrl, tileConfig],
   (newValue, oldValue) => {
@@ -206,7 +217,17 @@ onMounted(() => {
           <div class="item">
             <ElInputNumber v-model="tileConfig.gap" :min="0" :max="100" />
           </div>
-          <div class="config-item"></div>
+        </div>
+        <div class="config-item">
+          <div class="label">保存：</div>
+          <div class="item">
+            <ElCheckboxGroup v-model="exportOptions">
+              <ElCheckbox label="整图" value="all" />
+              <ElCheckbox label="区块" value="split" />
+              <ElCheckbox label="瓦片json" value="json" />
+            </ElCheckboxGroup>
+            <ElButton type="primary" @click="exportImage">导出</ElButton>
+          </div>
         </div>
       </div>
     </div>
