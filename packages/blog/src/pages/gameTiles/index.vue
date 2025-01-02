@@ -6,40 +6,38 @@ import {
   ElOption,
   ElSelect,
   ElUpload,
-  UploadProps,
-  UploadRequestHandler,
-  UploadUserFile,
+  UploadFile,
 } from 'element-plus'
 import { AddSvg } from '@sun-world/icons-vue'
 import { Plus } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { reactive } from 'vue'
 import { ref } from 'vue'
+import { onMounted } from 'vue'
+import { watch } from 'vue'
+interface ItemType {
+  left: number
+  top: number
+  image: string
+}
 const RenderOptions = ['div', 'canvas']
 const prop = defineProps({})
+const fileList = ref<UploadFile[]>([])
+const tiles = ref<ItemType[][]>([[]]) // 存储切割后的瓦片信息
 const tileConfig = reactive({
-  row: 5,
-  col: 5,
+  row: 20,
+  col: 20,
   width: 16,
   height: 16,
+  gap: 1,
 })
 const imageUrl = ref('')
 const splitMode = ref('size')
-const tileSize = ref(25)
-const rows = ref(20)
-const cols = ref(20)
-const tiles = ref<any[]>([])
 const imageWidth = ref(0)
 const imageHeight = ref(0)
 const renderType = ref('div')
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
-const fileList = ref<UploadUserFile[]>([
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-  },
-])
 const canvasConfig = computed(() => {
   return {
     width: tileConfig.row * tileConfig.width,
@@ -47,90 +45,76 @@ const canvasConfig = computed(() => {
   }
 })
 
-const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles)
-}
-const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url!
-  dialogVisible.value = true
-}
-// 自定义上传请求
-// 阻止上传，只有读取文件
-const handleBeforeUpload = (file: File) => {
-  // 读取文件
-  readFile(file)
-  // 返回 false，表示不上传文件
-  return false
-}
-// 读取文件信息并生成图片预览
-const readFile = (file: File) => {
-  // 使用 FileReader 读取文件
+// 读取文件并切割为瓦片
+const readFile = (file: any) => {
   const reader = new FileReader()
-
-  reader.onload = () => {
-    // 生成一个 URL，方便 img 显示图片
-    const fileUrl = reader.result as string
-    fileList.value.push({
-      name: file.name,
-      size: file.size,
-      // type: file.type,
-      url: fileUrl, // 将文件的URL保存到 file.url
-    })
+  reader.onload = (e: any) => {
+    // console.log('读取文件,', e)
+    const img = new Image()
+    img.onload = () => {
+      imageWidth.value = img.width
+      imageHeight.value = img.height
+      imageUrl.value = img.src
+      splitImage()
+    }
+    img.src = e.target.result
   }
-
-  reader.onerror = (error) => {
-    console.error('Error reading file:', error)
-  }
-
-  reader.readAsDataURL(file) // 读取文件为 data URL
+  reader.readAsDataURL(file.raw)
 }
-const tilesContainerStyle = computed(() => ({
-  width: imageWidth.value + 'px',
-  height: imageHeight.value + 'px',
-}))
 const splitImage = () => {
   tiles.value = []
   if (!imageUrl.value) return
 
-  if (splitMode.value === 'size') {
-    const numCols = Math.ceil(imageWidth.value / tileSize.value)
-    const numRows = Math.ceil(imageHeight.value / tileSize.value)
-
-    for (let row = 0; row < numRows; row++) {
-      for (let col = 0; col < numCols; col++) {
-        tiles.value.push({
-          left: col * tileSize.value,
-          top: row * tileSize.value,
-          width: tileSize.value,
-          height: tileSize.value,
-        })
-      }
+  for (let row = 0; row < tileConfig.row; row++) {
+    const rowItem = []
+    for (let col = 0; col < tileConfig.col; col++) {
+      rowItem.push({
+        left: col * tileConfig.width,
+        top: row * tileConfig.height,
+        image: imageUrl.value,
+      })
     }
-  } else {
-    const tileWidth = imageWidth.value / cols.value
-    const tileHeight = imageHeight.value / rows.value
-
-    for (let row = 0; row < rows.value; row++) {
-      for (let col = 0; col < cols.value; col++) {
-        tiles.value.push({
-          left: col * tileWidth,
-          top: row * tileHeight,
-          width: tileWidth,
-          height: tileHeight,
-        })
-      }
-    }
+    tiles.value.push(rowItem)
   }
 }
+watch(
+  [imageUrl, tileConfig],
+  (newValue, oldValue) => {
+    console.log('重新计算tiles', newValue, oldValue)
 
-const getTileStyle = (tile) => ({
-  left: tile.left + 'px',
-  top: tile.top + 'px',
-  width: tile.width + 'px',
-  height: tile.height + 'px',
-  backgroundImage: `url(${imageUrl.value})`,
-  backgroundPosition: `-${tile.left}px -${tile.top}px`,
-  backgroundSize: `${imageWidth.value}px ${imageHeight.value}px`,
+    for (let row = 0; row < tileConfig.row; row++) {
+      if (!tiles.value[row]) {
+        tiles.value[row] = []
+      }
+      for (let col = 0; col < tileConfig.col; col++) {
+        // let top = row * tileConfig.height + tileConfig.gap * (row + 1)
+        // let left = col * tileConfig.width + tileConfig.gap * (col + 1)
+        let top = row * tileConfig.height
+        let left = col * tileConfig.width
+        let image = tiles.value[row][col]?.image || ''
+        if (top >= imageHeight.value || left >= imageWidth.value) {
+          tiles.value[row][col] = {
+            left: 0,
+            top: 0,
+            image: '',
+          }
+        } else {
+          tiles.value[row][col] = {
+            left,
+            top,
+            image,
+          }
+        }
+      }
+    }
+  },
+  {
+    immediate: true, // 默认为false，立即执行回调函数
+    deep: true, // 默认为false，不监听对象内部属性
+  }
+)
+onMounted(() => {
+  console.log('mounted')
 })
 </script>
 
@@ -138,13 +122,21 @@ const getTileStyle = (tile) => ({
   <div class="game-tiles-page">
     <div>制作游戏需要的tiles</div>
     <div class="tiles-container">
-      <div class="left">
-        <div v-for="i in tileConfig.row" class="tile-row" key="`row-{i}`">
+      <div class="left" :style="{ gap: tileConfig.gap + 'px' }">
+        <div
+          v-for="(row, i) in tiles"
+          class="tile-row"
+          :style="{ gap: tileConfig.gap + 'px' }"
+          :key="`row-${i}`"
+        >
           <div
-            v-for="j in tileConfig.col"
+            v-for="(item, j) in row"
             :style="{
               width: tileConfig.width + 'px',
               height: tileConfig.height + 'px',
+              // backgroundImage: `url(${imageUrl})`,
+              backgroundImage: `url(${item.image})`,
+              backgroundPosition: `-${item.left}px -${item.top}px`,
             }"
             class="tile-item tile-col"
             :key="`${i}-${j}`"
@@ -164,6 +156,29 @@ const getTileStyle = (tile) => ({
               />
             </ElSelect>
           </div>
+        </div>
+
+        <div class="config-item">
+          <div class="label">导入已有tiles：</div>
+          <ElUpload
+            v-model:file-list="fileList"
+            drag
+            :limit="1"
+            :multiple="false"
+            action=""
+            :auto-upload="false"
+            :onChange="readFile"
+            list-type="picture-card"
+          >
+            <div class="upload-dragger">
+              <el-icon><Plus /></el-icon>
+              <!-- <AddSvg width="2.5rem" height="2.5rem" /> -->
+              <div>拖动或点击上传</div>
+            </div>
+          </ElUpload>
+          <ElDialog v-model="dialogVisible">
+            <img w-full :src="dialogImageUrl" />
+          </ElDialog>
         </div>
         <div class="config-item">
           <div class="label">画布大小：</div>
@@ -187,29 +202,12 @@ const getTileStyle = (tile) => ({
           </div>
         </div>
         <div class="config-item">
-          <div class="label">导入已有tiles：</div>
-          <ElUpload
-            v-model:file-list="fileList"
-            drag
-            :limit="1"
-            :multiple="false"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-            :before-upload="handleBeforeUpload"
-            list-type="picture-card"
-          >
-            <div class="upload-dragger">
-              <el-icon><Plus /></el-icon>
-              <!-- <AddSvg width="2.5rem" height="2.5rem" /> -->
-              <div>拖动或点击上传</div>
-            </div>
-          </ElUpload>
-          <ElDialog v-model="dialogVisible">
-            <img w-full :src="dialogImageUrl" />
-          </ElDialog>
+          <div class="label">瓦片间隔：</div>
+          <div class="item">
+            <ElInputNumber v-model="tileConfig.gap" :min="0" :max="100" />
+          </div>
+          <div class="config-item"></div>
         </div>
-        <div class="config-item"></div>
-        <div class="config-item"></div>
       </div>
     </div>
   </div>
@@ -237,7 +235,6 @@ const getTileStyle = (tile) => ({
       background-color: beige;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
       overflow: auto;
       .tile-row {
         display: flex;
