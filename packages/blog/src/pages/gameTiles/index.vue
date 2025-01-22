@@ -12,6 +12,7 @@ import {
   ElCheckbox,
 } from 'element-plus'
 import { AddSvg } from '@sun-world/icons-vue'
+import type { UploadProps } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { reactive } from 'vue'
@@ -36,8 +37,8 @@ const tileConfig = reactive({
   gap: 1,
 })
 const showTile = reactive<ItemType>({
-  top: 0,
-  left: 0,
+  top: 10 * 128,
+  left: 11 * 128,
   image: '',
 })
 const imageUrl = ref('')
@@ -138,7 +139,10 @@ const exportImage = () => {
   // saveTileImages(tiles.value)
   saveTilesAsZip(tiles.value)
 }
-
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+  dialogImageUrl.value = uploadFile.url!
+  dialogVisible.value = true
+}
 watch(
   [imageUrl, tileConfig],
   (newValue, oldValue) => {
@@ -238,6 +242,7 @@ onMounted(() => {
             :auto-upload="false"
             :onChange="readFile"
             list-type="picture-card"
+            :on-preview="handlePictureCardPreview"
           >
             <div class="upload-dragger">
               <el-icon><Plus /></el-icon>
@@ -294,14 +299,19 @@ onMounted(() => {
               <div
                 class="tile-item-image-show"
                 :style="{
-                  width: '200px',
-                  height: '200px',
-                  backgroundImage: `url(${showTile.image})`,
-                  backgroundPosition: `-${showTile.left * 12.5}px -${
-                    showTile.top * 12.5
-                  }px`,
-                  backgroundSize: '1250% 1250%',
+                  width: '256px',
+                  height: '256px',
+                  // backgroundImage: `url(${showTile.image})`,
+                  backgroundImage: `url(8x.jpeg)`,
+                  backgroundPosition: `left ${(10 / 12) * 100}% top ${
+                    (11 / 12) * 100
+                  }%`,
+                  // backgroundPosition: `-${showTile.left * 12.5}px -${
+                  //   showTile.top * 12.5
+                  // }px`,
+                  backgroundSize: '1200% 1200%',
                   backgroundRepeat: 'no-repeat',
+                  // transform: 'scale(2)',
                 }"
               ></div>
             </div>
@@ -353,6 +363,7 @@ onMounted(() => {
     .right {
       background-color: antiquewhite;
       width: 50%;
+      overflow: auto;
       padding: 1rem;
       display: flex;
       flex-direction: column;
