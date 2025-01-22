@@ -35,6 +35,11 @@ const tileConfig = reactive({
   height: 16,
   gap: 1,
 })
+const showTile = reactive<ItemType>({
+  top: 0,
+  left: 0,
+  image: '',
+})
 const imageUrl = ref('')
 const splitMode = ref('size')
 const imageWidth = ref(0)
@@ -82,6 +87,52 @@ const splitImage = () => {
     tiles.value.push(rowItem)
   }
 }
+/**
+ * 清空画布
+ */
+const clearAllTiles = () => {
+  // tiles.value = []
+  imageUrl.value = ''
+  fileList.value = []
+  for (let row = 0; row < tileConfig.row; row++) {
+    tiles.value[row] = []
+
+    for (let col = 0; col < tileConfig.col; col++) {
+      // let top = row * tileConfig.height + tileConfig.gap * (row + 1)
+      // let left = col * tileConfig.width + tileConfig.gap * (col + 1)
+      let top = row * tileConfig.height
+      let left = col * tileConfig.width
+      tiles.value[row][col] = {
+        left,
+        top,
+        image: '',
+      }
+    }
+  }
+}
+/**
+ * 点击瓦片，在右侧显示详情
+ * @param e 选中的瓦片
+ */
+const selectTiles = (event: MouseEvent) => {
+  // 获取事件目标
+  const target = event.target as HTMLElement
+
+  // 检查点击的是否是 .tile-item
+  if (target.classList.contains('tile-item')) {
+    // 获取自定义属性 data-key 的值
+    const key = target.getAttribute('data-key')
+    if (key) {
+      const [i, j] = key.split('-').map(Number) // 提取 i 和 j
+      console.log('Selected Tile:', { i, j })
+      // 这里可以执行你的逻辑，例如高亮选中的瓦片
+      const tile = tiles.value[i][j]
+      showTile.left = tile.left
+      showTile.top = tile.top
+      showTile.image = tile.image
+    }
+  }
+}
 
 const exportImage = () => {
   // saveTileImages(tiles.value)
@@ -91,8 +142,7 @@ const exportImage = () => {
 watch(
   [imageUrl, tileConfig],
   (newValue, oldValue) => {
-    console.log('重新计算tiles', newValue, oldValue)
-
+    // console.log('重新计算tiles', newValue, oldValue)
     for (let row = 0; row < tileConfig.row; row++) {
       if (!tiles.value[row]) {
         tiles.value[row] = []
@@ -133,7 +183,11 @@ onMounted(() => {
   <div class="game-tiles-page">
     <div>制作游戏需要的tiles</div>
     <div class="tiles-container">
-      <div class="left" :style="{ gap: tileConfig.gap + 'px' }">
+      <div
+        class="left"
+        :style="{ gap: tileConfig.gap + 'px' }"
+        @click="selectTiles"
+      >
         <div
           v-for="(row, i) in tiles"
           class="tile-row"
@@ -149,8 +203,10 @@ onMounted(() => {
               backgroundImage: `url(${item.image})`,
               backgroundPosition: `-${item.left}px -${item.top}px`,
             }"
+            :title="`${i}-${j} ${i * tileConfig.row + j}`"
             class="tile-item tile-col"
             :key="`${i}-${j}`"
+            :data-key="`${i}-${j}`"
           ></div>
         </div>
       </div>
@@ -166,6 +222,7 @@ onMounted(() => {
                 :value="item"
               />
             </ElSelect>
+            <ElButton type="danger" @click="clearAllTiles">清空画布</ElButton>
           </div>
         </div>
 
@@ -173,6 +230,7 @@ onMounted(() => {
           <div class="label">导入已有tiles：</div>
           <ElUpload
             v-model:file-list="fileList"
+            :max="1"
             drag
             :limit="1"
             :multiple="false"
@@ -229,6 +287,28 @@ onMounted(() => {
             <ElButton type="primary" @click="exportImage">导出</ElButton>
           </div>
         </div>
+        <div class="config-item">
+          <!-- <div class="label">单独设置：</div> -->
+          <div class="item tile-item-config">
+            <div class="config-left">
+              <div
+                class="tile-item-image-show"
+                :style="{
+                  width: '200px',
+                  height: '200px',
+                  backgroundImage: `url(${showTile.image})`,
+                  backgroundPosition: `-${showTile.left * 12.5}px -${
+                    showTile.top * 12.5
+                  }px`,
+                  backgroundSize: '1250% 1250%',
+                  backgroundRepeat: 'no-repeat',
+                }"
+              ></div>
+            </div>
+            <div class="config-right"></div>
+          </div>
+          <div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -263,6 +343,10 @@ onMounted(() => {
         .tile-item {
           flex: none;
           background-color: blanchedalmond;
+          &:hover {
+            scale: 1.3;
+            outline: 2px solid red;
+          }
         }
       }
     }
@@ -283,6 +367,9 @@ onMounted(() => {
           align-items: center;
           gap: 0.5rem;
         }
+      }
+      .tile-item-image-show {
+        background-color: red;
       }
     }
   }
