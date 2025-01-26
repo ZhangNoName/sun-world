@@ -296,24 +296,26 @@ onMounted(() => {
           <!-- <div class="label">单独设置：</div> -->
           <div class="item tile-item-config">
             <div class="config-left">
-              <div
-                class="tile-item-image-show"
-                :style="{
-                  width: '256px',
-                  height: '256px',
-                  // backgroundImage: `url(${showTile.image})`,
-                  backgroundImage: `url(8x.jpeg)`,
-                  backgroundPosition: `left ${(10 / 12) * 100}% top ${
-                    (11 / 12) * 100
-                  }%`,
-                  // backgroundPosition: `-${showTile.left * 12.5}px -${
-                  //   showTile.top * 12.5
-                  // }px`,
-                  backgroundSize: '1200% 1200%',
-                  backgroundRepeat: 'no-repeat',
-                  // transform: 'scale(2)',
-                }"
-              ></div>
+              <div>
+                <div
+                  class="tile-item-image-show"
+                  :style="{
+                    width: '256px',
+                    height: '256px',
+                    // backgroundImage: `url(${showTile.image})`,
+                    backgroundImage: `url(8x.jpeg)`,
+                    backgroundPosition: `left ${(10 / 12) * 100}% top ${
+                      (11 / 12) * 100
+                    }%`,
+                    // backgroundPosition: `-${showTile.left * 12.5}px -${
+                    //   showTile.top * 12.5
+                    // }px`,
+                    backgroundSize: '1200% 1200%',
+                    backgroundRepeat: 'no-repeat',
+                    // transform: 'scale(2)',
+                  }"
+                ></div>
+              </div>
             </div>
             <div class="config-right"></div>
           </div>
