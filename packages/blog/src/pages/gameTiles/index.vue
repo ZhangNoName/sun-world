@@ -37,8 +37,8 @@ const tileConfig = reactive({
   gap: 1,
 })
 const showTile = reactive<ItemType>({
-  top: 10 * 128,
-  left: 11 * 128,
+  top: 10,
+  left: 11,
   image: '',
 })
 const imageUrl = ref('')
@@ -296,23 +296,18 @@ onMounted(() => {
           <!-- <div class="label">单独设置：</div> -->
           <div class="item tile-item-config">
             <div class="config-left">
-              <div>
+              <div class="item-image-container">
                 <div
                   class="tile-item-image-show"
                   :style="{
-                    width: '256px',
-                    height: '256px',
+                    width: tileConfig.width + 'px',
+                    height: tileConfig.height + 'px',
                     // backgroundImage: `url(${showTile.image})`,
-                    backgroundImage: `url(8x.jpeg)`,
-                    backgroundPosition: `left ${(10 / 12) * 100}% top ${
-                      (11 / 12) * 100
-                    }%`,
-                    // backgroundPosition: `-${showTile.left * 12.5}px -${
-                    //   showTile.top * 12.5
-                    // }px`,
-                    backgroundSize: '1200% 1200%',
-                    backgroundRepeat: 'no-repeat',
-                    // transform: 'scale(2)',
+                    backgroundImage: `url(building.png)`,
+                    backgroundPosition: `-${
+                      showTile.left * tileConfig.width
+                    }px -${showTile.top * tileConfig.height}px`,
+                    // transform: `scale(${200 / tileConfig.width})`,
                   }"
                 ></div>
               </div>
@@ -381,8 +376,18 @@ onMounted(() => {
           gap: 0.5rem;
         }
       }
-      .tile-item-image-show {
-        background-color: red;
+      .item-image-container {
+        height: 200px;
+        width: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        outline: 1px solid red;
+        border-radius: 1rem;
+        .tile-item-image-show {
+          background-color: red;
+          background-repeat: no-repeat;
+        }
       }
     }
   }
