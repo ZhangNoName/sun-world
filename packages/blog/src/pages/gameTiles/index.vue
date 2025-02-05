@@ -23,7 +23,13 @@ import { saveTileImages, saveTilesAsZip } from '@/util/function'
 interface ItemType {
   left: number
   top: number
+
   image: string
+}
+interface TileInfo extends ItemType {
+  index: number
+  row: number
+  col: number
 }
 const RenderOptions = ['div', 'canvas']
 const prop = defineProps({})
@@ -36,10 +42,13 @@ const tileConfig = reactive({
   height: 16,
   gap: 1,
 })
-const showTile = reactive<ItemType>({
-  top: 10,
-  left: 11,
+const showTile = reactive<TileInfo>({
+  top: 0,
+  left: 0,
+  row: 0,
+  col: 0,
   image: '',
+  index: 0,
 })
 const imageUrl = ref('')
 const splitMode = ref('size')
@@ -130,6 +139,7 @@ const selectTiles = (event: MouseEvent) => {
       const tile = tiles.value[i][j]
       showTile.left = tile.left
       showTile.top = tile.top
+
       showTile.image = tile.image
     }
   }
@@ -142,6 +152,49 @@ const exportImage = () => {
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url!
   dialogVisible.value = true
+}
+
+/**
+ * 重置瓦片
+ */
+const resetTile = () => {
+  const { row, col } = showTile
+  const tile = tiles.value[row][col]
+  tile.top = 0
+  tile.left = 0
+  tile.image = ''
+  // showTile.image = ''
+}
+
+/**
+ * 重新计算tiles
+ */
+const recomputeTiles = () => {
+  for (let row = 0; row < tileConfig.row; row++) {
+    if (!tiles.value[row]) {
+      tiles.value[row] = []
+    }
+    for (let col = 0; col < tileConfig.col; col++) {
+      // let top = row * tileConfig.height + tileConfig.gap * (row + 1)
+      // let left = col * tileConfig.width + tileConfig.gap * (col + 1)
+      let top = row * tileConfig.height
+      let left = col * tileConfig.width
+      let image = tiles.value[row][col]?.image || ''
+      if (top >= imageHeight.value || left >= imageWidth.value) {
+        tiles.value[row][col] = {
+          left: 0,
+          top: 0,
+          image: '',
+        }
+      } else {
+        tiles.value[row][col] = {
+          left,
+          top,
+          image,
+        }
+      }
+    }
+  }
 }
 watch(
   [imageUrl, tileConfig],
@@ -302,17 +355,49 @@ onMounted(() => {
                   :style="{
                     width: tileConfig.width + 'px',
                     height: tileConfig.height + 'px',
-                    // backgroundImage: `url(${showTile.image})`,
-                    backgroundImage: `url(building.png)`,
-                    backgroundPosition: `-${
-                      showTile.left * tileConfig.width
-                    }px -${showTile.top * tileConfig.height}px`,
+                    backgroundImage: `url(${showTile.image})`,
+                    // backgroundImage: `url(building.png)`,
+                    backgroundPosition: `-${showTile.left}px -${showTile.top}px`,
                     // transform: `scale(${200 / tileConfig.width})`,
                   }"
                 ></div>
               </div>
             </div>
-            <div class="config-right"></div>
+            <div class="config-right">
+              <div class="tile-info">
+                <div>行：</div>
+                <ElInputNumber v-model="showTile.row" :min="1" :max="100" />
+                <div>列：</div>
+                <ElInputNumber v-model="showTile.col" :min="1" :max="100" />
+                <div>序号：</div>
+                <ElInputNumber v-model="showTile.index" :min="1" :max="100" />
+              </div>
+              <div class="update-tile">
+                <div class="upload-single-image">
+                  <ElUpload
+                    v-model:file-list="fileList"
+                    :max="1"
+                    drag
+                    :limit="1"
+                    :multiple="false"
+                    action=""
+                    :auto-upload="false"
+                    :onChange="readFile"
+                    list-type="picture-card"
+                    :on-preview="handlePictureCardPreview"
+                  >
+                    <div class="upload-dragger">
+                      <el-icon><Plus /></el-icon>
+                      <div>拖动或点击上传</div>
+                    </div>
+                  </ElUpload>
+                </div>
+                <div class="item-footer">
+                  <ElButton type="primary" @click="resetTile">替换</ElButton>
+                  <ElButton type="primary" @click="resetTile">重置</ElButton>
+                </div>
+              </div>
+            </div>
           </div>
           <div></div>
         </div>
@@ -375,18 +460,53 @@ onMounted(() => {
           align-items: center;
           gap: 0.5rem;
         }
-      }
-      .item-image-container {
-        height: 200px;
-        width: 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        outline: 1px solid red;
-        border-radius: 1rem;
-        .tile-item-image-show {
-          background-color: red;
-          background-repeat: no-repeat;
+
+        .tile-item-config {
+          display: flex;
+          height: 20rem;
+          gap: 1rem;
+          /* background-color: black; */
+          .config-left {
+            .item-image-container {
+              height: 200px;
+              width: 200px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border: 1px solid red;
+              /* border-radius: 1rem; */
+              .tile-item-image-show {
+                /* background-color: red; */
+                background-repeat: no-repeat;
+              }
+            }
+          }
+          .config-right {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            /* justify-content: space-between; */
+            gap: 1rem;
+            .tile-info {
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+            }
+            .update-tile {
+              flex: auto;
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+              .upload-single-image {
+              }
+              .item-footer {
+                display: flex;
+                /* justify-content: flex-end; */
+                gap: 1.5rem;
+                justify-self: flex-end;
+              }
+            }
+          }
         }
       }
     }
