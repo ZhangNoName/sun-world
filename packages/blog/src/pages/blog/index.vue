@@ -6,6 +6,8 @@ import { useRoute } from 'vue-router'
 import { onMounted } from 'vue'
 import { BlogDeatil, getBlogById } from '@/service/request'
 import { ElMessage } from 'element-plus'
+import VditorPreview from 'vditor/dist/method.min'
+
 import {
   Calendar,
   WordCount,
@@ -13,6 +15,8 @@ import {
   Clock,
   TagSvg,
 } from '@sun-world/icons-vue'
+import { BlogEditorClass } from '@/blogEditor'
+import Vditor from 'vditor'
 interface Props {}
 const props: Props = defineProps()
 const iconConfig = ref({
@@ -21,6 +25,7 @@ const iconConfig = ref({
 })
 const route = useRoute()
 const id = ref<string>((route.query.id as string) || '')
+const blogPreview = ref<HTMLElement | null>(null)
 const blogInfo = ref<BlogDeatil>({
   author: '',
   content: '',
@@ -29,6 +34,28 @@ const blogInfo = ref<BlogDeatil>({
   title: '',
   update_at: '',
 })
+const showBlog = (content: string) => {
+  // console.log('content', content)
+  if (blogPreview.value) {
+    // new Vditor('blog-preview', {
+    //   value: content,
+    //   mode: 'preview', // 使用所见即所得模式
+    //   preview: {
+    //     mode: 'both', // 预览模式
+    //     actions: [], // 可以自定义预览操作
+    //   },
+    //   toolbar: [], // 可以自定义工具栏
+    // })
+    VditorPreview.preview(blogPreview.value, content, {
+      theme: {
+        current: 'light',
+      },
+      hljs: {
+        style: 'github',
+      },
+    })
+  }
+}
 onMounted(() => {
   if (!id.value) {
     ElMessage.error('未找到相应的博客id')
@@ -36,8 +63,9 @@ onMounted(() => {
   }
   getBlogById(id.value)
     .then((res) => {
-      console.log('获取到的博客内容', res)
+      // console.log('获取到的博客内容', res)
       blogInfo.value = res
+      showBlog(res.content)
     })
     .catch((err) => {
       console.log('获取博客内容失败', err)
@@ -52,8 +80,8 @@ onMounted(() => {
 <template>
   <div class="blog-page">
     <div class="left">
-      <CatalogCard />
       <SelfInfoCard />
+      <CatalogCard />
     </div>
     <div class="right">
       <div class="data-info">
@@ -71,7 +99,8 @@ onMounted(() => {
         </div>
       </div>
       <h1>{{ blogInfo.title }}</h1>
-      {{ blogInfo.content }}
+      <!-- {{ blogInfo.content }} -->
+      <div class="preview-container" ref="blogPreview" id="blog-preview"></div>
     </div>
   </div>
 </template>
@@ -87,7 +116,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 35rem auto;
   grid-template-rows: auto;
-  gap: 1rem;
+  gap: 2rem;
   .left {
     display: flex;
     flex-direction: column;

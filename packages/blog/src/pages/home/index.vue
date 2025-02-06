@@ -51,14 +51,14 @@ onMounted(() => {
       console.log('获取博客列表数据失败', e)
     })
     .finally(() => {})
-  getBaseInfo()
-    .then((res) => {
-      console.log('获取基本信息', res)
-    })
-    .catch((e) => {
-      ElMessage.error('获取基本信息失败！')
-      console.log('获取基本信息失败', e)
-    })
+  // getBaseInfo()
+  //   .then((res) => {
+  //     console.log('获取基本信息', res)
+  //   })
+  //   .catch((e) => {
+  //     ElMessage.error('获取基本信息失败！')
+  //     console.log('获取基本信息失败', e)
+  //   })
 })
 </script>
 <template>
