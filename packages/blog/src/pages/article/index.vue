@@ -18,6 +18,7 @@ const saveBlog = async () => {
   await postSaveBlog({
     title: title.value,
     content: blogEditor.value.getContent() || '',
+    abstract: '摘要',
     // author: 'test',
     // created_at: 'test'
   }).then((res) => {
