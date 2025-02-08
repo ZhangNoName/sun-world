@@ -20,6 +20,7 @@ export const testApi = async () => {
 export const postSaveBlog = async (params: {
   title: string
   content: string
+  abstract: string
   author?: string
   created_at?: string
 }) => {
