@@ -36,12 +36,14 @@ onMounted(() => {
         ...res.list.map((o) => {
           return {
             title: o.title,
-            content: o.content,
-            publishTime: formatDate(o.created_at),
+            abstract: o.abstract,
             lastUpdateTime: formatDate(o.updated_at),
-            id: o.id,
-            commentNum: o.commentNum,
-            byteNum: o.byteNum,
+            id: o.id.toString(),
+            commentNum: o.comment_num,
+            byteNum: o.byte_num,
+            tag: o.tag,
+            category: o.category,
+            viewNum: o.view_num,
           }
         })
       )

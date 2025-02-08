@@ -2,9 +2,9 @@ import { DefineComponent } from 'vue'
 import { HeFengWeatherKey } from './constant'
 import { CurrentLocation } from './util/index'
 export interface BlogCardProps {
-  id: string
+  id: string | number
   title: string
-  content: string
+  abstract: string
   publishTime: string
   lastUpdateTime: string
   tags: string[]

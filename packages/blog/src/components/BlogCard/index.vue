@@ -16,14 +16,15 @@ const props = withDefaults(defineProps<BlogCardProps>(), {
 
 const {
   title,
-  content,
-  publishTime,
+  abstract,
+  // publishTime,
   lastUpdateTime,
   tags,
   category = 'js',
-  cover = '1',
+  // cover = '1',
   byteNum = 10000,
   commentNum = 0,
+  viewNum = 0,
   id,
 } = props
 const iconConfig = ref({
@@ -56,7 +57,7 @@ const showBlog = () => {
     <h1 class="title">
       <a>{{ title }}</a>
     </h1>
-    <div class="body">{{ content }}</div>
+    <div class="body">{{ abstract }}</div>
     <div class="footer">
       <div class="tag">
         <TagSvg v-bind="iconConfig" />
