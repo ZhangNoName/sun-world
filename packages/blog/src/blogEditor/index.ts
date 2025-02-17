@@ -24,15 +24,25 @@ export class BlogEditorClass {
     this.blogEditor = new Vditor(this.containerEle, {
       height: (ele.parentElement?.clientHeight || 500) * 0.9,
       width: '100%',
-      mode: 'sv',
+      // mode: 'sv',
+      mode: 'wysiwyg',
       typewriterMode: true,
       placeholder: '在这里输入内容...',
       cache: {
         enable: false,
       },
+      outline: {
+        enable: true,
+        position: 'right',
+      },
       preview: {
         mode: 'both',
+        markdown: {
+          toc: true,
+        },
       },
+      toolbar: ['emoji', 'br', 'bold', 'outline', '|', 'line'],
+
       input: (value) => {
         this._length = value.length || 0
         if (this.config.input) {

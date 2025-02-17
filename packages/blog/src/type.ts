@@ -14,11 +14,11 @@ export interface BlogCardProps {
   commentNum: number | string
 }
 
-export interface CatalogItem {
+export interface CatalogItemType {
   id: string
   name: string
   level: number | string
-  children?: CatalogItem[]
+  children?: CatalogItemType[]
   isopen?: boolean
   icon?: DefineComponent | SVGAElement | Element
 }
@@ -134,4 +134,12 @@ export interface HeFengWeather {
     /** 数据许可或版权声明，可能为空 */
     license?: string[]
   }
+}
+/**
+ * 从vidtor获取到的数组的类型
+ */
+export interface VditorTreeItemType {
+  text: string
+  level: number
+  id: string
 }

@@ -17,6 +17,7 @@ import {
 } from '@sun-world/icons-vue'
 import { BlogEditorClass } from '@/blogEditor'
 import Vditor from 'vditor'
+import { VditorTreeItemType } from '@/type'
 interface Props {}
 const props: Props = defineProps()
 const iconConfig = ref({
@@ -26,6 +27,7 @@ const iconConfig = ref({
 const route = useRoute()
 const id = ref<string>((route.query.id as string) || '')
 const blogPreview = ref<HTMLElement | null>(null)
+const catalog = ref<VditorTreeItemType[]>([])
 const blogInfo = ref<BlogDeatil>({
   author: '',
   content: '',
@@ -34,6 +36,17 @@ const blogInfo = ref<BlogDeatil>({
   title: '',
   update_at: '',
 })
+
+const getCatalog = (): VditorTreeItemType[] => {
+  if (!blogPreview.value) return []
+  const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
+
+  return Array.from(headers).map((header) => ({
+    text: header.textContent || '',
+    level: Number(header.tagName.charAt(1)), // 解析 h1~h6 级别
+    id: header.id, // Vditor 解析后会自动生成 id
+  }))
+}
 const showBlog = (content: string) => {
   // console.log('content', content)
   if (blogPreview.value) {
@@ -53,6 +66,9 @@ const showBlog = (content: string) => {
       hljs: {
         style: 'github',
       },
+    }).then(() => {
+      catalog.value = getCatalog()
+      console.log('获取道德标题:', catalog.value)
     })
   }
 }
@@ -79,10 +95,12 @@ onMounted(() => {
 
 <template>
   <div class="blog-page">
+    <div class="left-bg"></div>
     <div class="left">
       <SelfInfoCard />
-      <CatalogCard />
+      <CatalogCard :catalog="catalog" />
     </div>
+
     <div class="right">
       <div class="data-info">
         <div class="tag">
@@ -116,11 +134,17 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 35rem auto;
   grid-template-rows: auto;
-  gap: 2rem;
+  gap: 2.5rem;
   .left {
+    width: 35rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    position: fixed;
+  }
+  .left-bg {
+    /* background-color: var(--bg-color-0); */
+    /* background-color: #f8f9fa; */
   }
   .right {
     display: flex;
