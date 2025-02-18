@@ -33,7 +33,7 @@ export class BlogEditorClass {
       },
       outline: {
         enable: true,
-        position: 'right',
+        position: 'left',
       },
       preview: {
         mode: 'both',
@@ -41,7 +41,7 @@ export class BlogEditorClass {
           toc: true,
         },
       },
-      toolbar: ['emoji', 'br', 'bold', 'outline', '|', 'line'],
+      // toolbar: ['emoji', 'br', 'bold', 'outline', '|', 'line'],
 
       input: (value) => {
         this._length = value.length || 0
