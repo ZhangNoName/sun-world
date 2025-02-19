@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "node scripts/dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "run-p  \"watch icons-vue\" dev:blog",
+    "dev": "run-p   dev:blog",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
     "build:blog": "pnpm -F @sun-world/blog build",
