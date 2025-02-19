@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { BlogEditorClass } from '@/blogEditor'
-import { ElMessage, ElInput, ElSelect, ElOption } from 'element-plus'
+import { ElMessage, ElInput, ElSelect, ElOption, ElTree } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
 import { getBlogById, postSaveBlog } from '@/service/request'
 const prop = defineProps({
@@ -104,6 +104,8 @@ onMounted(() => {
         />
       </ElSelect>
       <ElTree :data="categoryList" :props="{ label: 'name' }"></ElTree>
+      <ElTree></ElTree>
+      <ElRadio></ElRadio>
     </div>
     <div ref="editorEle" class="editor-container"></div>
   </div>
