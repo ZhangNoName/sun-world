@@ -100,6 +100,7 @@ onMounted(() => {
       <SelfInfoCard />
       <CatalogCard :catalog="catalog" />
     </div>
+    <ElSelect></ElSelect>
 
     <div class="right">
       <div class="data-info">
