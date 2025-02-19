@@ -5,10 +5,10 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
       "@sun-world/icons-vue": ["../icons-vue/src"],
-      "@/*": ["src/*"] // 配置路径别名，用于导入 @ 符号开头的模块
+      "@/*": ["./src/*"] // 配置路径别名，用于导入 @ 符号开头的模块
     }
   },
   "include": ["src"]

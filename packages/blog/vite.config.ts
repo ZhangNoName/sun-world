@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import tsconfigPaths from 'vite-tsconfig-paths'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -19,6 +20,8 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+
+    tsconfigPaths(),
     // // 自动导入 Vue 相关 API 以及 Element Plus API（如 ElMessage、ElNotification）
     // AutoImport({
     //   resolvers: [ElementPlusResolver()],
