@@ -14,19 +14,20 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@sun-world/icons-vue': resolve(__dirname, '../icons-vue/src'),
     },
   },
   plugins: [
     vue(),
-    // 自动导入 Vue 相关 API 以及 Element Plus API（如 ElMessage、ElNotification）
-    AutoImport({
-      resolvers: [ElementPlusResolver()],
-      dts: 'src/auto-imports.d.ts',
-    }),
-    // 自动注册 Element Plus 组件
-    Components({
-      resolvers: [ElementPlusResolver()],
-      dts: 'src/components.d.ts',
-    }),
+    // // 自动导入 Vue 相关 API 以及 Element Plus API（如 ElMessage、ElNotification）
+    // AutoImport({
+    //   resolvers: [ElementPlusResolver()],
+    //   dts: 'src/auto-imports.d.ts',
+    // }),
+    // // 自动注册 Element Plus 组件
+    // Components({
+    //   resolvers: [ElementPlusResolver()],
+    //   dts: 'src/components.d.ts',
+    // }),
   ],
 })

@@ -1,44 +1,21 @@
-import Search from './Search.vue'
-import Calendar from './Calendar.vue'
-import TagSvg from './Tag.vue'
-import WordCount from './WordCount.vue'
-import Clock from './Clock.vue'
-import Comment from './Comment.vue'
-import FoldSvg from './Fold.vue'
-import PaperSvg from './Paper.vue'
-import AIGCSvg from './Aigc.vue'
-import DragSvg from './Drag.vue'
-import CharacterSvg from './Character.vue'
-import DiscoverSvg from './Discover.vue'
-import AddSvg from './Add.vue'
-import SettingSvg from './Setting.vue'
-import DeleteSvg from './Delete.vue'
-import EditSvg from './Edit.vue'
-import ExportSvg from './Export.vue'
-import FullScreenSvg from './FullScreen.vue'
-import CancelFullScreenSvg from './CancelFullScreen.vue'
-import ClearSvg from './Clear.vue'
-import RobotSvg from './Robot.vue'
-export {
-  Search,
-  Calendar,
-  TagSvg,
-  WordCount,
-  Clock,
-  Comment,
-  FoldSvg,
-  PaperSvg,
-  AIGCSvg,
-  DragSvg,
-  CharacterSvg,
-  DiscoverSvg,
-  AddSvg,
-  SettingSvg,
-  DeleteSvg,
-  EditSvg,
-  ExportSvg,
-  FullScreenSvg,
-  CancelFullScreenSvg,
-  ClearSvg,
-  RobotSvg,
-}
+export { default as Search } from './Search.vue'
+export { default as Calendar } from './Calendar.vue'
+export { default as TagSvg } from './Tag.vue'
+export { default as WordCount } from './WordCount.vue'
+export { default as Clock } from './Clock.vue'
+export { default as Comment } from './Comment.vue'
+export { default as FoldSvg } from './Fold.vue'
+export { default as PaperSvg } from './Paper.vue'
+export { default as AIGCSvg } from './Aigc.vue'
+export { default as DragSvg } from './Drag.vue'
+export { default as CharacterSvg } from './Character.vue'
+export { default as DiscoverSvg } from './Discover.vue'
+export { default as AddSvg } from './Add.vue'
+export { default as SettingSvg } from './Setting.vue'
+export { default as DeleteSvg } from './Delete.vue'
+export { default as EditSvg } from './Edit.vue'
+export { default as ExportSvg } from './Export.vue'
+export { default as FullScreenSvg } from './FullScreen.vue'
+export { default as CancelFullScreenSvg } from './CancelFullScreen.vue'
+export { default as ClearSvg } from './Clear.vue'
+export { default as RobotSvg } from './Robot.vue'

@@ -1,24 +1,15 @@
 {
   "name": "sun-world",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "run-p   dev:blog",
+    "dev": "run-p dev:blog dev:icons",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
-    "build:blog": "pnpm -F @sun-world/blog build",
-    "build:icons": "pnpm -F @sun-world/icons-vue build",
-    "build:all": "pnpm -r exec pnpm run build",
-    "build:all:staging": "pnpm -r exec pnpm run build:staging",
-    "icons:generate": "lerna run --scope @sun-world/icons-svg generate",
-    "icons:build": "lerna run --scope @sum-world/icons-svg build",
-    "icons:test": "lerna run --scope @sun-world/icons-svg test"
+    "build": "pnpm -r run build",
+    "icons:generate": "pnpm -F @sun-world/icons-svg run generate",
+    "icons:build": "pnpm -F @sun-world/icons-svg run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@langchain/core": "^0.2.36",
     "@langchain/openai": "^0.2.11",
@@ -52,7 +43,6 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
-    "@sun-world/icons-vue": "workspace:^",
     "jszip": "^3.10.1",
     "langchain": "^0.2.20",
     "langsmith": "^0.1.68",

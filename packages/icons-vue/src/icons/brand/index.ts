@@ -1,8 +1,5 @@
-import GithubFill from './GithubFill.vue'
-import QQFill from './QQ.vue'
-import WeChatOutLined from './WeChat.vue'
-import QQOutlined from './QQOutlined.vue'
-import GithubOutlined from './GithubOutlined.vue'
-
-
-export { GithubFill, QQFill, WeChatOutLined, QQOutlined, GithubOutlined }
+export { default as GithubFill } from './GithubFill.vue'
+export { default as QQFill } from './QQ.vue'
+export { default as WeChatOutLined } from './WeChat.vue'
+export { default as QQOutlined } from './QQOutlined.vue'
+export { default as GithubOutlined } from './GithubOutlined.vue'
