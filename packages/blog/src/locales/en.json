@@ -33,6 +33,7 @@
     "humidity": "Humidity",
     "windSpeed": "WindSpeed"
   },
+
   "aigc": {
     "title": "AIGC",
     "prompt": "Prompt",

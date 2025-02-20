@@ -48,8 +48,6 @@
     "moment": "^2.30.1",
     "openai": "^4.77.0",
     "vditor": "^3.10.8",
-    "vite-plugin-dts": "^4.4.0",
-    "vue-i18n": "^9.14.2",
-    "vue-router": "^4.5.0"
+    "vite-plugin-dts": "^4.4.0"
   }
 }

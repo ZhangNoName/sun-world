@@ -1,14 +1,14 @@
 import { createApp } from 'vue'
 import './style.scss'
 import App from './App.vue'
-import i18n from './i18n.ts'
-import router from './router/index.ts'
+import i18n from '@/i18n.ts'
+import router from '@/router'
 import {
   getAdressByLocation,
   getCurrentLocation,
   getWeatherByHeFeng,
   InterceptLocalStorage,
-} from '@/util/index.ts'
+} from '@/util'
 import 'element-plus/theme-chalk/src/index.scss'
 import 'qweather-icons/font/qweather-icons.css'
 

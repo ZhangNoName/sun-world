@@ -103,9 +103,6 @@ onMounted(() => {
           :value="item.id"
         />
       </ElSelect>
-      <ElTree :data="categoryList" :props="{ label: 'name' }"></ElTree>
-      <ElTree></ElTree>
-      <ElRadio></ElRadio>
     </div>
     <div ref="editorEle" class="editor-container"></div>
   </div>
