@@ -7,7 +7,8 @@ export const testApi = async () => {
   const response: any = await request.get('')
   return response
 }
-
+// 允许传递已有的 tag ID 或者 新建的 tag 对象
+export type TagInput = number | { name: string }
 /**
  * 保存博客内容
  * @param {Object} params - 请求的配置参数。
@@ -22,7 +23,8 @@ export const postSaveBlog = async (params: {
   content: string
   abstract: string
   author?: string
-  created_at?: string
+  category?: string
+  tag?: TagInput[]
 }) => {
   const response = await request.post<ResponseType<any>>('/blogs/', params)
   return response

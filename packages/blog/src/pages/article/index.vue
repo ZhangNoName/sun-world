@@ -12,18 +12,33 @@ const editorEle = ref()
 const blogWordCount = ref(0)
 const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
 const blogCategory = ref('')
-const blogTag = ref([])
+const blogTag = ref<number[]>([])
 const saveBlog = async () => {
-  ElMessage.success('保存成功')
+  if (title.value === '') return ElMessage.error('标题不能为空')
+
   const content = blogEditor.value.getContent() || ''
-  await postSaveBlog({
+  // if (content.length < 50) return ElMessage.error('内容长度不少于50')
+  const tags = blogTag.value.map((o) => {
+    const item = tagList.value.find((i) => i.id === o)
+    return item
+      ? o
+      : {
+          name: o.toString(),
+        }
+  })
+  const params = {
     title: title.value,
     content,
     abstract: content.substring(0, 100),
     author: 'test',
-    // created_at: 'test'
-  }).then((res) => {
+    category: blogCategory.value,
+    tag: tags,
+  }
+  console.log('保存博客', params)
+
+  await postSaveBlog(params).then((res) => {
     console.log('获取到返回的', res)
+    ElMessage.success('保存成功')
   })
   // blogEditor?.value.save()
 }
@@ -87,7 +102,7 @@ onMounted(() => {
         show-word-limit
         v-model="title"
       />
-      <ElSelect v-model="blogCategory" placeholder="请选择">
+      <ElSelect v-model="blogCategory" placeholder="请选择文章种类">
         <ElOption
           v-for="item in categoryList"
           :key="item.id"
@@ -95,7 +110,14 @@ onMounted(() => {
           :value="item.id"
         />
       </ElSelect>
-      <ElSelect v-model="blogTag" placeholder="请选择">
+      <ElSelect
+        v-model="blogTag"
+        placeholder="请选择标签"
+        allow-create
+        multiple
+        filterable
+        :reserve-keyword="false"
+      >
         <ElOption
           v-for="item in tagList"
           :key="item.id"
