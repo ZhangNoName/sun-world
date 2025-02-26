@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
 import { useRoute } from 'vue-router'
 import { onMounted } from 'vue'
 import { BlogDeatil, getBlogById } from '@/service/request'
 import { ElMessage } from 'element-plus'
+// @ts-ignore
 import VditorPreview from 'vditor/dist/method.min'
 
 import {
@@ -36,7 +37,6 @@ const blogInfo = ref<BlogDeatil>({
   title: '',
   update_at: '',
 })
-
 const getCatalog = (): VditorTreeItemType[] => {
   if (!blogPreview.value) return []
   const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
@@ -100,7 +100,6 @@ onMounted(() => {
       <SelfInfoCard />
       <CatalogCard :catalog="catalog" />
     </div>
-    <ElSelect></ElSelect>
 
     <div class="right">
       <div class="data-info">

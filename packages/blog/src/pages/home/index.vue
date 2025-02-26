@@ -2,11 +2,12 @@
 import BlogCard from '@/components/BlogCard/index.vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
-import { onMounted, reactive } from 'vue'
+import { inject, onMounted, reactive } from 'vue'
 import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
 import { fetchBaseData } from '@/util/request'
+import { CategoryResponse, TagResponse } from '@/service/baseRequest'
 interface Props {
   title?: string
   subTitle: string
@@ -24,16 +25,12 @@ const props: Props = defineProps({
   iconBgColor: { type: String, default: '#fff' },
 })
 const blogList = reactive<any[]>([])
-
+const categoryList = inject<CategoryResponse[]>('categoryList', [])
+const tagList = inject<TagResponse[]>('tagList', [])
 onMounted(() => {
-  fetchBaseData().then((res) => {
-    console.log('获取基本信息', res)
-  })
   // return
   getBlogByPage(1, 10)
     .then((res) => {
-      console.log('返回的数据', res)
-
       blogList.splice(
         0,
         blogList.length,
@@ -45,12 +42,13 @@ onMounted(() => {
             id: o.id.toString(),
             commentNum: o.comment_num,
             byteNum: o.byte_num,
-            tag: o.tag,
-            category: o.category,
+            tag: o.tag.map((i) => tagList.find((t) => t.id === i)?.name),
+            category: categoryList.find((c) => c.id === o.category)?.name,
             viewNum: o.view_num,
           }
         })
       )
+      console.log('最终的博客数据', blogList)
     })
     .catch((e) => {
       ElMessage.error('获取博客列表数据失败！')

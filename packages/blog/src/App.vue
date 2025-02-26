@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, provide, reactive } from 'vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ZHeader from './layout/header/index.vue'
 import ZFooter from './layout/footer/index.vue'
+import { fetchBaseData } from './util/request'
+import { CategoryResponse, TagResponse } from '@/service/baseRequest'
 // import { testApi } from './service/request'
 const theme = ref('sun-light')
 const { locale } = useI18n()
-
+const tagList = reactive<TagResponse[]>([])
+const categoryList = reactive<CategoryResponse[]>([])
 const allClass = computed(() => {
   return 'app-container ' + theme.value
 })
@@ -21,9 +24,20 @@ const updateLocalStorageValue = (e: StorageEvent) => {
     theme.value = e.newValue || 'sun-light'
   }
 }
+
+const getAllBaseData = async () => {
+  fetchBaseData().then((res) => {
+    console.log('获取基本信息', res)
+    tagList.splice(0, tagList.length, ...res.tags)
+    categoryList.splice(0, categoryList.length, ...res.categories)
+  })
+}
+provide('tagList', tagList)
+provide('categoryList', categoryList)
 onMounted(() => {
   // getAdressByLocation()
   // testApi()
+  getAllBaseData()
   window.addEventListener('localestorageChange' as any, updateLocalStorageValue)
   console.log('当前环境下的变量', import.meta.env)
 })

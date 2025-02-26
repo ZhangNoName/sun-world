@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 import { BlogEditorClass } from '@/blogEditor'
 import { ElMessage, ElInput, ElSelect, ElOption, ElTree } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
@@ -43,26 +43,8 @@ const saveBlog = async () => {
   // blogEditor?.value.save()
 }
 
-const categoryList = ref([
-  {
-    id: 1,
-    name: '分类1',
-  },
-  {
-    id: 2,
-    name: '分类2',
-  },
-])
-const tagList = ref([
-  {
-    id: 1,
-    name: '标签1',
-  },
-  {
-    id: 2,
-    name: '标签2',
-  },
-])
+const categoryList = inject('categoryList')
+const tagList = inject('tagList')
 
 const title = ref('')
 

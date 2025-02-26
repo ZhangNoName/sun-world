@@ -1,11 +1,11 @@
 import { request } from './http'
 
-interface CategoryResponse {
+export interface CategoryResponse {
   id: string
   name: string
 }
 
-interface TagResponse {
+export interface TagResponse {
   id: string
   name: string
 }
