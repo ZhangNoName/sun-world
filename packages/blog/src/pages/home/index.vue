@@ -6,6 +6,7 @@ import { onMounted, reactive } from 'vue'
 import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
+import { fetchBaseData } from '@/util/request'
 interface Props {
   title?: string
   subTitle: string
@@ -25,6 +26,9 @@ const props: Props = defineProps({
 const blogList = reactive<any[]>([])
 
 onMounted(() => {
+  fetchBaseData().then((res) => {
+    console.log('获取基本信息', res)
+  })
   // return
   getBlogByPage(1, 10)
     .then((res) => {
