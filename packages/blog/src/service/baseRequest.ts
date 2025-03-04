@@ -10,6 +10,20 @@ export interface TagResponse {
   name: string
 }
 
+export interface StatsResponse {
+  blog_count: number
+  category_count: number
+  tag_count: number
+  total_view_num: number
+}
+/**
+ * 获取基本数据
+ * @returns {Promise<StatsResponse[]>}
+ */
+export const getStats = async (): Promise<StatsResponse> => {
+  const response = await request.get<StatsResponse>('/base/')
+  return response
+}
 /**
  * 获取博客分类列表
  * @returns {Promise<CategoryResponse[]>}

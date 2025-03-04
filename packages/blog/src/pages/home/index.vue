@@ -2,12 +2,17 @@
 import BlogCard from '@/components/BlogCard/index.vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
-import { inject, onMounted, reactive } from 'vue'
+import { inject, onMounted, reactive, ref } from 'vue'
 import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
 import { fetchBaseData } from '@/util/request'
-import { CategoryResponse, TagResponse } from '@/service/baseRequest'
+import {
+  CategoryResponse,
+  getStats,
+  StatsResponse,
+  TagResponse,
+} from '@/service/baseRequest'
 interface Props {
   title?: string
   subTitle: string
@@ -27,7 +32,13 @@ const props: Props = defineProps({
 const blogList = reactive<any[]>([])
 const categoryList = inject<CategoryResponse[]>('categoryList', [])
 const tagList = inject<TagResponse[]>('tagList', [])
-onMounted(() => {
+const stats = ref<StatsResponse>({
+  blog_count: 0,
+  category_count: 0,
+  tag_count: 0,
+  total_view_num: 0,
+})
+onMounted(async () => {
   // return
   getBlogByPage(1, 10)
     .then((res) => {
@@ -55,20 +66,17 @@ onMounted(() => {
       console.log('获取博客列表数据失败', e)
     })
     .finally(() => {})
-  // getBaseInfo()
-  //   .then((res) => {
-  //     console.log('获取基本信息', res)
-  //   })
-  //   .catch((e) => {
-  //     ElMessage.error('获取基本信息失败！')
-  //     console.log('获取基本信息失败', e)
-  //   })
+  // 获取统计数据
+  getStats().then((res) => {
+    stats.value = res
+    console.log('获取到的统计数据', stats.value)
+  })
 })
 </script>
 <template>
   <div class="home-page">
     <div class="left">
-      <SelfInfoCard />
+      <SelfInfoCard v-bind="stats" />
       <WeatherCard />
     </div>
     <div class="right">

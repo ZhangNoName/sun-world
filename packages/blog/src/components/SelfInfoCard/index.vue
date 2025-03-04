@@ -1,23 +1,28 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from 'vue'
 import {
   WeChatOutLined,
   QQOutlined,
   GithubOutlined,
 } from '@sun-world/icons-vue'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
+import { StatsResponse } from '@/service/baseRequest'
 
-const prop = defineProps()
-const blogNum = ref(0)
-const seriesNum = ref(0)
-const tagNum = ref(0)
-const commentNum = ref(0)
-const viewsNum = ref(0)
+const prop = defineProps<StatsResponse>()
+const { blog_count, category_count, tag_count, total_view_num } = toRefs(prop)
 
 const weatherIcon = computed(() => {
   console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
+// // 监听 props 的变化
+// watch(
+//   () => prop,
+//   (newVal) => {
+//     console.log('子组件监听到的 stats 更新:', newVal)
+//   },
+//   { deep: true, immediate: true } // 确保初始就监听，且深度监听对象
+// )
 </script>
 
 <template>
@@ -29,19 +34,19 @@ const weatherIcon = computed(() => {
     <div class="card-list">
       <div class="card-item">
         <span>{{ $t('info.paper') }}</span>
-        <span>{{ blogNum }}</span>
+        <span>{{ blog_count }}</span>
       </div>
       <div class="card-item">
         <span>{{ $t('info.classification') }}</span>
-        <span>{{ seriesNum }}</span>
+        <span>{{ category_count }}</span>
       </div>
       <div class="card-item">
         <span>{{ $t('info.tag') }}</span>
-        <span>{{ tagNum }}</span>
+        <span>{{ tag_count }}</span>
       </div>
       <div class="card-item">
         <span>{{ $t('info.views') }}</span>
-        <span>{{ viewsNum }}</span>
+        <span>{{ total_view_num }}</span>
       </div>
     </div>
     <div class="icon-list">
