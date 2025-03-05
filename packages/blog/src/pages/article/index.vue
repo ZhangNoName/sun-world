@@ -4,6 +4,7 @@ import { BlogEditorClass } from '@/blogEditor'
 import { ElMessage, ElInput, ElSelect, ElOption, ElTree } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
 import { getBlogById, postSaveBlog } from '@/service/request'
+import { CategoryResponse, TagResponse } from '@/service/baseRequest'
 const prop = defineProps({
   id: { type: String, default: '' },
 })
@@ -34,17 +35,17 @@ const saveBlog = async () => {
     category: blogCategory.value,
     tag: tags,
   }
-  console.log('保存博客', params)
+  // console.log('保存博客', params)
 
   await postSaveBlog(params).then((res) => {
-    console.log('获取到返回的', res)
+    // console.log('获取到返回的', res)
     ElMessage.success('保存成功')
   })
   // blogEditor?.value.save()
 }
 
-const categoryList = inject('categoryList')
-const tagList = inject('tagList')
+const categoryList = inject<CategoryResponse[]>('categoryList', [])
+const tagList = inject<TagResponse[]>('tagList', [])
 
 const title = ref('')
 
@@ -61,7 +62,7 @@ onMounted(() => {
   })
   if (prop.id) {
     getBlogById(prop.id).then((res: any) => {
-      console.log('获取到的博客内容', res)
+      // console.log('获取到的博客内容', res)
     })
   }
 })

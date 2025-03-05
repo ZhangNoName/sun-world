@@ -150,9 +150,9 @@ const requestHandler = <T>(
   return new Promise<T>((resolve, reject) => {
     response
       .then((res) => {
-        console.log('当前响应数据', res)
+        // console.log('当前响应数据', res)
         const data = res.data
-        console.log('当前数据', data)
+        // console.log('当前数据', data)
 
         if (data.code !== 1) {
           // 特定状态码处理特定的需求

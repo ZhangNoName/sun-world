@@ -27,7 +27,7 @@ const updateLocalStorageValue = (e: StorageEvent) => {
 
 const getAllBaseData = async () => {
   fetchBaseData().then((res) => {
-    console.log('获取基本信息', res)
+    // console.log('获取基本信息', res)
     tagList.splice(0, tagList.length, ...res.tags)
     categoryList.splice(0, categoryList.length, ...res.categories)
   })

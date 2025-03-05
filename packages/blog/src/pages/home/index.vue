@@ -53,23 +53,24 @@ onMounted(async () => {
             id: o.id.toString(),
             commentNum: o.comment_num,
             byteNum: o.byte_num,
-            tag: o.tag.map((i) => tagList.find((t) => t.id === i)?.name),
+            tags: o.tag.map((i) => tagList.find((t) => t.id === i)?.name),
             category: categoryList.find((c) => c.id === o.category)?.name,
             viewNum: o.view_num,
+            publishTime: formatDate(o.created_at),
           }
         })
       )
-      console.log('最终的博客数据', blogList)
+      // console.log('最终的博客数据', blogList)
     })
     .catch((e) => {
       ElMessage.error('获取博客列表数据失败！')
-      console.log('获取博客列表数据失败', e)
+      console.error('获取博客列表数据失败', e)
     })
     .finally(() => {})
   // 获取统计数据
   getStats().then((res) => {
     stats.value = res
-    console.log('获取到的统计数据', stats.value)
+    // console.log('获取到的统计数据', stats.value)
   })
 })
 </script>
