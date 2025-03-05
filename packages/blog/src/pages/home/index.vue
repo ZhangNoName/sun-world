@@ -32,12 +32,7 @@ const props: Props = defineProps({
 const blogList = reactive<any[]>([])
 const categoryList = inject<CategoryResponse[]>('categoryList', [])
 const tagList = inject<TagResponse[]>('tagList', [])
-const stats = ref<StatsResponse>({
-  blog_count: 0,
-  category_count: 0,
-  tag_count: 0,
-  total_view_num: 0,
-})
+
 onMounted(async () => {
   // return
   getBlogByPage(1, 10)
@@ -68,16 +63,12 @@ onMounted(async () => {
     })
     .finally(() => {})
   // 获取统计数据
-  getStats().then((res) => {
-    stats.value = res
-    // console.log('获取到的统计数据', stats.value)
-  })
 })
 </script>
 <template>
   <div class="home-page">
     <div class="left">
-      <SelfInfoCard v-bind="stats" />
+      <SelfInfoCard />
       <WeatherCard />
     </div>
     <div class="right">

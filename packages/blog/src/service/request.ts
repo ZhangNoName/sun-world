@@ -8,7 +8,7 @@ export const testApi = async () => {
   return response
 }
 // 允许传递已有的 tag ID 或者 新建的 tag 对象
-export type TagInput = number | { name: string }
+export type TagInput = string | { name: string }
 /**
  * 保存博客内容
  * @param {Object} params - 请求的配置参数。

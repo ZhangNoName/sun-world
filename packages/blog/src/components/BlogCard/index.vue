@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref, watchEffect } from 'vue'
 import {
   Calendar,
   WordCount,
@@ -10,9 +10,8 @@ import {
 import Tag from '../Tag/index.vue'
 import { BlogCardProps } from '@/type'
 import { useRouter } from 'vue-router'
-const props = withDefaults(defineProps<BlogCardProps>(), {
-  tags: [] as string[],
-})
+import { StatsResponse } from '@/service/baseRequest'
+const props = defineProps<BlogCardProps>()
 
 const {
   title,

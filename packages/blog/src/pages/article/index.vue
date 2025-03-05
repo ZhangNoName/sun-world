@@ -13,14 +13,14 @@ const editorEle = ref()
 const blogWordCount = ref(0)
 const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
 const blogCategory = ref('')
-const blogTag = ref<number[]>([])
+const blogTag = ref<string[]>([])
 const saveBlog = async () => {
   if (title.value === '') return ElMessage.error('标题不能为空')
 
   const content = blogEditor.value.getContent() || ''
   // if (content.length < 50) return ElMessage.error('内容长度不少于50')
   const tags = blogTag.value.map((o) => {
-    const item = tagList.value.find((i) => i.id === o)
+    const item = tagList.find((i) => i.id == o)
     return item
       ? o
       : {

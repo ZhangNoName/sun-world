@@ -1,5 +1,15 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  Ref,
+  ref,
+  toRefs,
+  watch,
+  watchEffect,
+} from 'vue'
 import {
   WeChatOutLined,
   QQOutlined,
@@ -7,14 +17,17 @@ import {
 } from '@sun-world/icons-vue'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
 import { StatsResponse } from '@/service/baseRequest'
+import { DEFAULT_STATS } from '@/util/data'
 
-const prop = defineProps<StatsResponse>()
-const { blog_count, category_count, tag_count, total_view_num } = toRefs(prop)
+const prop = defineProps()
+const stats = inject<StatsResponse>('stats', DEFAULT_STATS)!
+const { blog_count, category_count, tag_count, total_view_num } = toRefs(stats)
 
 const weatherIcon = computed(() => {
   console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
+
 // // 监听 props 的变化
 // watch(
 //   () => prop,

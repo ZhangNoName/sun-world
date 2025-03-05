@@ -6,12 +6,19 @@ import { useI18n } from 'vue-i18n'
 import ZHeader from './layout/header/index.vue'
 import ZFooter from './layout/footer/index.vue'
 import { fetchBaseData } from './util/request'
-import { CategoryResponse, TagResponse } from '@/service/baseRequest'
+import {
+  CategoryResponse,
+  getStats,
+  StatsResponse,
+  TagResponse,
+} from '@/service/baseRequest'
+import { DEFAULT_STATS } from './util/data'
 // import { testApi } from './service/request'
 const theme = ref('sun-light')
 const { locale } = useI18n()
 const tagList = reactive<TagResponse[]>([])
 const categoryList = reactive<CategoryResponse[]>([])
+const stats = reactive<StatsResponse>(DEFAULT_STATS)
 const allClass = computed(() => {
   return 'app-container ' + theme.value
 })
@@ -31,9 +38,14 @@ const getAllBaseData = async () => {
     tagList.splice(0, tagList.length, ...res.tags)
     categoryList.splice(0, categoryList.length, ...res.categories)
   })
+  getStats().then((res) => {
+    Object.assign(stats, res)
+    // console.log('获取到的统计数据', stats.value)
+  })
 }
 provide('tagList', tagList)
 provide('categoryList', categoryList)
+provide('stats', stats)
 onMounted(() => {
   // getAdressByLocation()
   // testApi()
