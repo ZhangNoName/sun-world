@@ -5,7 +5,7 @@ import Home from './charts/index.vue'
 import ManageAigc from './aigc/index.vue'
 import { ref } from 'vue'
 type MenuIndex = 'total' | 'blog' | 'aigc'
-const activeMenu = ref<MenuIndex>('total')
+const activeMenu = ref<MenuIndex>('blog')
 
 const handleMenuSelect = (index: string) => {
   activeMenu.value = index as MenuIndex
