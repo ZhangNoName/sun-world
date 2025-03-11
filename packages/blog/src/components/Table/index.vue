@@ -1,36 +1,25 @@
 <script lang="ts" setup name="SunTable">
-import { ref, defineProps, watch } from 'vue'
-import type { ElTable, TableColumnCtx } from 'element-plus'
+import { ref, defineProps, watch, computed } from 'vue'
+import {
+  ElButton,
+  ElPagination,
+  ElTableColumn,
+  ElTable,
+  TableColumnCtx,
+} from 'element-plus'
+import {
+  DEFAULT_PAGE_CONFIG,
+  DEFAULT_TABLE_OPTIONS,
+  SunTableProps,
+  CLOUMN_WIDTH,
+} from './type'
 
-interface TableColumn {
-  label: string
-  prop: string
-  width?: string
-  align?: 'left' | 'center' | 'right'
-  sortable?: boolean
-}
-
-interface TableAction {
-  label: string
-  type?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
-  size?: 'large' | 'medium' | 'small' | 'mini'
-  handler: (row: any) => void
-}
-
-const props = defineProps<{
-  columns: TableColumn[]
-  data: Record<string, any>[]
-  loading?: boolean
-  tableConfig?: Partial<InstanceType<typeof ElTable>>
-  tableOptions?: {
-    showSelection?: boolean
-    showPagination?: boolean
-    actions?: TableAction[]
-    pageSize?: number
-    currentPage?: number
-    total?: number
-  }
-}>()
+const props = withDefaults(defineProps<SunTableProps>(), {
+  loading: false,
+  tableConfig: () => ({}),
+  tableOptions: () => ({ ...DEFAULT_TABLE_OPTIONS }), // 复制默认值，避免被修改
+  pageConfig: () => ({ ...DEFAULT_PAGE_CONFIG }),
+})
 
 const loading = ref(props.loading || false)
 const selectedRows = ref<any[]>([])
@@ -41,13 +30,15 @@ const handleSelectionChange = (selection: any[]) => {
 
 // 分页配置
 const paginationConfig = ref({
+  ...props.pageConfig,
   pageSize: props.tableOptions?.pageSize || 10,
   currentPage: props.tableOptions?.currentPage || 1,
   total: props.tableOptions?.total || 0,
-  layout: 'total, sizes, prev, pager, next, jumper',
   pageSizes: [10, 20, 50, 100],
 })
-
+const indexMethod = (index: number) => {
+  return index + 1
+}
 const handleSizeChange = (size: number) => {
   paginationConfig.value.pageSize = size
   emit('update:pageSize', size)
@@ -57,7 +48,12 @@ const handleCurrentChange = (page: number) => {
   paginationConfig.value.currentPage = page
   emit('update:currentPage', page)
 }
-
+const tableOptions = computed(() => {
+  return {
+    ...DEFAULT_TABLE_OPTIONS,
+    ...props.tableOptions,
+  }
+})
 // 监听父组件传入的分页配置
 watch(
   () => props.tableOptions,
@@ -76,72 +72,93 @@ watch(
 </script>
 
 <template>
-  <div class="custom-table">
+  <div class="sun-table">
     <!-- 表格 -->
-    <el-table
+    <ElTable
       v-bind="tableConfig"
       :data="data"
       :loading="loading"
       @selection-change="handleSelectionChange"
     >
       <!-- 多选框列（可选） -->
-      <el-table-column
+      <ElTableColumn
         v-if="tableOptions?.showSelection"
         type="selection"
-        width="50"
+        class-name="sun-table-select"
+        :width="CLOUMN_WIDTH['selection']"
+        align="center"
+      />
+      <!-- 序号框列（可选） -->
+      <ElTableColumn
+        v-if="tableOptions?.showIndex"
+        type="index"
+        label="序号"
+        class-name="sun-table-index"
+        :width="CLOUMN_WIDTH['index']"
+        align="center"
+        :index="indexMethod"
       />
 
-      <!-- 动态渲染列 -->
-      <el-table-column
-        v-for="col in columns"
-        :key="col.prop"
-        :prop="col.prop"
-        :label="col.label"
-        :width="col.width"
-        :align="col.align || 'left'"
-        :sortable="col.sortable || false"
-      >
-        <template #default="scope">
-          <slot :name="col.prop" :row="scope.row" :index="scope.$index">
-            {{ scope.row[col.prop] }}
-          </slot>
-        </template>
-      </el-table-column>
+      <!-- 动态列 -->
+      <ElTableColumn
+        v-for="column in columns"
+        :key="column.prop"
+        v-bind="column"
+      ></ElTableColumn>
 
       <!-- 操作列（可选） -->
-      <el-table-column
+      <ElTableColumn
         v-if="tableOptions?.actions?.length"
         label="操作"
         align="center"
         fixed="right"
-        width="150"
       >
         <template #default="scope">
-          <el-button
+          <ElButton
             v-for="action in tableOptions.actions"
             :key="action.label"
             :type="action.type || 'primary'"
-            :size="action.size || 'small'"
             @click="() => action.handler(scope.row)"
           >
             {{ action.label }}
-          </el-button>
+          </ElButton>
         </template>
-      </el-table-column>
-    </el-table>
+      </ElTableColumn>
+    </ElTable>
 
     <!-- 分页组件（可选） -->
-    <el-pagination
-      v-if="tableOptions?.showPagination"
-      v-bind="paginationConfig"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    <div class="sun-table-pagination">
+      <span class="pagination-total">共 {{ tableOptions.total }} 条数据</span>
+      <ElPagination
+        v-if="tableOptions.showPagination"
+        v-bind="paginationConfig"
+        :total="50"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      ></ElPagination>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.custom-table {
+.sun-table {
   width: 100%;
+  /* :deep(.sun-table-index) {
+    width: 100px;
+    background-color: #fff;
+  }
+  :deep(.sun-table-select) {
+    width: 15rem;
+  } */
+  .sun-table-pagination {
+    width: 100%;
+    height: 8rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
 }
+/* :deep(.sun-table-index) {
+  width: 100px;
+} */
 </style>

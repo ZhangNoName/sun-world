@@ -11,6 +11,8 @@ import {
   ElForm,
   ElFormItem,
   FormProps,
+  ElOption,
+  ElCheckbox,
 } from 'element-plus'
 
 const props = defineProps<{

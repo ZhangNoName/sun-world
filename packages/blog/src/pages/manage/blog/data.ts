@@ -1,6 +1,6 @@
 import { FormItem } from '@/components/Form/type'
 
-export const blogSearchForm: FormItem[] = [
+export const BlogSearchFormData: FormItem[] = [
   {
     label: '标题',
     type: 'input',
@@ -35,4 +35,10 @@ export const blogSearchForm: FormItem[] = [
       clearable: true,
     },
   },
+]
+export const BlogTableColumns = [
+  { label: 'ID', prop: 'index' },
+  { label: '名称', prop: 'name' },
+  { label: '种类', prop: 'address' },
+  { label: '创建时间', prop: 'date', sortable: true },
 ]

@@ -10,7 +10,8 @@ import {
   ElDatePicker,
 } from 'element-plus'
 import SunForm from '@/components/Form/index.vue'
-import { blogSearchForm } from './data'
+import SunTable from '@/components/Table/index.vue'
+import { BlogTableColumns, BlogSearchFormData } from './data'
 import { ref } from 'vue'
 // 定义表单类型
 interface BlogSearchForm {
@@ -78,15 +79,19 @@ const onReset = () => {
 <template>
   <div class="manage-blog">
     <div class="top">
-      <SunForm ref="formRef" :list="blogSearchForm" :initialValues="form" />
+      <SunForm ref="formRef" :list="BlogSearchFormData" :initialValues="form" />
     </div>
     <div class="mid"></div>
     <div class="bootom">
-      <ElTable :data="tableData" style="width: 100%">
-        <ElTableColumn prop="date" label="Date" width="180" />
-        <ElTableColumn prop="name" label="Date" width="180" />
-        <ElTableColumn prop="address" label="Date" width="180" />
-      </ElTable>
+      <SunTable
+        :columns="BlogTableColumns"
+        :data="tableData"
+        :tableOptions="{
+          showIndex: true,
+          showSelection: true,
+        }"
+        style="width: 100%"
+      ></SunTable>
     </div>
   </div>
 </template>
