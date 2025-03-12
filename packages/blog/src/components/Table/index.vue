@@ -1,5 +1,5 @@
 <script lang="ts" setup name="SunTable">
-import { ref, defineProps, watch, computed } from 'vue'
+import { ref, defineProps, watch, computed, watchEffect } from 'vue'
 import {
   ElButton,
   ElPagination,
@@ -13,41 +13,35 @@ import {
   SunTableProps,
   CLOUMN_WIDTH,
 } from './type'
+import { getDataByPage } from '@/service/manageRequest'
 
 const props = withDefaults(defineProps<SunTableProps>(), {
   loading: false,
   tableConfig: () => ({}),
   tableOptions: () => ({ ...DEFAULT_TABLE_OPTIONS }), // 复制默认值，避免被修改
   pageConfig: () => ({ ...DEFAULT_PAGE_CONFIG }),
+  url: '',
 })
 
 const loading = ref(props.loading || false)
 const selectedRows = ref<any[]>([])
+const tableData = ref<any[]>([])
 
 const handleSelectionChange = (selection: any[]) => {
   selectedRows.value = selection
 }
-
 // 分页配置
 const paginationConfig = ref({
   ...props.pageConfig,
-  pageSize: props.tableOptions?.pageSize || 10,
-  currentPage: props.tableOptions?.currentPage || 1,
-  total: props.tableOptions?.total || 0,
+  pageSize: 10,
+  currentPage: 1,
+  total: 0,
   pageSizes: [10, 20, 50, 100],
 })
 const indexMethod = (index: number) => {
   return index + 1
 }
-const handleSizeChange = (size: number) => {
-  paginationConfig.value.pageSize = size
-  emit('update:pageSize', size)
-}
 
-const handleCurrentChange = (page: number) => {
-  paginationConfig.value.currentPage = page
-  emit('update:currentPage', page)
-}
 const tableOptions = computed(() => {
   return {
     ...DEFAULT_TABLE_OPTIONS,
@@ -69,6 +63,17 @@ watch(
   },
   { deep: true }
 )
+
+watchEffect(() => {
+  console.log('出发变化')
+  getDataByPage(props.url, {
+    page_size: paginationConfig.value.pageSize,
+    page: paginationConfig.value.currentPage,
+  }).then((res) => {
+    console.log('表格数据更新', res)
+    tableData.value = res.list
+  })
+})
 </script>
 
 <template>
@@ -76,7 +81,7 @@ watch(
     <!-- 表格 -->
     <ElTable
       v-bind="tableConfig"
-      :data="data"
+      :data="tableData"
       :loading="loading"
       @selection-change="handleSelectionChange"
     >
@@ -132,9 +137,8 @@ watch(
       <ElPagination
         v-if="tableOptions.showPagination"
         v-bind="paginationConfig"
-        :total="50"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        v-model:page-size="paginationConfig.pageSize"
+        v-model:current-page="paginationConfig.currentPage"
       ></ElPagination>
     </div>
   </div>
@@ -156,6 +160,7 @@ watch(
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    gap: 1.5rem;
   }
 }
 /* :deep(.sun-table-index) {

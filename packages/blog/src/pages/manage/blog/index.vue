@@ -87,9 +87,10 @@ const onReset = () => {
         :columns="BlogTableColumns"
         :data="tableData"
         :tableOptions="{
-          showIndex: true,
+          showIndex: false,
           showSelection: true,
         }"
+        url="/blogs"
         style="width: 100%"
       ></SunTable>
     </div>

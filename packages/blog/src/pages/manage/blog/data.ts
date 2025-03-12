@@ -37,8 +37,12 @@ export const BlogSearchFormData: FormItem[] = [
   },
 ]
 export const BlogTableColumns = [
-  { label: 'ID', prop: 'index' },
-  { label: '名称', prop: 'name' },
-  { label: '种类', prop: 'address' },
-  { label: '创建时间', prop: 'date', sortable: true },
+  { label: 'ID', prop: 'id' },
+  { label: '标题', prop: 'title' },
+  { label: '种类', prop: 'category' },
+  { label: '标签', prop: 'tag' },
+  { label: '字符数', prop: 'byte_num' },
+  { label: '评论数', prop: 'comment_num' },
+  { label: '浏览量', prop: 'view_num' },
+  { label: '创建时间', prop: 'updated_at', sortable: true },
 ]

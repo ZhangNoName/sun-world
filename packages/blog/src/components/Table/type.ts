@@ -22,6 +22,7 @@ export interface SunTableProps {
   tableConfig?: Partial<InstanceType<typeof ElTable>>
   tableOptions?: Partial<typeof DEFAULT_TABLE_OPTIONS> // 允许部分覆盖默认值
   pageConfig?: Partial<InstanceType<typeof ElPagination>> // 分页配置
+  url: string
 }
 
 // 默认的表格配置
