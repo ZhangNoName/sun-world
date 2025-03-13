@@ -12,14 +12,16 @@ import {
 import SunForm from '@/components/Form/index.vue'
 import SunTable from '@/components/Table/index.vue'
 import { BlogTableColumns, BlogSearchFormData } from './data'
-import { ref } from 'vue'
+import { inject, onMounted, ref } from 'vue'
+import { CategoryResponse, TagResponse } from '@/service/baseRequest'
 // 定义表单类型
 interface BlogSearchForm {
   keyword: string
   category: string | undefined
   publishDate: string | undefined
 }
-
+const categoryList = inject<CategoryResponse[]>('categoryList', [])
+const tagList = inject<TagResponse[]>('tagList', [])
 // 表单数据
 const form = ref<BlogSearchForm>({
   keyword: '',
@@ -27,28 +29,14 @@ const form = ref<BlogSearchForm>({
   publishDate: undefined,
 })
 
-const tableData = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-]
+const categoryFormatter = (row, column, v: string, index) => {
+  return categoryList.find((c) => c.id === v)?.name || ''
+}
+const tagFormatter = (row, column, v: string[], index) => {
+  return (
+    v.map((id) => categoryList.find((c) => c.id === id)?.name).join(',') || ''
+  )
+}
 
 // 表单校验规则
 const rules = {
@@ -74,6 +62,10 @@ const onSubmit = () => {
 const onReset = () => {
   formRef.value?.resetFields()
 }
+onMounted(() => {
+  BlogTableColumns[2].formatter = categoryFormatter
+  BlogTableColumns[3].formatter = tagFormatter
+})
 </script>
 
 <template>
@@ -85,7 +77,6 @@ const onReset = () => {
     <div class="bootom">
       <SunTable
         :columns="BlogTableColumns"
-        :data="tableData"
         :tableOptions="{
           showIndex: false,
           showSelection: true,

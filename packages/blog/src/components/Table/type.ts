@@ -1,7 +1,7 @@
 import { ElPagination, ElTable, TableColumnCtx } from 'element-plus'
 
 // 表格列定义
-export interface TableColumn<T = any> extends Partial<TableColumnCtx<T>> {
+export interface SunTableColumn<T = any> extends Partial<TableColumnCtx<T>> {
   prop: string & keyof T // 确保 prop 既是 keyof T，又是 string 类型
   label: string
 }
@@ -16,8 +16,8 @@ export interface TableAction {
 
 // 表格 Props 定义
 export interface SunTableProps {
-  columns: TableColumn[]
-  data: Record<string, any>[]
+  columns: SunTableColumn[]
+  data?: Record<string, any>[]
   loading?: boolean
   tableConfig?: Partial<InstanceType<typeof ElTable>>
   tableOptions?: Partial<typeof DEFAULT_TABLE_OPTIONS> // 允许部分覆盖默认值
