@@ -1,5 +1,6 @@
 import { ElMessage } from 'element-plus'
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
+import { useAuth } from '@/hooks/auth/auth'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -18,14 +19,20 @@ const service = axios.create({
 
 //统一请求拦截 可配置自定义headers 例如 language、token等
 service.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (!token) {
-      token = localStorage.getItem('token')
+  async (config: InternalAxiosRequestConfig) => {
+    const auth = useAuth()
+
+    // 判断 accessToken 是否过期
+    const now = Date.now() / 1000
+    if (auth.accessTokenExpire.value && now >= auth.accessTokenExpire.value) {
+      // 尝试刷新
+      const success = await auth.refreshTokens()
+      if (!success) throw new Error('刷新 token 失败')
     }
     //配置自定义请求头
     config.headers = {
       'Content-Type': 'application/json',
-      Authorization: token,
+      Authorization: `Bearer ${auth.accessToken.value}`,
       ...config.headers,
     } as any
     config.withCredentials = false
@@ -52,7 +59,8 @@ service.interceptors.response.use(
     // 对响应数据做点什么
     return response
   },
-  function (error) {
+  async (error) => {
+    const auth = useAuth()
     // 对响应错误做点什么
     if (error && error.response) {
       switch (error.response.status) {
@@ -64,10 +72,13 @@ service.interceptors.response.use(
           ElMessage.error('错误请求')
           break
         case 401:
-          ElMessage.warning('登录超时，请重新登录')
-
-          localStorage.removeItem('token')
-          token = null
+          // token 失效，尝试刷新
+          const success = await auth.refreshTokens()
+          if (success) {
+            return service(error.config) // 重新请求
+          } else {
+            auth.logout()
+          }
           break
         case 403:
           ElMessage.info('拒绝访问')

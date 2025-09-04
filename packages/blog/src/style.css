@@ -25,7 +25,7 @@ h1 {
   margin: 0;
 }
 
-// 设置根元素的font-size，1rem = 10px
+/* 设置根元素的font-size，1rem = 10px */
 html {
   font-size: 10px;
 }
@@ -36,16 +36,15 @@ div {
   /* max-width: 1280px; */
   margin: 0;
   padding: 0;
-  // text-align: left;
+  /* text-align: left; */
   height: 100vh;
   width: 100vw;
   font-size: 1.6rem;
 }
 
-// 定义主题颜色
+/*  定义主题颜色 */
 
 .sun-light {
-  // 字体
   --font-color: #606266;
   --font-color-active: #409eff;
   --font-color-hover: #909399;
@@ -55,7 +54,7 @@ div {
   --font-color-3: #a8abb2;
   --font-color-4: #c0c4cc;
 
-  // 边框
+  /* 边框 */
   --border-color: #dcdfe6;
   --border-color-hover: #ebeef5;
   --border-color-active: #d4d7de;
@@ -66,7 +65,7 @@ div {
   --border-color-3: #ebeef5;
   --border-color-4: #f2f6fc;
 
-  // 填充
+  /* 填充 */
   --fill-color: #f0f2f5;
   --fill-color-0: #e7f8ff;
   --fill-color-1: #d9ecff;
@@ -76,7 +75,7 @@ div {
   --fill-color-5: #337ecc;
   --fill-color-6: #409eff;
 
-  // 背景
+  /* 背景 */
   --bg-color: #ffffff;
   --bg-color-0: #e7f8ff;
   --bg-color-1: #79bbff;
@@ -85,11 +84,11 @@ div {
   --bg-color-active: #409eff;
   --btn-bg-color: wheat;
 
-  //图标属性
+  /* 图标属性 */
   --icon-bg-color: transparent;
   --icon-bg-hover-color: yellow;
 
-  // shdow
+  /* shdow */
   --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
   --box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
 
@@ -100,7 +99,7 @@ div {
   }
 }
 .sun-dark {
-  // 字体
+  /* 字体 */
   --font-color: #cfd3dc;
   --font-color-active: #409eff;
   --font-color-hover: #a3a6ad;
@@ -109,7 +108,7 @@ div {
   --font-color-3: #8d9095;
   --font-color-4: #6c6e72;
 
-  // 边框
+  /* 边框 */
   --border-color: #4c4d4f;
   --border-color-hover: #636466;
   --border-color-active: #363637;
@@ -119,7 +118,7 @@ div {
   --border-color-3: #363637;
   --border-color-4: #2b2b2c;
 
-  // 填充
+  /* 填充 */
   --fill-color: #2a598a;
   --fill-color-0: #18222c;
   --fill-color-1: #1d3043;
@@ -129,16 +128,16 @@ div {
   --fill-color-5: #66b1ff;
   --fill-color-6: #409eff;
 
-  // 背景
+  /* 背景 */
   --bg-color: #141414;
   --bg-color-0: #0a0a0a;
   --bg-color-1: #141414;
   --bg-color-2: #1d1e1f;
-  //图标属性
+  /* 图标属性 */
   --icon-bg-color: white;
   --icon-bg-hover-color: yellow;
 
-  // shadow
+  /* shadow */
   --box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
   --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
   hr {
@@ -172,7 +171,7 @@ div {
   }
 }
 
-// /* 设置滚动条滑块在悬停时的样式 */
-// ::-webkit-scrollbar-thumb:hover {
-//   background: #555;
-// }
+/* 设置滚动条滑块在悬停时的样式 */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
