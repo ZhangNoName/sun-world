@@ -90,7 +90,7 @@ const showBlog = () => {
   gap: 0.5rem;
   .header {
     font-size: 1.1rem;
-    height: 4rem;
+
     color: var(--font-color-2);
     display: flex;
     justify-content: flex-start;
@@ -108,8 +108,8 @@ const showBlog = () => {
       } */
   }
   .title {
-    height: 3rem;
-    line-height: 3rem;
+    height: fit-content;
+
     font-size: 2.8rem;
     /* font-weight: 600; */
     text-align: left;

@@ -63,9 +63,8 @@ onUnmounted(() => {
 
 <template>
   <div :class="allClass">
-    <div class="header">
-      <ZHeader></ZHeader>
-    </div>
+    <ZHeader></ZHeader>
+
     <div class="content">
       <RouterView />
     </div>
@@ -86,6 +85,7 @@ onUnmounted(() => {
 </style>
 <style scoped>
 .app-container {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: auto;
