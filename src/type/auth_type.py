@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
@@ -16,6 +17,8 @@ class TokenModel(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    access_token_expire: datetime
+    refresh_token_expire: datetime
 
 class ResetPasswordRequest(BaseModel):
     email: EmailStr

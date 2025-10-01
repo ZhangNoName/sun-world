@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Header, status
 
@@ -39,15 +40,14 @@ async def register(user: RegisterModel, auth:AuthManager=Depends(get_auth_manage
 
 @router.post("/login", response_model=ResponseModel)
 async def login(form_data: LoginModel, auth:AuthManager=Depends(get_auth_manager)):
-    user = auth.authenticate_user(
+    tokens = auth.authenticate_user(
         form_data.username,
         form_data.password
     )
-    if not user:
+    if not tokens:
         return ResponseModel(code=0, data=None, message="用户名或密码错误")
-    access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
-    return ResponseModel(code=1, data={"token": access_token}, message="登录成功")
+    
+    return ResponseModel[TokenModel](code=1, data=tokens, message="登录成功")
 @router.post("/reset_password/request")
 async def request_reset_password(req: ResetPasswordRequest,  auth:AuthManager=Depends(get_auth_manager)):
     # TODO: 发送验证码或邮件

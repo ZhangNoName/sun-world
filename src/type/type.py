@@ -1,7 +1,9 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Generic, Optional, TypeVar
 from pydantic import BaseModel, Field
+from pydantic.generics import GenericModel
 
-class ResponseModel(BaseModel):
+T = TypeVar('T')
+class ResponseModel(BaseModel, Generic[T]):
     """
     统一的API接口返回数据模型
 
@@ -15,7 +17,7 @@ class ResponseModel(BaseModel):
         message (str): 描述信息，用于提供更详细的错误信息或成功提示。
     """
     code: int
-    data: Optional[Union[Dict[str, Any], List[Any], str, bool]] = None
+    data: Optional[T] = None
     message: str
 
 # 定义返回类型 BlogStats

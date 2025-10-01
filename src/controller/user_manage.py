@@ -12,7 +12,7 @@ class UserManager:
     table_name = "users"
     all_attr = [
         'id', 'name',  'age', 'phone', 'email',
-        'password', 'birth_day', 'create_time', 'status'
+        'password', 'birth_day', 'create_time', 'status',"sex"
     ]
     
     def __init__(self, db: MySQLManager):
@@ -52,6 +52,8 @@ class UserManager:
         try:
             res = self.db.execute(sql, val)
             logger.info(f"用户创建成功 {res}")
+             # 默认分配角色 id=2
+            self.set_role_by_id(res, [2])
             return True
         except Exception as e:
             logger.error(f"创建用户失败: {e}")
@@ -175,13 +177,14 @@ class UserManager:
         LIMIT %s OFFSET %s
         """
         params = (f"%{name}%", per_page, offset)
-        result = self.db.execute(sql, params)
+        result = self.db.fetch_all(sql, params)
 
         users = []
         for row in result:
             # 构造用户基本信息字典
-            user_data = dict(zip(self.all_attr, row))
-            user_id = user_data['id']
+            user_data = row
+            user_id = user_data["id"]
+            logger.debug(f"获取的id{row}{user_data}")
 
             # 查询用户角色
             role_sql = """
@@ -204,7 +207,7 @@ class UserManager:
             resources = self.db.fetch_all(resource_sql, user_id)
             user_data['resources'] = resources or []
 
-            users.append(user_data)
+            users.append(User(**user_data))
 
         return users
 
