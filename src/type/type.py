@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 class ResponseModel(BaseModel):
@@ -15,7 +15,7 @@ class ResponseModel(BaseModel):
         message (str): 描述信息，用于提供更详细的错误信息或成功提示。
     """
     code: int
-    data: Union[Dict[str, Any], List[Any], str, bool]
+    data: Optional[Union[Dict[str, Any], List[Any], str, bool]] = None
     message: str
 
 # 定义返回类型 BlogStats

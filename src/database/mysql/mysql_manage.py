@@ -13,7 +13,7 @@ class MySQLManager:
         host (str): MySQL服务器主机名
         port (int): MySQL服务器端口
         user (str): MySQL用户名
-        passwd (str): MySQL密码
+        password (str): MySQL密码
         db (str): MySQL数据库名
         charset (str): 字符集，默认为utf8mb4,注意和数据库的字符集一致
         max_retry_times (int): 最大重试次数，默认为3
@@ -21,12 +21,12 @@ class MySQLManager:
     """
 
     def __init__(self, host: str, port: int, db: str, user: Optional[str] = None,
-                 passwd: Optional[str] = None, charset: str = 'utf8mb4',
+                 password: Optional[str] = None, charset: str = 'utf8mb4',
                  max_retry_times: int = 3, retry_interval: int = 5):
         self.host = host
         self.port = port
         self.user = user
-        self.passwd = passwd
+        self.password = password
         self.db = db
         self.charset = charset
         self.max_retry_times = max_retry_times
@@ -42,7 +42,7 @@ class MySQLManager:
                 host=self.host,
                 port=self.port,
                 user=self.user,
-                passwd=self.passwd,
+                password=self.password,
                 db=self.db,
                 charset=self.charset,
                 autocommit=False,  # 禁止自动提交，使用手动提交

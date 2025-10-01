@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi.middleware.cors import CORSMiddleware
+from src.controller.auth_manager import AuthManager
 from src.controller.base_manage import BaseManager
 from src.controller.blog_manage import BlogManager
 from src.controller.tag_manage import TagManager
@@ -37,6 +38,7 @@ class Application(FastAPI):
         self.__init_base_manager()
         self.__init_role_manager()
         self.__init_reousrce_manager()
+        self.__init_auth_manager()
         logger.info(f'当前模式为{env}')
         if env == 'local':
             pass
@@ -61,12 +63,12 @@ class Application(FastAPI):
         logger.debug(f'Loaded configuration for environment: {env}')
 
     def __init__mongoDB(self):
-        self.mongo = MongoDBManager(ip=self.config['mongo']['ip'], port=self.config['mongo']['port'], db=self.config['mongo']['db'], user=self.config['mongo']['user'], passwd=self.config['mongo']['passwd'])
+        self.mongo = MongoDBManager(ip=self.config['mongo']['ip'], port=self.config['mongo']['port'], db=self.config['mongo']['db'], user=self.config['mongo']['user'], password=self.config['mongo']['password'])
 
     def __init__redis(self):
         self.redis = RedisManager(ip=self.config['redis']['ip'], port=self.config['redis']['port'], db=self.config['redis']['db'], auth=self.config['redis']['auth'], key_prefix='blog')
     def __init__mysql(self):
-        self.mysql = MySQLManager(host=self.config['mysql']['ip'], port=self.config['mysql']['port'], db=self.config['mysql']['db'], user=self.config['mysql']['user'], passwd=self.config['mysql']['passwd'])
+        self.mysql = MySQLManager(host=self.config['mysql']['ip'], port=self.config['mysql']['port'], db=self.config['mysql']['db'], user=self.config['mysql']['user'], password=self.config['mysql']['password'])
 
     def __init_blog_manager(self):
         self.blog = BlogManager(baseDB=self.mysql,contentDB=self.mongo)
@@ -80,6 +82,8 @@ class Application(FastAPI):
         self.role = RoleManager(db=self.mysql)
     def __init_reousrce_manager(self):
         self.resource = ResourceManager(db=self.mysql)
+    def __init_auth_manager(self):
+        self.auth = AuthManager(user_manager=self.user,enable_permission=False)
         
 
 @asynccontextmanager

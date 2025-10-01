@@ -12,11 +12,11 @@ mongo:
   port: 27017
   db: sun_world
   user: blog
-  passwd: zxy@blog
+  password: zxy@blog
 
 mysql:
   ip: localhost
   port: 3306
   db: blog
   user: blog
-  passwd: Zxy@020206
+  password: Zxy@020206

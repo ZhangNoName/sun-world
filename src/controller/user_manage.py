@@ -11,8 +11,8 @@ class UserManager:
     """
     table_name = "users"
     all_attr = [
-        'id', 'user_name', 'name', 'age', 'phone', 'email',
-        'passwd', 'birth_day', 'create_time', 'is_active'
+        'id', 'name',  'age', 'phone', 'email',
+        'password', 'birth_day', 'create_time', 'status'
     ]
     
     def __init__(self, db: MySQLManager):
@@ -38,17 +38,17 @@ class UserManager:
         创建用户
 
         Args:
-            user (User): 用户对象，包含用户名、姓名、年龄、手机号、邮箱、密码、生日等信息
+            user (User): 用户对象，包含用户名、昵称、性别、年龄、手机号、邮箱、密码、生日等信息
 
         Returns:
             bool: 创建成功返回 True，失败返回 False
         """
         sql = f"""
         INSERT INTO {self.table_name} 
-        (user_name, name, age, phone, email, passwd, birth_day, create_time) 
+        ( name, sex, age, phone, email, password, birth_day, create_time) 
         VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
         """
-        val = (user.user_name, user.name, user.age, user.phone, user.email, user.passwd, user.birth_day)
+        val = (user.name, user.sex, user.age, user.phone, user.email, user.password, user.birth_day)
         try:
             res = self.db.execute(sql, val)
             logger.info(f"用户创建成功 {res}")
@@ -56,6 +56,7 @@ class UserManager:
         except Exception as e:
             logger.error(f"创建用户失败: {e}")
             return False
+
 
     def get_user_by_id(self, user_id: int) -> Optional[User]:
         """
@@ -120,7 +121,61 @@ class UserManager:
         LIMIT %s OFFSET %s
         """
         params = (f"%{name}%", per_page, offset)
-        result = self.db.fetch_all(sql, params)
+        result = self.db.execute(sql, params)
+        return result
+        users = []
+        for row in result:
+            # 构造用户基本信息字典
+            user_data = dict(zip(self.all_attr, row))
+            user_id = user_data['id']
+
+            # 查询用户角色
+            role_sql = """
+            SELECT r.id, r.name, r.code 
+            FROM roles r
+            INNER JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = %s
+            """
+            roles = self.db.fetch_all(role_sql, user_id)
+            user_data['roles'] = roles or []
+
+            # 查询用户资源权限
+            resource_sql = """
+            SELECT DISTINCT res.id, res.name, res.code, res.type, res.path
+            FROM resources res
+            INNER JOIN role_resources rr ON res.id = rr.resource_id
+            INNER JOIN user_roles ur ON rr.role_id = ur.role_id
+            WHERE ur.user_id = %s
+            """
+            resources = self.db.fetch_all(resource_sql, user_id)
+            user_data['resources'] = resources or []
+
+            users.append(user_data)
+
+        return users
+
+    def get_user_by_email(self, name: str, page: int = 1, per_page: int = 10) -> List[User]:
+        """
+        根据用户名模糊查询用户信息，支持分页，同时获取每个用户的角色和资源列表
+
+        Args:
+            name (str): 用户名模糊匹配
+            page (int): 页码，从1开始
+            per_page (int): 每页显示记录数量
+
+        Returns:
+            List[User]: 用户列表，每个用户包含基本信息、角色列表、资源列表
+        """
+        offset = (page - 1) * per_page
+        sql = f"""
+        SELECT {self.get_all_user_attr()} 
+        FROM {self.table_name} 
+        WHERE email LIKE %s 
+        ORDER BY id ASC 
+        LIMIT %s OFFSET %s
+        """
+        params = (f"%{name}%", per_page, offset)
+        result = self.db.execute(sql, params)
 
         users = []
         for row in result:
@@ -179,5 +234,30 @@ class UserManager:
         Returns:
             bool: 成功返回 True，否则 False
         """
-        result = self.update_user(user_id, is_active=0)
+        result = self.update_user(user_id, status=0)
         return result > 0
+
+    def set_role_by_id(self, user_id: str, role_ids: List[int]) -> bool:
+        """
+        为用户分配角色，一个用户可以有多个角色
+
+        Args:
+            user_id (str): 用户ID
+            role_ids (List[int]): 角色ID列表
+
+        Returns:
+            bool: 分配成功返回 True，否则 False
+        """
+    
+        try:
+            # 先删除该用户已有的角色关联
+            delete_sql = "DELETE FROM user_roles WHERE user_id = %s"
+            self.db.execute(delete_sql, (user_id,))
+            # 再插入新的角色关联
+            insert_sql = "INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)"
+            for role_id in role_ids:
+                self.db.execute(insert_sql, (user_id, role_id))
+            return True
+        except Exception as e:
+            logger.error(f"为用户分配角色失败: {e}")
+            return False

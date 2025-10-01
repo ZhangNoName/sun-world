@@ -6,14 +6,14 @@ from pymongo.cursor import Cursor
 class MongoDBManager:
     """mongo服务"""
     logger = logger
-    def __init__(self, ip, port, db, user=None, passwd=None, **kwargs):
+    def __init__(self, ip, port, db, user=None, password=None, **kwargs):
         super().__init__()
 
         self.ip = ip
         self.port = port
         self.dbname = db
         self.user = user # 对用户名进行URL编码
-        self.passwd = passwd
+        self.password = password
 
         self.connect()
         self.ping()
@@ -24,7 +24,7 @@ class MongoDBManager:
     def connect(self) -> bool:
         try:
             # 在MongoClient中直接进行认证
-            pool = MongoClient(self.ip, self.port, username=self.user, password=self.passwd)
+            pool = MongoClient(self.ip, self.port, username=self.user, password=self.password)
             self.db = pool[self.dbname]  # 获取数据库对象
             self.logger.debug(f"{self} authenticated")
         except Exception as ex:
