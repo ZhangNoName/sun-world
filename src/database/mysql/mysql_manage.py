@@ -164,6 +164,29 @@ class MySQLManager:
         except pymysql.Error as e:
             logger.error(f"分页查询失败: {e}")
             return []
+    
+    def fetch_all(self, sql: str, params: Tuple[Any, ...] = ()) -> List[dict]:
+        """
+        查询多条记录
+
+        Args:
+            sql (str): 要执行的SQL语句
+            params (tuple): 参数
+
+        Returns:
+            List[dict]: 查询结果的字典列表，如果没有数据则返回空列表
+        """
+        if not self.is_alive():
+            self.reconnect()
+        try:
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchall()
+            logger.info(f"查询多条记录: {sql} | 参数: {params} | 结果条数: {len(result)}")
+            return result or []
+        except pymysql.Error as e:
+            logger.error(f"查询失败: {e}")
+            return []
+
 
     def close(self):
         """关闭数据库连接"""

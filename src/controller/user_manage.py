@@ -1,80 +1,115 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from loguru import logger
 from src.database.mysql.mysql_manage import MySQLManager
 from src.type.user_type import User
 
+
 class UserManager:
-    table_name = "user"
-    all_attr = ['id', 'user_name', 'name', 'age', 'phone', 'email', 'passwd', 'birth_day', 'create_time', 'is_active']
+    """
+    用户管理类，提供用户的增删改查功能，同时支持获取用户的角色和资源权限。
+    """
+    table_name = "users"
+    all_attr = [
+        'id', 'user_name', 'name', 'age', 'phone', 'email',
+        'passwd', 'birth_day', 'create_time', 'is_active'
+    ]
     
-    def __init__(self, db:MySQLManager):
+    def __init__(self, db: MySQLManager):
+        """
+        初始化 UserManager
+
+        Args:
+            db (MySQLManager): 数据库操作对象
+        """
         self.db = db
 
     def get_all_user_attr(self) -> str:
         """
-        获取全部的用户名字段的字符串
-        
+        获取所有用户表字段，以逗号分隔
+
         Returns:
-            属性字符串，以逗号分隔
+            str: 字段字符串
         """
         return ",".join(self.all_attr)
-    def create_user(self, user:User):
+
+    def create_user(self, user: User) -> bool:
         """
         创建用户
 
         Args:
-            name (str): 用户名
-            age (int): 年龄
-            phone (str): 手机号码
-            email (str): 邮箱
-            passwd (str): 密码
-            birth_day (str): 生日，格式为YYYY-MM-DD
+            user (User): 用户对象，包含用户名、姓名、年龄、手机号、邮箱、密码、生日等信息
+
+        Returns:
+            bool: 创建成功返回 True，失败返回 False
         """
-        sql = f"INSERT INTO {self.table_name} (user_name, name, age, phone, email, passwd, birth_day, create_time) VALUES (%s,%s,%s, %s, %s, %s, %s,  NOW())"
-        val = (user.user_name,user.name, user.age, user.phone, user.email, user.passwd, user.birth_day)
+        sql = f"""
+        INSERT INTO {self.table_name} 
+        (user_name, name, age, phone, email, passwd, birth_day, create_time) 
+        VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
+        """
+        val = (user.user_name, user.name, user.age, user.phone, user.email, user.passwd, user.birth_day)
         try:
-            # self.db.execute(sql, [val])
-            res = self.db.execute(sql,val)
-            logger.info(f"用户创建成功{res}")
+            res = self.db.execute(sql, val)
+            logger.info(f"用户创建成功 {res}")
             return True
         except Exception as e:
-            logger.error(f"Error occurred: {e}")
+            logger.error(f"创建用户失败: {e}")
             return False
-
 
     def get_user_by_id(self, user_id: int) -> Optional[User]:
         """
-        根据用户ID查询用户信息
+        根据用户ID获取用户信息，同时获取角色列表和资源权限列表
 
         Args:
             user_id (int): 用户ID
 
         Returns:
-            User: User对象，如果不存在则返回None
+            Optional[User]: 用户信息字典，如果不存在则返回 None
         """
+        # 查询用户基本信息
         sql = f"SELECT {self.get_all_user_attr()} FROM {self.table_name} WHERE id = %s"
         result = self.db.fetch_one(sql, user_id)
-        logger.info(f"根据id查询的结果{result}")
-        
-        # 查询结果是字典形式
-        if isinstance(result, dict):
-            user_data = result
-        else:
-            # 如果是元组形式，手动构造字典
-            user_data = dict(zip(self.all_attr, result))
-        return user_data
-    def get_user_by_name(self, name: str, page: int = 1, per_page: int = 10) -> list[User]:
+        if not result:
+            return None
+
+        # 构造用户字典
+        user_data = result if isinstance(result, dict) else dict(zip(self.all_attr, result))
+
+        # 查询用户角色
+        role_sql = """
+        SELECT r.id, r.name, r.code 
+        FROM roles r
+        INNER JOIN user_roles ur ON r.id = ur.role_id
+        WHERE ur.user_id = %s
         """
-        根据用户名模糊查询用户信息，支持分页
+        roles = self.db.fetch_all(role_sql, user_id)
+        user_data['roles'] = roles or []
+
+        # 查询用户资源权限（通过角色关联）
+        resource_sql = """
+        SELECT DISTINCT res.id, res.name, res.code, res.type, res.path
+        FROM resources res
+        INNER JOIN role_resources rr ON res.id = rr.resource_id
+        INNER JOIN user_roles ur ON rr.role_id = ur.role_id
+        WHERE ur.user_id = %s
+        """
+        resources = self.db.fetch_all(resource_sql, user_id)
+        user_data['resources'] = resources or []
+
+        return user_data
+
+    def get_user_by_name(self, name: str, page: int = 1, per_page: int = 10) -> List[User]:
+        """
+        根据用户名模糊查询用户信息，支持分页，同时获取每个用户的角色和资源列表
 
         Args:
-            name (str): 用户名
-            page (int): 页码，从1开始，默认为1
-            per_page (int): 每页显示的记录数量，默认为10
+            name (str): 用户名模糊匹配
+            page (int): 页码，从1开始
+            per_page (int): 每页显示记录数量
 
         Returns:
-            list[User]: 查询到的用户列表
+            List[User]: 用户列表，每个用户包含基本信息、角色列表、资源列表
         """
         offset = (page - 1) * per_page
         sql = f"""
@@ -84,18 +119,39 @@ class UserManager:
         ORDER BY id ASC 
         LIMIT %s OFFSET %s
         """
-        # 将参数打包为一个元组
         params = (f"%{name}%", per_page, offset)
+        result = self.db.fetch_all(sql, params)
 
-        # 传递参数时使用元组
-        result = self.db.execute(sql, params)
+        users = []
+        for row in result:
+            # 构造用户基本信息字典
+            user_data = dict(zip(self.all_attr, row))
+            user_id = user_data['id']
 
-        # 将查询结果转换为User对象列表
-        users = [User(**dict(zip(self.all_attr, row))) for row in result]
+            # 查询用户角色
+            role_sql = """
+            SELECT r.id, r.name, r.code 
+            FROM roles r
+            INNER JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = %s
+            """
+            roles = self.db.fetch_all(role_sql, user_id)
+            user_data['roles'] = roles or []
+
+            # 查询用户资源权限
+            resource_sql = """
+            SELECT DISTINCT res.id, res.name, res.code, res.type, res.path
+            FROM resources res
+            INNER JOIN role_resources rr ON res.id = rr.resource_id
+            INNER JOIN user_roles ur ON rr.role_id = ur.role_id
+            WHERE ur.user_id = %s
+            """
+            resources = self.db.fetch_all(resource_sql, user_id)
+            user_data['resources'] = resources or []
+
+            users.append(user_data)
+
         return users
-
-
-    # 其他查询方法，如根据name、phone查询，类似于get_user_by_id
 
     def update_user(self, user_id: str, **kwargs) -> int:
         """
@@ -103,32 +159,25 @@ class UserManager:
 
         Args:
             user_id (str): 用户ID
-            kwargs: 要更新的字段和值，例如：name='new_name', age=30
+            kwargs: 要更新的字段和值，例如 name='new_name', age=30
 
         Returns:
             int: 受影响的行数
         """
-        # 构造更新语句
         set_clause = ', '.join(f"{key} = %s" for key in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id = %s"
-        # 构造参数
         values = tuple(kwargs.values()) + (user_id,)
-        # 执行SQL并返回受影响的行数
         return self.db.execute(sql, values)
-
 
     def delete_user(self, user_id: str) -> bool:
         """
-        逻辑删除用户（停用账号）
+        逻辑删除用户（停用账号），通过设置 is_active=0
 
         Args:
             user_id (str): 用户ID
 
         Returns:
-            bool: 修改成功返回True，否则返回False
+            bool: 成功返回 True，否则 False
         """
-        # 调用 update_user 方法更新 is_active 字段为 0
         result = self.update_user(user_id, is_active=0)
-        # logger.info(f'更改的信息结果：{result}')
-        # 判断受影响的行数，update_user 默认返回受影响的行数
         return result > 0

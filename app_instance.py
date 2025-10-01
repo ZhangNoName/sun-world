@@ -9,6 +9,8 @@ from src.controller.base_manage import BaseManager
 from src.controller.blog_manage import BlogManager
 from src.controller.tag_manage import TagManager
 from src.controller.user_manage import UserManager
+from src.controller.role_manager import RoleManager
+from src.controller.resource_manager import ResourceManager
 from src.database.mongo.mongodb_manage import MongoDBManager
 from src.database.mysql.mysql_manage import MySQLManager
 from src.database.redis.redis_manage import RedisManager
@@ -33,6 +35,8 @@ class Application(FastAPI):
         self.__init_user_manager()
         self.__init_tag_manager()
         self.__init_base_manager()
+        self.__init_role_manager()
+        self.__init_reousrce_manager()
         logger.info(f'当前模式为{env}')
         if env == 'local':
             pass
@@ -72,6 +76,10 @@ class Application(FastAPI):
         self.tag = TagManager(db=self.mysql)
     def __init_base_manager(self):
         self.base = BaseManager(db=self.mysql)
+    def __init_role_manager(self):
+        self.role = RoleManager(db=self.mysql)
+    def __init_reousrce_manager(self):
+        self.resource = ResourceManager(db=self.mysql)
         
 
 @asynccontextmanager
