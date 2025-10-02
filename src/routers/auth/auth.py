@@ -62,3 +62,13 @@ async def reset_password(req: ResetPasswordModel,  auth:AuthManager=Depends(get_
 async def logout(current_user: User = Depends(get_current_user)):
     # TODO: 可选实现 token 黑名单
     return ResponseModel(code=1, data=None, message="登出成功")
+
+@router.post("/refresh_token")
+async def refresh_token(
+    refresh_token: str = Header(...),
+    auth: AuthManager = Depends(get_auth_manager)
+):
+    tokens = auth.refresh_access_token(refresh_token)
+    if not tokens:
+        return ResponseModel(code=0, data=None, message="刷新Token失败")
+    return ResponseModel[TokenModel](code=1, data=tokens, message="Token刷新成功")

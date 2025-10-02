@@ -83,7 +83,7 @@ class Application(FastAPI):
     def __init_reousrce_manager(self):
         self.resource = ResourceManager(db=self.mysql)
     def __init_auth_manager(self):
-        self.auth = AuthManager(user_manager=self.user,enable_permission=False)
+        self.auth = AuthManager(user_manager=self.user,db=self.redis,enable_permission=False)
         
 
 @asynccontextmanager

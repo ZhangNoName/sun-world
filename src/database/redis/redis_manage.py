@@ -261,4 +261,14 @@ class RedisManager():
                     value = self.r.hgetall(key)
                 res[key] = value
         return res
+    def exist(self, name: str, prefix: str = None) -> bool:
+        """
+        判断指定 key 是否存在
+        @param name: redis key
+        @param prefix: 自定义前缀
+        @return bool
+        """
+        self._maybe_reconnect()
+        redis_key = self._get_redis_key(name, prefix)
+        return self.r.exists(redis_key) > 0
     
