@@ -47,6 +47,12 @@ const openAI = () => {
 const goHome = () => {
   router.push({ path: '/' })
 }
+const loginHandle = () => {
+  router.push({ path: '/login' })
+}
+const registerHandle = () => {
+  router.push({ path: '/register' })
+}
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
 })
@@ -70,6 +76,9 @@ onBeforeUnmount(() => {
         <Search />
         <LanguageSwitch />
         <ThemeSwitch />
+
+        <button @click="loginHandle">登录</button>
+
         <!-- <AddOutlined></AddOutlined> -->
       </div>
     </div>

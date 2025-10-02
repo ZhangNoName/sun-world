@@ -143,3 +143,10 @@ export interface VditorTreeItemType {
   level: number
   id: string
 }
+
+export interface TokenType {
+  access_token: string
+  refresh_token: string
+  access_token_expire: string // 如果后端返回 ISO 字符串
+  refresh_token_expire: string // 同上
+}
