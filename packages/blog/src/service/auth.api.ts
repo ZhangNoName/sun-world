@@ -4,11 +4,13 @@ import { request, ResponseType } from './http'
 // 登录
 export const login = async (
   username: string,
-  password: string
+  password: string,
+  deviceId: string
 ): Promise<ResponseType<TokenType>> => {
   const response = await request.post<ResponseType<TokenType>>('/auth/login', {
     username,
     password,
+    device_id: deviceId,
   })
   return response
 }

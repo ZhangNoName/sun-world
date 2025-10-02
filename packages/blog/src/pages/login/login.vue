@@ -1,4 +1,5 @@
 <script setup lang="ts" name="login">
+import { login } from '@/service/auth.api'
 import { reactive } from 'vue'
 
 const form = reactive({
@@ -6,22 +7,18 @@ const form = reactive({
   password: '',
 })
 
-function handleLogin() {
+async function handleLogin() {
   // 模拟登录逻辑
   alert(`账号: ${form.account}\n密码: ${form.password}`)
+  const res = await login(form.account, form.password, '123456')
+  console.log(res)
 }
 </script>
 <template>
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <img
-          src="https://static.zhihu.com/heifetz/favicon.ico"
-          alt="logo"
-          class="logo"
-        />
-        <h2>登录知乎</h2>
-        <p class="subtitle">发现更大的世界</p>
+        <img src="/logo.svg" alt="logo" class="logo" />
       </div>
       <form @submit.prevent="handleLogin">
         <div class="input-group">
@@ -53,8 +50,6 @@ function handleLogin() {
 
 <style scoped>
 .login-container {
-  min-height: 100vh;
-  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,7 +58,7 @@ function handleLogin() {
   background: #fff;
   padding: 40px 32px;
   border-radius: 8px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 16px rgba(173, 163, 163, 0.08);
   width: 340px;
   display: flex;
   flex-direction: column;
