@@ -1,13 +1,24 @@
 // stores/auth.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { refreshTokenApi } from '@/api/auth' // 你需要实现这个接口
+import {
+  login as loginApi,
+  logout as logoutApi,
+  refreshToken as refreshTokenApi,
+} from '@/service/auth.api'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null)
   const refreshToken = ref<string | null>(null)
-  const accessTokenExpire = ref<number | null>(null) // 时间戳 (ms)
+  const accessTokenExpire = ref<number | null>(null)
   const refreshTokenExpire = ref<number | null>(null)
+  const deviceId = ref<string>(localStorage.getItem('device_id') || uuidv4())
+
+  // 首次运行时写入 deviceId
+  if (!localStorage.getItem('device_id')) {
+    localStorage.setItem('device_id', deviceId.value)
+  }
 
   /** 设置 token 信息 */
   function setTokens({
@@ -54,8 +65,38 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const res = await refreshTokenApi(refreshToken.value)
-    setTokens(res)
+    setTokens({
+      token: res.access_token,
+      refresh: res.refresh_token,
+      tokenExpire: Date.parse(res.access_token_expire),
+      refreshExpire: Date.parse(res.refresh_token_expire),
+    })
     return accessToken.value
+  }
+
+  /** 登录 */
+  async function login(username: string, password: string) {
+    const res = await loginApi({
+      username,
+      password,
+      deviceId: deviceId.value,
+    })
+    console.log(res)
+    setTokens({
+      token: res.access_token,
+      refresh: res.refresh_token,
+      tokenExpire: Date.parse(res.access_token_expire),
+      refreshExpire: Date.parse(res.refresh_token_expire),
+    })
+    return res
+  }
+
+  /** 登出（只清当前设备的 token） */
+  async function logout() {
+    if (accessToken.value) {
+      await logoutApi()
+    }
+    clearTokens()
   }
 
   return {
@@ -63,9 +104,12 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     accessTokenExpire,
     refreshTokenExpire,
+    deviceId,
     setTokens,
     clearTokens,
     isAccessTokenExpired,
     refreshTokensIfNeeded,
+    login,
+    logout,
   }
 })

@@ -3,6 +3,7 @@ import './style.css'
 import App from './App.vue'
 import i18n from '@/i18n.ts'
 import router from '@/router'
+
 import {
   getAdressByLocation,
   getCurrentLocation,
@@ -11,7 +12,8 @@ import {
 } from '@/util'
 import 'element-plus/theme-chalk/src/index.scss'
 import 'qweather-icons/font/qweather-icons.css'
-
+import { createPinia } from 'pinia'
+const pinia = createPinia()
 InterceptLocalStorage()
 // 使用示例
 getCurrentLocation().then((res) => {
@@ -24,4 +26,5 @@ const app = createApp(App)
 // app.config.globalProperties.$elMessage = elMessage;
 app.use(i18n)
 app.use(router)
+app.use(pinia)
 app.mount('#app')

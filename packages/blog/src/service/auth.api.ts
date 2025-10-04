@@ -2,15 +2,14 @@ import { TokenType } from '@/type'
 import { request, ResponseType } from './http'
 
 // 登录
-export const login = async (
-  username: string,
-  password: string,
+export const login = async (params: {
+  username: string
+  password: string
   deviceId: string
-): Promise<ResponseType<TokenType>> => {
-  const response = await request.post<ResponseType<TokenType>>('/auth/login', {
-    username,
-    password,
-    device_id: deviceId,
+}): Promise<TokenType> => {
+  const response = await request.post<TokenType>('/auth/login', {
+    ...params,
+    device_id: params.deviceId,
   })
   return response
 }
@@ -22,8 +21,8 @@ export const register = async (
   nickname: string,
   email?: string,
   phone?: string
-): Promise<ResponseType<boolean>> => {
-  const response = await request.post<ResponseType<boolean>>('/auth/register', {
+): Promise<boolean> => {
+  const response = await request.post<boolean>('/auth/register', {
     username,
     password,
     nickname,
@@ -37,22 +36,19 @@ export const register = async (
 export const forgotPassword = async (
   usernameOrEmail: string,
   newPassword: string
-): Promise<ResponseType<boolean>> => {
-  const response = await request.post<ResponseType<boolean>>(
-    '/auth/forgot_password',
-    {
-      username_or_email: usernameOrEmail,
-      new_password: newPassword,
-    }
-  )
+): Promise<boolean> => {
+  const response = await request.post<boolean>('/auth/forgot_password', {
+    username_or_email: usernameOrEmail,
+    new_password: newPassword,
+  })
   return response
 }
 
 // 刷新 token
 export const refreshToken = async (
   refreshToken: string
-): Promise<ResponseType<TokenType>> => {
-  const response = await request.post<ResponseType<TokenType>>(
+): Promise<TokenType> => {
+  const response = await request.post<TokenType>(
     '/auth/refresh_token',
     {},
     {
@@ -65,17 +61,7 @@ export const refreshToken = async (
 }
 
 // 退出登录
-export const logout = async (
-  accessToken: string
-): Promise<ResponseType<boolean>> => {
-  const response = await request.post<ResponseType<boolean>>(
-    '/auth/logout',
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+export const logout = async (): Promise<boolean> => {
+  const response = await request.post<boolean>('/auth/logout', {})
   return response
 }

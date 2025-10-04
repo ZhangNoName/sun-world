@@ -1,17 +1,24 @@
 <script setup lang="ts" name="login">
-import { login } from '@/service/auth.api'
+import router from '@/router'
+import { useAuthStore } from '@/store/auth'
 import { reactive } from 'vue'
 
 const form = reactive({
   account: '',
   password: '',
 })
-
+const { login } = useAuthStore()
 async function handleLogin() {
   // 模拟登录逻辑
-  alert(`账号: ${form.account}\n密码: ${form.password}`)
-  const res = await login(form.account, form.password, '123456')
-  console.log(res)
+  try {
+    const res = await login(form.account, form.password)
+    // console.log('登录界面', res)
+    if (res) {
+      router.push({ path: '/' })
+    }
+  } catch (error) {
+    console.log('登录失败', error)
+  }
 }
 </script>
 <template>
