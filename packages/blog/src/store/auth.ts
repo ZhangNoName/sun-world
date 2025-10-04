@@ -36,14 +36,41 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = refresh
     accessTokenExpire.value = tokenExpire
     refreshTokenExpire.value = refreshExpire
+
+    // 本地缓存 token 信息为对象
+    localStorage.setItem(
+      'auth_tokens',
+      JSON.stringify({
+        accessToken: token,
+        refreshToken: refresh,
+        accessTokenExpire: tokenExpire,
+        refreshTokenExpire: refreshExpire,
+      })
+    )
   }
 
-  /** 清空 token */
+  // 启动时自动读取本地 token
+  const cachedTokens = localStorage.getItem('auth_tokens')
+  if (cachedTokens) {
+    try {
+      const parsed = JSON.parse(cachedTokens)
+      accessToken.value = parsed.accessToken || null
+      refreshToken.value = parsed.refreshToken || null
+      accessTokenExpire.value = parsed.accessTokenExpire || null
+      refreshTokenExpire.value = parsed.refreshTokenExpire || null
+    } catch (e) {
+      // 解析失败时清空本地缓存
+      localStorage.removeItem('auth_tokens')
+    }
+  }
+
+  // 清空 token 时也清空本地缓存
   function clearTokens() {
     accessToken.value = null
     refreshToken.value = null
     accessTokenExpire.value = null
     refreshTokenExpire.value = null
+    localStorage.removeItem('auth_tokens')
   }
 
   /** 判断 accessToken 是否过期 */

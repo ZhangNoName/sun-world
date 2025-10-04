@@ -11,6 +11,7 @@ import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElButton } from 'element-plus'
 const time = ref('')
 const timerRef = ref()
 const router = useRouter()
@@ -77,7 +78,7 @@ onBeforeUnmount(() => {
         <LanguageSwitch />
         <ThemeSwitch />
 
-        <button @click="loginHandle">登录</button>
+        <ElButton @click="loginHandle">登录</ElButton>
 
         <!-- <AddOutlined></AddOutlined> -->
       </div>
@@ -98,7 +99,7 @@ onBeforeUnmount(() => {
   z-index: 10;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 7.5% 4fr 3fr 10rem 7.5%;
+  grid-template-columns: 2.5% 4fr 3fr 10rem 2.5%;
   grid-template-areas: '1 2 3 4 5';
   border-bottom: 2px solid rgb(180, 180, 180);
   background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */

@@ -42,5 +42,6 @@
   padding: 24px 32px;
   background: #f5f6fa;
   min-height: 0;
+  max-width: 1338px;
 }
 </style>
