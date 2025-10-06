@@ -29,7 +29,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
       <div>{{ createTime }}</div>
     </div>
     <div class="del">
-      <DeleteSvg color="var(--font-color-2)" width="1.6rem" height="1.6rem" />
+      <DeleteSvg color="var(--text-secondary)" width="1.6rem" height="1.6rem" />
     </div>
   </div>
 </template>
@@ -40,7 +40,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
   cursor: grab;
   touch-action: manipulation;
   padding: 1rem 1.4rem;
-  background-color: var(--bg-color);
+  background-color: var(--bg-page);
   border-radius: 1rem;
   margin-bottom: 1rem;
   box-shadow: var(--box-shadow);
@@ -48,19 +48,19 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  border: 0.2rem solid var(--border-color);
+  border: 0.2rem solid var(--border-default);
   position: relative;
   content-visibility: auto;
 
   &:hover {
-    border: 0.2rem solid var(--border-color-hover);
-    background-color: var(--bg-color-hover);
+    border: 0.2rem solid var(--border-lighter);
+    background-color: var(--bg-hover);
     .del {
       opacity: 1;
     }
   }
   .title {
-    color: var(--font-color-1);
+    color: var(--text-strong);
     font-size: 1.4rem;
     font-weight: bolder;
     display: block;
@@ -73,7 +73,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
   .info {
     display: flex;
     justify-content: space-between;
-    color: var(--font-color-4);
+    color: var(--text-secondary);
     font-size: 12px;
     margin-top: 8px;
     animation: all 0.3s ease;

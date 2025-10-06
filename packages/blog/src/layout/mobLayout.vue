@@ -1,39 +1,19 @@
 <template>
   <div class="mob-layout">
-    <!-- Header -->
-    <header class="mob-header">
-      <div class="logo">Sun World</div>
-      <button class="menu-btn" @click="toggleDrawer">
-        <span class="icon">&#9776;</span>
-      </button>
-    </header>
-
-    <!-- Side Drawer -->
-    <transition name="slide">
-      <nav class="mob-drawer" v-if="drawerOpen" @click.self="toggleDrawer">
-        <ul>
-          <li><a href="#home" @click="toggleDrawer">首页</a></li>
-          <li><a href="#about" @click="toggleDrawer">关于我</a></li>
-          <li><a href="#blog" @click="toggleDrawer">博客</a></li>
-          <li><a href="#contact" @click="toggleDrawer">联系</a></li>
-        </ul>
-      </nav>
-    </transition>
-
-    <!-- Main Content -->
-    <main class="mob-main">
-      <slot />
-    </main>
-
-    <!-- Footer -->
-    <footer class="mob-footer">
-      &copy; {{ new Date().getFullYear() }} Sun World. 保留所有权利.
-    </footer>
+    <RouterView />
+    <div class="mob-footer">
+      <div class="footer-item">1</div>
+      <div class="footer-item">2</div>
+      <div class="footer-item">3</div>
+      <div class="footer-item">4</div>
+      <div class="footer-item">5</div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { RouterView } from 'vue-router'
 const drawerOpen = ref(false)
 function toggleDrawer() {
   drawerOpen.value = !drawerOpen.value

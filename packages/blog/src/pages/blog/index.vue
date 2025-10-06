@@ -129,7 +129,7 @@ onMounted(() => {
   margin: 6.5rem auto 0 auto;
   height: auto;
   min-height: calc(100vh - 37rem);
-  background-color: var(--bg-color);
+  background-color: var(--bg-page);
   width: 85%;
   display: grid;
   grid-template-columns: 35rem auto;
@@ -143,7 +143,7 @@ onMounted(() => {
     position: fixed;
   }
   .left-bg {
-    /* background-color: var(--bg-color-0); */
+    /* background-color: var(--bg-brand-light); */
     /* background-color: #f8f9fa; */
   }
   .right {

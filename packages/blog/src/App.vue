@@ -3,8 +3,7 @@ import { onMounted, provide, reactive } from 'vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import ZHeader from './layout/header/index.vue'
-import ZFooter from './layout/footer/index.vue'
+import SwLayout from '@/layout/layout.vue'
 import { fetchBaseData } from './util/request'
 import {
   CategoryResponse,
@@ -63,14 +62,7 @@ onUnmounted(() => {
 
 <template>
   <div :class="allClass">
-    <ZHeader></ZHeader>
-
-    <div class="content">
-      <RouterView />
-    </div>
-    <div class="footer">
-      <ZFooter />
-    </div>
+    <SwLayout />
   </div>
 </template>
 <style>
@@ -90,8 +82,8 @@ onUnmounted(() => {
   height: 100%;
   overflow: auto;
   font-size: 1.6rem;
-  color: var(--font-color);
-  background-color: var(--bg-color);
+  color: var(--text-default);
+  background-color: var(--bg-page);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

@@ -57,7 +57,7 @@ import CatalogListItem from './index.vue'
   justify-content: flex-start;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--bg-color);
+  background-color: var(--bg-page);
 
   /* 禁止用户选中文本 */
   user-select: none; /* 标准语法 */
@@ -65,14 +65,14 @@ import CatalogListItem from './index.vue'
   -moz-user-select: none; /* 针对 Mozilla (Firefox) 浏览器 */
   -ms-user-select: none; /* 针对 IE10+ 浏览器 */
   &:hover {
-    background-color: var(--bg-color-hover);
-    color: var(--font-color-hover);
+    background-color: var(--bg-hover);
+    color: var(--text-hover);
   }
   .fold-icon {
     cursor: pointer;
 
     &:hover {
-      color: var(--bg-color-hover) !important;
+      color: var(--bg-page-hover) !important;
     }
   }
 }

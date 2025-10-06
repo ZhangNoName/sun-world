@@ -68,7 +68,7 @@ const weatherIcon = computed(() => {
   grid-template-columns: 1fr;
   grid-template-rows: 18rem 2.5rem 6rem;
   gap: 1.5rem;
-  background-color: var(--bg-color-0);
+  background-color: var(--bg-brand-light);
   cursor: default;
   .weather {
     display: flex;

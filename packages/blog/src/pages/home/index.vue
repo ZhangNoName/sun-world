@@ -81,9 +81,8 @@ onMounted(async () => {
 
 <style scoped>
 .home-page {
-  min-height: calc(100vh - 37rem);
-  background-color: var(--bg-color);
-
+  max-width: 1280px;
+  background-color: var(--bg-page);
   display: grid;
   grid-template-columns: 35rem auto;
   grid-template-rows: auto;
@@ -99,7 +98,7 @@ onMounted(async () => {
   }
   .right {
     .summary-card {
-      background-color: var(--bg-color-0);
+      background-color: var(--bg-brand-light);
     }
   }
 }

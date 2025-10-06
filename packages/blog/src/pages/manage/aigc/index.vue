@@ -11,6 +11,6 @@ const prop = defineProps()
 <style scoped>
 .manage-aigc {
   height: 100%;
-  background-color: var(--bg-color-0);
+  background-color: var(--bg-brand-light);
 }
 </style>

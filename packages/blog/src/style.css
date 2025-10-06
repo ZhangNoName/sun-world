@@ -26,6 +26,9 @@ h1 {
 }
 
 html {
+  /* 优先使用系统字体，确保速度和清晰度 */
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', 'Arial', sans-serif;
   font-size: 10px;
 }
 div {
@@ -43,94 +46,79 @@ div {
 }
 
 .sun-light {
-  --font-color: #606266;
-  --font-color-active: #409eff;
-  --font-color-hover: #909399;
-  --font-color-0: #303133;
-  --font-color-1: #606266;
-  --font-color-2: #909399;
-  --font-color-3: #a8abb2;
-  --font-color-4: #c0c4cc;
+  /* ---------------------- 核心颜色 ---------------------- */
+  --color-primary: #409eff; /* 主要操作色 (蓝色) */
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
 
-  --border-color: #dcdfe6;
-  --border-color-hover: #ebeef5;
-  --border-color-active: #d4d7de;
+  /* ---------------------- 文本颜色 (Text) ---------------------- */
+  --text-default: #606266; /* 默认正文 */
+  --text-strong: #303133; /* 重要标题/重点文字 (原 --text-default-0) */
+  --text-secondary: #909399; /* 次要/辅助文字 (原 --text-default-2) */
+  --text-placeholder: #a8abb2; /* 占位符/禁用文字 (原 --text-default-3) */
+  --text-active: var(--color-primary); /* 激活色 */
+  --text-hover: #909399; /* 悬停色 */
 
-  --border-color-0: #cdd0d6;
-  --border-color-1: #d4d7de;
-  --border-color-2: #e4e7ed;
-  --border-color-3: #ebeef5;
-  --border-color-4: #f2f6fc;
+  /* ---------------------- 背景/填充色 (Background / Fill) ---------------------- */
+  --bg-page: #ffffff; /* 页面背景 */
+  --bg-component: #ffffff; /* 组件背景 */
+  --bg-fill: #f0f2f5; /* 默认填充色 (例如输入框背景, 原 --fill-color) */
+  --bg-active: #409eff; /* 按钮激活/选中背景 */
+  --bg-hover: #a0cfff; /* 按钮/行悬停背景 */
+  --bg-brand-light: #e7f8ff; /* 品牌浅色背景 (原 --bg-brand-light) */
 
-  --fill-color: #f0f2f5;
-  --fill-color-0: #e7f8ff;
-  --fill-color-1: #d9ecff;
-  --fill-color-2: #c6e2ff;
-  --fill-color-3: #a0cfff;
-  --fill-color-4: #79bbff;
-  --fill-color-5: #337ecc;
-  --fill-color-6: #409eff;
+  /* ---------------------- 边框颜色 (Border) ---------------------- */
+  --border-default: #dcdfe6; /* 默认边框 */
+  --border-lighter: #ebeef5; /* 浅边框/分割线 (原 --border-default-hover) */
+  --border-darker: #cdd0d6; /* 深边框 (原 -border-darker) */
+  --border-active: #d4d7de; /* 激活边框 */
 
-  --bg-color: #ffffff;
-  --bg-color-0: #e7f8ff;
-  --bg-color-1: #79bbff;
-  --bg-color-2: #409eff;
-  --bg-color-hover: #a0cfff;
-  --bg-color-active: #409eff;
-  --btn-bg-color: wheat;
+  /* ---------------------- 阴影/其他 ---------------------- */
+  --shadow-default: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
+  --shadow-aigc: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
 
-  --icon-bg-color: transparent;
-  --icon-bg-hover-color: yellow;
-
-  --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
-  --box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
-
+  /* 内部元素样式，建议移除 hr 的 color 和 background-color，只保留 border 样式 */
   hr {
-    color: #7a7a7a;
-    background-color: #7a7a7a;
+    border-color: #7a7a7a;
     opacity: 0.5;
   }
 }
 .sun-dark {
-  --font-color: #cfd3dc;
-  --font-color-active: #409eff;
-  --font-color-hover: #a3a6ad;
-  --font-color-0: #e5eaf3;
-  --font-color-2: #a3a6ad;
-  --font-color-3: #8d9095;
-  --font-color-4: #6c6e72;
+  /* ---------------------- 核心颜色 ---------------------- */
+  --color-primary: #409eff;
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
 
-  --border-color: #4c4d4f;
-  --border-color-hover: #636466;
-  --border-color-active: #363637;
-  --border-color-0: #636466;
-  --border-color-1: #58585b;
-  --border-color-2: #414243;
-  --border-color-3: #363637;
-  --border-color-4: #2b2b2c;
+  /* ---------------------- 文本颜色 (Text) ---------------------- */
+  --text-default: #cfd3dc; /* 默认正文 */
+  --text-strong: #e5eaf3; /* 重要标题 (原 --text-default-0) */
+  --text-secondary: #a3a6ad; /* 次要/辅助文字 (原 --text-default-2) */
+  --text-placeholder: #8d9095; /* 占位符/禁用文字 (原 --text-default-3) */
+  --text-active: var(--color-primary);
+  --text-hover: #a3a6ad;
 
-  --fill-color: #2a598a;
-  --fill-color-0: #18222c;
-  --fill-color-1: #1d3043;
-  --fill-color-2: #213d5b;
-  --fill-color-3: #2a598a;
-  --fill-color-4: #3375b9;
-  --fill-color-5: #66b1ff;
-  --fill-color-6: #409eff;
+  /* ---------------------- 背景/填充色 (Background / Fill) ---------------------- */
+  --bg-page: #141414; /* 页面背景 (原 --bg-page) */
+  --bg-component: #1d1e1f; /* 组件背景 (原 --bg-page-2) */
+  --bg-fill: #1d3043; /* 默认填充色 (例如输入框背景, 原 --fill-color-1) */
+  --bg-active: #409eff;
+  --bg-hover: #2a598a; /* (原 --fill-color-3) */
+  --bg-brand-light: #18222c; /* 品牌浅色背景 (原 --fill-color-0) */
 
-  --bg-color: #141414;
-  --bg-color-0: #0a0a0a;
-  --bg-color-1: #141414;
-  --bg-color-2: #1d1e1f;
+  /* ---------------------- 边框颜色 (Border) ---------------------- */
+  --border-default: #4c4d4f; /* 默认边框 */
+  --border-lighter: #58585b; /* 浅边框 (原 --border-default-1) */
+  --border-darker: #363637; /* 深边框 (原 --border-default-active) */
+  --border-active: #636466; /* 激活边框 */
 
-  --icon-bg-color: white;
-  --icon-bg-hover-color: yellow;
+  /* ---------------------- 阴影/其他 ---------------------- */
+  --shadow-default: 0px 2px 4px 0px rgba(0, 0, 0, 0.2); /* 建议深色模式阴影更深 */
+  --shadow-aigc: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
 
-  --box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
-  --aigc-box-shadow: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
   hr {
-    color: #7a7a7a;
-    background-color: #7a7a7a;
+    border-color: #7a7a7a;
   }
 }
 

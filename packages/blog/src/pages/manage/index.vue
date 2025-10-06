@@ -42,7 +42,7 @@ const handleMenuSelect = (index: string) => {
 <style scoped>
 .manage-page {
   min-height: calc(100vh - 37rem);
-  background-color: var(--bg-color);
+  background-color: var(--bg-page);
 
   display: grid;
   grid-template-columns: 25rem auto;

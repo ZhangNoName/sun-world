@@ -205,7 +205,7 @@ onMounted(async () => {
   display: flex;
   height: 75rem;
   margin: 0 auto;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 2rem;
   overflow: hidden;
   box-shadow: var(--aigc-box-shadow);
@@ -213,7 +213,7 @@ onMounted(async () => {
   .sidebar {
     position: relative;
     gap: 1.5rem;
-    background-color: var(--bg-color-0);
+    background-color: var(--bg-brand-light);
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -228,13 +228,13 @@ onMounted(async () => {
         font-size: 2rem;
         font-weight: 700;
         animation: all 0.3s ease;
-        color: var(--font-color-0);
+        color: var(--text-strong);
       }
       .des {
         font-size: 1.2rem;
         font-weight: 400;
         animation: all 0.3s ease;
-        color: var(--font-color-2);
+        color: var(--text-secondary);
       }
       .logo {
         position: absolute;
@@ -277,7 +277,7 @@ onMounted(async () => {
       opacity: 0;
 
       &:hover {
-        background-color: var(--bg-color-1);
+        background-color: var(--bg-page-1);
 
         opacity: 0.5;
       }
@@ -320,7 +320,7 @@ onMounted(async () => {
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      border-top: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-default);
       box-shadow: var(--box-shadow);
       .func {
         display: flex;
@@ -335,15 +335,15 @@ onMounted(async () => {
         display: flex;
         flex: 1 1;
         border-radius: 10px;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-default);
         textarea {
           height: 100%;
           width: 100%;
           border-radius: 1rem;
           border: none;
           box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03);
-          background-color: var(--bg-color);
-          color: var(--font-color);
+          background-color: var(--bg-page);
+          color: var(--text-default);
           font-family: inherit;
           padding: 1rem 9rem 1rem 1.4rem;
           resize: none;

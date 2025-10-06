@@ -78,9 +78,9 @@ const showBlog = () => {
 <style scoped>
 .z-blog-card {
   margin-top: 1.5rem;
-  border-color: var(--border-color);
-  background-color: var(--bg-color-0);
-  color: var(--font-color);
+  border-color: var(--border-default);
+  background-color: var(--bg-brand-light);
+  color: var(--text-default);
   border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -91,7 +91,7 @@ const showBlog = () => {
   .header {
     font-size: 1.1rem;
 
-    color: var(--font-color-2);
+    color: var(--text-secondary);
     display: flex;
     justify-content: flex-start;
     align-items: center;
