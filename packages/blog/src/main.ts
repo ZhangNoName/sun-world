@@ -10,6 +10,7 @@ import {
   getWeatherByHeFeng,
   InterceptLocalStorage,
 } from '@/util'
+import lazy from '@/directives/lazy'
 import 'element-plus/theme-chalk/src/index.scss'
 import 'qweather-icons/font/qweather-icons.css'
 import { createPinia } from 'pinia'
@@ -22,6 +23,7 @@ getCurrentLocation().then((res) => {
   })
 })
 const app = createApp(App)
+app.directive('lazy', lazy)
 // 将实例挂载到全局属性
 // app.config.globalProperties.$elMessage = elMessage;
 app.use(i18n)

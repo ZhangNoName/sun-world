@@ -8,6 +8,9 @@ import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
 import { fetchBaseData } from '@/util/request'
+import Waterfall from '@/components/Waterfall/waterfall.vue'
+import ListSvg from '@/assets/svgs/list.svg'
+import WaterfallSvg from '@/assets/svgs/waterfall.svg'
 import {
   CategoryResponse,
   getStats,
@@ -22,6 +25,7 @@ interface Props {
   iconSize: string
   iconBgColor: string
 }
+type ListModeType = 'list' | 'waterfall'
 const props: Props = defineProps({
   title: { type: String },
   subTitle: { type: String, default: '副标题' },
@@ -36,10 +40,14 @@ const hasMore = ref<boolean>(true)
 const categoryList = inject<CategoryResponse[]>('categoryList', [])
 const tagList = inject<TagResponse[]>('tagList', [])
 const totalCount = ref<number>(0) // 博客总数
+const listMode = ref<ListModeType>('waterfall')
 const page = reactive<{ page: number; pageSize: number }>({
   page: 1,
   pageSize: 2,
 })
+const changeMode = (mode: ListModeType) => {
+  listMode.value = mode
+}
 /**
  * 核心数据获取和处理逻辑
  * @param append 是否是追加数据（用于加载更多）
@@ -115,7 +123,26 @@ onMounted(async () => {
           {{ item.name }}
         </div>
       </div>
-      <BlogCard v-for="item in blogList" :key="item.id" v-bind="item" />
+      <div class="view-config">
+        <div class="des">显示配置：</div>
+        <div class="mode-radio">
+          <div
+            :class="{ active: listMode === 'list' }"
+            @click="changeMode('list')"
+          >
+            <img :src="ListSvg" alt="列表模式" />
+          </div>
+
+          <div
+            :class="{ active: listMode === 'waterfall' }"
+            @click="changeMode('waterfall')"
+          >
+            <img :src="WaterfallSvg" alt="瀑布流模式" />
+          </div>
+        </div>
+      </div>
+      <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
+      <BlogCard v-else v-for="item in blogList" :key="item.id" v-bind="item" />
       <el-button
         type="primary"
         class="load-more"
@@ -168,6 +195,39 @@ onMounted(async () => {
         border-radius: 0.5rem;
       }
     }
+    .view-config {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      .mode-radio {
+        display: flex;
+        gap: 1rem;
+        div {
+          cursor: pointer;
+          /* 统一设置点击区域尺寸和样式 */
+          width: 2rem;
+          height: 2rem; /* 增加高度确保是方形点击区 */
+          display: flex; /* 确保 img 居中 */
+          align-items: center;
+          justify-content: center;
+
+          padding: 0.5rem;
+          border-radius: 0.6rem;
+          transition: background 0.3s; /* 添加过渡效果 */
+
+          img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
+        }
+        .active {
+          background: var(--bg-active);
+        }
+      }
+    }
+
     .load-more {
       width: fit-content;
       margin: auto;
