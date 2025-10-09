@@ -26,8 +26,6 @@ import ZFooter from './footer/index.vue'
   }
   .content {
     flex: 1;
-
-    margin: auto;
   }
   .footer {
     flex: none;

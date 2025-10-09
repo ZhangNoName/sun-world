@@ -1,5 +1,6 @@
 <script setup lang="ts" name="content">
 import BlogCard from '@/components/BlogCard/index.vue'
+import { ElButton } from 'element-plus'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import { inject, onMounted, reactive, ref } from 'vue'
@@ -30,39 +31,76 @@ const props: Props = defineProps({
   iconBgColor: { type: String, default: '#fff' },
 })
 const blogList = reactive<any[]>([])
+const loading = ref<boolean>(false)
+const hasMore = ref<boolean>(true)
 const categoryList = inject<CategoryResponse[]>('categoryList', [])
 const tagList = inject<TagResponse[]>('tagList', [])
+const totalCount = ref<number>(0) // 博客总数
+const page = reactive<{ page: number; pageSize: number }>({
+  page: 1,
+  pageSize: 2,
+})
+/**
+ * 核心数据获取和处理逻辑
+ * @param append 是否是追加数据（用于加载更多）
+ */
+const getList = async (append: boolean = false) => {
+  if (loading.value || (!hasMore.value && append)) return
 
+  loading.value = true
+  try {
+    const res = await getBlogByPage(page.page, page.pageSize)
+    const newItems = res.list.map((o) => {
+      // 数据映射和转换逻辑保持不变，确保 tagList 和 categoryList 是可用的
+      return {
+        title: o.title,
+        abstract: o.abstract,
+        lastUpdateTime: formatDate(o.updated_at),
+        id: o.id.toString(),
+        commentNum: o.comment_num,
+        byteNum: o.byte_num,
+        // 确保 find 方法可以工作，且 fallback 值是安全的
+        tags: o.tag
+          .map((i) => tagList.find((t) => t.id === i)?.name)
+          .filter(Boolean),
+        category:
+          categoryList.find((c) => c.id === o.category)?.name || '未分类',
+        viewNum: o.view_num,
+        publishTime: formatDate(o.created_at),
+      }
+    })
+
+    if (append) {
+      blogList.push(...newItems) // 加载更多时，追加数据
+    } else {
+      blogList.splice(0, blogList.length, ...newItems) // 首次加载或刷新时，替换数据
+    }
+
+    totalCount.value = res.total
+    // 判断是否还有更多数据
+    hasMore.value = blogList.length < res.total
+  } catch (error) {
+    ElMessage.error('获取博客列表数据失败！')
+    console.error('获取博客列表数据失败', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * 加载更多按钮的点击事件
+ */
+const loadMore = () => {
+  if (hasMore.value) {
+    page.page++ // 页码递增
+    getList(true) // 调用核心函数，并设置为追加模式
+  }
+}
+
+// 组件挂载时，加载第一页数据
 onMounted(async () => {
-  // return
-  getBlogByPage(1, 10)
-    .then((res) => {
-      blogList.splice(
-        0,
-        blogList.length,
-        ...res.list.map((o) => {
-          return {
-            title: o.title,
-            abstract: o.abstract,
-            lastUpdateTime: formatDate(o.updated_at),
-            id: o.id.toString(),
-            commentNum: o.comment_num,
-            byteNum: o.byte_num,
-            tags: o.tag.map((i) => tagList.find((t) => t.id === i)?.name),
-            category: categoryList.find((c) => c.id === o.category)?.name,
-            viewNum: o.view_num,
-            publishTime: formatDate(o.created_at),
-          }
-        })
-      )
-      // console.log('最终的博客数据', blogList)
-    })
-    .catch((e) => {
-      ElMessage.error('获取博客列表数据失败！')
-      console.error('获取博客列表数据失败', e)
-    })
-    .finally(() => {})
-  // 获取统计数据
+  await getList(false) // 首次加载，不追加
+  // 其他统计数据获取等可以在这里继续添加
 })
 </script>
 <template>
@@ -72,33 +110,67 @@ onMounted(async () => {
       <WeatherCard />
     </div>
     <div class="right">
-      <div class="card summary-card"></div>
-
+      <div class="card summary-card">
+        <div class="tag" v-for="item in tagList" :key="item.id">
+          {{ item.name }}
+        </div>
+      </div>
       <BlogCard v-for="item in blogList" :key="item.id" v-bind="item" />
+      <el-button
+        type="primary"
+        class="load-more"
+        :loading="loading"
+        :disabled="!hasMore"
+        @click="loadMore"
+      >
+        加载更多
+      </el-button>
     </div>
   </div>
 </template>
 
 <style scoped>
 .home-page {
+  width: 100%;
+  margin: 0 auto;
   max-width: 1280px;
   background-color: var(--bg-page);
-  display: grid;
-  grid-template-columns: 35rem auto;
-  grid-template-rows: auto;
+  display: flex;
+  /* grid-template-columns: 35rem 1fr;
+  grid-template-rows: auto; */
   gap: 1rem;
   .card {
     border-radius: 0.5rem;
     height: 10rem;
   }
+
   .left {
+    width: 35rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
   .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     .summary-card {
+      padding: 1.4rem;
       background-color: var(--bg-brand-light);
+      min-height: 10rem;
+      display: flex;
+      gap: 1.5rem;
+      .tag {
+        background-color: var(--bg-hover);
+        height: fit-content;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+      }
+    }
+    .load-more {
+      width: fit-content;
+      margin: auto;
     }
   }
 }

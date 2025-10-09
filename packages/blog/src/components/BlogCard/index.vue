@@ -77,7 +77,6 @@ const showBlog = () => {
 
 <style scoped>
 .z-blog-card {
-  margin-top: 1.5rem;
   border-color: var(--border-default);
   background-color: var(--bg-brand-light);
   color: var(--text-default);
@@ -88,6 +87,7 @@ const showBlog = () => {
   align-items: stretch;
   padding: 1.5rem;
   gap: 0.5rem;
+
   .header {
     font-size: 1.1rem;
 
@@ -96,6 +96,7 @@ const showBlog = () => {
     justify-content: flex-start;
     align-items: center;
     gap: 1.5rem;
+    cursor: pointer;
     .tag {
       display: flex;
       align-items: center;
@@ -109,10 +110,13 @@ const showBlog = () => {
   }
   .title {
     height: fit-content;
-
+    cursor: pointer;
     font-size: 2.8rem;
     /* font-weight: 600; */
     text-align: left;
+    &:hover {
+      color: var(--text-hover);
+    }
   }
   .body {
     min-height: 10rem;

@@ -134,7 +134,6 @@ const weatherIcon = computed(() => {
   hr {
     width: 100%;
     align-self: center;
-    height: 0.2rem;
   }
   .tip {
     display: flex;
