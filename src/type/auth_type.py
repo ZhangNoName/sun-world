@@ -10,7 +10,7 @@ class RegisterModel(BaseModel):
 
 class LoginModel(BaseModel):
     username: Optional[str]
-
+    device_id: str
     password: str
 
 class TokenModel(BaseModel):

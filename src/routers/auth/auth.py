@@ -42,7 +42,8 @@ async def register(user: RegisterModel, auth:AuthManager=Depends(get_auth_manage
 async def login(form_data: LoginModel, auth:AuthManager=Depends(get_auth_manager)):
     tokens = auth.authenticate_user(
         form_data.username,
-        form_data.password
+        form_data.password,
+        form_data.device_id
     )
     if not tokens:
         return ResponseModel(code=0, data=None, message="用户名或密码错误")

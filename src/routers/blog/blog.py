@@ -65,7 +65,7 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
 @router.get("/")
 async def get_blogs_paginated(
     page: int = 1,
-    page_size: int = 10,
+    pageSize: int = 10,
     blog_manager: BlogManager = Depends(get_blog_manager)
 ):
     """
@@ -79,8 +79,8 @@ async def get_blogs_paginated(
     Returns:
         dict: 包含分页信息的字典
     """
-
-    blogs = blog_manager.get_blog_by_page(page, page_size)
+    logger.info(f'分页参数：{page}--{pageSize}')
+    blogs = blog_manager.get_blog_by_page(page, pageSize)
     return ResponseModel(code=1, data=blogs, message="获取成功")
 
 

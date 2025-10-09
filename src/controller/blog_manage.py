@@ -118,6 +118,7 @@ class BlogManager:
 
         skip = (page - 1) * page_size
         # 1. 查询博客数据
+        logger.debug(f'分页获取数据 {page}{page_size}')
         blogs_data = self.db.find_page_query("blog", filter={}, skip=skip, page_size=page_size)
 
         # 获取所有博客的 ID
@@ -166,11 +167,11 @@ class BlogManager:
             blog_id = blog["id"]
             blog["tag"] = [tag_id for tag_id in blog_tag_map.get(blog_id, [])]  # 关联 tag
 
-        # total_count = self.db.find_count("blog")  # 统计总数
+        total_count = self.db.count("blog")  # 统计总数
         # total_count = 10
         # logger.info(f'查询到的结果{blogs_data}')
         return {
-            # "total": total_count,
+            "total": total_count,
             "page": page,
             "page_size": page_size,
             "list": [BlogBase(**blog_data) for blog_data in blogs_data]

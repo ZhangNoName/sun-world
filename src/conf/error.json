@@ -1,0 +1,10 @@
+{
+  "en": {
+    "S0001": "User not found",
+    "D0001": "Please try again later"
+  },
+  "zh": {
+    "S0001": "用户不存在",
+    "D0001": "请稍后重试"
+  }
+}

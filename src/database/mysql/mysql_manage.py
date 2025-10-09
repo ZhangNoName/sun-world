@@ -186,6 +186,34 @@ class MySQLManager:
         except pymysql.Error as e:
             logger.error(f"查询失败: {e}")
             return []
+    
+    def count(self, table: str, filter: Optional[dict] = None) -> int:
+        """
+        获取表中符合条件的记录数
+
+        Args:
+            table (str): 表名
+            filter (dict): 查询的过滤条件（WHERE 子句）
+
+        Returns:
+            int: 记录数
+        """
+        if filter is None:
+            filter = {}
+
+        where_clause = " AND ".join([f"{key} = %s" for key in filter.keys()])
+        where_clause = f"WHERE {where_clause}" if where_clause else ""
+        sql = f"SELECT COUNT(*) as count FROM {table} {where_clause}"
+        params = list(filter.values())
+
+        try:
+            logger.info(f"执行计数查询: {sql} | 参数: {params}")
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchone()
+            return result['count'] if result else 0
+        except pymysql.Error as e:
+            logger.error(f"计数查询失败: {e}")
+            return 0
 
 
     def close(self):
