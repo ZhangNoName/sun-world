@@ -12,7 +12,9 @@ import {
   TagResponse,
 } from '@/service/baseRequest'
 import { DEFAULT_STATS } from './util/data'
+import { useDeviceStore } from './store/tg'
 // import { testApi } from './service/request'
+const deviceStore = useDeviceStore()
 const theme = ref('sun-light')
 const { locale } = useI18n()
 const tagList = reactive<TagResponse[]>([])

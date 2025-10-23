@@ -9,17 +9,10 @@
 import { ref, onMounted } from 'vue'
 import MobileLayout from './mobLayout.vue'
 import WebLayout from './deskLayout.vue'
-
-const isMobile = ref(false)
-
-function checkIsMobile() {
-  // 简单的移动端判断，可根据需要调整
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  )
-}
+import { useDeviceStore } from '@/store/tg'
+const { isMobile } = useDeviceStore()
 
 onMounted(() => {
-  isMobile.value = checkIsMobile()
+  console.log('Layout Mounted - isMobile:', isMobile)
 })
 </script>

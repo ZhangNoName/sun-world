@@ -67,7 +67,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   columnCount: 2,
   gap: 12,
-  list: () => TestList,
+  list: () => [],
 })
 
 const containerRef = ref<HTMLElement>()
