@@ -132,9 +132,34 @@ export const useDeviceStore = defineStore('device', () => {
     if (tg) {
       tg.ready()
       tg.expand()
+      tg.enableClosingConfirmation()
+      tg.MainButton.color = '#ff0000'
+      tg.SecondaryButton.color = '#00ff00'
+      tg.MainButton.setParams({
+        color: '#ff0000',
+        text_color: '#00ffff',
+        text: '123456',
+      })
+
+      tg.setBackgroundColor('#ff0000')
+      // 生效
+      tg.setHeaderColor('#00ff00')
+      // tg.showScanQrPopup({
+      //   text: 'Scan this QR code to visit our website!',
+      // })
+
+      // tg.showPopup({
+      //   title: 'Welcome to the Mini App!',
+      //   message: 'This is a Telegram Mini App running inside Telegram.',
+      //   buttons: [
+      //     {
+      //       text: 'Got it',
+      //     },
+      //   ],
+      // })
 
       if (isMobilePhone) {
-        tg.requestFullscreen()
+        // tg.requestFullscreen()
       }
     }
   })
