@@ -92,13 +92,8 @@ export const useDeviceStore = defineStore('device', () => {
   // 4. 广义判断是否为手机 (排除 TMA 和 iPad) (保持不变)
   const isMobilePhone = computed(() => {
     return (
-      !isTMA.value &&
-      !isIPad.value &&
-      // 简化判断：如果不是 iPad 且是 iOS，那就是手机
-      ((isIOS.value && !isIPad.value) ||
-        // 或其他 Android/移动设备判断
-        /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(userAgent.value) ||
-        screenWidth.value <= 768)
+      /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(userAgent.value) ||
+      screenWidth.value <= 768
     )
   })
 
@@ -115,16 +110,39 @@ export const useDeviceStore = defineStore('device', () => {
     return guessDeviceModel(userAgent.value, deviceType.value)
   })
 
-  // --- 动作 (Actions) & 返回 (Return) ---
+  // --- 动作 (Actions) ---
 
+  // 1. 核心处理函数：更新 screenWidth
   const handleResize = () => {
-    /* ... (保持不变) ... */
+    // 仅在浏览器环境更新，以避免 SSR 错误
+    if (typeof window !== 'undefined') {
+      // 更新响应式状态 screenWidth
+      screenWidth.value = window.innerWidth
+    }
   }
+
+  /**
+   * 2. 注册和注销事件监听器的函数。
+   * * Pinia Store 本身没有生命周期，所以需要依赖调用方（如 App.vue）
+   * 传入 Vue 的 onMounted 和 onUnmounted 钩子来挂载事件。
+   */
   const registerResizeListener = (
     mounted: typeof onMounted,
     unmounted: typeof onUnmounted
   ) => {
-    /* ... (保持不变) ... */
+    if (typeof window !== 'undefined') {
+      // 在组件挂载时添加监听
+      mounted(() => {
+        // 确保在添加监听前先调用一次，以获取初始的正确宽度
+        handleResize()
+        window.addEventListener('resize', handleResize)
+      })
+
+      // 在组件卸载时移除监听
+      unmounted(() => {
+        window.removeEventListener('resize', handleResize)
+      })
+    }
   }
   onMounted(() => {
     console.log('Device Store Mounted', isTMA.value, window.Telegram)

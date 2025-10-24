@@ -1,12 +1,20 @@
 <template>
   <div class="mob-layout">
+    <div class="mob-header">
+      <div class="left">
+        <img src="/logo.svg" alt="logo" srcset="" />
+      </div>
+      <div class="right">
+        <div class="search">搜索</div>
+        <div>expend</div>
+      </div>
+    </div>
     <RouterView />
     <div class="mob-footer">
-      <div class="footer-item">1</div>
-      <div class="footer-item">2</div>
-      <div class="footer-item">3</div>
-      <div class="footer-item">4</div>
-      <div class="footer-item">5</div>
+      <div class="bot-channel">
+        <a href="/home">123</a>
+        <span class="text">首页</span>
+      </div>
     </div>
   </div>
 </template>
@@ -22,10 +30,27 @@ function toggleDrawer() {
 
 <style scoped>
 .mob-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  position: fixed;
+  bottom: 0;
   background: #f8f9fa;
+  width: 100%;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+  .mob-footer {
+    display: flex;
+    .bot-channel {
+      flex-grow: 1;
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      a {
+      }
+      .text {
+      }
+    }
+  }
 }
 
 .mob-header {
@@ -102,13 +127,5 @@ function toggleDrawer() {
   flex: 1;
   padding: 16px;
   background: #f8f9fa;
-}
-
-.mob-footer {
-  text-align: center;
-  padding: 12px 0;
-  background: #222;
-  color: #fff;
-  font-size: 0.95rem;
 }
 </style>

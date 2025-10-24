@@ -1,3 +1,11 @@
+* {
+  box-sizing: border-box;
+  /* -webkit-user-select: auto;
+  user-select: auto;
+  scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent; */
+}
+
 :root {
   font-family: Monda, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   line-height: 1.5;
@@ -29,7 +37,11 @@ html {
   /* 优先使用系统字体，确保速度和清晰度 */
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
     'Microsoft YaHei', 'Arial', sans-serif;
-  font-size: 10px;
+  --font-large: 16px;
+  --font-medium: 14px;
+  --font-small: 12px;
+  font-size: var(--font-medium);
+  line-height: 1.2;
 }
 div {
   cursor: default;
@@ -38,10 +50,9 @@ div {
   /* max-width: 1280px; */
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
-  font-size: 1.6rem;
-  line-height: 1.2;
+  height: 100dvh;
+  width: 100dvw;
+
   overflow: hidden;
 }
 
@@ -145,4 +156,8 @@ div {
   &:hover {
     background: rgba(0, 0, 0, 0.24);
   }
+}
+a {
+  text-decoration: none;
+  background-color: transparent;
 }

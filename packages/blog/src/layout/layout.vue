@@ -6,12 +6,12 @@
 </template>
 
 <script setup lang="ts" name="SwLayout">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import MobileLayout from './mobLayout.vue'
 import WebLayout from './deskLayout.vue'
 import { useDeviceStore } from '@/store/tg'
-const { isMobile } = useDeviceStore()
-
+const { isMobile, registerResizeListener } = useDeviceStore()
+registerResizeListener(onMounted, onUnmounted)
 onMounted(() => {
   console.log('Layout Mounted - isMobile:', isMobile)
 })
