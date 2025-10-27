@@ -10,7 +10,11 @@
       </div>
     </div>
     <div class="main-container" id="mf">
-      <RouterView />
+      <RouterView v-slot="{ Component, route }">
+        <keep-alive>
+          <component :is="Component" :key="route.fullPath" />
+        </keep-alive>
+      </RouterView>
     </div>
 
     <div class="mob-footer">
@@ -21,19 +25,19 @@
         </router-link>
       </div>
       <div class="bot-channel">
-        <router-link to="/home" class="bot-channel">
+        <router-link to="/aigc" class="bot-channel">
           <SvgIcon name="ai" alt="ai" />
           <span class="text">AI</span>
         </router-link>
       </div>
       <div class="bot-channel">
-        <router-link to="/home" class="bot-channel">
+        <router-link to="/canvas" class="bot-channel">
           <SvgIcon name="canvas" alt="canvas" />
           <span class="text">画布</span>
         </router-link>
       </div>
       <div class="bot-channel">
-        <router-link to="/home" class="bot-channel">
+        <router-link to="/me" class="bot-channel">
           <SvgIcon name="me" alt="me" />
           <span class="text">个人中心</span>
         </router-link>

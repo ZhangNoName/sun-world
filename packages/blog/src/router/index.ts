@@ -9,6 +9,8 @@ import NotFound from './NotFound.vue'
 import Login from '@/pages/login/login.vue'
 const routes = [
   { path: '/', component: Home },
+
+  { path: '/home', component: Home },
   { path: '/blog', component: Blog },
   { path: '/new_article', component: NewArticle },
   { path: '/aigc', component: AIGC },
@@ -23,6 +25,10 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    else return { top: 0 }
+  },
 })
 
 export default router
