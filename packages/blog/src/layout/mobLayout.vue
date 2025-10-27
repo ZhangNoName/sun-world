@@ -2,11 +2,11 @@
   <div class="mob-layout">
     <div class="mob-header">
       <div class="left">
-        <SvgIcon name="logo" alt="logo" />
+        <SvgIcon size="40px" name="logo" alt="logo" />
       </div>
       <div class="right">
-        <div class="search">搜索</div>
-        <div>expend</div>
+        <Btn icon="search" @click="toggleDrawer" type="icon" />
+        <Btn icon="menu" @click="toggleDrawer" type="icon" />
       </div>
     </div>
     <div class="main-container" id="mf">
@@ -47,7 +47,8 @@
 </template>
 
 <script setup>
-import SvgIcon from '@/components/SvgIcon/svgIcon.vue'
+import Btn from '@/baseCom/btn/btn.vue'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 const drawerOpen = ref(false)
@@ -74,10 +75,15 @@ function toggleDrawer() {
     align-items: center;
     justify-content: space-between;
     height: 72px;
-    padding: 0 16px 0 12px;
+    padding: 0 12px 0 16px;
     color: #fff;
     top: 0;
     flex-shrink: 0;
+    .right {
+      display: flex;
+      align-items: center;
+      gap: var(--horizontalGapPx);
+    }
   }
   .main-container {
     padding: 0 var(--horizontalGapPx);

@@ -16,7 +16,7 @@ import {
   StatsResponse,
   TagResponse,
 } from '@/service/baseRequest'
-import SvgIcon from '@/components/SvgIcon/svgIcon.vue'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 interface Props {
   title?: string
