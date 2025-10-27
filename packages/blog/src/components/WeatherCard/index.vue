@@ -5,7 +5,7 @@ import { HeFengWeatherData, CurrentLocationArea } from '@/util'
 const prop = defineProps()
 
 const weatherIcon = computed(() => {
-  console.log(HeFengWeatherData.now.icon)
+  // console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
 </script>

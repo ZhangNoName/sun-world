@@ -91,6 +91,7 @@ export const useDeviceStore = defineStore('device', () => {
 
   // 4. 广义判断是否为手机 (排除 TMA 和 iPad) (保持不变)
   const isMobilePhone = computed(() => {
+    // console.log('判断是否为手机设备', screenWidth.value)
     return (
       /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(userAgent.value) ||
       screenWidth.value <= 768
@@ -119,6 +120,7 @@ export const useDeviceStore = defineStore('device', () => {
       // 更新响应式状态 screenWidth
       screenWidth.value = window.innerWidth
     }
+    // console.log('屏幕尺寸变化，更新 screenWidth:', screenWidth.value)
   }
 
   /**
@@ -196,5 +198,6 @@ export const useDeviceStore = defineStore('device', () => {
 
     // Actions
     registerResizeListener,
+    handleResize,
   }
 })

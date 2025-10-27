@@ -74,7 +74,6 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  font-size: 1.5rem;
 }
 </style>
 <style scoped>
@@ -83,7 +82,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   overflow: auto;
-  font-size: 1.6rem;
+
   color: var(--text-default);
   background-color: var(--bg-page);
   display: flex;

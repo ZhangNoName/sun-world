@@ -3,20 +3,21 @@ import BlogCard from '@/components/BlogCard/index.vue'
 import { ElButton } from 'element-plus'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
-import { inject, onMounted, reactive, ref } from 'vue'
+import { inject, onMounted, reactive, ref, VNode, VNodeRef } from 'vue'
 import { getBaseInfo, getBlogByPage } from '@/service/request'
 import { ElMessage } from 'element-plus'
 import { formatDate } from '@/util/function'
 import { fetchBaseData } from '@/util/request'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
-import ListSvg from '@/assets/svgs/list.svg'
-import WaterfallSvg from '@/assets/svgs/waterfall.svg'
+
 import {
   CategoryResponse,
   getStats,
   StatsResponse,
   TagResponse,
 } from '@/service/baseRequest'
+import SvgIcon from '@/components/SvgIcon/svgIcon.vue'
+import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 interface Props {
   title?: string
   subTitle: string
@@ -40,14 +41,15 @@ const hasMore = ref<boolean>(true)
 const categoryList = inject<CategoryResponse[]>('categoryList', [])
 const tagList = inject<TagResponse[]>('tagList', [])
 const totalCount = ref<number>(0) // 博客总数
-const listMode = ref<ListModeType>('waterfall')
+const listMode = ref<ListModeType>('list')
 const page = reactive<{ page: number; pageSize: number }>({
   page: 1,
-  pageSize: 2,
+  pageSize: 5,
 })
 const changeMode = (mode: ListModeType) => {
   listMode.value = mode
 }
+
 /**
  * 核心数据获取和处理逻辑
  * @param append 是否是追加数据（用于加载更多）
@@ -98,13 +100,16 @@ const getList = async (append: boolean = false) => {
 /**
  * 加载更多按钮的点击事件
  */
-const loadMore = () => {
-  if (hasMore.value) {
+const loadMore = async () => {
+  if (hasMore.value && !loading.value) {
     page.page++ // 页码递增
-    getList(true) // 调用核心函数，并设置为追加模式
+    await getList(true) // 调用核心函数，并设置为追加模式
   }
 }
-
+const { loaderRef } = useInfiniteScroll(loadMore, {
+  rootMargin: '500px',
+  root: document.getElementById('mf'),
+})
 // 组件挂载时，加载第一页数据
 onMounted(async () => {
   await getList(false) // 首次加载，不追加
@@ -130,28 +135,30 @@ onMounted(async () => {
             :class="{ active: listMode === 'list' }"
             @click="changeMode('list')"
           >
-            <img :src="ListSvg" alt="列表模式" />
+            <SvgIcon name="list" alt="列表模式" />
           </div>
 
           <div
             :class="{ active: listMode === 'waterfall' }"
             @click="changeMode('waterfall')"
           >
-            <img :src="WaterfallSvg" alt="瀑布流模式" />
+            <SvgIcon name="waterfall" alt="瀑布流模式" />
           </div>
         </div>
       </div>
       <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
       <BlogCard v-else v-for="item in blogList" :key="item.id" v-bind="item" />
-      <el-button
-        type="primary"
-        class="load-more"
-        :loading="loading"
-        :disabled="!hasMore"
-        @click="loadMore"
-      >
-        加载更多
-      </el-button>
+      <div class="loader-btn" ref="loaderRef">
+        <el-button
+          type="primary"
+          class="load-more"
+          :loading="loading"
+          :disabled="loading"
+          @click="loadMore"
+        >
+          {{ loading ? '正在加载...' : hasMore ? '加载更多' : '没有更多了' }}
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -166,6 +173,7 @@ onMounted(async () => {
   /* grid-template-columns: 35rem 1fr;
   grid-template-rows: auto; */
   gap: 1rem;
+
   .card {
     border-radius: 0.5rem;
     height: 10rem;
@@ -227,10 +235,19 @@ onMounted(async () => {
         }
       }
     }
-
-    .load-more {
-      width: fit-content;
-      margin: auto;
+    .loader-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .load-more {
+        width: fit-content;
+        margin: auto;
+      }
+    }
+  }
+  @media screen and (max-width: 695px) {
+    .left {
+      display: none;
     }
   }
 }

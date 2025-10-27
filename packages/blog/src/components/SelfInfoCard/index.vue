@@ -24,7 +24,7 @@ const stats = inject<StatsResponse>('stats', DEFAULT_STATS)!
 const { blog_count, category_count, tag_count, total_view_num } = toRefs(stats)
 
 const weatherIcon = computed(() => {
-  console.log(HeFengWeatherData.now.icon)
+  // console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
 

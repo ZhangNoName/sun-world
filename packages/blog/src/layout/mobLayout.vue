@@ -2,24 +2,48 @@
   <div class="mob-layout">
     <div class="mob-header">
       <div class="left">
-        <img src="/logo.svg" alt="logo" srcset="" />
+        <SvgIcon name="logo" alt="logo" />
       </div>
       <div class="right">
         <div class="search">搜索</div>
         <div>expend</div>
       </div>
     </div>
-    <RouterView />
+    <div class="main-container" id="mf">
+      <RouterView />
+    </div>
+
     <div class="mob-footer">
       <div class="bot-channel">
-        <a href="/home">123</a>
-        <span class="text">首页</span>
+        <router-link to="/home" class="bot-channel">
+          <SvgIcon name="home" alt="home" />
+          <span class="text">首页</span>
+        </router-link>
+      </div>
+      <div class="bot-channel">
+        <router-link to="/home" class="bot-channel">
+          <SvgIcon name="ai" alt="ai" />
+          <span class="text">AI</span>
+        </router-link>
+      </div>
+      <div class="bot-channel">
+        <router-link to="/home" class="bot-channel">
+          <SvgIcon name="canvas" alt="canvas" />
+          <span class="text">画布</span>
+        </router-link>
+      </div>
+      <div class="bot-channel">
+        <router-link to="/home" class="bot-channel">
+          <SvgIcon name="me" alt="me" />
+          <span class="text">个人中心</span>
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import SvgIcon from '@/components/SvgIcon/svgIcon.vue'
 import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 const drawerOpen = ref(false)
@@ -30,13 +54,34 @@ function toggleDrawer() {
 
 <style scoped>
 .mob-layout {
+  height: 100dvh;
   position: fixed;
   bottom: 0;
-  background: #f8f9fa;
+  background: var(--bg-page);
   width: 100%;
   z-index: 10;
   padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .mob-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    padding: 0 16px 0 12px;
+    color: #fff;
+    top: 0;
+    flex-shrink: 0;
+  }
+  .main-container {
+    padding: 0 var(--horizontalGapPx);
+    flex: auto;
+    overflow: auto;
+  }
   .mob-footer {
+    flex-shrink: 0;
     display: flex;
     .bot-channel {
       flex-grow: 1;
@@ -45,25 +90,21 @@ function toggleDrawer() {
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      @media screen and (max-width: 695px) {
+        .text {
+          display: none;
+        }
+      }
       a {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .text {
       }
     }
   }
-}
-
-.mob-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 16px;
-  background: #222;
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .logo {

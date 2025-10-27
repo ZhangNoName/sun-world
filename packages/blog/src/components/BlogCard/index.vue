@@ -85,33 +85,27 @@ const showBlog = () => {
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  padding: 1.5rem;
+  padding: var(--horizontalGapPx);
   gap: 0.5rem;
 
   .header {
-    font-size: 1.1rem;
-
     color: var(--text-secondary);
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     cursor: pointer;
     .tag {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 0.5rem;
+      gap: var(--horizontalGapPx);
     }
-    /* span {
-        height: 1.1rem;
-        line-height: 1.1rem;
-      } */
   }
   .title {
     height: fit-content;
     cursor: pointer;
-    font-size: 2.8rem;
+    font-size: var(--font-large);
     /* font-weight: 600; */
     text-align: left;
     &:hover {
@@ -119,19 +113,18 @@ const showBlog = () => {
     }
   }
   .body {
-    min-height: 10rem;
     text-align: left;
   }
   .footer {
     height: 6rem;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     .tag {
-      height: 3rem;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 0.5rem;
     }
     hr {
       width: 100%;
@@ -142,16 +135,20 @@ const showBlog = () => {
       justify-content: space-between;
 
       & > :first-child {
-        background-color: var(--btn-bg-color);
-        border-radius: 0.5rem;
-        padding: 0.25rem 1rem;
+        background-color: var(--bg-component);
+        border-radius: var(--border-radius);
+        padding: 0 var(--paddingPx);
         cursor: pointer;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .last-update {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        font-size: 1.1rem;
+        font-size: var(--font-small);
         gap: 0.5rem;
       }
     }
