@@ -95,6 +95,6 @@ onMounted(() => {
   display: grid;
   grid-template-rows: 25rem 2.5rem auto;
   grid-template-columns: auto;
-  gap: 1rem;
+  gap: var(--horizontalGapPx);
 }
 </style>

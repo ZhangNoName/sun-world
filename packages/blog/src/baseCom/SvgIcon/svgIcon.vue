@@ -5,38 +5,33 @@ import { computed } from 'vue'
 type SvgSize = 'small' | 'normal' | 'large' | number | string
 
 interface Props {
-  /** 图标名，例如：common-search、user-avatar */
   name: string
-  /** 图标尺寸，可传数字或关键字 small(16)、normal(24)、large(32) */
   size?: SvgSize
-  /** 填充颜色，可用 class 或直接传 color */
-  color?: string
+  color?: string // 若传入则强制覆盖
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'normal',
 })
 
-// 尺寸映射表
 const sizeMap: Record<'small' | 'normal' | 'large', number> = {
   small: 16,
   normal: 24,
   large: 32,
 }
 
-// 计算最终的尺寸值
 const computedSize = computed(() => {
   if (typeof props.size === 'number') return `${props.size}px`
-  if (
-    typeof props.size === 'string' &&
-    /^[0-9]+(px|rem|em|%)?$/.test(props.size)
-  )
-    return props.size
+  if (/^[0-9]+(px|rem|em|%)?$/.test(String(props.size))) return props.size
   return `${sizeMap[props.size as keyof typeof sizeMap] || 24}px`
 })
 
-// 计算图标完整ID
 const symbolId = computed(() => `#${props.name}`)
+
+// ⚙️ 仅在用户传入 color 时才生成内联样式
+const customColor = computed(() =>
+  props.color ? { color: props.color } : undefined
+)
 </script>
 
 <template>
@@ -45,9 +40,16 @@ const symbolId = computed(() => `#${props.name}`)
     :width="computedSize"
     :height="computedSize"
     aria-hidden="true"
-    :style="{ fill: color }"
-    v-bind="$attrs"
+    :style="customColor"
   >
     <use :xlink:href="symbolId" />
   </svg>
 </template>
+
+<style scoped>
+.svg-icon {
+  fill: currentColor; /* 继承父级 color */
+  color: #8a8a8a; /* 默认颜色 */
+  transition: color 0.3s ease;
+}
+</style>

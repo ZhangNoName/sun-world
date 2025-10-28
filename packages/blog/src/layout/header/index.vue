@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     .logo {
       width: 5rem;
       height: 5rem;
@@ -129,7 +129,7 @@ onBeforeUnmount(() => {
     align-items: center;
     .link-icon {
       display: flex;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       & > *:hover {
         cursor: pointer;
         background-color: var(--icon-bg-hover-color);

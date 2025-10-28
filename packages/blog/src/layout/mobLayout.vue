@@ -2,7 +2,7 @@
   <div class="mob-layout">
     <div class="mob-header">
       <div class="left">
-        <SvgIcon size="40px" name="logo" alt="logo" />
+        <img src="/logo.svg" alt="logo" srcset="" width="40px" height="40px" />
       </div>
       <div class="right">
         <Btn icon="search" @click="toggleDrawer" type="icon" />
@@ -18,26 +18,29 @@
     </div>
 
     <div class="mob-footer">
-      <div class="bot-channel">
-        <router-link to="/home" class="bot-channel">
+      <div
+        class="bot-channel"
+        :class="{ active: activePath == '/' || activePath == '/home' }"
+      >
+        <router-link to="/home">
           <SvgIcon name="home" alt="home" />
           <span class="text">首页</span>
         </router-link>
       </div>
-      <div class="bot-channel">
-        <router-link to="/aigc" class="bot-channel">
+      <div class="bot-channel" :class="{ active: activePath === '/aigc' }">
+        <router-link to="/aigc">
           <SvgIcon name="ai" alt="ai" />
           <span class="text">AI</span>
         </router-link>
       </div>
-      <div class="bot-channel">
-        <router-link to="/canvas" class="bot-channel">
+      <div class="bot-channel" :class="{ active: activePath === '/canvas' }">
+        <router-link to="/canvas">
           <SvgIcon name="canvas" alt="canvas" />
           <span class="text">画布</span>
         </router-link>
       </div>
-      <div class="bot-channel">
-        <router-link to="/me" class="bot-channel">
+      <div class="bot-channel" :class="{ active: activePath === '/me' }">
+        <router-link to="/me">
           <SvgIcon name="me" alt="me" />
           <span class="text">个人中心</span>
         </router-link>
@@ -49,8 +52,12 @@
 <script setup>
 import Btn from '@/baseCom/btn/btn.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
+import { ref, computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
+const route = useRoute()
+
+// 当前激活路径
+const activePath = computed(() => route.path)
 const drawerOpen = ref(false)
 function toggleDrawer() {
   drawerOpen.value = !drawerOpen.value
@@ -112,6 +119,11 @@ function toggleDrawer() {
         justify-content: center;
       }
       .text {
+      }
+    }
+    .active {
+      .svg-icon {
+        color: var(--text-active);
       }
     }
   }

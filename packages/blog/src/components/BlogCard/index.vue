@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { inject, ref, watchEffect } from 'vue'
-import {
-  Calendar,
-  WordCount,
-  Comment,
-  Clock,
-  TagSvg,
-} from '@sun-world/icons-vue'
+
 import Tag from '../Tag/index.vue'
 import { BlogCardProps } from '@/type'
 import { useRouter } from 'vue-router'
 import { StatsResponse } from '@/service/baseRequest'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<BlogCardProps>()
 
 const {
@@ -41,15 +36,15 @@ const showBlog = () => {
   <article class="z-blog-card">
     <div class="header">
       <div class="tag">
-        <Calendar v-bind="iconConfig" />
+        <SvgIcon name="calender" />
         <span>{{ publishTime }}</span>
       </div>
       <div class="tag">
-        <Comment v-bind="iconConfig" />
+        <SvgIcon name="comment" />
         <span>{{ commentNum.toLocaleString() }}</span>
       </div>
       <div class="tag">
-        <WordCount v-bind="iconConfig" />
+        <SvgIcon name="font-num" />
         <span>{{ byteNum.toLocaleString() }}</span>
       </div>
     </div>
@@ -59,7 +54,7 @@ const showBlog = () => {
     <div class="body">{{ abstract }}</div>
     <div class="footer">
       <div class="tag">
-        <TagSvg v-bind="iconConfig" />
+        <SvgIcon name="tag" />
         <Tag v-for="tag in tags" :key="tag" :tag="tag" :url="''" />
       </div>
       <hr />
@@ -67,7 +62,7 @@ const showBlog = () => {
         <a @click="showBlog">{{ $t('readMore') }}...</a>
 
         <div class="last-update">
-          <Calendar v-bind="iconConfig" />
+          <SvgIcon name="calender" />
           {{ lastUpdateTime }}
         </div>
       </div>
@@ -99,7 +94,7 @@ const showBlog = () => {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: var(--horizontalGapPx);
+      gap: 5px;
     }
   }
   .title {

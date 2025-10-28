@@ -55,7 +55,7 @@ const style = computed(() => {
   justify-content: center;
   align-items: center;
   font-size: 1.6rem;
-  gap: 1rem;
+  gap: var(--horizontalGapPx);
   border: 1px solid var(-border-darker);
   border-radius: 1rem;
   padding: 1rem;

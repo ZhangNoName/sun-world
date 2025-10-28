@@ -212,7 +212,7 @@ onMounted(async () => {
 
   .sidebar {
     position: relative;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     background-color: var(--bg-brand-light);
     padding: 2rem;
     display: flex;
@@ -247,7 +247,7 @@ onMounted(async () => {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       .sun-btn {
         flex-grow: 1;
       }
@@ -301,7 +301,7 @@ onMounted(async () => {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        gap: 1rem;
+        gap: var(--horizontalGapPx);
       }
     }
     .body {
@@ -319,13 +319,13 @@ onMounted(async () => {
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       border-top: 1px solid var(--border-default);
       box-shadow: var(--box-shadow);
       .func {
         display: flex;
         flex-wrap: wrap;
-        gap: 1.5rem;
+        gap: var(--horizontalGapPx);
         .sun-btn {
           padding: 0.4rem 1rem;
         }
@@ -381,7 +381,7 @@ onMounted(async () => {
     }
     .tail {
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
     }
   }
 }

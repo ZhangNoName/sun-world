@@ -120,7 +120,7 @@ onMounted(() => {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  gap: 1rem;
+  gap: var(--horizontalGapPx);
   .func-bar {
     height: 3rem;
     width: 100%;
@@ -132,7 +132,7 @@ onMounted(() => {
     .btn-container {
       display: flex;
       justify-content: flex-end;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       align-items: center;
     }
   }
@@ -144,7 +144,7 @@ onMounted(() => {
     grid-template-rows: auto;
     grid-template-columns: 3fr 1fr 1fr;
     align-items: center;
-    gap: 1rem;
+    gap: var(--horizontalGapPx);
   }
   .editor-container {
     flex: 1;

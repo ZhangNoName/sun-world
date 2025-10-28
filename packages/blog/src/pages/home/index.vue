@@ -172,7 +172,7 @@ onMounted(async () => {
   display: flex;
   /* grid-template-columns: 35rem 1fr;
   grid-template-rows: auto; */
-  gap: 1rem;
+  gap: var(--horizontalGapPx);
 
   .card {
     border-radius: 0.5rem;
@@ -183,19 +183,19 @@ onMounted(async () => {
     width: 35rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
   }
   .right {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     .summary-card {
       padding: 1.4rem;
       background-color: var(--bg-brand-light);
       min-height: 10rem;
       display: flex;
-      gap: 1.5rem;
+      gap: var(--horizontalGapPx);
       .tag {
         background-color: var(--bg-hover);
         height: fit-content;
@@ -206,10 +206,10 @@ onMounted(async () => {
     .view-config {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       .mode-radio {
         display: flex;
-        gap: 1rem;
+        gap: var(--horizontalGapPx);
         div {
           cursor: pointer;
           /* 统一设置点击区域尺寸和样式 */

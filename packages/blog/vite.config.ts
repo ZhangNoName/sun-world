@@ -52,6 +52,12 @@ export default defineConfig(({ mode }) => {
         symbolId: '[name]',
         inject: 'body-last',
         customDomId: 'global-svg-icons',
+        // ✅ 关键点：去掉 fill / stroke 固定颜色
+        svgoOptions: {
+          plugins: [
+            { name: 'removeAttrs', params: { attrs: '(fill|stroke)' } },
+          ],
+        },
       }),
       visualizerPlugin,
     ],

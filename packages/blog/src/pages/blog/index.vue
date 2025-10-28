@@ -139,7 +139,7 @@ onMounted(() => {
     width: 35rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     position: fixed;
   }
   .left-bg {
@@ -151,14 +151,14 @@ onMounted(() => {
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    gap: 1rem;
+    gap: var(--horizontalGapPx);
     .data-info {
       height: 4rem;
       font-size: 1.2rem;
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       .tag {
         display: flex;
         align-items: center;
