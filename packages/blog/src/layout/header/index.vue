@@ -12,6 +12,7 @@ import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const time = ref('')
 const timerRef = ref()
 const router = useRouter()
@@ -54,6 +55,9 @@ const loginHandle = () => {
 const registerHandle = () => {
   router.push({ path: '/register' })
 }
+const canvasHandle = () => {
+  router.push({ path: '/canvas' })
+}
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
 })
@@ -70,11 +74,12 @@ onBeforeUnmount(() => {
     </div>
     <div class="right-menu">
       <div class="link-icon">
-        <AIGCSvg @click="openAI" />
+        <SvgIcon name="ai" @click="openAI" />
+        <SvgIcon name="canvas" @click="canvasHandle" />
         <PaperSvg @click="editArticle" />
         <GithubOutlined @click="openGithub" />
         <QQOutlined />
-        <Search />
+        <SvgIcon name="search" @click="openAI" />
         <LanguageSwitch />
         <ThemeSwitch />
 
@@ -141,6 +146,7 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: var(--font-large);
   }
 }
 </style>

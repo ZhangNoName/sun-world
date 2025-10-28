@@ -10,7 +10,7 @@ import Login from '@/pages/login/login.vue'
 import Me from '@/pages/me/me.vue'
 import Canvas from '@/pages/canvas/canvas.vue'
 const routes = [
-  { path: '/', component: Home },
+  { path: '/', component: Me },
 
   { path: '/home', component: Home },
   { path: '/blog', component: Blog },

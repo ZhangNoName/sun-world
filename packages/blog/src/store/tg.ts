@@ -152,6 +152,7 @@ export const useDeviceStore = defineStore('device', () => {
     if (tg) {
       tg.ready()
       tg.expand()
+      // tg.hideKeyboard()
       tg.enableClosingConfirmation()
       tg.MainButton.color = '#ff0000'
       tg.SecondaryButton.color = '#00ff00'
