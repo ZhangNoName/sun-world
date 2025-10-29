@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import dts from 'vite-plugin-dts'
+import path from 'path'
 import { resolve } from 'path'
-
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({
+      outputDir: 'dist',
+      insertTypesEntry: true,
+    }),
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -12,13 +18,12 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ZIconsVue',
-      fileName: (format) => `z-icons-vue.${format}.js`,
-      formats: ['es', 'cjs', 'umd'],
+      entry: path.resolve(__dirname, 'src/index.ts'),
+      name: 'IconsVue',
+      fileName: (format) => `icons-vue.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue'], // 避免 Vue 被打包进来
       output: {
         globals: {
           vue: 'Vue',

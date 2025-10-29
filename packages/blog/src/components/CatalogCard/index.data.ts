@@ -1,6 +1,6 @@
-import { CatalogItem } from '@/type';
+import { CatalogItemType } from '@/type'
 
-export const CatalogListData: CatalogItem[] = [
+export const CatalogListData: CatalogItemType[] = [
   {
     id: '1',
     level: '1',
@@ -15,15 +15,15 @@ export const CatalogListData: CatalogItem[] = [
             id: '1-1-1',
             name: '1-1-1',
             level: '3',
-          }]
+          },
+        ],
       },
       {
         id: '1-2',
         name: '1-2',
         level: '2',
       },
-
-    ]
+    ],
   },
   {
     id: '2',
@@ -44,7 +44,7 @@ export const CatalogListData: CatalogItem[] = [
         id: '3-2',
         name: '3-2',
         level: '2',
-      }
-    ]
-  }
+      },
+    ],
+  },
 ]

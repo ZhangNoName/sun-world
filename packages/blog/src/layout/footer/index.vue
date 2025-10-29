@@ -44,7 +44,7 @@ const count = ref(0)
 
 <style scoped>
 .z-footer {
-  background-color: var(--bg-color-0);
+  background-color: var(--bg-brand-light);
   height: 20rem;
   width: 100%;
   padding: 3rem 0 6rem 0;

@@ -1,5 +1,4 @@
 import { request, ResponseType } from './http'
-
 /**
  * 测试接口
  * @returns {Promise<any>}
@@ -8,7 +7,8 @@ export const testApi = async () => {
   const response: any = await request.get('')
   return response
 }
-
+// 允许传递已有的 tag ID 或者 新建的 tag 对象
+export type TagInput = string | { name: string }
 /**
  * 保存博客内容
  * @param {Object} params - 请求的配置参数。
@@ -21,11 +21,21 @@ export const testApi = async () => {
 export const postSaveBlog = async (params: {
   title: string
   content: string
+  abstract: string
   author?: string
-  created_at?: string
+  category?: string
+  tag?: TagInput[]
 }) => {
-  const response = await request.post('/blogs/', params)
+  const response = await request.post<ResponseType<any>>('/blogs/', params)
   return response
+}
+export interface BlogDeatil {
+  author: string
+  content: string
+  created_at: string
+  id: string
+  title: string
+  update_at: string
 }
 /**
  * 根据id获取博客内容
@@ -33,7 +43,7 @@ export const postSaveBlog = async (params: {
  * @returns {Promise<any>}
  */
 export const getBlogById = async (id: string) => {
-  const response = await request.post('/blogs/' + id)
+  const response = await request.get<BlogDeatil>('/blogs/' + id)
   return response
 }
 /**
@@ -46,9 +56,19 @@ export const getBlogByPage = async (
   page: number | string,
   pageSize: number | string
 ) => {
-  const response = await request.get('/blogs', {
+  const response = await request.get<{
+    list: any[]
+    page: number
+    page_size: number
+    total: number
+  }>('/blogs', {
     page,
     pageSize,
   })
+  return response
+}
+
+export const getBaseInfo = async () => {
+  const response = await request.get('/base')
   return response
 }

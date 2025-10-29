@@ -36,7 +36,7 @@ const style = computed(() => {
     width: prop.width,
     height: prop.height,
     backgroundColor: prop.bgColor || BgColor[prop.type],
-    borderColor: prop.borderColor || 'var(--border-color-0)',
+    borderColor: prop.borderColor || 'var(-border-darker)',
     fontSize: prop.fontSize || BtnSize[prop.size],
   }
 })
@@ -55,14 +55,14 @@ const style = computed(() => {
   justify-content: center;
   align-items: center;
   font-size: 1.6rem;
-  gap: 1rem;
-  border: 1px solid var(--border-color-0);
+  gap: var(--horizontalGapPx);
+  border: 1px solid var(-border-darker);
   border-radius: 1rem;
   padding: 1rem;
-  color: var(--font-color);
+  color: var(--text-default);
   &:hover {
-    background-color: var(--bg-color-hover) !important;
-    color: var(--font-color-hover);
+    background-color: var(--bg-page-hover) !important;
+    color: var(--text-hover);
   }
 }
 </style>

@@ -19,7 +19,6 @@ import {
 } from '@sun-world/icons-vue'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
-import ZHeader from '@/layout/header/index.vue'
 const prop = defineProps()
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const openAi = new OpenAiLangChian({
@@ -206,15 +205,15 @@ onMounted(async () => {
   display: flex;
   height: 75rem;
   margin: 0 auto;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 2rem;
   overflow: hidden;
   box-shadow: var(--aigc-box-shadow);
 
   .sidebar {
     position: relative;
-    gap: 1.5rem;
-    background-color: var(--bg-color-0);
+    gap: var(--horizontalGapPx);
+    background-color: var(--bg-brand-light);
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -229,13 +228,13 @@ onMounted(async () => {
         font-size: 2rem;
         font-weight: 700;
         animation: all 0.3s ease;
-        color: var(--font-color-0);
+        color: var(--text-strong);
       }
       .des {
         font-size: 1.2rem;
         font-weight: 400;
         animation: all 0.3s ease;
-        color: var(--font-color-2);
+        color: var(--text-secondary);
       }
       .logo {
         position: absolute;
@@ -248,7 +247,7 @@ onMounted(async () => {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       .sun-btn {
         flex-grow: 1;
       }
@@ -278,7 +277,7 @@ onMounted(async () => {
       opacity: 0;
 
       &:hover {
-        background-color: var(--bg-color-1);
+        background-color: var(--bg-page-1);
 
         opacity: 0.5;
       }
@@ -302,7 +301,7 @@ onMounted(async () => {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        gap: 1rem;
+        gap: var(--horizontalGapPx);
       }
     }
     .body {
@@ -320,13 +319,13 @@ onMounted(async () => {
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      border-top: 1px solid var(--border-color);
+      gap: var(--horizontalGapPx);
+      border-top: 1px solid var(--border-default);
       box-shadow: var(--box-shadow);
       .func {
         display: flex;
         flex-wrap: wrap;
-        gap: 1.5rem;
+        gap: var(--horizontalGapPx);
         .sun-btn {
           padding: 0.4rem 1rem;
         }
@@ -336,15 +335,15 @@ onMounted(async () => {
         display: flex;
         flex: 1 1;
         border-radius: 10px;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-default);
         textarea {
           height: 100%;
           width: 100%;
           border-radius: 1rem;
           border: none;
           box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03);
-          background-color: var(--bg-color);
-          color: var(--font-color);
+          background-color: var(--bg-page);
+          color: var(--text-default);
           font-family: inherit;
           padding: 1rem 9rem 1rem 1.4rem;
           resize: none;
@@ -382,7 +381,7 @@ onMounted(async () => {
     }
     .tail {
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
     }
   }
 }

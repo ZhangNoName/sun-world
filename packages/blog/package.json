@@ -1,19 +1,21 @@
 {
   "name": "@sun-world/blog",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:lint": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build"
   },
   "dependencies": {
-    "vue": "^3.4.21"
+    "@element-plus/icons-vue": "^2.3.1",
+    "@sun-world/icons-vue": "workspace:*",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.9.4",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vue": "^3.4.21",
+    "vue-i18n": "^11.1.1",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@sun-world/icons-vue": "workspace:^",
     "@vitejs/plugin-vue": "^5.0.4",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",

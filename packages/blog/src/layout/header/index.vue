@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="ZHeader">
 import {
   Search,
   QQOutlined,
@@ -11,6 +11,8 @@ import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElButton } from 'element-plus'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const time = ref('')
 const timerRef = ref()
 const router = useRouter()
@@ -43,6 +45,19 @@ const openAI = () => {
   const routeData = router.resolve({ path: '/aigc' })
   window.open(routeData.href, '_blank')
 }
+
+const goHome = () => {
+  router.push({ path: '/' })
+}
+const loginHandle = () => {
+  router.push({ path: '/login' })
+}
+const registerHandle = () => {
+  router.push({ path: '/register' })
+}
+const canvasHandle = () => {
+  router.push({ path: '/canvas' })
+}
 onMounted(() => {
   timerRef.value = requestAnimationFrame(updateTime)
 })
@@ -53,19 +68,23 @@ onBeforeUnmount(() => {
 <template>
   <div class="z-header">
     <div class="left-menu">
-      <div class="logo"></div>
+      <div class="logo" @click="goHome"></div>
       <div class="welcom">{{ $t('title') }}</div>
       <div class="menu-item"></div>
     </div>
     <div class="right-menu">
       <div class="link-icon">
-        <AIGCSvg @click="openAI" />
+        <SvgIcon name="ai" @click="openAI" />
+        <SvgIcon name="canvas" @click="canvasHandle" />
         <PaperSvg @click="editArticle" />
         <GithubOutlined @click="openGithub" />
         <QQOutlined />
-        <Search />
+        <SvgIcon name="search" @click="openAI" />
         <LanguageSwitch />
         <ThemeSwitch />
+
+        <ElButton @click="loginHandle">登录</ElButton>
+
         <!-- <AddOutlined></AddOutlined> -->
       </div>
     </div>
@@ -79,13 +98,13 @@ onBeforeUnmount(() => {
 .z-header {
   width: 100%;
   height: 5rem;
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   z-index: 10;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 7.5% 4fr 3fr 10rem 7.5%;
+  grid-template-columns: 2.5% 4fr 3fr 10rem 2.5%;
   grid-template-areas: '1 2 3 4 5';
   border-bottom: 2px solid rgb(180, 180, 180);
   background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
@@ -97,7 +116,7 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
     .logo {
       width: 5rem;
       height: 5rem;
@@ -105,6 +124,7 @@ onBeforeUnmount(() => {
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+      cursor: pointer;
     }
   }
   .right-menu {
@@ -114,7 +134,7 @@ onBeforeUnmount(() => {
     align-items: center;
     .link-icon {
       display: flex;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       & > *:hover {
         cursor: pointer;
         background-color: var(--icon-bg-hover-color);
@@ -126,6 +146,7 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: var(--font-large);
   }
 }
 </style>
