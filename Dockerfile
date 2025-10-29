@@ -1,5 +1,5 @@
 # 使用官方的 Node.js 镜像
-FROM node:19 AS build
+FROM node:22 AS build
 
 # 设置工作目录
 WORKDIR /app
@@ -10,8 +10,8 @@ COPY . .
 RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm@9.0.2
 RUN pnpm install 
-RUN pnpm build:icons
-RUN pnpm build:blog
+RUN pnpm build
+# RUN pnpm build:blog
 
 
 # 使用 Nginx 运行应用
