@@ -2,26 +2,62 @@
   <div class="mob-layout">
     <div class="mob-header">
       <div class="left">
-        <img src="/logo.svg" alt="logo" srcset="" />
+        <img src="/logo.svg" alt="logo" srcset="" width="40px" height="40px" />
       </div>
       <div class="right">
-        <div class="search">搜索</div>
-        <div>expend</div>
+        <Btn icon="search" @click="toggleDrawer" type="icon" />
+        <Btn icon="menu" @click="toggleDrawer" type="icon" />
       </div>
     </div>
-    <RouterView />
+    <div class="main-container" id="mf">
+      <RouterView v-slot="{ Component, route }">
+        <keep-alive>
+          <component :is="Component" :key="route.fullPath" />
+        </keep-alive>
+      </RouterView>
+    </div>
+
     <div class="mob-footer">
-      <div class="bot-channel">
-        <a href="/home">123</a>
-        <span class="text">首页</span>
+      <div
+        class="bot-channel"
+        :class="{ active: activePath == '/' || activePath == '/home' }"
+      >
+        <router-link to="/home">
+          <SvgIcon name="home" alt="home" />
+          <span class="text">首页</span>
+        </router-link>
+      </div>
+      <div class="bot-channel" :class="{ active: activePath === '/aigc' }">
+        <router-link to="/aigc">
+          <SvgIcon name="ai" alt="ai" />
+          <span class="text">AI</span>
+        </router-link>
+      </div>
+      <div class="bot-channel" :class="{ active: activePath === '/canvas' }">
+        <router-link to="/canvas">
+          <SvgIcon name="canvas" alt="canvas" />
+          <span class="text">画布</span>
+        </router-link>
+      </div>
+      <div class="bot-channel" :class="{ active: activePath === '/me' }">
+        <router-link to="/me">
+          <SvgIcon name="me" alt="me" />
+          <span class="text">个人中心</span>
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
+import Btn from '@/baseCom/btn/btn.vue'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
+import { ref, computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
+const route = useRoute()
+
+// 当前激活路径
+const activePath = computed(() => route.path)
 const drawerOpen = ref(false)
 function toggleDrawer() {
   drawerOpen.value = !drawerOpen.value
@@ -30,13 +66,39 @@ function toggleDrawer() {
 
 <style scoped>
 .mob-layout {
+  height: 100dvh;
   position: fixed;
   bottom: 0;
-  background: #f8f9fa;
+  background: var(--bg-page);
   width: 100%;
   z-index: 10;
   padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .mob-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    padding: 0 12px 0 16px;
+    color: #fff;
+    top: 0;
+    flex-shrink: 0;
+    .right {
+      display: flex;
+      align-items: center;
+      gap: var(--horizontalGapPx);
+    }
+  }
+  .main-container {
+    padding: 0 var(--horizontalGapPx);
+    flex: auto;
+    overflow: auto;
+  }
   .mob-footer {
+    flex-shrink: 0;
     display: flex;
     .bot-channel {
       flex-grow: 1;
@@ -45,25 +107,26 @@ function toggleDrawer() {
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      @media screen and (max-width: 695px) {
+        .text {
+          display: none;
+        }
+      }
       a {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .text {
       }
     }
+    .active {
+      .svg-icon {
+        color: var(--text-active);
+      }
+    }
   }
-}
-
-.mob-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 16px;
-  background: #222;
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .logo {

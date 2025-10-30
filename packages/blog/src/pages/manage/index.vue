@@ -47,6 +47,6 @@ const handleMenuSelect = (index: string) => {
   display: grid;
   grid-template-columns: 25rem auto;
   grid-template-rows: auto;
-  gap: 1rem;
+  gap: var(--horizontalGapPx);
 }
 </style>

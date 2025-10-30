@@ -160,7 +160,7 @@ watchEffect(() => {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--horizontalGapPx);
   }
 }
 /* :deep(.sun-table-index) {

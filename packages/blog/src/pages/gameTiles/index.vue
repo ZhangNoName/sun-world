@@ -418,7 +418,7 @@ onMounted(() => {
   .tiles-container {
     flex: auto;
     display: flex;
-    gap: 1rem;
+    gap: var(--horizontalGapPx);
     overflow: auto;
     .left {
       max-width: 50%;
@@ -450,11 +450,11 @@ onMounted(() => {
       display: flex;
       flex-direction: column;
       justify-content: stretch;
-      gap: 1rem;
+      gap: var(--horizontalGapPx);
       .config-item {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: var(--horizontalGapPx);
         .item {
           display: flex;
           align-items: center;
@@ -464,7 +464,7 @@ onMounted(() => {
         .tile-item-config {
           display: flex;
           height: 20rem;
-          gap: 1rem;
+          gap: var(--horizontalGapPx);
           /* background-color: black; */
           .config-left {
             .item-image-container {
@@ -486,11 +486,11 @@ onMounted(() => {
             display: flex;
             flex-direction: column;
             /* justify-content: space-between; */
-            gap: 1rem;
+            gap: var(--horizontalGapPx);
             .tile-info {
               display: flex;
               align-items: center;
-              gap: 1rem;
+              gap: var(--horizontalGapPx);
             }
             .update-tile {
               flex: auto;
@@ -502,7 +502,7 @@ onMounted(() => {
               .item-footer {
                 display: flex;
                 /* justify-content: flex-end; */
-                gap: 1.5rem;
+                gap: var(--horizontalGapPx);
                 justify-self: flex-end;
               }
             }

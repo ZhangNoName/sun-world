@@ -20,7 +20,7 @@ import ZFooter from './footer/index.vue'
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--horizontalGapPx);
   .header {
     flex: none;
   }

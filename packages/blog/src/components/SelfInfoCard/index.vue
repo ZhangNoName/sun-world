@@ -24,7 +24,7 @@ const stats = inject<StatsResponse>('stats', DEFAULT_STATS)!
 const { blog_count, category_count, tag_count, total_view_num } = toRefs(stats)
 
 const weatherIcon = computed(() => {
-  console.log(HeFengWeatherData.now.icon)
+  // console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
 
@@ -81,7 +81,7 @@ const weatherIcon = computed(() => {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 18rem 2.5rem 6rem 3rem 1rem 3rem;
-  gap: 1.5rem;
+  gap: var(--horizontalGapPx);
   background-color: var(--bg-brand-light);
 
   .avator {

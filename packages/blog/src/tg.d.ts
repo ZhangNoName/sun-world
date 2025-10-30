@@ -208,6 +208,7 @@ export declare namespace TelegramWebApps {
      * An object for controlling location on the device
      */
     readonly LocationManager: LocationManager
+    hideKeyboard(): void
     /**
      * Returns true if the user's app supports a version of the Bot API that is equal to
      * or higher than the version passed as the parameter.

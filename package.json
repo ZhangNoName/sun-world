@@ -6,7 +6,7 @@
     "dev": "run-p dev:blog dev:icons",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
-    "build": "pnpm -r run build",
+    "build": "pnpm -F @sun-world/blog build",
     "icons:generate": "pnpm -F @sun-world/icons-svg run generate",
     "icons:build": "pnpm -F @sun-world/icons-svg run build"
   },
@@ -38,6 +38,7 @@
     "tslib": "^2.8.1",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
+    "vite-plugin-svg-icons": "^2.0.1",
     "vue": "^3.5.13",
     "vue-tsc": "^1.8.27"
   },

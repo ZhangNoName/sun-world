@@ -8,14 +8,20 @@ import Manage from '@/pages/manage/index.vue'
 import NotFound from './NotFound.vue'
 import Login from '@/pages/login/login.vue'
 import Keep from '@/pages/keep/keep.vue'
+import Me from '@/pages/me/me.vue'
+import Canvas from '@/pages/canvas/canvas.vue'
 const routes = [
-  { path: '/', component: Home },
+  { path: '/', component: Me },
+
+  { path: '/home', component: Home },
   { path: '/blog', component: Blog },
   { path: '/new_article', component: NewArticle },
   { path: '/aigc', component: AIGC },
   { path: '/game_tiles', component: GameTiles },
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
+  { path: '/me', component: Me },
+  { path: '/canvas', component: Canvas },
   { path: '/keep', component: Keep },
 
   // 其他路由配置
@@ -25,6 +31,10 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    else return { top: 0 }
+  },
 })
 
 export default router

@@ -5,7 +5,7 @@ import { HeFengWeatherData, CurrentLocationArea } from '@/util'
 const prop = defineProps()
 
 const weatherIcon = computed(() => {
-  console.log(HeFengWeatherData.now.icon)
+  // console.log(HeFengWeatherData.now.icon)
   return 'qi qi-' + HeFengWeatherData.now.icon
 })
 </script>
@@ -67,7 +67,7 @@ const weatherIcon = computed(() => {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 18rem 2.5rem 6rem;
-  gap: 1.5rem;
+  gap: var(--horizontalGapPx);
   background-color: var(--bg-brand-light);
   cursor: default;
   .weather {

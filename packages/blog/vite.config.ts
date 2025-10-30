@@ -2,8 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
-// import tsconfigPaths from 'vite-tsconfig-paths'
-// https://vitejs.dev/config/
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 export default defineConfig(({ mode }) => {
   // 加载对应模式的 .env 文件变量
@@ -42,6 +41,25 @@ export default defineConfig(({ mode }) => {
         '@sun-world/icons-vue': resolve(__dirname, '../icons-vue/src'),
       },
     },
-    plugins: [vue(), visualizerPlugin],
+    plugins: [
+      vue(),
+      createSvgIconsPlugin({
+        // 多目录支持，可以按功能模块拆分
+        iconDirs: [
+          resolve(process.cwd(), 'src/assets/svgs'), // 所有 svg 放这里
+        ],
+        // symbolId 格式，可区分目录
+        symbolId: '[name]',
+        inject: 'body-last',
+        customDomId: 'global-svg-icons',
+        // ✅ 关键点：去掉 fill / stroke 固定颜色
+        svgoOptions: {
+          plugins: [
+            { name: 'removeAttrs', params: { attrs: '(fill|stroke)' } },
+          ],
+        },
+      }),
+      visualizerPlugin,
+    ],
   }
 })

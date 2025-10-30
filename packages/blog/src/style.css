@@ -1,9 +1,9 @@
 * {
   box-sizing: border-box;
-  /* -webkit-user-select: auto;
+  -webkit-user-select: auto;
   user-select: auto;
   scrollbar-width: none;
-  -webkit-tap-highlight-color: transparent; */
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -12,7 +12,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: #8a8a8a;
   background-color: #242424;
 
   font-synthesis: none;
@@ -42,6 +42,9 @@ html {
   --font-small: 12px;
   font-size: var(--font-medium);
   line-height: 1.2;
+  --horizontalGapPx: 12px;
+  --paddingPx: 12px;
+  --border-radius: 8px;
 }
 div {
   cursor: default;
@@ -52,7 +55,6 @@ div {
   padding: 0;
   height: 100dvh;
   width: 100dvw;
-
   overflow: hidden;
 }
 
