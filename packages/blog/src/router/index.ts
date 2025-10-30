@@ -7,6 +7,7 @@ import GameTiles from '@/pages/gameTiles/index.vue'
 import Manage from '@/pages/manage/index.vue'
 import NotFound from './NotFound.vue'
 import Login from '@/pages/login/login.vue'
+import Keep from '@/pages/keep/keep.vue'
 const routes = [
   { path: '/', component: Home },
   { path: '/blog', component: Blog },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/game_tiles', component: GameTiles },
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
+  { path: '/keep', component: Keep },
 
   // 其他路由配置
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
