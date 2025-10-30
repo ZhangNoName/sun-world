@@ -1,9 +1,11 @@
 <script setup lang="ts" name="canvas">
+import Editor from '@/editor/Editor.vue'
+
 const tg = window.Telegram?.WebApp
 </script>
 <template>
   <div class="canvas-page">
-    <input type="text" />
+    <Editor />
   </div>
 </template>
 <style scoped>

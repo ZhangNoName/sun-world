@@ -11,7 +11,7 @@ import Keep from '@/pages/keep/keep.vue'
 import Me from '@/pages/me/me.vue'
 import Canvas from '@/pages/canvas/canvas.vue'
 const routes = [
-  { path: '/', component: Me },
+  { path: '/', component: Home },
 
   { path: '/home', component: Home },
   { path: '/blog', component: Blog },
