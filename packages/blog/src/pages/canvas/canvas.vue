@@ -1,5 +1,6 @@
 <script setup lang="ts" name="canvas">
-import Editor from '@/editor/Editor.vue'
+// import Editor from '@/editor/Editor.vue'
+import { Editor } from '@sun-world/editor'
 
 const tg = window.Telegram?.WebApp
 </script>

@@ -6,7 +6,9 @@
     "dev": "run-p dev:blog dev:icons",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons-vue dev",
+    "dev:editor": "pnpm -F @sun-world/editor dev",
     "build": "pnpm -F @sun-world/blog build",
+    "build:editor": "pnpm -F @sun-world/editor build",
     "icons:generate": "pnpm -F @sun-world/icons-svg run generate",
     "icons:build": "pnpm -F @sun-world/icons-svg run build"
   },
