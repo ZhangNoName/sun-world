@@ -1,24 +1,18 @@
-<script setup lang="ts" name="canvas">
+<script setup lang="ts" name="sw-editor">
 // import Editor from '@/editor/Editor.vue'
-import { SWEditor } from '@sun-world/editor'
+import { SWEditor } from '../editor.ts'
 import { ref, watchEffect } from 'vue'
 
-const tg = window.Telegram?.WebApp
 // 创建一个 canvas 的 ref
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 watchEffect(() => {
   if (canvasRef.value) {
-    const canvas = canvasRef.value
-    const ctx = canvas.getContext('2d')
-
-    if (ctx) {
-      ctx.fillStyle = 'skyblue'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.fillStyle = 'white'
-      ctx.font = '24px sans-serif'
-      ctx.fillText('Hello Canvas!', 20, 40)
-    }
+    const editor = new SWEditor({
+      : canvasRef.value!,
+      width: document.body.clientWidth,
+      height: document.body.clientHeight,
+    })
   }
 })
 </script>

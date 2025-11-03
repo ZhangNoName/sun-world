@@ -1,4 +1,2 @@
-import Editor from './App.vue'
-
-export { Editor }
-export default Editor
+export * from './editor'
+export * from './components/editor.vue'
