@@ -6,10 +6,12 @@ import { ref, watchEffect } from 'vue'
 // 创建一个 canvas 的 ref
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
+const containerRef = ref<HTMLDivElement | null>(null)
+
 watchEffect(() => {
-  if (canvasRef.value) {
+  if (canvasRef.value && containerRef.value) {
     const editor = new SWEditor({
-      : canvasRef.value!,
+      containerElement: containerRef.value!,
       width: document.body.clientWidth,
       height: document.body.clientHeight,
     })
@@ -17,7 +19,7 @@ watchEffect(() => {
 })
 </script>
 <template>
-  <div class="canvas-page">
+  <div class="canvas-page" ref="containerRef">
     <canvas ref="canvasRef" />
   </div>
 </template>
