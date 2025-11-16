@@ -1,41 +1,44 @@
 <script setup lang="ts" name="canvas">
 // import Editor from '@/editor/Editor.vue'
 import { SWEditor } from '@sun-world/editor'
-import { ref, watchEffect } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 
 const tg = window.Telegram?.WebApp
 // 创建一个 canvas 的 ref
-const canvasRef = ref<HTMLCanvasElement | null>(null)
+const canvasRef = ref<HTMLDivElement | null>(null)
 
-watchEffect(() => {
+onMounted(() => {
   if (canvasRef.value) {
-    const canvas = canvasRef.value
-    const ctx = canvas.getContext('2d')
-
-    if (ctx) {
-      ctx.fillStyle = 'skyblue'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.fillStyle = 'white'
-      ctx.font = '24px sans-serif'
-      ctx.fillText('Hello Canvas!', 20, 40)
-    }
+    const editor = new SWEditor({
+      containerElement: canvasRef.value,
+    })
   }
 })
 </script>
 <template>
   <div class="canvas-page">
-    <canvas ref="canvasRef" />
+    <div class="left"></div>
+    <div class="canvas" ref="canvasRef"></div>
+    <div class="right"></div>
   </div>
 </template>
 <style scoped>
 .canvas-page {
   height: 100%;
-  padding: 20px;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  input {
-    height: 50px;
+  flex-direction: row;
+  align-items: stretch;
+  .left {
+    background: #000;
+    width: 241px;
+  }
+  .canvas {
+    width: calc(100vw - 241px - 321px);
+    height: calc(100vh);
+  }
+  .right {
+    background: pink;
+    width: 321px;
   }
 }
 </style>

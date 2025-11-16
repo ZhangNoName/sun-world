@@ -21,7 +21,15 @@ const routes = [
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
   { path: '/me', component: Me },
-  { path: '/canvas', component: Canvas },
+  {
+    path: '/canvas',
+    component: Canvas,
+    meta: {
+      hideFooter: true,
+      hideHeader: true,
+      className: 'canvas-page-wrapper',
+    },
+  },
   { path: '/keep', component: Keep },
 
   // 其他路由配置

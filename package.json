@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "run-p dev:blog dev:icons dev:editor",
     "dev:blog": "pnpm -F @sun-world/blog dev",
-    "dev:icons": "pnpm -F @sun-world/icons-vue dev",
+    "dev:icons": "pnpm -F @sun-world/icons dev",
     "dev:editor": "pnpm -F @sun-world/editor dev",
+    "watch:editor": "pnpm -F @sun-world/editor run watch",
     "build": "pnpm -F @sun-world/blog build",
     "build:editor": "pnpm -F @sun-world/editor build",
-    "icons:generate": "pnpm -F @sun-world/icons-svg run generate",
-    "icons:build": "pnpm -F @sun-world/icons-svg run build"
+    "icons:generate": "pnpm -F @sun-world/icons run generate",
+    "icons:build": "pnpm -F @sun-world/icons run build"
   },
   "devDependencies": {
     "@langchain/core": "^0.2.36",
@@ -21,6 +22,7 @@
     "@types/node": "^20.17.11",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react-swc": "^3.7.2",
