@@ -14,7 +14,7 @@ import {
   WeChatOutLined,
   QQOutlined,
   GithubOutlined,
-} from '@sun-world/icons-vue'
+} from '../../../../icons/dist'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
 import { StatsResponse } from '@/service/baseRequest'
 import { DEFAULT_STATS } from '@/util/data'

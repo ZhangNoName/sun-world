@@ -15,7 +15,7 @@ import {
   Comment,
   Clock,
   TagSvg,
-} from '@sun-world/icons-vue'
+} from '../../../../icons/dist'
 import { BlogEditorClass } from '@/blogEditor'
 import Vditor from 'vditor'
 import { VditorTreeItemType } from '@/type'

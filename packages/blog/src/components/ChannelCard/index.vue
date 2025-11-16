@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { DeleteSvg } from '@sun-world/icons-vue'
+import { DeleteSvg } from '../../../../icons/dist'
 interface ChannelCardProps {
   title: string
   id: string | number

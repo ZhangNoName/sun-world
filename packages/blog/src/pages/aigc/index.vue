@@ -16,7 +16,7 @@ import {
   FullScreenSvg,
   ClearSvg,
   RobotSvg,
-} from '@sun-world/icons-vue'
+} from '../../../../icons/dist'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
 const prop = defineProps()

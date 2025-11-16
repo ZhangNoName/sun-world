@@ -5,7 +5,7 @@ import {
   GithubOutlined,
   PaperSvg,
   AIGCSvg,
-} from '@sun-world/icons-vue'
+} from '../../../../icons/dist'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'

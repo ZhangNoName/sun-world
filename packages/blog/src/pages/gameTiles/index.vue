@@ -11,7 +11,7 @@ import {
   ElCheckboxGroup,
   ElCheckbox,
 } from 'element-plus'
-import { AddSvg } from '@sun-world/icons-vue'
+import { AddSvg } from '../../../../icons/dist'
 import type { UploadProps } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { computed } from 'vue'
