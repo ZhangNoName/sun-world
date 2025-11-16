@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
-    "@sun-world/icons-vue": "workspace:*",
+    "@sun-world/icons": "workspace:*",
     "@sun-world/editor": "workspace:*",
     "echarts": "^5.6.0",
     "element-plus": "^2.9.4",

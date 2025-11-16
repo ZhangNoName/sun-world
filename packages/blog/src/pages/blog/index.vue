@@ -9,13 +9,7 @@ import { ElMessage } from 'element-plus'
 // @ts-ignore
 import VditorPreview from 'vditor/dist/method.min'
 
-import {
-  Calendar,
-  WordCount,
-  Comment,
-  Clock,
-  TagSvg,
-} from '../../../../icons/dist'
+import { Calendar, WordCount, Comment, Clock, TagSvg } from '@sun-world/icons'
 import { BlogEditorClass } from '@/blogEditor'
 import Vditor from 'vditor'
 import { VditorTreeItemType } from '@/type'

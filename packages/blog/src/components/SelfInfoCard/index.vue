@@ -10,11 +10,7 @@ import {
   watch,
   watchEffect,
 } from 'vue'
-import {
-  WeChatOutLined,
-  QQOutlined,
-  GithubOutlined,
-} from '../../../../icons/dist'
+import { WeChatOutLined, QQOutlined, GithubOutlined } from '@sun-world/icons'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
 import { StatsResponse } from '@/service/baseRequest'
 import { DEFAULT_STATS } from '@/util/data'

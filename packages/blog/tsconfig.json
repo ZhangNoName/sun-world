@@ -13,7 +13,7 @@
     "baseUrl": ".",
     "types": ["element-plus/global"],
     "paths": {
-      "@sun-world/icons-vue": ["../icons-vue/src"],
+      "@sun-world/icons": ["../icons/src"],
       "@sun-world/editor": ["../editor/src"],
       "@/*": ["./src/*"]
     }

@@ -1,7 +1,7 @@
 <script lang="ts" setup name="CatalogListItem">
 import type { CatalogItemType } from '@/type'
 import { computed, ref } from 'vue'
-import { FoldSvg } from '../../../../../icons/dist'
+import { FoldSvg } from '@sun-world/icons'
 
 const prop = withDefaults(defineProps<CatalogItemType>(), {
   level: 1,

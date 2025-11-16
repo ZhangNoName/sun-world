@@ -1,6 +1,5 @@
 {
   "name": "@sun-world/editor",
-  "private": true,
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/editor.cjs.js",

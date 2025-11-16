@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
-        '@sun-world/icons-vue': resolve(__dirname, '../icons-vue/src'),
+        '@sun-world/icons': resolve(__dirname, '../icons/src'),
       },
     },
     plugins: [
