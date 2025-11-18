@@ -10,6 +10,7 @@ import Login from '@/pages/login/login.vue'
 import Keep from '@/pages/keep/keep.vue'
 import Me from '@/pages/me/me.vue'
 import Canvas from '@/pages/canvas/canvas.vue'
+import ToolsPage from '@/pages/tools/tools.page.vue'
 const routes = [
   { path: '/', component: Home },
 
@@ -21,6 +22,10 @@ const routes = [
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
   { path: '/me', component: Me },
+  {
+    path: '/tools',
+    component: ToolsPage,
+  },
   {
     path: '/canvas',
     component: Canvas,

@@ -96,7 +96,7 @@ const formData = reactive<Record<string, any>>({ ...props.initialValues })
   </ElForm>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .el-form {
   max-width: 800px;
 

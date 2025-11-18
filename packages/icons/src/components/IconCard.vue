@@ -8,4 +8,4 @@ const prop = defineProps({})
   <div class="">456789</div>
 </template>
 
-<style lang="scss" scoped></style>
+<style scoped></style>
