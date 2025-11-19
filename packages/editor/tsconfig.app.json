@@ -14,8 +14,6 @@
     "baseUrl": ".",
 
     "paths": {
-      "@sun-world/icons": ["../icons/src"],
-      "@sun-world/editor": ["../editor/src"],
       "@/*": ["./src/*"]
     }
   },

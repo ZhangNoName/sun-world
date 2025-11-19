@@ -1,12 +1,13 @@
 {
   "name": "@sun-world/icons",
   "version": "0.0.1",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/icons.umd.js",
+  "module": "dist/icons.es.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite"
+    "build": "vite build --mode lib",
+    "dev": "vite",
+    "build:preview": "vite build --mode preview"
   },
   "dependencies": {
     "vue": "^3.4.21"

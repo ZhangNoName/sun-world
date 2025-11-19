@@ -42,8 +42,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
-        '@sun-world/icons': resolve(__dirname, '../icons/src'),
-        '@sun-world/editor': resolve(__dirname, '../editor/src'),
       },
     },
     plugins: [
@@ -68,7 +66,7 @@ export default defineConfig(({ mode }) => {
     ],
     optimizeDeps: {
       // 确保 vite 处理 editor 源码，HMR 生效
-      include: ['@sun-world/editor'],
+      include: ['@sun-world/editor', '@sun-world/icons'],
     },
   }
 })

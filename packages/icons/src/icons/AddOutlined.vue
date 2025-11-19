@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { DefaultProps } from '../constant'
 import { IconProps } from '../type'
-// import { DefaultProps } from '@/constant'
-// 定义组件的 props
-// const props = withDefaults(defineProps<IconProps>(), DefaultProps)
+const props = withDefaults(defineProps<IconProps>(), DefaultProps)
 </script>
 
 <template>
