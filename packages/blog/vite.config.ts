@@ -3,70 +3,145 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import chunkSplitPlugin from 'rollup-plugin-chunk-split'
+import fs from 'fs'
+
+// ⭐ 读取 package.json 的 version
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
+const version = `${pkg.version}`
+
+// ⭐ Type for rollup manualChunks（解决 TS 报错）
+type ManualChunksFn = (id: string) => string | undefined
 
 export default defineConfig(({ mode }) => {
-  // 加载对应模式的 .env 文件变量
+  // 加载 .env.[mode] 文件
   const env = loadEnv(mode, process.cwd())
+
   const isProd = mode === 'production'
   const isNeedVisualizer = mode === 'visualizer'
+
+  // rollup-plugin-visualizer 插件可视化分析（只在 mode=visualizer 时开启）
   const visualizerPlugin =
     (isNeedVisualizer &&
       visualizer({
-        open: true, // 构建完成后自动打开浏览器
-        gzipSize: true, // 统计 gzip 压缩后的大小
-        brotliSize: true, // 统计 brotli 压缩后的大小
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
       })) ||
     null
+
   return {
     esbuild: {
+      // 生产模式移除 console 和 debugger
       drop: isProd ? ['console', 'debugger'] : [],
     },
+
     server: {
       host: '0.0.0.0',
-      port: 3000, // 您可以选择其他端口
-      open: false, // 是否自动在浏览器中打开
+      port: 3000,
+      open: false,
       watch: {
-        usePolling: true, // 有时候在WSL、Docker下必开
+        usePolling: true,
       },
       allowedHosts: [
-        'localhost', // 保留默认值
-        '127.0.0.1', // 保留默认值
-        // 添加你的 ngrok 域名
+        'localhost',
+        '127.0.0.1',
         'transequatorial-jeanice-enabling.ngrok-free.dev',
       ],
       fs: {
-        // 允许访问 monorepo 外的文件
         allow: ['..'],
       },
     },
+
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
       },
     },
+
     plugins: [
       vue(),
+
+      // SVG 图标插件
       createSvgIconsPlugin({
-        // 多目录支持，可以按功能模块拆分
-        iconDirs: [
-          resolve(process.cwd(), 'src/assets/svgs'), // 所有 svg 放这里
-        ],
-        // symbolId 格式，可区分目录
+        iconDirs: [resolve(process.cwd(), 'src/assets/svgs')],
         symbolId: '[name]',
         inject: 'body-last',
         customDomId: 'global-svg-icons',
-        // ✅ 关键点：去掉 fill / stroke 固定颜色
+
+        // 去掉 fill/stroke 固定颜色，使 SVG 可全局变色
         svgoOptions: {
           plugins: [
             { name: 'removeAttrs', params: { attrs: '(fill|stroke)' } },
           ],
         },
       }),
+
       visualizerPlugin,
     ],
+
     optimizeDeps: {
-      // 确保 vite 处理 editor 源码，HMR 生效
       include: ['@sun-world/editor', '@sun-world/icons'],
+    },
+
+    build: {
+      target: 'esnext',
+      cssTarget: 'chrome61',
+
+      // ⭐ 使用 Terser 替代 esbuild，压缩效果更好
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          // 彻底移除 console.log
+          pure_funcs: ['console.log'],
+          passes: 3, // 多次优化
+        },
+        format: {
+          comments: false,
+        },
+      },
+
+      chunkSizeWarningLimit: 2000,
+
+      rollupOptions: {
+        output: {
+          entryFileNames: `assets/[name].v${version}.[hash].js`,
+          chunkFileNames: `assets/[name].v${version}.[hash].js`,
+          assetFileNames: `assets/[name].v${version}.[hash].[ext]`,
+
+          /**
+           * ⭐ 手动拆包策略 (manualChunks)
+           * - TS 收窄类型到 ManualChunksFn
+           * - 确保不会报错
+           */
+          manualChunks: ((id: string) => {
+            // 只处理 node_modules
+            if (id.includes('node_modules')) {
+              if (id.includes('echarts')) return 'echarts'
+              if (id.includes('element-plus')) return 'element'
+              if (id.includes('axios')) return 'vendor-axios'
+              if (id.includes('dayjs')) return 'vendor-dayjs'
+              if (id.includes('@sun-world/editor')) return 'editor'
+              if (id.includes('@sun-world/icons')) return 'icons'
+              if (id.includes('vditor')) return 'vditor'
+              if (id.includes('lodash')) return 'lodash'
+              if (id.includes('langchain') || id.includes('langsmith'))
+                return 'langchain'
+              if (id.includes('zrender')) return 'zrender'
+
+              // 其余全部放 vendor
+              return 'vendor'
+            }
+            // 小页面组件合并到 index
+            // pages 下的 vue 文件全部合并到 index
+            if (/src\/pages\/.+\.vue$/.test(id)) {
+              return 'index'
+            }
+          }) as ManualChunksFn,
+        },
+      },
     },
   }
 })

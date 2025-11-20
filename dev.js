@@ -39,9 +39,6 @@ const setup = async () => {
     format: 'esm',
     platform: 'browser',
     plugins: [
-      sassPlugin({
-        type: 'style',
-      }),
       vuePlugin(), // 添加 vue 插件
       {
         name: 'watch-build',

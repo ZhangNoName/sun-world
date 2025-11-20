@@ -1,16 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/pages/home/index.vue'
-import Blog from '@/pages/blog/index.vue'
-import AIGC from '@/pages/aigc/index.vue'
-import NewArticle from '@/pages/article/index.vue'
-import GameTiles from '@/pages/gameTiles/index.vue'
-import Manage from '@/pages/manage/index.vue'
-import NotFound from './NotFound.vue'
-import Login from '@/pages/login/login.vue'
-import Keep from '@/pages/keep/keep.vue'
-import Me from '@/pages/me/me.vue'
-import Canvas from '@/pages/canvas/canvas.vue'
-import ToolsPage from '@/pages/tools/tools.page.vue'
+
+const Home = () => import(/* webpackPrefetch: true */ '@/pages/home/index.vue')
+const Blog = () => import(/* webpackPrefetch: true */ '@/pages/blog/index.vue')
+
+const AIGC = () => import('@/pages/aigc/index.vue')
+const NewArticle = () => import('@/pages/article/index.vue')
+const GameTiles = () => import('@/pages/gameTiles/index.vue')
+const Manage = () => import('@/pages/manage/index.vue')
+const Login = () => import('@/pages/login/login.vue')
+const Keep = () => import('@/pages/keep/keep.vue')
+const Me = () => import('@/pages/me/me.vue')
+const Canvas = () => import('@/pages/canvas/canvas.vue')
+const ToolsPage = () => import('@/pages/tools/tools.page.vue')
+const NotFound = () => import('@/router/NotFound.vue')
+
+// 🔥 如果你想额外预加载某个页面，只需要打开这个
+// const preloadBlog = () => import('@/pages/blog/index.vue')
+
 const routes = [
   { path: '/', component: Home },
 
@@ -22,10 +28,9 @@ const routes = [
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
   { path: '/me', component: Me },
-  {
-    path: '/tools',
-    component: ToolsPage,
-  },
+  { path: '/tools', component: ToolsPage },
+  { path: '/keep', component: Keep },
+
   {
     path: '/canvas',
     component: Canvas,
@@ -35,9 +40,8 @@ const routes = [
       className: 'canvas-page-wrapper',
     },
   },
-  { path: '/keep', component: Keep },
 
-  // 其他路由配置
+  // 404
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
 ]
 
@@ -46,7 +50,7 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
-    else return { top: 0 }
+    return { top: 0 }
   },
 })
 
