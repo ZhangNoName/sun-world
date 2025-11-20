@@ -3,7 +3,6 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
-import chunkSplitPlugin from 'rollup-plugin-chunk-split'
 import fs from 'fs'
 
 // ⭐ 读取 package.json 的 version
