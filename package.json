@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "run-p dev:icons dev:editor dev:blog  ",
+    "dev:nuxt-blog": "pnpm -F @sun-world/nuxt-blog dev",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons dev",
     "dev:editor": "pnpm -F @sun-world/editor dev",

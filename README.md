@@ -1,5 +1,11 @@
 # sun-world
 
+# packages
+
+## nuxt-blog 测试博客的 SSR 及 SSG
+
+如果根目录下面是有 pnpm 文件的话，再初始化项目之前记得删了，否则会引起错误
+
 # langchain 集成
 
 地址：
