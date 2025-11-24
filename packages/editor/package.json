@@ -1,0 +1,30 @@
+{
+  "name": "@sun-world/editor",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/editor.cjs.js",
+  "module": "./dist/editor.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/editor.es.js",
+      "require": "./dist/editor.cjs.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "watch": "vite build --watch",
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.8.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vue-tsc": "^3.1.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "title": "欢迎~~",
+  "readMore": "阅读更多",
+  "search": "搜索",
+  "searchPlaceholder": "搜索...",
+  "add": "新增",
+  "save": "保存",
+  "cancel": "取消",
+  "edit": "编辑",
+  "delete": "删除",
+  "clear": "清除",
+  "clearAll": "清空",
+  "submit": "提交",
+  "confirm": "确定",
+  "close": "关闭",
+  "commit": "评论",
+  "star": "点赞",
+  "settings": "设置",
+  "export": "导出",
+  "fullScreen": "全屏",
+  "exitFullScreen": "退出全屏",
+  "theme": "主题",
+
+  "info": {
+    "paper": "文章",
+    "classification": "分类",
+    "tag": "标签",
+    "views": "浏览量"
+  },
+  "weather": {
+    "temp": "温度",
+    "feelsLike": "体感温度",
+    "humidity": "湿度",
+    "windSpeed": "风速"
+  },
+  "aigc": {
+    "title": "AIGC",
+    "prompt": "提示词",
+    "submit": "提交",
+    "result": "结果",
+    "send": "发送",
+    "newChat": "新的对话",
+    "mask": "面具",
+    "find": "发现",
+    "robot": "机器人",
+    "desc": "创建自己的AI助手",
+    "stastic": "共{num}条对话"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@sun-world/icons",
+  "version": "0.0.1",
+  "main": "dist/icons.umd.js",
+  "module": "dist/icons.es.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "vite build --mode lib",
+    "dev": "vite",
+    "build:preview": "vite build --mode preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

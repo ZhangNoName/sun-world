@@ -1,0 +1,11 @@
+.page-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  & > .content {
+    width: 85%;
+    position: relative;
+    margin: 6.5rem auto 0 auto;
+    height: auto;
+  }
+}

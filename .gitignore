@@ -1,2 +1,9 @@
 node_modules
 dist
+packages/blog/src/constant.ts
+sunworld.key
+sunworld.pem
+sunworld.site_bundle.crt
+sunworld.site_bundle.pem
+sunworld.site.csr
+sunworld.site.key

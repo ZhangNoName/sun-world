@@ -1,0 +1,5 @@
+export { default as GithubFill } from './GithubFill.vue'
+export { default as QQFill } from './QQ.vue'
+export { default as WeChatOutLined } from './WeChat.vue'
+export { default as QQOutlined } from './QQOutlined.vue'
+export { default as GithubOutlined } from './GithubOutlined.vue'

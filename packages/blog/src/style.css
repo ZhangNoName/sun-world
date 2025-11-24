@@ -1,0 +1,165 @@
+* {
+  box-sizing: border-box;
+  -webkit-user-select: auto;
+  user-select: auto;
+  scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  font-family: Monda, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: #8a8a8a;
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: left;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+h1 {
+  margin: 0;
+}
+
+html {
+  /* 优先使用系统字体，确保速度和清晰度 */
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', 'Arial', sans-serif;
+  --font-large: 16px;
+  --font-medium: 14px;
+  --font-small: 12px;
+  font-size: var(--font-medium);
+  line-height: 1.2;
+  --horizontalGapPx: 12px;
+  --paddingPx: 12px;
+  --border-radius: 8px;
+}
+div {
+  cursor: default;
+}
+#app {
+  /* max-width: 1280px; */
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  width: 100dvw;
+  overflow: hidden;
+}
+
+.sun-light {
+  /* ---------------------- 核心颜色 ---------------------- */
+  --color-primary: #409eff; /* 主要操作色 (蓝色) */
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+
+  /* ---------------------- 文本颜色 (Text) ---------------------- */
+  --text-default: #606266; /* 默认正文 */
+  --text-strong: #303133; /* 重要标题/重点文字 (原 --text-default-0) */
+  --text-secondary: #909399; /* 次要/辅助文字 (原 --text-default-2) */
+  --text-placeholder: #a8abb2; /* 占位符/禁用文字 (原 --text-default-3) */
+  --text-active: var(--color-primary); /* 激活色 */
+  --text-hover: #909399; /* 悬停色 */
+
+  /* ---------------------- 背景/填充色 (Background / Fill) ---------------------- */
+  --bg-page: #ffffff; /* 页面背景 */
+  --bg-component: #ffffff; /* 组件背景 */
+  --bg-fill: #f0f2f5; /* 默认填充色 (例如输入框背景, 原 --fill-color) */
+  --bg-active: #409eff; /* 按钮激活/选中背景 */
+  --bg-hover: #a0cfff; /* 按钮/行悬停背景 */
+  --bg-brand-light: #e7f8ff; /* 品牌浅色背景 (原 --bg-brand-light) */
+
+  /* ---------------------- 边框颜色 (Border) ---------------------- */
+  --border-default: #dcdfe6; /* 默认边框 */
+  --border-lighter: #ebeef5; /* 浅边框/分割线 (原 --border-default-hover) */
+  --border-darker: #cdd0d6; /* 深边框 (原 -border-darker) */
+  --border-active: #d4d7de; /* 激活边框 */
+
+  /* ---------------------- 阴影/其他 ---------------------- */
+  --shadow-default: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
+  --shadow-aigc: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* 内部元素样式，建议移除 hr 的 color 和 background-color，只保留 border 样式 */
+  hr {
+    border-color: #7a7a7a;
+    opacity: 0.5;
+  }
+}
+.sun-dark {
+  /* ---------------------- 核心颜色 ---------------------- */
+  --color-primary: #409eff;
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+
+  /* ---------------------- 文本颜色 (Text) ---------------------- */
+  --text-default: #cfd3dc; /* 默认正文 */
+  --text-strong: #e5eaf3; /* 重要标题 (原 --text-default-0) */
+  --text-secondary: #a3a6ad; /* 次要/辅助文字 (原 --text-default-2) */
+  --text-placeholder: #8d9095; /* 占位符/禁用文字 (原 --text-default-3) */
+  --text-active: var(--color-primary);
+  --text-hover: #a3a6ad;
+
+  /* ---------------------- 背景/填充色 (Background / Fill) ---------------------- */
+  --bg-page: #141414; /* 页面背景 (原 --bg-page) */
+  --bg-component: #1d1e1f; /* 组件背景 (原 --bg-page-2) */
+  --bg-fill: #1d3043; /* 默认填充色 (例如输入框背景, 原 --fill-color-1) */
+  --bg-active: #409eff;
+  --bg-hover: #2a598a; /* (原 --fill-color-3) */
+  --bg-brand-light: #18222c; /* 品牌浅色背景 (原 --fill-color-0) */
+
+  /* ---------------------- 边框颜色 (Border) ---------------------- */
+  --border-default: #4c4d4f; /* 默认边框 */
+  --border-lighter: #58585b; /* 浅边框 (原 --border-default-1) */
+  --border-darker: #363637; /* 深边框 (原 --border-default-active) */
+  --border-active: #636466; /* 激活边框 */
+
+  /* ---------------------- 阴影/其他 ---------------------- */
+  --shadow-default: 0px 2px 4px 0px rgba(0, 0, 0, 0.2); /* 建议深色模式阴影更深 */
+  --shadow-aigc: inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+
+  hr {
+    border-color: #7a7a7a;
+  }
+}
+
+/* 设置滚动条的宽度和高度 */
+::-webkit-scrollbar {
+  width: 0.8rem;
+  /* 纵向滚动条宽度 */
+  height: 0.8rem;
+  /* 横向滚动条高度 */
+}
+
+/* 设置滚动条轨道的样式 */
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 0.3rem;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 设置滚动条滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 0.3rem;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  &:hover {
+    background: rgba(0, 0, 0, 0.24);
+  }
+}
+a {
+  text-decoration: none;
+  background-color: transparent;
+}
