@@ -1,3 +1,4 @@
+import type { ElementStore } from '@/elements/elementStore'
 import { debounce } from '../utils/common'
 import type { ViewportState } from '@/viewport/viewport'
 
@@ -10,7 +11,8 @@ export class CanvasRenderer {
   public ctx: CanvasRenderingContext2D
   private resizeObserver!: ResizeObserver
   private viewport: ViewportState
-
+  private store!: ElementStore
+  private isDirty = true // 控制是否需要重绘
   constructor(containerElement: HTMLDivElement, viewportState: ViewportState) {
     this.containerElement = containerElement
     this.viewport = viewportState
@@ -57,51 +59,43 @@ export class CanvasRenderer {
     this.resizeObserver = new ResizeObserver(resizeHandler)
     this.resizeObserver.observe(this.containerElement)
   }
-
-  // 2. 核心绘制方法
-  public draw() {
-    const { ctx, viewport } = this
-    const { transform, width, height } = viewport
-
-    // 清空画布
-    ctx.clearRect(0, 0, width, height)
-
-    // 重置并应用视图变换矩阵 (无限画布的核心)
-    ctx.setTransform(
-      transform.scale,
-      0,
-      0,
-      transform.scale,
-      transform.x,
-      transform.y
-    )
-
-    // --- 渲染逻辑 ---
-    // 在这里添加网格、模型、辅助线等的绘制调用
-    // ...
-    // --- 渲染逻辑结束 ---
-
-    // 调试信息 (可选)
-    ctx.setTransform(1, 0, 0, 1, 0, 0) // 绘制调试信息前重置
-    ctx.fillStyle = '#000'
-    ctx.fillText(`Scale: ${transform.scale.toFixed(2)}`, 10, 20)
+  setElementStore(store: ElementStore) {
+    this.store = store
+  }
+  markDirty() {
+    this.isDirty = true
+  }
+  // 渲染线程
+  private startDrawLoop() {
+    const draw = () => {
+      if (this.isDirty) {
+        this.render()
+        this.isDirty = false
+      }
+      requestAnimationFrame(draw)
+    }
+    requestAnimationFrame(draw)
   }
 
-  // 3. 渲染循环 (使用 requestAnimationFrame 保证流畅)
-  private startDrawLoop() {
-    // 这里的实现取决于具体需求，对于 2D 编辑器，通常只在状态改变时重绘
-    // 但保持一个 loop 结构方便未来动画和实时更新
-    let lastTime = 0
-    const loop = (time: number) => {
-      // 可以在此添加性能监测逻辑
+  render() {
+    const ctx = this.ctx
 
-      // 如果没有状态变化，可以跳过 draw()
-      this.draw()
+    ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height)
 
-      lastTime = time
-      requestAnimationFrame(loop)
+    ctx.save()
+
+    // 应用 viewport 缩放/平移
+    ctx.translate(this.viewport.transform.x, this.viewport.transform.y)
+    ctx.scale(this.viewport.transform.scale, this.viewport.transform.scale)
+
+    // 遍历绘制所有元素
+    if (this.store) {
+      for (const el of this.store.getAll()) {
+        el.draw(ctx)
+      }
     }
-    requestAnimationFrame(loop)
+
+    ctx.restore()
   }
 
   // 4. 清理方法
