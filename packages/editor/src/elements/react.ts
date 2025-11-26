@@ -1,4 +1,4 @@
-import { BaseElement } from '@/types/element.type'
+import { BaseElement } from '../types/element.type'
 
 export class RectElement extends BaseElement {
   draw(ctx: CanvasRenderingContext2D) {

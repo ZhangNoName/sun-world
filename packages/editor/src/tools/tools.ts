@@ -1,4 +1,4 @@
-import type { BaseTool } from '@/types/tools.type'
+import type { BaseTool } from '../types/tools.type'
 
 export class ToolManager {
   private tools = new Map<string, BaseTool>()

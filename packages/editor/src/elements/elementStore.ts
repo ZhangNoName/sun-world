@@ -1,4 +1,4 @@
-import type { BaseElement } from '@/types/element.type'
+import type { BaseElement } from '../types/element.type'
 
 export class ElementStore {
   private elements: BaseElement[] = []

@@ -30,6 +30,8 @@ export class SWEditor {
 
   constructor(options: IEditorOptions) {
     console.log('Initializing SWEditor with options:  ', options)
+    console.log('App Version:-------------- ', this.appVersion)
+    console.log('User Preference**************: ', options.userPreference)
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()

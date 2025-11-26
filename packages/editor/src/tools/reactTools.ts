@@ -1,6 +1,6 @@
-import { RectElement } from '@/elements/react'
-import { BaseTool } from '@/types/tools.type'
-import { getUUID } from '@/utils/common'
+import { RectElement } from '../elements/react'
+import { BaseTool } from '../types/tools.type'
+import { getUUID } from '../utils/common'
 
 export class RectTool extends BaseTool {
   name = 'rect'
