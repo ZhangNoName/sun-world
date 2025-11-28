@@ -4,6 +4,7 @@ export class ElementStore {
   private elements: BaseElement[] = []
 
   add(el: BaseElement) {
+    console.log('Adding element: ', el)
     this.elements.push(el)
   }
 

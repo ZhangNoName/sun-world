@@ -13,7 +13,8 @@
     "baseUrl": ".",
     "types": ["element-plus/global"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sun-world/editor": ["../editor/src"]
     }
   },
   "include": ["src", "node_modules/element-plus/global.d.ts"]

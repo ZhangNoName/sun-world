@@ -6,7 +6,7 @@ import { ToolManager } from './tools/tools'
 import { debounce, getUUID } from './utils/common'
 import { ViewportState } from './viewport/viewport'
 
-interface IEditorOptions {
+export interface IEditorOptions {
   containerElement: HTMLDivElement
   width?: number
   height?: number
@@ -29,9 +29,10 @@ export class SWEditor {
   private toolManager = new ToolManager()
 
   constructor(options: IEditorOptions) {
-    console.log('Initializing SWEditor with options:  ', options)
-    console.log('App Version:-------------- ', this.appVersion)
+    console.log('Initializing SWEditor with options*********:  ', options)
+    console.log('App Version:-------------- ***', this.appVersion)
     console.log('User Preference**************: ', options.userPreference)
+    console.log('User Config**************: ', options.offsetY)
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()

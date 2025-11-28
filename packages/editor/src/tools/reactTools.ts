@@ -1,6 +1,8 @@
+import type { ElementStore } from '@/elements/elementStore'
 import { RectElement } from '../elements/react'
 import { BaseTool } from '../types/tools.type'
 import { getUUID } from '../utils/common'
+import type { ViewportState } from '@/viewport/viewport'
 
 export class RectTool extends BaseTool {
   name = 'rect'
@@ -12,7 +14,7 @@ export class RectTool extends BaseTool {
   private startY = 0
   private currentRect: RectElement | null = null
 
-  constructor(store, viewport) {
+  constructor(store: ElementStore, viewport: ViewportState) {
     super()
     this.store = store
     this.viewport = viewport
@@ -27,6 +29,7 @@ export class RectTool extends BaseTool {
   }
 
   onMouseDown(e: MouseEvent) {
+    console.log('RectTool onMouseDown')
     const x =
       (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
     const y =
@@ -47,6 +50,7 @@ export class RectTool extends BaseTool {
 
   onMouseMove(e: MouseEvent) {
     if (!this.drawing || !this.currentRect) return
+    console.log('RectTool onMouseMove')
 
     const x =
       (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
@@ -58,6 +62,7 @@ export class RectTool extends BaseTool {
   }
 
   onMouseUp() {
+    console.log('RectTool onMouseUp')
     this.drawing = false
     this.currentRect = null
   }

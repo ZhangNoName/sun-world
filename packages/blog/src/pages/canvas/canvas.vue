@@ -9,9 +9,10 @@ const canvasRef = ref<HTMLDivElement | null>(null)
 
 onMounted(() => {
   if (canvasRef.value) {
-    const editor = new SWEditor({
+    const editor: SWEditor = new SWEditor({
       containerElement: canvasRef.value,
     })
+    ;(window as any).sw = editor
   }
 })
 </script>

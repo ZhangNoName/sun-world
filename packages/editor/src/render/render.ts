@@ -52,7 +52,7 @@ export class CanvasRenderer {
         // 更新 ViewportState
         this.viewport.updateDimensions(width, height)
         // 触发重绘
-        this.draw()
+        this.render()
       }
     }, 100)
 
