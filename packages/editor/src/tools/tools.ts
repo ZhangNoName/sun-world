@@ -23,4 +23,11 @@ export class ToolManager {
   getActiveTool() {
     return this.activeTool
   }
+  /**
+   * 获取工具列表
+   * @returns 返回所有工具的键名数组
+   */
+  getTools() {
+    return [...this.tools.keys()]
+  }
 }

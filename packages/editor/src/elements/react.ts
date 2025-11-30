@@ -8,6 +8,7 @@ export class RectElement extends BaseElement {
     // ctx.scale(this.scaleX, this.scaleY)
 
     // ctx.fillStyle = this.fill
+    ctx.fillStyle = 'red'
     ctx.fillRect(0, 0, this.width, this.height)
 
     ctx.restore()

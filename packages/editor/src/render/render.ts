@@ -13,9 +13,14 @@ export class CanvasRenderer {
   private viewport: ViewportState
   private store!: ElementStore
   private isDirty = true // 控制是否需要重绘
-  constructor(containerElement: HTMLDivElement, viewportState: ViewportState) {
+  constructor(
+    containerElement: HTMLDivElement,
+    viewportState: ViewportState,
+    elementStore: ElementStore
+  ) {
     this.containerElement = containerElement
     this.viewport = viewportState
+    this.store = elementStore
 
     // 1. 创建 Canvas 元素
     this.canvasElement = document.createElement('canvas')
@@ -32,7 +37,7 @@ export class CanvasRenderer {
     this.ctx = this.canvasElement.getContext('2d')!
 
     this.setupResizeObserver()
-    this.startDrawLoop() // 启动渲染循环
+    // this.startDrawLoop() // 启动渲染循环
   }
 
   // 1. 设置 ResizeObserver 来响应容器尺寸变化
@@ -58,9 +63,8 @@ export class CanvasRenderer {
 
     this.resizeObserver = new ResizeObserver(resizeHandler)
     this.resizeObserver.observe(this.containerElement)
-  }
-  setElementStore(store: ElementStore) {
-    this.store = store
+
+    this.store.onChange(() => this.render())
   }
   markDirty() {
     this.isDirty = true
@@ -68,6 +72,7 @@ export class CanvasRenderer {
   // 渲染线程
   private startDrawLoop() {
     const draw = () => {
+      // console.log('Render loop started.')
       if (this.isDirty) {
         this.render()
         this.isDirty = false
@@ -92,6 +97,7 @@ export class CanvasRenderer {
     if (this.store) {
       for (const el of this.store.getAll()) {
         el.draw(ctx)
+        console.log('Render element:', el)
       }
     }
 
