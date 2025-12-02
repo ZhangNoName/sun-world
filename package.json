@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "run-p dev:icons dev:editor dev:blog  ",
     "dev:nuxt-blog": "pnpm -F @sun-world/nuxt-blog dev",
+    "dev:blog-next": "pnpm -F @sun-world/blog-next dev",
     "dev:blog": "pnpm -F @sun-world/blog dev",
     "dev:icons": "pnpm -F @sun-world/icons dev",
     "watch:editor": "pnpm -F @sun-world/editor run watch",
