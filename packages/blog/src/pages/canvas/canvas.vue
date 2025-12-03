@@ -1,20 +1,25 @@
 <script setup lang="ts" name="canvas">
 // import Editor from '@/editor/Editor.vue'
 import { Delete } from '@element-plus/icons-vue'
-import { SWEditor } from '@sun-world/editor'
-import { DeleteSvg } from '@sun-world/icons'
+import { SWEditor, ToolName } from '@sun-world/editor'
+
+import { CommentSvg, HandSvg, RectSvg, SelectSvg } from '@sun-world/icons'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 const tg = window.Telegram?.WebApp
 // 创建一个 canvas 的 ref
 const canvasRef = ref<HTMLDivElement | null>(null)
 const tools = ref<string[]>([])
-
+const editor = ref<SWEditor | null>(null)
+const selectToolHandle = (tool: ToolName) => {
+  editor.value?.setTool(tool)
+}
 onMounted(() => {
   if (canvasRef.value) {
-    const editor: SWEditor = new SWEditor({
+    editor.value = new SWEditor({
       containerElement: canvasRef.value,
     })
+
     // tools.value = [...editor.getTools()]
     tools.value = ['1', '2', '3', '4']
     ;(window as any).sw = editor
@@ -27,10 +32,34 @@ onMounted(() => {
     <div class="canvas" ref="canvasRef"></div>
     <!-- <div class="right"></div> -->
     <div class="tools-container">
-      <div class="tool" v-for="tool in tools" :key="tool">
-        <DeleteSvg width="24px" height="24px" />
-        <!-- <div class="svg">{{ tool }}</div> -->
-        <!-- <Delete class="svg" /> -->
+      <div class="tool active">
+        <SelectSvg
+          color="#fff"
+          width="24px"
+          height="24px"
+          @click="() => selectToolHandle('select')"
+        />
+      </div>
+      <div class="tool">
+        <HandSvg
+          width="24px"
+          height="24px"
+          @click="() => selectToolHandle('drag')"
+        />
+      </div>
+      <div class="tool">
+        <CommentSvg
+          width="24px"
+          height="24px"
+          @click="() => selectToolHandle('comment')"
+        />
+      </div>
+      <div class="tool">
+        <RectSvg
+          width="24px"
+          height="24px"
+          @click="() => selectToolHandle('rect')"
+        />
       </div>
     </div>
   </div>
@@ -71,6 +100,7 @@ onMounted(() => {
     flex-direction: row;
     align-items: center;
     gap: 8px;
+    background-color: #ffffff;
     .tool {
       color: white;
       padding: 4px;
@@ -81,6 +111,9 @@ onMounted(() => {
 
         /* height: 24px; */
       }
+    }
+    .active {
+      background-color: #0d99ff;
     }
   }
 }

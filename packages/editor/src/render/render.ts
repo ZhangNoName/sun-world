@@ -1,6 +1,6 @@
 import type { ElementStore } from '@/elements/elementStore'
 import { debounce } from '../utils/common'
-import type { ViewportState } from '@/viewport/viewport'
+import ViewportState from '@/viewport/viewport'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -25,7 +25,7 @@ export class CanvasRenderer {
     // 1. 创建 Canvas 元素
     this.canvasElement = document.createElement('canvas')
     this.canvasElement.style.cssText =
-      'display: block; width: 100%; height: 100%;'
+      'display: block; width: 100%; height: 100%;background-color: #f5f5f5;'
 
     // 2. 初始尺寸设置
     const { clientWidth, clientHeight } = containerElement

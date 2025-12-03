@@ -14,7 +14,8 @@
     "types": ["element-plus/global"],
     "paths": {
       "@/*": ["./src/*"],
-      "@sun-world/editor": ["../editor/src"]
+      "@sun-world/editor": ["../editor/src"],
+      "@sun-world/icons": ["../icons/src"]
     }
   },
   "include": ["src", "node_modules/element-plus/global.d.ts"]

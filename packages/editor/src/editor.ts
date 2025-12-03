@@ -2,11 +2,13 @@ import type { BaseConfig } from './config'
 import { ElementStore } from './elements/elementStore'
 import { InputManager } from './input/inputManager'
 import { CanvasRenderer } from './render/render'
+import DragTool from './tools/dragTool'
 import { RectTool } from './tools/reactTools'
 import { ToolManager } from './tools/tools'
 import { Transformer } from './transformer/transformer'
+import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
-import { ViewportState } from './viewport/viewport'
+import ViewportState from './viewport/viewport'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -53,9 +55,11 @@ export class SWEditor {
     this.toolManager.registerTool(
       new RectTool(this.elementStore, this.viewportState)
     )
+    this.toolManager.registerTool(new DragTool(this.viewportState))
 
     // 默认激活选择工具（你之后会写）
     this.toolManager.activateTool('rect')
+    this.viewportState.on(() => this.renderer.render())
 
     this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
@@ -80,7 +84,7 @@ export class SWEditor {
     })
   }
 
-  public setTool(name: string) {
+  public setTool(name: ToolName) {
     this.toolManager.activateTool(name)
   }
   /**

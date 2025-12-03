@@ -1,7 +1,6 @@
 import type { BaseConfig } from './config'
 import type { CanvasRenderer } from './render/render'
 import { debounce, getUUID } from './utils/common'
-import type { ViewportState } from './viewport/viewport'
 
 interface IEditorOptions {
   containerElement: HTMLDivElement

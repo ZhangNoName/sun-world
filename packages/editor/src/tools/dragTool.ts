@@ -1,0 +1,55 @@
+import { BaseTool, ToolName } from '@/types/tools.type'
+import ViewportState from '@/viewport/viewport'
+
+export default class DragTool implements BaseTool {
+  name: ToolName = 'drag'
+  private isPanning = false
+  private startX = 0
+  private startY = 0
+  private origX = 0
+  private origY = 0
+  private viewport: ViewportState
+  constructor(viewport: ViewportState) {
+    this.viewport = viewport
+  }
+  onWheel(e: WheelEvent): void {
+    console.log('DragTool.onWheel', e)
+  }
+  onMouseDown(e: MouseEvent): void {
+    // 只在左键按下时开始
+    if (e.button !== 0) return
+
+    this.isPanning = true
+
+    // 记录鼠标初始位置 (屏幕坐标)
+    this.startX = e.clientX
+    this.startY = e.clientY
+
+    // 记录当前视图位置
+    this.origX = this.viewport.transform.x
+    this.origY = this.viewport.transform.y
+    console.log('DragTool.onMouseDown', e)
+  }
+  onMouseMove(e: MouseEvent): void {
+    if (!this.isPanning) return
+
+    // 鼠标移动距离
+    const dx = e.clientX - this.startX
+    const dy = e.clientY - this.startY
+
+    // 更新 viewport
+    this.viewport.move(dx, dy)
+
+    console.log('DragTool.onMouseMove', e)
+  }
+  onMouseUp(): void {
+    console.log('DragTool.onMouseUp')
+    this.isPanning = false
+  }
+  activate(): void {
+    console.log('DragTool.activate')
+  }
+  deactivate(): void {
+    console.log('DragTool.deactivate')
+  }
+}

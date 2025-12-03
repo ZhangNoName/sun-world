@@ -1,5 +1,14 @@
+export type ToolName =
+  | 'rect'
+  | 'select'
+  | 'line'
+  | 'text'
+  | 'image'
+  | 'eraser'
+  | 'drag'
+  | 'comment'
 export abstract class BaseTool {
-  abstract name: string
+  abstract name: ToolName
 
   onMouseDown?(e: MouseEvent): void
   onMouseMove?(e: MouseEvent): void

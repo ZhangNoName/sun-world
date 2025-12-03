@@ -1,11 +1,11 @@
 import type { ElementStore } from '@/elements/elementStore'
 import { RectElement } from '../elements/react'
-import { BaseTool } from '../types/tools.type'
+import { BaseTool, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
-import type { ViewportState } from '@/viewport/viewport'
+import ViewportState from '@/viewport/viewport'
 
 export class RectTool extends BaseTool {
-  name = 'rect'
+  name: ToolName = 'rect'
   private store
   private viewport
 

@@ -1,14 +1,15 @@
-import type { BaseTool } from '../types/tools.type'
+import type { BaseTool, ToolName } from '../types/tools.type'
 
 export class ToolManager {
-  private tools = new Map<string, BaseTool>()
+  private tools = new Map<ToolName, BaseTool>()
   private activeTool: BaseTool | null = null
 
   registerTool(tool: BaseTool) {
     this.tools.set(tool.name, tool)
   }
 
-  activateTool(name: string) {
+  activateTool(name: ToolName) {
+    console.log('Activating tool:', name)
     const tool = this.tools.get(name)
     if (!tool) return
 
@@ -20,7 +21,7 @@ export class ToolManager {
     tool.activate?.()
   }
 
-  getActiveTool() {
+  getActiveTool(): BaseTool | null {
     return this.activeTool
   }
   /**
@@ -29,5 +30,12 @@ export class ToolManager {
    */
   getTools() {
     return [...this.tools.keys()]
+  }
+  /**
+   * 获取当前激活的工具名称
+   * @returns 返回当前激活的工具名称
+   */
+  getActiveToolName(): ToolName | null {
+    return this.activeTool?.name || null
   }
 }
