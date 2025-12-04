@@ -97,7 +97,7 @@ export class CanvasRenderer {
     if (this.store) {
       for (const el of this.store.getAll()) {
         el.draw(ctx)
-        console.log('Render element:', el)
+        // console.log('Render element:', el)
       }
     }
 
