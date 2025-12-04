@@ -102,4 +102,12 @@ export class SWEditor {
   public getCanvas() {
     return this.renderer.canvasElement
   }
+  public toolChanged(cb: () => void) {
+    this.toolManager.on(() => {
+      cb()
+    })
+  }
+  public getActiveToolName() {
+    return this.toolManager.getActiveToolName()
+  }
 }

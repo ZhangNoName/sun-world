@@ -1,9 +1,9 @@
 import type { BaseTool, ToolName } from '../types/tools.type'
-
+type ToolsListener = () => void
 export class ToolManager {
   private tools = new Map<ToolName, BaseTool>()
   private activeTool: BaseTool | null = null
-
+  private listeners: Set<ToolsListener> = new Set()
   registerTool(tool: BaseTool) {
     this.tools.set(tool.name, tool)
   }
@@ -19,6 +19,7 @@ export class ToolManager {
     // 激活新工具
     this.activeTool = tool
     tool.activate?.()
+    this.emit()
   }
 
   getActiveTool(): BaseTool | null {
@@ -37,5 +38,14 @@ export class ToolManager {
    */
   getActiveToolName(): ToolName | null {
     return this.activeTool?.name || null
+  }
+
+  public on(listener: ToolsListener) {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener) // 取消订阅
+  }
+
+  private emit() {
+    this.listeners.forEach((fn) => fn())
   }
 }

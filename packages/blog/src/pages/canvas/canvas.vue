@@ -11,6 +11,7 @@ const tg = window.Telegram?.WebApp
 const canvasRef = ref<HTMLDivElement | null>(null)
 const tools = ref<string[]>([])
 const editor = ref<SWEditor | null>(null)
+const activeTool = ref<ToolName | null>(null)
 const selectToolHandle = (tool: ToolName) => {
   editor.value?.setTool(tool)
 }
@@ -22,6 +23,9 @@ onMounted(() => {
 
     // tools.value = [...editor.getTools()]
     tools.value = ['1', '2', '3', '4']
+    editor.value.toolChanged(() => {
+      activeTool.value = editor.value?.getActiveToolName() || null
+    })
     ;(window as any).sw = editor
   }
 })
@@ -32,29 +36,28 @@ onMounted(() => {
     <div class="canvas" ref="canvasRef"></div>
     <!-- <div class="right"></div> -->
     <div class="tools-container">
-      <div class="tool active">
+      <div class="tool" :class="{ active: activeTool === 'select' }">
         <SelectSvg
-          color="#fff"
           width="24px"
           height="24px"
           @click="() => selectToolHandle('select')"
         />
       </div>
-      <div class="tool">
+      <div class="tool" :class="{ active: activeTool === 'drag' }">
         <HandSvg
           width="24px"
           height="24px"
           @click="() => selectToolHandle('drag')"
         />
       </div>
-      <div class="tool">
+      <div class="tool" :class="{ active: activeTool === 'comment' }">
         <CommentSvg
           width="24px"
           height="24px"
           @click="() => selectToolHandle('comment')"
         />
       </div>
-      <div class="tool">
+      <div class="tool" :class="{ active: activeTool === 'rect' }">
         <RectSvg
           width="24px"
           height="24px"
@@ -114,6 +117,9 @@ onMounted(() => {
     }
     .active {
       background-color: #0d99ff;
+      svg {
+        fill: white;
+      }
     }
   }
 }
