@@ -15,6 +15,12 @@ export default class ViewportState {
     // this.height = height
     // this.transform = transform
   }
+  screenToCanvas(x: number, y: number) {
+    return {
+      x: (x - this.transform.x) / this.transform.scale,
+      y: (y - this.transform.y) / this.transform.scale,
+    }
+  }
 
   updateDimensions(width: number, height: number) {
     this.width = width

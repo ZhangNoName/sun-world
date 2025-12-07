@@ -1,9 +1,22 @@
-import type { BaseTool, ToolName } from '../types/tools.type'
+import type { BaseTool, ToolContext, ToolName } from '../types/tools.type'
+import CommentTool from './commentTool'
+import DragTool from './dragTool'
+import { RectTool } from './reactTools'
+import SelectTool from './selectTool'
 type ToolsListener = () => void
 export class ToolManager {
   private tools = new Map<ToolName, BaseTool>()
   private activeTool: BaseTool | null = null
   private listeners: Set<ToolsListener> = new Set()
+  private ctx: ToolContext
+
+  constructor(ctx: ToolContext) {
+    this.ctx = ctx
+    this.registerTool(new RectTool(ctx))
+    this.registerTool(new SelectTool(ctx))
+    this.registerTool(new DragTool(ctx))
+    this.registerTool(new CommentTool(ctx))
+  }
   registerTool(tool: BaseTool) {
     this.tools.set(tool.name, tool)
   }

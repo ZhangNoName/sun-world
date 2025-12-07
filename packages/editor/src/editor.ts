@@ -30,7 +30,8 @@ export class SWEditor {
   private viewportState: ViewportState
   private renderer: CanvasRenderer
   private elementStore = new ElementStore()
-  private toolManager = new ToolManager()
+  private inputManager = new InputManager(this)
+  private toolManager: ToolManager
   private transformer = new Transformer()
   private inputEvents
   constructor(options: IEditorOptions) {
@@ -52,11 +53,12 @@ export class SWEditor {
     this._id = getUUID()
 
     // 注册工具
-    this.toolManager.registerTool(
-      new RectTool(this.elementStore, this.viewportState)
-    )
-    this.toolManager.registerTool(new DragTool(this.viewportState))
-
+    this.toolManager = new ToolManager({
+      input: this.inputManager,
+      viewport: this.viewportState,
+      elements: this.elementStore,
+      render: debounce(() => this.renderer.render(), 0),
+    })
     // 默认激活选择工具（你之后会写）
     this.toolManager.activateTool('rect')
     this.viewportState.on(() => this.renderer.render())

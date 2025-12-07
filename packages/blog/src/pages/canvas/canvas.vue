@@ -20,7 +20,7 @@ onMounted(() => {
     editor.value = new SWEditor({
       containerElement: canvasRef.value,
     })
-
+    activeTool.value = editor.value?.getActiveToolName() || null
     // tools.value = [...editor.getTools()]
     tools.value = ['1', '2', '3', '4']
     editor.value.toolChanged(() => {
@@ -109,6 +109,7 @@ onMounted(() => {
       padding: 4px;
       border-radius: 5px;
       aspect-ratio: 1 / 1;
+      cursor: pointer;
       svg {
         display: block;
 

@@ -1,8 +1,8 @@
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import ViewportState from '@/viewport/viewport'
 
-export default class DragTool extends BaseTool {
-  name: ToolName = 'drag'
+export default class CommentTool extends BaseTool {
+  name: ToolName = 'comment'
   private isPanning = false
   private lastX = 0
   private lastY = 0

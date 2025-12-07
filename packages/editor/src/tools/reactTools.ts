@@ -1,6 +1,6 @@
 import type { ElementStore } from '@/elements/elementStore'
 import { RectElement } from '../elements/react'
-import { BaseTool, ToolName } from '../types/tools.type'
+import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 
@@ -14,10 +14,10 @@ export class RectTool extends BaseTool {
   private startY = 0
   private currentRect: RectElement | null = null
 
-  constructor(store: ElementStore, viewport: ViewportState) {
-    super()
-    this.store = store
-    this.viewport = viewport
+  constructor(ctx: ToolContext) {
+    super(ctx)
+    this.store = ctx.elements
+    this.viewport = ctx.viewport
   }
 
   activate() {

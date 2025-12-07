@@ -26,6 +26,9 @@ export class ElementStore {
   onChange(cb: () => void) {
     this.listeners.add(cb)
   }
+  hitTest(x: number, y: number) {
+    return this.elements.find((el) => el.hitTest(x, y))
+  }
 
   private emit() {
     this.listeners.forEach((cb) => cb())
