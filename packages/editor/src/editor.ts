@@ -2,6 +2,7 @@ import type { BaseConfig } from './config'
 import { ElementStore } from './elements/elementStore'
 import { InputManager } from './input/inputManager'
 import { CanvasRenderer } from './render/render'
+import { Rule } from './support/rules'
 import DragTool from './tools/dragTool'
 import { RectTool } from './tools/reactTools'
 import { ToolManager } from './tools/tools'
@@ -33,6 +34,7 @@ export class SWEditor {
   private inputManager = new InputManager(this)
   private toolManager: ToolManager
   private transformer = new Transformer()
+  private rule: Rule
   private inputEvents
   constructor(options: IEditorOptions) {
     // console.log('Initializing SWEditor with options*********:  ', options)
@@ -60,11 +62,12 @@ export class SWEditor {
       render: debounce(() => this.renderer.render(), 0),
     })
     // 默认激活选择工具（你之后会写）
-    this.toolManager.activateTool('rect')
+    this.toolManager.activateTool('drag')
     this.viewportState.on(() => this.renderer.render())
 
     this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
+    this.rule = new Rule(this.renderer.ctx, this.viewportState)
   }
   // id，只读
   get id() {
