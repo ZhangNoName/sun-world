@@ -68,6 +68,7 @@ export class SWEditor {
     this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
     this.rule = new Rule(this.renderer.ctx, this.viewportState)
+    this.rule.render()
   }
   // id，只读
   get id() {

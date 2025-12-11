@@ -7,7 +7,7 @@ import ViewportState from '@/viewport/viewport'
 export class Rule {
   visible = true
   // x轴就是高度，Y轴就是宽度
-  size: number = 30
+  size: number = 20
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -29,9 +29,10 @@ export class Rule {
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, width, this.size)
 
-    ctx.strokeStyle = '#999'
-    ctx.fillStyle = '#666'
+    ctx.strokeStyle = '#c1c1c1'
+    ctx.fillStyle = '#c1c1c1'
     ctx.font = '10px sans-serif'
+    ctx.textAlign = 'center'
 
     // 动态刻度间隔（Figma 同款算法）
     const baseStep = 50
@@ -47,12 +48,12 @@ export class Rule {
       const isMajor = Math.round(v) % (step * 10) === 0
 
       ctx.beginPath()
-      ctx.moveTo(sx, 0)
-      ctx.lineTo(sx, isMajor ? this.size : this.size * 0.6)
+      ctx.moveTo(sx, this.size)
+      ctx.lineTo(sx, isMajor ? this.size - 8 : this.size - 4)
       ctx.stroke()
 
       if (isMajor) {
-        ctx.fillText(String(Math.round(v)), sx + 2, 12)
+        ctx.fillText(String(Math.round(v)), sx, 12)
       }
     }
   }
