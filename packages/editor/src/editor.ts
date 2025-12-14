@@ -1,5 +1,7 @@
 import type { BaseConfig } from './config'
 import { ElementStore } from './elements/elementStore'
+import { EventManager } from './event/eventManager'
+import { KeyBindingManager } from './event/keyBindingManager'
 import { InputManager } from './input/inputManager'
 import { CanvasRenderer } from './render/render'
 import { Rule } from './support/rules'
@@ -7,6 +9,7 @@ import DragTool from './tools/dragTool'
 import { RectTool } from './tools/reactTools'
 import { ToolManager } from './tools/tools'
 import { Transformer } from './transformer/transformer'
+import { KeyBindingConfig, MODIFIERS } from './types/keybinding.type'
 import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
 import ViewportState from './viewport/viewport'
@@ -19,6 +22,7 @@ export interface IEditorOptions {
   offsetY?: number
   showPerfMonitor?: boolean
   userPreference?: Partial<BaseConfig>
+  keyBindingConfig?: Partial<KeyBindingConfig>
 }
 
 interface Events {
@@ -31,6 +35,7 @@ export class SWEditor {
   private viewportState: ViewportState
   private renderer: CanvasRenderer
   private elementStore = new ElementStore()
+  private eventManager: EventManager
   private inputManager = new InputManager(this)
   private toolManager: ToolManager
   private transformer = new Transformer()
@@ -45,6 +50,8 @@ export class SWEditor {
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()
 
+    this._id = getUUID()
+
     // 2. 实例化核心模块，并进行依赖注入
     this.renderer = new CanvasRenderer(
       options.containerElement,
@@ -52,7 +59,8 @@ export class SWEditor {
       this.elementStore
     )
 
-    this._id = getUUID()
+    // 初始化事件管理器（包含按键绑定）
+    this.eventManager = new EventManager(this, options.keyBindingConfig)
 
     // 注册工具
     this.toolManager = new ToolManager({
@@ -61,7 +69,7 @@ export class SWEditor {
       elements: this.elementStore,
       render: debounce(() => this.renderer.render(), 0),
     })
-    // 默认激活选择工具（你之后会写）
+    // 默认激活选择工具
     this.toolManager.activateTool('drag')
     this.viewportState.on(() => this.renderer.render())
 
@@ -100,9 +108,31 @@ export class SWEditor {
   public getTools() {
     return this.toolManager.getTools()
   }
+  /**
+   * 获取按键绑定管理器
+   */
+  public getKeyBindingManager(): KeyBindingManager {
+    return this.eventManager['keyBindingManager']
+  }
+
+  /**
+   * 添加自定义按键绑定
+   */
+  public addKeyBinding(bindingId: string, binding: any) {
+    this.getKeyBindingManager().addBinding(binding)
+  }
+
+  /**
+   * 注册按键绑定处理器
+   */
+  public registerKeyHandler(bindingId: string, handler: any) {
+    this.getKeyBindingManager().registerHandler(bindingId, handler)
+  }
+
   // 销毁方法
   public destroy() {
     this.renderer.destroy()
+    this.eventManager['keyBindingManager'].destroy()
     // ... 清理其他模块和事件监听器
   }
   public getCanvas() {

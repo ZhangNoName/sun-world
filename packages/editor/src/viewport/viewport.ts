@@ -7,7 +7,9 @@ export default class ViewportState {
   public width: number = 0
   public height: number = 0
   public transform: Transform = { x: 0, y: 0, scale: 1.0 }
+  public scale: number = 1.0
   private listeners: Set<ViewportListener> = new Set()
+
   // 在一个 Vue/React 环境中，这些属性应该被封装为响应式数据 (e.g., Vue's reactive)
   // 这样当 transform 改变时，Renderer 会自动感知并重绘。
   constructor() {
@@ -31,6 +33,18 @@ export default class ViewportState {
     console.log('move', x, y, this.transform.scale)
     this.transform.x += x
     this.transform.y += y
+    this.emit()
+  }
+  public zoomIn() {
+    this.transform.scale *= scale
+    this.emit()
+  }
+  public zoomOut(scale: number) {
+    this.transform.scale /= scale
+    this.emit()
+  }
+  public zoomTo(scale: number) {
+    this.transform.scale = scale
     this.emit()
   }
   public on(listener: ViewportListener) {

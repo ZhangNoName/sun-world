@@ -216,6 +216,7 @@ export class Rule {
    * 渲染标尺
    */
   public render() {
+    console.log('渲染标尺')
     if (!this.visible) return
     this.drawXAxis()
     this.drawYAxis()
