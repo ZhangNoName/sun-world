@@ -28,7 +28,7 @@ export default class DragTool extends BaseTool {
   }
   onMouseMove(e: MouseEvent): void {
     if (!this.isPanning) return
-
+    // console.log('按下', e.clientX, this.lastX)
     // 鼠标移动距离
     const dx = e.clientX - this.lastX
     const dy = e.clientY - this.lastY

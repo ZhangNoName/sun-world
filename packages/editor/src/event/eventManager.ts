@@ -50,18 +50,18 @@ export class EventManager {
   }
 
   handleMouseDown = (e: MouseEvent) => {
-    const p = transformer.toCanvas(e) // 坐标统一转换
-    this.editor.toolManager.activeTool?.onMouseDown(p)
+    // 传递原始事件，让tool自己处理坐标转换
+    this.editor.toolManager.activeTool?.onMouseDown(e)
   }
 
   handleMouseMove = (e: MouseEvent) => {
-    const p = transformer.toCanvas(e)
-    this.editor.toolManager.activeTool?.onMouseMove(p)
+    // 传递原始事件，让tool自己处理坐标转换
+    this.editor.toolManager.activeTool?.onMouseMove(e)
   }
 
   handleMouseUp = (e: MouseEvent) => {
-    const p = transformer.toCanvas(e)
-    this.editor.toolManager.activeTool?.onMouseUp(p)
+    // 传递原始事件，让tool自己处理坐标转换
+    this.editor.toolManager.activeTool?.onMouseUp(e)
   }
 
   handleKeyDown = (e: KeyboardEvent) => {

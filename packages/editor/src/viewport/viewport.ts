@@ -30,7 +30,7 @@ export default class ViewportState {
   }
 
   public move(x: number, y: number) {
-    console.log('move', x, y, this.transform.scale)
+    // console.log('move', x, y, this.transform.scale)
     this.transform.x += x
     this.transform.y += y
     this.emit()
