@@ -1,37 +1,58 @@
 import {
-  KeyBinding,
-  KeyBindingConfig,
-  KeyBindingHandler,
-  ModifierKey,
-  KeyCondition,
-  DEFAULT_KEY_BINDINGS,
+  InputBinding,
+  InputBindingConfig,
+  InputBindingHandler,
+  InputCondition,
+  MouseButton,
+  IInput,
+  DEFAULT_INPUT_BINDINGS,
 } from '../types/keybinding.type'
 import { SWEditor } from '../editor'
 
 /**
- * 🟧 KeyBindingManager（按键绑定管理器）
+ * 🟧 InputBindingManager（输入绑定管理器）
  *
  * 负责：
- * 1. 管理按键绑定配置
- * 2. 匹配键盘事件与按键绑定
+ * 1. 统一管理键盘和鼠标输入绑定配置
+ * 2. 匹配输入事件与绑定条件
  * 3. 执行绑定的处理函数或action回调
  * 4. 支持动态添加/移除绑定
- * 5. 支持平台特定的按键绑定
+ * 5. 支持平台特定的输入绑定
  * 6. 支持条件检查
+ * 7. 维护输入状态（键盘修饰键+鼠标按键状态）
  */
-export class KeyBindingManager {
-  private config: KeyBindingConfig
-  private handlers: Map<string, KeyBindingHandler> = new Map()
+export class InputBindingManager {
+  private config: InputBindingConfig
+  private handlers: Map<string, InputBindingHandler> = new Map()
   private enabled = true
   private editor: SWEditor
   private platform: 'mac' | 'win' = this.detectPlatform()
 
-  constructor(editor: SWEditor, config?: Partial<KeyBindingConfig>) {
+  // 输入状态管理 - 实时反映当前输入设备状态
+  public inputState = {
+    // 键盘修饰键状态
+    shift: false,
+    alt: false,
+    ctrl: false,
+    meta: false,
+    space: false,
+
+    // 鼠标按键状态
+    leftMouse: false,
+    rightMouse: false,
+    middleMouse: false,
+
+    // 鼠标位置（可选，用于某些高级功能）
+    mouseX: 0,
+    mouseY: 0,
+  }
+
+  constructor(editor: SWEditor, config?: Partial<InputBindingConfig>) {
     this.editor = editor
-    this.config = this.mergeConfig(DEFAULT_KEY_BINDINGS, config)
+    this.config = this.mergeConfig(DEFAULT_INPUT_BINDINGS, config)
     this.enabled = this.config.enabled ?? true
 
-    console.log('KeyBindingManager 初始化完成，平台:', this.platform)
+    console.log('InputBindingManager 初始化完成，平台:', this.platform)
   }
 
   /**
@@ -45,9 +66,9 @@ export class KeyBindingManager {
    * 合并配置
    */
   private mergeConfig(
-    defaultConfig: KeyBindingConfig,
-    userConfig?: Partial<KeyBindingConfig>
-  ): KeyBindingConfig {
+    defaultConfig: InputBindingConfig,
+    userConfig?: Partial<InputBindingConfig>
+  ): InputBindingConfig {
     const merged = { ...defaultConfig, ...userConfig }
 
     // 深度合并bindings
@@ -59,12 +80,15 @@ export class KeyBindingManager {
   }
 
   /**
-   * 处理键盘事件
-   * @param event 键盘事件
+   * 处理输入事件（键盘、鼠标、滚轮）
+   * @param event 输入事件
    * @returns 是否匹配并处理了绑定
    */
-  handleKeyEvent(event: KeyboardEvent): boolean {
+  handleInputEvent(event: Event): boolean {
     if (!this.enabled) return false
+
+    // 先更新输入状态，再检查绑定（确保状态是最新的）
+    this.updateInputState(event)
 
     // 检查全局条件
     if (this.config.condition && !this.config.condition(this.editor)) {
@@ -97,16 +121,16 @@ export class KeyBindingManager {
   }
 
   /**
-   * 注册按键绑定处理器
+   * 注册输入绑定处理器
    * @param bindingId 绑定ID
    * @param handler 处理函数
    */
-  registerHandler(bindingId: string, handler: KeyBindingHandler): void {
+  registerHandler(bindingId: string, handler: InputBindingHandler): void {
     this.handlers.set(bindingId, handler)
   }
 
   /**
-   * 移除按键绑定处理器
+   * 移除输入绑定处理器
    * @param bindingId 绑定ID
    */
   unregisterHandler(bindingId: string): void {
@@ -114,10 +138,85 @@ export class KeyBindingManager {
   }
 
   /**
-   * 添加新的按键绑定
+   * 更新输入状态 - 统一管理键盘和鼠标状态
+   */
+  private updateInputState(event: Event): void {
+    // 所有事件都可能包含键盘修饰键信息
+    if ('shiftKey' in event) {
+      this.inputState.shift = (
+        event as KeyboardEvent | MouseEvent | WheelEvent
+      ).shiftKey
+    }
+    if ('altKey' in event) {
+      this.inputState.alt = (
+        event as KeyboardEvent | MouseEvent | WheelEvent
+      ).altKey
+    }
+    if ('ctrlKey' in event) {
+      this.inputState.ctrl = (
+        event as KeyboardEvent | MouseEvent | WheelEvent
+      ).ctrlKey
+    }
+    if ('metaKey' in event) {
+      this.inputState.meta = (
+        event as KeyboardEvent | MouseEvent | WheelEvent
+      ).metaKey
+    }
+
+    if (event instanceof KeyboardEvent) {
+      // 处理键盘特定状态
+      if (event.code === 'Space') {
+        this.inputState.space = event.type === 'keydown'
+      }
+    } else if (event instanceof MouseEvent) {
+      // 更新鼠标按键状态
+      this.updateMouseButtonState(event)
+
+      // 更新鼠标位置
+      this.inputState.mouseX = event.clientX
+      this.inputState.mouseY = event.clientY
+    }
+  }
+
+  /**
+   * 更新鼠标按键状态
+   */
+  private updateMouseButtonState(event: MouseEvent): void {
+    switch (event.type) {
+      case 'mousedown':
+        switch (event.button) {
+          case MouseButton.LEFT:
+            this.inputState.leftMouse = true
+            break
+          case MouseButton.RIGHT:
+            this.inputState.rightMouse = true
+            break
+          case MouseButton.MIDDLE:
+            this.inputState.middleMouse = true
+            break
+        }
+        break
+      case 'mouseup':
+        switch (event.button) {
+          case MouseButton.LEFT:
+            this.inputState.leftMouse = false
+            break
+          case MouseButton.RIGHT:
+            this.inputState.rightMouse = false
+            break
+          case MouseButton.MIDDLE:
+            this.inputState.middleMouse = false
+            break
+        }
+        break
+    }
+  }
+
+  /**
+   * 添加新的输入绑定
    * @param binding 绑定配置
    */
-  addBinding(binding: KeyBinding): void {
+  addBinding(binding: InputBinding): void {
     // 检查是否已存在相同ID的绑定
     const existingIndex = this.config.bindings.findIndex(
       (b) => b.id === binding.id
@@ -130,7 +229,7 @@ export class KeyBindingManager {
   }
 
   /**
-   * 移除按键绑定
+   * 移除输入绑定
    * @param bindingId 绑定ID
    */
   removeBinding(bindingId: string): void {
@@ -140,10 +239,10 @@ export class KeyBindingManager {
   }
 
   /**
-   * 更新按键绑定配置
+   * 更新输入绑定配置
    * @param config 新的配置
    */
-  updateConfig(config: Partial<KeyBindingConfig>): void {
+  updateConfig(config: Partial<InputBindingConfig>): void {
     this.config = { ...this.config, ...config }
     this.enabled = this.config.enabled ?? true
   }
@@ -151,7 +250,7 @@ export class KeyBindingManager {
   /**
    * 获取当前配置
    */
-  getConfig(): KeyBindingConfig {
+  getConfig(): InputBindingConfig {
     return { ...this.config }
   }
 
@@ -172,11 +271,11 @@ export class KeyBindingManager {
   }
 
   /**
-   * 匹配键盘事件与按键绑定
-   * @param event 键盘事件
+   * 匹配输入事件与绑定
+   * @param event 输入事件
    * @returns 匹配的绑定或null
    */
-  private matchBinding(event: KeyboardEvent): KeyBinding | null {
+  private matchBinding(event: Event): InputBinding | null {
     for (const binding of Object.values(this.config.bindings)) {
       const condition = this.getPlatformCondition(binding)
       if (condition && this.matchesCondition(condition, event)) {
@@ -188,79 +287,107 @@ export class KeyBindingManager {
   }
 
   /**
-   * 获取当前平台的按键条件
+   * 获取当前平台的输入条件
    */
-  private getPlatformCondition(binding: KeyBinding): KeyCondition | null {
+  private getPlatformCondition(binding: InputBinding): InputCondition | null {
     // 优先使用平台特定的条件
-    const platformCondition = binding.keys[this.platform]
+    const platformCondition = binding.inputs[this.platform]
     if (platformCondition) {
       return platformCondition
     }
 
     // 回退到通用条件
-    return binding.keys.common || null
+    return binding.inputs.common || null
   }
 
   /**
-   * 匹配按键条件
+   * 匹配输入条件
    */
-  private matchesCondition(
-    condition: KeyCondition,
-    event: KeyboardEvent
-  ): boolean {
-    // 检查按键条件
-    if (!this.matchesKeyCondition(condition.key, event)) {
+  private matchesCondition(condition: InputCondition, event: Event): boolean {
+    // 检查事件类型
+    if (condition.eventType !== event.type) {
       return false
     }
 
-    // 检查触发时机
-    const shouldTrigger =
-      condition.onKeyDown !== false
-        ? event.type === 'keydown'
-        : event.type === 'keyup'
-
-    return shouldTrigger
+    // 检查输入条件
+    return this.matchesInputCondition(condition.input, event)
   }
 
   /**
-   * 检查按键条件是否匹配
+   * 检查输入条件是否匹配
    */
-  private matchesKeyCondition(
-    keyCondition: IKey,
-    event: KeyboardEvent
-  ): boolean {
-    // 检查按键代码（支持通配符'*'）
+  private matchesInputCondition(inputCondition: IInput, event: Event): boolean {
+    // 检查键盘修饰键
     if (
-      keyCondition.keyCode !== '*' &&
-      !this.matchesKey(keyCondition.keyCode, event.key)
+      inputCondition.ctrlKey !== undefined &&
+      inputCondition.ctrlKey !== this.inputState.ctrl
+    ) {
+      return false
+    }
+    if (
+      inputCondition.shiftKey !== undefined &&
+      inputCondition.shiftKey !== this.inputState.shift
+    ) {
+      return false
+    }
+    if (
+      inputCondition.altKey !== undefined &&
+      inputCondition.altKey !== this.inputState.alt
+    ) {
+      return false
+    }
+    if (
+      inputCondition.metaKey !== undefined &&
+      inputCondition.metaKey !== this.inputState.meta
     ) {
       return false
     }
 
-    // 检查修饰键（只检查明确定义的修饰键，未定义的表示不关心该修饰键状态）
+    // 检查鼠标按键
     if (
-      keyCondition.ctrlKey !== undefined &&
-      keyCondition.ctrlKey !== event.ctrlKey
+      inputCondition.leftMouse !== undefined &&
+      inputCondition.leftMouse !== this.inputState.leftMouse
     ) {
       return false
     }
     if (
-      keyCondition.shiftKey !== undefined &&
-      keyCondition.shiftKey !== event.shiftKey
+      inputCondition.rightMouse !== undefined &&
+      inputCondition.rightMouse !== this.inputState.rightMouse
     ) {
       return false
     }
     if (
-      keyCondition.altKey !== undefined &&
-      keyCondition.altKey !== event.altKey
+      inputCondition.middleMouse !== undefined &&
+      inputCondition.middleMouse !== this.inputState.middleMouse
     ) {
       return false
     }
-    if (
-      keyCondition.metaKey !== undefined &&
-      keyCondition.metaKey !== event.metaKey
-    ) {
-      return false
+
+    // 检查键盘按键（仅对键盘事件有效）
+    if (inputCondition.keyCode !== undefined) {
+      if (event instanceof KeyboardEvent) {
+        if (
+          inputCondition.keyCode !== '*' &&
+          !this.matchesKey(inputCondition.keyCode, event.key)
+        ) {
+          return false
+        }
+      } else {
+        // 非键盘事件不能匹配键盘按键条件
+        return false
+      }
+    }
+
+    // 检查鼠标按钮（仅对鼠标事件有效）
+    if (inputCondition.mouseButton !== undefined) {
+      if (event instanceof MouseEvent) {
+        if (inputCondition.mouseButton !== event.button) {
+          return false
+        }
+      } else {
+        // 非鼠标事件不能匹配鼠标按钮条件
+        return false
+      }
     }
 
     return true
@@ -275,62 +402,6 @@ export class KeyBindingManager {
     const eKey = eventKey.toLowerCase()
 
     return key === eKey
-  }
-
-  /**
-   * 检查修饰键是否匹配（保留旧方法以兼容性）
-   */
-  private matchesModifiers(
-    requiredModifiers: ModifierKey[],
-    event: KeyboardEvent
-  ): boolean {
-    // 检查所有必需的修饰键是否都按下了
-    for (const modifier of requiredModifiers) {
-      if (!this.isModifierPressed(modifier, event)) {
-        return false
-      }
-    }
-
-    // 检查是否有多余的修饰键（严格匹配）
-    const pressedModifiers = this.getPressedModifiers(event)
-    if (pressedModifiers.length !== requiredModifiers.length) {
-      return false
-    }
-
-    return true
-  }
-
-  /**
-   * 检查指定的修饰键是否按下
-   */
-  private isModifierPressed(
-    modifier: ModifierKey,
-    event: KeyboardEvent
-  ): boolean {
-    switch (modifier) {
-      case ModifierKey.CTRL:
-        return event.ctrlKey
-      case ModifierKey.ALT:
-        return event.altKey
-      case ModifierKey.SHIFT:
-        return event.shiftKey
-      case ModifierKey.META:
-        return event.metaKey
-      default:
-        return false
-    }
-  }
-
-  /**
-   * 获取当前按下的修饰键列表
-   */
-  private getPressedModifiers(event: KeyboardEvent): ModifierKey[] {
-    const modifiers: ModifierKey[] = []
-    if (event.ctrlKey) modifiers.push(ModifierKey.CTRL)
-    if (event.altKey) modifiers.push(ModifierKey.ALT)
-    if (event.shiftKey) modifiers.push(ModifierKey.SHIFT)
-    if (event.metaKey) modifiers.push(ModifierKey.META)
-    return modifiers
   }
 
   /**

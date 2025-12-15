@@ -1,4 +1,4 @@
-import { KeyBindingConfig, MODIFIERS } from './keybinding.type'
+import { InputBindingConfig, MODIFIERS, MouseButton } from './keybinding.type'
 import { SWEditor } from '../editor'
 
 /**
@@ -16,8 +16,8 @@ const editor1 = new SWEditor({
   // 使用默认按键绑定配置
 })
 
-// 示例2: 自定义按键绑定配置
-const customKeyBindings: Partial<KeyBindingConfig> = {
+// 示例2: 自定义输入绑定配置
+const customInputBindings: Partial<InputBindingConfig> = {
   enabled: true,
   // 添加全局条件检查，只有在非拖拽状态下才允许热键
   condition: (editor: SWEditor) => {
@@ -28,18 +28,20 @@ const customKeyBindings: Partial<KeyBindingConfig> = {
     // 自定义保存快捷键
     save: {
       id: 'save',
-      keys: {
+      inputs: {
         mac: {
-          key: {
+          input: {
             metaKey: true,
             keyCode: 's', // Cmd+S on Mac
           },
+          eventType: 'keydown',
         },
         win: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 's', // Ctrl+S on Windows/Linux
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -47,7 +49,6 @@ const customKeyBindings: Partial<KeyBindingConfig> = {
       // 直接定义action回调
       action: (event, binding) => {
         console.log('保存文档')
-        // 执行保存逻辑
         // editor.save()
       },
     },
@@ -55,40 +56,81 @@ const customKeyBindings: Partial<KeyBindingConfig> = {
     // 自定义撤销快捷键
     undo: {
       id: 'undo',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'z',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
       description: '撤销操作',
     },
 
-    // 添加自定义快捷键
-    'custom-zoom-in': {
-      id: 'custom-zoom-in',
-      keys: {
-        mac: {
-          key: {
-            metaKey: true,
-            keyCode: '=', // Cmd+=
-          },
-        },
-        win: {
-          key: {
+    // Ctrl+Shift+鼠标左键 - 多选
+    'multi-select': {
+      id: 'multi-select',
+      inputs: {
+        common: {
+          input: {
             ctrlKey: true,
-            keyCode: '=', // Ctrl+=
+            shiftKey: true,
+            leftMouse: true,
           },
+          eventType: 'mousedown',
         },
       },
       preventDefault: true,
-      description: '放大',
+      description: '多选模式',
       action: (event, binding) => {
-        console.log('放大视图')
-        // editor.zoomIn()
+        console.log('进入多选模式')
+        // editor.setMultiSelectMode(true)
+      },
+    },
+
+    // 滚轮缩放（支持Ctrl修饰键调整灵敏度）
+    'wheel-zoom': {
+      id: 'wheel-zoom',
+      inputs: {
+        common: {
+          input: {}, // 空对象表示匹配所有滚轮事件
+          eventType: 'wheel',
+        },
+      },
+      preventDefault: true,
+      description: '滚轮缩放',
+      action: (event, binding) => {
+        const wheelEvent = event as WheelEvent
+        const delta = wheelEvent.deltaY
+        const ctrlPressed = binding.inputs.common?.input.ctrlKey
+
+        if (ctrlPressed) {
+          console.log('精确缩放:', delta * 0.1)
+        } else {
+          console.log('普通缩放:', delta)
+        }
+        // editor.zoom(delta, ctrlPressed)
+      },
+    },
+
+    // 右键拖拽 - 平移视图
+    'pan-view': {
+      id: 'pan-view',
+      inputs: {
+        common: {
+          input: {
+            rightMouse: true,
+          },
+          eventType: 'mousedown',
+        },
+      },
+      preventDefault: true,
+      description: '右键拖拽平移',
+      action: (event, binding) => {
+        console.log('开始右键平移')
+        // editor.startPanning(event as MouseEvent)
       },
     },
 
@@ -118,7 +160,7 @@ const customKeyBindings: Partial<KeyBindingConfig> = {
 
 const editor2 = new SWEditor({
   containerElement: document.getElementById('editor2') as HTMLDivElement,
-  keyBindingConfig: customKeyBindings,
+  inputBindingConfig: customInputBindings,
 })
 
 // 示例3: 运行时动态添加按键绑定
@@ -129,13 +171,14 @@ const editor3 = new SWEditor({
 // 动态添加绑定
 editor3.addKeyBinding('my-custom-action', {
   id: 'my-custom-action',
-  keys: {
+  inputs: {
     common: {
-      key: {
+      input: {
         ctrlKey: true,
         shiftKey: true,
         keyCode: 'm',
       },
+      eventType: 'keydown',
     },
   },
   preventDefault: true,
@@ -148,8 +191,8 @@ editor3.registerKeyHandler('my-custom-action', (binding, event) => {
   // 执行自定义逻辑
 })
 
-// 示例4: 条件控制热键生效
-const conditionalKeyBindings: Partial<KeyBindingConfig> = {
+// 示例4: 条件控制输入绑定生效
+const conditionalInputBindings: Partial<InputBindingConfig> = {
   // 只有在画布有选中元素时才允许删除
   condition: (editor: SWEditor) => {
     return editor.hasSelection?.() // 假设有选中状态检查方法
@@ -157,11 +200,12 @@ const conditionalKeyBindings: Partial<KeyBindingConfig> = {
   bindings: {
     delete: {
       id: 'delete',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             keyCode: 'Delete',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -176,25 +220,28 @@ const conditionalKeyBindings: Partial<KeyBindingConfig> = {
 
 const editor4 = new SWEditor({
   containerElement: document.getElementById('editor4') as HTMLDivElement,
-  keyBindingConfig: conditionalKeyBindings,
+  inputBindingConfig: conditionalInputBindings,
 })
 
-// 示例5: 获取和管理按键绑定
-const keyBindingManager = editor1.getKeyBindingManager()
+// 示例5: 获取和管理输入绑定
+const inputBindingManager = editor1.getKeyBindingManager()
 
 // 获取所有绑定
-const allBindings = keyBindingManager.getBindings()
-console.log('所有按键绑定:', allBindings)
+const allBindings = inputBindingManager.getBindings()
+console.log('所有输入绑定:', allBindings)
 
 // 获取特定绑定
-const saveBinding = keyBindingManager.getBinding('save')
+const saveBinding = inputBindingManager.getBinding('save')
 console.log('保存绑定:', saveBinding)
 
-// 启用/禁用按键绑定
-keyBindingManager.disable() // 禁用所有热键
-keyBindingManager.enable() // 重新启用
+// 获取当前输入状态
+console.log('当前输入状态:', inputBindingManager.inputState)
+
+// 启用/禁用输入绑定
+inputBindingManager.disable() // 禁用所有绑定
+inputBindingManager.enable() // 重新启用
 
 // 更新配置
-keyBindingManager.updateConfig({
-  enabled: false, // 禁用所有热键
+inputBindingManager.updateConfig({
+  enabled: false, // 禁用所有绑定
 })

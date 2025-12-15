@@ -1,7 +1,7 @@
 import type { BaseConfig } from './config'
 import { ElementStore } from './elements/elementStore'
 import { EventManager } from './event/eventManager'
-import { KeyBindingManager } from './event/keyBindingManager'
+import { InputBindingManager } from './event/keyBindingManager'
 import { InputManager } from './input/inputManager'
 import { CanvasRenderer } from './render/render'
 import { Rule } from './support/rules'
@@ -9,7 +9,7 @@ import DragTool from './tools/dragTool'
 import { RectTool } from './tools/reactTools'
 import { ToolManager } from './tools/tools'
 import { Transformer } from './transformer/transformer'
-import { KeyBindingConfig, MODIFIERS } from './types/keybinding.type'
+import { InputBindingConfig, MODIFIERS } from './types/keybinding.type'
 import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
 import ViewportState from './viewport/viewport'
@@ -22,7 +22,7 @@ export interface IEditorOptions {
   offsetY?: number
   showPerfMonitor?: boolean
   userPreference?: Partial<BaseConfig>
-  keyBindingConfig?: Partial<KeyBindingConfig>
+  inputBindingConfig?: Partial<InputBindingConfig>
 }
 
 interface Events {
@@ -58,9 +58,10 @@ export class SWEditor {
       this.viewportState,
       this.elementStore
     )
+    this.renderer.render()
 
-    // 初始化事件管理器（包含按键绑定）
-    this.eventManager = new EventManager(this, options.keyBindingConfig)
+    // 初始化事件管理器（包含输入绑定）
+    this.eventManager = new EventManager(this, options.inputBindingConfig)
 
     // 注册工具
     this.toolManager = new ToolManager({
@@ -111,7 +112,7 @@ export class SWEditor {
   /**
    * 获取按键绑定管理器
    */
-  public getKeyBindingManager(): KeyBindingManager {
+  public getKeyBindingManager(): InputBindingManager {
     return this.eventManager['keyBindingManager']
   }
 

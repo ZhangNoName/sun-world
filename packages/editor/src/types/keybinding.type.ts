@@ -23,49 +23,64 @@ export const MODIFIERS = {
 } as const
 
 /**
- * 按键条件接口
+ * 鼠标按键枚举
  */
-export interface IKey {
+export enum MouseButton {
+  LEFT = 0,
+  MIDDLE = 1,
+  RIGHT = 2,
+}
+
+/**
+ * 输入条件接口（键盘+鼠标统一）
+ */
+export interface IInput {
+  // 键盘修饰键
   ctrlKey?: boolean
   shiftKey?: boolean
   altKey?: boolean
   metaKey?: boolean
-  /**
-   * KeyboardEvent['code'] or '*'(match any key)
-   */
-  keyCode: string
+
+  // 鼠标按键
+  leftMouse?: boolean
+  rightMouse?: boolean
+  middleMouse?: boolean
+
+  // 按键代码（键盘）或鼠标按钮
+  keyCode?: string // KeyboardEvent['code'] or '*'(match any key)
+  mouseButton?: MouseButton
 }
 
 /**
- * 按键条件组合
+ * 输入条件组合（键盘+鼠标）
  */
-export interface KeyCondition {
-  /** 按键条件 */
-  key: IKey
-  /** 是否在按键按下时触发（默认true），false表示按键释放时触发 */
-  onKeyDown?: boolean
+export interface InputCondition {
+  /** 输入条件 */
+  input: IInput
+  /** 事件类型：'keydown' | 'keyup' | 'mousedown' | 'mouseup' | 'wheel' */
+  eventType: 'keydown' | 'keyup' | 'mousedown' | 'mouseup' | 'wheel'
 }
 
 /**
- * 平台特定的按键绑定
+ * 平台特定的输入绑定
  */
-export interface PlatformKeyBindings {
-  /** macOS平台按键条件 */
-  mac?: KeyCondition
-  /** Windows/Linux平台按键条件 */
-  win?: KeyCondition
-  /** 通用按键条件（所有平台） */
-  common?: KeyCondition
+export interface PlatformInputBindings {
+  /** macOS平台输入条件 */
+  mac?: InputCondition
+  /** Windows/Linux平台输入条件 */
+  win?: InputCondition
+  /** 通用输入条件（所有平台） */
+  common?: InputCondition
 }
 
 /**
- * 按键绑定配置项
+ * 输入绑定配置项（键盘+鼠标统一）
  */
-export interface KeyBinding {
-  /** 绑定ID，用于标识唯一的按键绑定 */
+export interface InputBinding {
+  /** 绑定ID，用于标识唯一的输入绑定 */
   id: string
-  /** 平台特定的按键条件 */
-  keys: PlatformKeyBindings
+  /** 平台特定的输入条件 */
+  inputs: PlatformInputBindings
   /** 是否阻止默认行为 */
   preventDefault?: boolean
   /** 是否阻止事件冒泡 */
@@ -73,43 +88,45 @@ export interface KeyBinding {
   /** 描述信息 */
   description?: string
   /** 执行回调函数 */
-  action?: (event: KeyboardEvent, binding: KeyBinding) => void
+  action?: (event: Event, binding: InputBinding) => void
 }
 
 /**
- * 按键绑定配置
+ * 输入绑定配置（键盘+鼠标统一）
  */
-export interface KeyBindingConfig {
+export interface InputBindingConfig {
   /** 绑定对象 */
-  bindings: Record<string, KeyBinding>
-  /** 是否启用按键绑定功能 */
+  bindings: Record<string, InputBinding>
+  /** 是否启用输入绑定功能 */
   enabled?: boolean
-  /** 条件检查函数，返回true表示允许执行热键 */
+  /** 条件检查函数，返回true表示允许执行绑定 */
   condition?: (editor: any) => boolean
 }
 
 /**
- * 按键绑定事件处理器
+ * 输入绑定事件处理器
  */
-export interface KeyBindingHandler {
-  (binding: KeyBinding, event: KeyboardEvent): void | boolean
+export interface InputBindingHandler {
+  (binding: InputBinding, event: Event): void | boolean
 }
 
 /**
- * 默认的按键绑定配置
+ * 默认的输入绑定配置
  */
-export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
+export const DEFAULT_INPUT_BINDINGS: InputBindingConfig = {
   enabled: true,
   bindings: {
+    // 键盘绑定
     // 复制
     copy: {
       id: 'copy',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'c',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -118,12 +135,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 粘贴
     paste: {
       id: 'paste',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'v',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -132,12 +150,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 剪切
     cut: {
       id: 'cut',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'x',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -146,12 +165,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 撤销
     undo: {
       id: 'undo',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'z',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -160,19 +180,21 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 重做
     redo: {
       id: 'redo',
-      keys: {
+      inputs: {
         mac: {
-          key: {
+          input: {
             shiftKey: true,
             metaKey: true,
             keyCode: 'z',
           },
+          eventType: 'keydown',
         },
         win: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'y',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -181,18 +203,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 保存
     save: {
       id: 'save',
-      keys: {
+      inputs: {
         mac: {
-          key: {
+          input: {
             metaKey: true,
             keyCode: 's',
           },
+          eventType: 'keydown',
         },
         win: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 's',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -201,12 +225,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 全选
     'select-all': {
       id: 'select-all',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             ctrlKey: true,
             keyCode: 'a',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: true,
@@ -215,11 +240,12 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 删除
     delete: {
       id: 'delete',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             keyCode: 'Delete',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: false,
@@ -228,15 +254,61 @@ export const DEFAULT_KEY_BINDINGS: KeyBindingConfig = {
     // 退格删除
     backspace: {
       id: 'backspace',
-      keys: {
+      inputs: {
         common: {
-          key: {
+          input: {
             keyCode: 'Backspace',
           },
+          eventType: 'keydown',
         },
       },
       preventDefault: false,
       description: '删除',
+    },
+
+    // 鼠标绑定
+    // 右键菜单
+    'context-menu': {
+      id: 'context-menu',
+      inputs: {
+        common: {
+          input: {
+            rightMouse: true,
+          },
+          eventType: 'mousedown',
+        },
+      },
+      preventDefault: true,
+      description: '右键菜单',
+    },
+
+    // Ctrl+鼠标左键拖拽
+    'ctrl-drag': {
+      id: 'ctrl-drag',
+      inputs: {
+        common: {
+          input: {
+            ctrlKey: true,
+            leftMouse: true,
+          },
+          eventType: 'mousedown',
+        },
+      },
+      preventDefault: false,
+      description: 'Ctrl+拖拽',
+    },
+
+    // 鼠标滚轮缩放
+    'wheel-zoom': {
+      id: 'wheel-zoom',
+      inputs: {
+        common: {
+          input: {},
+          eventType: 'wheel',
+        },
+      },
+      preventDefault: true,
+      description: '滚轮缩放',
     },
   },
 }
