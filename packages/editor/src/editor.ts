@@ -58,6 +58,13 @@ export class SWEditor {
       this.viewportState,
       this.elementStore
     )
+
+    // 创建标尺并设置到渲染器中
+    this.rule = new Rule(this.renderer.ctx, this.viewportState)
+    this.rule.setViewportChangeCallback(() => this.renderer.render())
+    this.renderer.setRule(this.rule)
+
+    // 首次渲染（包含标尺）
     this.renderer.render()
 
     // 初始化事件管理器（包含输入绑定）
@@ -76,8 +83,6 @@ export class SWEditor {
 
     this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
-    this.rule = new Rule(this.renderer.ctx, this.viewportState)
-    this.rule.render()
   }
   // id，只读
   get id() {
@@ -128,6 +133,18 @@ export class SWEditor {
    */
   public registerKeyHandler(bindingId: string, handler: any) {
     this.getKeyBindingManager().registerHandler(bindingId, handler)
+  }
+
+  public changZoom(delta: number) {
+    this.viewportState.zoom(delta)
+  }
+  get zoom() {
+    return this.viewportState.transform.scale
+  }
+  onZoomChange(cb: (zoom: number) => void) {
+    this.viewportState.on(() => {
+      cb(this.viewportState.scale)
+    })
   }
 
   // 销毁方法

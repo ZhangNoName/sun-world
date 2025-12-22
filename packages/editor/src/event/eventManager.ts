@@ -104,70 +104,37 @@ export class EventManager {
    * 注册默认的输入绑定处理器
    */
   private registerDefaultHandlers() {
-    // 键盘操作
-    this.inputBindingManager.registerHandler('copy', (binding, event) => {
-      console.log('执行复制操作')
-      // this.editor.copy()
+    const manager = this.inputBindingManager
+    manager.addBinding({
+      id: 'copy',
+      inputs: {
+        common: {
+          input: { ctrlKey: true, keyCode: 'c' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '复制',
+      action: (event, binding) => {
+        console.log('执行复制操作')
+        // this.editor.copy()
+      },
     })
-
-    this.inputBindingManager.registerHandler('paste', (binding, event) => {
-      console.log('执行粘贴操作')
-      // this.editor.paste()
-    })
-
-    this.inputBindingManager.registerHandler('cut', (binding, event) => {
-      console.log('执行剪切操作')
-      // this.editor.cut()
-    })
-
-    this.inputBindingManager.registerHandler('undo', (binding, event) => {
-      console.log('执行撤销操作')
-      // this.editor.undo()
-    })
-
-    this.inputBindingManager.registerHandler('redo', (binding, event) => {
-      console.log('执行重做操作')
-      // this.editor.redo()
-    })
-
-    this.inputBindingManager.registerHandler('save', (binding, event) => {
-      console.log('执行保存操作')
-      // this.editor.save()
-    })
-
-    this.inputBindingManager.registerHandler('select-all', (binding, event) => {
-      console.log('执行全选操作')
-      // this.editor.selectAll()
-    })
-
-    this.inputBindingManager.registerHandler('delete', (binding, event) => {
-      console.log('执行删除操作')
-      // this.editor.delete()
-    })
-
-    this.inputBindingManager.registerHandler('backspace', (binding, event) => {
-      console.log('执行退格删除操作')
-      // this.editor.backspace()
-    })
-
-    // 鼠标操作
-    this.inputBindingManager.registerHandler(
-      'context-menu',
-      (binding, event) => {
-        console.log('显示右键菜单')
-        // this.editor.showContextMenu(event as MouseEvent)
-      }
-    )
-
-    this.inputBindingManager.registerHandler('ctrl-drag', (binding, event) => {
-      console.log('Ctrl+拖拽操作')
-      // 特殊的选择或复制操作
-    })
-
-    this.inputBindingManager.registerHandler('wheel-zoom', (binding, event) => {
-      const wheelEvent = event as WheelEvent
-      console.log('滚轮缩放:', wheelEvent.deltaY)
-      // this.editor.zoom(wheelEvent.deltaY > 0 ? 'out' : 'in')
+    manager.addBinding({
+      id: 'wheel-zoom',
+      inputs: {
+        common: {
+          input: { ctrlKey: true },
+          eventType: 'wheel',
+        },
+      },
+      preventDefault: true,
+      description: '滚轮缩放',
+      action: (event, binding) => {
+        const wheelEvent = event as WheelEvent
+        const delta = wheelEvent.deltaY > 0 ? 0.01 : -0.01
+        this.editor.changZoom(delta)
+      },
     })
   }
 }

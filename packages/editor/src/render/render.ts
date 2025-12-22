@@ -1,6 +1,7 @@
 import type { ElementStore } from '@/elements/elementStore'
 import { debounce } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
+import { Rule } from '../support/rules'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -12,6 +13,7 @@ export class CanvasRenderer {
   private resizeObserver!: ResizeObserver
   private viewport: ViewportState
   private store!: ElementStore
+  private rule?: Rule
   private isDirty = true // 控制是否需要重绘
   constructor(
     containerElement: HTMLDivElement,
@@ -38,6 +40,13 @@ export class CanvasRenderer {
 
     this.setupResizeObserver()
     // this.startDrawLoop() // 启动渲染循环
+  }
+
+  /**
+   * 设置标尺
+   */
+  setRule(rule: Rule) {
+    this.rule = rule
   }
 
   // 1. 设置 ResizeObserver 来响应容器尺寸变化
@@ -86,6 +95,11 @@ export class CanvasRenderer {
     const ctx = this.ctx
 
     ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height)
+
+    // 先绘制标尺（在canvas变换之前）
+    if (this.rule) {
+      this.rule.render()
+    }
 
     ctx.save()
 

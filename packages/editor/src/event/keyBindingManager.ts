@@ -22,8 +22,10 @@ import { SWEditor } from '../editor'
  * 7. 维护输入状态（键盘修饰键+鼠标按键状态）
  */
 export class InputBindingManager {
-  private config: InputBindingConfig
-  private handlers: Map<string, InputBindingHandler> = new Map()
+  private handlers: Map<string, InputBinding[]> = new Map<
+    string,
+    InputBinding[]
+  >()
   private enabled = true
   private editor: SWEditor
   private platform: 'mac' | 'win' = this.detectPlatform()
@@ -49,8 +51,8 @@ export class InputBindingManager {
 
   constructor(editor: SWEditor, config?: Partial<InputBindingConfig>) {
     this.editor = editor
-    this.config = this.mergeConfig(DEFAULT_INPUT_BINDINGS, config)
-    this.enabled = this.config.enabled ?? true
+    // this.config = this.mergeConfig(DEFAULT_INPUT_BINDINGS, config)
+    // this.enabled = this.config.enabled ?? true
 
     console.log('InputBindingManager 初始化完成，平台:', this.platform)
   }
@@ -89,11 +91,6 @@ export class InputBindingManager {
 
     // 先更新输入状态，再检查绑定（确保状态是最新的）
     this.updateInputState(event)
-
-    // 检查全局条件
-    if (this.config.condition && !this.config.condition(this.editor)) {
-      return false
-    }
 
     const binding = this.matchBinding(event)
     if (!binding) return false
@@ -217,15 +214,9 @@ export class InputBindingManager {
    * @param binding 绑定配置
    */
   addBinding(binding: InputBinding): void {
-    // 检查是否已存在相同ID的绑定
-    const existingIndex = this.config.bindings.findIndex(
-      (b) => b.id === binding.id
-    )
-    if (existingIndex >= 0) {
-      this.config.bindings[existingIndex] = binding
-    } else {
-      this.config.bindings.push(binding)
-    }
+    const handlers = this.handlers.get(binding.id) || []
+    handlers.push(binding)
+    this.handlers.set(binding.id, handlers)
   }
 
   /**
@@ -233,25 +224,7 @@ export class InputBindingManager {
    * @param bindingId 绑定ID
    */
   removeBinding(bindingId: string): void {
-    this.config.bindings = this.config.bindings.filter(
-      (b) => b.id !== bindingId
-    )
-  }
-
-  /**
-   * 更新输入绑定配置
-   * @param config 新的配置
-   */
-  updateConfig(config: Partial<InputBindingConfig>): void {
-    this.config = { ...this.config, ...config }
-    this.enabled = this.config.enabled ?? true
-  }
-
-  /**
-   * 获取当前配置
-   */
-  getConfig(): InputBindingConfig {
-    return { ...this.config }
+    this.handlers.delete(bindingId)
   }
 
   /**
@@ -259,7 +232,6 @@ export class InputBindingManager {
    */
   enable(): void {
     this.enabled = true
-    this.config.enabled = true
   }
 
   /**
@@ -267,7 +239,6 @@ export class InputBindingManager {
    */
   disable(): void {
     this.enabled = false
-    this.config.enabled = false
   }
 
   /**
@@ -276,11 +247,13 @@ export class InputBindingManager {
    * @returns 匹配的绑定或null
    */
   private matchBinding(event: Event): InputBinding | null {
-    for (const binding of Object.values(this.config.bindings)) {
-      const condition = this.getPlatformCondition(binding)
-      if (condition && this.matchesCondition(condition, event)) {
-        console.log('匹配到绑定: ', binding)
-        return binding
+    for (const bindings of this.handlers.values()) {
+      for (const binding of bindings) {
+        const condition = this.getPlatformCondition(binding)
+        if (condition && this.matchesCondition(condition, event)) {
+          console.log('匹配到绑定: ', binding)
+          return binding
+        }
       }
     }
     return null
@@ -407,14 +380,14 @@ export class InputBindingManager {
   /**
    * 获取所有绑定
    */
-  getBindings(): KeyBinding[] {
+  getBindings(): InputBinding[] {
     return Object.values(this.config.bindings)
   }
 
   /**
    * 根据ID查找绑定
    */
-  getBinding(bindingId: string): KeyBinding | undefined {
+  getBinding(bindingId: string): InputBinding | undefined {
     return this.config.bindings[bindingId]
   }
 

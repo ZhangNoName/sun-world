@@ -56,6 +56,7 @@ const DEFAULT_CONFIG: Required<RuleConfig> = {
 export class Rule {
   private config: Required<RuleConfig>
   visible: boolean = true
+  private onViewportChange?: () => void
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -65,7 +66,17 @@ export class Rule {
     // 合并用户配置和默认配置
     this.config = { ...DEFAULT_CONFIG, ...config }
 
-    this.viewport.on(() => this.render())
+    this.viewport.on(() => {
+      // 通知外部重新渲染（通常是renderer）
+      this.onViewportChange?.()
+    })
+  }
+
+  /**
+   * 设置viewport变化时的回调
+   */
+  setViewportChangeCallback(callback: () => void) {
+    this.onViewportChange = callback
   }
   /**
    * 隐藏标尺

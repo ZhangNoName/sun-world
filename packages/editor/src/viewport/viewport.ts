@@ -1,7 +1,7 @@
 // 视图转换数据
 
 import type { Transform } from '@/types/viewport.type'
-type ViewportListener = () => void
+type ViewportListener = (scale: number) => void
 // 抽象出视图状态：无限画布的关键数据
 export default class ViewportState {
   public width: number = 0
@@ -47,12 +47,17 @@ export default class ViewportState {
     this.transform.scale = scale
     this.emit()
   }
+  public zoom(delta: number) {
+    this.transform.scale += delta
+    this.scale = this.transform.scale
+    this.emit()
+  }
   public on(listener: ViewportListener) {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener) // 取消订阅
   }
 
   private emit() {
-    this.listeners.forEach((fn) => fn())
+    this.listeners.forEach((fn) => fn(this.transform.scale))
   }
 }
