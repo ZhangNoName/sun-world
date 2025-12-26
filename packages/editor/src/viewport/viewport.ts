@@ -1,7 +1,18 @@
+/*
+ * @Author: ZhangNoName
+ * @Date: 2025-12-03 14:05:26
+ * @LastEditors: no name no name
+ * @LastEditTime: 2025-12-26 16:02:19
+ * @FilePath: \sun-world\packages\editor\src\viewport\viewport.ts
+ * @Description:
+ *
+ * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
+ */
 // 视图转换数据
 
 import type { Transform } from '@/types/viewport.type'
 type ViewportListener = (scale: number) => void
+const STEP_BY_ZOOM = 0.04
 // 抽象出视图状态：无限画布的关键数据
 export default class ViewportState {
   public width: number = 0
@@ -48,8 +59,10 @@ export default class ViewportState {
     this.emit()
   }
   public zoom(delta: number) {
-    this.transform.scale += delta
-    this.scale = this.transform.scale
+    const newScale =
+      this.transform.scale + delta * STEP_BY_ZOOM * this.transform.scale
+    this.transform.scale = newScale
+    this.scale = newScale
     this.emit()
   }
   public on(listener: ViewportListener) {

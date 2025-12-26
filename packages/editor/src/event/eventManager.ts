@@ -132,7 +132,7 @@ export class EventManager {
       description: '滚轮缩放',
       action: (event, binding) => {
         const wheelEvent = event as WheelEvent
-        const delta = wheelEvent.deltaY > 0 ? 0.01 : -0.01
+        const delta = wheelEvent.deltaY < 0 ? 1 : -1
         this.editor.changZoom(delta)
       },
     })

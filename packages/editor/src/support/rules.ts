@@ -1,52 +1,5 @@
 import ViewportState from '@/viewport/viewport'
-
-/**
- * 标尺配置选项
- */
-export interface RuleConfig {
-  /** x轴标尺高度（横向标尺） y轴标尺宽度（纵向标尺） */
-  size?: number
-  /** 标尺相交区域颜色 */
-  interColor?: string
-  /** 背景颜色 */
-  backgroundColor?: string
-  /** 文字颜色 */
-  textColor?: string
-  /** 线条颜色 */
-  lineColor?: string
-  /** 字体大小（像素） */
-  fontSize?: number
-  /** 字体族 */
-  fontFamily?: string
-  /** 主刻度高度（长刻度） */
-  majorTickHeight?: number
-  /** 次刻度高度（短刻度） */
-  minorTickHeight?: number
-  /** 基础刻度间隔（像素） */
-  baseStep?: number
-  /** 主刻度倍数（每多少个刻度显示一个主刻度） */
-  majorTickMultiple?: number
-  /** 文字垂直偏移（用于调整文字位置） */
-  textOffsetY?: number
-}
-
-/**
- * 默认配置
- */
-const DEFAULT_CONFIG: Required<RuleConfig> = {
-  size: 20,
-  interColor: '#f5f5f5',
-  backgroundColor: '#ffffff',
-  textColor: '#000',
-  lineColor: '#000',
-  fontSize: 10,
-  fontFamily: 'inter',
-  majorTickHeight: 8,
-  minorTickHeight: 4,
-  baseStep: 10,
-  majorTickMultiple: 5,
-  textOffsetY: 2,
-}
+import { DEFAULT_CONFIG, getStepByZoom, RuleConfig } from './rule.config'
 
 /**
  * 绘制上方及左方标尺
@@ -130,7 +83,7 @@ export class Rule {
     ctx.textBaseline = 'top'
 
     // 动态刻度间隔（Figma 同款算法）
-    const step = this.config.baseStep / scale
+    const step = getStepByZoom(scale)
 
     // 计算世界坐标起点
     const start = Math.floor(-x / scale / step) * step
@@ -139,11 +92,7 @@ export class Rule {
     for (let v = start; v <= end; v += step) {
       const sx = v * scale + x // 世界 -> 屏幕
 
-      const isMajor =
-        Math.round(v) % (step * this.config.majorTickMultiple) === 0
-      const tickHeight = isMajor
-        ? this.config.majorTickHeight
-        : this.config.minorTickHeight
+      const tickHeight = this.config.majorTickHeight
 
       // 绘制刻度线
       ctx.beginPath()
@@ -151,10 +100,7 @@ export class Rule {
       ctx.lineTo(sx, height - tickHeight)
       ctx.stroke()
 
-      // 绘制主刻度文字
-      if (isMajor) {
-        ctx.fillText(String(Math.round(v)), sx, this.config.textOffsetY)
-      }
+      ctx.fillText(String(Math.round(v)), sx, this.config.textOffsetY)
     }
   }
   /**
@@ -181,7 +127,7 @@ export class Rule {
     ctx.textBaseline = 'top'
 
     // 动态刻度间隔（Figma 同款算法）
-    const step = this.config.baseStep / scale
+    const step = getStepByZoom(scale)
 
     // 计算世界坐标起点
     const start = Math.floor(-y / scale / step) * step
@@ -218,10 +164,30 @@ export class Rule {
     const { scale, x } = this.viewport.transform
 
     // 清除并绘制背景
-    ctx.clearRect(0, 0, this.config.size, this.config.size)
-    ctx.fillStyle = this.config.interColor
+    // ctx.clearRect(0, 0, this.config.size, this.config.size)
+    ctx.fillStyle = this.config.backgroundColor
 
     ctx.fillRect(0, 0, this.config.size, this.config.size)
+  }
+  private drawBorder() {
+    const ctx = this.ctx
+    const height = ctx.canvas.height
+    const width = ctx.canvas.width
+    const size = this.config.size
+    ctx.strokeStyle = this.config.borderColor
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(0, size)
+    ctx.lineTo(width, size)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(0, height)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(size, 0)
+    ctx.lineTo(size, height)
+    ctx.stroke()
   }
   /**
    * 渲染标尺
@@ -231,5 +197,6 @@ export class Rule {
     this.drawXAxis()
     this.drawYAxis()
     this.clearReact()
+    this.drawBorder()
   }
 }
