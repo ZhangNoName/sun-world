@@ -1,3 +1,13 @@
+/*
+ * @Author: ZhangNoName
+ * @Date: 2025-12-03 14:07:59
+ * @LastEditors: no name no name
+ * @LastEditTime: 2025-12-29 11:42:15
+ * @FilePath: \sun-world\packages\editor\src\tools\reactTools.ts
+ * @Description:
+ *
+ * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
+ */
 import type { ElementStore } from '@/elements/elementStore'
 import { RectElement } from '../elements/react'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
@@ -59,6 +69,7 @@ export class RectTool extends BaseTool {
 
     this.currentRect.width = x - this.startX
     this.currentRect.height = y - this.startY
+    this.store.update()
   }
 
   onMouseUp() {

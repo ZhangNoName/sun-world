@@ -151,7 +151,7 @@ export class SWEditor {
   get zoom() {
     return this.viewportState.transform.scale
   }
-  onZoomChange(cb: (zoom: number) => void) {
+  public onZoomChange(cb: (zoom: number) => void) {
     this.viewportState.on(() => {
       cb(this.viewportState.scale)
     })

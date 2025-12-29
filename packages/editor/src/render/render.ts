@@ -146,7 +146,7 @@ export class CanvasRenderer {
     // 遍历绘制所有元素
     if (this.store) {
       for (const el of this.store.getAll()) {
-        el.draw(ctx)
+        el.render(ctx)
         // console.log('Render element:', el)
       }
     }

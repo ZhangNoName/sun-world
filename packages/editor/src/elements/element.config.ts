@@ -1,0 +1,31 @@
+export enum ElementType {
+  Rect = 'rect',
+  Text = 'text',
+  Line = 'line',
+  Arrow = 'arrow',
+  Ellipse = 'ellipse',
+  Polygon = 'polygon',
+  Star = 'star',
+  Diamond = 'diamond',
+  Triangle = 'triangle',
+  Rectangle = 'rectangle',
+  Circle = 'circle',
+}
+export const elementConfig = {
+  name: {
+    fontSize: 12,
+    fontFamily: 'Arial',
+    textAlign: 'left' as CanvasTextAlign,
+    color: '#000000',
+    backgroundColor: '#ffffff',
+    backgroundOpacity: 0.8,
+    padding: 4,
+    borderRadius: 4,
+    offsetX: 0,
+    offsetY: -15,
+    showBackground: true,
+    strokeColor: '#ffffff',
+    strokeWidth: 2,
+  },
+  border: {},
+}

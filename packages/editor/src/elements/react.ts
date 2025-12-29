@@ -1,6 +1,11 @@
-import { BaseElement } from '../types/element.type'
+import { BaseElement } from './baseElement.class'
+import { ElementType } from './element.config'
 
 export class RectElement extends BaseElement {
+  type: ElementType = ElementType.Rect
+  constructor(params: { x: number; y: number; width: number; height: number }) {
+    super({ type: ElementType.Rect, name: 'Rect', ...params })
+  }
   draw(ctx: CanvasRenderingContext2D) {
     ctx.save()
     ctx.translate(this.x, this.y)

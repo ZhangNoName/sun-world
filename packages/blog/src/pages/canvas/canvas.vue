@@ -2,8 +2,7 @@
 // import Editor from '@/editor/Editor.vue'
 import { FormatPercent } from '@/util/format'
 import { Delete } from '@element-plus/icons-vue'
-import { SWEditor, ToolName } from '@sun-world/editor'
-
+import { SWEditor, type ToolName } from '@sun-world/editor'
 import { CommentSvg, HandSvg, RectSvg, SelectSvg } from '@sun-world/icons'
 import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
 
@@ -31,7 +30,7 @@ onMounted(() => {
     })
     zoom.value = editor.value?.zoom || 1
     editor.value?.onZoomChange((newVal) => {
-      console.log('newVal', newVal)
+      // console.log('newVal', newVal)
       zoom.value = newVal
     })
     ;(window as any).sw = editor

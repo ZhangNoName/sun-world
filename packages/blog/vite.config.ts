@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+// import tsconfigPaths from 'vite-tsconfig-paths'
 import fs from 'fs'
 
 // ⭐ 读取 package.json 的 version
@@ -63,6 +64,7 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       vue(),
+      // tsconfigPaths(),
 
       // SVG 图标插件
       createSvgIconsPlugin({

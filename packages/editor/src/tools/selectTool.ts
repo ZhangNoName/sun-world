@@ -1,4 +1,4 @@
-import { BaseElement } from '@/types/element.type'
+import { BaseElement } from '@/elements/baseElement.class'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import ViewportState from '@/viewport/viewport'
 
