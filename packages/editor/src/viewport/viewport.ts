@@ -46,8 +46,9 @@ export default class ViewportState {
     this.transform.y += y
     this.emit()
   }
-  public zoomIn() {
+  public zoomIn(scale: number = 1.1) {
     this.transform.scale *= scale
+    this.scale = this.transform.scale
     this.emit()
   }
   public zoomOut(scale: number) {
@@ -61,6 +62,33 @@ export default class ViewportState {
   public zoom(delta: number) {
     const newScale =
       this.transform.scale + delta * STEP_BY_ZOOM * this.transform.scale
+    this.transform.scale = newScale
+    this.scale = newScale
+    this.emit()
+  }
+
+  /**
+   * 在指定屏幕位置进行缩放，保持该位置在画布坐标系中不变
+   * @param delta 缩放增量
+   * @param screenX 屏幕 X 坐标
+   * @param screenY 屏幕 Y 坐标
+   */
+  public zoomAt(delta: number, screenX: number, screenY: number) {
+    const oldScale = this.transform.scale
+    const newScale = oldScale + delta * STEP_BY_ZOOM * oldScale
+
+    // 计算鼠标指向的画布坐标（缩放前）
+    const canvasX = (screenX - this.transform.x) / oldScale
+    const canvasY = (screenY - this.transform.y) / oldScale
+
+    // 计算新的 offset，使得缩放后鼠标指向的画布位置保持不变
+    // 公式：newOffset = screenPos - canvasPos * newScale
+    const newX = screenX - canvasX * newScale
+    const newY = screenY - canvasY * newScale
+
+    // 更新 transform
+    this.transform.x = newX
+    this.transform.y = newY
     this.transform.scale = newScale
     this.scale = newScale
     this.emit()

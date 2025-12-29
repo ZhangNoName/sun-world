@@ -130,10 +130,18 @@ export class EventManager {
       },
       preventDefault: true,
       description: '滚轮缩放',
-      action: (event, binding) => {
-        const wheelEvent = event as WheelEvent
-        const delta = wheelEvent.deltaY < 0 ? 1 : -1
-        this.editor.changZoom(delta)
+      action: (event: Event, binding) => {
+        const e = event as WheelEvent
+        const delta = e.deltaY < 0 ? 1 : -1
+
+        // 获取鼠标相对于 canvas 的位置（屏幕坐标）
+        const canvas = this.editor.getCanvas()
+        const rect = canvas.getBoundingClientRect()
+        const mx = e.clientX - rect.left
+        const my = e.clientY - rect.top
+
+        // 使用 zoomAt 方法，在鼠标位置缩放并保持鼠标指向的画布位置不变
+        this.editor.changZoomAt(delta, mx, my)
       },
     })
   }

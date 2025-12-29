@@ -67,7 +67,8 @@ export class Rule {
 
     const ctx = this.ctx
     const { scale, x } = this.viewport.transform
-    const width = ctx.canvas.width
+    // 使用显示尺寸（CSS 像素），因为 context 已经应用了 devicePixelRatio 缩放
+    const width = this.viewport.width
     const height = this.config.size
 
     // 清除并绘制背景
@@ -76,8 +77,9 @@ export class Rule {
     ctx.fillRect(0, 0, width, height)
 
     // 设置样式
+    ctx.lineWidth = 1 // 明确设置线宽
     ctx.strokeStyle = this.config.lineColor
-    ctx.fillStyle = this.config.textColor
+
     ctx.font = `${this.config.fontSize}px ${this.config.fontFamily}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
@@ -88,76 +90,90 @@ export class Rule {
     // 计算世界坐标起点
     const start = Math.floor(-x / scale / step) * step
     const end = start + width / scale + step
-
+    // 绘制刻度线
+    ctx.beginPath()
+    const tickHeight = this.config.majorTickHeight
     for (let v = start; v <= end; v += step) {
       const sx = v * scale + x // 世界 -> 屏幕
-
-      const tickHeight = this.config.majorTickHeight
-
-      // 绘制刻度线
-      ctx.beginPath()
+      if (sx < 0 || sx > width) continue
       ctx.moveTo(sx, height)
       ctx.lineTo(sx, height - tickHeight)
-      ctx.stroke()
-
+      ctx.fillStyle = this.config.textColor
       ctx.fillText(String(Math.round(v)), sx, this.config.textOffsetY)
     }
+    ctx.strokeStyle = this.config.lineColor
+    ctx.stroke()
   }
-  /**
-   * 绘制Y轴（纵向标尺）
-   */
   private drawYAxis() {
     if (!this.visible) return
 
     const ctx = this.ctx
     const { scale, y } = this.viewport.transform
     const width = this.config.size
-    const height = ctx.canvas.height
+    const height = this.viewport.height
 
-    // 清除并绘制背景
+    // 1. 清除并绘制背景
     ctx.clearRect(0, 0, width, height)
     ctx.fillStyle = this.config.backgroundColor
     ctx.fillRect(0, 0, width, height)
 
-    // 设置样式
-    ctx.strokeStyle = this.config.lineColor
-    ctx.fillStyle = this.config.textColor
+    // 2. 基础样式设置
     ctx.font = `${this.config.fontSize}px ${this.config.fontFamily}`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'top'
+    ctx.textAlign = 'right' // 文字右对齐，靠近刻度线
+    ctx.textBaseline = 'middle' // 纵向居中，对齐刻度线
 
-    // 动态刻度间隔（Figma 同款算法）
     const step = getStepByZoom(scale)
-
-    // 计算世界坐标起点
     const start = Math.floor(-y / scale / step) * step
     const end = start + height / scale + step
+    const tickHeight = this.config.majorTickHeight
+
+    // 3. 开始绘制刻度线
+    ctx.strokeStyle = this.config.lineColor
+    ctx.lineWidth = 1
+    ctx.beginPath()
 
     for (let v = start; v <= end; v += step) {
-      const sy = v * scale + y // 世界 -> 屏幕
+      // 关键：像素对齐，防止模糊
+      const sy = Math.round(v * scale + y) - 0.5
 
-      const isMajor =
-        Math.round(v) % (step * this.config.majorTickMultiple) === 0
-      const tickWidth = isMajor
-        ? this.config.majorTickHeight
-        : this.config.minorTickHeight
+      if (sy < 0 || sy > height) continue
 
-      // 绘制刻度线
-      ctx.beginPath()
+      // 绘制横向小刻度
       ctx.moveTo(width, sy)
-      ctx.lineTo(width - tickWidth, sy)
-      ctx.stroke()
+      ctx.lineTo(width - tickHeight, sy)
 
-      // 绘制主刻度文字
-      if (isMajor) {
-        // 旋转文字以垂直显示
-        ctx.save()
-        ctx.translate(this.config.textOffsetY, sy)
-        ctx.rotate(-Math.PI / 2) // 旋转90度
-        ctx.fillText(String(Math.round(v)), 0, 0)
-        ctx.restore()
-      }
+      // 2. 绘制竖向文字
+      ctx.save() // 必须 save，否则后续绘制会乱
+
+      // 设置文字样式
+      ctx.fillStyle = this.config.textColor
+      ctx.textAlign = 'center'
+
+      /**
+       * 关键步骤：
+       * 1. translate: 将画布原点移动到文字应该出现的位置
+       * 2. rotate: 旋转画布 (-90度 = -Math.PI / 2)
+       * 3. fillText: 在新的原点 (0,0) 附近绘制文字
+       */
+      const textX = tickHeight + 4 // 距离刻度线左侧 4px
+      const textY = sy
+
+      ctx.translate(textX, textY)
+      ctx.rotate(-Math.PI / 2) // 逆时针旋转 90 度
+
+      // 此时 (0,0) 就是原来的 (textX, textY)
+      ctx.fillText(String(Math.round(v)), 0, 0)
+
+      ctx.restore() // 必须 restore，恢复到正常坐标系
     }
+    ctx.stroke()
+
+    // 绘制 Y 轴右侧的边界线（Figma 风格）
+    ctx.beginPath()
+    ctx.moveTo(width - 0.5, 0)
+    ctx.lineTo(width - 0.5, height)
+    ctx.strokeStyle = this.config.borderColor
+    ctx.stroke()
   }
   private clearReact() {
     const ctx = this.ctx
@@ -171,8 +187,9 @@ export class Rule {
   }
   private drawBorder() {
     const ctx = this.ctx
-    const height = ctx.canvas.height
-    const width = ctx.canvas.width
+    // 使用显示尺寸（CSS 像素），因为 context 已经应用了 devicePixelRatio 缩放
+    const height = this.viewport.height
+    const width = this.viewport.width
     const size = this.config.size
     ctx.strokeStyle = this.config.borderColor
     ctx.lineWidth = 1

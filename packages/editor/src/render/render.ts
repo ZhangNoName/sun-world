@@ -15,6 +15,8 @@ export class CanvasRenderer {
   private store!: ElementStore
   private rule?: Rule
   private isDirty = true // 控制是否需要重绘
+  private devicePixelRatio: number = 1
+
   constructor(
     containerElement: HTMLDivElement,
     viewportState: ViewportState,
@@ -24,22 +26,48 @@ export class CanvasRenderer {
     this.viewport = viewportState
     this.store = elementStore
 
+    // 获取设备像素比
+    this.devicePixelRatio = window.devicePixelRatio || 1
+
     // 1. 创建 Canvas 元素
     this.canvasElement = document.createElement('canvas')
     this.canvasElement.style.cssText =
       'display: block; width: 100%; height: 100%;background-color: #f5f5f5;'
 
-    // 2. 初始尺寸设置
-    const { clientWidth, clientHeight } = containerElement
-    this.canvasElement.width = clientWidth
-    this.canvasElement.height = clientHeight
-    this.viewport.updateDimensions(clientWidth, clientHeight)
-
     containerElement.appendChild(this.canvasElement)
     this.ctx = this.canvasElement.getContext('2d')!
 
+    // 2. 初始尺寸设置（考虑 devicePixelRatio）
+    const { clientWidth, clientHeight } = containerElement
+    this.updateCanvasSize(clientWidth, clientHeight)
+    this.viewport.updateDimensions(clientWidth, clientHeight)
+
     this.setupResizeObserver()
     // this.startDrawLoop() // 启动渲染循环
+  }
+
+  /**
+   * 更新 Canvas 尺寸，考虑 devicePixelRatio 以支持高 DPI 屏幕
+   */
+  private updateCanvasSize(width: number, height: number) {
+    // 设置显示尺寸（CSS 像素）
+    this.canvasElement.style.width = width + 'px'
+    this.canvasElement.style.height = height + 'px'
+
+    // 设置实际绘制尺寸（物理像素）
+    // 注意：设置 width/height 会重置 context 的变换矩阵，所以需要重新应用 devicePixelRatio 缩放
+    this.canvasElement.width = width * this.devicePixelRatio
+    this.canvasElement.height = height * this.devicePixelRatio
+
+    // 重新应用 devicePixelRatio 缩放（因为设置 canvas 尺寸会重置 transform）
+    this.ctx.setTransform(
+      this.devicePixelRatio,
+      0,
+      0,
+      this.devicePixelRatio,
+      0,
+      0
+    )
   }
 
   /**
@@ -56,14 +84,14 @@ export class CanvasRenderer {
       if (!entry) return
 
       const { width, height } = entry.contentRect
-      if (
-        this.canvasElement.width !== width ||
-        this.canvasElement.height !== height
-      ) {
-        // 更新 Canvas 元素尺寸
-        this.canvasElement.width = width
-        this.canvasElement.height = height
-        // 更新 ViewportState
+      const currentDisplayWidth = parseInt(this.canvasElement.style.width) || 0
+      const currentDisplayHeight =
+        parseInt(this.canvasElement.style.height) || 0
+
+      if (currentDisplayWidth !== width || currentDisplayHeight !== height) {
+        // 更新 Canvas 元素尺寸（考虑 devicePixelRatio）
+        this.updateCanvasSize(width, height)
+        // 更新 ViewportState（使用显示尺寸，不是物理像素）
         this.viewport.updateDimensions(width, height)
         // 触发重绘
         this.render()
@@ -94,7 +122,15 @@ export class CanvasRenderer {
   render() {
     const ctx = this.ctx
 
-    ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height)
+    // 获取显示尺寸（CSS 像素），用于清除和绘制
+    const displayWidth =
+      parseInt(this.canvasElement.style.width) ||
+      this.canvasElement.width / this.devicePixelRatio
+    const displayHeight =
+      parseInt(this.canvasElement.style.height) ||
+      this.canvasElement.height / this.devicePixelRatio
+
+    ctx.clearRect(0, 0, displayWidth, displayHeight)
 
     // 先绘制标尺（在canvas变换之前）
     if (this.rule) {

@@ -138,6 +138,16 @@ export class SWEditor {
   public changZoom(delta: number) {
     this.viewportState.zoom(delta)
   }
+
+  /**
+   * 在指定屏幕位置进行缩放，保持该位置在画布坐标系中不变
+   * @param delta 缩放增量
+   * @param screenX 屏幕 X 坐标
+   * @param screenY 屏幕 Y 坐标
+   */
+  public changZoomAt(delta: number, screenX: number, screenY: number) {
+    this.viewportState.zoomAt(delta, screenX, screenY)
+  }
   get zoom() {
     return this.viewportState.transform.scale
   }

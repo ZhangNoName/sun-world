@@ -1,3 +1,13 @@
+/*
+ * @Author: ZhangNoName
+ * @Date: 2025-12-26 15:54:38
+ * @LastEditors: no name no name
+ * @LastEditTime: 2025-12-29 10:47:56
+ * @FilePath: \sun-world\packages\editor\src\support\rule.config.ts
+ * @Description:
+ *
+ * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
+ */
 export const getStepByZoom = (zoom: number) => {
   /**
    * 步长研究，参考 figma
@@ -65,8 +75,8 @@ export const DEFAULT_CONFIG: Required<RuleConfig> = {
   borderColor: '#e6e6e6',
   fontSize: 10,
   fontFamily: 'inter',
-  majorTickHeight: 8,
-  minorTickHeight: 4,
+  majorTickHeight: 5,
+  minorTickHeight: 10,
   baseStep: 10,
   majorTickMultiple: 5,
   textOffsetY: 2,
