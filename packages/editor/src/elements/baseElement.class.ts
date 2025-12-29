@@ -1,4 +1,9 @@
-import { elementConfig, ElementType } from './element.config'
+import {
+  elementConfig,
+  ElementType,
+  FillStyle,
+  FillType,
+} from './element.config'
 
 export abstract class BaseElement {
   type: ElementType
@@ -11,6 +16,11 @@ export abstract class BaseElement {
   visible: boolean = true
   isSelected: boolean = false
   name: string = ''
+
+  fill: FillStyle = { type: FillType.Solid, color: '#FF6B6B' }
+  children: string[] | null = null
+  parentId: string | null = null
+  group: string | null = null
 
   constructor(params: {
     type: ElementType
