@@ -1,6 +1,7 @@
 import { ElMessage } from 'element-plus'
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
-import { useAuth } from '@/hooks/auth/auth'
+import { useAuthStore } from '@/store/auth'
+import { getDeviceId } from '@/util/auth'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -8,7 +9,6 @@ import { useAuth } from '@/hooks/auth/auth'
 const baseURL = import.meta.env.VITE_BASE_URL
 //默认请求超时时间
 const timeout = 30000
-let token: string | null = ''
 //创建axios实例
 const service = axios.create({
   timeout,
@@ -20,22 +20,30 @@ const service = axios.create({
 //统一请求拦截 可配置自定义headers 例如 language、token等
 service.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const auth = useAuth()
+    // const authStore = useAuthStore()
 
-    // 判断 accessToken 是否过期
-    const now = Date.now() / 1000
-    if (auth.accessTokenExpire.value && now >= auth.accessTokenExpire.value) {
-      // 尝试刷新
-      const success = await auth.refreshTokens()
-      if (!success) throw new Error('刷新 token 失败')
-    }
-    //配置自定义请求头
+    // 如果 token 即将过期，自动刷新（token 从 cookie 自动带过去）
+    // 跳过登录、注册和刷新 token 的请求
+    // if (
+    //   !config.url?.includes('/auth/login') &&
+    //   !config.url?.includes('/auth/register') &&
+    //   !config.url?.includes('/auth/refresh_token')
+    // ) {
+    //   try {
+    //     await authStore.refreshTokensIfNeeded()
+    //   } catch (error) {
+    //     console.error('刷新 token 失败', error)
+    //     // 刷新失败时抛出错误，让响应拦截器处理
+    //     throw error
+    //   }
+    // }
+
+    //配置自定义请求头（不包含 token，token 从 cookie 自动带过去）
     config.headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${auth.accessToken.value}`,
       ...config.headers,
+      withCredentials: true, // 允许携带 cookie
     } as any
-    config.withCredentials = false
     return config
   },
   (error) => {
@@ -47,20 +55,14 @@ service.interceptors.request.use(
 //统一响应拦截 可以格式化返回的数据，针对返回code做出统一处理
 service.interceptors.response.use(
   function (response) {
-    // console.log('请求返回数据', response);
-    // console.log('返回过来的响应头', response.headers);
-    if (response.headers.authorization) {
-      // console.log('接收到的新token', response.headers.authorization);
-      localStorage.setItem('token', response.headers.authorization)
-      token = response.headers.authorization
-    } else {
-      // console.log('没有token', Object.keys(response.headers));
-    }
-    // 对响应数据做点什么
+    // token 在 cookie 中，不需要手动处理
+    // 如果响应中有新的过期时间，可以同步更新
+    const authStore = useAuthStore()
+    authStore.syncExpireFromCookie?.()
     return response
   },
   async (error) => {
-    const auth = useAuth()
+    const authStore = useAuthStore()
     // 对响应错误做点什么
     if (error && error.response) {
       switch (error.response.status) {
@@ -72,12 +74,20 @@ service.interceptors.response.use(
           ElMessage.error('错误请求')
           break
         case 401:
-          // token 失效，尝试刷新
-          const success = await auth.refreshTokens()
-          if (success) {
-            return service(error.config) // 重新请求
-          } else {
-            auth.logout()
+          // token 失效，尝试刷新（refresh_token 从 cookie 自动带过去）
+          try {
+            await authStore.refreshTokensIfNeeded()
+            // 刷新成功，重新请求
+            if (error.config) {
+              return service(error.config)
+            }
+          } catch (refreshError) {
+            // 刷新失败，登出
+            await authStore.logout()
+            // 跳转到登录页
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login'
+            }
           }
           break
         case 403:

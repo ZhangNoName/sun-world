@@ -1,55 +1,122 @@
 <script setup lang="ts" name="login">
 import router from '@/router'
 import { useAuthStore } from '@/store/auth'
-import { reactive } from 'vue'
+import { reactive, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import SwInput from '@/baseCom/input/input.vue'
+import SwButton from '@/baseCom/button/button.vue'
+import { ElMessage, ElForm, ElFormItem } from 'element-plus'
+
+const { t } = useI18n()
 
 const form = reactive({
   account: '',
   password: '',
 })
+
+const loading = ref(false)
+const formRef = ref<InstanceType<typeof ElForm>>()
 const { login } = useAuthStore()
+
+const rules = computed(() => ({
+  account: [
+    {
+      required: true,
+      message: t('login.accountRequiredMessage'),
+      trigger: 'blur',
+    },
+  ],
+  password: [
+    {
+      required: true,
+      message: t('login.passwordRequiredMessage'),
+      trigger: 'blur',
+    },
+  ],
+}))
+
 async function handleLogin() {
-  // 模拟登录逻辑
-  try {
-    const res = await login(form.account, form.password)
-    // console.log('登录界面', res)
-    if (res) {
-      router.push({ path: '/' })
+  if (!formRef.value) return
+
+  await formRef.value.validate(async (valid: boolean) => {
+    if (!valid) {
+      ElMessage.warning(t('login.accountRequired'))
+      return
     }
-  } catch (error) {
-    console.log('登录失败', error)
-  }
+
+    loading.value = true
+    try {
+      const res = await login(form.account, form.password)
+      if (res) {
+        ElMessage.success(t('login.loginSuccess'))
+        router.push({ path: '/' })
+      }
+    } catch (error: any) {
+      ElMessage.error(error?.message || t('login.loginFailed'))
+      console.error('登录失败', error)
+    } finally {
+      loading.value = false
+    }
+  })
+}
+
+function goToRegister() {
+  router.push({ path: '/register' })
+  console.log('goToRegister')
 }
 </script>
+
 <template>
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <img src="/logo.svg" alt="logo" class="logo" />
+        <h2 class="title">{{ $t('login.title') }}</h2>
       </div>
-      <form @submit.prevent="handleLogin">
-        <div class="input-group">
-          <input
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        @submit.prevent="handleLogin"
+        class="login-form"
+        label-position="top"
+      >
+        <el-form-item :label="$t('login.account')" prop="account">
+          <SwInput
             v-model="form.account"
-            type="text"
-            placeholder="手机号或邮箱"
-            required
+            :placeholder="$t('login.accountPlaceholder')"
+            size="large"
+            clearable
           />
-        </div>
-        <div class="input-group">
-          <input
+        </el-form-item>
+        <el-form-item :label="$t('login.password')" prop="password">
+          <SwInput
             v-model="form.password"
             type="password"
-            placeholder="密码"
-            required
+            :placeholder="$t('login.passwordPlaceholder')"
+            size="large"
+            show-password
+            clearable
+            @keyup.enter="handleLogin"
           />
-        </div>
-        <button class="login-btn" type="submit">登录</button>
-      </form>
+        </el-form-item>
+        <el-form-item>
+          <SwButton
+            type="primary"
+            size="large"
+            :loading="loading"
+            class="login-btn"
+            @click="handleLogin"
+          >
+            {{ $t('login.loginBtn') }}
+          </SwButton>
+        </el-form-item>
+      </el-form>
       <div class="login-footer">
-        <a href="#">注册新账号</a>
+        <a href="/register" @click.prevent="goToRegister">
+          {{ $t('login.registerLink') }}
+        </a>
         <span>|</span>
-        <a href="#">忘记密码？</a>
+        <a href="#">{{ $t('login.forgotPassword') }}</a>
       </div>
     </div>
   </div>
@@ -57,78 +124,83 @@ async function handleLogin() {
 
 <style scoped>
 .login-container {
+  flex: 1;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .login-box {
   background: #fff;
   padding: 40px 32px;
-  border-radius: 8px;
-  box-shadow: 0 2px 16px rgba(173, 163, 163, 0.08);
-  width: 340px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .login-header {
   text-align: center;
-  margin-bottom: 24px;
-}
-.logo {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 8px;
-}
-.subtitle {
-  color: #8590a6;
-  font-size: 14px;
-  margin-top: 4px;
-}
-.input-group {
+  margin-bottom: 32px;
   width: 100%;
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
   margin-bottom: 16px;
 }
-.input-group input {
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.login-form {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.2s;
 }
-.input-group input:focus {
-  border-color: #0084ff;
+
+.login-form :deep(.el-form-item) {
+  margin-bottom: 20px;
 }
+
+.login-form :deep(.el-input) {
+  width: 100%;
+}
+
 .login-btn {
   width: 100%;
-  padding: 10px 0;
-  background: #0084ff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: background 0.2s;
+  margin-top: 8px;
 }
-.login-btn:hover {
-  background: #006fd6;
-}
+
 .login-footer {
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 14px;
   color: #8590a6;
+  margin-top: 16px;
 }
+
 .login-footer a {
-  color: #0084ff;
+  color: #409eff;
   text-decoration: none;
   margin: 0 4px;
+  cursor: pointer;
+  transition: color 0.2s;
 }
+
+.login-footer a:hover {
+  color: #66b1ff;
+}
+
 .login-footer span {
-  margin: 0 4px;
+  margin: 0 8px;
+  color: #dcdfe6;
 }
 </style>

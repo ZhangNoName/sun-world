@@ -8,6 +8,7 @@ const NewArticle = () => import('@/pages/article/index.vue')
 const GameTiles = () => import('@/pages/gameTiles/index.vue')
 const Manage = () => import('@/pages/manage/index.vue')
 const Login = () => import('@/pages/login/login.vue')
+const Register = () => import('@/pages/login/register.vue')
 const Keep = () => import('@/pages/keep/keep.vue')
 const Me = () => import('@/pages/me/me.vue')
 const Canvas = () => import('@/pages/canvas/canvas.vue')
@@ -27,9 +28,14 @@ const routes = [
   { path: '/game_tiles', component: GameTiles },
   { path: '/manage', component: Manage },
   { path: '/login', component: Login },
+  { path: '/register', component: Register },
   { path: '/me', component: Me },
   { path: '/tools', component: ToolsPage },
   { path: '/keep', component: Keep },
+  {
+    path: '/register',
+    component: Register,
+  },
 
   {
     path: '/canvas',

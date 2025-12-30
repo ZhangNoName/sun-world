@@ -1,141 +1,142 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
-  login as loginApi,
-  logout as logoutApi,
-  refreshToken as refreshTokenApi,
-} from '@/service/auth.api'
-import { v4 as uuidv4 } from 'uuid'
+  postLogin,
+  postLogout,
+  postRefreshToken,
+  postRegister,
+} from '@/service/auth.req'
+import { getDeviceId } from '@/util/auth'
+import { getAccessTokenExpire, getRefreshTokenExpire } from '@/util/cookie'
+import type { TokenType } from '@/type'
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref<string | null>(null)
-  const refreshToken = ref<string | null>(null)
+  // 只存储过期时间，token 本身存储在 cookie 中
   const accessTokenExpire = ref<number | null>(null)
   const refreshTokenExpire = ref<number | null>(null)
-  const deviceId = ref<string>(localStorage.getItem('device_id') || uuidv4())
+  const deviceId = ref<string>(getDeviceId())
 
-  // 首次运行时写入 deviceId
-  if (!localStorage.getItem('device_id')) {
-    localStorage.setItem('device_id', deviceId.value)
+  // 从 cookie 同步过期时间
+  function syncExpireFromCookie() {
+    const accessExpire = getAccessTokenExpire()
+    const refreshExpire = getRefreshTokenExpire()
+    if (accessExpire) accessTokenExpire.value = accessExpire
+    if (refreshExpire) refreshTokenExpire.value = refreshExpire
   }
 
-  /** 设置 token 信息 */
-  function setTokens({
-    token,
-    refresh,
-    tokenExpire,
-    refreshExpire,
-  }: {
-    token: string
-    refresh: string
-    tokenExpire: number
-    refreshExpire: number
-  }) {
-    accessToken.value = token
-    refreshToken.value = refresh
-    accessTokenExpire.value = tokenExpire
+  /** 更新 token 过期时间（token 本身在 cookie 中，不需要存储） */
+  function updateTokenExpire(data: TokenType) {
+    // 优先从 cookie 读取过期时间，如果没有则解析返回的时间字符串
+    const accessExpire =
+      getAccessTokenExpire() || new Date(data.access_token_expire).getTime()
+    const refreshExpire =
+      getRefreshTokenExpire() || new Date(data.refresh_token_expire).getTime()
+
+    accessTokenExpire.value = accessExpire
     refreshTokenExpire.value = refreshExpire
-
-    // 本地缓存 token 信息为对象
-    localStorage.setItem(
-      'auth_tokens',
-      JSON.stringify({
-        accessToken: token,
-        refreshToken: refresh,
-        accessTokenExpire: tokenExpire,
-        refreshTokenExpire: refreshExpire,
-      })
-    )
   }
 
-  // 启动时自动读取本地 token
-  const cachedTokens = localStorage.getItem('auth_tokens')
-  if (cachedTokens) {
-    try {
-      const parsed = JSON.parse(cachedTokens)
-      accessToken.value = parsed.accessToken || null
-      refreshToken.value = parsed.refreshToken || null
-      accessTokenExpire.value = parsed.accessTokenExpire || null
-      refreshTokenExpire.value = parsed.refreshTokenExpire || null
-    } catch (e) {
-      // 解析失败时清空本地缓存
-      localStorage.removeItem('auth_tokens')
-    }
-  }
+  // 启动时从 cookie 同步过期时间
+  syncExpireFromCookie()
 
-  // 清空 token 时也清空本地缓存
+  // 清空 token 过期时间（cookie 由后端清除）
   function clearTokens() {
-    accessToken.value = null
-    refreshToken.value = null
     accessTokenExpire.value = null
     refreshTokenExpire.value = null
-    localStorage.removeItem('auth_tokens')
   }
 
   /** 判断 accessToken 是否过期 */
   function isAccessTokenExpired() {
+    // 同步 cookie 中的过期时间
+    syncExpireFromCookie()
     return !accessTokenExpire.value || Date.now() > accessTokenExpire.value
   }
 
-  /** 刷新 token */
-  async function refreshTokensIfNeeded() {
-    if (!isAccessTokenExpired()) return accessToken.value
+  /** 判断 accessToken 是否即将过期（提前 5 分钟刷新） */
+  function isAccessTokenExpiringSoon() {
+    syncExpireFromCookie()
+    if (!accessTokenExpire.value) return true
+    const fiveMinutes = 5 * 60 * 1000 // 5 分钟
+    return Date.now() + fiveMinutes >= accessTokenExpire.value
+  }
 
-    if (
-      !refreshToken.value ||
-      !refreshTokenExpire.value ||
-      Date.now() > refreshTokenExpire.value
-    ) {
+  /** 判断 refreshToken 是否过期 */
+  function isRefreshTokenExpired() {
+    syncExpireFromCookie()
+    return !refreshTokenExpire.value || Date.now() > refreshTokenExpire.value
+  }
+
+  /** 刷新 token（refresh_token 从 cookie 自动带过去） */
+  async function refreshTokensIfNeeded() {
+    // 如果 token 未过期且未即将过期，则不需要刷新
+    if (!isAccessTokenExpiringSoon()) {
+      return
+    }
+
+    // 检查 refresh token 是否过期
+    if (isRefreshTokenExpired()) {
       clearTokens()
       throw new Error('Refresh token 已过期，需要重新登录')
     }
 
-    const res = await refreshTokenApi(refreshToken.value)
-    setTokens({
-      token: res.access_token,
-      refresh: res.refresh_token,
-      tokenExpire: Date.parse(res.access_token_expire),
-      refreshExpire: Date.parse(res.refresh_token_expire),
-    })
-    return accessToken.value
+    try {
+      // 调用刷新接口，refresh_token 会从 cookie 自动带过去
+      // 刷新成功后，新的 token 会设置到 cookie，只需要更新过期时间
+      const res = await postRefreshToken()
+      updateTokenExpire(res)
+    } catch (error) {
+      clearTokens()
+      throw error
+    }
   }
 
   /** 登录 */
   async function login(username: string, password: string) {
-    const res = await loginApi({
+    const res = await postLogin({
       username,
       password,
-      deviceId: deviceId.value,
     })
-    console.log(res)
-    setTokens({
-      token: res.access_token,
-      refresh: res.refresh_token,
-      tokenExpire: Date.parse(res.access_token_expire),
-      refreshExpire: Date.parse(res.refresh_token_expire),
-    })
+    // token 会自动设置到 cookie，只需要更新过期时间
+    updateTokenExpire(res)
     return res
   }
 
-  /** 登出（只清当前设备的 token） */
+  /** 注册 */
+  async function register(data: {
+    name: string
+    phone: string
+    email: string
+    password: string
+  }) {
+    const res = await postRegister(data)
+    // 注册成功后 token 会自动设置到 cookie，只需要更新过期时间
+    updateTokenExpire(res)
+    return res
+  }
+
+  /** 登出 */
   async function logout() {
-    if (accessToken.value) {
-      await logoutApi()
+    try {
+      await postLogout()
+    } catch (error) {
+      console.error('登出失败', error)
     }
+    // 清空过期时间（cookie 由后端清除）
     clearTokens()
   }
 
   return {
-    accessToken,
-    refreshToken,
     accessTokenExpire,
     refreshTokenExpire,
     deviceId,
-    setTokens,
+    syncExpireFromCookie,
     clearTokens,
     isAccessTokenExpired,
+    isAccessTokenExpiringSoon,
+    isRefreshTokenExpired,
     refreshTokensIfNeeded,
     login,
+    register,
     logout,
   }
 })
