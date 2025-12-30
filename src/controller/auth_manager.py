@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import hashlib
-import jwt
+from jose import JWTError, jwt
 from loguru import logger
 from src.controller.user_manage import UserManager
 from src.database.redis.redis_manage import RedisManager
@@ -10,15 +10,18 @@ from src.type.user_type import User
 
 SECRET_KEY = "b9WqXgK9Oq1wZtR3JpN4HcFv6uL2YsVq5D8Qn0TfGzA"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 默认值
+REFRESH_TOKEN_EXPIRE_DAYS = 7  # 默认值
 
 
 class AuthManager:
-    def __init__(self, user_manager: UserManager, db: RedisManager, enable_permission: bool = False):
+    def __init__(self, user_manager: UserManager, db: RedisManager, enable_permission: bool = False,
+                 access_token_expire_minutes: int = None, refresh_token_expire_days: int = None):
         self.user_manager = user_manager
         self.db = db
         self.enable_permission = enable_permission
+        self.access_token_expire_minutes = access_token_expire_minutes or ACCESS_TOKEN_EXPIRE_MINUTES
+        self.refresh_token_expire_days = refresh_token_expire_days or REFRESH_TOKEN_EXPIRE_DAYS
 
     def hash_password(self, password: str) -> str:
         return hashlib.sha256(password.encode()).hexdigest()
@@ -29,8 +32,8 @@ class AuthManager:
     def _create_tokens(self, user_id: str, device_id: str) -> TokenModel:
         """生成 access_token 和 refresh_token，并存入 Redis"""
         now = datetime.utcnow()
-        access_exp = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        refresh_exp = now + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        access_exp = now + timedelta(minutes=self.access_token_expire_minutes)
+        refresh_exp = now + timedelta(days=self.refresh_token_expire_days)
 
         payload = {"sub": str(user_id), "device": device_id}
 
@@ -66,6 +69,10 @@ class AuthManager:
             refresh_token_expire=refresh_exp
         )
 
+    def create_tokens_for_user(self, user_id: str, device_id: str) -> TokenModel:
+        """为指定用户创建 token（公共方法）"""
+        return self._create_tokens(str(user_id), device_id)
+
     def register_user(self, user: User) -> bool:
         """注册用户"""
         user.password = self.hash_password(user.password)
@@ -86,14 +93,16 @@ class AuthManager:
     def refresh_access_token(self, refresh_token: str) -> Optional[TokenModel]:
         """使用 refresh_token 刷新 access_token"""
         try:
-            payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(refresh_token, SECRET_KEY,
+                                 algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
             if not user_id or not device_id:
                 return None
 
             # 校验 Redis 中是否有对应的 refresh_token
-            stored_token = self.db.hget(f"user:{user_id}:refresh_tokens", device_id)
+            stored_token = self.db.hget(
+                f"user:{user_id}:refresh_tokens", device_id)
             if stored_token != refresh_token:
                 return None
 
@@ -120,7 +129,8 @@ class AuthManager:
                 return None
 
             # 校验 Redis 中存储的 token
-            stored_token = self.db.hget(f"user:{user_id}:{token_type}_tokens", device_id)
+            stored_token = self.db.hget(
+                f"user:{user_id}:{token_type}_tokens", device_id)
             if stored_token != token:
                 return None
 
@@ -162,4 +172,4 @@ class AuthManager:
 
     def is_token_blacklisted(self, token: str) -> bool:
         """检查 token 是否在黑名单"""
-        return self.db.exist(f"blacklist:{token}") 
+        return self.db.exist(f"blacklist:{token}")

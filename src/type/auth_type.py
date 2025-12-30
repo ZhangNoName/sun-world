@@ -2,16 +2,18 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
+
 class RegisterModel(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str]
     password: str
 
+
 class LoginModel(BaseModel):
     username: Optional[str]
-    device_id: str
     password: str
+
 
 class TokenModel(BaseModel):
     access_token: str
@@ -20,8 +22,10 @@ class TokenModel(BaseModel):
     access_token_expire: datetime
     refresh_token_expire: datetime
 
+
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
+
 
 class ResetPasswordModel(BaseModel):
     token: str

@@ -1,28 +1,108 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+import uuid
+import os
+from fastapi import APIRouter, Depends, HTTPException, Header, status, Request, Response
 
 from src.type.auth_type import RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
 from src.controller.auth_manager import AuthManager
 from src.type.type import ResponseModel
 from src.type.user_type import User
 from app_instance import app
+
+
+def get_cookie_settings(request: Request):
+    """根据环境和请求 origin 获取 cookie 设置"""
+    env = os.getenv('ENV', 'local')
+
+    # 从配置读取 cookie 设置
+    auth_config = getattr(app, 'config', {}).get('auth', {})
+    cookie_secure = auth_config.get('cookie_secure', None)
+    cookie_samesite = auth_config.get('cookie_samesite', None)
+
+    # 如果配置文件中明确指定了，使用配置的值
+    if cookie_secure is not None and cookie_samesite:
+        return {
+            'secure': cookie_secure,
+            'samesite': cookie_samesite
+        }
+
+    # 否则根据环境和请求自动判断
+    origin = request.headers.get('origin', '')
+
+    # 检查是否是跨站请求（不同端口也算跨站）
+    is_cross_site = False
+    if origin:
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(origin)
+            origin_host = parsed.hostname
+            origin_port = parsed.port or (
+                443 if parsed.scheme == 'https' else 80)
+
+            # 获取当前请求的 host
+            host_header = request.headers.get('host', '')
+            if ':' in host_header:
+                current_host, current_port = host_header.split(':')
+                current_port = int(current_port)
+            else:
+                current_host = host_header
+                current_port = 80 if request.url.scheme == 'http' else 443
+
+            # 如果 host 不同或 port 不同，认为是跨站
+            if origin_host != current_host or origin_port != current_port:
+                is_cross_site = True
+        except Exception:
+            # 如果无法解析，假设是跨站
+            is_cross_site = True
+
+    # 对于本地开发
+    if env == 'local':
+        # 如果是跨站请求，尝试使用 none + secure=False
+        # 注意：Chrome 较新版本可能不允许，建议使用 HTTPS
+        if is_cross_site:
+            return {
+                'secure': False,
+                'samesite': 'none'
+            }
+        else:
+            return {
+                'secure': False,
+                'samesite': 'lax'
+            }
+    else:
+        # 生产环境：必须使用 none + secure=True（需要 HTTPS）
+        return {
+            'secure': True,
+            'samesite': 'none'
+        }
+
+
 def get_auth_manager() -> AuthManager:
     auth: Optional[AuthManager] = getattr(app, "auth", None)
     if auth is None:
-        raise HTTPException(status_code=500, detail="Auth manager not initialized")
+        raise HTTPException(
+            status_code=500, detail="Auth manager not initialized")
     return auth
+
 
 def get_current_user(authorization: str = Header(...), auth_manager: AuthManager = Depends(get_auth_manager)):
     token = authorization.replace("Bearer ", "")
     user = auth_manager.get_user_from_token(token)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token无效或已过期")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token无效或已过期")
     return user
+
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+
 @router.post("/register")
-async def register(user: RegisterModel, auth:AuthManager=Depends(get_auth_manager)):
+async def register(user: RegisterModel, request: Request, response: Response, auth: AuthManager = Depends(get_auth_manager)):
+    # 从 cookie 获取 device_id，如果没有则生成新的
+    device_id = request.cookies.get("device_id") or str(uuid.uuid4())
+
     user_obj = User(
         username=user.name,
         name=user.name,
@@ -35,34 +115,120 @@ async def register(user: RegisterModel, auth:AuthManager=Depends(get_auth_manage
     )
     res = auth.register_user(user_obj)
     if res:
-        return ResponseModel(code=1, data={"id": user_obj.id}, message="注册成功")
+        # 注册成功后自动登录，生成 token
+        tokens = auth.create_tokens_for_user(str(user_obj.id), device_id)
+
+        # 设置 cookie
+        refresh_expire_seconds = int(
+            (tokens.refresh_token_expire - datetime.utcnow()).total_seconds())
+        cookie_settings = get_cookie_settings(request)
+        response.set_cookie(
+            key="access_token",
+            value=tokens.access_token,
+            samesite="none",  # 允许跨域发送 Cookie
+            secure=False,      # samesite=none 必须配合 secure=False
+            httponly=True,
+            max_age=auth.access_token_expire_minutes * 60
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=tokens.refresh_token,
+            samesite="none",  # 允许跨域发送 Cookie
+            secure=False,      # samesite=none 必须配合 secure=False
+            httponly=True,
+            max_age=refresh_expire_seconds
+        )
+        response.set_cookie(
+            key="device_id",
+            value=device_id,
+            samesite="lax",  # 允许跨域发送 Cookie
+            secure=False,      # samesite=none 必须配合 secure=False
+            httponly=True,
+            max_age=refresh_expire_seconds,
+
+        )
+
+        return ResponseModel(
+            code=1,
+            data={
+                "id": user_obj.id,
+                "refresh_token": tokens.refresh_token,
+                "refresh_token_expire": tokens.refresh_token_expire.isoformat()
+            },
+            message="注册成功"
+        )
     return ResponseModel(code=0, data=None, message="注册失败")
 
+
 @router.post("/login", response_model=ResponseModel)
-async def login(form_data: LoginModel, auth:AuthManager=Depends(get_auth_manager)):
+async def login(form_data: LoginModel, request: Request, response: Response, auth: AuthManager = Depends(get_auth_manager)):
+    # 优先从 cookie 获取 device_id，如果没有则生成新的
+    device_id = request.cookies.get("device_id") or str(uuid.uuid4())
+
     tokens = auth.authenticate_user(
         form_data.username,
         form_data.password,
-        form_data.device_id
+        device_id
     )
     if not tokens:
         return ResponseModel(code=0, data=None, message="用户名或密码错误")
-    
-    return ResponseModel[TokenModel](code=1, data=tokens, message="登录成功")
+
+    # 设置 cookie
+    refresh_expire_seconds = int(
+        (tokens.refresh_token_expire - datetime.utcnow()).total_seconds())
+    cookie_settings = get_cookie_settings(request)
+    response.set_cookie(
+        key="access_token",
+        value=tokens.access_token,
+        httponly=True,
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite'],
+        max_age=auth.access_token_expire_minutes * 60
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite'],
+        max_age=refresh_expire_seconds
+    )
+    response.set_cookie(
+        key="device_id",
+        value=device_id,
+        httponly=False,  # device_id 可能需要前端访问
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite'],
+        max_age=refresh_expire_seconds
+    )
+
+    return ResponseModel(
+        code=1,
+        data={
+            "refresh_token": tokens.refresh_token,
+            "refresh_token_expire": tokens.refresh_token_expire.isoformat()
+        },
+        message="登录成功"
+    )
+
+
 @router.post("/reset_password/request")
-async def request_reset_password(req: ResetPasswordRequest,  auth:AuthManager=Depends(get_auth_manager)):
+async def request_reset_password(req: ResetPasswordRequest,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 发送验证码或邮件
     return ResponseModel(code=1, data=None, message="重置密码链接已发送")
 
+
 @router.post("/reset_password")
-async def reset_password(req: ResetPasswordModel,  auth:AuthManager=Depends(get_auth_manager)):
+async def reset_password(req: ResetPasswordModel,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 校验token并重置密码
     return ResponseModel(code=1, data=None, message="密码已重置")
+
 
 @router.post("/logout")
 async def logout(current_user: User = Depends(get_current_user)):
     # TODO: 可选实现 token 黑名单
     return ResponseModel(code=1, data=None, message="登出成功")
+
 
 @router.post("/refresh_token")
 async def refresh_token(
