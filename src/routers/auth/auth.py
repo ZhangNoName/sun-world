@@ -1,13 +1,15 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import uuid
 import os
 from fastapi import APIRouter, Depends, HTTPException, Header, status, Request, Response
+from loguru import logger
 
 from src.type.auth_type import RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
 from src.controller.auth_manager import AuthManager
 from src.type.type import ResponseModel
 from src.type.user_type import User
+from src.util.func import get_seconds_until_expiry
 from app_instance import app
 
 
@@ -86,12 +88,57 @@ def get_auth_manager() -> AuthManager:
     return auth
 
 
-def get_current_user(authorization: str = Header(...), auth_manager: AuthManager = Depends(get_auth_manager)):
-    token = authorization.replace("Bearer ", "")
-    user = auth_manager.get_user_from_token(token)
+def get_current_user(
+    request: Request,
+    response: Response,
+    auth_manager: AuthManager = Depends(get_auth_manager)
+):
+    """
+    从 cookie 或 Authorization header 获取当前用户
+    优先从 cookie 中读取 access_token，如果过期则尝试使用 refresh_token 自动刷新
+    """
+    # 优先从 cookie 获取 access_token
+    access_token = request.cookies.get("access_token")
+
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="未找到 token，请先登录"
+        )
+
+    # 尝试使用 access_token 获取用户
+    user = auth_manager.get_user_from_token(access_token, check_redis=False)
+
+    # 如果 access_token 过期，尝试使用 refresh_token 自动刷新
+    if not user:
+        refresh_token = request.cookies.get("refresh_token")
+        if refresh_token:
+            logger.info(
+                "Access token expired, attempting to refresh using refresh_token")
+            new_tokens = auth_manager.refresh_access_token(refresh_token)
+            if new_tokens:
+                # 更新 cookie 中的 access_token
+                cookie_settings = get_cookie_settings(request)
+                response.set_cookie(
+                    key="access_token",
+                    value=new_tokens.access_token,
+                    httponly=True,
+                    secure=cookie_settings['secure'],
+                    samesite=cookie_settings['samesite'],
+                    max_age=auth_manager.access_token_expire_minutes * 60
+                )
+                # 使用新的 access_token 获取用户
+                user = auth_manager.get_user_from_token(
+                    new_tokens.access_token, check_redis=False)
+                logger.info(
+                    f"Token refreshed successfully, user: {user is not None}")
+
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token无效或已过期")
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token无效或已过期，请重新登录"
+        )
+
     return user
 
 
@@ -119,29 +166,22 @@ async def register(user: RegisterModel, request: Request, response: Response, au
         tokens = auth.create_tokens_for_user(str(user_obj.id), device_id)
 
         # 设置 cookie
-        refresh_expire_seconds = int(
-            (tokens.refresh_token_expire - datetime.utcnow()).total_seconds())
+        refresh_expire_seconds = get_seconds_until_expiry(
+            tokens.refresh_token_expire)
         cookie_settings = get_cookie_settings(request)
         response.set_cookie(
             key="access_token",
             value=tokens.access_token,
             samesite="none",  # 允许跨域发送 Cookie
-            secure=False,      # samesite=none 必须配合 secure=False
+            secure=True,      # samesite=none 必须配合 secure=False
             httponly=True,
             max_age=auth.access_token_expire_minutes * 60
         )
-        response.set_cookie(
-            key="refresh_token",
-            value=tokens.refresh_token,
-            samesite="none",  # 允许跨域发送 Cookie
-            secure=False,      # samesite=none 必须配合 secure=False
-            httponly=True,
-            max_age=refresh_expire_seconds
-        )
+
         response.set_cookie(
             key="device_id",
             value=device_id,
-            samesite="lax",  # 允许跨域发送 Cookie
+            # samesite="lax",  # 允许跨域发送 Cookie
             secure=False,      # samesite=none 必须配合 secure=False
             httponly=True,
             max_age=refresh_expire_seconds,
@@ -174,8 +214,8 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
         return ResponseModel(code=0, data=None, message="用户名或密码错误")
 
     # 设置 cookie
-    refresh_expire_seconds = int(
-        (tokens.refresh_token_expire - datetime.utcnow()).total_seconds())
+    refresh_expire_seconds = get_seconds_until_expiry(
+        tokens.refresh_token_expire)
     cookie_settings = get_cookie_settings(request)
     response.set_cookie(
         key="access_token",
@@ -185,14 +225,7 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
         samesite=cookie_settings['samesite'],
         max_age=auth.access_token_expire_minutes * 60
     )
-    response.set_cookie(
-        key="refresh_token",
-        value=tokens.refresh_token,
-        httponly=True,
-        secure=cookie_settings['secure'],
-        samesite=cookie_settings['samesite'],
-        max_age=refresh_expire_seconds
-    )
+
     response.set_cookie(
         key="device_id",
         value=device_id,
@@ -225,17 +258,75 @@ async def reset_password(req: ResetPasswordModel,  auth: AuthManager = Depends(g
 
 
 @router.post("/logout")
-async def logout(current_user: User = Depends(get_current_user)):
-    # TODO: 可选实现 token 黑名单
+async def logout(
+    request: Request,
+    response: Response,
+    current_user: User = Depends(get_current_user),
+    auth: AuthManager = Depends(get_auth_manager)
+):
+    """登出：从 cookie 或 header 获取 token 并加入黑名单"""
+    # 优先从 cookie 获取 token
+    token = request.cookies.get("access_token")
+
+    # 如果 cookie 中没有，尝试从 Authorization header 获取
+    if not token:
+        authorization = request.headers.get("authorization", "")
+        if authorization:
+            token = authorization.replace("Bearer ", "")
+
+    if token:
+        # 将 token 加入黑名单
+        auth.logout(token, all_devices=False)
+
+    # 清除 cookie
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+    response.delete_cookie(key="device_id")
+
     return ResponseModel(code=1, data=None, message="登出成功")
 
 
 @router.post("/refresh_token")
 async def refresh_token(
-    refresh_token: str = Header(...),
+    request: Request,
+    response: Response,
+    refresh_token: Optional[str] = Header(None),
     auth: AuthManager = Depends(get_auth_manager)
 ):
-    tokens = auth.refresh_access_token(refresh_token)
+    """
+    刷新 access_token
+    优先从 cookie 中读取 refresh_token，如果没有则从 header 读取
+    """
+    # 优先从 cookie 获取 refresh_token
+    token = request.cookies.get("refresh_token")
+
+    # 如果 cookie 中没有，尝试从 header 获取
+    if not token and refresh_token:
+        token = refresh_token
+
+    if not token:
+        return ResponseModel(code=0, data=None, message="未找到 refresh_token")
+
+    tokens = auth.refresh_access_token(token)
     if not tokens:
         return ResponseModel(code=0, data=None, message="刷新Token失败")
-    return ResponseModel[TokenModel](code=1, data=tokens, message="Token刷新成功")
+
+    # 更新 cookie 中的 access_token
+    cookie_settings = get_cookie_settings(request)
+    response.set_cookie(
+        key="access_token",
+        value=tokens.access_token,
+        httponly=True,
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite'],
+        max_age=auth.access_token_expire_minutes * 60
+    )
+
+    return ResponseModel(
+        code=1,
+        data={
+            "refresh_token": tokens.refresh_token,
+            "refresh_token_expire": tokens.refresh_token_expire.isoformat()
+        },
+        message="Token刷新成功"
+    )

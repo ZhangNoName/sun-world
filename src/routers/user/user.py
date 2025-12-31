@@ -6,16 +6,21 @@ from src.controller.user_manage import UserManager
 from app_instance import app
 from src.type.user_type import User
 from src.type.type import ResponseModel
+from src.routers.auth.auth import get_current_user
 
 
 # 创建用户 API 路由
-router = APIRouter(prefix="/user",tags=["user"])
+router = APIRouter(prefix="/user", tags=["user"])
 
 # 注入 UserManager 依赖
+
+
 def get_user_manager() -> UserManager:
     if not hasattr(app, 'user'):
-        raise HTTPException(status_code=500, detail="User manager not initialized")
+        raise HTTPException(
+            status_code=500, detail="User manager not initialized")
     return app.user
+
 
 # 创建新用户
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -30,13 +35,29 @@ async def create_user(user: User, user_manager: UserManager = Depends(get_user_m
         dict: 包含新用户 ID 的字典
     """
     logger.info(f'接收到的参数：{user}')
-    
+
     res = user_manager.create_user(user)
     logger.success(f'创建结果{res}')
     if res:
         return ResponseModel(code=1, data={"id": user.id}, message="创建成功")
     else:
         return ResponseModel(code=0, data=None, message="创建失败")
+
+
+# 获取当前登录用户信息（必须在 /{user_id} 之前定义）
+@router.get("/me")
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """
+    获取当前登录用户的信息
+
+    Args:
+        current_user (User): 从 token 中解析出的当前用户
+
+    Returns:
+        dict: 包含用户信息的响应
+    """
+    return ResponseModel(code=1, data=current_user, message="获取成功")
+
 
 # 根据id获取指定用户
 @router.get("/{user_id}")
@@ -52,7 +73,7 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
     """
     user = user_manager.get_user_by_id(user_id)
     logger.info(f'查找的结果-----{user}')
-    
+
     if not user:
         return ResponseModel(code=0, data=None, message="用户不存在")
 
@@ -61,6 +82,8 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
     return ResponseModel(code=1, data=user, message="获取成功")
 
 # 分页获取用户
+
+
 @router.get("/")
 async def get_users_paginated(
     page: int = 1,
@@ -79,7 +102,7 @@ async def get_users_paginated(
         dict: 包含分页信息的字典
     """
 
-    users = user_manager.get_user_by_name('',page, page_size)
+    users = user_manager.get_user_by_name('', page, page_size)
     return ResponseModel(code=1, data=users, message="获取成功")
 
 

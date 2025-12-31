@@ -21,6 +21,13 @@ mysql:
   user: blog
   password: Zxy@020206
 
+postgresql:
+  ip: localhost
+  port: 5432
+  db: blog
+  user: blog
+  password: Zxy@123456
+
 auth:
   access_token_expire_minutes: 30
   refresh_token_expire_days: 7
@@ -30,5 +37,5 @@ auth:
   # 1. 使用 HTTPS（即使是自签名证书）
   # 2. 使用代理让前后端在同一域名下
   # 3. 或者使用 localStorage 代替 cookie
-  cookie_secure: false  # 本地开发设为 false，生产环境设为 true
-  cookie_samesite: "lax"  # 可选值: "lax", "strict", "none"（none 需要 secure=true）
+  cookie_secure: true  # 本地开发设为 false，生产环境设为 true
+  cookie_samesite: "none"  # 可选值: "lax", "strict", "none"（none 需要 secure=true）

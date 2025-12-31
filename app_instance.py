@@ -14,6 +14,7 @@ from src.controller.role_manager import RoleManager
 from src.controller.resource_manager import ResourceManager
 from src.database.mongo.mongodb_manage import MongoDBManager
 from src.database.mysql.mysql_manage import MySQLManager
+from src.database.postgresql.postgresql_manager import PostgreSQLManager
 from src.database.redis.redis_manage import RedisManager
 
 
@@ -38,6 +39,7 @@ class Application(FastAPI):
         self.__init__mongoDB()
         self.__init__redis()
         self.__init__mysql()
+        self.__init__postgresql()
         self.__init_blog_manager()
         self.__init_user_manager()
         self.__init_tag_manager()
@@ -45,6 +47,7 @@ class Application(FastAPI):
         self.__init_role_manager()
         self.__init_reousrce_manager()
         self.__init_auth_manager()
+
         logger.info(f'当前模式为{env}')
         if env == 'local':
             pass
@@ -80,6 +83,10 @@ class Application(FastAPI):
     def __init__mysql(self):
         self.mysql = MySQLManager(host=self.config['mysql']['ip'], port=self.config['mysql']['port'],
                                   db=self.config['mysql']['db'], user=self.config['mysql']['user'], password=self.config['mysql']['password'])
+
+    def __init__postgresql(self):
+        self.postgresql = PostgreSQLManager(ip=self.config['postgresql']['ip'], port=self.config['postgresql']['port'],
+                                            db=self.config['postgresql']['db'], user=self.config['postgresql']['user'], password=self.config['postgresql']['password'])
 
     def __init_blog_manager(self):
         self.blog = BlogManager(baseDB=self.mysql, contentDB=self.mongo)

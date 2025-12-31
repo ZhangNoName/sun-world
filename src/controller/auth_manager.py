@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import hashlib
 from jose import JWTError, jwt
@@ -10,7 +10,7 @@ from src.type.user_type import User
 
 SECRET_KEY = "b9WqXgK9Oq1wZtR3JpN4HcFv6uL2YsVq5D8Qn0TfGzA"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 默认值
+ACCESS_TOKEN_EXPIRE_MINUTES = 30000  # 默认值
 REFRESH_TOKEN_EXPIRE_DAYS = 7  # 默认值
 
 
@@ -31,19 +31,20 @@ class AuthManager:
 
     def _create_tokens(self, user_id: str, device_id: str) -> TokenModel:
         """生成 access_token 和 refresh_token，并存入 Redis"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
+
         access_exp = now + timedelta(minutes=self.access_token_expire_minutes)
         refresh_exp = now + timedelta(days=self.refresh_token_expire_days)
 
         payload = {"sub": str(user_id), "device": device_id}
 
         access_token = jwt.encode(
-            {**payload, "exp": access_exp.timestamp()},
+            {**payload, "exp": int(access_exp.timestamp())},  # JWT exp 需要整数秒数
             SECRET_KEY,
             algorithm=ALGORITHM
         )
         refresh_token = jwt.encode(
-            {**payload, "exp": refresh_exp.timestamp()},
+            {**payload, "exp": int(refresh_exp.timestamp())},  # JWT exp 需要整数秒数
             SECRET_KEY,
             algorithm=ALGORITHM
         )
@@ -115,30 +116,71 @@ class AuthManager:
             logger.error(f"刷新 token 失败: {e}")
             return None
 
-    def verify_token(self, token: str, token_type: str = "access") -> Optional[str]:
-        """校验 token 是否有效"""
+    def verify_token(self, token: str, token_type: str = "access", check_redis: bool = True) -> Optional[str]:
+        """
+        校验 token 是否有效
+
+        Args:
+            token: JWT token
+            token_type: token 类型 ("access" 或 "refresh")
+            check_redis: 是否检查 Redis 中的 token（对于 access_token，可以设为 False 以提高性能）
+        """
         try:
+            logger.info(f"verify_token: {token}")
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
+            logger.info(f"user_id: {user_id}, device_id: {device_id}")
             if not user_id or not device_id:
+                logger.warning(
+                    f"Token missing user_id or device_id: user_id={user_id}, device_id={device_id}")
                 return None
 
             # 黑名单检查
             if self.is_token_blacklisted(token):
+                logger.warning(f"Token is blacklisted: {token[:20]}...")
                 return None
 
-            # 校验 Redis 中存储的 token
-            stored_token = self.db.hget(
-                f"user:{user_id}:{token_type}_tokens", device_id)
-            if stored_token != token:
-                return None
+            # 对于 access_token，可以选择不检查 Redis（因为 JWT 本身有过期时间）
+            # 对于 refresh_token，必须检查 Redis 以确保安全性
+            if check_redis or token_type == "refresh":
+                redis_key = f"user:{user_id}:{token_type}_tokens"
+                stored_token = self.db.hget(redis_key, device_id)
+                if stored_token != token:
+                    logger.warning(
+                        f"Token mismatch in Redis: user_id={user_id}, device_id={device_id}")
+                    return None
 
             return user_id
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as e:
+            logger.warning(f"Token expired: {e}")
             return None
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
+            logger.warning(f"Invalid token: {e}")
             return None
+
+    def get_user_from_token(self, token: str, check_redis: bool = False) -> Optional[User]:
+        """
+        从 token 获取用户信息
+
+        Args:
+            token: JWT access token
+            check_redis: 是否检查 Redis 中的 token（默认 False，只验证 JWT 有效性）
+        """
+        user_id = self.verify_token(token, "access", check_redis=check_redis)
+        if not user_id:
+            return None
+
+        user = self.user_manager.get_user_by_id(user_id)
+        if not user:
+            return None
+
+        # 检查用户状态
+        if not user.get('status'):
+            logger.warning(f"User {user_id} is disabled")
+            return None
+
+        return user
 
     def logout(self, token: str, all_devices: bool = False) -> bool:
         """退出登录：单设备 or 所有设备"""
@@ -146,8 +188,8 @@ class AuthManager:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
-            exp = int(payload.get("exp", datetime.utcnow().timestamp()))
-            ttl = exp - int(datetime.utcnow().timestamp())
+            exp = int(payload.get("exp", datetime.now(timezone.utc).timestamp()))
+            ttl = exp - int(datetime.now(timezone.utc).timestamp())
 
             if not user_id or not device_id:
                 return False
