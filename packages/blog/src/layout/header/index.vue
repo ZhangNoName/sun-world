@@ -13,6 +13,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
+import Avator from '@/components/Avator/avator.vue'
 const time = ref('')
 const timerRef = ref()
 const router = useRouter()
@@ -82,9 +83,7 @@ onBeforeUnmount(() => {
         <SvgIcon name="search" @click="openAI" />
         <LanguageSwitch />
         <ThemeSwitch />
-
-        <ElButton @click="loginHandle">登录</ElButton>
-
+        <Avator />
         <!-- <AddOutlined></AddOutlined> -->
       </div>
     </div>
@@ -135,6 +134,7 @@ onBeforeUnmount(() => {
     .link-icon {
       display: flex;
       gap: var(--horizontalGapPx);
+      align-items: center;
       & > *:hover {
         cursor: pointer;
         background-color: var(--icon-bg-hover-color);

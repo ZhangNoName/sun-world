@@ -62,9 +62,18 @@ service.interceptors.response.use(
     return response
   },
   async (error) => {
-    const authStore = useAuthStore()
     // 对响应错误做点什么
     if (error && error.response) {
+      // 防止重复请求的标志
+      const config = error.config as InternalAxiosRequestConfig & {
+        _retry?: boolean
+      }
+
+      // 如果已经重试过，直接拒绝
+      if (config._retry) {
+        return Promise.reject(error)
+      }
+
       switch (error.response.status) {
         case 307:
           ElMessage.error('307临时重定向')
@@ -74,21 +83,8 @@ service.interceptors.response.use(
           ElMessage.error('错误请求')
           break
         case 401:
-          // token 失效，尝试刷新（refresh_token 从 cookie 自动带过去）
-          try {
-            await authStore.refreshTokensIfNeeded()
-            // 刷新成功，重新请求
-            if (error.config) {
-              return service(error.config)
-            }
-          } catch (refreshError) {
-            // 刷新失败，登出
-            await authStore.logout()
-            // 跳转到登录页
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login'
-            }
-          }
+          // 暂时不刷新 token，直接返回错误
+          ElMessage.error('未授权，请重新登录')
           break
         case 403:
           ElMessage.info('拒绝访问')
@@ -107,6 +103,10 @@ service.interceptors.response.use(
           break
         case 501:
           ElMessage.info('网络未实现')
+          // 标记已处理，防止重复请求
+          if (config) {
+            config._retry = true
+          }
           break
         case 502:
           ElMessage.info('网络错误')

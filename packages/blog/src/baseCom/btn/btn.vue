@@ -20,7 +20,6 @@
 </template>
 
 <script setup lang="ts" name="sw-btn">
-import { defineProps, defineEmits, computed } from 'vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 
 /** 节流函数 */

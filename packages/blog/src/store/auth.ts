@@ -9,13 +9,15 @@ import {
 import { getDeviceId } from '@/util/auth'
 import { getAccessTokenExpire, getRefreshTokenExpire } from '@/util/cookie'
 import type { TokenType } from '@/type'
+import { getUserMe } from '@/service/user.req'
+import { UserInfo } from '@/types/user.type'
 
 export const useAuthStore = defineStore('auth', () => {
   // 只存储过期时间，token 本身存储在 cookie 中
   const accessTokenExpire = ref<number | null>(null)
   const refreshTokenExpire = ref<number | null>(null)
   const deviceId = ref<string>(getDeviceId())
-
+  const user = ref<UserInfo | null>(null)
   // 从 cookie 同步过期时间
   function syncExpireFromCookie() {
     const accessExpire = getAccessTokenExpire()
@@ -39,10 +41,11 @@ export const useAuthStore = defineStore('auth', () => {
   // 启动时从 cookie 同步过期时间
   syncExpireFromCookie()
 
-  // 清空 token 过期时间（cookie 由后端清除）
+  // 清空 token 过期时间和用户信息（cookie 由后端清除）
   function clearTokens() {
     accessTokenExpire.value = null
     refreshTokenExpire.value = null
+    user.value = null
   }
 
   /** 判断 accessToken 是否过期 */
@@ -82,8 +85,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // 调用刷新接口，refresh_token 会从 cookie 自动带过去
       // 刷新成功后，新的 token 会设置到 cookie，只需要更新过期时间
-      const res = await postRefreshToken()
-      updateTokenExpire(res)
+      // const res = await postRefreshToken()
+      // updateTokenExpire(res)
     } catch (error) {
       clearTokens()
       throw error
@@ -98,6 +101,8 @@ export const useAuthStore = defineStore('auth', () => {
     })
     // token 会自动设置到 cookie，只需要更新过期时间
     updateTokenExpire(res)
+    const user = await getUser()
+    console.log('user', user)
     return res
   }
 
@@ -117,12 +122,24 @@ export const useAuthStore = defineStore('auth', () => {
   /** 登出 */
   async function logout() {
     try {
-      await postLogout()
+      // await postLogout()
     } catch (error) {
       console.error('登出失败', error)
     }
     // 清空过期时间（cookie 由后端清除）
     clearTokens()
+  }
+
+  /** 获取用户信息 */
+  async function getUser() {
+    try {
+      const res = await getUserMe()
+      user.value = res
+      return res
+    } catch (error) {
+      console.error('获取用户信息失败', error)
+      return null
+    }
   }
 
   return {
@@ -138,5 +155,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
+    user,
   }
 })
