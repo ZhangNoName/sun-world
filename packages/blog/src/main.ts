@@ -12,7 +12,6 @@ import {
 } from '@/util'
 import lazy from '@/directives/lazy'
 import 'element-plus/theme-chalk/src/index.scss'
-import 'qweather-icons/font/qweather-icons.css'
 import { createPinia } from 'pinia'
 import 'virtual:svg-icons-register'
 const pinia = createPinia()
