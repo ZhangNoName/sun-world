@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
   postLogin,
   postLogout,
@@ -7,7 +7,11 @@ import {
   postRegister,
 } from '@/service/auth.req'
 import { getDeviceId } from '@/util/auth'
-import { getAccessTokenExpire, getRefreshTokenExpire } from '@/util/cookie'
+import {
+  getAccessTokenExpire,
+  getRefreshTokenExpire,
+  getCookie,
+} from '@/util/cookie'
 import type { TokenType } from '@/type'
 import { getUserMe } from '@/service/user.req'
 import { UserInfo } from '@/types/user.type'
@@ -141,6 +145,10 @@ export const useAuthStore = defineStore('auth', () => {
       return null
     }
   }
+  onMounted(() => {
+    // 只有在有 token cookie 时才获取用户信息
+    getUser()
+  })
 
   return {
     accessTokenExpire,
