@@ -49,7 +49,7 @@ async function handleLogin() {
       const res = await login(form.account, form.password)
       if (res) {
         ElMessage.success(t('login.loginSuccess'))
-        // router.push({ path: '/' })
+        router.push({ path: '/' })
       }
     } catch (error: any) {
       ElMessage.error(error?.message || t('login.loginFailed'))
