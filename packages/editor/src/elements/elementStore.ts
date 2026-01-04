@@ -1,23 +1,23 @@
 import type { BaseElement } from './baseElement.class'
 export class ElementStore {
-  private elements: Record<string, BaseElement> = {}
+  private elements: Map<string, BaseElement> = new Map()
   private listeners: Set<() => void> = new Set()
   private selectedElement: string | null = null
   add(el: BaseElement) {
-    this.elements[el.id] = el
+    this.elements.set(el.id, el)
     this.emit()
   }
 
   remove(id: string) {
-    delete this.elements[id]
+    this.elements.delete(id)
     this.emit()
   }
 
   getAll() {
-    return this.elements
+    return this.elements.values()
   }
   getById(id: string) {
-    return this.elements[id]
+    return this.elements.get(id)
   }
   // 元素更新后调用
   update() {

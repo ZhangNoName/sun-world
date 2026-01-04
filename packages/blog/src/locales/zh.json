@@ -91,5 +91,17 @@
     "formIncomplete": "请填写完整的注册信息",
     "hasAccount": "已有账号？",
     "goToLogin": "立即登录"
+  },
+  "footer": {
+    "webName": "Sun World",
+    "copyright": "© 版权说明：[本网站所有内容均收集于互联网或自己创作,方便于网友与自己学习交流，如有侵权，请留言，立即处理]",
+    "runningSince": "本站自",
+    "runningTime": "已运行",
+    "day": "天",
+    "hour": "时",
+    "minute": "分",
+    "second": "秒",
+    "visitors": "游览人数",
+    "views": "游览量"
   }
 }

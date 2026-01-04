@@ -91,5 +91,17 @@
     "formIncomplete": "Please fill in complete registration information",
     "hasAccount": "Already have an account?",
     "goToLogin": "Login now"
+  },
+  "footer": {
+    "webName": "Sun World",
+    "copyright": "© Copyright Notice: [All content on this website is collected from the internet or created by ourselves, for the convenience of netizens and our own learning and exchange. If there is any infringement, please leave a message and we will handle it immediately]",
+    "runningSince": "Running since",
+    "runningTime": "for",
+    "day": "days",
+    "hour": "hours",
+    "minute": "minutes",
+    "second": "seconds",
+    "visitors": "Visitors",
+    "views": "Views"
   }
 }

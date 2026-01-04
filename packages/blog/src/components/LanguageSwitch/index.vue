@@ -42,7 +42,7 @@ const changeLanguage = () => {
     top: 3px;
     z-index: 1;
     background-color: #fff;
-    color: #000;
+    color: var(--color-primary);
   }
   .language-en {
     right: 3px;

@@ -1,0 +1,16 @@
+.text-large {
+  font-size: var(--font-large);
+  line-height: 1.2;
+}
+.text-medium {
+  font-size: var(--font-medium);
+  line-height: 1.2;
+}
+.text-small {
+  font-size: var(--font-small);
+  line-height: 1.2;
+}
+.text-xsmall {
+  font-size: var(--font-xsmall);
+  line-height: 1.2;
+}
