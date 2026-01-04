@@ -1,20 +1,24 @@
 import type { BaseElement } from './baseElement.class'
 export class ElementStore {
   private elements: Map<string, BaseElement> = new Map()
-  private listeners: Set<() => void> = new Set()
+  private listeners: Set<(elements: BaseElement[]) => void> = new Set()
+  private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
+    new Set()
   private selectedElement: string | null = null
   add(el: BaseElement) {
     this.elements.set(el.id, el)
     this.emit()
+    this.emitElementsChanged()
   }
 
   remove(id: string) {
     this.elements.delete(id)
     this.emit()
+    this.emitElementsChanged()
   }
 
   getAll() {
-    return this.elements.values()
+    return Array.from(this.elements.values())
   }
   getById(id: string) {
     return this.elements.get(id)
@@ -23,9 +27,17 @@ export class ElementStore {
   update() {
     this.emit()
   }
-
+  addElementsChanged(cb: (elements: BaseElement[]) => void) {
+    this.elementsChangedListeners.add(cb)
+  }
+  removeElementsChanged(cb: (elements: BaseElement[]) => void) {
+    this.elementsChangedListeners.delete(cb)
+  }
+  private emitElementsChanged() {
+    this.elementsChangedListeners.forEach((cb) => cb(this.getAll()))
+  }
   // renderer 用来监听
-  onChange(cb: () => void) {
+  onChange(cb: (elements: BaseElement[]) => void) {
     this.listeners.add(cb)
   }
   hitTest(x: number, y: number) {
@@ -33,6 +45,6 @@ export class ElementStore {
   }
 
   private emit() {
-    this.listeners.forEach((cb) => cb())
+    this.listeners.forEach((cb) => cb(this.getAll()))
   }
 }

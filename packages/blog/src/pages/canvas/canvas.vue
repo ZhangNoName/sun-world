@@ -2,7 +2,7 @@
 // import Editor from '@/editor/Editor.vue'
 import { FormatPercent } from '@/util/format'
 import { Delete } from '@element-plus/icons-vue'
-import { SWEditor, type ToolName } from '@sun-world/editor'
+import { BaseElement, SWEditor, type ToolName } from '@sun-world/editor'
 import { CommentSvg, HandSvg, RectSvg, SelectSvg } from '@sun-world/icons'
 import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
 
@@ -12,6 +12,7 @@ const canvasRef = ref<HTMLDivElement | null>(null)
 const tools = ref<string[]>([])
 const editor = ref<SWEditor | null>(null)
 const activeTool = ref<ToolName | null>(null)
+const elements = ref<BaseElement[]>([])
 const selectToolHandle = (tool: ToolName) => {
   editor.value?.setTool(tool)
 }
@@ -33,13 +34,23 @@ onMounted(() => {
       // console.log('newVal', newVal)
       zoom.value = newVal
     })
+    editor.value?.elementStoreChanged((ele) => {
+      elements.value = ele
+      console.log('elements', elements.value)
+    })
     ;(window as any).sw = editor
   }
 })
 </script>
 <template>
   <div class="canvas-page">
-    <div class="left"></div>
+    <div class="left">
+      <div class="elements-container">
+        <div class="element" v-for="element in elements" :key="element.id">
+          <div class="element-name">{{ element.name }}</div>
+        </div>
+      </div>
+    </div>
     <div class="canvas" ref="canvasRef"></div>
     <div class="right">
       <div class="right-top">

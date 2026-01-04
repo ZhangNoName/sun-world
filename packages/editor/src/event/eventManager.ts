@@ -21,11 +21,19 @@ import { InputBindingConfig } from '../types/keybinding.type'
 export class EventManager {
   private inputBindingManager: InputBindingManager
 
+  /**
+   * 获取输入绑定管理器
+   */
+  public getInputBindingManager(): InputBindingManager {
+    return this.inputBindingManager
+  }
+
   constructor(
     private editor: SWEditor,
     inputBindingConfig?: Partial<InputBindingConfig>
   ) {
     const canvas = editor.getCanvas()
+    console.log('[EventManager] Initializing, canvas:', canvas)
 
     // 初始化输入绑定管理器（统一管理键盘和鼠标）
     this.inputBindingManager = new InputBindingManager(
@@ -34,6 +42,7 @@ export class EventManager {
     )
 
     // 鼠标事件监听
+    console.log('[EventManager] Registering mouse event listeners')
     canvas.addEventListener('mousedown', this.handleMouseDown)
     canvas.addEventListener('mousemove', this.handleMouseMove)
     canvas.addEventListener('mouseup', this.handleMouseUp)
@@ -57,19 +66,22 @@ export class EventManager {
   }
 
   handleMouseDown = (e: MouseEvent) => {
+    console.log('[EventManager] handleMouseDown called', e.target)
     // 先让 InputBindingManager 处理输入绑定
     const bindingHandled = this.inputBindingManager.handleInputEvent(e)
 
     // 如果没有匹配的绑定，则传递给工具处理
     if (!bindingHandled) {
-      this.editor.toolManager.activeTool?.onMouseDown?.(e)
+      const activeTool = this.editor.getToolManager()?.getActiveTool()
+      console.log('[EventManager] Calling tool.onMouseDown', activeTool?.name)
+      activeTool?.onMouseDown?.(e)
     }
   }
 
   handleMouseMove = (e: MouseEvent) => {
     // 鼠标移动主要由工具处理，但也要更新输入状态
     this.inputBindingManager.handleInputEvent(e)
-    this.editor.toolManager.activeTool?.onMouseMove?.(e)
+    this.editor.getToolManager()?.getActiveTool()?.onMouseMove?.(e)
   }
 
   handleMouseUp = (e: MouseEvent) => {
@@ -78,7 +90,7 @@ export class EventManager {
 
     // 如果没有匹配的绑定，则传递给工具处理
     if (!bindingHandled) {
-      this.editor.toolManager.activeTool?.onMouseUp?.(e)
+      this.editor.getToolManager()?.getActiveTool()?.onMouseUp?.(e)
     }
   }
 
@@ -88,7 +100,7 @@ export class EventManager {
 
     // 如果没有匹配的绑定，可以传递给工具处理缩放等
     if (!bindingHandled) {
-      this.editor.toolManager.activeTool?.onWheel?.(e)
+      this.editor.getToolManager()?.getActiveTool()?.onWheel?.(e)
     }
   }
 

@@ -1,4 +1,5 @@
 import type { BaseConfig } from './config'
+import { BaseElement } from './elements/baseElement.class'
 import { ElementStore } from './elements/elementStore'
 import { EventManager } from './event/eventManager'
 import { InputBindingManager } from './event/keyBindingManager'
@@ -81,28 +82,30 @@ export class SWEditor {
     this.toolManager.activateTool('drag')
     this.viewportState.on(() => this.renderer.render())
 
-    this.bindEvents(options.containerElement)
+    // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
+    // this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
   }
   // id，只读
   get id() {
     return this._id
   }
-  private bindEvents(el: HTMLDivElement) {
-    el.addEventListener('mousedown', (e) => {
-      const p = this.transformer.toCanvas(e)
-      this.toolManager.getActiveTool()?.onMouseDown?.(e)
-    })
+  // 已移除：事件处理已由 EventManager 统一管理
+  // private bindEvents(el: HTMLDivElement) {
+  //   el.addEventListener('mousedown', (e) => {
+  //     const p = this.transformer.toCanvas(e)
+  //     this.toolManager.getActiveTool()?.onMouseDown?.(e)
+  //   })
 
-    el.addEventListener('mousemove', (e) => {
-      const p = this.transformer.toCanvas(e)
-      this.toolManager.getActiveTool()?.onMouseMove?.(e)
-    })
-    el.addEventListener('mouseup', (e) => {
-      const p = this.transformer.toCanvas(e)
-      this.toolManager.getActiveTool()?.onMouseUp?.(e)
-    })
-  }
+  //   el.addEventListener('mousemove', (e) => {
+  //     const p = this.transformer.toCanvas(e)
+  //     this.toolManager.getActiveTool()?.onMouseMove?.(e)
+  //   })
+  //   el.addEventListener('mouseup', (e) => {
+  //     const p = this.transformer.toCanvas(e)
+  //     this.toolManager.getActiveTool()?.onMouseUp?.(e)
+  //   })
+  // }
 
   public setTool(name: ToolName) {
     this.toolManager.activateTool(name)
@@ -115,10 +118,16 @@ export class SWEditor {
     return this.toolManager.getTools()
   }
   /**
+   * 获取工具管理器
+   */
+  public getToolManager(): ToolManager {
+    return this.toolManager
+  }
+  /**
    * 获取按键绑定管理器
    */
   public getKeyBindingManager(): InputBindingManager {
-    return this.eventManager['keyBindingManager']
+    return this.eventManager.getInputBindingManager()
   }
 
   /**
@@ -160,7 +169,7 @@ export class SWEditor {
   // 销毁方法
   public destroy() {
     this.renderer.destroy()
-    this.eventManager['keyBindingManager'].destroy()
+    this.eventManager.getInputBindingManager().destroy()
     // ... 清理其他模块和事件监听器
   }
   public getCanvas() {
@@ -173,5 +182,8 @@ export class SWEditor {
   }
   public getActiveToolName() {
     return this.toolManager.getActiveToolName()
+  }
+  public elementStoreChanged(cb: (elements: BaseElement[]) => void) {
+    this.elementStore.addElementsChanged(cb)
   }
 }

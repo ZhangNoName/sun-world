@@ -39,7 +39,13 @@ export class RectTool extends BaseTool {
   }
 
   onMouseDown(e: MouseEvent) {
-    console.log('RectTool onMouseDown')
+    console.log('[RectTool] onMouseDown called, drawing:', this.drawing)
+    // 如果正在绘制中，忽略新的点击
+    if (this.drawing) {
+      console.log('[RectTool] Already drawing, ignoring')
+      return
+    }
+
     const x =
       (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
     const y =
@@ -55,6 +61,7 @@ export class RectTool extends BaseTool {
       width: 0,
       height: 0,
     })
+    console.log('[RectTool] Adding rect to store:', this.currentRect.id)
     this.store.add(this.currentRect)
   }
 
