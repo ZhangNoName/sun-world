@@ -1,10 +1,12 @@
 # app_instance.py
 import os
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 import yaml
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi.middleware.cors import CORSMiddleware
+from src.controller.ai_manager import AiManager
 from src.controller.auth_manager import AuthManager
 from src.controller.base_manage import BaseManager
 from src.controller.blog_manage import BlogManager
@@ -34,12 +36,14 @@ class Application(FastAPI):
             allow_headers=["*"],
         )
 
-    def init(self, env='dev'):
+    async def init(self, env='dev'):
         self.load_config(env=env)
         self.__init__mongoDB()
         self.__init__redis()
         self.__init__mysql()
         self.__init__postgresql()
+        await self.__init__ai_manager()
+        # AI Manager 的初始化移到 lifespan 中，因为需要异步操作
         self.__init_blog_manager()
         self.__init_user_manager()
         self.__init_tag_manager()
@@ -88,6 +92,37 @@ class Application(FastAPI):
         self.postgresql = PostgreSQLManager(ip=self.config['postgresql']['ip'], port=self.config['postgresql']['port'],
                                             db=self.config['postgresql']['db'], user=self.config['postgresql']['user'], password=self.config['postgresql']['password'])
 
+    async def __init__ai_manager(self):
+        """初始化 AI Manager（异步）"""
+        from urllib.parse import quote_plus
+        db_user = self.config['postgresql']['user']
+        db_password = self.config['postgresql']['password']
+        db_host = self.config['postgresql']['ip']
+        db_port = self.config['postgresql']['port']
+        db_name = self.config['postgresql']['db']
+        safe_password = quote_plus(db_password)
+        DB_URI = f"postgresql://{db_user}:{safe_password}@{db_host}:{db_port}/{db_name}?sslmode=disable"
+
+        # 创建 checkpointer 上下文管理器并手动进入
+        checkpointer_context = AsyncPostgresSaver.from_conn_string(DB_URI)
+        checkpointer = await checkpointer_context.__aenter__()
+        await checkpointer.setup()
+
+        # 保存 checkpointer 和上下文管理器，以便在关闭时清理
+        self._ai_checkpointer = checkpointer
+        self._ai_checkpointer_context = checkpointer_context
+        self.ai = AiManager(checkpointer=checkpointer)
+        logger.info("AI Manager 初始化成功")
+
+    async def __cleanup_ai_manager(self):
+        """清理 AI Manager 资源（异步）"""
+        if hasattr(self, '_ai_checkpointer_context') and self._ai_checkpointer_context:
+            try:
+                await self._ai_checkpointer_context.__aexit__(None, None, None)
+                logger.info("AI Manager checkpointer 已关闭")
+            except Exception as e:
+                logger.error(f"关闭 AI Manager checkpointer 失败: {e}")
+
     def __init_blog_manager(self):
         self.blog = BlogManager(baseDB=self.mysql, contentDB=self.mongo)
 
@@ -122,9 +157,13 @@ class Application(FastAPI):
 @asynccontextmanager
 async def lifespan(app: Application):
     env = os.getenv('ENV', 'local')
-    app.init(env)
+    await app.init(env)
+    # 异步初始化 AI Manager
+    # await app.__init__ai_manager()
     logger.debug('start up event')
     yield
+    # 清理 AI Manager 资源
+    await app.__cleanup_ai_manager()
     app.shut_down()
     logger.debug('stop event')
 

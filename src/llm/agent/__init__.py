@@ -1,3 +1,3 @@
-from .test import test_agent
+from .test import TestAgent
 
-__all__ = ["test_agent"]
+__all__ = ["TestAgent"]
