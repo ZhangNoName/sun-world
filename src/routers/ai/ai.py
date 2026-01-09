@@ -58,32 +58,14 @@ async def get_answer_stream(request: Request, chat_data: ChatRequest, ai_manager
     )
 
 
-@router.get("/gemini-style-stream")
-async def gemini_style_stream(ai_manager: AiManager = Depends(get_ai_manager)):
-    # async def generate():
-    #     # 模拟模型逐字生成
-    #     tokens = [
-    #         "Hello", " this", " is", " a", " Gemini", "-style", " stream", ".",
-    #         " It", " demonstrates", " how", " to", " send", " streaming", " responses",
-    #         " in", " a", " format", " similar", " to", " Google", "'s", " Gemini", " API", ".",
-    #         " Each", " token", " is", " sent", " as", " a", " separate", " JSON", " chunk",
-    #         " with", " the", " text", " content", " and", " status", " information", ".",
-    #         " This", " allows", " for", " real", "-time", " streaming", " of", " AI", " responses",
-    #         " to", " the", " client", " without", " waiting", " for", " the", " complete", " response", ".",
-    #         " The", " client", " can", " display", " the", " text", " as", " it", " arrives",
-    #         " creating", " a", " more", " interactive", " and", " responsive", " user", " experience", "."
-    #     ]
-    #     for token in tokens:
-    #         # 模仿 Google 的封装格式：每个块都是一个独立的 JSON 片段
-    #         chunk = json.dumps({"text": token, "status": "generating"})
-    #         # 注意：这里我们不加 "data:" 前缀，直接 yield 字符串 + 换行符
-    #         yield chunk + "\n"
-    #         await asyncio.sleep(0.1)  # 模拟网络延迟
-
+@router.post("/chat-chunk-stream")
+async def chat_chunk_stream(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
+    user_id = 2
+    ip = request.headers.get("x-forwarded-for") or request.client.host
+    config = {"configurable": {
+        "thread_id": chat_data.session_id, "ip": ip, "user_id": user_id}}
     return StreamingResponse(
-        # generate(),
-        ai_manager.invoke_stream("请写一个200字的作文，题目自拟", {
-                                 "configurable": {"thread_id": "999"}}),
+        ai_manager.invoke_stream(chat_data.question, config),
         media_type="application/json",  # 或者使用更规范的 application/x-ndjson
         headers={
             "Cache-Control": "no-cache",

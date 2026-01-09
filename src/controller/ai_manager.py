@@ -1,3 +1,5 @@
+import asyncio
+import json
 import os
 from typing import Optional
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -60,4 +62,21 @@ class AiManager:
 
         # ✅ 正确写法：迭代底层生成器并逐个向上层 yield
         async for chunk in self.agent.invoke_stream(message, config=config):
+            yield chunk
+
+    async def gemini_style_stream(self, message: str, config: dict):
+        """
+        调用 AI 模型，按逐字生成
+
+        Args:
+            message: 用户消息
+            config: 配置
+
+        Yields:
+            SSE 格式的数据块（data: {...}\n\n）
+        """
+        if self.agent is None:
+            raise RuntimeError("AI 模型未初始化，请检查配置")
+
+        async for chunk in self.agent.gemini_style_stream(message, config=config):
             yield chunk
