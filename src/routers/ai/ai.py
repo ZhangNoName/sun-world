@@ -7,6 +7,9 @@ from pydantic import BaseModel
 from app_instance import app
 from src.controller import ai_manager
 from src.controller.ai_manager import AiManager
+from src.llm.model.gemma import GemmaModel
+from src.llm.model.mistral_img import MistralImgModel
+from src.llm.model.qwen import QwenModel
 from src.type.type import ResponseModel
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -73,3 +76,39 @@ async def chat_chunk_stream(request: Request, chat_data: ChatRequest, ai_manager
             "X-Accel-Buffering": "no",  # 👈 告诉 Nginx 不要缓存，直接转发
         }
     )
+
+
+@router.post("/generate-image")
+async def generate_image(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
+    user_id = 2
+    ip = request.headers.get("x-forwarded-for") or request.client.host
+    config = {"configurable": {
+        "thread_id": chat_data.session_id, "ip": ip, "user_id": user_id}}
+    # answer = await ai_manager.generate_image(chat_data.question, config)
+    answer = await GemmaModel.ainvoke(chat_data.question)
+    logger.info(f"generate_image: {answer}")
+    return ResponseModel(code=1, data=answer, message="获取成功")
+
+
+@router.post("/read-image")
+async def generate_image(request: Request, ai_manager: AiManager = Depends(get_ai_manager)):
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "What is in this image?"
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    }
+                }
+            ]
+        }
+    ]
+    answer = await QwenModel.ainvoke(messages)
+    logger.info(f"generate_image: {answer}")
+    return ResponseModel(code=1, data=answer, message="获取成功")

@@ -5,6 +5,8 @@ from loguru import logger
 from pydantic import BaseModel, Field
 import httpx
 
+from src.llm.model.gemma import GemmaModel
+
 # ---------------------------------------------------------
 # 工具 1: 获取用户 IP
 # ---------------------------------------------------------
@@ -81,3 +83,10 @@ def generate_python_code(description: str, language: str = "python") -> str:
     # 实际上，代码生成是由 LLM 完成的。
     # 这个工具的意义在于：强迫 Agent 进入“代码模式”，并给出一个结构化的标记。
     return f"---CODE_BLOCK_START---\nLanguage: {language}\nDescription: {description}\n---CODE_BLOCK_END---"
+
+
+@tool
+async def generate_image(prompt: str) -> str:
+    """当用户请求生成图片时，调用此工具生成对应的图片。"""
+    response = await GemmaModel.ainvoke(prompt)
+    return response.content

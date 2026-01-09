@@ -9,6 +9,7 @@ from langchain_core.messages import BaseMessage
 
 from src.llm.agent import TestAgent
 from src.llm.llm import LLM
+from src.llm.model.gemma import GemmaModel
 
 
 class AiManager:
@@ -28,6 +29,7 @@ class AiManager:
 
         self.checkpointer = checkpointer
         self.agent = TestAgent(checkpointer)
+        self.image_agent = GemmaModel
         logger.info("AI Manager 初始化成功")
 
     async def invoke(self, message: str, config: dict):
@@ -64,9 +66,9 @@ class AiManager:
         async for chunk in self.agent.invoke_stream(message, config=config):
             yield chunk
 
-    async def gemini_style_stream(self, message: str, config: dict):
+    async def generate_image(self, message: str, config: dict):
         """
-        调用 AI 模型，按逐字生成
+        调用 AI 模型，生成图片
 
         Args:
             message: 用户消息
@@ -77,6 +79,6 @@ class AiManager:
         """
         if self.agent is None:
             raise RuntimeError("AI 模型未初始化，请检查配置")
-
-        async for chunk in self.agent.gemini_style_stream(message, config=config):
-            yield chunk
+        logger.info(f"generate_image: {message}, config: {config}")
+        response = await self.image_agent.ainvoke({"messages": [{"role": "user", "content": message}]})
+        return response.content
