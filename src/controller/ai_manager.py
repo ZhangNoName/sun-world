@@ -28,13 +28,13 @@ class AiManager:
         self.agent = TestAgent(checkpointer)
         logger.info("AI Manager 初始化成功")
 
-    async def invoke(self, message: str, thread_id: str = "1"):
+    async def invoke(self, message: str, config: dict):
         """
         调用 AI 模型，一次性返回完整结果
 
         Args:
             message: 用户消息
-            thread_id: 对话线程 ID
+            config: 配置
 
         Returns:
             AI 响应字典
@@ -42,15 +42,15 @@ class AiManager:
         if self.agent is None:
             raise RuntimeError("AI 模型未初始化，请检查配置")
 
-        return await self.agent.invoke(message, thread_id=thread_id)
+        return await self.agent.invoke(message, config=config)
 
-    async def invoke_stream(self, message: str, thread_id: str = "1"):
+    async def invoke_stream(self, message: str, config: dict):
         """
         调用 AI 模型，按 token 流式返回
 
         Args:
             message: 用户消息
-            thread_id: 对话线程 ID
+            config: 配置
 
         Yields:
             文本内容字符串（按 token）
@@ -58,5 +58,6 @@ class AiManager:
         if self.agent is None:
             raise RuntimeError("AI 模型未初始化，请检查配置")
 
-        async for token in self.agent.invoke_stream(message, thread_id=thread_id):
-            yield token
+        # ✅ 正确写法：迭代底层生成器并逐个向上层 yield
+        async for chunk in self.agent.invoke_stream(message, config=config):
+            yield chunk

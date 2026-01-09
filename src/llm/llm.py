@@ -1,21 +1,9 @@
 import asyncio
-from urllib.parse import quote_plus, urlparse, parse_qs
-
-from langgraph.graph.message import MessagesState
-from langgraph.graph.state import END, START, StateGraph
-from loguru import logger
-from src.database.postgresql.postgresql_manager import PostgreSQLManager
-from src.llm.agent import TestAgent
+from urllib.parse import quote_plus
 from src.llm.graph import TestGraph
-from src.llm.model.mistral import model
-from src.llm.format import ResponseFormat
-from src.llm.prompt import SYSTEM_PROMPT
-from langchain.agents import create_agent
-from src.llm.tools import get_weather_for_location, get_user_location, Context
+
 from langgraph.checkpoint.memory import InMemorySaver
-from langchain.agents.structured_output import ToolStrategy
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from langgraph.graph.state import CompiledStateGraph
 # `thread_id` is a unique identifier for a given conversation.
 config = {"configurable": {"thread_id": "1"}}
 # 1. 定义原始信息

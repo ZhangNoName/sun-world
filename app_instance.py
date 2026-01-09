@@ -58,7 +58,8 @@ class Application(FastAPI):
         else:
             pass
 
-    def shut_down(self, env='dev'):
+    async def shut_down(self, env='dev'):
+        await self.__cleanup_ai_manager()
         if env == 'local':
             pass
         else:
@@ -116,7 +117,11 @@ class Application(FastAPI):
 
     async def __cleanup_ai_manager(self):
         """清理 AI Manager 资源（异步）"""
-        if hasattr(self, '_ai_checkpointer_context') and self._ai_checkpointer_context:
+        if not hasattr(self, '_ai_checkpointer_context'):
+            logger.debug("AI Manager checkpointer 未初始化，跳过清理")
+            return
+
+        if self._ai_checkpointer_context:
             try:
                 await self._ai_checkpointer_context.__aexit__(None, None, None)
                 logger.info("AI Manager checkpointer 已关闭")
@@ -158,13 +163,9 @@ class Application(FastAPI):
 async def lifespan(app: Application):
     env = os.getenv('ENV', 'local')
     await app.init(env)
-    # 异步初始化 AI Manager
-    # await app.__init__ai_manager()
     logger.debug('start up event')
     yield
-    # 清理 AI Manager 资源
-    await app.__cleanup_ai_manager()
-    app.shut_down()
+    await app.shut_down()
     logger.debug('stop event')
 
 app = Application(lifespan=lifespan)
