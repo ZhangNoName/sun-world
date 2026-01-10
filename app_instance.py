@@ -25,7 +25,8 @@ class Application(FastAPI):
         super(Application, self).__init__(**args)
         self.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origin_regex=r"https?://.*",
+            # allow_origins=["*"],
             # allow_origins=[
             #     "http://localhost:3000",
             #     "http://127.0.0.1:3000",
