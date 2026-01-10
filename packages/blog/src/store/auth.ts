@@ -147,7 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
   onMounted(() => {
     // 只有在有 token cookie 时才获取用户信息
-    getUser()
+    // getUser()
   })
 
   return {

@@ -1,11 +1,9 @@
 <script setup lang="ts" name="canvas">
-// import Editor from '@/editor/Editor.vue'
-import { FormatPercent } from '@/util/format'
-import { Delete } from '@element-plus/icons-vue'
 import { BaseElement, SWEditor, type ToolName } from '@sun-world/editor'
 import { CommentSvg, HandSvg, RectSvg, SelectSvg } from '@sun-world/icons'
 import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
-
+import CanvasLeft from './left.vue'
+import CanvasRight from './right.vue'
 const tg = window.Telegram?.WebApp
 // 创建一个 canvas 的 ref
 const canvasRef = ref<HTMLDivElement | null>(null)
@@ -45,17 +43,11 @@ onMounted(() => {
 <template>
   <div class="canvas-page">
     <div class="left">
-      <div class="elements-container">
-        <div class="element" v-for="element in elements" :key="element.id">
-          <div class="element-name">{{ element.name }}</div>
-        </div>
-      </div>
+      <CanvasLeft :editor="editor" />
     </div>
     <div class="canvas" ref="canvasRef"></div>
     <div class="right">
-      <div class="right-top">
-        <div class="label">zoom: {{ FormatPercent(zoom) }}</div>
-      </div>
+      <CanvasRight :editor="editor" />
     </div>
     <div class="tools-container">
       <div class="tool" :class="{ active: activeTool === 'select' }">
