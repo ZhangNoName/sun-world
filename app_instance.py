@@ -6,10 +6,12 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from src.controller.ai_manager import AiManager
 from src.controller.auth_manager import AuthManager
 from src.controller.base_manage import BaseManager
 from src.controller.blog_manage import BlogManager
+from src.controller.file_manager import FileManager
 from src.controller.tag_manage import TagManager
 from src.controller.user_manage import UserManager
 from src.controller.role_manager import RoleManager
@@ -52,7 +54,7 @@ class Application(FastAPI):
         self.__init_role_manager()
         self.__init_reousrce_manager()
         self.__init_auth_manager()
-
+        self.__init_file_manager()
         logger.info(f'当前模式为{env}')
         if env == 'local':
             pass
@@ -158,6 +160,14 @@ class Application(FastAPI):
             refresh_token_expire_days=auth_config.get(
                 'refresh_token_expire_days')
         )
+
+    def __init_file_manager(self):
+        self.file = FileManager()
+        # 确保目录存在
+        os.makedirs(self.config['file']['videos_dir'], exist_ok=True)
+        # 挂载静态服务，这样前端就能通过 http://ip/static/v_001/master.m3u8 访问了
+        self.mount(
+            "/static", StaticFiles(directory=self.config['file']['videos_dir']), name="static")
 
 
 @asynccontextmanager

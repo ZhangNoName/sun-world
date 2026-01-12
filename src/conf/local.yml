@@ -39,3 +39,6 @@ auth:
   # 3. 或者使用 localStorage 代替 cookie
   cookie_secure: true  # 本地开发设为 false，生产环境设为 true
   cookie_samesite: "none"  # 可选值: "lax", "strict", "none"（none 需要 secure=true）
+
+file:
+  videos_dir: /home/lighthouse/videos
