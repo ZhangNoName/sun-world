@@ -42,3 +42,4 @@ auth:
 
 file:
   videos_dir: /home/lighthouse/videos
+  images_dir: /home/lighthouse/imgs

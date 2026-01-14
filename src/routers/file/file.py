@@ -1,6 +1,6 @@
 import os
 import uuid
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, UploadFile, status
 from loguru import logger
 from pydantic import BaseModel
 from src.controller.file_manager import FileManager
@@ -12,7 +12,7 @@ from src.routers.auth.auth import get_current_user
 
 
 # 创建文件 API 路由
-router = APIRouter(prefix="/file", tags=["file"])
+router = APIRouter(prefix="/file", tags=["文件"])
 
 # 注入 FileManager 依赖
 
@@ -65,3 +65,41 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
         },
         message="上传成功，后台处理中"
     )
+
+
+@router.post('/image/upload')
+async def upload_image(request: Request, file: UploadFile = File(...)):
+    image_id = str(uuid.uuid4())
+    base_dir = app.config['file']['images_dir']  # 即 /home/lighthouse/imgs
+
+    # 确保目录存在
+    os.makedirs(base_dir, exist_ok=True)
+
+    # 获取文件扩展名和原始文件名（不含扩展名）
+    extension = os.path.splitext(file.filename)[1]
+    original_name = os.path.splitext(file.filename)[0]
+
+    # 生成文件名：原文件名_uuid.扩展名
+    filename = f"{original_name}_{image_id}{extension}"
+    file_path = os.path.join(base_dir, filename)
+
+    try:
+        # 保存图片文件
+        with open(file_path, "wb") as buffer:
+            while chunk := await file.read(1024 * 1024):  # 每次读取 1MB
+                buffer.write(chunk)
+
+        logger.info(f"图片上传成功: {filename}")
+
+        return ResponseModel(
+            code=1,
+            data={
+                "image_id": image_id,
+                "filename": filename,
+                "url": f"/static/imgs/{filename}"  # 假设有静态文件服务
+            },
+            message="图片上传成功"
+        )
+    except Exception as e:
+        logger.error(f"图片保存失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"图片保存失败: {str(e)}")

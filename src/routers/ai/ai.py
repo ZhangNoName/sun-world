@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
@@ -31,6 +32,7 @@ def get_ai_manager() -> AiManager:
 class ChatRequest(BaseModel):
     question: str
     session_id: str = "1"
+    image_url: Optional[str] = None
 
 
 @router.post("/chat")
@@ -91,7 +93,7 @@ async def generate_image(request: Request, chat_data: ChatRequest, ai_manager: A
 
 
 @router.post("/read-image")
-async def generate_image(request: Request, ai_manager: AiManager = Depends(get_ai_manager)):
+async def generate_image(request: Request, uri: str, ai_manager: AiManager = Depends(get_ai_manager)):
     messages = [
         {
             "role": "user",
@@ -103,12 +105,13 @@ async def generate_image(request: Request, ai_manager: AiManager = Depends(get_a
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                        "url": uri
                     }
                 }
             ]
         }
     ]
-    answer = await QwenModel.ainvoke(messages)
+    response = await QwenModel.ainvoke(messages)
+    answer = response.content
     logger.info(f"generate_image: {answer}")
     return ResponseModel(code=1, data=answer, message="获取成功")
