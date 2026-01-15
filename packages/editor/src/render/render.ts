@@ -132,11 +132,6 @@ export class CanvasRenderer {
 
     ctx.clearRect(0, 0, displayWidth, displayHeight)
 
-    // 先绘制标尺（在canvas变换之前）
-    if (this.rule) {
-      this.rule.render()
-    }
-
     ctx.save()
 
     // 应用 viewport 缩放/平移
@@ -152,6 +147,10 @@ export class CanvasRenderer {
     }
 
     ctx.restore()
+    // 绘制标尺
+    if (this.rule) {
+      this.rule.render()
+    }
   }
 
   // 4. 清理方法

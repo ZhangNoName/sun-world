@@ -1,18 +1,22 @@
 <script setup lang="ts" name="canvasLeft">
 import { BaseElement, SWEditor } from '@sun-world/editor'
 import { ref, watch } from 'vue'
+import CanvasTree from './coms/tree.vue'
 const props = defineProps<{
-  editor: SWEditor
+  editor: SWEditor | null
 }>()
 const editor = props.editor
 const elements = ref<BaseElement[]>([])
 watch(
-  editor,
+  () => editor,
   (newVal) => {
-    newVal?.elementStoreChanged((ele) => {
-      elements.value = ele
-      console.log('elements', elements.value)
-    })
+    console.log('newVal', newVal)
+    if (newVal) {
+      newVal.elementStoreChanged((ele) => {
+        elements.value = ele
+        console.log('elements', elements.value)
+      })
+    }
   },
   { immediate: true }
 )
@@ -20,9 +24,7 @@ watch(
 <template>
   <div class="canvas-left-container">
     <div class="elements-container">
-      <div class="element" v-for="element in elements" :key="element.id">
-        <div class="element-name">{{ element.name }}</div>
-      </div>
+      <CanvasTree :elements="elements" />
     </div>
   </div>
 </template>

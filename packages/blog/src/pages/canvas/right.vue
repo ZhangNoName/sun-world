@@ -3,16 +3,18 @@ import { SWEditor } from '@sun-world/editor'
 import { ref, watch } from 'vue'
 import { FormatPercent } from '@/util/format'
 const props = defineProps<{
-  editor: SWEditor
+  editor: SWEditor | null
 }>()
 const editor = props.editor
 const zoom = ref<number>(1)
 watch(
-  editor,
+  () => editor,
   (newVal) => {
-    newVal?.onZoomChange((newVal) => {
-      zoom.value = newVal
-    })
+    if (newVal) {
+      newVal.onZoomChange((newVal) => {
+        zoom.value = newVal
+      })
+    }
   },
   { immediate: true }
 )

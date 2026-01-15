@@ -43,11 +43,11 @@ onMounted(() => {
 <template>
   <div class="canvas-page">
     <div class="left">
-      <CanvasLeft :editor="editor" />
+      <CanvasLeft v-if="editor" :editor="(editor as SWEditor)" />
     </div>
     <div class="canvas" ref="canvasRef"></div>
     <div class="right">
-      <CanvasRight :editor="editor" />
+      <CanvasRight v-if="editor" :editor="(editor as SWEditor)" />
     </div>
     <div class="tools-container">
       <div class="tool" :class="{ active: activeTool === 'select' }">

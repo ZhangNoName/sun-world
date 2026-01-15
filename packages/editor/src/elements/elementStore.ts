@@ -1,13 +1,18 @@
 import type { BaseElement } from './baseElement.class'
+import { RectElement } from './react'
 export class ElementStore {
   private elements: Map<string, BaseElement> = new Map()
   private listeners: Set<(elements: BaseElement[]) => void> = new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
   private selectedElement: string | null = null
+  constructor() {
+    this.loadLocal()
+  }
   add(el: BaseElement) {
     this.elements.set(el.id, el)
     this.emit()
+    this.saveLoacal()
     this.emitElementsChanged()
   }
 
@@ -28,6 +33,7 @@ export class ElementStore {
     this.emit()
   }
   addElementsChanged(cb: (elements: BaseElement[]) => void) {
+    cb(this.getAll())
     this.elementsChangedListeners.add(cb)
   }
   removeElementsChanged(cb: (elements: BaseElement[]) => void) {
@@ -35,6 +41,18 @@ export class ElementStore {
   }
   private emitElementsChanged() {
     this.elementsChangedListeners.forEach((cb) => cb(this.getAll()))
+  }
+
+  saveLoacal() {
+    localStorage.setItem('elements', JSON.stringify(this.getAll()))
+  }
+  loadLocal() {
+    const elements = JSON.parse(localStorage.getItem('elements') || '[]')
+    for (const el of elements) {
+      this.add(new RectElement(el))
+    }
+    this.emitElementsChanged()
+    // this.emit()
   }
   // renderer 用来监听
   onChange(cb: (elements: BaseElement[]) => void) {

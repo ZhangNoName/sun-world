@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => {
       // SVG 图标插件
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/svgs')],
-        symbolId: '[name]',
+        symbolId: '[dir]-[name]',
         inject: 'body-last',
         customDomId: 'global-svg-icons',
 
