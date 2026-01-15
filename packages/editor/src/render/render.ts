@@ -138,10 +138,12 @@ export class CanvasRenderer {
     ctx.translate(this.viewport.transform.x, this.viewport.transform.y)
     ctx.scale(this.viewport.transform.scale, this.viewport.transform.scale)
 
-    // 遍历绘制所有元素
+    // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
     if (this.store) {
-      for (const el of this.store.getAll()) {
-        el.render(ctx)
+      const roots = this.store.getRootElements()
+
+      for (const el of roots) {
+        el.render(ctx, this.store, 0, 0)
         // console.log('Render element:', el)
       }
     }

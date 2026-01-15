@@ -45,9 +45,9 @@ export class RectElement extends BaseElement {
     img.src = imageUrl
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, dx: number, dy: number) {
     ctx.save()
-    ctx.translate(this.x, this.y)
+    ctx.translate(this.x + dx, this.y + dy)
     ctx.rotate(this.rotation)
 
     // 根据填充类型绘制

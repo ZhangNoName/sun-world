@@ -25,6 +25,9 @@ export class ElementStore {
   getAll() {
     return Array.from(this.elements.values())
   }
+  getRootElements() {
+    return this.getAll().filter((el) => !el.parentId)
+  }
   getById(id: string) {
     return this.elements.get(id)
   }
@@ -59,7 +62,7 @@ export class ElementStore {
     this.listeners.add(cb)
   }
   hitTest(x: number, y: number) {
-    return Object.values(this.elements).find((el) => el.hitTest(x, y))
+    return this.getRootElements().find((el) => el.hitTest(x, y))
   }
 
   private emit() {

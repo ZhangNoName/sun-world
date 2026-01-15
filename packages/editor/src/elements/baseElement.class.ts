@@ -39,7 +39,7 @@ export abstract class BaseElement {
     this.height = params.height
   }
 
-  abstract draw(ctx: CanvasRenderingContext2D): void
+  abstract draw(ctx: CanvasRenderingContext2D, dx: number, dy: number): void
   abstract hitTest(px: number, py: number): boolean
 
   move(dx: number, dy: number) {
@@ -52,7 +52,7 @@ export abstract class BaseElement {
     this.height = newHeight
   }
 
-  showName(ctx: CanvasRenderingContext2D) {
+  showName(ctx: CanvasRenderingContext2D, dx: number, dy: number) {
     if (!this.name || !this.visible) return
 
     const nameConfig = elementConfig.name
@@ -67,8 +67,8 @@ export abstract class BaseElement {
     // const textMetrics = ctx.measureText(this.name)
 
     // 计算文本位置（居中显示在元素上方）
-    const textX = this.x + +nameConfig.offsetX
-    const textY = this.y + nameConfig.offsetY
+    const textX = this.x + dx + (nameConfig.offsetX ?? 0)
+    const textY = this.y + dy + (nameConfig.offsetY ?? 0)
 
     // 绘制文本描边（提高对比度）
     if (nameConfig.strokeWidth > 0) {
@@ -83,10 +83,23 @@ export abstract class BaseElement {
 
     ctx.restore()
   }
-  render(ctx: CanvasRenderingContext2D) {
+  render(
+    ctx: CanvasRenderingContext2D,
+    store: { getById(id: string): BaseElement | undefined },
+    dx: number,
+    dy: number
+  ) {
     if (!this.visible) return
-    this.draw(ctx)
-    this.showName(ctx)
+    this.draw(ctx, dx, dy)
+    this.showName(ctx, dx, dy)
+    if (this.children) {
+      for (const child of this.children) {
+        const childElement = store.getById(child)
+        if (childElement) {
+          childElement.render(ctx, store, dx + this.x, dy + this.y)
+        }
+      }
+    }
   }
 
   getBoundingBox() {

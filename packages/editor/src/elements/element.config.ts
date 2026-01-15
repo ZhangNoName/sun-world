@@ -10,6 +10,8 @@ export enum ElementType {
   Triangle = 'triangle',
   Rectangle = 'rectangle',
   Circle = 'circle',
+  Group = 'group',
+  Frame = 'frame',
 }
 
 export enum FillType {
