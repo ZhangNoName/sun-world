@@ -13,6 +13,7 @@ const Keep = () => import('@/pages/keep/keep.vue')
 const Me = () => import('@/pages/me/me.vue')
 const Canvas = () => import('@/pages/canvas/canvas.vue')
 const ToolsPage = () => import('@/pages/tools/tools.page.vue')
+const VideoPage = () => import('@/pages/video/video.page.vue')
 const NotFound = () => import('@/router/NotFound.vue')
 
 // 🔥 如果你想额外预加载某个页面，只需要打开这个
@@ -45,6 +46,10 @@ const routes = [
       hideHeader: true,
       className: 'canvas-page-wrapper',
     },
+  },
+  {
+    path: '/video',
+    component: VideoPage,
   },
 
   // 404

@@ -51,6 +51,11 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
+    "artplayer": "^5.3.0",
+    "artplayer-plugin-danmuku": "^5.2.0",
+    "artplayer-plugin-document-pip": "^1.0.2",
+    "artplayer-plugin-hls-control": "^1.0.1",
+    "hls.js": "^1.6.15",
     "jszip": "^3.10.1",
     "langchain": "^0.2.20",
     "moment": "^2.30.1",

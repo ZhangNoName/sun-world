@@ -27,9 +27,9 @@ const contentClass = computed(() => {
     <div class="content" :class="contentClass">
       <RouterView />
     </div>
-    <div class="footer" v-if="showFooter">
+    <!-- <div class="footer" v-if="showFooter">
       <ZFooter />
-    </div>
+    </div> -->
   </div>
 </template>
 
