@@ -41,5 +41,5 @@ auth:
   cookie_samesite: "none"  # 可选值: "lax", "strict", "none"（none 需要 secure=true）
 
 file:
-  videos_dir: /home/lighthouse/videos
-  images_dir: /home/lighthouse/imgs
+  videos_dir: /data/blog/videos
+  images_dir: /data/blog/imgs

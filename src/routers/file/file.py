@@ -27,12 +27,25 @@ def get_file_manager() -> FileManager:
 # 上传视频
 @router.post("/video/upload", status_code=status.HTTP_201_CREATED)
 async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...), file_manager: FileManager = Depends(get_file_manager)):
+    # 定义允许的视频扩展名
+    ALLOWED_EXTENSIONS = {'.mp4', '.avi', '.mov', '.mkv',
+                          '.wmv', '.flv', '.webm', '.m4v', '.3gp', '.mpg', '.mpeg'}
+
+    # 获取文件扩展名
+    extension = os.path.splitext(file.filename)[1].lower()
+
+    # 验证文件格式
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"不支持的视频格式，仅支持: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+
    # 1. 生成唯一的视频 ID
     video_id = str(uuid.uuid4())
-    base_dir = app.config['file']['videos_dir']  # 即 /home/lighthouse/videos
+    base_dir = app.config['file']['videos_dir']  # 即 /data/blog/videos
 
     # 定义临时原始文件路径和输出目录
-    extension = os.path.splitext(file.filename)[1]
     temp_mp4_path = os.path.join(base_dir, f"raw_{video_id}{extension}")
     output_dir = os.path.join(base_dir, video_id)
 
@@ -54,7 +67,7 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
 
     # 4. 返回前端可以访问的 master 路径
     # 假设你挂载了 /static 到 videos_dir
-    master_url = f"/static/{video_id}/master.m3u8"
+    master_url = f"/static/videos/{video_id}/master.m3u8"
 
     return ResponseModel(
         code=1,
@@ -69,37 +82,71 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
 
 @router.post('/image/upload')
 async def upload_image(request: Request, file: UploadFile = File(...)):
-    image_id = str(uuid.uuid4())
-    base_dir = app.config['file']['images_dir']  # 即 /home/lighthouse/imgs
+    # 定义允许的图片扩展名
+    ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png',
+                          '.gif', '.webp', '.bmp', '.svg', '.ico'}
+    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+
+    # 获取文件扩展名和原始文件名（不含扩展名）
+    extension = os.path.splitext(file.filename)[1].lower()
+
+    # 验证文件格式
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"不支持的图片格式，仅支持: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+
+    image_id = str(uuid.uuid4().hex[:8])
+    base_dir = app.config['file']['images_dir']  # 即 /data/blog/imgs
 
     # 确保目录存在
     os.makedirs(base_dir, exist_ok=True)
 
-    # 获取文件扩展名和原始文件名（不含扩展名）
-    extension = os.path.splitext(file.filename)[1]
     original_name = os.path.splitext(file.filename)[0]
 
     # 生成文件名：原文件名_uuid.扩展名
-    filename = f"{original_name}_{image_id}{extension}"
+    filename = f"{original_name}-{image_id}{extension}"
     file_path = os.path.join(base_dir, filename)
 
     try:
-        # 保存图片文件
+        # 保存图片文件并检查大小
+        file_size = 0
         with open(file_path, "wb") as buffer:
             while chunk := await file.read(1024 * 1024):  # 每次读取 1MB
+                file_size += len(chunk)
+                # 检查文件大小是否超过限制
+                if file_size > MAX_FILE_SIZE:
+                    # 删除已创建的文件
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"文件大小超过限制，最大允许50MB，当前文件大小: {file_size / 1024 / 1024:.2f}MB"
+                    )
                 buffer.write(chunk)
 
-        logger.info(f"图片上传成功: {filename}")
+        logger.info(f"图片上传成功: {filename}, 大小: {file_size / 1024 / 1024:.2f}MB")
 
         return ResponseModel(
             code=1,
             data={
                 "image_id": image_id,
                 "filename": filename,
-                "url": f"/static/imgs/{filename}"  # 假设有静态文件服务
+                # 假设有静态文件服务
+                "url": f"https://sunworld.site/static/imgs/{filename}"
             },
             message="图片上传成功"
         )
+    except HTTPException:
+        # 重新抛出HTTP异常
+        raise
     except Exception as e:
         logger.error(f"图片保存失败: {str(e)}")
+        # 如果文件已创建但保存失败，尝试删除
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except:
+                pass
         raise HTTPException(status_code=500, detail=f"图片保存失败: {str(e)}")
