@@ -8,10 +8,12 @@ interface Props {
   name: string
   size?: SvgSize
   color?: string // 若传入则强制覆盖
+  prefix?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'normal',
+  prefix: 'icon',
 })
 
 const sizeMap: Record<'small' | 'normal' | 'large', number> = {
@@ -26,7 +28,7 @@ const computedSize = computed(() => {
   return `${sizeMap[props.size as keyof typeof sizeMap] || 24}px`
 })
 
-const symbolId = computed(() => `#${props.name}`)
+const symbolId = computed(() => `#${props.prefix}-${props.name}`)
 
 // ⚙️ 仅在用户传入 color 时才生成内联样式
 const customColor = computed(() =>

@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="right-menu">
         <div class="link-icon">
-          <SvgIcon name="ai" @click="openAI" />
+          <SvgIcon name="" @click="openAI" />
           <SvgIcon name="canvas" @click="canvasHandle" />
           <PaperSvg @click="editArticle" />
           <GithubOutlined @click="openGithub" />

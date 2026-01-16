@@ -11,7 +11,7 @@
     "skipLibCheck": false,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "types": ["element-plus/global"],
+    "types": ["element-plus/global", "vite-plugin-svg-icons/client"],
     "paths": {
       "@/*": ["./src/*"],
       "@sun-world/editor": ["../editor/src/"],

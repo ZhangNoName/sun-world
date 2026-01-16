@@ -69,9 +69,11 @@ export default defineConfig(({ mode }) => {
       // SVG 图标插件
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/svgs')],
-        symbolId: '[dir]-[name]',
+        // symbolId: '[name]',
+        symbolId: 'icon-[dir]-[name]',
         inject: 'body-last',
-        customDomId: 'global-svg-icons',
+        // customDomId: 'global-svg-icons',
+        customDomId: '__svg__icons__dom__',
 
         // 去掉 fill/stroke 固定颜色，使 SVG 可全局变色
         svgoOptions: {
