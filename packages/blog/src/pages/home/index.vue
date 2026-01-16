@@ -49,7 +49,9 @@ const page = reactive<{ page: number; pageSize: number }>({
 const changeMode = (mode: ListModeType) => {
   listMode.value = mode
 }
-
+const leftRef = ref<HTMLElement | null>(null)
+const bottomRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 /**
  * 核心数据获取和处理逻辑
  * @param append 是否是追加数据（用于加载更多）
@@ -113,15 +115,52 @@ const { loaderRef } = useInfiniteScroll(loadMore, {
 // 组件挂载时，加载第一页数据
 onMounted(async () => {
   await getList(false) // 首次加载，不追加
-  // 其他统计数据获取等可以在这里继续添加
+  if (!bottomRef.value) {
+    return
+  }
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        const leftHeight = leftRef.value?.offsetHeight
+
+        if (!leftHeight) {
+          return
+        }
+        const overflow = Math.max(leftHeight - window.innerHeight, -64)
+        // console.log(
+        //   'left 底部进入视口',
+        //   leftRef.value,
+        //   leftHeight,
+        //   window.innerHeight,
+        //   overflow
+        // )
+        leftRef.value?.style.setProperty('top', `${-overflow}px`)
+        // 在这里开始“推走 sticky”或锁定 left
+      } else {
+        // console.log('left 底部离开视口')
+        // 恢复正常 sticky
+        leftRef.value?.style.removeProperty('top')
+      }
+    },
+    {
+      root: null, // 视口
+      threshold: 0, // 一进入就触发
+    }
+  )
+  observer.observe(bottomRef.value as Element)
 })
 </script>
 <template>
   <div class="home-page">
-    <div class="left">
+    <!-- <div class="left-container"> -->
+    <div class="left" ref="leftRef">
       <SelfInfoCard />
       <WeatherCard />
+      <WeatherCard />
+      <WeatherCard />
+      <div ref="bottomRef" style="height: 2px"></div>
     </div>
+    <!-- </div> -->
     <div class="right">
       <div class="card summary-card">
         <div class="tag" v-for="item in tagList" :key="item.id">
@@ -148,6 +187,13 @@ onMounted(async () => {
       </div>
       <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
       <BlogCard v-else v-for="item in blogList" :key="item.id" v-bind="item" />
+      <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
+      <BlogCard
+        v-else
+        v-for="item in blogList"
+        :key="item.id + '_list'"
+        v-bind="item"
+      />
       <div class="loader-btn" ref="loaderRef">
         <el-button
           type="primary"
@@ -173,18 +219,27 @@ onMounted(async () => {
   /* grid-template-columns: 35rem 1fr;
   grid-template-rows: auto; */
   gap: var(--horizontalGapPx);
-
+  justify-content: center;
   .card {
     border-radius: 0.5rem;
     height: 10rem;
   }
 
+  /* .left-container { */
+  position: relative;
+
   .left {
+    height: fit-content;
+    position: sticky;
+    padding-bottom: 50px;
+    /* top: 64px; */
     width: 35rem;
     display: flex;
     flex-direction: column;
+    /* align-self: flex-end; */
     gap: var(--horizontalGapPx);
   }
+  /* } */
   .right {
     flex: 1;
     display: flex;

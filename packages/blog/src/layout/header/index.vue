@@ -68,85 +68,91 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <div class="z-header">
-    <div class="left-menu">
-      <div class="logo" @click="goHome"></div>
-      <div class="welcom">{{ $t('title') }}</div>
-      <div class="menu-item"></div>
-    </div>
-    <div class="right-menu">
-      <div class="link-icon">
-        <SvgIcon name="ai" @click="openAI" />
-        <SvgIcon name="canvas" @click="canvasHandle" />
-        <PaperSvg @click="editArticle" />
-        <GithubOutlined @click="openGithub" />
-        <QQOutlined />
-        <SvgIcon name="search" @click="openAI" />
-        <LanguageSwitch />
-        <ThemeSwitch />
-        <Avator />
-        <!-- <AddOutlined></AddOutlined> -->
+    <div class="header-container">
+      <div class="left-menu">
+        <div class="logo" @click="goHome"></div>
+        <div class="welcom">{{ $t('title') }}</div>
+        <div class="menu-item"></div>
       </div>
-    </div>
-    <div class="time">
-      {{ time }}
+      <div class="right-menu">
+        <div class="link-icon">
+          <SvgIcon name="ai" @click="openAI" />
+          <SvgIcon name="canvas" @click="canvasHandle" />
+          <PaperSvg @click="editArticle" />
+          <GithubOutlined @click="openGithub" />
+          <QQOutlined />
+          <SvgIcon name="search" @click="openAI" />
+          <LanguageSwitch />
+          <ThemeSwitch />
+          <Avator />
+          <!-- <AddOutlined></AddOutlined> -->
+        </div>
+      </div>
+      <div class="time">
+        {{ time }}
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .z-header {
-  width: 100%;
-  height: 64px;
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2.5% 4fr 3fr 10rem 2.5%;
-  grid-template-areas: '1 2 3 4 5';
-  border-bottom: 1px solid rgb(180, 180, 180);
-  background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
-  backdrop-filter: blur(10px); /* 毛玻璃效果 */
-  -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
+  min-height: 64px;
+  .header-container {
+    width: 100%;
+    height: 64px;
+    position: fixed;
 
-  .left-menu {
-    grid-column: 2 / 3;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--horizontalGapPx);
-    .logo {
-      height: 80%;
-      aspect-ratio: 1 / 1;
-      background-image: url(/logo.svg);
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      cursor: pointer;
-    }
-  }
-  .right-menu {
-    grid-column: 3 / 4;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    .link-icon {
+    top: 0;
+    left: 0;
+    z-index: 10;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2.5% 4fr 3fr 10rem 2.5%;
+    grid-template-areas: '1 2 3 4 5';
+    border-bottom: 1px solid rgb(180, 180, 180);
+    background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
+    backdrop-filter: blur(10px); /* 毛玻璃效果 */
+    -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
+
+    .left-menu {
+      grid-column: 2 / 3;
       display: flex;
-      gap: var(--horizontalGapPx);
+      justify-content: flex-start;
       align-items: center;
-      & > *:hover {
+      gap: var(--horizontalGapPx);
+      .logo {
+        height: 80%;
+        aspect-ratio: 1 / 1;
+        background-image: url(/logo.svg);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
         cursor: pointer;
-        background-color: var(--icon-bg-hover-color);
       }
     }
-  }
-  .time {
-    grid-column: 4 / 5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: var(--font-large);
+    .right-menu {
+      grid-column: 3 / 4;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      .link-icon {
+        display: flex;
+        gap: var(--horizontalGapPx);
+        align-items: center;
+        & > *:hover {
+          cursor: pointer;
+          background-color: var(--icon-bg-hover-color);
+        }
+      }
+    }
+    .time {
+      grid-column: 4 / 5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: var(--font-large);
+    }
   }
 }
 </style>
