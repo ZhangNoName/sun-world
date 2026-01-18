@@ -1,11 +1,30 @@
+
 import type { BaseElement } from './baseElement.class'
 import { RectElement } from './react'
+import { ElementType } from './element.config'
+export interface EleTreeNode{
+  id:string ,
+  name:string,
+  type:ElementType,
+  visible:boolean,
+  locked:boolean,
+  children:EleTreeNode[] | undefined,
+}
 export class ElementStore {
   private elements: Map<string, BaseElement> = new Map()
   private listeners: Set<(elements: BaseElement[]) => void> = new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
   private selectedElement: string | null = null
+  private tree:EleTreeNode = {
+    id:'0',
+    name:'root',
+    type:ElementType.Group,
+    visible:true,
+    locked:false,
+    children:[],
+
+  } 
   constructor() {
     this.loadLocal()
   }
