@@ -16,22 +16,13 @@ export class ElementStore {
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
   private selectedElement: string | null = null
-  private tree:EleTreeNode = {
-    id:'0',
-    name:'root',
-    type:ElementType.Group,
-    visible:true,
-    locked:false,
-    children:[],
-
-  } 
   constructor() {
     this.loadLocal()
   }
   add(el: BaseElement) {
     this.elements.set(el.id, el)
     this.emit()
-    this.saveLoacal()
+    this.saveLocal()
     this.emitElementsChanged()
   }
 
@@ -65,7 +56,7 @@ export class ElementStore {
     this.elementsChangedListeners.forEach((cb) => cb(this.getAll()))
   }
 
-  saveLoacal() {
+  saveLocal() {
     localStorage.setItem('elements', JSON.stringify(this.getAll()))
   }
   loadLocal() {
