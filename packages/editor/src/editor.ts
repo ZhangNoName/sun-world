@@ -50,7 +50,7 @@ export class SWEditor {
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()
-
+    this.viewportState.setOffset(options.offsetX ?? 0, options.offsetY ?? 0)
     this._id = getUUID()
 
     // 2. 实例化核心模块，并进行依赖注入

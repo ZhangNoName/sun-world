@@ -20,6 +20,7 @@ onMounted(() => {
   if (canvasRef.value) {
     editor.value = new SWEditor({
       containerElement: canvasRef.value,
+      offsetX: 241,
     })
     activeTool.value = editor.value?.getActiveToolName() || null
     // tools.value = [...editor.getTools()]

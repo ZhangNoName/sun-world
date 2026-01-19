@@ -119,9 +119,6 @@ export class ElementStore {
     return Array.from(this.elements.values())
   }
   getRootElements() {
-
-    const rootNode = this.getNodeById(this.ROOT_ID)!
-    console.log('getRootElements', rootNode, this.elements)
     return this.root
       .map((node) => this.elements.get(node.id))
       .filter((el): el is BaseElement => el !== undefined)
@@ -307,8 +304,10 @@ export class ElementStore {
     if (this.selectedElement && this.getById(this.selectedElement)?.hitTest(x, y)) {
       nodeList = this.getNodeById(this.selectedElement)?.children ?? []
       nodeList.push(this.getNodeById(this.selectedElement)!)
+      console.log('已有的元素命中', this.selectedElement)
     } else {
       nodeList = this.root
+      console.log('根元素命中', nodeList)
     }
 
     for (let node of nodeList) {
@@ -316,6 +315,7 @@ export class ElementStore {
         this.selectedElement = node.id
       }
     }
+    return !!this.selectedElement
 
   }
   getSelectedElement() {

@@ -25,19 +25,15 @@ export default class SelectTool extends BaseTool {
 
     // 转换屏幕坐标 → 画布坐标
     const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
-
     // 点击命中检测
     const hit = elements.hitTest(canvasPos.x, canvasPos.y)
+    this.selectedEl = elements.getSelectedElement() ?? null
 
-    if (hit) {
-      this.selectedEl = hit
-
-      this.lastX = canvasPos.x
-      this.lastY = canvasPos.y
+    if (this.selectedEl) {
+      this.lastX = e.clientX
+      this.lastY = e.clientY
 
       this.dragging = true
-    } else {
-      this.selectedEl = null
     }
 
     this.ctx.render()

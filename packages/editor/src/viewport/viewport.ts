@@ -1,8 +1,8 @@
 /*
  * @Author: ZhangNoName
  * @Date: 2025-12-03 14:05:26
- * @LastEditors: no name no name
- * @LastEditTime: 2025-12-26 16:02:19
+ * @LastEditors: zxy 1623190186@qq.com
+ * @LastEditTime: 2026-01-19 15:27:43
  * @FilePath: \sun-world\packages\editor\src\viewport\viewport.ts
  * @Description:
  *
@@ -20,18 +20,25 @@ export default class ViewportState {
   public transform: Transform = { x: 0, y: 0, scale: 1.0 }
   public scale: number = 1.0
   private listeners: Set<ViewportListener> = new Set()
+  private offsetX: number = 0 // 偏移量
+  private offsetY: number = 0 // 偏移量
 
   // 在一个 Vue/React 环境中，这些属性应该被封装为响应式数据 (e.g., Vue's reactive)
   // 这样当 transform 改变时，Renderer 会自动感知并重绘。
   constructor() {
+
     // this.width = width
     // this.height = height
     // this.transform = transform
   }
+  setOffset(offsetX: number, offsetY: number) {
+    this.offsetX = offsetX
+    this.offsetY = offsetY
+  }
   screenToCanvas(x: number, y: number) {
     return {
-      x: (x - this.transform.x) / this.transform.scale,
-      y: (y - this.transform.y) / this.transform.scale,
+      x: (x - this.offsetX - this.transform.x) / this.transform.scale,
+      y: (y - this.offsetY - this.transform.y) / this.transform.scale,
     }
   }
 

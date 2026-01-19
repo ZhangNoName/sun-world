@@ -162,11 +162,8 @@ export class CanvasRenderer {
     // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
     if (this.store) {
       const roots = this.store.getRootElements()
-      console.log('Render roots:', roots)
       for (const el of roots) {
-
         el.render(ctx, this.store, 0, 0)
-        console.log('Render element:', el)
       }
     }
 
@@ -175,7 +172,7 @@ export class CanvasRenderer {
     if (this.rule) {
       this.rule.render()
     }
-    // this.renderSelect()
+    this.renderSelect()
   }
 
   // 4. 清理方法
