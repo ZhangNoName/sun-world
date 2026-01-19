@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { BaseElement } from '@sun-world/editor'
+import { BaseElement, EleTreeNode } from '@sun-world/editor'
 import { computed } from 'vue'
 import EleIcon from './icon.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<{
-  element: BaseElement
-  elementMap: Map<string, BaseElement>
+  element: EleTreeNode
+  elementMap: Map<string, EleTreeNode>
   level: number
   expandedItems: Set<string>
-  getChildren: (id: string) => BaseElement[]
+  getChildren: (id: string) => EleTreeNode[]
 }>()
 
 const emit = defineEmits<{

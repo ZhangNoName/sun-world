@@ -1,6 +1,6 @@
 import type { BaseConfig } from './config'
 import { BaseElement } from './elements/baseElement.class'
-import { ElementStore } from './elements/elementStore'
+import { ElementStore, EleTreeNode } from './elements/elementStore'
 import { EventManager } from './event/eventManager'
 import { InputBindingManager } from './event/keyBindingManager'
 import { InputManager } from './input/inputManager'
@@ -185,5 +185,8 @@ export class SWEditor {
   }
   public elementStoreChanged(cb: (elements: BaseElement[]) => void) {
     this.elementStore.onElementsChange(cb)
+  }
+  public elementTreeChanged(cb: (root: EleTreeNode[]) => void) {
+    this.elementStore.onHierarchyChange(cb)
   }
 }

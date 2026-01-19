@@ -1,15 +1,15 @@
 <script setup lang="ts" name="canvasTree">
-import { BaseElement } from '@sun-world/editor'
+import { BaseElement, EleTreeNode } from '@sun-world/editor'
 import { computed, ref } from 'vue'
 import TreeNode from './treeNode.vue'
 
 const props = defineProps<{
-  elements: BaseElement[]
+  elements: EleTreeNode[]
 }>()
 
 // 构建元素映射表
 const elementMap = computed(() => {
-  const map = new Map<string, BaseElement>()
+  const map = new Map<string, EleTreeNode>()
   props.elements.forEach((el) => {
     map.set(el.id, el)
   })
@@ -22,14 +22,14 @@ const rootElements = computed(() => {
 })
 
 // 获取指定元素的子元素
-const getChildren = (elementId: string): BaseElement[] => {
+const getChildren = (elementId: string): EleTreeNode[] => {
   const element = elementMap.value.get(elementId)
   if (!element || !element.children || element.children.length === 0) {
     return []
   }
   return element.children
     .map((id) => elementMap.value.get(id))
-    .filter((el): el is BaseElement => el !== undefined)
+    .filter((el): el is EleTreeNode => el !== undefined)
 }
 
 // 展开/折叠状态

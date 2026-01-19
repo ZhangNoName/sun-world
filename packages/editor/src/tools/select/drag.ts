@@ -9,6 +9,7 @@ export default class DragTool extends BaseTool {
   private lastY = 0
   private viewport: ViewportState
   private selectedEl: BaseElement | null = null
+  private parentId: string | null = null
   constructor(ctx: ToolContext) {
     super(ctx)
     this.viewport = ctx.viewport
@@ -21,6 +22,14 @@ export default class DragTool extends BaseTool {
     const { viewport, elements } = this.ctx
     const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
     // elements.hitTest(canvasPos.x, canvasPos.y)
+    const newParentId = elements.hitTopExcludeSelected(canvasPos.x, canvasPos.y)
+    if (newParentId !== this.parentId) {
+      console.log('更新----newParentId', this.parentId, newParentId)
+      this.parentId = newParentId
+      this.ctx.elements.moveNode(this.selectedEl.id, newParentId)
+      this.selectedEl.parentId = newParentId
+    }
+
     // 鼠标移动距离
     const dx = e.clientX - this.lastX
     const dy = e.clientY - this.lastY
@@ -39,6 +48,7 @@ export default class DragTool extends BaseTool {
   onMouseDown(e: MouseEvent): void {
     // console.log('DragTool.onMouseDown')
     this.selectedEl = this.ctx.elements.getSelectedElement() ?? null
+    this.parentId = this.selectedEl?.parentId ?? null
 
     this.lastX = e.clientX
     this.lastY = e.clientY

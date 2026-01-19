@@ -24,7 +24,7 @@ export class ElementStore {
   /**
    * 层级变化监听：只关注 parent/children/顺序 等结构变化
    */
-  private hierarchyChangedListeners: Set<(root: EleTreeNode) => void> = new Set()
+  private hierarchyChangedListeners: Set<(root: EleTreeNode[]) => void> = new Set()
   /**
    * 元素变化监听：关注元素对象（几何/样式）及节点元信息（name/visible/locked）变化
    */
@@ -43,11 +43,20 @@ export class ElementStore {
   }
 
   /**
+   * 统一根层语义：parentId === null 表示在 root（根层）
+   * 历史代码里可能会出现 parentId === 'root'，这里统一当作 null 处理。
+   */
+  private normalizeParentId(parentId: string | null | undefined): string | null {
+    if (!parentId) return null
+    return parentId === this.ROOT_ID ? null : parentId
+  }
+
+  /**
    * 添加元素：默认插入到根节点末尾
    * - 会触发：层级变化 + 元素变化
    */
   add(el: BaseElement, parentId: string | null = null, index?: number) {
-    const actualParentId = parentId ?? this.ROOT_ID
+    const actualParentId = this.normalizeParentId(parentId)
 
     // 1) 写入元素对象
     this.elements.set(el.id, el)
@@ -57,22 +66,15 @@ export class ElementStore {
     this.nodeMap.set(node.id, node)
 
     // 3) 挂到父节点 children（顺序）
-    const parentNode = this.getNodeById(actualParentId)
-    if (!parentNode) {
-      // 父节点不存在则兜底挂根
-      this.insertChild(this.ROOT_ID, node.id, index)
-      node.parentId = null
-    } else {
-      this.insertChild(actualParentId, node.id, index)
-      node.parentId = actualParentId === this.ROOT_ID ? null : actualParentId
-    }
+    node.parentId = actualParentId
+    this.insertChild(actualParentId, node.id, index)
 
 
 
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitHierarchyChanged()
-      this.emitElementsChanged()
+      // this.emitElementsChanged()
     }
   }
 
@@ -81,18 +83,18 @@ export class ElementStore {
    * - 会触发：层级变化 + 元素变化
    */
   remove(id: string) {
-    if (id === this.ROOT_ID) {
-      this.root = this.root.filter((n) => n.id !== id)
-      return
-    }
     const node = this.getNodeById(id)
     if (!node) return
 
     // 1) 从父节点 children 中移除
-
-    const parentNode = this.getNodeById(node.parentId!)
-    if (parentNode) {
-      parentNode.children = parentNode.children.filter((n) => n.id !== id)
+    const oldParentId = this.normalizeParentId(node.parentId)
+    if (oldParentId === null) {
+      this.root = this.root.filter((n) => n.id !== id)
+    } else {
+      const parentNode = this.getNodeById(oldParentId)
+      if (parentNode) {
+        parentNode.children = parentNode.children.filter((n) => n.id !== id)
+      }
     }
 
     // 2) 删除子树, bfs 广度优先搜索
@@ -116,7 +118,7 @@ export class ElementStore {
   }
 
   getAll() {
-    return Array.from(this.elements.values())
+    return Array.from(this.root)
   }
   getRootElements() {
     return this.root
@@ -127,8 +129,6 @@ export class ElementStore {
     return this.elements.get(id)
   }
   getNodeById(id: string) {
-
-    if (id === this.ROOT_ID) return this.root[0]
     return this.nodeMap.get(id)
   }
   /**
@@ -143,30 +143,40 @@ export class ElementStore {
    * 仅变更层级/顺序：移动节点到新父节点/新位置
    */
   moveNode(id: string, newParentId: string | null, index?: number) {
-    if (id === this.ROOT_ID) return
     const node = this.getNodeById(id)
     if (!node) return
 
-    const oldParentId = node.parentId ?? this.ROOT_ID
-    const targetParentId = newParentId ?? this.ROOT_ID
+    const oldParentId = this.normalizeParentId(node.parentId)
+    const targetParentId = this.normalizeParentId(newParentId)
+    if (oldParentId === targetParentId) return
 
-    // 1) 从旧父节点移除
-    const oldParentNode = this.getNodeById(oldParentId)
-    if (oldParentNode) {
-      oldParentNode.children = oldParentNode.children.filter((n) => n.id !== id)
+    // 1) 从旧父节点移除（root 或 parent.children）
+    if (oldParentId === null) {
+      this.root = this.root.filter((n) => n.id !== id)
+    } else {
+      const oldParentNode = this.getNodeById(oldParentId)
+      if (oldParentNode) {
+        oldParentNode.children = oldParentNode.children.filter((n) => n.id !== id)
+      }
     }
+    console.log('移动----newParentId', newParentId)
+    if (!newParentId) {
+      this.root.push(node)
+      return
+    }
+    const newParentNode = this.getNodeById(newParentId)
+    newParentNode?.children.push(node)
+    // 2) 插入到新父节点（root 或 parent.children）
+    // this.insertChild(newParentId, id, index)
+    node.parentId = newParentId
 
-    // 2) 插入到新父节点
-    this.insertChild(targetParentId, id, index)
-    node.parentId = targetParentId === this.ROOT_ID ? null : targetParentId
 
-
-
+    console.log('更新----node', this.root)
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitHierarchyChanged()
       // move 不一定改变元素对象，但为了让 UI/渲染立即反映层级变化，也触发一次元素变化
-      this.emitElementsChanged()
+      // this.emitElementsChanged()
     }
   }
 
@@ -235,15 +245,14 @@ export class ElementStore {
   /**
    * 监听层级变化（parent/children/顺序）
    */
-  onHierarchyChange(cb: (root: EleTreeNode) => void) {
-
-    cb(this.root[0])
+  onHierarchyChange(cb: (root: EleTreeNode[]) => void) {
+    cb(this.root)
     this.hierarchyChangedListeners.add(cb)
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
 
-    this.hierarchyChangedListeners.forEach((cb) => cb(this.root[0]))
+    this.hierarchyChangedListeners.forEach((cb) => cb(this.root))
   }
 
   saveLocal() {
@@ -274,6 +283,7 @@ export class ElementStore {
     try {
 
       const tree = JSON.parse(localStorage.getItem(this.storageKey) || '{}')
+      console.log('tree', tree)
       if (tree.version !== 1) return
       this.root = tree.data
       const loadTree = (tree: any[]) => {
@@ -318,6 +328,50 @@ export class ElementStore {
     return !!this.selectedElement
 
   }
+  hitTopExcludeSelected(x: number, y: number) {
+    if (!this.selectedElement) return null
+
+    const selectedId = this.selectedElement
+    const selectedNode = this.getNodeById(selectedId)
+    if (!selectedNode) return null
+
+    // 目标：拖拽过程中判断是否需要变更 parentId
+    // 规则：
+    // - 优先命中“当前父节点”（避免在父容器内拖动时频繁变更）
+    // - 否则命中“根层最上方的容器节点”（按 root 顺序从上到下）
+    // - 排除自己（不能把自己设为自己的 parent）
+    const currentParentId = this.normalizeParentId(selectedNode.parentId)
+
+    // 1) 先看当前父节点是否命中
+    if (currentParentId) {
+      const parentNode = this.getNodeById(currentParentId)
+      const parentEl = parentNode ? this.getById(parentNode.id) : undefined
+      if (parentNode?.visible && parentEl?.hitTest(x, y)) {
+        return null // 仍在父容器内，不变更
+      }
+    }
+
+    // 2) 再从根层（上层优先）找新的父节点
+    let newParentId: string | null = null
+    for (let i = 0; i < this.root.length; i++) {
+      const node = this.root[i]
+      if (!node?.visible) continue
+      if (node.id === selectedId) continue
+      const el = this.getById(node.id)
+      if (el?.hitTest(x, y)) {
+        newParentId = node.id
+        break
+      }
+    }
+
+    // 3) 统一 parentId 语义并执行变更
+    const normalizedNewParentId = this.normalizeParentId(newParentId)
+    if (normalizedNewParentId === currentParentId) return null
+    if (normalizedNewParentId === selectedId) return null
+
+    // this.moveNode(selectedId, normalizedNewParentId)
+    return normalizedNewParentId
+  }
   getSelectedElement() {
     return this.selectedElement ? this.getById(this.selectedElement) : null
   }
@@ -329,17 +383,29 @@ export class ElementStore {
   }
 
 
-  private insertChild(parentId: string, childId: string, index?: number) {
+  private insertChild(parentId: string | null, childId: string, index?: number) {
     const childNode = this.nodeMap.get(childId)
     if (!childNode) return
-    if (parentId === this.ROOT_ID) {
-      this.root.push(childNode)
+
+    const pid = this.normalizeParentId(parentId)
+    if (pid === null) {
+      // 根层插入：root 是节点数组，顺序即 root 顺序
+      this.root = this.root.filter((n) => n.id !== childId)
+      const i =
+        index === undefined || index < 0 || index > this.root.length
+          ? this.root.length
+          : index
+      this.root.splice(i, 0, childNode)
       return
     }
 
-    const pid = parentId
     const parentNode = this.getNodeById(pid)
-    if (!parentNode) return
+    if (!parentNode) {
+      // 父节点不存在，兜底挂根
+      this.insertChild(null, childId, index)
+      childNode.parentId = null
+      return
+    }
 
     // 先去重
     parentNode.children = parentNode.children.filter((n) => n.id !== childId)
@@ -365,17 +431,15 @@ export class ElementStore {
    * 兼容旧 API：渲染器以前监听 onChange（不区分事件类型）
    * 现在改为同时监听“层级变化”和“元素变化”。
    */
-  onChange(cb: (elements: BaseElement[]) => void) {
+  onChange(cb: (root: EleTreeNode[]) => void) {
     // 只立即触发一次，避免重复回调
-    cb(this.getAll())
+    cb(this.root)
 
-    const hierarchyCb = (_root: EleTreeNode) => cb(this.getAll())
+    const hierarchyCb = (_root: EleTreeNode[]) => cb(this.root)
     this.hierarchyChangedListeners.add(hierarchyCb)
-    this.elementsChangedListeners.add(cb)
 
     return () => {
       this.hierarchyChangedListeners.delete(hierarchyCb)
-      this.elementsChangedListeners.delete(cb)
     }
   }
 }
