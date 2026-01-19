@@ -11,6 +11,9 @@ export type ToolName =
   | 'eraser'
   | 'drag'
   | 'comment'
+  | 'area'
+  | 'resize'
+  | 'rotate'
 export interface ToolContext {
   input: InputManager // 鼠标、键盘、组合键（Shift/Alt/Ctrl）
   viewport: ViewportState // 坐标转换、缩放、平移
@@ -27,12 +30,12 @@ export abstract class BaseTool {
 
   abstract name: ToolName
 
-  onMouseDown?(e: MouseEvent): void
-  onMouseMove?(e: MouseEvent): void
-  onMouseUp?(e: MouseEvent): void
-  onKeyDown?(e: KeyboardEvent): void
-  onWheel?(e: WheelEvent): void
+  abstract onMouseDown(e: MouseEvent): void
+  abstract onMouseMove(e: MouseEvent): void
+  abstract onMouseUp(): void
+  abstract onKeyDown(e: KeyboardEvent): void
+  abstract onWheel(e: WheelEvent): void
 
-  activate?(): void
-  deactivate?(): void
+  abstract activate(): void
+  abstract deactivate(): void
 }

@@ -2,7 +2,7 @@ import type { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import CommentTool from './commentTool'
 import DragTool from './dragTool'
 import { RectTool } from './reactTools'
-import SelectTool from './selectTool'
+import SelectTool from './select'
 type ToolsListener = () => void
 export class ToolManager {
   private tools = new Map<ToolName, BaseTool>()
