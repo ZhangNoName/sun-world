@@ -82,4 +82,14 @@ export class RectElement extends BaseElement {
   getBounds() {
     return { x: this.x, y: this.y, width: this.width, height: this.height }
   }
+  getAttr(){
+    return {
+      ...super.getAttr(),
+      fill: this.fill,
+    }
+  }
+  setAttr(attr: any) {
+    super.setAttr(attr)
+    this.fill = attr.fill
+  }
 }

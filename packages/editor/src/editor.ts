@@ -184,6 +184,6 @@ export class SWEditor {
     return this.toolManager.getActiveToolName()
   }
   public elementStoreChanged(cb: (elements: BaseElement[]) => void) {
-    this.elementStore.addElementsChanged(cb)
+    this.elementStore.onElementsChange(cb)
   }
 }

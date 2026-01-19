@@ -101,7 +101,9 @@ export class CanvasRenderer {
     this.resizeObserver = new ResizeObserver(resizeHandler)
     this.resizeObserver.observe(this.containerElement)
 
-    this.store.onChange(() => this.render())
+    // 分离监听：层级变化 / 元素变化
+    this.store.onHierarchyChange(() => this.render())
+    this.store.onElementsChange(() => this.render())
   }
   markDirty() {
     this.isDirty = true
@@ -117,6 +119,25 @@ export class CanvasRenderer {
       requestAnimationFrame(draw)
     }
     requestAnimationFrame(draw)
+  }
+  renderSelect() {
+    const selectedEl = this.store.getSelectedElement()
+    if (!selectedEl) {
+      return
+    }
+    const ctx = this.ctx
+    const area = selectedEl.getBoundingBox()
+    ctx.beginPath()
+    ctx.save()
+    ctx.lineTo(area.x, area.y)
+    ctx.lineTo(area.x + area.width, area.y)
+    ctx.lineTo(area.x + area.width, area.y + area.height)
+    ctx.lineTo(area.x, area.y + area.height)
+    ctx.closePath()
+    ctx.strokeStyle = '#1890ff'
+    ctx.lineWidth = 2
+    ctx.stroke()
+    ctx.restore()
   }
 
   render() {
@@ -141,10 +162,11 @@ export class CanvasRenderer {
     // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
     if (this.store) {
       const roots = this.store.getRootElements()
-
+      console.log('Render roots:', roots)
       for (const el of roots) {
+
         el.render(ctx, this.store, 0, 0)
-        // console.log('Render element:', el)
+        console.log('Render element:', el)
       }
     }
 
@@ -153,6 +175,7 @@ export class CanvasRenderer {
     if (this.rule) {
       this.rule.render()
     }
+    // this.renderSelect()
   }
 
   // 4. 清理方法

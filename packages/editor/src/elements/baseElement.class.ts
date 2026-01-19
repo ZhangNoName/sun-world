@@ -4,6 +4,7 @@ import {
   FillStyle,
   FillType,
 } from './element.config'
+import { EleTreeNode } from './elementStore'
 
 export abstract class BaseElement {
   type: ElementType
@@ -23,6 +24,7 @@ export abstract class BaseElement {
   group: string | null = null
 
   constructor(params: {
+    id?: string
     type: ElementType
     name: string
     x: number
@@ -30,7 +32,7 @@ export abstract class BaseElement {
     width: number
     height: number
   }) {
-    this.id = crypto.randomUUID()
+    this.id = params.id ?? crypto.randomUUID()
     this.type = params.type
     this.name = params.name
     this.x = params.x
@@ -133,5 +135,49 @@ export abstract class BaseElement {
   }
   setHeight(height: number) {
     this.height = height
+  }
+  getNodeInfo(){
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      visible: this.visible,
+      parentId: this.parentId,
+      children: [] as EleTreeNode[],
+      locked: false,
+
+    }
+  }
+  getAttr(){
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      visible: this.visible,
+      parentId: this.parentId,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      rotation: this.rotation,
+      children: [] as any[],
+
+    }
+  }
+  setAttr(attr: any) {
+    this.id = attr.id
+    this.name = attr.name
+    this.type = attr.type
+    this.visible = attr.visible
+    this.parentId = attr.parentId
+    this.x = attr.x
+    this.y = attr.y
+    this.width = attr.width
+    this.height = attr.height
+    this.rotation = attr.rotation
+    this.children = attr.children
+  }
+  hitTest(px: number, py: number): boolean {
+    return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height
   }
 }
