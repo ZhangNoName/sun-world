@@ -16,6 +16,16 @@ export class CanvasRenderer {
   private rule?: Rule
   private isDirty = true // 控制是否需要重绘
   private devicePixelRatio: number = 1
+  /**
+   * 选中元素四角拖拽手柄（屏幕坐标）
+   * 后续工具层可以用它做命中判断。
+   */
+  private selectionHandles: Array<{
+    id: string
+    x: number
+    y: number
+    size: number
+  }> = []
 
   constructor(
     containerElement: HTMLDivElement,
@@ -120,27 +130,103 @@ export class CanvasRenderer {
     }
     requestAnimationFrame(draw)
   }
-  renderSelect() {
-    const selectedEl = this.store.getSelectedElement()
+  renderName() {
+    const selectedEl = this.store.getFrame()
     if (!selectedEl) {
       return
     }
+    for (const id of selectedEl) {
+      const el = this.store.getById(id)
+      if (el) {
+        // renderName() 在 render() 的 ctx.restore() 之后调用，此时是屏幕坐标系。
+        // 需要把元素(世界坐标，含父级偏移)转换到屏幕坐标，才能保证缩放/平移时位置正确。
+        const { x: tx, y: ty, scale } = this.viewport.transform
+
+        // 计算元素世界坐标（子元素坐标是相对父级的）
+        let worldX = el.x
+        let worldY = el.y
+        let p = el.parentId
+        while (p) {
+          const parent = this.store.getById(p)
+          if (!parent) break
+          worldX += parent.x
+          worldY += parent.y
+          p = parent.parentId
+        }
+
+        // 将世界坐标映射到屏幕坐标：screen = world * scale + translate
+        // showName 内部计算 textX = this.x + dx + offsetX
+        // 所以这里把 dx/dy 设成：dx = screenX - this.x（同理 dy）
+        const screenX = worldX * scale + tx
+        const screenY = worldY * scale + ty
+        const dx = screenX - el.x
+        const dy = screenY - el.y
+
+        el.showName(this.ctx, dx, dy)
+      }
+    }
+  }
+  renderSelect() {
+    const selectedEl = this.store.getSelectedElement()
+    if (!selectedEl) {
+      this.selectionHandles = []
+      return
+    }
+
     const ctx = this.ctx
     const area = selectedEl.getBoundingBox()
-    ctx.beginPath()
+
+    // 注意：renderSelect() 在 render() 的 ctx.restore() 之后调用
+    // 此时 ctx 在“屏幕坐标系”，需要把元素 world 坐标转换到屏幕坐标
+    const { x: tx, y: ty, scale } = this.viewport.transform
+    const toScreen = (x: number, y: number) => ({
+      x: x * scale + tx,
+      y: y * scale + ty,
+    })
+
+    const p1 = toScreen(area.x, area.y) // 左上
+    const p2 = toScreen(area.x + area.width, area.y) // 右上
+    const p3 = toScreen(area.x + area.width, area.y + area.height) // 右下
+    const p4 = toScreen(area.x, area.y + area.height) // 左下
+
+    // 1) 画选中框
     ctx.save()
-    ctx.lineTo(area.x, area.y)
-    ctx.lineTo(area.x + area.width, area.y)
-    ctx.lineTo(area.x + area.width, area.y + area.height)
-    ctx.lineTo(area.x, area.y + area.height)
+    ctx.beginPath()
+    ctx.moveTo(p1.x, p1.y)
+    ctx.lineTo(p2.x, p2.y)
+    ctx.lineTo(p3.x, p3.y)
+    ctx.lineTo(p4.x, p4.y)
     ctx.closePath()
     ctx.strokeStyle = '#1890ff'
     ctx.lineWidth = 2
     ctx.stroke()
+
+    // 2) 画四个顶点的拖拽手柄（固定屏幕像素大小）
+    const handleSize = 10
+    const half = handleSize / 2
+    const corners = [p1, p2, p3, p4]
+
+    this.selectionHandles = corners.map((p, idx) => ({
+      id: `corner_${idx}`,
+      x: p.x - half,
+      y: p.y - half,
+      size: handleSize,
+    }))
+
+    ctx.fillStyle = '#ffffff'
+    ctx.strokeStyle = '#1890ff'
+    ctx.lineWidth = 2
+    for (const h of this.selectionHandles) {
+      ctx.beginPath()
+      ctx.rect(h.x, h.y, h.size, h.size)
+      ctx.fill()
+      ctx.stroke()
+    }
+
     ctx.restore()
   }
 
-  render() {
+  render(isDragging: boolean = false) {
     const ctx = this.ctx
 
     // 获取显示尺寸（CSS 像素），用于清除和绘制
@@ -168,11 +254,15 @@ export class CanvasRenderer {
     }
 
     ctx.restore()
+
     // 绘制标尺
     if (this.rule) {
       this.rule.render()
     }
-    this.renderSelect()
+    if (isDragging) {
+      this.renderSelect()
+    }
+    this.renderName()
   }
 
   // 4. 清理方法

@@ -42,7 +42,7 @@ export abstract class BaseElement {
   }
 
   abstract draw(ctx: CanvasRenderingContext2D, dx: number, dy: number): void
-  abstract hitTest(px: number, py: number): boolean
+
 
   move(dx: number, dy: number) {
     this.x += dx
@@ -59,6 +59,8 @@ export abstract class BaseElement {
 
     const nameConfig = elementConfig.name
     ctx.save()
+    // ctx.restore()
+
 
     // 设置字体
     ctx.font = `${nameConfig.fontSize}px ${nameConfig.fontFamily}`
@@ -93,7 +95,7 @@ export abstract class BaseElement {
   ) {
     if (!this.visible) return
     this.draw(ctx, dx, dy)
-    this.showName(ctx, dx, dy)
+    // this.showName(ctx, dx, dy)
     if (this.children) {
       for (const child of this.children) {
         const childElement = store.getById(child)
@@ -136,7 +138,7 @@ export abstract class BaseElement {
   setHeight(height: number) {
     this.height = height
   }
-  getNodeInfo(){
+  getNodeInfo() {
     return {
       id: this.id,
       name: this.name,
@@ -148,7 +150,7 @@ export abstract class BaseElement {
 
     }
   }
-  getAttr(){
+  getAttr() {
     return {
       id: this.id,
       name: this.name,

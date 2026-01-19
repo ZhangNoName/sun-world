@@ -350,7 +350,15 @@ export class ElementStore {
         : index
     parentNode.children.splice(i, 0, childNode)
   }
-
+  getFrame() {
+    const frame = []
+    for (let node of this.nodeMap.values()) {
+      if (node.visible && node.type === ElementType.Rect) {
+        frame.push(node.id)
+      }
+    }
+    return frame
+  }
 
 
   /**

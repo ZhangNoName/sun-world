@@ -76,7 +76,7 @@ export class SWEditor {
       input: this.inputManager,
       viewport: this.viewportState,
       elements: this.elementStore,
-      render: debounce(() => this.renderer.render(), 0),
+      render: debounce((isDragging?: boolean) => this.renderer.render(isDragging), 0),
     })
     // 默认激活选择工具
     this.toolManager.activateTool('drag')

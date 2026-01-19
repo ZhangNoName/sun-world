@@ -15,7 +15,7 @@ export interface ToolContext {
   input: InputManager // 鼠标、键盘、组合键（Shift/Alt/Ctrl）
   viewport: ViewportState // 坐标转换、缩放、平移
   elements: ElementStore // hitTest、add、update、remove
-  render: () => void // 渲染调度
+  render: (isDragging?: boolean) => void // 渲染调度
 }
 
 export abstract class BaseTool {

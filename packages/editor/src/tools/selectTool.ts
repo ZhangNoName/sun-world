@@ -36,7 +36,7 @@ export default class SelectTool extends BaseTool {
       this.dragging = true
     }
 
-    this.ctx.render()
+    this.ctx.render(true)
   }
   onMouseMove(e: MouseEvent): void {
     if (!this.dragging || !this.selectedEl) return
@@ -56,6 +56,7 @@ export default class SelectTool extends BaseTool {
   onMouseUp(): void {
     console.log('SelectTool.onMouseUp')
     this.dragging = false
+    this.ctx.render(true)
   }
   activate(): void {
     console.log('SelectTool.activate')
