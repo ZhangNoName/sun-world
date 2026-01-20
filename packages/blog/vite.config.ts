@@ -57,8 +57,14 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
-        '@sun-world/icons': resolve(__dirname, '../icons/src'),
-        '@sun-world/editor': resolve(__dirname, '../editor/src'),
+        // '@sun-world/icons': resolve(__dirname, '../icons/src'),
+        // '@sun-world/editor': resolve(__dirname, '../editor/src'),
+        ...(!isProd
+          ? {
+              "@sun-world/icons": resolve(__dirname, "../icons/src"),
+              "@sun-world/editor": resolve(__dirname, "../editor/src"),
+            }
+          : {}),
       },
     },
 
