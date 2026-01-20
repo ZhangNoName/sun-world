@@ -35,7 +35,7 @@ onMounted(() => {
     })
     editor.value?.elementStoreChanged((ele) => {
       elements.value = ele
-      console.log('elements', elements.value)
+      // console.log('elements', elements.value)
     })
     ;(window as any).sw = editor
   }

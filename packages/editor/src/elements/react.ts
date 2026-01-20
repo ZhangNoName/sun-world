@@ -10,9 +10,12 @@ export class RectElement extends BaseElement {
     y: number
     width: number
     height: number
+    name: string
+    id?: string
     fill?: { type: FillType; color?: string; imageUrl?: string }
   }) {
-    super({ type: ElementType.Rect, name: 'Rect', ...params })
+    const { id, ...rest } = params
+    super({ ...rest, id: id ?? crypto.randomUUID(), type: ElementType.Rect })
 
     // 如果没有提供 fill，则从预设色彩集合中随机获取
     if (!params.fill) {
@@ -82,7 +85,7 @@ export class RectElement extends BaseElement {
   getBounds() {
     return { x: this.x, y: this.y, width: this.width, height: this.height }
   }
-  getAttr(){
+  getAttr() {
     return {
       ...super.getAttr(),
       fill: this.fill,

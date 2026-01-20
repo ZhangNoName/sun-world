@@ -14,7 +14,7 @@ watch(
     if (newVal) {
       newVal.elementTreeChanged((ele) => {
         root.value = ele
-        console.log('elements', ele)
+        console.log('左侧树 ---elements',root.value.length,root.value[0], root.value)
       })
     }
   },

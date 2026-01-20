@@ -1,114 +1,111 @@
-
 import type { BaseElement } from './baseElement.class'
 import { RectElement } from './react'
 import { ElementType } from './element.config'
+import { EleName } from './name'
+
 export interface EleTreeNode {
-  id: string,
-  name: string,
-  type: ElementType,
-  visible: boolean,
-  locked: boolean,
-  parentId: string | null,
+  id: string
+  name: string
+  type: ElementType
+  visible: boolean
+  locked: boolean
   /**
-   * 只存子节点 id，顺序即渲染/图层顺序
+   * 统一语义：
+   * - 根节点（id === 'root'）：parentId === null
+   * - 其它节点：parentId 永远有值（默认 'root'）
    */
-  children: EleTreeNode[],
+  parentId: string | null
+  children: EleTreeNode[]
 }
+
+type PersistedV1 = {
+  version: 1
+  updatedAt: number
+  data: any[]
+}
+
 export class ElementStore {
+  private eleName = new EleName()
   private storageKey = 'editor-data'
   private elements: Map<string, BaseElement> = new Map()
-  /**
-   * 扁平节点表：节点查找 O(1)
-   */
   private nodeMap: Map<string, EleTreeNode> = new Map()
-  /**
-   * 层级变化监听：只关注 parent/children/顺序 等结构变化
-   */
-  private hierarchyChangedListeners: Set<(root: EleTreeNode[]) => void> = new Set()
-  /**
-   * 元素变化监听：关注元素对象（几何/样式）及节点元信息（name/visible/locked）变化
-   */
+
+  private hierarchyChangedListeners: Set<(rootChildren: EleTreeNode[]) => void> =
+    new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
-  private selectedElement: string | null = null
-  /**
-   * root 只负责“层级关系 + 顺序关系”
-   */
-  private root: EleTreeNode[] = []
-  private readonly ROOT_ID = 'root'
-  private isHydrating = false
-  constructor() {
 
+  private selectedElement: string | null = null
+  public readonly ROOT_ID = 'root'
+
+  /**
+   * 统一的根节点：所有“根层元素”的 parentId 都指向它（ROOT_ID）
+   */
+  private root: EleTreeNode = {
+    id: this.ROOT_ID,
+    name: '根节点',
+    type: ElementType.Group,
+    visible: true,
+    locked: false,
+    parentId: null,
+    children: [],
+  }
+
+  private isHydrating = false
+
+  constructor() {
+    this.nodeMap.set(this.ROOT_ID, this.root)
     this.loadLocal()
   }
 
+  public generateName(type: ElementType) {
+    return this.eleName.getName(type)
+  }
   /**
-   * 统一根层语义：parentId === null 表示在 root（根层）
-   * 历史代码里可能会出现 parentId === 'root'，这里统一当作 null 处理。
+   * 将 parentId 统一为“必定存在的父节点 id”
+   * - null/undefined/'' => ROOT_ID
    */
-  private normalizeParentId(parentId: string | null | undefined): string | null {
-    if (!parentId) return null
-    return parentId === this.ROOT_ID ? null : parentId
+  private normalizeParentId(parentId?: string | null): string {
+    if (!parentId) return this.ROOT_ID
+    return parentId
   }
 
-  /**
-   * 添加元素：默认插入到根节点末尾
-   * - 会触发：层级变化 + 元素变化
-   */
-  add(el: BaseElement, parentId: string | null = null, index?: number) {
-    const actualParentId = this.normalizeParentId(parentId)
+  private getNode(id: string): EleTreeNode | undefined {
+    return id === this.ROOT_ID ? this.root : this.nodeMap.get(id)
+  }
 
-    // 1) 写入元素对象
+  private rebuildElementRelations() {
+    // 让 BaseElement.parentId/children 与 node 树保持一致（渲染/名字定位需要）
+    for (const el of this.elements.values()) {
+      el.parentId = null
+      el.children = null
+    }
+
+    for (const [id, node] of this.nodeMap.entries()) {
+      if (id === this.ROOT_ID) continue
+      const el = this.elements.get(id)
+      if (!el) continue
+      el.parentId = node.parentId // 根层为 'root'
+      el.children = node.children.length > 0 ? node.children.map((c) => c.id) : null
+      el.visible = node.visible
+      el.name = node.name
+    }
+  }
+
+  add(el: BaseElement, parentId?: string | null, index?: number) {
+    const pid = this.normalizeParentId(parentId)
+    const parentNode = this.getNode(pid)
+    if (!parentNode) return
+
     this.elements.set(el.id, el)
 
-    // 2) 写入节点（层级/顺序）
-    const node = el.getNodeInfo()
+    const node = el.getNodeInfo() as EleTreeNode
+    node.parentId = pid
+    node.children = []
     this.nodeMap.set(node.id, node)
 
-    // 3) 挂到父节点 children（顺序）
-    node.parentId = actualParentId
-    this.insertChild(actualParentId, node.id, index)
-
-
-
-    if (!this.isHydrating) {
-      this.saveLocal()
-      this.emitHierarchyChanged()
-      // this.emitElementsChanged()
-    }
-  }
-
-  /**
-   * 删除节点（包含子树）
-   * - 会触发：层级变化 + 元素变化
-   */
-  remove(id: string) {
-    const node = this.getNodeById(id)
-    if (!node) return
-
-    // 1) 从父节点 children 中移除
-    const oldParentId = this.normalizeParentId(node.parentId)
-    if (oldParentId === null) {
-      this.root = this.root.filter((n) => n.id !== id)
-    } else {
-      const parentNode = this.getNodeById(oldParentId)
-      if (parentNode) {
-        parentNode.children = parentNode.children.filter((n) => n.id !== id)
-      }
-    }
-
-    // 2) 删除子树, bfs 广度优先搜索
-    const q = [node]
-    while (q.length > 0) {
-      const current = q.shift()
-      if (current) {
-        this.nodeMap.delete(current.id)
-        this.elements.delete(current.id)
-        q.push(...current.children)
-      }
-    }
-
-
+    this.insertChild(pid, node.id, index)
+    this.rebuildElementRelations()
 
     if (!this.isHydrating) {
       this.saveLocal()
@@ -117,122 +114,127 @@ export class ElementStore {
     }
   }
 
-  getAll() {
-    return Array.from(this.root)
-  }
-  getRootElements() {
-    return this.root
-      .map((node) => this.elements.get(node.id))
-      .filter((el): el is BaseElement => el !== undefined)
-  }
-  getById(id: string) {
-    return this.elements.get(id)
-  }
-  getNodeById(id: string) {
-    return this.nodeMap.get(id)
-  }
-  /**
-   * 获取某节点的子节点 id（顺序即 children 顺序）
-   */
-  getChildrenIds(id: string) {
-    const node = this.getNodeById(id)
-    return node ? [...node.children] : []
-  }
-
-  /**
-   * 仅变更层级/顺序：移动节点到新父节点/新位置
-   */
-  moveNode(id: string, newParentId: string | null, index?: number) {
-    const node = this.getNodeById(id)
+  remove(id: string) {
+    if (id === this.ROOT_ID) return
+    const node = this.getNode(id)
     if (!node) return
 
-    const oldParentId = this.normalizeParentId(node.parentId)
-    const targetParentId = this.normalizeParentId(newParentId)
-    if (oldParentId === targetParentId) return
-
-    // 1) 从旧父节点移除（root 或 parent.children）
-    if (oldParentId === null) {
-      this.root = this.root.filter((n) => n.id !== id)
-    } else {
-      const oldParentNode = this.getNodeById(oldParentId)
-      if (oldParentNode) {
-        oldParentNode.children = oldParentNode.children.filter((n) => n.id !== id)
-      }
+    // 从父节点移除
+    const parentId = this.normalizeParentId(node.parentId)
+    const parentNode = this.getNode(parentId)
+    if (parentNode) {
+      parentNode.children = parentNode.children.filter((c) => c.id !== id)
     }
-    console.log('移动----newParentId', newParentId)
-    if (!newParentId) {
-      this.root.push(node)
-      return
+
+    // BFS 删除子树
+    const q: EleTreeNode[] = [node]
+    while (q.length) {
+      const cur = q.shift()!
+      q.push(...cur.children)
+      this.nodeMap.delete(cur.id)
+      this.elements.delete(cur.id)
+      if (this.selectedElement === cur.id) this.selectedElement = null
     }
-    const newParentNode = this.getNodeById(newParentId)
-    newParentNode?.children.push(node)
-    // 2) 插入到新父节点（root 或 parent.children）
-    // this.insertChild(newParentId, id, index)
-    node.parentId = newParentId
 
-
-    console.log('更新----node', this.root)
+    this.rebuildElementRelations()
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitHierarchyChanged()
-      // move 不一定改变元素对象，但为了让 UI/渲染立即反映层级变化，也触发一次元素变化
       // this.emitElementsChanged()
     }
   }
 
+  getAll() {
+    return Array.from(this.elements.values())
+  }
+
+  getRootElements() {
+    return this.root.children
+      .map((node) => this.elements.get(node.id))
+      .filter((el): el is BaseElement => el !== undefined)
+  }
+
+  getById(id: string) {
+    return this.elements.get(id)
+  }
+
+  getNodeById(id: string) {
+    return this.getNode(id)
+  }
+
   /**
-   * 更新节点元信息（不改层级）
+   * 变更层级：把节点挂到新的 parent 下（根层也用 ROOT_ID 表示）
    */
+  moveNode(id: string, newParentId?: string | null, index?: number) {
+    if (id === this.ROOT_ID) return
+    const node = this.getNode(id)
+    if (!node) return
+
+    const targetParentId = this.normalizeParentId(newParentId)
+    if (targetParentId === id) return
+    if (node.parentId === targetParentId) return
+
+    // 不允许移动到自己的子树里
+    const targetParentNode = this.getNode(targetParentId)
+    if (!targetParentNode) return
+    if (this.isDescendant(targetParentNode, id)) return
+
+    // 从旧父节点移除
+    const oldParentNode = this.getNode(this.normalizeParentId(node.parentId))
+    if (oldParentNode) {
+      oldParentNode.children = oldParentNode.children.filter((c) => c.id !== id)
+    }
+
+    // 插入新父节点
+    node.parentId = targetParentId
+    this.insertChild(targetParentId, id, index)
+    this.rebuildElementRelations()
+
+    if (!this.isHydrating) {
+      this.saveLocal()
+      this.emitHierarchyChanged()
+      this.emitElementsChanged()
+    }
+  }
+
+  private isDescendant(parent: EleTreeNode, possibleDescendantId: string): boolean {
+    const q: EleTreeNode[] = [...parent.children]
+    while (q.length) {
+      const cur = q.shift()!
+      if (cur.id === possibleDescendantId) return true
+      q.push(...cur.children)
+    }
+    return false
+  }
+
   updateNodeMeta(
     id: string,
     meta: Partial<Pick<EleTreeNode, 'name' | 'visible' | 'locked'>>
   ) {
     if (id === this.ROOT_ID) return
-    const node = this.getNodeById(id)
+    const node = this.getNode(id)
     if (!node) return
     if (meta.name !== undefined) node.name = meta.name
     if (meta.visible !== undefined) node.visible = meta.visible
     if (meta.locked !== undefined) node.locked = meta.locked
 
-    // 同步到元素对象（兼容旧逻辑：渲染直接用 element.visible / element.name）
-    const el = this.getById(id)
-    if (el) {
-      if (meta.name !== undefined) el.name = meta.name
-      if (meta.visible !== undefined) el.visible = meta.visible
-      // locked 目前 BaseElement 没有字段，仅存在节点层
-    }
+    this.rebuildElementRelations()
 
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitElementsChanged()
+      this.emitHierarchyChanged()
     }
   }
-  // 元素更新后调用
+
+  // 元素更新后调用（几何/样式变化）
   update() {
-    // 将元素对象（name/visible/type）同步回节点表，保证两边一致
-    for (const [id, el] of this.elements.entries()) {
-      const node = this.nodeMap.get(id)
-      if (!node) continue
-      node.name = el.name ?? node.name
-      node.visible = el.visible ?? node.visible
-      node.type = el.type ?? node.type
-    }
-
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitElementsChanged()
     }
   }
-  addElementsChanged(cb: (elements: BaseElement[]) => void) {
-    cb(this.getAll())
-    this.elementsChangedListeners.add(cb)
-  }
-  removeElementsChanged(cb: (elements: BaseElement[]) => void) {
-    this.elementsChangedListeners.delete(cb)
-  }
-  /**
-   * 新 API：监听元素变化（返回取消订阅）
-   */
+
   onElementsChange(cb: (elements: BaseElement[]) => void) {
     cb(this.getAll())
     this.elementsChangedListeners.add(cb)
@@ -242,136 +244,166 @@ export class ElementStore {
     this.elementsChangedListeners.forEach((cb) => cb(this.getAll()))
   }
 
-  /**
-   * 监听层级变化（parent/children/顺序）
-   */
-  onHierarchyChange(cb: (root: EleTreeNode[]) => void) {
-    cb(this.root)
+  onHierarchyChange(cb: (rootChildren: EleTreeNode[]) => void) {
+    cb(this.root.children)
     this.hierarchyChangedListeners.add(cb)
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
-
-    this.hierarchyChangedListeners.forEach((cb) => cb(this.root))
+    this.hierarchyChangedListeners.forEach((cb) => cb(this.root.children))
   }
 
   saveLocal() {
-    const tree = []
-    const getTree = (node: EleTreeNode) => {
-      const tmpElement = this.elements.get(node.id)
-      if (!tmpElement) return
-      const tmp = tmpElement.getAttr()
-      const next = []
-      for (let child of node.children) {
+    const buildTree = (node: EleTreeNode): any => {
+      const el = this.elements.get(node.id)
+      if (!el) return null
+      const attr = el.getAttr()
+      attr.children = node.children.map(buildTree).filter(Boolean)
+      // 统一保存 parentId（根层为 ROOT_ID）
+      attr.parentId = node.parentId
+      return attr
+    }
 
-        next.push(getTree(child))
-      }
-      tmp.children = next
-      return tmp
-    }
-    for (let node of this.root) {
-      tree.push(getTree(node))
-    }
-    localStorage.setItem(this.storageKey, JSON.stringify({
-      data: tree,
+    const data: PersistedV1 = {
       version: 1,
       updatedAt: Date.now(),
-    }))
+      data: this.root.children.map(buildTree).filter(Boolean),
+    }
+    localStorage.setItem(this.storageKey, JSON.stringify(data))
   }
+
   loadLocal() {
     this.isHydrating = true
     try {
+      const raw = localStorage.getItem(this.storageKey)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as PersistedV1
+      if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.data)) return
 
-      const tree = JSON.parse(localStorage.getItem(this.storageKey) || '{}')
-      console.log('tree', tree)
-      if (tree.version !== 1) return
-      this.root = tree.data
-      const loadTree = (tree: any[]) => {
-        for (let node of tree) {
-          const el = new RectElement(node)
-          this.elements.set(node.id, el)
+      // 重建：保留 root，自顶向下恢复 children
+      this.elements.clear()
+      this.nodeMap.clear()
+      this.root.children = []
+      this.nodeMap.set(this.ROOT_ID, this.root)
+      this.selectedElement = null
+
+      const createElement = (attr: any) => {
+        // 目前只有 Rect，后续可按 attr.type 分发
+        const el = new RectElement({
+          x: attr?.x ?? 0,
+          y: attr?.y ?? 0,
+          width: attr?.width ?? 0,
+          height: attr?.height ?? 0,
+          fill: attr?.fill,
+        } as any)
+        el.setAttr({ ...attr, children: null })
+        return el
+      }
+
+      const walk = (arr: any[], parentId: string, parentNode: EleTreeNode) => {
+        for (const item of arr) {
+          if (!item?.id) continue
+          const el = createElement(item)
+          this.elements.set(el.id, el)
+
+          const node: EleTreeNode = {
+            id: el.id,
+            name: el.name ?? '',
+            type: el.type ?? ElementType.Rect,
+            visible: el.visible ?? true,
+            locked: false,
+            parentId,
+            children: [],
+          }
           this.nodeMap.set(node.id, node)
-          if (node.children) {
-            loadTree(node.children)
+          parentNode.children.push(node)
+
+          if (Array.isArray(item.children) && item.children.length) {
+            walk(item.children, node.id, node)
           }
         }
       }
-      loadTree(this.root)
 
-      // 4) 同步派生关系
-      //
+      walk(parsed.data, this.ROOT_ID, this.root)
+      this.rebuildElementRelations()
     } finally {
       this.isHydrating = false
     }
 
-    // hydrating 完成后统一触发一次
     this.emitHierarchyChanged()
     this.emitElementsChanged()
   }
+
+  /**
+   * 命中检测：返回是否命中，并更新 selectedElement 为最上层命中节点
+   */
   hitTest(x: number, y: number) {
-    let nodeList: EleTreeNode[] = []
-    // 已经被选中的元素直接返回
-    if (this.selectedElement && this.getById(this.selectedElement)?.hitTest(x, y)) {
-      nodeList = this.getNodeById(this.selectedElement)?.children ?? []
-      nodeList.push(this.getNodeById(this.selectedElement)!)
-      console.log('已有的元素命中', this.selectedElement)
-    } else {
-      nodeList = this.root
-      console.log('根元素命中', nodeList)
+    const hitId = this.hitTestNodeList(this.root.children, x, y)
+    if (hitId) {
+      this.selectedElement = hitId
+      return true
     }
-
-    for (let node of nodeList) {
-      if (node.visible && this.getById(node.id)?.hitTest(x, y)) {
-        this.selectedElement = node.id
-      }
-    }
-    return !!this.selectedElement
-
+    this.selectedElement = null
+    return false
   }
+
+  private hitTestNodeList(nodes: EleTreeNode[], x: number, y: number): string | null {
+    // 从后往前：后面的更上层
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i]
+      if (!n.visible) continue
+
+      // 子节点优先
+      if (n.children.length) {
+        const childHit = this.hitTestNodeList(n.children, x, y)
+        if (childHit) return childHit
+      }
+
+      const el = this.elements.get(n.id)
+      if (el?.hitTest(x, y)) return n.id
+    }
+    return null
+  }
+
+  /**
+   * 拖拽过程中判断是否需要改变 parentId：
+   * - 返回新的 parentId（没变化则返回 null）
+   */
   hitTopExcludeSelected(x: number, y: number) {
     if (!this.selectedElement) return null
-
     const selectedId = this.selectedElement
-    const selectedNode = this.getNodeById(selectedId)
+    const selectedNode = this.getNode(selectedId)
     if (!selectedNode) return null
 
-    // 目标：拖拽过程中判断是否需要变更 parentId
-    // 规则：
-    // - 优先命中“当前父节点”（避免在父容器内拖动时频繁变更）
-    // - 否则命中“根层最上方的容器节点”（按 root 顺序从上到下）
-    // - 排除自己（不能把自己设为自己的 parent）
+    // 先命中“当前父容器”则不变
     const currentParentId = this.normalizeParentId(selectedNode.parentId)
-
-    // 1) 先看当前父节点是否命中
-    if (currentParentId) {
-      const parentNode = this.getNodeById(currentParentId)
-      const parentEl = parentNode ? this.getById(parentNode.id) : undefined
-      if (parentNode?.visible && parentEl?.hitTest(x, y)) {
-        return null // 仍在父容器内，不变更
-      }
+    const currentParentNode = this.getNode(currentParentId)
+    const currentParentEl = currentParentNode
+      ? this.elements.get(currentParentNode.id)
+      : undefined
+    if (currentParentNode && currentParentNode.id !== this.ROOT_ID) {
+      if (currentParentNode.visible && currentParentEl?.hitTest(x, y)) return null
     }
 
-    // 2) 再从根层（上层优先）找新的父节点
-    let newParentId: string | null = null
-    for (let i = 0; i < this.root.length; i++) {
-      const node = this.root[i]
-      if (!node?.visible) continue
+    // 根层从上到下找命中的父（排除自己和自己子树）
+    let newParentId: string = this.ROOT_ID
+    for (let i = this.root.children.length - 1; i >= 0; i--) {
+      const node = this.root.children[i]
+      if (!node.visible) continue
       if (node.id === selectedId) continue
-      const el = this.getById(node.id)
+      if (this.isDescendant(node, selectedId)) continue
+      const el = this.elements.get(node.id)
       if (el?.hitTest(x, y)) {
         newParentId = node.id
         break
       }
     }
 
-    // 3) 统一 parentId 语义并执行变更
-    const normalizedNewParentId = this.normalizeParentId(newParentId)
-    if (normalizedNewParentId === currentParentId) return null
-    if (normalizedNewParentId === selectedId) return null
-
-    // this.moveNode(selectedId, normalizedNewParentId)
-    return normalizedNewParentId
+    if (newParentId === currentParentId) return null
+    this.moveNode(selectedId, newParentId)
+    return newParentId
   }
+
   getSelectedElement() {
     return this.selectedElement ? this.getById(this.selectedElement) : null
   }
@@ -382,33 +414,13 @@ export class ElementStore {
     this.selectedElement = null
   }
 
+  private insertChild(parentId: string, childId: string, index?: number) {
+    const parentNode = this.getNode(this.normalizeParentId(parentId))
+    const childNode = this.getNode(childId)
+    if (!parentNode || !childNode) return
 
-  private insertChild(parentId: string | null, childId: string, index?: number) {
-    const childNode = this.nodeMap.get(childId)
-    if (!childNode) return
-
-    const pid = this.normalizeParentId(parentId)
-    if (pid === null) {
-      // 根层插入：root 是节点数组，顺序即 root 顺序
-      this.root = this.root.filter((n) => n.id !== childId)
-      const i =
-        index === undefined || index < 0 || index > this.root.length
-          ? this.root.length
-          : index
-      this.root.splice(i, 0, childNode)
-      return
-    }
-
-    const parentNode = this.getNodeById(pid)
-    if (!parentNode) {
-      // 父节点不存在，兜底挂根
-      this.insertChild(null, childId, index)
-      childNode.parentId = null
-      return
-    }
-
-    // 先去重
-    parentNode.children = parentNode.children.filter((n) => n.id !== childId)
+    // 去重
+    parentNode.children = parentNode.children.filter((c) => c.id !== childId)
 
     const i =
       index === undefined || index < 0 || index > parentNode.children.length
@@ -416,30 +428,13 @@ export class ElementStore {
         : index
     parentNode.children.splice(i, 0, childNode)
   }
+
   getFrame() {
-    const frame = []
-    for (let node of this.nodeMap.values()) {
-      if (node.visible && node.type === ElementType.Rect) {
-        frame.push(node.id)
-      }
+    const frame: string[] = []
+    for (const node of this.nodeMap.values()) {
+      if (node.id === this.ROOT_ID) continue
+      if (node.visible && node.type === ElementType.Rect) frame.push(node.id)
     }
     return frame
-  }
-
-
-  /**
-   * 兼容旧 API：渲染器以前监听 onChange（不区分事件类型）
-   * 现在改为同时监听“层级变化”和“元素变化”。
-   */
-  onChange(cb: (root: EleTreeNode[]) => void) {
-    // 只立即触发一次，避免重复回调
-    cb(this.root)
-
-    const hierarchyCb = (_root: EleTreeNode[]) => cb(this.root)
-    this.hierarchyChangedListeners.add(hierarchyCb)
-
-    return () => {
-      this.hierarchyChangedListeners.delete(hierarchyCb)
-    }
   }
 }

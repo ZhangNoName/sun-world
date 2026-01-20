@@ -5,19 +5,17 @@ import EleIcon from './icon.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<{
   element: EleTreeNode
-  elementMap: Map<string, EleTreeNode>
   level: number
   expandedItems: Set<string>
-  getChildren: (id: string) => EleTreeNode[]
 }>()
 
 const emit = defineEmits<{
   toggleExpand: [id: string]
 }>()
 
-const children = computed(() => props.getChildren(props.element.id))
-const hasChildren = computed(() => children.value.length > 0)
-const isExpanded = computed(() => props.expandedItems.has(props.element.id))
+const hasChildren = computed(() => props.element.children.length > 0)
+// const isExpanded = computed(() => props.expandedItems.has(props.element.id))
+const isExpanded = true
 
 const toggleExpand = () => {
   if (hasChildren.value) {
@@ -50,13 +48,11 @@ const toggleExpand = () => {
     </div>
     <div v-if="hasChildren && isExpanded" class="tree-children">
       <TreeNode
-        v-for="child in children"
+        v-for="child in element.children"
         :key="child.id"
         :element="child"
-        :element-map="elementMap"
         :level="level + 1"
         :expanded-items="expandedItems"
-        :get-children="getChildren"
         @toggle-expand="emit('toggleExpand', $event)"
       />
     </div>
