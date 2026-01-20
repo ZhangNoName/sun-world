@@ -15,7 +15,7 @@ const Canvas = () => import('@/pages/canvas/canvas.vue')
 const ToolsPage = () => import('@/pages/tools/tools.page.vue')
 const VideoPage = () => import('@/pages/video/video.page.vue')
 const NotFound = () => import('@/router/NotFound.vue')
-
+const QQCb = () => import('@/pages/login/qqCb.vue')
 // 🔥 如果你想额外预加载某个页面，只需要打开这个
 // const preloadBlog = () => import('@/pages/blog/index.vue')
 
@@ -50,6 +50,10 @@ const routes = [
   {
     path: '/video',
     component: VideoPage,
+  },
+  {
+    path: '/qq',
+    component: QQCb,
   },
 
   // 404
