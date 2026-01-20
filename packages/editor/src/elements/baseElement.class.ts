@@ -49,11 +49,6 @@ export abstract class BaseElement {
      * - 若未提供，会尝试从旧字段 x/y/rotation 兼容生成（便于数据迁移）
      */
     matrix?: Matrix
-
-    /** 兼容旧数据：将被转换为 matrix，不会保留为属性 */
-    x?: number
-    y?: number
-    rotation?: number
   }) {
     this.id = params.id
     this.type = params.type
@@ -61,14 +56,7 @@ export abstract class BaseElement {
     this.width = params.width
     this.height = params.height
     this.parentId = params.parentId
-
-    if (params.matrix) {
-      this.matrix = params.matrix
-    } else if (params.x !== undefined || params.y !== undefined || params.rotation !== undefined) {
-      this.matrix = composeTR(params.x ?? 0, params.y ?? 0, params.rotation ?? 0)
-    } else {
-      this.matrix = identity()
-    }
+    this.matrix = params.matrix ?? identity()
   }
 
   /**

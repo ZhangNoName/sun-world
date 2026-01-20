@@ -13,9 +13,6 @@ export class RectElement extends BaseElement {
     id: string
     parentId: string
     matrix?: import('../types/common.type').Matrix
-    /** 兼容旧调用：将被转换为 matrix */
-    x?: number
-    y?: number
     rotation?: number
     fill?: { type: FillType; color?: string; imageUrl?: string }
   }) {
