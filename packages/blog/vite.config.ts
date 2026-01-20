@@ -61,9 +61,9 @@ export default defineConfig(({ mode }) => {
         // '@sun-world/editor': resolve(__dirname, '../editor/src'),
         ...(!isProd
           ? {
-              "@sun-world/icons": resolve(__dirname, "../icons/src"),
-              "@sun-world/editor": resolve(__dirname, "../editor/src"),
-            }
+            "@sun-world/icons": resolve(__dirname, "../icons/src"),
+            "@sun-world/editor": resolve(__dirname, "../editor/src"),
+          }
           : {}),
       },
     },
@@ -101,6 +101,7 @@ export default defineConfig(({ mode }) => {
       cssTarget: 'chrome61',
 
       // ⭐ 使用 Terser 替代 esbuild，压缩效果更好
+      // 优化：减少 passes 次数以降低内存占用（从 3 降到 1）
       minify: 'terser',
       terserOptions: {
         compress: {
@@ -108,7 +109,7 @@ export default defineConfig(({ mode }) => {
           drop_debugger: true,
           // 彻底移除 console.log
           pure_funcs: ['console.log'],
-          passes: 3, // 多次优化
+          passes: 1, // 减少优化次数以降低内存占用
         },
         format: {
           comments: false,
