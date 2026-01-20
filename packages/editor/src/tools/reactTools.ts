@@ -14,6 +14,7 @@ import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { ElementType } from '../elements/element.config'
+import { setTranslation, translate } from '../utils/matrix'
 
 export class RectTool extends BaseTool {
   name: ToolName = 'rect'
@@ -24,6 +25,7 @@ export class RectTool extends BaseTool {
   private startX = 0
   private startY = 0
   private currentRect: RectElement | null = null
+  private readonly minWidthToAdd = 5
 
   constructor(ctx: ToolContext) {
     super(ctx)
@@ -54,35 +56,51 @@ export class RectTool extends BaseTool {
     this.drawing = true
     this.startX = x
     this.startY = y
-
-    this.currentRect = new RectElement({
-      id: getUUID(),
-      parentId: this.store.ROOT_ID,
-      x,
-      y,
-      width: 1,
-      height: 1,
-      name: this.store.generateName(ElementType.Rect),
-    })
-    this.store.add(this.currentRect)
+    // 不立即创建/加入：宽度 > minWidthToAdd 时才加入，避免误触
+    this.currentRect = null
   }
 
   onMouseMove(e: MouseEvent) {
-    if (!this.drawing || !this.currentRect) return
+    if (!this.drawing) return
 
     const x =
       (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
     const y =
       (e.offsetY - this.viewport.transform.y) / this.viewport.transform.scale
 
-    this.currentRect.width = x - this.startX
-    this.currentRect.height = y - this.startY
+    const left = Math.min(this.startX, x)
+    const top = Math.min(this.startY, y)
+    const w = Math.abs(x - this.startX)
+    const h = Math.abs(y - this.startY)
+
+    // 只有宽度足够时才创建并加入 store
+    if (!this.currentRect) {
+      if (w <= this.minWidthToAdd) return
+      this.currentRect = new RectElement({
+        id: getUUID(),
+        parentId: this.store.ROOT_ID,
+        width: w,
+        height: h,
+        matrix: translate(left, top),
+        name: this.store.generateName(ElementType.Rect),
+      })
+      this.store.add(this.currentRect)
+      return
+    }
+
+    this.currentRect.width = w
+    this.currentRect.height = h
+    this.currentRect.matrix = setTranslation(this.currentRect.matrix, left, top)
     this.store.update()
 
   }
 
   onMouseUp() {
     console.log('RectTool onMouseUp')
+    // 如果已经创建但最终宽度仍不够，则移除（保证“宽度>5才加入”语义）
+    if (this.currentRect && this.currentRect.width <= this.minWidthToAdd) {
+      this.store.remove(this.currentRect.id)
+    }
     this.drawing = false
     this.currentRect = null
   }

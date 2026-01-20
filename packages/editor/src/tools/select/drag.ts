@@ -36,8 +36,10 @@ export default class DragTool extends BaseTool {
     this.lastX = e.clientX
     this.lastY = e.clientY
 
-    // 更新 viewport
-    this.selectedEl.move(dx, dy)
+    // 将屏幕像素位移转换为画布坐标位移（父坐标系）
+    const cdx = dx / this.viewport.transform.scale
+    const cdy = dy / this.viewport.transform.scale
+    this.selectedEl.move(cdx, cdy)
     this.ctx.render()
   }
   onMouseUp(): void {

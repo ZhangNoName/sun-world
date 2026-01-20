@@ -2,20 +2,22 @@ import type { BaseElement } from './baseElement.class'
 import { RectElement } from './react'
 import { ElementType } from './element.config'
 import { EleName } from './name'
+import { identity, invert, multiply } from '../utils/matrix'
 
-export interface EleTreeNode {
-  id: string
-  name: string
-  type: ElementType
-  visible: boolean
-  locked: boolean
+export class EleTreeNode {
+  id!: string
+  name!: string
+  type!: ElementType
+  visible!: boolean
+  locked!: boolean
+  _isDirty: boolean = false
   /**
    * 统一语义：
    * - 根节点（id === 'root'）：parentId === null
    * - 其它节点：parentId 永远有值（默认 'root'）
    */
-  parentId: string | null
-  children: EleTreeNode[]
+  parentId!: string | null
+  children!: EleTreeNode[]
 }
 
 type PersistedV1 = {
@@ -47,6 +49,7 @@ export class ElementStore {
     type: ElementType.Group,
     visible: true,
     locked: false,
+    _isDirty: false,
     parentId: null,
     children: [],
   }
@@ -76,26 +79,13 @@ export class ElementStore {
   }
 
   /**
-   * 计算元素的世界坐标（把 parent 链上的偏移叠加起来）
+   * 计算元素的世界矩阵（把 parent 链上的 TR 叠加起来）
    * 约定：parentId === ROOT_ID 为根，不再继续向上找。
    */
-  private getElementWorldPosition(id: string): { x: number; y: number } {
+  private getElementWorldMatrix(id: string) {
     const el = this.elements.get(id)
-    if (!el) return { x: 0, y: 0 }
-
-    let x = el.x
-    let y = el.y
-    let p = el.parentId
-
-    while (p && p !== this.ROOT_ID) {
-      const parent = this.elements.get(p)
-      if (!parent) break
-      x += parent.x
-      y += parent.y
-      p = parent.parentId
-    }
-
-    return { x, y }
+    if (!el) return identity()
+    return el.getWorldMatrix(this)
   }
 
   private rebuildElementRelations() {
@@ -317,12 +307,21 @@ export class ElementStore {
       const createElement = (attr: any) => {
         // 目前只有 Rect，后续可按 attr.type 分发
         const el = new RectElement({
-          x: attr?.x ?? 0,
-          y: attr?.y ?? 0,
+          id: attr?.id ?? this.generateName(ElementType.Rect),
+          parentId: this.normalizeParentId(attr?.parentId),
+          name: attr?.name ?? this.generateName(ElementType.Rect),
           width: attr?.width ?? 0,
           height: attr?.height ?? 0,
+          matrix:
+            Array.isArray(attr?.matrix) && attr.matrix.length === 6
+              ? attr.matrix
+              : undefined,
+          // 兼容旧数据：setAttr 内部会从 x/y/rotation 推导 matrix
+          x: attr?.x,
+          y: attr?.y,
+          rotation: attr?.rotation,
           fill: attr?.fill,
-        } as any)
+        })
         el.setAttr({ ...attr, children: null })
         return el
       }
@@ -339,6 +338,7 @@ export class ElementStore {
             type: el.type ?? ElementType.Rect,
             visible: el.visible ?? true,
             locked: false,
+            _isDirty: false,
             parentId,
             children: [],
           }
@@ -387,7 +387,7 @@ export class ElementStore {
       }
 
       const el = this.elements.get(n.id)
-      if (el?.hitTest(x, y)) return n.id
+      if (el?.hitTest(x, y, this)) return n.id
     }
     return null
   }
@@ -409,7 +409,7 @@ export class ElementStore {
       ? this.elements.get(currentParentNode.id)
       : undefined
     if (currentParentNode && currentParentNode.id !== this.ROOT_ID) {
-      if (currentParentNode.visible && currentParentEl?.hitTest(x, y)) return null
+      if (currentParentNode.visible && currentParentEl?.hitTest(x, y, this)) return null
     }
 
     // 根层从上到下找命中的父（排除自己和自己子树）
@@ -420,7 +420,7 @@ export class ElementStore {
       if (node.id === selectedId) continue
       if (this.isDescendant(node, selectedId)) continue
       const el = this.elements.get(node.id)
-      if (el?.hitTest(x, y)) {
+      if (el?.hitTest(x, y, this)) {
         newParentId = node.id
         break
       }
@@ -448,15 +448,18 @@ export class ElementStore {
 
     if (!parentNode || !childNode) return
 
-    // 关键：插入后需要把元素坐标从“旧父坐标系”重算为“新父坐标系”
-    // 保持世界坐标不变：local = world(child) - world(newParent)
+    // 关键：插入后需要把元素变换从“旧父坐标系”重算为“新父坐标系”
+    // 保持世界变换不变：local = inverse(world(newParent)) * world(child)
     const childEl = this.elements.get(nodeId)
     if (childEl) {
-      const childWorld = this.getElementWorldPosition(nodeId)
+      const childWorld = this.getElementWorldMatrix(nodeId)
       const parentWorld =
-        pid === this.ROOT_ID ? { x: 0, y: 0 } : this.getElementWorldPosition(pid)
-      childEl.x = childWorld.x - parentWorld.x
-      childEl.y = childWorld.y - parentWorld.y
+        pid === this.ROOT_ID ? identity() : this.getElementWorldMatrix(pid)
+      const invParent = invert(parentWorld)
+      if (invParent) {
+        const newLocal = multiply(invParent, childWorld)
+        childEl.matrix = newLocal
+      }
     }
 
     // 去重

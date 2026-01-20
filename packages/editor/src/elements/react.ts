@@ -1,18 +1,22 @@
 import { BaseElement } from './baseElement.class'
 import { ElementType, FillType, getRandomColor } from './element.config'
+import { getTranslation } from '../utils/matrix'
 
 export class RectElement extends BaseElement {
   type: ElementType = ElementType.Rect
   private imageCache: HTMLImageElement | null = null
 
   constructor(params: {
-    x: number
-    y: number
     width: number
     height: number
     name: string
     id: string
     parentId: string
+    matrix?: import('../types/common.type').Matrix
+    /** 兼容旧调用：将被转换为 matrix */
+    x?: number
+    y?: number
+    rotation?: number
     fill?: { type: FillType; color?: string; imageUrl?: string }
   }) {
     const { id, parentId, ...rest } = params
@@ -50,11 +54,7 @@ export class RectElement extends BaseElement {
     img.src = imageUrl
   }
 
-  draw(ctx: CanvasRenderingContext2D, dx: number, dy: number) {
-    ctx.save()
-    ctx.translate(this.x + dx, this.y + dy)
-    ctx.rotate(this.rotation)
-
+  draw(ctx: CanvasRenderingContext2D) {
     // 根据填充类型绘制
     if (
       this.fill.type === FillType.Image &&
@@ -70,22 +70,11 @@ export class RectElement extends BaseElement {
       ctx.fillStyle = this.fill.color || getRandomColor()
       ctx.fillRect(0, 0, this.width, this.height)
     }
-
-    ctx.restore()
-  }
-
-  hitTest(px: number, py: number): boolean {
-    // 根据矩阵逆变换回局部坐标
-    return (
-      px >= this.x &&
-      px <= this.x + this.width &&
-      py >= this.y &&
-      py <= this.y + this.height
-    )
   }
 
   getBounds() {
-    return { x: this.x, y: this.y, width: this.width, height: this.height }
+    const { x, y } = getTranslation(this.matrix)
+    return { x, y, width: this.width, height: this.height }
   }
   getAttr() {
     return {

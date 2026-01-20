@@ -1,2 +1,5 @@
 // 鼠标位置
 export type Point = { x: number; y: number }
+// 变换矩阵 [a, b, c, d, e, f] a: 水平缩放, b: 水平倾斜, c: 垂直倾斜, d: 垂直缩放, e: 水平平移, f: 垂直平移
+
+export type Matrix = [a: number, b: number, c: number, d: number, e: number, f: number]

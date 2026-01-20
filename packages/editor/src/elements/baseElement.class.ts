@@ -5,15 +5,27 @@ import {
   FillType,
 } from './element.config'
 import { EleTreeNode } from './elementStore'
+import type { Matrix, Point } from '../types/common.type'
+import {
+  applyToPoint,
+  composeTR,
+  identity,
+  invert,
+  multiply,
+  setTranslation,
+  translateBy,
+} from '../utils/matrix'
 
 export abstract class BaseElement {
   type: ElementType
   id: string
-  x: number
-  y: number
   width: number
   height: number
-  rotation: number = 0
+  /**
+   * 本地变换矩阵：把元素局部坐标系 (0,0..w,h) 映射到父坐标系
+   * - 使用 `common.type.ts` 的数组形式 `[a,b,c,d,e,f]`
+   */
+  matrix: Matrix
   visible: boolean = true
   isSelected: boolean = false
   name: string = ''
@@ -28,28 +40,115 @@ export abstract class BaseElement {
 
     type: ElementType
     name: string
-    x: number
-    y: number
     width: number
     height: number
     parentId: string
+
+    /**
+     * 推荐：直接传本地矩阵
+     * - 若未提供，会尝试从旧字段 x/y/rotation 兼容生成（便于数据迁移）
+     */
+    matrix?: Matrix
+
+    /** 兼容旧数据：将被转换为 matrix，不会保留为属性 */
+    x?: number
+    y?: number
+    rotation?: number
   }) {
     this.id = params.id
     this.type = params.type
     this.name = params.name
-    this.x = params.x
-    this.y = params.y
     this.width = params.width
     this.height = params.height
     this.parentId = params.parentId
+
+    if (params.matrix) {
+      this.matrix = params.matrix
+    } else if (params.x !== undefined || params.y !== undefined || params.rotation !== undefined) {
+      this.matrix = composeTR(params.x ?? 0, params.y ?? 0, params.rotation ?? 0)
+    } else {
+      this.matrix = identity()
+    }
   }
 
-  abstract draw(ctx: CanvasRenderingContext2D, dx: number, dy: number): void
+  /**
+   * 绘制元素本体（在“元素局部坐标系”下绘制）
+   *
+   * 约定：`BaseElement.render()` 会先对 ctx 应用：
+   * - transform(...this.matrix)
+   *
+   * 因此这里的 draw 应该直接在 (0,0) 开始绘制元素内容。
+   */
+  abstract draw(ctx: CanvasRenderingContext2D): void
+
+  /**
+   * 本地矩阵：把“元素自身局部坐标系 (0,0..w,h)”映射到“父坐标系”
+   */
+  getLocalMatrix(): Matrix {
+    return this.matrix
+  }
+
+  /**
+   * 世界矩阵：把元素局部坐标映射到“世界坐标系”（root 下的坐标系）
+   * - world = parentWorld * local
+   */
+  getWorldMatrix(store: { getById(id: string): BaseElement | undefined }): Matrix {
+    // 先收集父链，避免递归（也避免潜在循环引用时无限递归）
+    const chain: BaseElement[] = []
+    let pid = this.parentId
+    while (pid && pid !== 'root') {
+      const parent = store.getById(pid)
+      if (!parent) break
+      chain.push(parent)
+      pid = parent.parentId
+    }
+
+    let m = this.getLocalMatrix()
+    for (let i = chain.length - 1; i >= 0; i--) {
+      m = multiply(chain[i].getLocalMatrix(), m)
+    }
+    return m
+  }
+
+  /** 世界坐标 -> 当前元素局部坐标（不可逆时返回 null） */
+  worldToLocal(
+    store: { getById(id: string): BaseElement | undefined },
+    p: Point
+  ): Point | null {
+    const inv = invert(this.getWorldMatrix(store))
+    if (!inv) return null
+    return applyToPoint(inv, p)
+  }
+
+  /** 获取元素四个角点的世界坐标（顺序：左上、右上、右下、左下） */
+  getWorldCorners(store: { getById(id: string): BaseElement | undefined }): Point[] {
+    const m = this.getWorldMatrix(store)
+    const w = this.width
+    const h = this.height
+    return [
+      applyToPoint(m, { x: 0, y: 0 }),
+      applyToPoint(m, { x: w, y: 0 }),
+      applyToPoint(m, { x: w, y: h }),
+      applyToPoint(m, { x: 0, y: h }),
+    ]
+  }
+
+  /** 元素在世界坐标系下的轴对齐包围盒（AABB） */
+  getWorldAABB(store: { getById(id: string): BaseElement | undefined }) {
+    const pts = this.getWorldCorners(store)
+    const xs = pts.map((p) => p.x)
+    const ys = pts.map((p) => p.y)
+    const minX = Math.min(...xs)
+    const maxX = Math.max(...xs)
+    const minY = Math.min(...ys)
+    const maxY = Math.max(...ys)
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+  }
 
 
   move(dx: number, dy: number) {
-    this.x += dx
-    this.y += dy
+    // 在父坐标系下平移（拖拽通常需要这个语义）
+    this.matrix = translateBy(this.matrix, dx, dy)
   }
 
   resize(newWidth: number, newHeight: number) {
@@ -74,8 +173,8 @@ export abstract class BaseElement {
     // const textMetrics = ctx.measureText(this.name)
 
     // 计算文本位置（居中显示在元素上方）
-    const textX = this.x + dx + (nameConfig.offsetX ?? 0)
-    const textY = this.y + dy + (nameConfig.offsetY ?? 0)
+    const textX = dx + (nameConfig.offsetX ?? 0)
+    const textY = dy + (nameConfig.offsetY ?? 0)
 
     // 绘制文本描边（提高对比度）
     if (nameConfig.strokeWidth > 0) {
@@ -92,31 +191,32 @@ export abstract class BaseElement {
   }
   render(
     ctx: CanvasRenderingContext2D,
-    store: { getById(id: string): BaseElement | undefined },
-    dx: number,
-    dy: number
+    store: { getById(id: string): BaseElement | undefined }
   ) {
     if (!this.visible) return
-    this.draw(ctx, dx, dy)
+
+    // 把 ctx 切换到当前元素的局部坐标系（支持父子层级与任意 matrix）
+    ctx.save()
+    ctx.transform(...this.matrix)
+
+    this.draw(ctx)
     // this.showName(ctx, dx, dy)
     if (this.children) {
       for (const child of this.children) {
         const childElement = store.getById(child)
         if (childElement) {
-          childElement.render(ctx, store, dx + this.x, dy + this.y)
+          childElement.render(ctx, store)
         }
       }
     }
-  }
-  updatePosition(x: number, y: number) {
-    this.x += x
-    this.y += y
+
+    ctx.restore()
   }
 
   getBoundingBox() {
     return {
-      x: this.x,
-      y: this.y,
+      x: 0,
+      y: 0,
       width: this.width,
       height: this.height,
     }
@@ -130,20 +230,21 @@ export abstract class BaseElement {
   setSelected(selected: boolean) {
     this.isSelected = selected
   }
-  setRotation(rotation: number) {
-    this.rotation = rotation
-  }
-  setX(x: number) {
-    this.x = x
-  }
-  setY(y: number) {
-    this.y = y
-  }
   setWidth(width: number) {
     this.width = width
   }
   setHeight(height: number) {
     this.height = height
+  }
+  setMatrix(matrix: Matrix) {
+    this.matrix = matrix
+  }
+  /**
+   * 仅修改平移分量（保持缩放/旋转/斜切不变）
+   * - 适合创建矩形时用“左上角定位”快速更新位置
+   */
+  setTranslation(x: number, y: number) {
+    this.matrix = setTranslation(this.matrix, x, y)
   }
   getNodeInfo() {
     return {
@@ -164,11 +265,9 @@ export abstract class BaseElement {
       type: this.type,
       visible: this.visible,
       parentId: this.parentId,
-      x: this.x,
-      y: this.y,
       width: this.width,
       height: this.height,
-      rotation: this.rotation,
+      matrix: this.matrix,
       children: [] as any[],
 
     }
@@ -179,14 +278,37 @@ export abstract class BaseElement {
     this.type = attr.type
     this.visible = attr.visible
     this.parentId = attr.parentId
-    this.x = attr.x
-    this.y = attr.y
     this.width = attr.width
     this.height = attr.height
-    this.rotation = attr.rotation
+
+    // 兼容迁移：优先使用 matrix，否则从 x/y/rotation 生成
+    if (Array.isArray(attr.matrix) && attr.matrix.length === 6) {
+      this.matrix = attr.matrix as Matrix
+    } else {
+      this.matrix = composeTR(attr.x ?? 0, attr.y ?? 0, attr.rotation ?? 0)
+    }
     this.children = attr.children
   }
-  hitTest(px: number, py: number): boolean {
-    return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height
+
+  /**
+   * 命中检测（默认按“局部矩形 [0,w]x[0,h]”做检测）
+   * - 若传入 store：会按世界矩阵做逆变换，支持父子层级与 rotation
+   * - 若不传 store：保持旧逻辑（仅适用于未旋转/未嵌套时的快速判断）
+   */
+  hitTest(
+    px: number,
+    py: number,
+    store?: { getById(id: string): BaseElement | undefined }
+  ): boolean {
+    const inv = invert(store ? this.getWorldMatrix(store) : this.matrix)
+    if (!inv) return false
+    const local = applyToPoint(inv, { x: px, y: py })
+    if (!local) return false
+    return (
+      local.x >= 0 &&
+      local.x <= this.width &&
+      local.y >= 0 &&
+      local.y <= this.height
+    )
   }
 }

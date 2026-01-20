@@ -118,18 +118,6 @@ export class CanvasRenderer {
   markDirty() {
     this.isDirty = true
   }
-  // 渲染线程
-  private startDrawLoop() {
-    const draw = () => {
-      // console.log('Render loop started.')
-      if (this.isDirty) {
-        this.render()
-        this.isDirty = false
-      }
-      requestAnimationFrame(draw)
-    }
-    requestAnimationFrame(draw)
-  }
   renderName() {
     const selectedEl = this.store.getFrame()
     if (!selectedEl) {
@@ -141,28 +129,16 @@ export class CanvasRenderer {
         // renderName() 在 render() 的 ctx.restore() 之后调用，此时是屏幕坐标系。
         // 需要把元素(世界坐标，含父级偏移)转换到屏幕坐标，才能保证缩放/平移时位置正确。
         const { x: tx, y: ty, scale } = this.viewport.transform
-
-        // 计算元素世界坐标（子元素坐标是相对父级的）
-        let worldX = el.x
-        let worldY = el.y
-        let p = el.parentId
-        while (p) {
-          const parent = this.store.getById(p)
-          if (!parent) break
-          worldX += parent.x
-          worldY += parent.y
-          p = parent.parentId
-        }
+        // 使用世界矩阵计算元素原点的世界坐标（支持父级旋转）
+        const worldOrigin = el.getWorldCorners(this.store)[0]
 
         // 将世界坐标映射到屏幕坐标：screen = world * scale + translate
         // showName 内部计算 textX = this.x + dx + offsetX
         // 所以这里把 dx/dy 设成：dx = screenX - this.x（同理 dy）
-        const screenX = worldX * scale + tx
-        const screenY = worldY * scale + ty
-        const dx = screenX - el.x
-        const dy = screenY - el.y
-
-        el.showName(this.ctx, dx, dy)
+        const screenX = worldOrigin.x * scale + tx
+        const screenY = worldOrigin.y * scale + ty
+        // showName 现在直接接收“屏幕坐标”作为绘制基准点
+        el.showName(this.ctx, screenX, screenY)
       }
     }
   }
@@ -174,7 +150,6 @@ export class CanvasRenderer {
     }
 
     const ctx = this.ctx
-    const area = selectedEl.getBoundingBox()
 
     // 注意：renderSelect() 在 render() 的 ctx.restore() 之后调用
     // 此时 ctx 在“屏幕坐标系”，需要把元素 world 坐标转换到屏幕坐标
@@ -184,10 +159,12 @@ export class CanvasRenderer {
       y: y * scale + ty,
     })
 
-    const p1 = toScreen(area.x, area.y) // 左上
-    const p2 = toScreen(area.x + area.width, area.y) // 右上
-    const p3 = toScreen(area.x + area.width, area.y + area.height) // 右下
-    const p4 = toScreen(area.x, area.y + area.height) // 左下
+    // 用世界矩阵角点绘制选中框（支持父子层级与 rotation）
+    const worldCorners = selectedEl.getWorldCorners(this.store)
+    const p1 = toScreen(worldCorners[0].x, worldCorners[0].y) // 左上
+    const p2 = toScreen(worldCorners[1].x, worldCorners[1].y) // 右上
+    const p3 = toScreen(worldCorners[2].x, worldCorners[2].y) // 右下
+    const p4 = toScreen(worldCorners[3].x, worldCorners[3].y) // 左下
 
     // 1) 画选中框
     ctx.save()
@@ -249,7 +226,7 @@ export class CanvasRenderer {
     if (this.store) {
       const roots = this.store.getRootElements()
       for (const el of roots) {
-        el.render(ctx, this.store, 0, 0)
+        el.render(ctx, this.store)
       }
     }
 
