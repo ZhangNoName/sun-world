@@ -11,14 +11,16 @@ export class RectElement extends BaseElement {
     width: number
     height: number
     name: string
-    id?: string
+    id: string
+    parentId: string
     fill?: { type: FillType; color?: string; imageUrl?: string }
   }) {
-    const { id, ...rest } = params
-    super({ ...rest, id: id ?? crypto.randomUUID(), type: ElementType.Rect })
+    const { id, parentId, ...rest } = params
+    super({ ...rest, id: id, parentId: parentId, type: ElementType.Rect })
 
     // 如果没有提供 fill，则从预设色彩集合中随机获取
     if (!params.fill) {
+      console.log('RectElement fill is not provided, using random color')
       this.fill = { type: FillType.Solid, color: getRandomColor() }
     } else {
       this.fill = params.fill

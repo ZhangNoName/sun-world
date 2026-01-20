@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     // 基础配置
-    "target": "ES2020",
+    "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM"],
-    "moduleResolution": "node", // 兼容性最高的模块解析策略
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    // // Monorepo 和路径
+    // Monorepo 和路径
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"] // 保持对内部 @/ 别名的支持

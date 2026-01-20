@@ -2,7 +2,7 @@
  * @Author: ZhangNoName
  * @Date: 2025-12-03 14:07:59
  * @LastEditors: zxy 1623190186@qq.com
- * @LastEditTime: 2026-01-20 15:51:34
+ * @LastEditTime: 2026-01-20 16:37:47
  * @FilePath: \sun-world\packages\editor\src\tools\reactTools.ts
  * @Description:
  *
@@ -40,7 +40,6 @@ export class RectTool extends BaseTool {
   }
 
   onMouseDown(e: MouseEvent) {
-    console.log('[RectTool] onMouseDown called, drawing:', this.drawing)
     // 如果正在绘制中，忽略新的点击
     if (this.drawing) {
       console.log('[RectTool] Already drawing, ignoring')
@@ -57,19 +56,19 @@ export class RectTool extends BaseTool {
     this.startY = y
 
     this.currentRect = new RectElement({
+      id: getUUID(),
+      parentId: this.store.ROOT_ID,
       x,
       y,
-      width: 50,
-      height: 50,
+      width: 1,
+      height: 1,
       name: this.store.generateName(ElementType.Rect),
     })
-    console.log('[RectTool] Adding rect to store:', this.currentRect.id)
     this.store.add(this.currentRect)
   }
 
   onMouseMove(e: MouseEvent) {
     if (!this.drawing || !this.currentRect) return
-    console.log('RectTool onMouseMove')
 
     const x =
       (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale

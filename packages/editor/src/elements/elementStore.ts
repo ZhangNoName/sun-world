@@ -54,6 +54,7 @@ export class ElementStore {
   private isHydrating = false
 
   constructor() {
+
     this.nodeMap.set(this.ROOT_ID, this.root)
     this.loadLocal()
   }
@@ -95,11 +96,14 @@ export class ElementStore {
   add(el: BaseElement, parentId?: string | null, index?: number) {
     const pid = this.normalizeParentId(parentId)
     const parentNode = this.getNode(pid)
+    console.log('add', el.id, pid, parentNode)
     if (!parentNode) return
 
     this.elements.set(el.id, el)
 
     const node = el.getNodeInfo() as EleTreeNode
+    if (!node) return
+    console.log('新增的node节点', el, node)
     node.parentId = pid
     node.children = []
     this.nodeMap.set(node.id, node)
@@ -414,19 +418,21 @@ export class ElementStore {
     this.selectedElement = null
   }
 
-  private insertChild(parentId: string, childId: string, index?: number) {
+  private insertChild(parentId: string, nodeId: string, index?: number) {
     const parentNode = this.getNode(this.normalizeParentId(parentId))
-    const childNode = this.getNode(childId)
+    const childNode = this.getNode(nodeId)
+
     if (!parentNode || !childNode) return
 
     // 去重
-    parentNode.children = parentNode.children.filter((c) => c.id !== childId)
+    parentNode.children = parentNode.children.filter((c) => c.id !== nodeId)
 
     const i =
       index === undefined || index < 0 || index > parentNode.children.length
         ? parentNode.children.length
         : index
     parentNode.children.splice(i, 0, childNode)
+    // childElement.updatePosition(parentElement.x, parentElement.y)
   }
 
   getFrame() {

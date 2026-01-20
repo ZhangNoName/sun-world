@@ -156,5 +156,19 @@ export class EventManager {
         this.editor.changZoomAt(delta, mx, my)
       },
     })
+    manager.addBinding({
+      id: 'delete',
+      inputs: {
+        common: {
+          input: { keyCode: 'Delete' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '删除',
+      action: (event: Event, binding) => {
+        this.editor.deleteSelectedElement()
+      },
+    })
   }
 }

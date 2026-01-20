@@ -10,11 +10,10 @@ const root = ref<EleTreeNode[]>([])
 watch(
   () => editor,
   (newVal) => {
-    console.log('newVal', newVal)
     if (newVal) {
       newVal.elementTreeChanged((ele) => {
         root.value = ele
-        console.log('左侧树 ---elements',root.value.length,root.value[0], root.value)
+        // console.log('左侧树 ---elements',root.value.length,root.value[0], root.value)
       })
     }
   },

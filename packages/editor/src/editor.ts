@@ -189,4 +189,13 @@ export class SWEditor {
   public elementTreeChanged(cb: (root: EleTreeNode[]) => void) {
     this.elementStore.onHierarchyChange(cb)
   }
+  public deleteElement(id: string) {
+    this.elementStore.remove(id)
+  }
+  public deleteSelectedElement() {
+    const selectedElement = this.elementStore.getSelectedElement()
+    if (selectedElement) {
+      this.elementStore.remove(selectedElement.id)
+    }
+  }
 }

@@ -24,21 +24,24 @@ export abstract class BaseElement {
   group: string | null = null
 
   constructor(params: {
-    id?: string
+    id: string
+
     type: ElementType
     name: string
     x: number
     y: number
     width: number
     height: number
+    parentId: string
   }) {
-    this.id = params.id ?? crypto.randomUUID()
+    this.id = params.id
     this.type = params.type
     this.name = params.name
     this.x = params.x
     this.y = params.y
     this.width = params.width
     this.height = params.height
+    this.parentId = params.parentId
   }
 
   abstract draw(ctx: CanvasRenderingContext2D, dx: number, dy: number): void
@@ -94,7 +97,7 @@ export abstract class BaseElement {
     dy: number
   ) {
     if (!this.visible) return
-    this.draw(ctx, dx, dy)
+    this.draw(ctx, 0, 0)
     // this.showName(ctx, dx, dy)
     if (this.children) {
       for (const child of this.children) {
@@ -104,6 +107,10 @@ export abstract class BaseElement {
         }
       }
     }
+  }
+  updatePosition(x: number, y: number) {
+    this.x += x
+    this.y += y
   }
 
   getBoundingBox() {
