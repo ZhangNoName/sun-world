@@ -97,7 +97,7 @@ export abstract class BaseElement {
     dy: number
   ) {
     if (!this.visible) return
-    this.draw(ctx, 0, 0)
+    this.draw(ctx, dx, dy)
     // this.showName(ctx, dx, dy)
     if (this.children) {
       for (const child of this.children) {

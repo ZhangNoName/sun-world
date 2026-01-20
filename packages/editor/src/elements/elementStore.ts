@@ -75,6 +75,29 @@ export class ElementStore {
     return id === this.ROOT_ID ? this.root : this.nodeMap.get(id)
   }
 
+  /**
+   * 计算元素的世界坐标（把 parent 链上的偏移叠加起来）
+   * 约定：parentId === ROOT_ID 为根，不再继续向上找。
+   */
+  private getElementWorldPosition(id: string): { x: number; y: number } {
+    const el = this.elements.get(id)
+    if (!el) return { x: 0, y: 0 }
+
+    let x = el.x
+    let y = el.y
+    let p = el.parentId
+
+    while (p && p !== this.ROOT_ID) {
+      const parent = this.elements.get(p)
+      if (!parent) break
+      x += parent.x
+      y += parent.y
+      p = parent.parentId
+    }
+
+    return { x, y }
+  }
+
   private rebuildElementRelations() {
     // 让 BaseElement.parentId/children 与 node 树保持一致（渲染/名字定位需要）
     for (const el of this.elements.values()) {
@@ -419,10 +442,22 @@ export class ElementStore {
   }
 
   private insertChild(parentId: string, nodeId: string, index?: number) {
-    const parentNode = this.getNode(this.normalizeParentId(parentId))
+    const pid = this.normalizeParentId(parentId)
+    const parentNode = this.getNode(pid)
     const childNode = this.getNode(nodeId)
 
     if (!parentNode || !childNode) return
+
+    // 关键：插入后需要把元素坐标从“旧父坐标系”重算为“新父坐标系”
+    // 保持世界坐标不变：local = world(child) - world(newParent)
+    const childEl = this.elements.get(nodeId)
+    if (childEl) {
+      const childWorld = this.getElementWorldPosition(nodeId)
+      const parentWorld =
+        pid === this.ROOT_ID ? { x: 0, y: 0 } : this.getElementWorldPosition(pid)
+      childEl.x = childWorld.x - parentWorld.x
+      childEl.y = childWorld.y - parentWorld.y
+    }
 
     // 去重
     parentNode.children = parentNode.children.filter((c) => c.id !== nodeId)
@@ -432,7 +467,6 @@ export class ElementStore {
         ? parentNode.children.length
         : index
     parentNode.children.splice(i, 0, childNode)
-    // childElement.updatePosition(parentElement.x, parentElement.y)
   }
 
   getFrame() {
