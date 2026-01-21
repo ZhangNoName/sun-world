@@ -1,3 +1,4 @@
+import { IBox } from '@/types/common.type'
 import { v4 as uuidv4 } from 'uuid'
 
 /**
@@ -47,4 +48,12 @@ export function debounce(fn: Function, wait = 200) {
       fn(...args)
     }, wait)
   }
+}
+
+export function intersectBox(a: IBox, b: IBox): boolean {
+  const startX = Math.min(a.minX, b.minX)
+  const startY = Math.min(a.minY, b.minY)
+  const endX = Math.max(a.maxX, b.maxX)
+  const endY = Math.max(a.maxY, b.maxY)
+  return startX <= endX && startY <= endY
 }

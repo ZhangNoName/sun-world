@@ -2,7 +2,7 @@
  * @Author: ZhangNoName
  * @Date: 2025-12-03 14:07:59
  * @LastEditors: zxy 1623190186@qq.com
- * @LastEditTime: 2026-01-20 16:37:47
+ * @LastEditTime: 2026-01-21 16:31:44
  * @FilePath: \sun-world\packages\editor\src\tools\reactTools.ts
  * @Description:
  *
@@ -87,12 +87,13 @@ export class RectTool extends BaseTool {
       this.store.add(this.currentRect)
       return
     }
-
-    this.currentRect.width = w
-    this.currentRect.height = h
-    this.currentRect.matrix = setTranslation(this.currentRect.matrix, left, top)
+    this.currentRect.updateAttrs({
+      width: w,
+      height: h,
+      x: left,
+      y: top,
+    })
     this.store.update()
-
   }
 
   onMouseUp() {

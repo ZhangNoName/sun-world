@@ -13,7 +13,7 @@ export default class SelectTool extends BaseTool {
   private lastY = 0
   private viewport: ViewportState
   private dragging = false
-  private selectedEl: BaseElement | null = null
+  private selectedEl: string[] = []
   private readonly DragMode: DragTool
   private readonly AreaMode: AreaTool
   private readonly ResizeMode: ResizeTool
@@ -41,27 +41,22 @@ export default class SelectTool extends BaseTool {
     const controlHandle = false
     const rotateHandle = false
     // 点击命中检测
-    const hit = elements.hitTest(canvasPos.x, canvasPos.y)
+    elements.setMarqueeRect({ minX: canvasPos.x, minY: canvasPos.y, maxX: canvasPos.x, maxY: canvasPos.y })
+
+    this.selectedEl = elements.getSelectedElement()
+    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y)
     if (controlHandle) {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {
       this.currentMode = this.RotateMode
-    } else if (hit) {
+    } else if (this.selectedEl.length > 0) {
       this.currentMode = this.DragMode
     } else {
       this.currentMode = this.AreaMode
     }
+    console.log('当前模式', this.currentMode?.name)
     this.currentMode.onMouseDown(e)
-    this.selectedEl = elements.getSelectedElement() ?? null
 
-    if (this.selectedEl) {
-      this.lastX = e.clientX
-      this.lastY = e.clientY
-
-      this.dragging = true
-    }
-
-    this.ctx.render(true)
   }
   onMouseMove(e: MouseEvent): void {
     // console.log('SelectTool.onMouseMove', e)
@@ -81,10 +76,10 @@ export default class SelectTool extends BaseTool {
 
   }
   activate(): void {
-    console.log('SelectTool.activate')
+    console.log('选择工具 激活')
   }
   deactivate(): void {
-    console.log('SelectTool.deactivate')
+    console.log('选择工具 取消')
   }
   onKeyDown(e: KeyboardEvent): void {
     console.log('SelectTool.onKeyDown', e)

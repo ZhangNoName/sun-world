@@ -6,63 +6,52 @@ export class AreaTool extends BaseTool {
   private isPanning = false
   private startX = 0
   private startY = 0
-  private curX = 0
-  private curY = 0
   private viewport: ViewportState
-  
+
 
   constructor(ctx: ToolContext) {
     super(ctx)
     this.viewport = ctx.viewport
   }
   onMouseDown(e: MouseEvent): void {
+    console.log('区域选择 鼠标按下')
     // console.log('AreaTool.onMouseDown', e)
     this.isPanning = true
     const p = this.viewport.screenToCanvas(e.clientX, e.clientY)
     this.startX = p.x
     this.startY = p.y
-    this.curX = p.x
-    this.curY = p.y
 
-    this.ctx.elements.setMarqueeRect({ x1: this.startX, y1: this.startY, x2: this.curX, y2: this.curY })
+    this.ctx.elements.setMarqueeRect({ minX: p.x, minY: p.y, maxX: p.x, maxY: p.y })
     this.ctx.render(true)
   }
   onMouseMove(e: MouseEvent): void {
+    console.log('区域选择 鼠标移动')
     if (!this.isPanning) return
     const p = this.viewport.screenToCanvas(e.clientX, e.clientY)
-    this.curX = p.x
-    this.curY = p.y
-    this.ctx.elements.setMarqueeRect({ x1: this.startX, y1: this.startY, x2: this.curX, y2: this.curY })
+
+    const minX = Math.min(this.startX, p.x)
+    const maxX = Math.max(this.startX, p.x)
+    const minY = Math.min(this.startY, p.y)
+    const maxY = Math.max(this.startY, p.y)
+    this.ctx.elements.setMarqueeRect({ minX, minY, maxX, maxY })
     this.ctx.render(true)
   }
   onMouseUp(): void {
-    // console.log('AreaTool.onMouseUp')
+    console.log('区域选择 取消')
     this.isPanning = false
-
-    const rect = this.ctx.elements.getMarqueeRect()
-    this.ctx.elements.clearMarqueeRect()
-
-    if (rect) {
-      const w = Math.abs(rect.x2 - rect.x1)
-      const h = Math.abs(rect.y2 - rect.y1)
-      // 太小认为是“空框”，不做范围选择
-      if (w > 3 && h > 3) {
-        this.ctx.elements.selectByMarquee(rect.x1, rect.y1, rect.x2, rect.y2)
-      }
-    }
 
     this.ctx.render(true)
   }
   onKeyDown(e: KeyboardEvent): void {
-    console.log('AreaTool.onKeyDown', e)
+    console.log('区域选择 按键', e)
   }
   onWheel(e: WheelEvent): void {
-    console.log('AreaTool.onWheel', e)
+    console.log('区域选择 滚轮', e)
   }
   activate(): void {
-    console.log('AreaTool.activate')
+    console.log('区域选择 激活')
   }
   deactivate(): void {
-    console.log('AreaTool.deactivate')
+    console.log('区域选择 取消')
   }
 }

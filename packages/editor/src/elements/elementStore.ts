@@ -3,6 +3,8 @@ import { RectElement } from './react'
 import { ElementType } from './element.config'
 import { EleName } from './name'
 import { identity, invert, multiply } from '../utils/matrix'
+import { IBox, IRect } from '../types/common.type'
+import { intersectBox } from '../utils/common'
 
 export class EleTreeNode {
   id!: string
@@ -32,24 +34,26 @@ export class ElementStore {
   private elements: Map<string, BaseElement> = new Map()
   private nodeMap: Map<string, EleTreeNode> = new Map()
 
+
   /**
    * 框选矩形（画布坐标系 / 世界坐标系下的轴对齐矩形）
    * - 仅用于交互态展示与范围选择，不会持久化
    */
-  private marqueeRect: { x1: number; y1: number; x2: number; y2: number } | null =
+  private marqueeRect: IBox | null =
     null
   /**
-   * worldMatrix/inverse 缓存版本号：任何会影响几何/层级的变化都应 +1
-   * BaseElement 可以用它来判断缓存是否失效。
+   * 选中矩形（画布坐标系 / 世界坐标系下的轴对齐矩形）
+   * - 仅用于交互态展示与范围选择，不会持久化
    */
-  private worldMatrixEpoch = 0
+  private selectedBox: IBox | null =
+    null
 
   private hierarchyChangedListeners: Set<(rootChildren: EleTreeNode[]) => void> =
     new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
 
-  private selectedElement: string | null = null
+  private selectedElement: string[] = []
   public readonly ROOT_ID = 'root'
 
   /**
@@ -69,7 +73,6 @@ export class ElementStore {
   private isHydrating = false
 
   constructor() {
-
     this.nodeMap.set(this.ROOT_ID, this.root)
     this.loadLocal()
   }
@@ -90,11 +93,6 @@ export class ElementStore {
     return id === this.ROOT_ID ? this.root : this.nodeMap.get(id)
   }
 
-  /** 供 BaseElement 做矩阵缓存失效判断 */
-  getWorldMatrixEpoch() {
-    return this.worldMatrixEpoch
-  }
-
   /**
    * 计算元素的世界矩阵（把 parent 链上的 TR 叠加起来）
    * 约定：parentId === ROOT_ID 为根，不再继续向上找。
@@ -106,10 +104,9 @@ export class ElementStore {
   }
 
   private rebuildElementRelations() {
-    this.worldMatrixEpoch++
     // 让 BaseElement.parentId/children 与 node 树保持一致（渲染/名字定位需要）
     for (const el of this.elements.values()) {
-      el.parentId = null
+      el.attrs.parentId = null
       el.children = null
     }
 
@@ -117,25 +114,23 @@ export class ElementStore {
       if (id === this.ROOT_ID) continue
       const el = this.elements.get(id)
       if (!el) continue
-      el.parentId = node.parentId // 根层为 'root'
+      el.attrs.parentId = node.parentId // 根层为 'root'
       el.children = node.children.length > 0 ? node.children.map((c) => c.id) : null
-      el.visible = node.visible
-      el.name = node.name
+      el.attrs.visible = node.visible
+      el.attrs.name = node.name
+      el.markDirty(this)
     }
   }
 
   add(el: BaseElement, parentId?: string | null, index?: number) {
-    this.worldMatrixEpoch++
     const pid = this.normalizeParentId(parentId)
     const parentNode = this.getNode(pid)
-    console.log('add', el.id, pid, parentNode)
     if (!parentNode) return
 
     this.elements.set(el.id, el)
 
     const node = el.getNodeInfo() as EleTreeNode
     if (!node) return
-    console.log('新增的node节点', el, node)
     node.parentId = pid
     node.children = []
     this.nodeMap.set(node.id, node)
@@ -151,7 +146,6 @@ export class ElementStore {
   }
 
   remove(id: string) {
-    this.worldMatrixEpoch++
     if (id === this.ROOT_ID) return
     const node = this.getNode(id)
     if (!node) return
@@ -170,14 +164,15 @@ export class ElementStore {
       q.push(...cur.children)
       this.nodeMap.delete(cur.id)
       this.elements.delete(cur.id)
-      if (this.selectedElement === cur.id) this.selectedElement = null
+
     }
+    this.selectedElement = []
+
 
     this.rebuildElementRelations()
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitHierarchyChanged()
-      // this.emitElementsChanged()
     }
   }
 
@@ -188,8 +183,9 @@ export class ElementStore {
   getMarqueeRect() {
     return this.marqueeRect
   }
-  setMarqueeRect(rect: { x1: number; y1: number; x2: number; y2: number }) {
+  setMarqueeRect(rect: IBox) {
     this.marqueeRect = rect
+    this.hitTest()
   }
   clearMarqueeRect() {
     this.marqueeRect = null
@@ -213,7 +209,6 @@ export class ElementStore {
    * 变更层级：把节点挂到新的 parent 下（根层也用 ROOT_ID 表示）
    */
   moveNode(id: string, newParentId?: string | null, index?: number) {
-    this.worldMatrixEpoch++
     if (id === this.ROOT_ID) return
     const node = this.getNode(id)
     if (!node) return
@@ -277,7 +272,6 @@ export class ElementStore {
 
   // 元素更新后调用（几何/样式变化）
   update() {
-    this.worldMatrixEpoch++
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitElementsChanged()
@@ -299,7 +293,6 @@ export class ElementStore {
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
-    console.log('元素层级变化', this.root.children)
     this.hierarchyChangedListeners.forEach((cb) => cb(this.root.children))
   }
 
@@ -309,7 +302,6 @@ export class ElementStore {
       if (!el) return null
       const attr = el.getAttr()
       attr.children = node.children.map(buildTree).filter(Boolean)
-      // 统一保存 parentId（根层为 ROOT_ID）
       attr.parentId = node.parentId
       return attr
     }
@@ -330,28 +322,24 @@ export class ElementStore {
       const parsed = JSON.parse(raw) as PersistedV1
       if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.data)) return
 
-      // 重建：保留 root，自顶向下恢复 children
+      // 重建
       this.elements.clear()
       this.nodeMap.clear()
       this.root.children = []
       this.nodeMap.set(this.ROOT_ID, this.root)
-      this.selectedElement = null
+      this.selectedElement = []
 
       const createElement = (attr: any) => {
-        // 目前只有 Rect，后续可按 attr.type 分发
         const el = new RectElement({
           id: attr?.id ?? this.generateName(ElementType.Rect),
           parentId: this.normalizeParentId(attr?.parentId),
           name: attr?.name ?? this.generateName(ElementType.Rect),
           width: attr?.width ?? 0,
           height: attr?.height ?? 0,
-          matrix:
-            Array.isArray(attr?.matrix) && attr.matrix.length === 6
-              ? attr.matrix
-              : undefined,
+          matrix: attr?.matrix,
           fill: attr?.fill,
         })
-        el.setAttr({ ...attr, children: null })
+        el.setAttr({ ...attr, children: null }, this)
         return el
       }
 
@@ -389,109 +377,88 @@ export class ElementStore {
     this.emitHierarchyChanged()
     this.emitElementsChanged()
   }
+  private hitSelectBox() {
+    if (!this.selectedBox) {
+      return false
+    }
+    const areaBox = this.selectedBox
+    const box = this.getMarqueeRect()
+    if (!box) return false
 
-  /**
-   * 命中检测：返回是否命中，并更新 selectedElement 为最上层命中节点
-   */
-  hitTest(x: number, y: number) {
-    const hitId = this.hitTestNodeList(this.root.children, x, y)
-    if (hitId) {
-      this.selectedElement = hitId
+    return intersectBox(areaBox, box)
+  }
+  hitTest() {
+    if (this.hitSelectBox()) {
+      console.log('点击到选中框')
       return true
     }
-    this.selectedElement = null
+    this.hitTestNodeList(this.root.children)
+    if (this.selectedElement.length > 0) {
+      console.log('点击到元素', this.selectedElement)
+      return true
+    }
     return false
   }
 
-  /**
-   * 范围选择（框选）：从最上层开始返回命中的元素 id（当前实现为单选）
-   * - 输入为画布坐标系下的轴对齐矩形
-   */
   selectByMarquee(x1: number, y1: number, x2: number, y2: number) {
     const minX = Math.min(x1, x2)
     const maxX = Math.max(x1, x2)
     const minY = Math.min(y1, y2)
     const maxY = Math.max(y1, y2)
 
-    const hitId = this.hitTestNodeListByRect(this.root.children, {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
-    })
+    const hitId = this.hitTestNodeListByRect(this.root.children,)
     if (hitId) {
-      this.selectedElement = hitId
+      this.selectedElement.push(hitId)
       return true
     }
-    this.selectedElement = null
+    this.selectedElement = []
     return false
   }
 
   private hitTestNodeListByRect(
     nodes: EleTreeNode[],
-    rect: { x: number; y: number; width: number; height: number }
-  ): string | null {
-    const intersects = (
-      a: { x: number; y: number; width: number; height: number },
-      b: { x: number; y: number; width: number; height: number }
-    ) => {
-      return !(
-        a.x + a.width < b.x ||
-        b.x + b.width < a.x ||
-        a.y + a.height < b.y ||
-        b.y + b.height < a.y
-      )
-    }
 
-    // 从后往前：后面的更上层
+  ) {
+
+    const areaBox = this.getMarqueeRect()
+    if (!areaBox) return null
     for (let i = nodes.length - 1; i >= 0; i--) {
       const n = nodes[i]
       if (!n.visible) continue
 
-      // 子节点优先
-      if (n.children.length) {
-        const childHit = this.hitTestNodeListByRect(n.children, rect)
-        if (childHit) return childHit
-      }
 
       const el = this.elements.get(n.id)
       if (!el) continue
-      const aabb = el.getWorldAABB(this)
-      if (intersects(aabb, rect)) return n.id
+      const aabb = el.getAABB()
+      if (intersectBox(areaBox, aabb)) {
+        this.selectedElement.push(n.id)
+      }
     }
-
-    return null
   }
 
-  private hitTestNodeList(nodes: EleTreeNode[], x: number, y: number): string | null {
-    // 从后往前：后面的更上层
+  private hitTestNodeList(nodes: EleTreeNode[]) {
+    const areaBox = this.getMarqueeRect()
+    if (!areaBox) return null
     for (let i = nodes.length - 1; i >= 0; i--) {
       const n = nodes[i]
       if (!n.visible) continue
 
-      // 子节点优先
-      if (n.children.length) {
-        const childHit = this.hitTestNodeList(n.children, x, y)
-        if (childHit) return childHit
-      }
-
       const el = this.elements.get(n.id)
-      if (el?.hitTest(x, y, this)) return n.id
+      if (!el) continue
+      const aabb = el.getAABB()
+      if (intersectBox(areaBox, aabb)) {
+        this.selectedElement.push(n.id)
+      }
     }
     return null
   }
 
-  /**
-   * 拖拽过程中判断是否需要改变 parentId：
-   * - 返回新的 parentId（没变化则返回 null）
-   */
   hitTopExcludeSelected(x: number, y: number) {
     if (!this.selectedElement) return null
-    const selectedId = this.selectedElement
+    const selectedId = this.selectedElement[0]
     const selectedNode = this.getNode(selectedId)
     if (!selectedNode) return null
 
-    // 先命中“当前父容器”则不变
     const currentParentId = this.normalizeParentId(selectedNode.parentId)
     const currentParentNode = this.getNode(currentParentId)
     const currentParentEl = currentParentNode
@@ -501,7 +468,6 @@ export class ElementStore {
       if (currentParentNode.visible && currentParentEl?.hitTest(x, y, this)) return null
     }
 
-    // 根层从上到下找命中的父（排除自己和自己子树）
     let newParentId: string = this.ROOT_ID
     for (let i = this.root.children.length - 1; i >= 0; i--) {
       const node = this.root.children[i]
@@ -521,13 +487,13 @@ export class ElementStore {
   }
 
   getSelectedElement() {
-    return this.selectedElement ? this.getById(this.selectedElement) : null
+    return this.selectedElement
   }
   setSelectedElement(id: string) {
-    this.selectedElement = id
+    this.selectedElement.push(id)
   }
   clearSelectedElement() {
-    this.selectedElement = null
+    this.selectedElement = []
   }
 
   private insertChild(parentId: string, nodeId: string, index?: number) {
@@ -537,8 +503,6 @@ export class ElementStore {
 
     if (!parentNode || !childNode) return
 
-    // 关键：插入后需要把元素变换从“旧父坐标系”重算为“新父坐标系”
-    // 保持世界变换不变：local = inverse(world(newParent)) * world(child)
     const childEl = this.elements.get(nodeId)
     if (childEl) {
       const childWorld = this.getElementWorldMatrix(nodeId)
@@ -547,11 +511,11 @@ export class ElementStore {
       const invParent = invert(parentWorld)
       if (invParent) {
         const newLocal = multiply(invParent, childWorld)
-        childEl.matrix = newLocal
+        childEl.attrs.matrix = newLocal
+        childEl.markDirty(this)
       }
     }
 
-    // 去重
     parentNode.children = parentNode.children.filter((c) => c.id !== nodeId)
 
     const i =
@@ -559,5 +523,13 @@ export class ElementStore {
         ? parentNode.children.length
         : index
     parentNode.children.splice(i, 0, childNode)
+  }
+  moveSelectedElement(x: number, y: number) {
+    for (const id of this.selectedElement) {
+      const el = this.elements.get(id)
+      if (el) {
+        el.move(x, y)
+      }
+    }
   }
 }

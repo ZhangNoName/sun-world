@@ -3,7 +3,7 @@ import type { Matrix, Point } from '../types/common.type'
 /**
  * 2D 仿射变换矩阵（与 CanvasRenderingContext2D / SVGMatrix 的 a,b,c,d,e,f 含义保持一致）。
  *
- * 统一使用数组表示：`[a, b, c, d, e, f]`，可直接用于：
+ * 统一使用对象表示：`{ a, b, c, d, e, f }`，用于：
  * - `ctx.transform(a, b, c, d, e, f)`
  * - `ctx.setTransform(a, b, c, d, e, f)`
  *
@@ -16,27 +16,27 @@ import type { Matrix, Point } from '../types/common.type'
  * - 作用到点时：`(left * right) * p` 等价于 **先应用 right，再应用 left**
  */
 
-export const IDENTITY_MATRIX: Matrix = [1, 0, 0, 1, 0, 0]
+export const IDENTITY_MATRIX: Matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }
 
 export function identity(): Matrix {
-  return [1, 0, 0, 1, 0, 0]
+  return { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }
 }
 
 export function translate(tx: number, ty: number): Matrix {
-  return [1, 0, 0, 1, tx, ty]
+  return { a: 1, b: 0, c: 0, d: 1, e: tx, f: ty }
 }
 
 export function getTranslation(m: Matrix): { x: number; y: number } {
-  return { x: m[4], y: m[5] }
+  return { x: m.e, y: m.f }
 }
 
 /** 设置矩阵的平移分量（保持 a,b,c,d 不变） */
 export function setTranslation(m: Matrix, x: number, y: number): Matrix {
-  return [m[0], m[1], m[2], m[3], x, y]
+  return { ...m, e: x, f: y }
 }
 
 export function scale(sx: number, sy = sx): Matrix {
-  return [sx, 0, 0, sy, 0, 0]
+  return { a: sx, b: 0, c: 0, d: sy, e: 0, f: 0 }
 }
 
 /**
@@ -46,21 +46,21 @@ export function scale(sx: number, sy = sx): Matrix {
 export function rotate(rad: number): Matrix {
   const cos = Math.cos(rad)
   const sin = Math.sin(rad)
-  return [cos, sin, -sin, cos, 0, 0]
+  return { a: cos, b: sin, c: -sin, d: cos, e: 0, f: 0 }
 }
 
 /** 矩阵相乘：返回 `left * right` */
 export function multiply(left: Matrix, right: Matrix): Matrix {
-  const [la, lb, lc, ld, le, lf] = left
-  const [ra, rb, rc, rd, re, rf] = right
-  return [
-    la * ra + lc * rb,
-    lb * ra + ld * rb,
-    la * rc + lc * rd,
-    lb * rc + ld * rd,
-    la * re + lc * rf + le,
-    lb * re + ld * rf + lf,
-  ]
+  const { a: la, b: lb, c: lc, d: ld, e: le, f: lf } = left
+  const { a: ra, b: rb, c: rc, d: rd, e: re, f: rf } = right
+  return {
+    a: la * ra + lc * rb,
+    b: lb * ra + ld * rb,
+    c: la * rc + lc * rd,
+    d: lb * rc + ld * rd,
+    e: la * re + lc * rf + le,
+    f: lb * re + ld * rf + lf,
+  }
 }
 
 /**
@@ -73,7 +73,7 @@ export function translateBy(m: Matrix, dx: number, dy: number): Matrix {
 
 /** 将矩阵应用到点上，返回新点 */
 export function applyToPoint(m: Matrix, p: Point): Point {
-  const [a, b, c, d, e, f] = m
+  const { a, b, c, d, e, f } = m
   return {
     x: a * p.x + c * p.y + e,
     y: b * p.x + d * p.y + f,
@@ -86,7 +86,7 @@ export function applyToPoint(m: Matrix, p: Point): Point {
  * det = a*d - b*c
  */
 export function invert(m: Matrix): Matrix | null {
-  const [a0, b0, c0, d0, e0, f0] = m
+  const { a: a0, b: b0, c: c0, d: d0, e: e0, f: f0 } = m
   const det = a0 * d0 - b0 * c0
   if (det === 0) return null
 
@@ -98,7 +98,38 @@ export function invert(m: Matrix): Matrix | null {
   const e = -(a * e0 + c * f0)
   const f = -(b * e0 + d * f0)
 
-  return [a, b, c, d, e, f]
+  return { a, b, c, d, e, f }
+}
+
+/**
+ * 组合 TRS（平移 + 旋转 + 缩放）。
+ * 这里将 width 和 height 视为缩放分量。
+ */
+export function composeTRS(x: number, y: number, rotation: number, width: number, height: number): Matrix {
+  const cos = Math.cos(rotation)
+  const sin = Math.sin(rotation)
+  return {
+    a: width * cos,
+    b: width * sin,
+    c: -height * sin,
+    d: height * cos,
+    e: x,
+    f: y,
+  }
+}
+
+/**
+ * 从矩阵分解出 TRS（仅适用于无斜切矩阵）。
+ */
+export function decomposeTRS(m: Matrix) {
+  const { a, b, c, d, e, f } = m
+  return {
+    x: e,
+    y: f,
+    rotation: Math.atan2(b, a),
+    width: Math.sqrt(a * a + b * b),
+    height: Math.sqrt(c * c + d * d),
+  }
 }
 
 /**
@@ -114,6 +145,6 @@ export function composeTR(x: number, y: number, rotation: number): Matrix {
  * - 仅适用于矩阵只包含 TR（不包含缩放/斜切）的情况。
  */
 export function decomposeTR(m: Matrix): { x: number; y: number; rotation: number } {
-  const [a, b, _c, _d, e, f] = m
+  const { a, b, e, f } = m
   return { x: e, y: f, rotation: Math.atan2(b, a) }
 }

@@ -2,6 +2,7 @@ import type { ElementStore } from '@/elements/elementStore'
 import { debounce } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
+import { elementConfig } from '../elements/element.config'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -121,11 +122,23 @@ export class CanvasRenderer {
   renderName() {
     const elements = this.store.getRootElements()
     if (!elements?.length) return
+    const nameConfig = elementConfig.name
+    this.transform()
+
+    this.ctx.font = `${nameConfig.fontSize}px ${nameConfig.fontFamily}`
+    this.ctx.textAlign = nameConfig.textAlign
+    this.ctx.textBaseline = 'top'
+    // if (nameConfig.strokeWidth > 0) {
+    //   this.ctx.strokeStyle = nameConfig.strokeColor
+    //   this.ctx.lineWidth = nameConfig.strokeWidth
+    // }
+    this.ctx.fillStyle = nameConfig.color
 
     // renderName() 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系
     for (const el of elements) {
       el.showName(this.ctx)
     }
+    this.ctx.restore()
   }
   renderSelect() {
     // 1) 优先绘制框选矩形（范围选择）
@@ -152,6 +165,7 @@ export class CanvasRenderer {
       ctx.restore()
       return
     }
+    return;
 
     const selectedEl = this.store.getSelectedElement()
     if (!selectedEl) {
@@ -226,12 +240,7 @@ export class CanvasRenderer {
 
     ctx.clearRect(0, 0, displayWidth, displayHeight)
 
-    ctx.save()
-
-    // 应用 viewport 缩放/平移
-    ctx.translate(this.viewport.transform.x, this.viewport.transform.y)
-    ctx.scale(this.viewport.transform.scale, this.viewport.transform.scale)
-
+    this.transform()
     // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
     if (this.store) {
       const roots = this.store.getRootElements()
@@ -250,6 +259,8 @@ export class CanvasRenderer {
       this.renderSelect()
     }
     this.renderName()
+
+    this.ctx.restore()
   }
 
   // 4. 清理方法
@@ -259,5 +270,11 @@ export class CanvasRenderer {
     // 移除 canvasElement
     this.containerElement.removeChild(this.canvasElement)
     console.log('Renderer destroyed and cleanup complete.')
+  }
+  private transform() {
+    const { x, y, scale } = this.viewport.transform
+    this.ctx.save()
+    this.ctx.translate(x, y)
+    this.ctx.scale(scale, scale)
   }
 }
