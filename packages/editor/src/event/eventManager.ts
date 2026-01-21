@@ -66,7 +66,6 @@ export class EventManager {
   }
 
   handleMouseDown = (e: MouseEvent) => {
-    console.log('[EventManager] handleMouseDown called', e.target)
     // 先让 InputBindingManager 处理输入绑定
     const bindingHandled = this.inputBindingManager.handleInputEvent(e)
 

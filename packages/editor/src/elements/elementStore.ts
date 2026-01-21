@@ -32,6 +32,18 @@ export class ElementStore {
   private elements: Map<string, BaseElement> = new Map()
   private nodeMap: Map<string, EleTreeNode> = new Map()
 
+  /**
+   * 框选矩形（画布坐标系 / 世界坐标系下的轴对齐矩形）
+   * - 仅用于交互态展示与范围选择，不会持久化
+   */
+  private marqueeRect: { x1: number; y1: number; x2: number; y2: number } | null =
+    null
+  /**
+   * worldMatrix/inverse 缓存版本号：任何会影响几何/层级的变化都应 +1
+   * BaseElement 可以用它来判断缓存是否失效。
+   */
+  private worldMatrixEpoch = 0
+
   private hierarchyChangedListeners: Set<(rootChildren: EleTreeNode[]) => void> =
     new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
@@ -78,6 +90,11 @@ export class ElementStore {
     return id === this.ROOT_ID ? this.root : this.nodeMap.get(id)
   }
 
+  /** 供 BaseElement 做矩阵缓存失效判断 */
+  getWorldMatrixEpoch() {
+    return this.worldMatrixEpoch
+  }
+
   /**
    * 计算元素的世界矩阵（把 parent 链上的 TR 叠加起来）
    * 约定：parentId === ROOT_ID 为根，不再继续向上找。
@@ -89,6 +106,7 @@ export class ElementStore {
   }
 
   private rebuildElementRelations() {
+    this.worldMatrixEpoch++
     // 让 BaseElement.parentId/children 与 node 树保持一致（渲染/名字定位需要）
     for (const el of this.elements.values()) {
       el.parentId = null
@@ -107,6 +125,7 @@ export class ElementStore {
   }
 
   add(el: BaseElement, parentId?: string | null, index?: number) {
+    this.worldMatrixEpoch++
     const pid = this.normalizeParentId(parentId)
     const parentNode = this.getNode(pid)
     console.log('add', el.id, pid, parentNode)
@@ -132,6 +151,7 @@ export class ElementStore {
   }
 
   remove(id: string) {
+    this.worldMatrixEpoch++
     if (id === this.ROOT_ID) return
     const node = this.getNode(id)
     if (!node) return
@@ -165,6 +185,16 @@ export class ElementStore {
     return Array.from(this.elements.values())
   }
 
+  getMarqueeRect() {
+    return this.marqueeRect
+  }
+  setMarqueeRect(rect: { x1: number; y1: number; x2: number; y2: number }) {
+    this.marqueeRect = rect
+  }
+  clearMarqueeRect() {
+    this.marqueeRect = null
+  }
+
   getRootElements() {
     return this.root.children
       .map((node) => this.elements.get(node.id))
@@ -183,6 +213,7 @@ export class ElementStore {
    * 变更层级：把节点挂到新的 parent 下（根层也用 ROOT_ID 表示）
    */
   moveNode(id: string, newParentId?: string | null, index?: number) {
+    this.worldMatrixEpoch++
     if (id === this.ROOT_ID) return
     const node = this.getNode(id)
     if (!node) return
@@ -246,6 +277,7 @@ export class ElementStore {
 
   // 元素更新后调用（几何/样式变化）
   update() {
+    this.worldMatrixEpoch++
     if (!this.isHydrating) {
       this.saveLocal()
       this.emitElementsChanged()
@@ -267,6 +299,7 @@ export class ElementStore {
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
+    console.log('元素层级变化', this.root.children)
     this.hierarchyChangedListeners.forEach((cb) => cb(this.root.children))
   }
 
@@ -316,10 +349,6 @@ export class ElementStore {
             Array.isArray(attr?.matrix) && attr.matrix.length === 6
               ? attr.matrix
               : undefined,
-          // 兼容旧数据：setAttr 内部会从 x/y/rotation 推导 matrix
-          x: attr?.x,
-          y: attr?.y,
-          rotation: attr?.rotation,
           fill: attr?.fill,
         })
         el.setAttr({ ...attr, children: null })
@@ -372,6 +401,66 @@ export class ElementStore {
     }
     this.selectedElement = null
     return false
+  }
+
+  /**
+   * 范围选择（框选）：从最上层开始返回命中的元素 id（当前实现为单选）
+   * - 输入为画布坐标系下的轴对齐矩形
+   */
+  selectByMarquee(x1: number, y1: number, x2: number, y2: number) {
+    const minX = Math.min(x1, x2)
+    const maxX = Math.max(x1, x2)
+    const minY = Math.min(y1, y2)
+    const maxY = Math.max(y1, y2)
+
+    const hitId = this.hitTestNodeListByRect(this.root.children, {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    })
+    if (hitId) {
+      this.selectedElement = hitId
+      return true
+    }
+    this.selectedElement = null
+    return false
+  }
+
+  private hitTestNodeListByRect(
+    nodes: EleTreeNode[],
+    rect: { x: number; y: number; width: number; height: number }
+  ): string | null {
+    const intersects = (
+      a: { x: number; y: number; width: number; height: number },
+      b: { x: number; y: number; width: number; height: number }
+    ) => {
+      return !(
+        a.x + a.width < b.x ||
+        b.x + b.width < a.x ||
+        a.y + a.height < b.y ||
+        b.y + b.height < a.y
+      )
+    }
+
+    // 从后往前：后面的更上层
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i]
+      if (!n.visible) continue
+
+      // 子节点优先
+      if (n.children.length) {
+        const childHit = this.hitTestNodeListByRect(n.children, rect)
+        if (childHit) return childHit
+      }
+
+      const el = this.elements.get(n.id)
+      if (!el) continue
+      const aabb = el.getWorldAABB(this)
+      if (intersects(aabb, rect)) return n.id
+    }
+
+    return null
   }
 
   private hitTestNodeList(nodes: EleTreeNode[], x: number, y: number): string | null {
@@ -470,14 +559,5 @@ export class ElementStore {
         ? parentNode.children.length
         : index
     parentNode.children.splice(i, 0, childNode)
-  }
-
-  getFrame() {
-    const frame: string[] = []
-    for (const node of this.nodeMap.values()) {
-      if (node.id === this.ROOT_ID) continue
-      if (node.visible && node.type === ElementType.Rect) frame.push(node.id)
-    }
-    return frame
   }
 }

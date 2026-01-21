@@ -13,7 +13,7 @@ const emit = defineEmits<{
   toggleExpand: [id: string]
 }>()
 
-const hasChildren = computed(() => props.element.children.length > 0)
+const hasChildren = computed(() => props.element.children && props.element.children.length > 0)
 // const isExpanded = computed(() => props.expandedItems.has(props.element.id))
 const isExpanded = true
 
@@ -46,7 +46,7 @@ const toggleExpand = () => {
         {{ element.name || element.type }}
       </span>
     </div>
-    <div v-if="hasChildren && isExpanded" class="tree-children">
+    <div  class="tree-children">
       <TreeNode
         v-for="child in element.children"
         :key="child.id"

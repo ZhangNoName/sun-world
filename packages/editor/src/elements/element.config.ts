@@ -62,7 +62,7 @@ export const elementConfig = {
     padding: 4,
     borderRadius: 4,
     offsetX: 0,
-    offsetY: -15,
+    offsetY: 15,
     showBackground: true,
     strokeColor: '#ffffff',
     strokeWidth: 2,

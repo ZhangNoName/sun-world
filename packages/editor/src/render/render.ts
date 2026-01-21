@@ -119,30 +119,40 @@ export class CanvasRenderer {
     this.isDirty = true
   }
   renderName() {
-    const selectedEl = this.store.getFrame()
-    if (!selectedEl) {
-      return
-    }
-    for (const id of selectedEl) {
-      const el = this.store.getById(id)
-      if (el) {
-        // renderName() 在 render() 的 ctx.restore() 之后调用，此时是屏幕坐标系。
-        // 需要把元素(世界坐标，含父级偏移)转换到屏幕坐标，才能保证缩放/平移时位置正确。
-        const { x: tx, y: ty, scale } = this.viewport.transform
-        // 使用世界矩阵计算元素原点的世界坐标（支持父级旋转）
-        const worldOrigin = el.getWorldCorners(this.store)[0]
+    const elements = this.store.getRootElements()
+    if (!elements?.length) return
 
-        // 将世界坐标映射到屏幕坐标：screen = world * scale + translate
-        // showName 内部计算 textX = this.x + dx + offsetX
-        // 所以这里把 dx/dy 设成：dx = screenX - this.x（同理 dy）
-        const screenX = worldOrigin.x * scale + tx
-        const screenY = worldOrigin.y * scale + ty
-        // showName 现在直接接收“屏幕坐标”作为绘制基准点
-        el.showName(this.ctx, screenX, screenY)
-      }
+    // renderName() 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系
+    for (const el of elements) {
+      el.showName(this.ctx)
     }
   }
   renderSelect() {
+    // 1) 优先绘制框选矩形（范围选择）
+    const marquee = this.store.getMarqueeRect?.() as
+      | { x1: number; y1: number; x2: number; y2: number }
+      | null
+    if (marquee) {
+      const ctx = this.ctx
+      const { x: tx, y: ty, scale } = this.viewport.transform
+      const x = Math.min(marquee.x1, marquee.x2) * scale + tx
+      const y = Math.min(marquee.y1, marquee.y2) * scale + ty
+      const w = Math.abs(marquee.x2 - marquee.x1) * scale
+      const h = Math.abs(marquee.y2 - marquee.y1) * scale
+
+      ctx.save()
+      ctx.setLineDash([6, 4])
+      ctx.strokeStyle = '#1890ff'
+      ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.rect(x, y, w, h)
+      ctx.fill()
+      ctx.stroke()
+      ctx.restore()
+      return
+    }
+
     const selectedEl = this.store.getSelectedElement()
     if (!selectedEl) {
       this.selectionHandles = []

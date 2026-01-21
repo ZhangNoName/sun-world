@@ -8,10 +8,10 @@ import { EleTreeNode } from './elementStore'
 import type { Matrix, Point } from '../types/common.type'
 import {
   applyToPoint,
-  composeTR,
   identity,
   invert,
   multiply,
+  composeTR,
   setTranslation,
   translateBy,
 } from '../utils/matrix'
@@ -34,6 +34,10 @@ export abstract class BaseElement {
   children: string[] | null = null
   parentId: string | null = null
   group: string | null = null
+  private _worldMatrix: Matrix = identity()
+  private _worldMatrixEpoch = -1
+  private _inverseWorldMatrix: Matrix | null = null
+  private _inverseWorldMatrixEpoch = -1
 
   constructor(params: {
     id: string
@@ -80,7 +84,13 @@ export abstract class BaseElement {
    * 世界矩阵：把元素局部坐标映射到“世界坐标系”（root 下的坐标系）
    * - world = parentWorld * local
    */
-  getWorldMatrix(store: { getById(id: string): BaseElement | undefined }): Matrix {
+  getWorldMatrix(store: {
+    getById(id: string): BaseElement | undefined
+    getWorldMatrixEpoch?: () => number
+  }): Matrix {
+    const epoch = store.getWorldMatrixEpoch?.() ?? -1
+    if (epoch !== -1 && this._worldMatrixEpoch === epoch) return this._worldMatrix
+
     // 先收集父链，避免递归（也避免潜在循环引用时无限递归）
     const chain: BaseElement[] = []
     let pid = this.parentId
@@ -95,6 +105,8 @@ export abstract class BaseElement {
     for (let i = chain.length - 1; i >= 0; i--) {
       m = multiply(chain[i].getLocalMatrix(), m)
     }
+    this._worldMatrix = m
+    this._worldMatrixEpoch = epoch
     return m
   }
 
@@ -103,9 +115,23 @@ export abstract class BaseElement {
     store: { getById(id: string): BaseElement | undefined },
     p: Point
   ): Point | null {
-    const inv = invert(this.getWorldMatrix(store))
+    const inv = this.getInverseWorldMatrix(store)
     if (!inv) return null
     return applyToPoint(inv, p)
+  }
+
+  /** 缓存的 worldMatrix 的逆（用于 hitTest / 坐标逆变换） */
+  getInverseWorldMatrix(store: {
+    getById(id: string): BaseElement | undefined
+    getWorldMatrixEpoch?: () => number
+  }): Matrix | null {
+    const epoch = store.getWorldMatrixEpoch?.() ?? -1
+    if (epoch !== -1 && this._inverseWorldMatrixEpoch === epoch) return this._inverseWorldMatrix
+
+    const inv = invert(this.getWorldMatrix(store))
+    this._inverseWorldMatrix = inv
+    this._inverseWorldMatrixEpoch = epoch
+    return inv
   }
 
   /** 获取元素四个角点的世界坐标（顺序：左上、右上、右下、左下） */
@@ -144,7 +170,9 @@ export abstract class BaseElement {
     this.height = newHeight
   }
 
-  showName(ctx: CanvasRenderingContext2D, dx: number, dy: number) {
+  showName(
+    ctx: CanvasRenderingContext2D,
+  ) {
     if (!this.name || !this.visible) return
 
     const nameConfig = elementConfig.name
@@ -161,8 +189,13 @@ export abstract class BaseElement {
     // const textMetrics = ctx.measureText(this.name)
 
     // 计算文本位置（居中显示在元素上方）
-    const textX = dx + (nameConfig.offsetX ?? 0)
-    const textY = dy + (nameConfig.offsetY ?? 0)
+    // 使用缓存的 worldMatrix（e,f 即局部原点在世界坐标的位置）
+    const wm = this._worldMatrix
+    const worldX = wm[4]
+    const worldY = wm[5]
+    // world -> screen（renderName 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系）
+    const textX = worldX - (nameConfig.offsetX ?? 0)
+    const textY = worldY - (nameConfig.offsetY ?? 0)
 
     // 绘制文本描边（提高对比度）
     if (nameConfig.strokeWidth > 0) {
@@ -288,7 +321,7 @@ export abstract class BaseElement {
     py: number,
     store?: { getById(id: string): BaseElement | undefined }
   ): boolean {
-    const inv = invert(store ? this.getWorldMatrix(store) : this.matrix)
+    const inv = store ? this.getInverseWorldMatrix(store) : invert(this.matrix)
     if (!inv) return false
     const local = applyToPoint(inv, { x: px, y: py })
     if (!local) return false
