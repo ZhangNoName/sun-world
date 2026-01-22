@@ -94,7 +94,7 @@ export abstract class BaseElement {
    * 支持更新矩阵相关的几何属性 (x, y, width, height, rotation) 
    * 以及基础属性 (name, visible, fill 等)
    */
-  updateAttrs(patch: Partial<ElementAttrs & { x?: number, y?: number, rotation?: number, width?: number, height?: number }>, store?: StoreLike) {
+  updateAttrs(patch: Partial<ElementAttrs & { x?: number, y?: number, rotation?: number, width?: number, height?: number }>) {
     let matrixChanged = false;
     let needsDirty = false;
 
@@ -138,18 +138,19 @@ export abstract class BaseElement {
 
     // 3. 如果几何或可见性变化，触发布局刷新
     if (matrixChanged || needsDirty) {
-      this.markDirty(store);
+      this.markDirty();
     }
   }
 
   /**
    * 仅平移（move 快捷方式）
    */
-  move(dx: number, dy: number, store?: StoreLike) {
+  move(dx: number, dy: number) {
+    // console.log('move', dx, dy)
     this.updateAttrs({
       x: this.x + dx,
       y: this.y + dy
-    }, store);
+    });
   }
 
   /**
@@ -305,6 +306,7 @@ export abstract class BaseElement {
       visible: this.visible,
       parentId: this.parentId,
       children: [] as any[],
+      isSelected: false,
       locked: false,
     }
   }

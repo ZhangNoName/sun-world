@@ -21,7 +21,7 @@ export default class DragTool extends BaseTool {
     console.log('')
     const { viewport, elements } = this.ctx
     const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
-    elements.moveSelectedElement(canvasPos.x, canvasPos.y)
+    // elements.moveSelectedElement(canvasPos.x, canvasPos.y)
     const dx = e.clientX - this.lastX
     const dy = e.clientY - this.lastY
     this.lastX = e.clientX

@@ -39,6 +39,7 @@ export class AreaTool extends BaseTool {
   onMouseUp(): void {
     console.log('区域选择 取消')
     this.isPanning = false
+    this.ctx.elements.clearMarqueeRect()
 
     this.ctx.render(true)
   }

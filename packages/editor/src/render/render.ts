@@ -142,16 +142,30 @@ export class CanvasRenderer {
   }
   renderSelect() {
     // 1) 优先绘制框选矩形（范围选择）
-    const marquee = this.store.getMarqueeRect?.() as
-      | { x1: number; y1: number; x2: number; y2: number }
-      | null
+    const marquee = this.store.getMarqueeRect()
+    const selectedBox = this.store.getSelectedBox()
+    const ctx = this.ctx
+    const { x: tx, y: ty, scale } = this.viewport.transform
+    if (selectedBox) {
+      const x = Math.min(selectedBox.minX, selectedBox.maxX) * scale + tx
+      const y = Math.min(selectedBox.minY, selectedBox.maxY) * scale + ty
+      const w = Math.abs(selectedBox.maxX - selectedBox.minX) * scale
+      const h = Math.abs(selectedBox.maxY - selectedBox.minY) * scale
+      ctx.save()
+      ctx.setLineDash([6, 4])
+      ctx.strokeStyle = '#1890ff'
+      ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.rect(x, y, w, h)
+      ctx.fill()
+      ctx.stroke()
+    }
     if (marquee) {
-      const ctx = this.ctx
-      const { x: tx, y: ty, scale } = this.viewport.transform
-      const x = Math.min(marquee.x1, marquee.x2) * scale + tx
-      const y = Math.min(marquee.y1, marquee.y2) * scale + ty
-      const w = Math.abs(marquee.x2 - marquee.x1) * scale
-      const h = Math.abs(marquee.y2 - marquee.y1) * scale
+      const x = Math.min(marquee.minX, marquee.maxX) * scale + tx
+      const y = Math.min(marquee.minY, marquee.maxY) * scale + ty
+      const w = Math.abs(marquee.maxX - marquee.minX) * scale
+      const h = Math.abs(marquee.maxY - marquee.minY) * scale
 
       ctx.save()
       ctx.setLineDash([6, 4])
@@ -173,11 +187,9 @@ export class CanvasRenderer {
       return
     }
 
-    const ctx = this.ctx
 
     // 注意：renderSelect() 在 render() 的 ctx.restore() 之后调用
     // 此时 ctx 在“屏幕坐标系”，需要把元素 world 坐标转换到屏幕坐标
-    const { x: tx, y: ty, scale } = this.viewport.transform
     const toScreen = (x: number, y: number) => ({
       x: x * scale + tx,
       y: y * scale + ty,
@@ -255,9 +267,9 @@ export class CanvasRenderer {
     if (this.rule) {
       this.rule.render()
     }
-    if (isDragging) {
-      this.renderSelect()
-    }
+
+    this.renderSelect()
+
     this.renderName()
 
     this.ctx.restore()

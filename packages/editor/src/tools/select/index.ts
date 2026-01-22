@@ -41,7 +41,11 @@ export default class SelectTool extends BaseTool {
     const controlHandle = false
     const rotateHandle = false
     // 点击命中检测
-    elements.setMarqueeRect({ minX: canvasPos.x, minY: canvasPos.y, maxX: canvasPos.x, maxY: canvasPos.y })
+
+    const isDrag = elements.hitSelectBox(canvasPos)
+    if (!isDrag) {
+      elements.setMarqueeRect({ minX: canvasPos.x, minY: canvasPos.y, maxX: canvasPos.x, maxY: canvasPos.y })
+    }
 
     this.selectedEl = elements.getSelectedElement()
     console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y)
@@ -49,7 +53,7 @@ export default class SelectTool extends BaseTool {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {
       this.currentMode = this.RotateMode
-    } else if (this.selectedEl.length > 0) {
+    } else if (isDrag) {
       this.currentMode = this.DragMode
     } else {
       this.currentMode = this.AreaMode

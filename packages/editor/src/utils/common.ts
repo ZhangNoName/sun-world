@@ -51,9 +51,9 @@ export function debounce(fn: Function, wait = 200) {
 }
 
 export function intersectBox(a: IBox, b: IBox): boolean {
-  const startX = Math.min(a.minX, b.minX)
-  const startY = Math.min(a.minY, b.minY)
-  const endX = Math.max(a.maxX, b.maxX)
-  const endY = Math.max(a.maxY, b.maxY)
+  const startX = Math.max(a.minX, b.minX)
+  const startY = Math.max(a.minY, b.minY)
+  const endX = Math.min(a.maxX, b.maxX)
+  const endY = Math.min(a.maxY, b.maxY)
   return startX <= endX && startY <= endY
 }

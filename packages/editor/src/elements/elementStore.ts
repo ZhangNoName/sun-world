@@ -3,7 +3,7 @@ import { RectElement } from './react'
 import { ElementType } from './element.config'
 import { EleName } from './name'
 import { identity, invert, multiply } from '../utils/matrix'
-import { IBox, IRect } from '../types/common.type'
+import { IBox, IPoint, IRect } from '../types/common.type'
 import { intersectBox } from '../utils/common'
 
 export class EleTreeNode {
@@ -12,6 +12,7 @@ export class EleTreeNode {
   type!: ElementType
   visible!: boolean
   locked!: boolean
+  isSelected!: boolean
   _isDirty: boolean = false
   /**
    * 统一语义：
@@ -65,6 +66,7 @@ export class ElementStore {
     type: ElementType.Group,
     visible: true,
     locked: false,
+    isSelected: false,
     _isDirty: false,
     parentId: null,
     children: [],
@@ -189,6 +191,9 @@ export class ElementStore {
   }
   clearMarqueeRect() {
     this.marqueeRect = null
+  }
+  getSelectedBox() {
+    return this.selectedBox
   }
 
   getRootElements() {
@@ -377,24 +382,19 @@ export class ElementStore {
     this.emitHierarchyChanged()
     this.emitElementsChanged()
   }
-  private hitSelectBox() {
+  // 是否点击在选中框内，只有鼠标按下的时候计算
+  hitSelectBox(point: IPoint) {
+    const { x, y } = point
     if (!this.selectedBox) {
       return false
     }
-    const areaBox = this.selectedBox
-    const box = this.getMarqueeRect()
-    if (!box) return false
-
-    return intersectBox(areaBox, box)
+    return x >= this.selectedBox.minX && x <= this.selectedBox.maxX && y >= this.selectedBox.minY && y <= this.selectedBox.maxY
   }
+
   hitTest() {
-    if (this.hitSelectBox()) {
-      console.log('点击到选中框')
-      return true
-    }
     this.hitTestNodeList(this.root.children)
     if (this.selectedElement.length > 0) {
-      console.log('点击到元素', this.selectedElement)
+      // console.log('点击到元素', this.selectedElement)
       return true
     }
     return false
@@ -435,19 +435,34 @@ export class ElementStore {
       }
     }
   }
+  private updateSelectBox(newBox: IBox) {
+    if (!this.selectedBox) {
+      this.selectedBox = newBox
+      return
+    }
+    const oldBox = this.selectedBox
+    this.selectedBox = {
+      minX: Math.min(oldBox.minX, newBox.minX),
+      minY: Math.min(oldBox.minY, newBox.minY),
+      maxX: Math.max(oldBox.maxX, newBox.maxX),
+      maxY: Math.max(oldBox.maxY, newBox.maxY),
+    }
 
+  }
   private hitTestNodeList(nodes: EleTreeNode[]) {
     const areaBox = this.getMarqueeRect()
+    this.selectedElement = []
+    this.selectedBox = null
     if (!areaBox) return null
-    for (let i = nodes.length - 1; i >= 0; i--) {
-      const n = nodes[i]
+    for (let n of nodes) {
       if (!n.visible) continue
-
       const el = this.elements.get(n.id)
       if (!el) continue
       const aabb = el.getAABB()
       if (intersectBox(areaBox, aabb)) {
         this.selectedElement.push(n.id)
+        n.isSelected = true
+        this.updateSelectBox(aabb)
       }
     }
     return null
@@ -524,12 +539,20 @@ export class ElementStore {
         : index
     parentNode.children.splice(i, 0, childNode)
   }
-  moveSelectedElement(x: number, y: number) {
+  moveSelectedElement(dx: number, dy: number) {
     for (const id of this.selectedElement) {
       const el = this.elements.get(id)
       if (el) {
-        el.move(x, y)
+        el.move(dx, dy)
       }
+    }
+    if (!this.selectedBox) return
+    const oldBox = this.selectedBox
+    this.selectedBox = {
+      minX: oldBox.minX + dx,
+      minY: oldBox.minY + dy,
+      maxX: oldBox.maxX + dx,
+      maxY: oldBox.maxY + dy,
     }
   }
 }
