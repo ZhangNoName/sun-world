@@ -53,6 +53,7 @@ export class RectElement extends BaseElement {
     // 根据填充类型绘制
     // 由于父类 BaseElement 的矩阵已包含 width/height (scale)，
     // 这里的 draw 只需绘制 (0, 0, 1, 1) 的矩形单元。
+    console.log('draw', this.attrs.name, ctx.getTransform())
     const fill = this.attrs.fill
     if (
       fill.type === FillType.Image &&

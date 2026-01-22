@@ -18,7 +18,6 @@ export default class DragTool extends BaseTool {
   onMouseMove(e: MouseEvent): void {
     // console.log('DragTool.onMouseMove', e)
     if (!this.selectedEl) return
-    console.log('')
     const { viewport, elements } = this.ctx
     const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
     // elements.moveSelectedElement(canvasPos.x, canvasPos.y)
@@ -27,7 +26,7 @@ export default class DragTool extends BaseTool {
     this.lastX = e.clientX
     this.lastY = e.clientY
     // elements.hitTest(canvasPos.x, canvasPos.y)
-    // const newParentId = elements.hitTopExcludeSelected(canvasPos.x, canvasPos.y)
+    elements.hitTopExcludeSelected(canvasPos.x, canvasPos.y)
     // if (newParentId !== this.parentId) {
     //   console.log('更新----newParentId', this.parentId, newParentId)
     //   this.parentId = newParentId

@@ -3,8 +3,9 @@ import { RectElement } from './react'
 import { ElementType } from './element.config'
 import { EleName } from './name'
 import { identity, invert, multiply } from '../utils/matrix'
-import { IBox, IPoint, IRect } from '../types/common.type'
-import { intersectBox } from '../utils/common'
+import { IBox, IPoint, IRect, Matrix } from '../types/common.type'
+import { intersectBox, isPointInBox } from '../utils/common'
+import ViewportState from '@/viewport/viewport'
 
 export class EleTreeNode {
   id!: string
@@ -124,7 +125,7 @@ export class ElementStore {
     }
   }
 
-  add(el: BaseElement, parentId?: string | null, index?: number) {
+  add(el: BaseElement, parentId: string = this.ROOT_ID, index: number = 0) {
     const pid = this.normalizeParentId(parentId)
     const parentNode = this.getNode(pid)
     if (!parentNode) return
@@ -214,35 +215,7 @@ export class ElementStore {
    * 变更层级：把节点挂到新的 parent 下（根层也用 ROOT_ID 表示）
    */
   moveNode(id: string, newParentId?: string | null, index?: number) {
-    if (id === this.ROOT_ID) return
-    const node = this.getNode(id)
-    if (!node) return
-
-    const targetParentId = this.normalizeParentId(newParentId)
-    if (targetParentId === id) return
-    if (node.parentId === targetParentId) return
-
-    // 不允许移动到自己的子树里
-    const targetParentNode = this.getNode(targetParentId)
-    if (!targetParentNode) return
-    if (this.isDescendant(targetParentNode, id)) return
-
-    // 从旧父节点移除
-    const oldParentNode = this.getNode(this.normalizeParentId(node.parentId))
-    if (oldParentNode) {
-      oldParentNode.children = oldParentNode.children.filter((c) => c.id !== id)
-    }
-
-    // 插入新父节点
-    node.parentId = targetParentId
-    this.insertChild(targetParentId, id, index)
-    this.rebuildElementRelations()
-
-    if (!this.isHydrating) {
-      this.saveLocal()
-      this.emitHierarchyChanged()
-      this.emitElementsChanged()
-    }
+    this.moveNodes([id], newParentId ?? this.ROOT_ID, index)
   }
 
   private isDescendant(parent: EleTreeNode, possibleDescendantId: string): boolean {
@@ -253,6 +226,45 @@ export class ElementStore {
       q.push(...cur.children)
     }
     return false
+  }
+
+  /**
+   * 批量移动节点到同一个 parent
+   * - 会自动过滤掉“父子同时被选中”情况下的子节点（只移动最上层的选中节点）
+   * - 会保持世界矩阵不变（insertChild 内部会重算 local matrix）
+   */
+  moveNodes(ids: string[], newParentId: string, index?: number) {
+    const targetParentId = this.normalizeParentId(newParentId)
+    const targetParentNode = this.getNode(targetParentId)
+    if (!targetParentNode) return
+
+    // 先从旧父节点中移除（避免在 insert 时被去重影响）
+    for (const id of ids) {
+      const node = this.getNode(id)
+      if (!node) continue
+      const oldParentNode = this.getNode(this.normalizeParentId(node.parentId))
+      if (oldParentNode) {
+        oldParentNode.children = oldParentNode.children.filter((c) => c.id !== id)
+      }
+    }
+
+    // 插入到新父节点
+    let insertAt = index
+    for (const id of ids) {
+      const node = this.getNode(id)
+      if (!node) continue
+      node.parentId = targetParentId
+      this.insertChild(targetParentId, id, insertAt)
+      if (insertAt !== undefined) insertAt += 1
+    }
+    console.log('移动过后的元素结构', this.root.children)
+    this.rebuildElementRelations()
+
+    if (!this.isHydrating) {
+      this.saveLocal()
+      this.emitHierarchyChanged()
+      this.emitElementsChanged()
+    }
   }
 
   updateNodeMeta(
@@ -360,6 +372,7 @@ export class ElementStore {
             type: el.type ?? ElementType.Rect,
             visible: el.visible ?? true,
             locked: false,
+            isSelected: false,
             _isDirty: false,
             parentId,
             children: [],
@@ -467,37 +480,58 @@ export class ElementStore {
     }
     return null
   }
-
+  private hitTopFrame(x: number, y: number) {
+    const areaBox = this.getMarqueeRect()
+    if (!areaBox) return null
+    for (let i = this.root.children.length - 1; i >= 0; i--) {
+      const node = this.root.children[i]
+      if (!node.visible) continue
+    }
+  }
+  // 排除掉选中的元素有没有在其他元素里面，如果有，则返回该元素的父元素id
   hitTopExcludeSelected(x: number, y: number) {
-    if (!this.selectedElement) return null
+    if (!this.selectedElement.length) return null
     const selectedId = this.selectedElement[0]
+
     const selectedNode = this.getNode(selectedId)
     if (!selectedNode) return null
 
     const currentParentId = this.normalizeParentId(selectedNode.parentId)
     const currentParentNode = this.getNode(currentParentId)
-    const currentParentEl = currentParentNode
-      ? this.elements.get(currentParentNode.id)
-      : undefined
-    if (currentParentNode && currentParentNode.id !== this.ROOT_ID) {
-      if (currentParentNode.visible && currentParentEl?.hitTest(x, y, this)) return null
+    const currentParentEl = this.elements.get(currentParentId)
+    if (!currentParentNode) return null
+    const allNodeId = new Set<string>(this.selectedElement)
+    if (currentParentEl && isPointInBox(currentParentEl.getAABB(), { x, y })) {
+      return currentParentId
     }
-
-    let newParentId: string = this.ROOT_ID
-    for (let i = this.root.children.length - 1; i >= 0; i--) {
-      const node = this.root.children[i]
-      if (!node.visible) continue
-      if (node.id === selectedId) continue
-      if (this.isDescendant(node, selectedId)) continue
-      const el = this.elements.get(node.id)
-      if (el?.hitTest(x, y, this)) {
-        newParentId = node.id
-        break
+    // console.log('currentParentNode', currentParentNode?.name)
+    let newParentId: string = ''
+    const dfs = (node: EleTreeNode): string => {
+      // console.log('node', node.name)
+      if (node.id !== this.ROOT_ID) {
+        if (allNodeId.has(node.id)) return ''
+        if (!node.visible) return ''
+        const el = this.elements.get(node.id)
+        if (!el) return ''
+        const inNowBox = isPointInBox(el.getAABB(), { x, y })
+        if (!inNowBox) {
+          return ''
+        }
       }
+      for (const child of node.children) {
+        const result = dfs(child)
+        if (result) return result
+      }
+      return node.id
     }
-
+    const result = dfs(this.root)
+    if (result) {
+      newParentId = result
+    }
+    console.log('newParentId', currentParentId, result)
     if (newParentId === currentParentId) return null
-    this.moveNode(selectedId, newParentId)
+    // 将当前所有选中元素移动到同一个节点
+    this.moveNodes(this.selectedElement, newParentId)
     return newParentId
   }
 
@@ -511,7 +545,7 @@ export class ElementStore {
     this.selectedElement = []
   }
 
-  private insertChild(parentId: string, nodeId: string, index?: number) {
+  private insertChild(parentId: string, nodeId: string, index: number = 0) {
     const pid = this.normalizeParentId(parentId)
     const parentNode = this.getNode(pid)
     const childNode = this.getNode(nodeId)
@@ -543,7 +577,7 @@ export class ElementStore {
     for (const id of this.selectedElement) {
       const el = this.elements.get(id)
       if (el) {
-        el.move(dx, dy)
+        el.move(dx, dy, this)
       }
     }
     if (!this.selectedBox) return
@@ -555,4 +589,13 @@ export class ElementStore {
       maxY: oldBox.maxY + dy,
     }
   }
+  renderAll(ctx: CanvasRenderingContext2D) {
+
+    for (let node of this.root.children) {
+      const el = this.elements.get(node.id)
+      if (!el) continue
+      el.render(ctx, this)
+    }
+  }
+
 }

@@ -17,13 +17,25 @@ import {
 export interface ElementAttrs {
   id: string
   name: string
+  width: number
+  height: number
+  opacity?: number,
   type: ElementType
   visible: boolean
   isSelected: boolean
   fill: FillStyle
   parentId: string | null
   /** 本地变换矩阵：把元素局部坐标系 (0,0..1,1) 映射到父坐标系 */
-  matrix: Matrix
+  matrix: Matrix,
+  locked: boolean
+
+}
+export interface PanelAttrs {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
 }
 
 export interface StoreLike {
@@ -53,11 +65,8 @@ export abstract class BaseElement {
   public children: string[] | null = null
 
   // Cache information
-  protected _worldMatrix: Matrix = identity()
-  protected _inverseWorldMatrix: Matrix | null = null
   /** AABB in world coordinates */
-  protected _aabb: IBox = { minX: 0, minY: 0, maxX: 0, maxY: 0 }
-  protected _isDirty: boolean = true
+  protected _aabb: IBox | null = null
 
   constructor(params: BaseElementParams) {
     this.width = params.width
@@ -94,7 +103,7 @@ export abstract class BaseElement {
    * 支持更新矩阵相关的几何属性 (x, y, width, height, rotation) 
    * 以及基础属性 (name, visible, fill 等)
    */
-  updateAttrs(patch: Partial<ElementAttrs & { x?: number, y?: number, rotation?: number, width?: number, height?: number }>) {
+  updateAttrs(patch: Partial<ElementAttrs & { x?: number, y?: number, rotation?: number, width?: number, height?: number }>, store?: StoreLike) {
     let matrixChanged = false;
     let needsDirty = false;
 
@@ -138,19 +147,45 @@ export abstract class BaseElement {
 
     // 3. 如果几何或可见性变化，触发布局刷新
     if (matrixChanged || needsDirty) {
-      this.markDirty();
+      this.markDirty(store);
     }
   }
 
   /**
    * 仅平移（move 快捷方式）
    */
-  move(dx: number, dy: number) {
-    // console.log('move', dx, dy)
-    this.updateAttrs({
-      x: this.x + dx,
-      y: this.y + dy
-    });
+  move(dx: number, dy: number, store?: StoreLike) {
+    // 1. 更新本地矩阵的平移部分
+    this.attrs.matrix.e += dx
+    this.attrs.matrix.f += dy
+
+
+
+    // 3. 递归更新子元素的 AABB
+    if (this.children && store) {
+      for (const childId of this.children) {
+        const child = store.getById(childId)
+        child?.moveAABBRecursively(dx, dy, store)
+      }
+    }
+  }
+
+  /**
+   * 递归更新 AABB（仅用于平移场景，不改变本地矩阵）
+   */
+  protected moveAABBRecursively(dx: number, dy: number, store: StoreLike) {
+    if (!this._aabb) return
+    this._aabb.minX += dx
+    this._aabb.maxX += dx
+    this._aabb.minY += dy
+    this._aabb.maxY += dy
+
+    if (this.children) {
+      for (const childId of this.children) {
+        const child = store.getById(childId)
+        child?.moveAABBRecursively(dx, dy, store)
+      }
+    }
   }
 
   /**
@@ -158,8 +193,9 @@ export abstract class BaseElement {
    * Recursively propagates the dirty flag.
    */
   markDirty(store?: StoreLike) {
-    this._isDirty = true
-    this._inverseWorldMatrix = null
+    if (store) {
+      this._updateAABBCache(store)
+    }
 
     if (this.children && store) {
       for (const childId of this.children) {
@@ -179,18 +215,10 @@ export abstract class BaseElement {
    * 获取世界矩阵
    */
   getWorldMatrix(store: StoreLike): Matrix {
-    if (!this._isDirty) return this._worldMatrix
-
     const parent = this.attrs.parentId ? store.getById(this.attrs.parentId) : null
     const parentWorld = parent ? parent.getWorldMatrix(store) : identity()
 
-    this._worldMatrix = multiply(parentWorld, this.attrs.matrix)
-
-    // Update AABB cache
-    this._updateAABBCache()
-
-    this._isDirty = false
-    return this._worldMatrix
+    return multiply(parentWorld, this.attrs.matrix)
   }
 
   /** 世界坐标 -> 当前元素局部坐标 */
@@ -202,15 +230,12 @@ export abstract class BaseElement {
 
   /** 获取世界矩阵的逆 */
   getInverseWorldMatrix(store: StoreLike): Matrix | null {
-    if (this._inverseWorldMatrix && !this._isDirty) return this._inverseWorldMatrix
-
     const inv = invert(this.getWorldMatrix(store))
-    this._inverseWorldMatrix = inv
     return inv
   }
 
-  private _updateAABBCache() {
-    const m = this._worldMatrix
+  private _updateAABBCache(store: StoreLike) {
+    const m = this.getWorldMatrix(store)
     const pts = [
       applyToPoint(m, { x: 0, y: 0 }),
       applyToPoint(m, { x: 1, y: 0 }),
@@ -230,22 +255,25 @@ export abstract class BaseElement {
   getAABB() {
     return this._aabb
   }
+  clearCache() {
+    this._aabb = null
+  }
 
   /** 元素在世界坐标系下的轴对齐包围盒（兼容格式） */
   getWorldAABB(store: StoreLike) {
-    this.getWorldMatrix(store) // Ensure cache is updated
     return this._aabb
   }
 
   /**
    * 使用缓存的世界矩阵坐标绘制名称
    */
-  showName(ctx: CanvasRenderingContext2D) {
+  showName(ctx: CanvasRenderingContext2D, store: StoreLike) {
     if (!this.attrs.name || !this.attrs.visible) return
 
     const nameConfig = elementConfig.name
-    const worldX = this._worldMatrix.e
-    const worldY = this._worldMatrix.f
+    const worldMatrix = this.getWorldMatrix(store)
+    const worldX = worldMatrix.e
+    const worldY = worldMatrix.f
 
     const textX = worldX - (nameConfig.offsetX ?? 0)
     const textY = worldY - (nameConfig.offsetY ?? 0)
@@ -256,19 +284,24 @@ export abstract class BaseElement {
   render(ctx: CanvasRenderingContext2D, store: StoreLike) {
     if (!this.attrs.visible) return
     const m = this.getWorldMatrix(store)
+    // const m = this.attrs.matrix
 
+    // 关键：每个元素都在“干净的 ctx”上应用自己的 worldMatrix。
+    // 如果在父元素 transform 后直接渲染子元素，同时子元素又用 worldMatrix transform，
+    // 会导致矩阵叠加（偏移/缩放越来越大）。
     ctx.save()
     ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f)
-
     this.draw(ctx)
 
+
+    // 子元素使用自己的 worldMatrix 绘制，因此必须在 restore 后递归绘制
     if (this.children) {
       for (const childId of this.children) {
         const child = store.getById(childId)
-        child?.render(ctx, store)
+        if (!child?.visible) continue
+        child.render(ctx, store)
       }
     }
-
     ctx.restore()
   }
 
@@ -353,7 +386,9 @@ export abstract class BaseElement {
    * 命中检测
    */
   hitTest(px: IPoint, py: IPoint, store: StoreLike): boolean {
+
     const aabb = this.getAABB()
+    if (!aabb) return false
     const startX = Math.min(aabb.minX, px.x,)
     const endX = Math.max(aabb.maxX, px.x,)
     const startY = Math.min(aabb.minY, py.y,)

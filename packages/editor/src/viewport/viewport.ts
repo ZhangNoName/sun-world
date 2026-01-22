@@ -73,6 +73,14 @@ export default class ViewportState {
     this.scale = newScale
     this.emit()
   }
+  getRect() {
+    return {
+      x: this.transform.x,
+      y: this.transform.y,
+      width: this.width,
+      height: this.height,
+    }
+  }
 
   /**
    * 在指定屏幕位置进行缩放，保持该位置在画布坐标系中不变

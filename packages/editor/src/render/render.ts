@@ -1,8 +1,9 @@
-import type { ElementStore } from '@/elements/elementStore'
+import type { ElementStore, EleTreeNode } from '@/elements/elementStore'
 import { debounce } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
+import { applyToPoint } from '../utils/matrix'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -136,7 +137,7 @@ export class CanvasRenderer {
 
     // renderName() 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系
     for (const el of elements) {
-      el.showName(this.ctx)
+      el.showName(this.ctx, this.store)
     }
     this.ctx.restore()
   }
@@ -179,14 +180,19 @@ export class CanvasRenderer {
       ctx.restore()
       return
     }
-    return;
 
-    const selectedEl = this.store.getSelectedElement()
-    if (!selectedEl) {
+    const selectedIds = this.store.getSelectedElement()
+    if (!selectedIds || selectedIds.length === 0) {
       this.selectionHandles = []
       return
     }
 
+    const selectedId = selectedIds[0]
+    const el = this.store.getById(selectedId)
+    if (!el) {
+      this.selectionHandles = []
+      return
+    }
 
     // 注意：renderSelect() 在 render() 的 ctx.restore() 之后调用
     // 此时 ctx 在“屏幕坐标系”，需要把元素 world 坐标转换到屏幕坐标
@@ -196,7 +202,13 @@ export class CanvasRenderer {
     })
 
     // 用世界矩阵角点绘制选中框（支持父子层级与 rotation）
-    const worldCorners = selectedEl.getWorldCorners(this.store)
+    const worldMatrix = el.getWorldMatrix(this.store)
+    const worldCorners = [
+      applyToPoint(worldMatrix, { x: 0, y: 0 }),
+      applyToPoint(worldMatrix, { x: 1, y: 0 }),
+      applyToPoint(worldMatrix, { x: 1, y: 1 }),
+      applyToPoint(worldMatrix, { x: 0, y: 1 }),
+    ]
     const p1 = toScreen(worldCorners[0].x, worldCorners[0].y) // 左上
     const p2 = toScreen(worldCorners[1].x, worldCorners[1].y) // 右上
     const p3 = toScreen(worldCorners[2].x, worldCorners[2].y) // 右下
@@ -253,13 +265,16 @@ export class CanvasRenderer {
     ctx.clearRect(0, 0, displayWidth, displayHeight)
 
     this.transform()
+    this.store.renderAll(ctx)
+
     // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
-    if (this.store) {
-      const roots = this.store.getRootElements()
-      for (const el of roots) {
-        el.render(ctx, this.store)
-      }
-    }
+    // if (this.store) {
+    //   const roots = this.store.getRootElements()
+    //   for (let el of roots) {
+    //     if (!el.visible) continue
+    //     el.render(ctx, this.store)
+    //   }
+    // }
 
     ctx.restore()
 

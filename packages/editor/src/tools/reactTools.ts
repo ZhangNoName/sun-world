@@ -92,7 +92,7 @@ export class RectTool extends BaseTool {
       height: h,
       x: left,
       y: top,
-    })
+    }, this.store)
     this.store.update()
   }
 

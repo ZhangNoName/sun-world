@@ -1,4 +1,4 @@
-import { IBox } from '@/types/common.type'
+import { IBox, IPoint } from '@/types/common.type'
 import { v4 as uuidv4 } from 'uuid'
 
 /**
@@ -56,4 +56,7 @@ export function intersectBox(a: IBox, b: IBox): boolean {
   const endX = Math.min(a.maxX, b.maxX)
   const endY = Math.min(a.maxY, b.maxY)
   return startX <= endX && startY <= endY
+}
+export function isPointInBox(box: IBox, point: IPoint): boolean {
+  return point.x >= box.minX && point.x <= box.maxX && point.y >= box.minY && point.y <= box.maxY
 }
