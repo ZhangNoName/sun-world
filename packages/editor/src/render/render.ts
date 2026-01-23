@@ -1,4 +1,4 @@
-import type { ElementStore, EleTreeNode } from '@/elements/elementStore'
+import type { ElementManager } from '@/elements/elementManager'
 import { debounce } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
@@ -14,7 +14,7 @@ export class CanvasRenderer {
   public ctx: CanvasRenderingContext2D
   private resizeObserver!: ResizeObserver
   private viewport: ViewportState
-  private store!: ElementStore
+  private elementManager!: ElementManager
   private rule?: Rule
   private isDirty = true // 控制是否需要重绘
   private devicePixelRatio: number = 1
@@ -32,11 +32,11 @@ export class CanvasRenderer {
   constructor(
     containerElement: HTMLDivElement,
     viewportState: ViewportState,
-    elementStore: ElementStore
+    elementManager: ElementManager
   ) {
     this.containerElement = containerElement
     this.viewport = viewportState
-    this.store = elementStore
+    this.elementManager = elementManager
 
     // 获取设备像素比
     this.devicePixelRatio = window.devicePixelRatio || 1
@@ -89,7 +89,9 @@ export class CanvasRenderer {
     this.rule = rule
   }
 
-  // 1. 设置 ResizeObserver 来响应容器尺寸变化
+  /**
+   * 设置 ResizeObserver 来响应容器尺寸变化
+   */
   private setupResizeObserver() {
     const resizeHandler = debounce((entries: ResizeObserverEntry[]) => {
       const entry = entries[0]
@@ -114,14 +116,14 @@ export class CanvasRenderer {
     this.resizeObserver.observe(this.containerElement)
 
     // 分离监听：层级变化 / 元素变化
-    this.store.onHierarchyChange(() => this.render())
-    this.store.onElementsChange(() => this.render())
+    this.elementManager.onHierarchyChange(() => this.render())
+    this.elementManager.onElementsChange(() => this.render())
   }
   markDirty() {
     this.isDirty = true
   }
   renderName() {
-    const elements = this.store.getRootElements()
+    const elements = this.elementManager.getRootElements()
     if (!elements?.length) return
     const nameConfig = elementConfig.name
     this.transform()
@@ -137,14 +139,14 @@ export class CanvasRenderer {
 
     // renderName() 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系
     for (const el of elements) {
-      el.showName(this.ctx, this.store)
+      el.showName(this.ctx, this.elementManager)
     }
     this.ctx.restore()
   }
   renderSelect() {
     // 1) 优先绘制框选矩形（范围选择）
-    const marquee = this.store.getMarqueeRect()
-    const selectedBox = this.store.getSelectedBox()
+    const marquee = this.elementManager.getMarqueeRect()
+    const selectedBox = this.elementManager.getSelectedBox()
     const ctx = this.ctx
     const { x: tx, y: ty, scale } = this.viewport.transform
     if (selectedBox) {
@@ -181,14 +183,14 @@ export class CanvasRenderer {
       return
     }
 
-    const selectedIds = this.store.getSelectedElement()
+    const selectedIds = this.elementManager.getSelectedElement()
     if (!selectedIds || selectedIds.length === 0) {
       this.selectionHandles = []
       return
     }
 
     const selectedId = selectedIds[0]
-    const el = this.store.getById(selectedId)
+    const el = this.elementManager.getById(selectedId)
     if (!el) {
       this.selectionHandles = []
       return
@@ -202,7 +204,7 @@ export class CanvasRenderer {
     })
 
     // 用世界矩阵角点绘制选中框（支持父子层级与 rotation）
-    const worldMatrix = el.getWorldMatrix(this.store)
+    const worldMatrix = el.getWorldMatrix(this.elementManager)
     const worldCorners = [
       applyToPoint(worldMatrix, { x: 0, y: 0 }),
       applyToPoint(worldMatrix, { x: 1, y: 0 }),
@@ -265,14 +267,14 @@ export class CanvasRenderer {
     ctx.clearRect(0, 0, displayWidth, displayHeight)
 
     this.transform()
-    this.store.renderAll(ctx)
+    this.elementManager.renderAll(ctx)
 
     // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
-    // if (this.store) {
-    //   const roots = this.store.getRootElements()
+    // if (this.elementManager) {
+    //   const roots = this.elementManager.getRootElements()
     //   for (let el of roots) {
     //     if (!el.visible) continue
-    //     el.render(ctx, this.store)
+    //     el.render(ctx, this.elementManager)
     //   }
     // }
 
@@ -290,7 +292,9 @@ export class CanvasRenderer {
     this.ctx.restore()
   }
 
-  // 4. 清理方法
+  /**
+   * 清理方法
+   */
   public destroy() {
     this.resizeObserver.unobserve(this.containerElement)
     this.resizeObserver.disconnect()
@@ -305,3 +309,4 @@ export class CanvasRenderer {
     this.ctx.scale(scale, scale)
   }
 }
+

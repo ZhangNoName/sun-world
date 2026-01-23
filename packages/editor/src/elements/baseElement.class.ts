@@ -4,7 +4,7 @@ import {
   FillStyle,
   FillType,
 } from './element.config'
-import type { IBox, IPoint, Matrix, Point } from '../types/common.type'
+import type { IBox, IPoint, Matrix, Optional, Point } from '../types/common.type'
 import {
   applyToPoint,
   identity,
@@ -13,23 +13,10 @@ import {
   composeTRS,
   decomposeTRS,
 } from '../utils/matrix'
+import { EleAttrs, EleCreateAttrs, NodeInfo } from './ele.type'
+import { deepClone, getUUID } from '../utils/common'
 
-export interface ElementAttrs {
-  id: string
-  name: string
-  width: number
-  height: number
-  opacity?: number,
-  type: ElementType
-  visible: boolean
-  isSelected: boolean
-  fill: FillStyle
-  parentId: string | null
-  /** 本地变换矩阵：把元素局部坐标系 (0,0..1,1) 映射到父坐标系 */
-  matrix: Matrix,
-  locked: boolean
 
-}
 export interface PanelAttrs {
   x: number
   y: number
@@ -42,60 +29,38 @@ export interface StoreLike {
   getById(id: string): BaseElement | undefined
 }
 
-export interface BaseElementParams {
-  id: string
-  type: ElementType
-  name: string
-  width: number
-  height: number
-  parentId: string | null
-  matrix?: Matrix
-  fill?: FillStyle
-}
-
 export abstract class BaseElement {
-  // Class directly responsible for width and height
-  public width: number = 0
-  public height: number = 0
 
   // Properties encapsulated in attrs
-  public attrs: ElementAttrs
+  protected attrs: EleAttrs
 
-  // Children IDs for hierarchy traversal
-  public children: string[] | null = null
+  // Children for hierarchy traversal
+  public children: BaseElement[] = []
+  private _parent: BaseElement | null = null
+  get parent(): BaseElement | null {
+
+    return this._parent
+  }
+  set parent(value: BaseElement) {
+    this.attrs.parentId = value.id
+    this._parent = value
+  }
 
   // Cache information
   /** AABB in world coordinates */
   protected _aabb: IBox | null = null
 
-  constructor(params: BaseElementParams) {
-    this.width = params.width
-    this.height = params.height
-
+  constructor(params: EleCreateAttrs) {
+    const transform = params.transform ?? identity()
+    transform.e = params.x ?? 0
+    transform.f = params.y ?? 0
+    console.log('创建矩形的transform', transform)
     this.attrs = {
-      id: params.id,
-      type: params.type,
-      name: params.name,
-      visible: true,
-      isSelected: false,
-      fill: params.fill ?? { type: FillType.Solid, color: '#FF6B6B' },
-      parentId: params.parentId,
-      matrix: params.matrix ?? composeTRS(0, 0, 0, params.width, params.height)
+      ...params,
+      id: params.id ?? getUUID(),
+      transform: transform
     }
-
-    // Sync width/height from matrix if provided
-    if (params.matrix) {
-      const trs = decomposeTRS(params.matrix)
-      this.width = trs.width
-      this.height = trs.height
-    }
-  }
-
-  // Getters based on matrix
-  get x() { return this.attrs.matrix.e }
-  get y() { return this.attrs.matrix.f }
-  get rotation() {
-    return decomposeTRS(this.attrs.matrix).rotation
+    this._updateAABBCache({ getById: () => undefined } as any) // Initial cache update
   }
 
   /**
@@ -103,36 +68,34 @@ export abstract class BaseElement {
    * 支持更新矩阵相关的几何属性 (x, y, width, height, rotation) 
    * 以及基础属性 (name, visible, fill 等)
    */
-  updateAttrs(patch: Partial<ElementAttrs & { x?: number, y?: number, rotation?: number, width?: number, height?: number }>, store?: StoreLike) {
+  updateAttrs(patch: Partial<PanelAttrs & EleAttrs>) {
     let matrixChanged = false;
     let needsDirty = false;
 
     // 1. 处理几何属性（如果 patch 中包含任何一个，都需要重新计算矩阵）
     const hasGeo = patch.x !== undefined || patch.y !== undefined || patch.rotation !== undefined ||
-      patch.width !== undefined || patch.height !== undefined || patch.matrix !== undefined;
+      patch.width !== undefined || patch.height !== undefined;
 
     if (hasGeo) {
-      if (patch.matrix) {
-        this.attrs.matrix = patch.matrix;
-        const trs = decomposeTRS(this.attrs.matrix);
-        this.width = trs.width;
-        this.height = trs.height;
-        matrixChanged = true;
-      } else {
-        const trs = decomposeTRS(this.attrs.matrix);
-        const newX = patch.x ?? trs.x;
-        const newY = patch.y ?? trs.y;
-        const newRot = patch.rotation ?? trs.rotation;
-        const newW = patch.width ?? trs.width;
-        const newH = patch.height ?? trs.height;
+      this.attrs.transform.e = patch.x ?? this.attrs.transform.e
+      this.attrs.transform.f = patch.y ?? this.attrs.transform.f
+      this.attrs.width = patch.width ?? this.attrs.width
+      this.attrs.height = patch.height ?? this.attrs.height
+      // this.attrs.rotation = patch.rotation ?? this.attrs.rotation
+      matrixChanged = true;
+      // const trs = decomposeTRS(this.attrs.transform ?? composeTRS(0, 0, 0, 1, 1));
+      // const newX = patch.x ?? trs.x;
+      // const newY = patch.y ?? trs.y;
+      // const newRot = patch.rotation ?? trs.rotation;
+      // const newSX = patch.width !== undefined ? patch.width : trs.sx;
+      // const newSY = patch.height !== undefined ? patch.height : trs.sy;
 
-        if (newX !== trs.x || newY !== trs.y || newRot !== trs.rotation || newW !== trs.width || newH !== trs.height) {
-          this.attrs.matrix = composeTRS(newX, newY, newRot, newW, newH);
-          this.width = newW;
-          this.height = newH;
-          matrixChanged = true;
-        }
-      }
+      // if (newX !== trs.x || newY !== trs.y || newRot !== trs.rotation || newSX !== trs.sx || newSY !== trs.sy) {
+      //   this.attrs.transform = composeTRS(newX, newY, newRot, newSX, newSY);
+      //   this.attrs.width = newSX;
+      //   this.attrs.height = newSY;
+      //   matrixChanged = true;
+      // }
     }
 
     // 2. 处理基础属性
@@ -142,13 +105,30 @@ export abstract class BaseElement {
       needsDirty = true;
     }
     if (patch.fill !== undefined) this.attrs.fill = patch.fill;
-    if (patch.isSelected !== undefined) this.attrs.isSelected = patch.isSelected;
+    if (patch.locked !== undefined) this.attrs.locked = patch.locked;
     if (patch.parentId !== undefined) this.attrs.parentId = patch.parentId;
 
-    // 3. 如果几何或可见性变化，触发布局刷新
-    if (matrixChanged || needsDirty) {
-      this.markDirty(store);
-    }
+  }
+  get visible(): boolean {
+    return this.attrs.visible ?? true
+  }
+  get parentId(): string {
+    return this.attrs.parentId ?? 'root'
+  }
+  set parentId(value: string) {
+    this.attrs.parentId = value
+  }
+  get id(): string {
+    return this.attrs.id
+  }
+  get width(): number {
+    return this.attrs.width
+  }
+  get height(): number {
+    return this.attrs.height
+  }
+  get rotation(): number {
+    return decomposeTRS(this.attrs.transform).rotation
   }
 
   /**
@@ -156,17 +136,12 @@ export abstract class BaseElement {
    */
   move(dx: number, dy: number, store?: StoreLike) {
     // 1. 更新本地矩阵的平移部分
-    this.attrs.matrix.e += dx
-    this.attrs.matrix.f += dy
-
-
+    this.attrs.transform.e += dx
+    this.attrs.transform.f += dy
 
     // 3. 递归更新子元素的 AABB
-    if (this.children && store) {
-      for (const childId of this.children) {
-        const child = store.getById(childId)
-        child?.moveAABBRecursively(dx, dy, store)
-      }
+    for (const child of this.children) {
+      child.moveAABBRecursively(dx, dy, store!)
     }
   }
 
@@ -180,11 +155,8 @@ export abstract class BaseElement {
     this._aabb.minY += dy
     this._aabb.maxY += dy
 
-    if (this.children) {
-      for (const childId of this.children) {
-        const child = store.getById(childId)
-        child?.moveAABBRecursively(dx, dy, store)
-      }
+    for (const child of this.children) {
+      child.moveAABBRecursively(dx, dy, store)
     }
   }
 
@@ -197,11 +169,8 @@ export abstract class BaseElement {
       this._updateAABBCache(store)
     }
 
-    if (this.children && store) {
-      for (const childId of this.children) {
-        const child = store.getById(childId)
-        child?.markDirty(store)
-      }
+    for (const child of this.children) {
+      child.markDirty(store)
     }
   }
 
@@ -218,7 +187,7 @@ export abstract class BaseElement {
     const parent = this.attrs.parentId ? store.getById(this.attrs.parentId) : null
     const parentWorld = parent ? parent.getWorldMatrix(store) : identity()
 
-    return multiply(parentWorld, this.attrs.matrix)
+    return multiply(parentWorld, this.attrs.transform)
   }
 
   /** 世界坐标 -> 当前元素局部坐标 */
@@ -267,11 +236,11 @@ export abstract class BaseElement {
   /**
    * 使用缓存的世界矩阵坐标绘制名称
    */
-  showName(ctx: CanvasRenderingContext2D, store: StoreLike) {
+  showName(ctx: CanvasRenderingContext2D) {
     if (!this.attrs.name || !this.attrs.visible) return
 
     const nameConfig = elementConfig.name
-    const worldMatrix = this.getWorldMatrix(store)
+    const worldMatrix = this.attrs.transform
     const worldX = worldMatrix.e
     const worldY = worldMatrix.f
 
@@ -281,10 +250,11 @@ export abstract class BaseElement {
     ctx.fillText(this.attrs.name, textX, textY)
   }
 
-  render(ctx: CanvasRenderingContext2D, store: StoreLike) {
-    if (!this.attrs.visible) return
-    const m = this.getWorldMatrix(store)
-    // const m = this.attrs.matrix
+  render(ctx: CanvasRenderingContext2D) {
+    if (!this.visible) return
+    const m = this.attrs.transform
+    // const m = this.getWorldMatrix()
+    // const m = this.attrs.transform
 
     // 关键：每个元素都在“干净的 ctx”上应用自己的 worldMatrix。
     // 如果在父元素 transform 后直接渲染子元素，同时子元素又用 worldMatrix transform，
@@ -295,92 +265,41 @@ export abstract class BaseElement {
 
 
     // 子元素使用自己的 worldMatrix 绘制，因此必须在 restore 后递归绘制
-    if (this.children) {
-      for (const childId of this.children) {
-        const child = store.getById(childId)
-        if (!child?.visible) continue
-        child.render(ctx, store)
-      }
+    for (const child of this.children) {
+      if (!child.visible) continue
+      child.render(ctx)
     }
     ctx.restore()
   }
 
-  // Common setters that should trigger markDirty
-  setVisible(visible: boolean, store: StoreLike) {
-    if (this.attrs.visible !== visible) {
-      this.attrs.visible = visible
-      this.markDirty(store)
-    }
-  }
 
-  setName(name: string) {
-    this.attrs.name = name
-  }
-
-  setSelected(selected: boolean) {
-    this.attrs.isSelected = selected
-  }
-
-  // ID and Type (usually immutable)
-  get id() { return this.attrs.id }
-  get type() { return this.attrs.type }
-  get parentId() { return this.attrs.parentId }
-  set parentId(id: string | null) { this.attrs.parentId = id }
-  get visible() { return this.attrs.visible }
-  get isSelected() { return this.attrs.isSelected }
-  get name() { return this.attrs.name }
-  set name(v: string) { this.attrs.name = v }
-
-  getNodeInfo(): any {
+  getNodeInfo(): NodeInfo {
     return {
-      id: this.id,
-      name: this.name,
-      type: this.type,
+      id: this.attrs.id,
+      name: this.attrs.name,
+      type: this.attrs.type,
       visible: this.visible,
       parentId: this.parentId,
-      children: [] as any[],
-      isSelected: false,
+      children: this.children.map(c => c.getNodeInfo()),
       locked: false,
     }
   }
-
-  getAttr() {
+  getPanelAttrs(): PanelAttrs {
     return {
-      ...this.attrs,
+      x: this.attrs.transform.e,
+      y: this.attrs.transform.f,
       width: this.width,
       height: this.height,
-      children: [] as any[],
+      rotation: this.rotation,
+      // fill:deepClone(this.attrs.fill),
     }
   }
 
-  setAttr(attr: any, store: StoreLike) {
-    this.attrs.id = attr.id
-    this.attrs.name = attr.name
-    this.attrs.type = attr.type
-    this.attrs.visible = attr.visible
-    this.attrs.parentId = attr.parentId
-    this.attrs.fill = attr.fill
-
-    if (attr.matrix) {
-      this.attrs.matrix = attr.matrix
-    } else {
-      // Fallback if matrix is not provided but individual TRS components are
-      this.attrs.matrix = composeTRS(
-        attr.x ?? 0,
-        attr.y ?? 0,
-        attr.rotation ?? 0,
-        attr.width ?? 0,
-        attr.height ?? 0
-      )
-    }
-
-    const trs = decomposeTRS(this.attrs.matrix)
-    this.width = trs.width
-    this.height = trs.height
-    this.children = attr.children
-
-    this.markDirty(store)
+  toJSON() {
+    return this.getNodeInfo()
   }
+
+
 
   /**
    * 命中检测

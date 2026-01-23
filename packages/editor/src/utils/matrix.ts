@@ -102,17 +102,16 @@ export function invert(m: Matrix): Matrix | null {
 }
 
 /**
- * 组合 TRS（平移 + 旋转 + 缩放）。
- * 这里将 width 和 height 视为缩放分量。
+ * 组合 TRS（平移 + 旋转 + 缩放比例）。
  */
-export function composeTRS(x: number, y: number, rotation: number, width: number, height: number): Matrix {
+export function composeTRS(x: number, y: number, rotation: number, sx: number, sy: number): Matrix {
   const cos = Math.cos(rotation)
   const sin = Math.sin(rotation)
   return {
-    a: width * cos,
-    b: width * sin,
-    c: -height * sin,
-    d: height * cos,
+    a: sx * cos,
+    b: sx * sin,
+    c: -sy * sin,
+    d: sy * cos,
     e: x,
     f: y,
   }
@@ -127,8 +126,8 @@ export function decomposeTRS(m: Matrix) {
     x: e,
     y: f,
     rotation: Math.atan2(b, a),
-    width: Math.sqrt(a * a + b * b),
-    height: Math.sqrt(c * c + d * d),
+    sx: Math.sqrt(a * a + b * b),
+    sy: Math.sqrt(c * c + d * d),
   }
 }
 

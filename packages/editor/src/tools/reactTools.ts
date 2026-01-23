@@ -2,24 +2,24 @@
  * @Author: ZhangNoName
  * @Date: 2025-12-03 14:07:59
  * @LastEditors: zxy 1623190186@qq.com
- * @LastEditTime: 2026-01-21 16:31:44
+ * @LastEditTime: 2026-01-23 16:30:32
  * @FilePath: \sun-world\packages\editor\src\tools\reactTools.ts
  * @Description:
  *
  * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
  */
-import type { ElementStore } from '@/elements/elementStore'
+import type { ElementManager } from '@/elements/elementManager'
 import { RectElement } from '../elements/react'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { ElementType } from '../elements/element.config'
-import { setTranslation, translate } from '../utils/matrix'
+import { composeTRS, setTranslation, translate } from '../utils/matrix'
 
 export class RectTool extends BaseTool {
   name: ToolName = 'rect'
-  private store
-  private viewport
+  private elementManager: ElementManager
+  private viewport: ViewportState
 
   private drawing = false
   private startX = 0
@@ -29,7 +29,7 @@ export class RectTool extends BaseTool {
 
   constructor(ctx: ToolContext) {
     super(ctx)
-    this.store = ctx.elements
+    this.elementManager = ctx.elements
     this.viewport = ctx.viewport
   }
 
@@ -73,34 +73,35 @@ export class RectTool extends BaseTool {
     const w = Math.abs(x - this.startX)
     const h = Math.abs(y - this.startY)
 
-    // 只有宽度足够时才创建并加入 store
+    // 只有宽度足够时才创建并加入 elementManager
     if (!this.currentRect) {
       if (w <= this.minWidthToAdd) return
       this.currentRect = new RectElement({
-        id: getUUID(),
-        parentId: this.store.ROOT_ID,
+        parentId: this.elementManager.ROOT_ID,
+        name: this.elementManager.generateName(ElementType.Rect),
+        x: left,
+        y: top,
         width: w,
         height: h,
-        matrix: translate(left, top),
-        name: this.store.generateName(ElementType.Rect),
       })
-      this.store.add(this.currentRect)
+      this.elementManager.add(this.currentRect)
+      console.log('RectTool add', this.currentRect)
       return
     }
     this.currentRect.updateAttrs({
-      width: w,
-      height: h,
       x: left,
       y: top,
-    }, this.store)
-    this.store.update()
+      width: w,
+      height: h,
+    })
+    this.elementManager.update()
   }
 
   onMouseUp() {
     console.log('RectTool onMouseUp')
     // 如果已经创建但最终宽度仍不够，则移除（保证“宽度>5才加入”语义）
     if (this.currentRect && this.currentRect.width <= this.minWidthToAdd) {
-      this.store.remove(this.currentRect.id)
+      this.elementManager.remove(this.currentRect.id)
     }
     this.drawing = false
     this.currentRect = null

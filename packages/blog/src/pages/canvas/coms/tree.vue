@@ -1,10 +1,10 @@
 <script setup lang="ts" name="canvasTree">
-import { BaseElement, EleTreeNode } from '@sun-world/editor'
+import { BaseElement } from '@sun-world/editor'
 import { computed, ref } from 'vue'
 import TreeNode from './treeNode.vue'
 
 const props = defineProps<{
-  elements: EleTreeNode[]
+  elements: BaseElement[]
 }>()
 
 

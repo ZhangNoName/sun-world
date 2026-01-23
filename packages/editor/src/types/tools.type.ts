@@ -1,4 +1,4 @@
-import { ElementStore } from '@/elements/elementStore'
+import { ElementManager } from '@/elements/elementManager'
 import { InputManager } from '@/input/inputManager'
 import ViewportState from '@/viewport/viewport'
 
@@ -17,7 +17,7 @@ export type ToolName =
 export interface ToolContext {
   input: InputManager // 鼠标、键盘、组合键（Shift/Alt/Ctrl）
   viewport: ViewportState // 坐标转换、缩放、平移
-  elements: ElementStore // hitTest、add、update、remove
+  elements: ElementManager // hitTest、add、update、remove
   render: (isDragging?: boolean) => void // 渲染调度
 }
 

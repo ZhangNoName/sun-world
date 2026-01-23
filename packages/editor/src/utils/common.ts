@@ -60,3 +60,37 @@ export function intersectBox(a: IBox, b: IBox): boolean {
 export function isPointInBox(box: IBox, point: IPoint): boolean {
   return point.x >= box.minX && point.x <= box.maxX && point.y >= box.minY && point.y <= box.maxY
 }
+
+
+export function deepClone<T>(obj: T, hash = new WeakMap()): T {
+  // 1. 基本类型直接返回
+  if (obj === null || typeof obj !== 'object') return obj;
+
+  // 2. 处理日期和正则
+  if (obj instanceof Date) return new Date(obj) as any;
+  if (obj instanceof RegExp) return new RegExp(obj) as any;
+
+  // 3. 处理循环引用（解决 parent/children 互相指向的问题）
+  if (hash.has(obj)) return hash.get(obj);
+
+  // 4. 处理数组
+  if (Array.isArray(obj)) {
+    const copy: any[] = [];
+    hash.set(obj, copy);
+    obj.forEach((item, i) => (copy[i] = deepClone(item, hash)));
+    return copy as any;
+  }
+
+  // 5. 处理类实例（保持原型链）
+  const result = Object.create(Object.getPrototypeOf(obj));
+  hash.set(obj, result);
+
+  // 6. 递归处理所有属性（包括 Symbol 属性）
+  const keys = Reflect.ownKeys(obj);
+  for (const key of keys) {
+    const value = (obj as any)[key];
+    (result as any)[key] = deepClone(value, hash);
+  }
+
+  return result;
+}

@@ -1,6 +1,6 @@
 import type { BaseConfig } from './config'
 import { BaseElement } from './elements/baseElement.class'
-import { ElementStore, EleTreeNode } from './elements/elementStore'
+import { ElementManager } from './elements/elementManager'
 import { EventManager } from './event/eventManager'
 import { InputBindingManager } from './event/keyBindingManager'
 import { InputManager } from './input/inputManager'
@@ -35,7 +35,7 @@ export class SWEditor {
   private _id: string
   private viewportState: ViewportState
   private renderer: CanvasRenderer
-  private elementStore = new ElementStore()
+  private elementManager = new ElementManager()
   private eventManager: EventManager
   private inputManager = new InputManager(this)
   private toolManager: ToolManager
@@ -57,7 +57,7 @@ export class SWEditor {
     this.renderer = new CanvasRenderer(
       options.containerElement,
       this.viewportState,
-      this.elementStore
+      this.elementManager
     )
 
     // 创建标尺并设置到渲染器中
@@ -75,7 +75,7 @@ export class SWEditor {
     this.toolManager = new ToolManager({
       input: this.inputManager,
       viewport: this.viewportState,
-      elements: this.elementStore,
+      elements: this.elementManager,
       render: debounce((isDragging?: boolean) => this.renderer.render(isDragging), 0),
     })
     // 默认激活选择工具
@@ -183,19 +183,19 @@ export class SWEditor {
   public getActiveToolName() {
     return this.toolManager.getActiveToolName()
   }
-  public elementStoreChanged(cb: (elements: BaseElement[]) => void) {
-    this.elementStore.onElementsChange(cb)
+  public elementManagerChanged(cb: (elements: BaseElement[]) => void) {
+    this.elementManager.onElementsChange(cb)
   }
-  public elementTreeChanged(cb: (root: EleTreeNode[]) => void) {
-    this.elementStore.onHierarchyChange(cb)
+  public elementTreeChanged(cb: (root: BaseElement[]) => void) {
+    this.elementManager.onHierarchyChange(cb)
   }
   public deleteElement(id: string) {
-    this.elementStore.remove(id)
+    this.elementManager.remove(id)
   }
   public deleteSelectedElement() {
-    const selectedElement = this.elementStore.getSelectedElement()
-    if (selectedElement) {
-      this.elementStore.remove(selectedElement.id)
+    const selectedElementIds = this.elementManager.getSelectedElement()
+    for (const id of selectedElementIds) {
+      this.elementManager.remove(id)
     }
   }
 }

@@ -33,7 +33,7 @@ onMounted(() => {
       // console.log('newVal', newVal)
       zoom.value = newVal
     })
-    editor.value?.elementStoreChanged((ele) => {
+    editor.value?.elementManagerChanged((ele) => {
       elements.value = ele
       // console.log('elements', elements.value)
     })

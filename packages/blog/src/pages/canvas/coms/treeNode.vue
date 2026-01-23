@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { BaseElement, EleTreeNode } from '@sun-world/editor'
+import { BaseElement } from '@sun-world/editor'
 import { computed } from 'vue'
 import EleIcon from './icon.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<{
-  element: EleTreeNode
+  element: BaseElement
   level: number
   expandedItems: Set<string>
 }>()

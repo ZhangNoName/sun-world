@@ -1,12 +1,12 @@
 <script setup lang="ts" name="canvasLeft">
-import { BaseElement, EleTreeNode, SWEditor } from '@sun-world/editor'
+import { BaseElement, SWEditor } from '@sun-world/editor'
 import { ref, watch } from 'vue'
 import CanvasTree from './coms/tree.vue'
 const props = defineProps<{
   editor: SWEditor | null
 }>()
 const editor = props.editor
-const root = ref<EleTreeNode[]>([])
+const root = ref<BaseElement[]>([])
 watch(
   () => editor,
   (newVal) => {

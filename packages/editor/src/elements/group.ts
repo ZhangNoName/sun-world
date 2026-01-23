@@ -1,21 +1,11 @@
 import { ElementType } from './element.config'
 import { BaseElement } from './baseElement.class'
 import type { Matrix } from '../types/common.type'
+import { EleCreateAttrs } from './ele.type'
 
 export class GroupElement extends BaseElement {
   type: ElementType = ElementType.Group
-  constructor(params: {
-    id: string
-    parentId: string
-    name?: string
-    width: number
-    height: number
-    matrix?: Matrix
-    /** 兼容旧调用：将被转换为 matrix */
-    x?: number
-    y?: number
-    rotation?: number
-  }) {
+  constructor(params: EleCreateAttrs) {
     super({
       id: params.id,
       parentId: params.parentId,
@@ -23,7 +13,7 @@ export class GroupElement extends BaseElement {
       name: params.name ?? 'Group',
       width: params.width,
       height: params.height,
-      matrix: params.matrix,
+
       x: params.x,
       y: params.y,
       rotation: params.rotation,
