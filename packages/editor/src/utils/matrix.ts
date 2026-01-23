@@ -1,20 +1,6 @@
 import type { Matrix, Point } from '../types/common.type'
 
-/**
- * 2D 仿射变换矩阵（与 CanvasRenderingContext2D / SVGMatrix 的 a,b,c,d,e,f 含义保持一致）。
- *
- * 统一使用对象表示：`{ a, b, c, d, e, f }`，用于：
- * - `ctx.transform(a, b, c, d, e, f)`
- * - `ctx.setTransform(a, b, c, d, e, f)`
- *
- * 对点 \((x, y)\) 的变换为：
- * - \(x' = a x + c y + e\)
- * - \(y' = b x + d y + f\)
- *
- * 重要：矩阵乘法的含义（列向量约定）
- * - `multiply(left, right) = left * right`
- * - 作用到点时：`(left * right) * p` 等价于 **先应用 right，再应用 left**
- */
+
 
 export const IDENTITY_MATRIX: Matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }
 

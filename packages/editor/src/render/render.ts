@@ -1,5 +1,6 @@
+import { en } from '@/locales/en.json';
 import type { ElementManager } from '@/elements/elementManager'
-import { debounce } from '../utils/common'
+import { debounce, rafThrottle } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
@@ -123,23 +124,26 @@ export class CanvasRenderer {
     this.isDirty = true
   }
   renderName() {
+
     const elements = this.elementManager.getRootElements()
     if (!elements?.length) return
     const nameConfig = elementConfig.name
-    this.transform()
+    const {offsetX, offsetY} = nameConfig
+    this.ctx.setTransform(1,0,0,1,0,0)
+    const dpr = this.devicePixelRatio
+     const { x, y, scale } = this.viewport.transform
+    this.ctx.scale(dpr,  dpr)
 
     this.ctx.font = `${nameConfig.fontSize}px ${nameConfig.fontFamily}`
     this.ctx.textAlign = nameConfig.textAlign
     this.ctx.textBaseline = 'top'
-    // if (nameConfig.strokeWidth > 0) {
-    //   this.ctx.strokeStyle = nameConfig.strokeColor
-    //   this.ctx.lineWidth = nameConfig.strokeWidth
-    // }
     this.ctx.fillStyle = nameConfig.color
 
     // renderName() 在 render() 的 ctx.restore() 之后调用，此时 ctx 为屏幕坐标系
     for (const el of elements) {
-      el.showName(this.ctx, this.elementManager)
+      const m = el.worldMatrix
+      const p = this.viewport.canvasToScreen(m.e, m.f)
+      this.ctx.fillText(el.name,p.x ,p.y)
     }
     this.ctx.restore()
   }
@@ -183,7 +187,7 @@ export class CanvasRenderer {
       return
     }
 
-    const selectedIds = this.elementManager.getSelectedElement()
+    const selectedIds = this.elementManager.selectedIds
     if (!selectedIds || selectedIds.length === 0) {
       this.selectionHandles = []
       return
@@ -204,7 +208,7 @@ export class CanvasRenderer {
     })
 
     // 用世界矩阵角点绘制选中框（支持父子层级与 rotation）
-    const worldMatrix = el.getWorldMatrix(this.elementManager)
+    const worldMatrix = el.worldMatrix
     const worldCorners = [
       applyToPoint(worldMatrix, { x: 0, y: 0 }),
       applyToPoint(worldMatrix, { x: 1, y: 0 }),
@@ -253,7 +257,7 @@ export class CanvasRenderer {
     ctx.restore()
   }
 
-  render(isDragging: boolean = false) {
+  render = rafThrottle(() => {
     const ctx = this.ctx
 
     // 获取显示尺寸（CSS 像素），用于清除和绘制
@@ -290,7 +294,7 @@ export class CanvasRenderer {
     this.renderName()
 
     this.ctx.restore()
-  }
+  })
 
   /**
    * 清理方法

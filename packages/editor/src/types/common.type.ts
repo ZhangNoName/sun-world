@@ -1,3 +1,4 @@
+
 // 自定义 Optional 的典型实现
 export type Optional<T, K extends keyof T> =
   Omit<T, K> &              // 剔除掉这些键
@@ -5,8 +6,20 @@ export type Optional<T, K extends keyof T> =
 
 // 鼠标位置
 export type Point = { x: number; y: number }
-// 变换矩阵 {a, b, c, d, e, f} a: 水平缩放, b: 水平倾斜, c: 垂直倾斜, d: 垂直缩放, e: 水平平移, f: 垂直平移
+/**
+ * 仿射变换矩阵
+ * 
+ * 矩阵形式：
+ * [ a  c  e ]
+ * [ b  d  f ]
+ * [ 0  0  1 ]
+ * 
+ * 参数说明：
+ * - a, b, c, d: 线性变换部分（旋转、缩放、斜切）
+ * - e, f: 平移部分（x, y 方向的偏移）
+ */
 export type Matrix = { a: number; b: number; c: number; d: number; e: number; f: number }
 export type IRect = { x: number; y: number; width: number; height: number }
 export type IPoint = { x: number; y: number }
 export type IBox = { minX: number; minY: number; maxX: number; maxY: number }
+export type Transform = [a:number,b:number,c:number,d:number,e:number,f:number]

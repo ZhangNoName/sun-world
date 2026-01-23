@@ -85,7 +85,7 @@ export class RectTool extends BaseTool {
         height: h,
       })
       this.elementManager.add(this.currentRect)
-      console.log('RectTool add', this.currentRect)
+      // console.log('RectTool add', this.currentRect)
       return
     }
     this.currentRect.updateAttrs({
@@ -107,9 +107,9 @@ export class RectTool extends BaseTool {
     this.currentRect = null
   }
   onKeyDown(e: KeyboardEvent) {
-    console.log('RectTool onKeyDown', e)
+    // console.log('RectTool onKeyDown', e)
   }
   onWheel(e: WheelEvent) {
-    console.log('RectTool onWheel', e)
+    // console.log('RectTool onWheel', e)
   }
 }

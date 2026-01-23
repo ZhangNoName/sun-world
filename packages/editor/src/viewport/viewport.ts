@@ -1,15 +1,4 @@
-/*
- * @Author: ZhangNoName
- * @Date: 2025-12-03 14:05:26
- * @LastEditors: zxy 1623190186@qq.com
- * @LastEditTime: 2026-01-19 15:27:43
- * @FilePath: \sun-world\packages\editor\src\viewport\viewport.ts
- * @Description:
- *
- * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
- */
-// 视图转换数据
-
+import { IBox } from '@/types/common.type'
 import type { Transform } from '@/types/viewport.type'
 type ViewportListener = (scale: number) => void
 const STEP_BY_ZOOM = 0.04
@@ -22,6 +11,7 @@ export default class ViewportState {
   private listeners: Set<ViewportListener> = new Set()
   private offsetX: number = 0 // 偏移量
   private offsetY: number = 0 // 偏移量
+  private _area: IBox | null = null
 
   // 在一个 Vue/React 环境中，这些属性应该被封装为响应式数据 (e.g., Vue's reactive)
   // 这样当 transform 改变时，Renderer 会自动感知并重绘。
@@ -108,6 +98,22 @@ export default class ViewportState {
     this.scale = newScale
     this.emit()
   }
+  public pointToViewport(x: number, y: number) {
+    return {
+      x:x * this.transform.scale + this.transform.x,
+      y:y * this.transform.scale + this.transform.y,
+    }
+  }
+  /**
+ * 将画布坐标系中的点转换为屏幕上的像素坐标
+ */
+public canvasToScreen(canvasX: number, canvasY: number) {
+  console.log('坐标转换',this.transform.x,this.transform.y,this.transform.scale)
+  return {
+    x: (canvasX - this.transform.x) / this.transform.scale,
+    y: (canvasY - this.transform.y) / this.transform.scale 
+  };
+}
   public on(listener: ViewportListener) {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener) // 取消订阅

@@ -4,7 +4,7 @@ import {
   FillStyle,
   FillType,
 } from './element.config'
-import type { IBox, IPoint, Matrix, Optional, Point } from '../types/common.type'
+import type { IBox, IPoint, Matrix, Optional, Point, Transform } from '../types/common.type'
 import {
   applyToPoint,
   identity,
@@ -47,8 +47,10 @@ export abstract class BaseElement {
   }
 
   // Cache information
-  /** AABB in world coordinates */
-  protected _aabb: IBox | null = null
+
+  /** AABB (Axis-Aligned Bounding Box) in world coordinates */
+  
+  private _aabb: IBox | null = null
 
   constructor(params: EleCreateAttrs) {
     const transform = params.transform ?? identity()
@@ -57,10 +59,13 @@ export abstract class BaseElement {
     console.log('创建矩形的transform', transform)
     this.attrs = {
       ...params,
+
       id: params.id ?? getUUID(),
+      visible:params.visible ?? true,
+      locked:params.locked ?? false,
       transform: transform
     }
-    this._updateAABBCache({ getById: () => undefined } as any) // Initial cache update
+    
   }
 
   /**
@@ -75,12 +80,12 @@ export abstract class BaseElement {
     // 1. 处理几何属性（如果 patch 中包含任何一个，都需要重新计算矩阵）
     const hasGeo = patch.x !== undefined || patch.y !== undefined || patch.rotation !== undefined ||
       patch.width !== undefined || patch.height !== undefined;
-
     if (hasGeo) {
       this.attrs.transform.e = patch.x ?? this.attrs.transform.e
       this.attrs.transform.f = patch.y ?? this.attrs.transform.f
       this.attrs.width = patch.width ?? this.attrs.width
       this.attrs.height = patch.height ?? this.attrs.height
+      this._updateAABBCache()
       // this.attrs.rotation = patch.rotation ?? this.attrs.rotation
       matrixChanged = true;
       // const trs = decomposeTRS(this.attrs.transform ?? composeTRS(0, 0, 0, 1, 1));
@@ -109,6 +114,9 @@ export abstract class BaseElement {
     if (patch.parentId !== undefined) this.attrs.parentId = patch.parentId;
 
   }
+  get name(): string {
+    return this.attrs.name ?? ''
+  }
   get visible(): boolean {
     return this.attrs.visible ?? true
   }
@@ -130,6 +138,26 @@ export abstract class BaseElement {
   get rotation(): number {
     return decomposeTRS(this.attrs.transform).rotation
   }
+  get matrix():Matrix{
+
+    return {...this.attrs.transform}
+  }
+  get transform():Transform{
+    const m = this.attrs.transform
+    return [m.a,m.b,m.c,m.d,m.e,m.f]
+  }
+  get box():IBox{
+  const b = this._aabb || {
+    minX:0,
+      maxX:0,
+      minY:0,
+      maxY:0
+  }
+    return {
+     ...b
+    }
+  }
+
 
   /**
    * 仅平移（move 快捷方式）
@@ -138,26 +166,6 @@ export abstract class BaseElement {
     // 1. 更新本地矩阵的平移部分
     this.attrs.transform.e += dx
     this.attrs.transform.f += dy
-
-    // 3. 递归更新子元素的 AABB
-    for (const child of this.children) {
-      child.moveAABBRecursively(dx, dy, store!)
-    }
-  }
-
-  /**
-   * 递归更新 AABB（仅用于平移场景，不改变本地矩阵）
-   */
-  protected moveAABBRecursively(dx: number, dy: number, store: StoreLike) {
-    if (!this._aabb) return
-    this._aabb.minX += dx
-    this._aabb.maxX += dx
-    this._aabb.minY += dy
-    this._aabb.maxY += dy
-
-    for (const child of this.children) {
-      child.moveAABBRecursively(dx, dy, store)
-    }
   }
 
   /**
@@ -183,71 +191,63 @@ export abstract class BaseElement {
   /**
    * 获取世界矩阵
    */
-  getWorldMatrix(store: StoreLike): Matrix {
-    const parent = this.attrs.parentId ? store.getById(this.attrs.parentId) : null
-    const parentWorld = parent ? parent.getWorldMatrix(store) : identity()
-
-    return multiply(parentWorld, this.attrs.transform)
+  get worldMatrix(): Matrix {
+    if(this.parent){
+      return multiply(this.parent.worldMatrix,this.matrix)
+    }
+    return this.matrix
   }
 
-  /** 世界坐标 -> 当前元素局部坐标 */
-  worldToLocal(store: StoreLike, p: Point): Point | null {
-    const inv = this.getInverseWorldMatrix(store)
-    if (!inv) return null
-    return applyToPoint(inv, p)
-  }
 
   /** 获取世界矩阵的逆 */
-  getInverseWorldMatrix(store: StoreLike): Matrix | null {
-    const inv = invert(this.getWorldMatrix(store))
+  getInverseWorldMatrix(): Matrix | null {
+    const inv = invert(this.worldMatrix)
     return inv
   }
+  private _updateBox(){
+    const m = this.worldMatrix
 
-  private _updateAABBCache(store: StoreLike) {
-    const m = this.getWorldMatrix(store)
+  }
+  private _updateAABBCache() {
+    const m = this.worldMatrix
     const pts = [
       applyToPoint(m, { x: 0, y: 0 }),
-      applyToPoint(m, { x: 1, y: 0 }),
-      applyToPoint(m, { x: 1, y: 1 }),
-      applyToPoint(m, { x: 0, y: 1 }),
+      applyToPoint(m, { x: this.attrs.width, y: 0 }),
+      applyToPoint(m, { x: this.attrs.width, y: this.attrs.height }),
+      applyToPoint(m, { x: 0, y: this.attrs.height }),
     ]
     const xs = pts.map(p => p.x)
     const ys = pts.map(p => p.y)
+  
     this._aabb = {
       minX: Math.min(...xs),
       minY: Math.min(...ys),
       maxX: Math.max(...xs),
       maxY: Math.max(...ys)
     }
-  }
-
-  getAABB() {
-    return this._aabb
-  }
-  clearCache() {
-    this._aabb = null
-  }
-
-  /** 元素在世界坐标系下的轴对齐包围盒（兼容格式） */
-  getWorldAABB(store: StoreLike) {
-    return this._aabb
+    // console.log('更改坐标系',this._aabb)
   }
 
   /**
    * 使用缓存的世界矩阵坐标绘制名称
    */
   showName(ctx: CanvasRenderingContext2D) {
+    
     if (!this.attrs.name || !this.attrs.visible) return
-
     const nameConfig = elementConfig.name
-    const worldMatrix = this.attrs.transform
-    const worldX = worldMatrix.e
-    const worldY = worldMatrix.f
+    // const worldMatrix = this.transform
+    // const worldX = worldMatrix.e
+    // const worldY = worldMatrix.f
+    // ctx.save()
+    const m = this.transform
+    // ctx.transform()
+    const scale = ctx.getTransform().a
+    const textX =this.box.minX - (nameConfig.offsetX / scale)
 
-    const textX = worldX - (nameConfig.offsetX ?? 0)
-    const textY = worldY - (nameConfig.offsetY ?? 0)
-
+    const textY =this.box.minY -  (nameConfig.offsetY / scale)
+    console.log('绘制名称',textX,textY)
     ctx.fillText(this.attrs.name, textX, textY)
+    // ctx.restore()
   }
 
   render(ctx: CanvasRenderingContext2D) {

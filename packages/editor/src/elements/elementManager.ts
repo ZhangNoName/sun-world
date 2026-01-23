@@ -72,15 +72,6 @@ export class ElementManager {
     return parentId
   }
 
-  /**
-   * 计算元素的世界矩阵（把 parent 链上的 TR 叠加起来）
-   * 约定：parentId === ROOT_ID 为根，不再继续向上找。
-   */
-  private getElementWorldMatrix(id: string) {
-    const el = this.store.get(id)
-    if (!el) return identity()
-    return el.getWorldMatrix(this)
-  }
 
   add(el: BaseElement, parentId: string = this.ROOT_ID, index?: number) {
     const pid = this.normalizeParentId(parentId)
@@ -432,9 +423,12 @@ export class ElementManager {
     }
     return null
   }
-
-  getSelectedElement() {
+  get selectedIds(){
     return this.selectedElementIds
+  }
+
+  get selectedElements() {
+    return this.selectedElementIds.map(o => this.store.get(o))
   }
   setSelectedElement(id: string) {
     if (!this.selectedElementIds.includes(id)) {
@@ -452,8 +446,8 @@ export class ElementManager {
 
     if (!parent || !child) return
 
-    const childWorld = child.getWorldMatrix(this)
-    const parentWorld = pid === this.ROOT_ID ? identity() : parent.getWorldMatrix(this)
+    const childWorld = child.worldMatrix  
+    const parentWorld = pid === this.ROOT_ID ? identity() : parent.worldMatrix
     const invParent = invert(parentWorld)
 
     if (invParent) {

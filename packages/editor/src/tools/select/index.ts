@@ -47,8 +47,8 @@ export default class SelectTool extends BaseTool {
       elements.setMarqueeRect({ minX: canvasPos.x, minY: canvasPos.y, maxX: canvasPos.x, maxY: canvasPos.y })
     }
 
-    this.selectedEl = elements.getSelectedElement()
-    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y)
+    this.selectedEl = elements.selectedIds
+    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y,elements.selectedElements)
     if (controlHandle) {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {

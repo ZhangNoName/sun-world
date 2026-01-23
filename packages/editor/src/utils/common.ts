@@ -49,6 +49,31 @@ export function debounce(fn: Function, wait = 200) {
     }, wait)
   }
 }
+/**
+ * 节流 + raf
+ */
+export const rafThrottle = (callback: (...args: any) => void) => {
+  let requestId: number | undefined;
+
+  const throttled = function (...args: unknown[]) {
+    if (requestId === undefined) {
+      requestId = requestAnimationFrame(() => {
+        requestId = undefined;
+        callback(args);
+      });
+    }
+  };
+
+  throttled.cancel = () => {
+    if (requestId !== undefined) {
+      cancelAnimationFrame(requestId);
+    }
+    requestId = undefined;
+  };
+
+  return throttled;
+};
+
 
 export function intersectBox(a: IBox, b: IBox): boolean {
   const startX = Math.max(a.minX, b.minX)

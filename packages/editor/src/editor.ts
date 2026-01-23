@@ -193,9 +193,6 @@ export class SWEditor {
     this.elementManager.remove(id)
   }
   public deleteSelectedElement() {
-    const selectedElementIds = this.elementManager.getSelectedElement()
-    for (const id of selectedElementIds) {
-      this.elementManager.remove(id)
-    }
+    
   }
 }
