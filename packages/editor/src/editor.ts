@@ -190,4 +190,8 @@ export class SWEditor {
   public deleteSelectedElement() {
     
   }
+  public save(){
+  this.elementManager.saveLocal()
+  
+  }
 }

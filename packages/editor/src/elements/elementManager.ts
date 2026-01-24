@@ -84,9 +84,7 @@ export class ElementManager {
     this.insertChild(pid, el.id, index)
 
     if (!this.isHydrating) {
-      this.saveLocal()
       this.emitHierarchyChanged()
-      this.emitElementsChanged()
     }
   }
 
@@ -112,7 +110,7 @@ export class ElementManager {
     this.selectedElementIds = this.selectedElementIds.filter(sid => sid !== id)
 
     if (!this.isHydrating) {
-      this.saveLocal()
+
       this.emitHierarchyChanged()
     }
   }
@@ -182,35 +180,15 @@ export class ElementManager {
     }
 
     if (!this.isHydrating) {
-      this.saveLocal()
-      this.emitHierarchyChanged()
-      this.emitElementsChanged()
-    }
-  }
-
-  updateNodeMeta(
-    id: string,
-    meta: Partial<Pick<BaseElement, 'name' | 'visible' | 'locked'>>
-  ) {
-    if (id === this.ROOT_ID) return
-    const el = this.store.get(id)
-    if (!el) return
-    if (meta.name !== undefined) el.name = meta.name
-    if (meta.visible !== undefined) el.visible = meta.visible
-    if (meta.locked !== undefined) el.locked = meta.locked
-
-    if (!this.isHydrating) {
-      this.saveLocal()
-      this.emitElementsChanged()
+   
       this.emitHierarchyChanged()
     }
   }
-
   // 元素更新后调用（几何/样式变化）
   update() {
     // this.emitElementsChanged()
     if (!this.isHydrating) {
-      this.saveLocal()
+
       this.emitElementsChanged()
     }
   }
@@ -231,6 +209,7 @@ export class ElementManager {
   }
   private emitHierarchyChanged() {
     this.hierarchyChangedListeners.forEach((cb) => cb(this.root.children))
+    this.emitElementsChanged()
   }
 
   saveLocal() {
@@ -240,6 +219,7 @@ export class ElementManager {
       data: this.root.children.map(c => c.toJSON()),
     }
     localStorage.setItem(this.storageKey, JSON.stringify(data))
+    console.log('保存成功')
   }
 
   loadLocal() {
@@ -300,7 +280,6 @@ export class ElementManager {
     }
 
     this.emitHierarchyChanged()
-    this.emitElementsChanged()
   }
 
   // 是否点击在选中框内，只有鼠标按下的时候计算

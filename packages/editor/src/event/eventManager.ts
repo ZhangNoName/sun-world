@@ -169,5 +169,19 @@ export class EventManager {
         this.editor.deleteSelectedElement()
       },
     })
+    manager.addBinding({
+      id: 'save',
+      inputs: {
+        common: {
+          input: { keyCode: 's' ,ctrlKey: true},
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '保存',
+      action: (event: Event, binding) => {
+        this.editor.save()
+      },
+    })
   }
 }
