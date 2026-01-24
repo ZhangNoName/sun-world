@@ -35,8 +35,8 @@ export default class DragTool extends BaseTool {
     // }
 
     // 将屏幕像素位移转换为画布坐标位移（父坐标系）
-    const cdx = dx / this.viewport.transform.scale
-    const cdy = dy / this.viewport.transform.scale
+    const cdx = dx / this.viewport.scale
+    const cdy = dy / this.viewport.scale
     elements.moveSelectedElement(cdx, cdy)
     this.ctx.render()
   }

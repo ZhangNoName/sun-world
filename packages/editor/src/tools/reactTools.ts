@@ -48,11 +48,9 @@ export class RectTool extends BaseTool {
       return
     }
 
-    const x =
-      (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
-    const y =
-      (e.offsetY - this.viewport.transform.y) / this.viewport.transform.scale
-
+    const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
+    const x = p.x
+    const y = p.y
     this.drawing = true
     this.startX = x
     this.startY = y
@@ -63,10 +61,9 @@ export class RectTool extends BaseTool {
   onMouseMove(e: MouseEvent) {
     if (!this.drawing) return
 
-    const x =
-      (e.offsetX - this.viewport.transform.x) / this.viewport.transform.scale
-    const y =
-      (e.offsetY - this.viewport.transform.y) / this.viewport.transform.scale
+    const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
+    const x = p.x
+    const y = p.y
 
     const left = Math.min(this.startX, x)
     const top = Math.min(this.startY, y)

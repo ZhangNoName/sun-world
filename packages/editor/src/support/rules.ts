@@ -66,7 +66,8 @@ export class Rule {
     if (!this.visible) return
 
     const ctx = this.ctx
-    const { scale, x } = this.viewport.transform
+    const scale = this.viewport.scale
+    const x = this.viewport.x
     // 使用显示尺寸（CSS 像素），因为 context 已经应用了 devicePixelRatio 缩放
     const width = this.viewport.width
     const height = this.config.size
@@ -108,7 +109,8 @@ export class Rule {
     if (!this.visible) return
 
     const ctx = this.ctx
-    const { scale, y } = this.viewport.transform
+    const scale = this.viewport.scale
+    const y = this.viewport.y
     const width = this.config.size
     const height = this.viewport.height
 
@@ -177,7 +179,8 @@ export class Rule {
   }
   private clearReact() {
     const ctx = this.ctx
-    const { scale, x } = this.viewport.transform
+    const scale = this.viewport.scale
+    const x = this.viewport.x
 
     // 清除并绘制背景
     // ctx.clearRect(0, 0, this.config.size, this.config.size)

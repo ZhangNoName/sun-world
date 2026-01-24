@@ -43,14 +43,9 @@ export class SWEditor {
   private rule: Rule
   private inputEvents
   constructor(options: IEditorOptions) {
-    // console.log('Initializing SWEditor with options*********:  ', options)
-    // console.log('App Version:-------------- ***', this.appVersion)
-    // console.log('User Preference**************: ', options.userPreference)
-    // console.log('User Config**************: ', options.offsetY)
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()
-    this.viewportState.setOffset(options.offsetX ?? 0, options.offsetY ?? 0)
     this._id = getUUID()
 
     // 2. 实例化核心模块，并进行依赖注入
@@ -158,7 +153,7 @@ export class SWEditor {
     this.viewportState.zoomAt(delta, screenX, screenY)
   }
   get zoom() {
-    return this.viewportState.transform.scale
+    return this.viewportState.scale
   }
   public onZoomChange(cb: (zoom: number) => void) {
     this.viewportState.on(() => {

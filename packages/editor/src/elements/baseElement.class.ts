@@ -53,10 +53,10 @@ export abstract class BaseElement {
   private _aabb: IBox | null = null
 
   constructor(params: EleCreateAttrs) {
+  
     const transform = params.transform ?? identity()
-    transform.e = params.x ?? 0
-    transform.f = params.y ?? 0
-    console.log('创建矩形的transform', transform)
+    if(params.x !== undefined) transform.e = params.x
+    if(params.y !== undefined) transform.f = params.y
     this.attrs = {
       ...params,
 
@@ -139,7 +139,6 @@ export abstract class BaseElement {
     return decomposeTRS(this.attrs.transform).rotation
   }
   get matrix():Matrix{
-
     return {...this.attrs.transform}
   }
   get transform():Transform{
@@ -225,7 +224,6 @@ export abstract class BaseElement {
       maxX: Math.max(...xs),
       maxY: Math.max(...ys)
     }
-    // console.log('更改坐标系',this._aabb)
   }
 
   /**
@@ -295,8 +293,21 @@ export abstract class BaseElement {
     }
   }
 
-  toJSON() {
-    return this.getNodeInfo()
+  toJSON():any {
+    return {
+      id: this.attrs.id,
+      name: this.name,
+      type: this.attrs.type,
+      visible: this.visible,
+      parentId: this.parentId,
+      children: this.children.map(c => c.toJSON()),
+      locked: false,
+      transform: this.matrix,
+      width: this.width,
+      height: this.height,
+      fill: this.attrs.fill,
+      opacity: this.attrs.opacity,
+    }
   }
 
 

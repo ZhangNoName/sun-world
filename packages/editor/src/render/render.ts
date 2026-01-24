@@ -131,7 +131,6 @@ export class CanvasRenderer {
     const {offsetX, offsetY} = nameConfig
     this.ctx.setTransform(1,0,0,1,0,0)
     const dpr = this.devicePixelRatio
-     const { x, y, scale } = this.viewport.transform
     this.ctx.scale(dpr,  dpr)
 
     this.ctx.font = `${nameConfig.fontSize}px ${nameConfig.fontFamily}`
@@ -143,7 +142,7 @@ export class CanvasRenderer {
     for (const el of elements) {
       const m = el.worldMatrix
       const p = this.viewport.canvasToScreen(m.e, m.f)
-      this.ctx.fillText(el.name,p.x ,p.y)
+      this.ctx.fillText(el.name,p.x + offsetX,p.y + offsetY)
     }
     this.ctx.restore()
   }
@@ -152,7 +151,9 @@ export class CanvasRenderer {
     const marquee = this.elementManager.getMarqueeRect()
     const selectedBox = this.elementManager.getSelectedBox()
     const ctx = this.ctx
-    const { x: tx, y: ty, scale } = this.viewport.transform
+    const tx = this.viewport.x
+    const ty = this.viewport.y
+    const scale = this.viewport.scale
     if (selectedBox) {
       const x = Math.min(selectedBox.minX, selectedBox.maxX) * scale + tx
       const y = Math.min(selectedBox.minY, selectedBox.maxY) * scale + ty
@@ -269,7 +270,6 @@ export class CanvasRenderer {
       this.canvasElement.height / this.devicePixelRatio
 
     ctx.clearRect(0, 0, displayWidth, displayHeight)
-
     this.transform()
     this.elementManager.renderAll(ctx)
 
@@ -307,10 +307,9 @@ export class CanvasRenderer {
     console.log('Renderer destroyed and cleanup complete.')
   }
   private transform() {
-    const { x, y, scale } = this.viewport.transform
+    const { a, b, c, d, e, f } = this.viewport.transform
     this.ctx.save()
-    this.ctx.translate(x, y)
-    this.ctx.scale(scale, scale)
+    this.ctx.transform(a, b, c, d, e, f)
   }
 }
 

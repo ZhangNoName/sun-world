@@ -3,20 +3,13 @@ import { BaseElement } from './baseElement.class'
 import type { Matrix } from '../types/common.type'
 import { EleCreateAttrs } from './ele.type'
 
+
 export class GroupElement extends BaseElement {
   type: ElementType = ElementType.Group
-  constructor(params: EleCreateAttrs) {
+  constructor(params: Omit<EleCreateAttrs, 'type'>) {
     super({
-      id: params.id,
-      parentId: params.parentId,
+      ...params,
       type: ElementType.Group,
-      name: params.name ?? 'Group',
-      width: params.width,
-      height: params.height,
-
-      x: params.x,
-      y: params.y,
-      rotation: params.rotation,
     })
   }
   draw(ctx: CanvasRenderingContext2D) {

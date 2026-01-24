@@ -234,7 +234,6 @@ export class ElementManager {
   }
 
   saveLocal() {
-    return;
     const data: PersistedV1 = {
       version: 1,
       updatedAt: Date.now(),
@@ -244,8 +243,6 @@ export class ElementManager {
   }
 
   loadLocal() {
-    return;
-    this.isHydrating = true
     try {
       const raw = localStorage.getItem(this.storageKey)
       if (!raw) return
@@ -267,7 +264,7 @@ export class ElementManager {
             name: item.name,
             width: item.width,
             height: item.height,
-            matrix: item.matrix,
+            transform: item.transform,
           })
         } else {
           el = new RectElement({
@@ -276,11 +273,12 @@ export class ElementManager {
             name: item.name,
             width: item.width,
             height: item.height,
-            matrix: item.matrix,
+            transform: item.transform,
             fill: item.fill,
           })
         }
-        el.updateAttrs(item)
+        // this.add(el, el.parentId)
+        // el.updateAttrs(item)
 
         if (Array.isArray(item.children)) {
           for (const childAttr of item.children) {
