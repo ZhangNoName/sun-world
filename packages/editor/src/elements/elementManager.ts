@@ -132,6 +132,34 @@ export class ElementManager {
   getSelectedBox() {
     return this.selectedBox
   }
+  clearSelectedBox() {
+    this.selectedBox = null
+  }
+  calcSelectBox() {
+    if (this.selectedElements.length === 0) return null;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    let hasValidBox = false;
+
+    for (const element of this.selectedElements) {
+      const box = element?.box;
+      if (!box) continue;
+
+      if (box.minX < minX) minX = box.minX;
+      if (box.maxX > maxX) maxX = box.maxX;
+      if (box.minY < minY) minY = box.minY;
+      if (box.maxY > maxY) maxY = box.maxY;
+
+      hasValidBox = true;
+    }
+
+    this.selectedBox = hasValidBox ? { minX, maxX, minY, maxY } : null
+
+  }
+
 
   getRootElements() {
     return this.root.children
@@ -180,7 +208,7 @@ export class ElementManager {
     }
 
     if (!this.isHydrating) {
-   
+
       this.emitHierarchyChanged()
     }
   }
@@ -310,7 +338,7 @@ export class ElementManager {
       const el = elements[i]
       if (!el.visible) continue
 
-      const aabb = el.getAABB()
+      const aabb = el.box
       if (aabb && intersectBox(areaBox, aabb)) {
         this.selectedElementIds.push(el.id)
         this.updateSelectBox(aabb)
@@ -340,12 +368,14 @@ export class ElementManager {
     this.selectedElementIds = []
     this.selectedBox = null
     if (!areaBox) return
-
     const walk = (els: BaseElement[]) => {
+
       for (const el of els) {
         if (!el.visible) continue
-        const aabb = el.getAABB()
+        const aabb = el.box
+        // console.log('hitTestNodeList', el.id, aabb)
         if (aabb && intersectBox(areaBox, aabb)) {
+          // console.log('hitTestNodeList', el.id)
           this.selectedElementIds.push(el.id)
           // el.isSelected = true
           this.updateSelectBox(aabb)
@@ -371,7 +401,7 @@ export class ElementManager {
     const selectedIdsSet = new Set(this.selectedElementIds)
 
     if (currentParentEl && currentParentId !== this.ROOT_ID) {
-      const aabb = currentParentEl.getAABB()
+      const aabb = currentParentEl.box
       if (aabb && isPointInBox(aabb, { x, y })) {
         return currentParentId
       }
@@ -382,7 +412,7 @@ export class ElementManager {
       if (el.id !== this.ROOT_ID) {
         if (selectedIdsSet.has(el.id)) return null
         if (!el.visible) return null
-        const aabb = el.getAABB()
+        const aabb = el.box
         if (!aabb || !isPointInBox(aabb, { x, y })) return null
       }
 
@@ -400,7 +430,7 @@ export class ElementManager {
     }
     return null
   }
-  get selectedIds(){
+  get selectedIds() {
     return this.selectedElementIds
   }
 
@@ -423,7 +453,7 @@ export class ElementManager {
 
     if (!parent || !child) return
 
-    const childWorld = child.worldMatrix  
+    const childWorld = child.worldMatrix
     const parentWorld = pid === this.ROOT_ID ? identity() : parent.worldMatrix
     const invParent = invert(parentWorld)
 

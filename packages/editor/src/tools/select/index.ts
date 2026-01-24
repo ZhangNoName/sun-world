@@ -37,7 +37,7 @@ export default class SelectTool extends BaseTool {
     const { viewport, elements } = this.ctx
 
     // 转换屏幕坐标 → 画布坐标
-    const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
+    const canvasPos = viewport.screenToCanvas(e.offsetX, e.offsetY)
     const controlHandle = false
     const rotateHandle = false
     // 点击命中检测
@@ -48,7 +48,7 @@ export default class SelectTool extends BaseTool {
     }
 
     this.selectedEl = elements.selectedIds
-    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y,elements.selectedElements)
+    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y, elements.selectedElements)
     if (controlHandle) {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {

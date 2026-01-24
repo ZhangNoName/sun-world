@@ -22,4 +22,4 @@ export type Matrix = { a: number; b: number; c: number; d: number; e: number; f:
 export type IRect = { x: number; y: number; width: number; height: number }
 export type IPoint = { x: number; y: number }
 export type IBox = { minX: number; minY: number; maxX: number; maxY: number }
-export type Transform = [a:number,b:number,c:number,d:number,e:number,f:number]
+export type Transform = [a: number, b: number, c: number, d: number, e: number, f: number]

@@ -4,7 +4,7 @@ import { debounce, rafThrottle } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
-import { applyToPoint } from '../utils/matrix'
+import { applyToPoint, box2Point, matrix2Array } from '../utils/matrix'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -128,10 +128,10 @@ export class CanvasRenderer {
     const elements = this.elementManager.getRootElements()
     if (!elements?.length) return
     const nameConfig = elementConfig.name
-    const {offsetX, offsetY} = nameConfig
-    this.ctx.setTransform(1,0,0,1,0,0)
+    const { offsetX, offsetY } = nameConfig
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     const dpr = this.devicePixelRatio
-    this.ctx.scale(dpr,  dpr)
+    this.ctx.scale(dpr, dpr)
 
     this.ctx.font = `${nameConfig.fontSize}px ${nameConfig.fontFamily}`
     this.ctx.textAlign = nameConfig.textAlign
@@ -142,7 +142,7 @@ export class CanvasRenderer {
     for (const el of elements) {
       const m = el.worldMatrix
       const p = this.viewport.canvasToScreen(m.e, m.f)
-      this.ctx.fillText(el.name,p.x + offsetX,p.y + offsetY)
+      this.ctx.fillText(el.name, p.x + offsetX, p.y + offsetY)
     }
     this.ctx.restore()
   }
@@ -154,26 +154,25 @@ export class CanvasRenderer {
     const tx = this.viewport.x
     const ty = this.viewport.y
     const scale = this.viewport.scale
+    ctx.transform(...matrix2Array(this.viewport.transform))
     if (selectedBox) {
-      const x = Math.min(selectedBox.minX, selectedBox.maxX) * scale + tx
-      const y = Math.min(selectedBox.minY, selectedBox.maxY) * scale + ty
-      const w = Math.abs(selectedBox.maxX - selectedBox.minX) * scale
-      const h = Math.abs(selectedBox.maxY - selectedBox.minY) * scale
-      ctx.save()
-      ctx.setLineDash([6, 4])
+      const { x, y, width, height } = box2Point(selectedBox)
+      // this.transform()
+      // ctx.setLineDash([6, 4])
       ctx.strokeStyle = '#1890ff'
       ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
       ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.rect(x, y, w, h)
+      ctx.rect(x, y, width, height)
       ctx.fill()
       ctx.stroke()
     }
     if (marquee) {
-      const x = Math.min(marquee.minX, marquee.maxX) * scale + tx
-      const y = Math.min(marquee.minY, marquee.maxY) * scale + ty
-      const w = Math.abs(marquee.maxX - marquee.minX) * scale
-      const h = Math.abs(marquee.maxY - marquee.minY) * scale
+      const { x, y, width, height } = box2Point(marquee)
+      // const x = Math.min(marquee.minX, marquee.maxX) * scale + tx
+      // const y = Math.min(marquee.minY, marquee.maxY) * scale + ty
+      // const w = Math.abs(marquee.maxX - marquee.minX) * scale
+      // const h = Math.abs(marquee.maxY - marquee.minY) * scale
 
       ctx.save()
       ctx.setLineDash([6, 4])
@@ -181,78 +180,11 @@ export class CanvasRenderer {
       ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
       ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.rect(x, y, w, h)
+      ctx.rect(x, y, width, height)
       ctx.fill()
       ctx.stroke()
       ctx.restore()
       return
-    }
-
-    const selectedIds = this.elementManager.selectedIds
-    if (!selectedIds || selectedIds.length === 0) {
-      this.selectionHandles = []
-      return
-    }
-
-    const selectedId = selectedIds[0]
-    const el = this.elementManager.getById(selectedId)
-    if (!el) {
-      this.selectionHandles = []
-      return
-    }
-
-    // 注意：renderSelect() 在 render() 的 ctx.restore() 之后调用
-    // 此时 ctx 在“屏幕坐标系”，需要把元素 world 坐标转换到屏幕坐标
-    const toScreen = (x: number, y: number) => ({
-      x: x * scale + tx,
-      y: y * scale + ty,
-    })
-
-    // 用世界矩阵角点绘制选中框（支持父子层级与 rotation）
-    const worldMatrix = el.worldMatrix
-    const worldCorners = [
-      applyToPoint(worldMatrix, { x: 0, y: 0 }),
-      applyToPoint(worldMatrix, { x: 1, y: 0 }),
-      applyToPoint(worldMatrix, { x: 1, y: 1 }),
-      applyToPoint(worldMatrix, { x: 0, y: 1 }),
-    ]
-    const p1 = toScreen(worldCorners[0].x, worldCorners[0].y) // 左上
-    const p2 = toScreen(worldCorners[1].x, worldCorners[1].y) // 右上
-    const p3 = toScreen(worldCorners[2].x, worldCorners[2].y) // 右下
-    const p4 = toScreen(worldCorners[3].x, worldCorners[3].y) // 左下
-
-    // 1) 画选中框
-    ctx.save()
-    ctx.beginPath()
-    ctx.moveTo(p1.x, p1.y)
-    ctx.lineTo(p2.x, p2.y)
-    ctx.lineTo(p3.x, p3.y)
-    ctx.lineTo(p4.x, p4.y)
-    ctx.closePath()
-    ctx.strokeStyle = '#1890ff'
-    ctx.lineWidth = 2
-    ctx.stroke()
-
-    // 2) 画四个顶点的拖拽手柄（固定屏幕像素大小）
-    const handleSize = 10
-    const half = handleSize / 2
-    const corners = [p1, p2, p3, p4]
-
-    this.selectionHandles = corners.map((p, idx) => ({
-      id: `corner_${idx}`,
-      x: p.x - half,
-      y: p.y - half,
-      size: handleSize,
-    }))
-
-    ctx.fillStyle = '#ffffff'
-    ctx.strokeStyle = '#1890ff'
-    ctx.lineWidth = 2
-    for (const h of this.selectionHandles) {
-      ctx.beginPath()
-      ctx.rect(h.x, h.y, h.size, h.size)
-      ctx.fill()
-      ctx.stroke()
     }
 
     ctx.restore()
@@ -260,39 +192,25 @@ export class CanvasRenderer {
 
   render = rafThrottle(() => {
     const ctx = this.ctx
-
     // 获取显示尺寸（CSS 像素），用于清除和绘制
     const displayWidth =
-      parseInt(this.canvasElement.style.width) ||
-      this.canvasElement.width / this.devicePixelRatio
+      this.canvasElement.width
     const displayHeight =
-      parseInt(this.canvasElement.style.height) ||
-      this.canvasElement.height / this.devicePixelRatio
+      this.canvasElement.height
 
     ctx.clearRect(0, 0, displayWidth, displayHeight)
     this.transform()
     this.elementManager.renderAll(ctx)
 
-    // 遍历绘制所有元素（从根节点开始，递归绘制子节点，避免重复渲染）
-    // if (this.elementManager) {
-    //   const roots = this.elementManager.getRootElements()
-    //   for (let el of roots) {
-    //     if (!el.visible) continue
-    //     el.render(ctx, this.elementManager)
-    //   }
-    // }
-
     ctx.restore()
 
-    // 绘制标尺
-    if (this.rule) {
-      this.rule.render()
-    }
 
     this.renderSelect()
 
     this.renderName()
-
+    if (this.rule) {
+      this.rule.render()
+    }
     this.ctx.restore()
   })
 

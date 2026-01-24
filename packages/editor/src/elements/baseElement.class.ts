@@ -49,23 +49,23 @@ export abstract class BaseElement {
   // Cache information
 
   /** AABB (Axis-Aligned Bounding Box) in world coordinates */
-  
+
   private _aabb: IBox | null = null
 
   constructor(params: EleCreateAttrs) {
-  
+
     const transform = params.transform ?? identity()
-    if(params.x !== undefined) transform.e = params.x
-    if(params.y !== undefined) transform.f = params.y
+    if (params.x !== undefined) transform.e = params.x
+    if (params.y !== undefined) transform.f = params.y
     this.attrs = {
       ...params,
 
       id: params.id ?? getUUID(),
-      visible:params.visible ?? true,
-      locked:params.locked ?? false,
+      visible: params.visible ?? true,
+      locked: params.locked ?? false,
       transform: transform
     }
-    
+
   }
 
   /**
@@ -138,33 +138,29 @@ export abstract class BaseElement {
   get rotation(): number {
     return decomposeTRS(this.attrs.transform).rotation
   }
-  get matrix():Matrix{
-    return {...this.attrs.transform}
+  get matrix(): Matrix {
+    return { ...this.attrs.transform }
   }
-  get transform():Transform{
+  get transform(): Transform {
     const m = this.attrs.transform
-    return [m.a,m.b,m.c,m.d,m.e,m.f]
+    return [m.a, m.b, m.c, m.d, m.e, m.f]
   }
-  get box():IBox{
-  const b = this._aabb || {
-    minX:0,
-      maxX:0,
-      minY:0,
-      maxY:0
-  }
-    return {
-     ...b
+  get box(): IBox {
+    if (!this._aabb) {
+      return this._updateAABBCache()
     }
+    return { ...this._aabb }
   }
 
 
   /**
    * 仅平移（move 快捷方式）
    */
-  move(dx: number, dy: number, store?: StoreLike) {
+  move(dx: number, dy: number) {
     // 1. 更新本地矩阵的平移部分
     this.attrs.transform.e += dx
     this.attrs.transform.f += dy
+    this._aabb = null;
   }
 
   /**
@@ -191,8 +187,8 @@ export abstract class BaseElement {
    * 获取世界矩阵
    */
   get worldMatrix(): Matrix {
-    if(this.parent){
-      return multiply(this.parent.worldMatrix,this.matrix)
+    if (this.parent) {
+      return multiply(this.parent.worldMatrix, this.matrix)
     }
     return this.matrix
   }
@@ -203,11 +199,11 @@ export abstract class BaseElement {
     const inv = invert(this.worldMatrix)
     return inv
   }
-  private _updateBox(){
+  private _updateBox() {
     const m = this.worldMatrix
 
   }
-  private _updateAABBCache() {
+  private _updateAABBCache(): IBox {
     const m = this.worldMatrix
     const pts = [
       applyToPoint(m, { x: 0, y: 0 }),
@@ -217,20 +213,22 @@ export abstract class BaseElement {
     ]
     const xs = pts.map(p => p.x)
     const ys = pts.map(p => p.y)
-  
-    this._aabb = {
+    const newBox = {
       minX: Math.min(...xs),
       minY: Math.min(...ys),
       maxX: Math.max(...xs),
       maxY: Math.max(...ys)
     }
+    this._aabb = newBox
+    console.log('updateAABBCache', this.id, this._aabb)
+    return newBox
   }
 
   /**
    * 使用缓存的世界矩阵坐标绘制名称
    */
   showName(ctx: CanvasRenderingContext2D) {
-    
+
     if (!this.attrs.name || !this.attrs.visible) return
     const nameConfig = elementConfig.name
     // const worldMatrix = this.transform
@@ -240,10 +238,10 @@ export abstract class BaseElement {
     const m = this.transform
     // ctx.transform()
     const scale = ctx.getTransform().a
-    const textX =this.box.minX - (nameConfig.offsetX / scale)
+    const textX = this.box.minX - (nameConfig.offsetX / scale)
 
-    const textY =this.box.minY -  (nameConfig.offsetY / scale)
-    console.log('绘制名称',textX,textY)
+    const textY = this.box.minY - (nameConfig.offsetY / scale)
+    console.log('绘制名称', textX, textY)
     ctx.fillText(this.attrs.name, textX, textY)
     // ctx.restore()
   }
@@ -293,7 +291,7 @@ export abstract class BaseElement {
     }
   }
 
-  toJSON():any {
+  toJSON(): any {
     return {
       id: this.attrs.id,
       name: this.name,

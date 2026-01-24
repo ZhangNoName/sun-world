@@ -19,14 +19,15 @@ export default class DragTool extends BaseTool {
     // console.log('DragTool.onMouseMove', e)
     if (!this.selectedEl) return
     const { viewport, elements } = this.ctx
-    const canvasPos = viewport.screenToCanvas(e.clientX, e.clientY)
+    const { x, y } = viewport.screenToCanvas(e.offsetX, e.offsetY)
     // elements.moveSelectedElement(canvasPos.x, canvasPos.y)
-    const dx = e.clientX - this.lastX
-    const dy = e.clientY - this.lastY
-    this.lastX = e.clientX
-    this.lastY = e.clientY
+    const dx = x - this.lastX
+    const dy = y - this.lastY
+    this.lastX = x
+    this.lastY = y
+
     // elements.hitTest(canvasPos.x, canvasPos.y)
-    elements.hitTopExcludeSelected(canvasPos.x, canvasPos.y)
+    elements.hitTopExcludeSelected(x, y)
     // if (newParentId !== this.parentId) {
     //   console.log('更新----newParentId', this.parentId, newParentId)
     //   this.parentId = newParentId
@@ -44,15 +45,20 @@ export default class DragTool extends BaseTool {
     // console.log('DragTool.onMouseUp')
     this.selectedEl = []
     this.dragging = false
+    const { viewport, elements } = this.ctx
+    elements.calcSelectBox()
+    this.ctx.render()
+
   }
   onMouseDown(e: MouseEvent): void {
 
     // console.log('DragTool.onMouseDown')
     // this.parentId = this.selectedEl?.parentId ?? null
-
-    this.lastX = e.clientX
-    this.lastY = e.clientY
+    const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
+    this.lastX = p.x
+    this.lastY = p.y
     this.dragging = true
+    this.ctx.elements.clearSelectedBox()
   }
   onKeyDown(e: KeyboardEvent): void {
     // console.log('DragTool.onKeyDown')

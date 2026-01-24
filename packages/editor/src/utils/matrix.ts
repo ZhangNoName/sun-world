@@ -1,4 +1,4 @@
-import type { Matrix, Point } from '../types/common.type'
+import type { IBox, IRect, Matrix, Point, Transform } from '../types/common.type'
 
 
 
@@ -132,4 +132,26 @@ export function composeTR(x: number, y: number, rotation: number): Matrix {
 export function decomposeTR(m: Matrix): { x: number; y: number; rotation: number } {
   const { a, b, e, f } = m
   return { x: e, y: f, rotation: Math.atan2(b, a) }
+}
+
+export function box2Point(b: IBox): IRect {
+  const x = b.minX
+  const y = b.minY
+  const width = Math.abs(b.maxX - b.minX)
+  const height = Math.abs(b.maxY - b.minY)
+  return {
+    x,
+    y,
+    width,
+    height
+
+  }
+}
+/**
+ * 
+ * @param m 对象形式变换矩阵
+ * @returns 数组形式变换矩阵
+ */
+export function matrix2Array(m: Matrix): Transform {
+  return [m.a, m.b, m.c, m.d, m.e, m.f]
 }
