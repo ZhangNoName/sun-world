@@ -71,10 +71,10 @@ export function applyToPoint(m: Matrix, p: Point): Point {
  *
  * det = a*d - b*c
  */
-export function invert(m: Matrix): Matrix | null {
+export function invert(m: Matrix): Matrix {
   const { a: a0, b: b0, c: c0, d: d0, e: e0, f: f0 } = m
   const det = a0 * d0 - b0 * c0
-  if (det === 0) return null
+  if (det === 0) return identity()
 
   const invDet = 1 / det
   const a = d0 * invDet

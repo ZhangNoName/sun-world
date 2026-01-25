@@ -38,12 +38,19 @@ export abstract class BaseElement {
   public children: BaseElement[] = []
   private _parent: BaseElement | null = null
   get parent(): BaseElement | null {
-
     return this._parent
   }
   set parent(value: BaseElement) {
+    const oldParent = this._parent
     this.attrs.parentId = value.id
     this._parent = value
+    console.log('设置父元素- 父元素', this.id, value.id)
+    this._calcMatrix(oldParent)
+  }
+  addChild(child: BaseElement) {
+    this.children.push(child)
+    child.parent = this
+    console.log('添加子元素- 父元素', this.id, child.id)
   }
 
   // Cache information
@@ -86,21 +93,8 @@ export abstract class BaseElement {
       this.attrs.width = patch.width ?? this.attrs.width
       this.attrs.height = patch.height ?? this.attrs.height
       this._updateAABBCache()
-      // this.attrs.rotation = patch.rotation ?? this.attrs.rotation
       matrixChanged = true;
-      // const trs = decomposeTRS(this.attrs.transform ?? composeTRS(0, 0, 0, 1, 1));
-      // const newX = patch.x ?? trs.x;
-      // const newY = patch.y ?? trs.y;
-      // const newRot = patch.rotation ?? trs.rotation;
-      // const newSX = patch.width !== undefined ? patch.width : trs.sx;
-      // const newSY = patch.height !== undefined ? patch.height : trs.sy;
 
-      // if (newX !== trs.x || newY !== trs.y || newRot !== trs.rotation || newSX !== trs.sx || newSY !== trs.sy) {
-      //   this.attrs.transform = composeTRS(newX, newY, newRot, newSX, newSY);
-      //   this.attrs.width = newSX;
-      //   this.attrs.height = newSY;
-      //   matrixChanged = true;
-      // }
     }
 
     // 2. 处理基础属性
@@ -199,6 +193,23 @@ export abstract class BaseElement {
     const inv = invert(this.worldMatrix)
     return inv
   }
+  private _calcMatrix(oldParent: BaseElement | null) {
+    if (this.parent === null) {
+      console.log('计算变换矩阵- 父元素为空', this.id, this.matrix)
+      return
+    }
+    console.log('计算变换矩阵- 父元素不为空', this.id,)
+    let oldPM = identity()
+    if (!oldParent) {
+      oldPM = identity()
+    } else {
+      oldPM = oldParent.worldMatrix
+    }
+    const wm = multiply(oldPM, this.matrix)
+    const pm = this.parent.worldMatrix
+    const m = multiply(invert(pm), wm)
+    this.attrs.transform = m
+  }
   private _updateBox() {
     const m = this.worldMatrix
 
@@ -220,7 +231,7 @@ export abstract class BaseElement {
       maxY: Math.max(...ys)
     }
     this._aabb = newBox
-    console.log('updateAABBCache', this.id, this._aabb)
+    // console.log('updateAABBCache', this.id, this._aabb)
     return newBox
   }
 

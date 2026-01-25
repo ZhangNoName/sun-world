@@ -180,31 +180,26 @@ export class ElementManager {
    * 批量移动节点到同一个 parent
    * - 会自动过滤掉“父子同时被选中”情况下的子节点（只移动最上层的选中节点）
    * - 会保持世界矩阵不变（insertChild 内部会重算 local matrix）
+   * - 每次移动都只会移动同一个层级的节点，也就是父元素
    */
   moveNodes(ids: string[], newParentId: string, index?: number) {
+
     const targetParentId = this.normalizeParentId(newParentId)
+    const oldParent = this.store.get(ids[0])?.parent
     const targetParent = this.store.get(targetParentId)
-    if (!targetParent) return
-
-    // 先从旧父节点中移除
-    for (const id of ids) {
-      const el = this.store.get(id)
-      if (!el) continue
-      const oldParentId = this.normalizeParentId(el.parentId)
-      const oldParent = this.store.get(oldParentId)
-      if (oldParent) {
-        oldParent.children = oldParent.children.filter((c) => c.id !== id)
-      }
+    if (!targetParent || !oldParent) {
+      console.log('移动节点- 目标父元素或旧父元素不存在', targetParentId, oldParent)
+      return
     }
-
+    const oldParentWorldMatrix = oldParent.worldMatrix
+    oldParent.children = oldParent.children.filter((c) => !ids.includes(c.id))
+    console.log('移动节点- 旧父元素', oldParent.id, oldParent.children)
     // 插入到新父节点
-    let insertAt = index
+    let insertAt = index ?? 0
     for (const id of ids) {
       const el = this.store.get(id)
       if (!el) continue
-      el.parentId = targetParentId
-      this.insertChild(targetParentId, id, insertAt)
-      if (insertAt !== undefined) insertAt += 1
+      targetParent.addChild(el)
     }
 
     if (!this.isHydrating) {
@@ -300,8 +295,8 @@ export class ElementManager {
 
       for (const item of parsed.data) {
         const el = createElement(item)
-        this.root.children.push(el)
         this.store.set(el.id, el)
+        this.root.addChild(el)
       }
     } finally {
       this.isHydrating = false
@@ -422,8 +417,8 @@ export class ElementManager {
       }
       return el.id
     }
-
     const result = dfs(this.root)
+    console.log('移动元素- 检测父元素', currentParentId, result)
     if (result && result !== currentParentId) {
       this.moveNodes(this.selectedElementIds, result)
       return result
