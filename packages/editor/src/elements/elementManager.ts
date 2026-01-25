@@ -418,7 +418,6 @@ export class ElementManager {
       return el.id
     }
     const result = dfs(this.root)
-    console.log('移动元素- 检测父元素', currentParentId, result)
     if (result && result !== currentParentId) {
       this.moveNodes(this.selectedElementIds, result)
       return result
@@ -466,17 +465,10 @@ export class ElementManager {
   }
 
   moveSelectedElement(dx: number, dy: number) {
-    for (const id of this.selectedElementIds) {
-      const el = this.store.get(id)
+    for (const el of this.selectedElements) {
       if (el) {
-        el.move(dx, dy, this)
+        el.move(dx, dy)
       }
-    }
-    if (this.selectedBox) {
-      this.selectedBox.minX += dx
-      this.selectedBox.maxX += dx
-      this.selectedBox.minY += dy
-      this.selectedBox.maxY += dy
     }
   }
 

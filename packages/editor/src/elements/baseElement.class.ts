@@ -154,6 +154,7 @@ export abstract class BaseElement {
     // 1. 更新本地矩阵的平移部分
     this.attrs.transform.e += dx
     this.attrs.transform.f += dy
+    console.log('平移元素- 元素', this.id, dx, dy)
     this._aabb = null;
   }
 
@@ -260,12 +261,6 @@ export abstract class BaseElement {
   render(ctx: CanvasRenderingContext2D) {
     if (!this.visible) return
     const m = this.attrs.transform
-    // const m = this.getWorldMatrix()
-    // const m = this.attrs.transform
-
-    // 关键：每个元素都在“干净的 ctx”上应用自己的 worldMatrix。
-    // 如果在父元素 transform 后直接渲染子元素，同时子元素又用 worldMatrix transform，
-    // 会导致矩阵叠加（偏移/缩放越来越大）。
     ctx.save()
     ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f)
     this.draw(ctx)

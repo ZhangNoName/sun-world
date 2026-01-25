@@ -16,29 +16,16 @@ export default class DragTool extends BaseTool {
 
   }
   onMouseMove(e: MouseEvent): void {
-    // console.log('DragTool.onMouseMove', e)
     if (!this.selectedEl) return
     const { viewport, elements } = this.ctx
     const { x, y } = viewport.screenToCanvas(e.offsetX, e.offsetY)
-    // elements.moveSelectedElement(canvasPos.x, canvasPos.y)
     const dx = x - this.lastX
     const dy = y - this.lastY
     this.lastX = x
     this.lastY = y
-
-    // elements.hitTest(canvasPos.x, canvasPos.y)
     elements.hitTopExcludeSelected(x, y)
-    // if (newParentId !== this.parentId) {
-    //   console.log('更新----newParentId', this.parentId, newParentId)
-    //   this.parentId = newParentId
-    //   this.ctx.elements.moveNode(this.selectedEl.id, newParentId)
-    //   this.selectedEl.parentId = newParentId
-    // }
 
-    // 将屏幕像素位移转换为画布坐标位移（父坐标系）
-    const cdx = dx / this.viewport.scale
-    const cdy = dy / this.viewport.scale
-    elements.moveSelectedElement(cdx, cdy)
+    elements.moveSelectedElement(dx, dy)
     this.ctx.render()
   }
   onMouseUp(): void {
