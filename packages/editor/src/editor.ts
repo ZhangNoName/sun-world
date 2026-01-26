@@ -14,6 +14,7 @@ import { InputBindingConfig, MODIFIERS } from './types/keybinding.type'
 import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
 import ViewportState from './viewport/viewport'
+import { NodeInfo } from './elements/ele.type'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -181,17 +182,17 @@ export class SWEditor {
   public elementManagerChanged(cb: (elements: BaseElement[]) => void) {
     this.elementManager.onElementsChange(cb)
   }
-  public elementTreeChanged(cb: (root: BaseElement[]) => void) {
+  public elementTreeChanged(cb: (root: NodeInfo[]) => void) {
     this.elementManager.onHierarchyChange(cb)
   }
   public deleteElement(id: string) {
     this.elementManager.remove(id)
   }
   public deleteSelectedElement() {
-    
+
   }
-  public save(){
-  this.elementManager.saveLocal()
-  
+  public save() {
+    this.elementManager.saveLocal()
+
   }
 }

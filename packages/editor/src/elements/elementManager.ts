@@ -6,6 +6,7 @@ import { EleName } from './name'
 import { identity, invert, multiply } from '../utils/matrix'
 import { IBox, IPoint, Matrix } from '../types/common.type'
 import { intersectBox, isPointInBox } from '../utils/common'
+import { NodeInfo } from './ele.type'
 
 type PersistedV1 = {
   version: 1
@@ -29,7 +30,7 @@ export class ElementManager {
    */
   private selectedBox: IBox | null = null
 
-  private hierarchyChangedListeners: Set<(rootChildren: BaseElement[]) => void> =
+  private hierarchyChangedListeners: Set<(rootChildren: NodeInfo[]) => void> =
     new Set()
   private elementsChangedListeners: Set<(elements: BaseElement[]) => void> =
     new Set()
@@ -79,7 +80,7 @@ export class ElementManager {
     if (!parent) return
 
     this.store.set(el.id, el)
-    el.parentId = pid
+    el.parent = parent
 
     this.insertChild(pid, el.id, index)
 
@@ -188,7 +189,7 @@ export class ElementManager {
     const oldParent = this.store.get(ids[0])?.parent
     const targetParent = this.store.get(targetParentId)
     if (!targetParent || !oldParent) {
-      console.log('移动节点- 目标父元素或旧父元素不存在', targetParentId, oldParent)
+      console.log('移动节点- 目标父元素或旧父元素不存在', ids, targetParentId, oldParent)
       return
     }
     const oldParentWorldMatrix = oldParent.worldMatrix
@@ -202,10 +203,10 @@ export class ElementManager {
       targetParent.addChild(el)
     }
 
-    if (!this.isHydrating) {
 
-      this.emitHierarchyChanged()
-    }
+
+    this.emitHierarchyChanged()
+
   }
   // 元素更新后调用（几何/样式变化）
   update() {
@@ -225,13 +226,14 @@ export class ElementManager {
     this.elementsChangedListeners.forEach((cb) => cb(this.getAll()))
   }
 
-  onHierarchyChange(cb: (rootChildren: BaseElement[]) => void) {
-    cb(this.root.children)
+  onHierarchyChange(cb: (rootChildren: NodeInfo[]) => void) {
+    cb(this.tree)
     this.hierarchyChangedListeners.add(cb)
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
-    this.hierarchyChangedListeners.forEach((cb) => cb(this.root.children))
+   
+    this.hierarchyChangedListeners.forEach((cb) => cb(this.tree))
     this.emitElementsChanged()
   }
 
@@ -247,16 +249,16 @@ export class ElementManager {
 
   loadLocal() {
     try {
-      const raw = localStorage.getItem(this.storageKey)
-      if (!raw) return
-      const parsed = JSON.parse(raw) as PersistedV1
-      if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.data)) return
-
       // 重建
       this.store.clear()
       this.root.children = []
       this.store.set(this.ROOT_ID, this.root)
       this.selectedElementIds = []
+      const raw = localStorage.getItem(this.storageKey)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as PersistedV1
+      if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.data)) return
+
 
       const createElement = (item: any): BaseElement => {
         let el: BaseElement
@@ -375,9 +377,9 @@ export class ElementManager {
           // el.isSelected = true
           this.updateSelectBox(aabb)
         }
-        if (el.children.length > 0) {
-          walk(el.children)
-        }
+        // if (el.children.length > 0) {
+        //   walk(el.children)
+        // }
       }
     }
     walk(elements)
@@ -465,6 +467,7 @@ export class ElementManager {
   }
 
   moveSelectedElement(dx: number, dy: number) {
+    console.log('moveSelectedElement', this.selectedElements.length)
     for (const el of this.selectedElements) {
       if (el) {
         el.move(dx, dy)
@@ -477,5 +480,9 @@ export class ElementManager {
     for (const el of this.root.children) {
       el.render(ctx)
     }
+  }
+
+  get tree(){
+    return this.root.children.map(c => c.getNodeInfo())
   }
 }
