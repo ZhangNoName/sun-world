@@ -15,6 +15,7 @@ import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
 import ViewportState from './viewport/viewport'
 import { NodeInfo } from './elements/ele.type'
+import { CursorManager } from './cursor/cursorManager'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -41,6 +42,7 @@ export class SWEditor {
   private inputManager = new InputManager(this)
   private toolManager: ToolManager
   private transformer = new Transformer()
+  private cursorManager: CursorManager
   private rule: Rule
   private inputEvents
   constructor(options: IEditorOptions) {
@@ -81,6 +83,7 @@ export class SWEditor {
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
+    this.cursorManager = new CursorManager(this.getCanvas())
   }
   // id，只读
   get id() {
