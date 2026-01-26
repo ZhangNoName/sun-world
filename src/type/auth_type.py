@@ -30,3 +30,8 @@ class ResetPasswordRequest(BaseModel):
 class ResetPasswordModel(BaseModel):
     token: str
     new_password: str
+
+
+class QQModel(BaseModel):
+    access_token: str
+    expires_in: int

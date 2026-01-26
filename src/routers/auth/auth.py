@@ -5,7 +5,7 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Header, status, Request, Response
 from loguru import logger
 
-from src.type.auth_type import RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
+from src.type.auth_type import QQModel, RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
 from src.controller.auth_manager import AuthManager
 from src.type.type import ResponseModel
 from src.type.user_type import User
@@ -330,3 +330,9 @@ async def refresh_token(
         },
         message="Token刷新成功"
     )
+
+
+@router.post("/qq")
+async def qq(info: QQModel, auth: AuthManager = Depends(get_auth_manager)):
+    logger.info(f"qq登录: {info}")
+    return ResponseModel(code=1, data=None, message="qq成功")
