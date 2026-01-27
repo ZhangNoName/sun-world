@@ -68,12 +68,14 @@ export class SWEditor {
 
     // 初始化事件管理器（包含输入绑定）
     this.eventManager = new EventManager(this, options.inputBindingConfig)
-
+    // 初始化光标管理器
+    this.cursorManager = new CursorManager(this.getCanvas())
     // 注册工具
     this.toolManager = new ToolManager({
       input: this.inputManager,
       viewport: this.viewportState,
       elements: this.elementManager,
+      cursor: this.cursorManager,
       render: debounce((isDragging?: boolean) => this.renderer.render(isDragging), 0),
     })
     // 默认激活选择工具
@@ -83,7 +85,7 @@ export class SWEditor {
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
-    this.cursorManager = new CursorManager(this.getCanvas())
+
   }
   // id，只读
   get id() {

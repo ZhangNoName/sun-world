@@ -70,3 +70,9 @@
       8 24,
     auto;
 }
+.sw-cursor-grab {
+  cursor: grab;
+}
+.sw-cursor-grabbing {
+  cursor: grabbing;
+}

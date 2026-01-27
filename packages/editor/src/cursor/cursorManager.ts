@@ -6,6 +6,7 @@ export enum SystemCursor {
   Default = 'default',
   Move = 'move',
   Grab = 'grab',
+  Grabbing = 'grabbing',
   Pointer = 'pointer'
 }
 
@@ -57,7 +58,7 @@ export class CursorManager {
     // custom class cursor
     const clsPrefix = 'sw-cursor-';
 
-
+    console.log('setCursor', nc)
     this._canvas.classList.forEach((className) => {
       if (className.startsWith(clsPrefix)) {
         this._canvas.classList.remove(className);

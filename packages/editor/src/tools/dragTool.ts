@@ -1,3 +1,4 @@
+import { SystemCursor } from '../cursor/cursorManager'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import ViewportState from '@/viewport/viewport'
 
@@ -25,6 +26,7 @@ export default class DragTool extends BaseTool {
     this.lastY = e.clientY
 
     console.log('DragTool.onMouseDown', e)
+    this.ctx.cursor.setCursor(SystemCursor.Grabbing)
   }
   onMouseMove(e: MouseEvent): void {
     if (!this.isPanning) return
@@ -43,11 +45,18 @@ export default class DragTool extends BaseTool {
   onMouseUp(): void {
     console.log('DragTool.onMouseUp')
     this.isPanning = false
+    this.ctx.cursor.setCursor(SystemCursor.Grab)
   }
   activate(): void {
     console.log('DragTool.activate')
+    this.ctx.cursor.setCursor(SystemCursor.Grab)
+
   }
   deactivate(): void {
     console.log('DragTool.deactivate')
+    this.ctx.cursor.setCursor(SystemCursor.Default)
+  }
+  onKeyDown(e: KeyboardEvent): void {
+    // console.log('DragTool.onKeyDown', e)
   }
 }

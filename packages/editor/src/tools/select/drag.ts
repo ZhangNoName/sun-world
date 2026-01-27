@@ -1,6 +1,7 @@
 import { BaseElement } from '@/elements/baseElement.class'
 import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
 import ViewportState from '@/viewport/viewport'
+import { SystemCursor } from '../../cursor/cursorManager'
 
 export default class DragTool extends BaseTool {
   name: ToolName = 'drag'
@@ -27,6 +28,7 @@ export default class DragTool extends BaseTool {
 
     elements.moveSelectedElement(dx, dy)
     this.ctx.render()
+
   }
   onMouseUp(): void {
     // console.log('DragTool.onMouseUp')
@@ -35,10 +37,11 @@ export default class DragTool extends BaseTool {
     const { viewport, elements } = this.ctx
     elements.calcSelectBox()
     this.ctx.render()
+    this.ctx.cursor.setCursor(SystemCursor.Default)
 
   }
   onMouseDown(e: MouseEvent): void {
-
+    this.ctx.cursor.setCursor(SystemCursor.Grabbing)
     // console.log('DragTool.onMouseDown')
     // this.parentId = this.selectedEl?.parentId ?? null
     const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
@@ -54,6 +57,7 @@ export default class DragTool extends BaseTool {
     console.log('DragTool.onWheel')
   }
   activate(): void {
+
     console.log('DragTool.activate')
   }
   deactivate(): void {

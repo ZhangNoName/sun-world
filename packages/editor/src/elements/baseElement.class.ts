@@ -44,13 +44,13 @@ export abstract class BaseElement {
     const oldParent = this._parent
     this.attrs.parentId = value.id
     this._parent = value
-    console.log('设置父元素- 父元素', this.id, value.id)
+    // console.log('设置父元素- 父元素', this.id, value.id)
     this._calcMatrix(oldParent)
   }
   addChild(child: BaseElement) {
     this.children.push(child)
     child.parent = this
-    console.log('添加子元素- 父元素', this.id, child.id)
+    // console.log('添加子元素- 父元素', this.id, child.id)
   }
 
   // Cache information
@@ -154,7 +154,7 @@ export abstract class BaseElement {
     // 1. 更新本地矩阵的平移部分
     this.attrs.transform.e += dx
     this.attrs.transform.f += dy
-    console.log('平移元素- 元素', this.id, dx, dy)
+    // console.log('平移元素- 元素', this.id, dx, dy)
     this._aabb = null;
   }
 

@@ -48,7 +48,7 @@ export default class SelectTool extends BaseTool {
     }
 
     this.selectedEl = elements.selectedIds
-    console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y, elements.selectedElements)
+    // console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y, elements.selectedElements)
     if (controlHandle) {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {
@@ -86,6 +86,6 @@ export default class SelectTool extends BaseTool {
     console.log('选择工具 取消')
   }
   onKeyDown(e: KeyboardEvent): void {
-    console.log('SelectTool.onKeyDown', e)
+    // console.log('SelectTool.onKeyDown', e)
   }
 }
