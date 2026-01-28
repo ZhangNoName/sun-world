@@ -27,9 +27,6 @@ const contentClass = computed(() => {
     <div class="content" :class="contentClass">
       <RouterView />
     </div>
-    <!-- <div class="footer" v-if="showFooter">
-      <ZFooter />
-    </div> -->
   </div>
 </template>
 
@@ -38,7 +35,6 @@ const contentClass = computed(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: var(--horizontalGapPx);
   .header {
     flex: none;
   }

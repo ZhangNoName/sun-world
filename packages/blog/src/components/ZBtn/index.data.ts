@@ -5,6 +5,7 @@ export const BgColor = {
   success: '#67C23A',
   warning: '#E6A23C',
   danger: '#F56C6C',
+  text: 'transparent',
 }
 export type ZBtnType = keyof typeof BgColor
 
