@@ -214,6 +214,7 @@ onMounted(async () => {
   width: 100%;
   margin: 0 auto;
   max-width: 1280px;
+  padding-top: 2rem;
   background-color: var(--bg-page);
   display: flex;
   /* grid-template-columns: 35rem 1fr;
