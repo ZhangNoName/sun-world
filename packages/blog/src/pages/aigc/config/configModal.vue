@@ -1,6 +1,6 @@
 <script setup lang="ts" name="config-modal">
 import { ref, reactive } from 'vue'
-import { ElDialog, ElForm, ElFormItem } from 'element-plus'
+import { ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
 import { SettingSvg } from '@sun-world/icons'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ZInput from '@/baseCom/input/input.vue'
@@ -12,25 +12,17 @@ const handleClose = () => {
   open.value = false
 }
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  token: '',
 })
-
-const onSubmit = () => {
-  console.log('submit!')
-}
+const rules = reactive({
+  token: [{ required: true, message: '请输入Token' }],
+})
 
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      console.log('submit!')
+      console.log('submit!', valid)
     } else {
       console.log('error submit!')
     }
@@ -40,11 +32,12 @@ const submitForm = (formEl: FormInstance | undefined) => {
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
+  handleClose()
 }
 </script>
 
 <template>
-  <z-btn type="icon" size="icon" @click="open = true">
+  <z-btn type="icon" size="icon" @click="open = true" title="设置">
     <SettingSvg #icon width="1.4rem" height="1.4rem" />
   </z-btn>
   <el-dialog
@@ -61,16 +54,17 @@ const resetForm = (formEl: FormInstance | undefined) => {
         :model="form"
         label-width="auto"
         class="demo-dynamic"
+        :rules="rules"
       >
-        <el-form-item label="Token">
-          <z-input v-model="form.name" />
+        <el-form-item label="Token" prop="token">
+          <z-input v-model="form.token" />
         </el-form-item>
       </el-form>
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <z-btn type="outline" @click="handleClose">Cancel</z-btn>
-        <z-btn type="primary" @click="submitForm(formRef)">Confirm</z-btn>
+        <z-btn type="outline" @click="resetForm(formRef)">取消</z-btn>
+        <z-btn type="primary" @click="submitForm(formRef)">保存</z-btn>
       </div>
     </template>
   </el-dialog>

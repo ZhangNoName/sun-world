@@ -25,6 +25,7 @@ import { getUUID } from '@/util/common'
 import router from '@/router'
 import ChatList from './side.vue'
 import ConfigModal from './config/configModal.vue'
+import ModelName from './config/modelName.vue'
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const userInput = ref('')
 const chatList = ref<IMsg[]>([])
@@ -55,16 +56,6 @@ const sendMsg = async () => {
     ElMessage.error('发送失败，请检查网络或 API Key')
   }
 }
-
-const changeSidebar = () => {
-  sidebarClass.value = sidebarClass.value === 'expend' ? 'hide' : 'expend'
-}
-const goHome = () => {
-  router.push({ path: '/' })
-}
-const closeSidebar = () => {
-  sidebarClass.value = 'hide'
-}
 </script>
 
 <template>
@@ -75,14 +66,12 @@ const closeSidebar = () => {
     <!-- 主内容区 -->
     <main class="main-content">
       <header class="chat-header">
-        <div class="model-info">
-          <span class="model-name">GPT-3.5 Turbo</span>
-        </div>
+        <model-name model="gpt-3.5-t" />
         <div class="header-actions">
-          <ZBtn type="icon" size="icon">
+          <ZBtn type="icon" size="icon" title="导出聊天记录">
             <ExportSvg #icon width="1.4rem" height="1.4rem" />
           </ZBtn>
-          <config-modal v-model:visible="configModalVisible" />
+          <config-modal />
         </div>
       </header>
 
@@ -161,11 +150,15 @@ const closeSidebar = () => {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.5rem;
+      padding: 0 1.5rem 0 0.5rem;
       border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       .model-name {
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 18px;
+        span {
+          margin-right: var(--spacing);
+          line-height: 28px;
+        }
       }
       .header-actions {
         display: flex;

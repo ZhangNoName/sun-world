@@ -16,6 +16,7 @@ interface ZBtnProps {
   fontSize?: string
   borderColor?: string
   class?: string
+  title?: string
 }
 
 const props = withDefaults(defineProps<ZBtnProps>(), {
@@ -59,7 +60,12 @@ const style = computed(() => {
 </script>
 
 <template>
-  <button :class="classes" :style="style" :disabled="disabled || loading">
+  <button
+    :class="classes"
+    :style="style"
+    :disabled="disabled || loading"
+    :title="title"
+  >
     <span v-if="loading" class="sun-btn__loading-icon">
       <SvgIcon name="loading" size="small" />
     </span>
@@ -68,9 +74,9 @@ const style = computed(() => {
         <SvgIcon v-if="icon" :name="icon" size="small" />
       </slot>
     </template>
-    <span v-if="slots.default" class="sun-btn__content">
+    <template v-if="slots.default">
       <slot></slot>
-    </span>
+    </template>
   </button>
 </template>
 
@@ -85,7 +91,7 @@ const style = computed(() => {
   transition: all 0.2s;
   cursor: pointer;
   outline: none;
-  gap: 8px;
+  /* gap: 8px; */
   border: 1px solid transparent;
   font-family: inherit;
   box-sizing: border-box;
