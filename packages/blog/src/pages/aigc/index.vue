@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { OpenAiLangChian } from '@/aigc/openai_langchian'
 import { OPENAI_API_KEY } from '@/constant'
 import { ElMessage } from 'element-plus'
+import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import {
   AIGCSvg,
   CharacterSvg,
@@ -19,20 +20,17 @@ import {
 } from '@sun-world/icons'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
-
+import { IMsg, MsgRole } from '@/types/ai.type'
+import { getUUID } from '@/util/common'
 import router from '@/router'
 import ChatList from './side.vue'
+import ConfigModal from './config/configModal.vue'
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const userInput = ref('')
-const chatList = ref([
-  { role: 'ai', content: '你好！我是你的 AI 助手，有什么我可以帮你的吗？' },
-  { role: 'user', content: '帮我写一个关于重构 UI 的计划。' },
-  {
-    role: 'ai',
-    content:
-      '没问题，重构 UI 通常包括以下几个步骤：\n1. 分析现有结构\n2. 定义视觉风格\n3. 优化交互流程\n4. 编写响应式代码。',
-  },
-])
+const chatList = ref<IMsg[]>([])
+const SessionList = ref([])
+const currentSession = ref(null)
+const configModalVisible = ref(false)
 
 const openAi = new OpenAiLangChian({
   apiKey: OPENAI_API_KEY,
@@ -47,12 +45,12 @@ const sendMsg = async () => {
   }
 
   const msg = userInput.value
-  chatList.value.push({ role: 'user', content: msg })
+  chatList.value.push({ id: getUUID(), role: MsgRole.USER, content: msg })
   userInput.value = ''
 
   try {
     let res = await openAi.sendMsg({ text: msg })
-    chatList.value.push({ role: 'ai', content: res })
+    chatList.value.push({ id: getUUID(), role: MsgRole.AI, content: res })
   } catch (error) {
     ElMessage.error('发送失败，请检查网络或 API Key')
   }
@@ -81,9 +79,10 @@ const closeSidebar = () => {
           <span class="model-name">GPT-3.5 Turbo</span>
         </div>
         <div class="header-actions">
-          <ZBtn type="text" icon="export">
+          <ZBtn type="icon" size="icon">
             <ExportSvg #icon width="1.4rem" height="1.4rem" />
           </ZBtn>
+          <config-modal v-model:visible="configModalVisible" />
         </div>
       </header>
 
@@ -137,6 +136,7 @@ const closeSidebar = () => {
       </footer>
     </main>
   </div>
+  <!-- <config-modal v-model:visible="configModalVisible" /> -->
 </template>
 
 <style scoped>
@@ -170,6 +170,7 @@ const closeSidebar = () => {
       .header-actions {
         display: flex;
         gap: 0.5rem;
+        align-items: center;
       }
     }
 

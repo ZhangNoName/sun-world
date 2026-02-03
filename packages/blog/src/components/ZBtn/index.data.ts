@@ -1,18 +1,25 @@
-export const BgColor = {
-  normal: '#ffffff',
-  info: '#909399',
-  primary: '#409EFF',
-  success: '#67C23A',
-  warning: '#E6A23C',
-  danger: '#F56C6C',
-  text: 'transparent',
-}
-export type ZBtnType = keyof typeof BgColor
+export type ZBtnVariant =
+  | 'default'
+  | 'destructive'
+  | 'outline'
+  | 'secondary'
+  | 'ghost'
+  | 'link'
+  | 'icon'
+  | 'primary' // 保持兼容
+  | 'success'
+  | 'warning'
+  | 'info'
 
-export const BtnSize = {
-  large: '2rem',
-  medium: '1.6rem',
-  small: '1.2rem',
-}
+export type ZBtnSize = 'default' | 'sm' | 'lg' | 'icon'
 
-export type ZBtnSize = keyof typeof BtnSize
+export const BgColor: Record<string, string> = {
+  primary: 'var(--primary)',
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger: 'var(--destructive)',
+  info: 'var(--secondary)',
+  default: 'var(--primary)',
+  destructive: 'var(--destructive)',
+  secondary: 'var(--secondary)',
+}

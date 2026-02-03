@@ -45,6 +45,8 @@ html {
   --horizontalGapPx: 12px;
   --paddingPx: 12px;
   --border-radius: 8px;
+
+  --spacing: 0.25rem;
 }
 div {
   cursor: default;
