@@ -4,25 +4,12 @@ import { OpenAiLangChian } from '@/aigc/openai_langchian'
 import { OPENAI_API_KEY } from '@/constant'
 import { ElMessage } from 'element-plus'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
-import {
-  AIGCSvg,
-  CharacterSvg,
-  DiscoverSvg,
-  DragSvg,
-  AddSvg,
-  SettingSvg,
-  Search,
-  EditSvg,
-  ExportSvg,
-  FullScreenSvg,
-  ClearSvg,
-  RobotSvg,
-} from '@sun-world/icons'
+import { ExportSvg, RobotSvg } from '@sun-world/icons'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
 import { IMsg, MsgRole } from '@/types/ai.type'
 import { getUUID } from '@/util/common'
-import router from '@/router'
+import ChatInput from './config/chatInput.vue'
 import ChatList from './side.vue'
 import ConfigModal from './config/configModal.vue'
 import ModelName from './config/modelName.vue'
@@ -100,28 +87,7 @@ const sendMsg = async () => {
 
       <!-- 输入区域 -->
       <footer class="chat-footer">
-        <div class="input-container">
-          <div class="input-wrapper">
-            <textarea
-              v-model="userInput"
-              placeholder="发送消息..."
-              @keydown.enter.exact.prevent="sendMsg"
-              rows="1"
-            ></textarea>
-            <button
-              class="send-btn"
-              :disabled="!userInput.trim()"
-              @click="sendMsg"
-            >
-              <AddSvg
-                style="transform: rotate(45deg)"
-                width="1.6rem"
-                height="1.6rem"
-              />
-            </button>
-          </div>
-          <p class="footer-tip">AI 可能会产生错误信息，请核实重要内容。</p>
-        </div>
+        <chat-input />
       </footer>
     </main>
   </div>
@@ -214,54 +180,6 @@ const sendMsg = async () => {
     .chat-footer {
       padding: 1rem 0 2rem;
       background: linear-gradient(transparent, #fff 20%);
-
-      .input-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 1rem;
-
-        .input-wrapper {
-          position: relative;
-          display: flex;
-          align-items: flex-end;
-          background: #fff;
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-          padding: 0.7rem 1rem;
-
-          textarea {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 0.2rem 0;
-            resize: none;
-            max-height: 200px;
-            font-family: inherit;
-            font-size: 1rem;
-          }
-
-          .send-btn {
-            background: #19c37d;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 4px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            &:disabled {
-              background: #d9d9e3;
-              cursor: not-allowed;
-            }
-          }
-        }
-        .footer-tip {
-          text-align: center;
-          font-size: 0.75rem;
-          color: #8e8ea0;
-          margin-top: 0.8rem;
-        }
-      }
     }
   }
 }

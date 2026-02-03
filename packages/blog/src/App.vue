@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, provide, reactive } from 'vue'
+import { onMounted, provide, reactive, watch } from 'vue'
 import { computed, ref } from 'vue'
 import { onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -14,22 +14,55 @@ import {
 import { DEFAULT_STATS } from './util/data'
 import { useDeviceStore } from './store/tg'
 // import { testApi } from './service/request'
+const STORAGE_THEME = 'theme'
+const STORAGE_LOCALE = 'locale'
+const DEFAULT_THEME = 'sun-light'
+const DEFAULT_LOCALE = 'zh'
+
 const deviceStore = useDeviceStore()
-const theme = ref('sun-light')
 const { locale } = useI18n()
+
+// 从本地缓存初始化，运行后挂载到 html 维护
+const theme = ref(localStorage.getItem(STORAGE_THEME) || DEFAULT_THEME)
+locale.value = localStorage.getItem(STORAGE_LOCALE) || DEFAULT_LOCALE
+
+provide('theme', theme)
+provide('locale', locale)
+
 const tagList = reactive<TagResponse[]>([])
 const categoryList = reactive<CategoryResponse[]>([])
 const stats = reactive<StatsResponse>(DEFAULT_STATS)
-const allClass = computed(() => {
-  return 'app-container ' + theme.value
-})
-const updateLocalStorageValue = (e: StorageEvent) => {
-  // console.log('当前信息发生改变', e)
-  if (e.key === 'locale') {
-    locale.value = e.newValue || 'zh'
-    // console.log(e.newValue)
-  } else if (e.key === 'theme') {
-    theme.value = e.newValue || 'sun-light'
+provide('tagList', tagList)
+provide('categoryList', categoryList)
+provide('stats', stats)
+
+const allClass = computed(() => 'app-container')
+
+/** 将主题与多语言同步到 document.documentElement（html） */
+const applyToHtml = () => {
+  const html = document.documentElement
+  html.lang = locale.value === 'zh' ? 'zh-CN' : 'en'
+  html.classList.remove('sun-light', 'sun-dark')
+  html.classList.add(theme.value)
+}
+
+// 监听 theme/locale 变化：同步到 html 并写入本地缓存
+watch(
+  [theme, locale],
+  ([newTheme, newLocale]) => {
+    applyToHtml()
+    localStorage.setItem(STORAGE_THEME, newTheme as string)
+    localStorage.setItem(STORAGE_LOCALE, newLocale as string)
+  },
+  { immediate: false }
+)
+
+/** 其他标签页修改 localStorage 时同步到当前页 */
+const onStorageChange = (e: StorageEvent) => {
+  if (e.key === STORAGE_LOCALE) {
+    locale.value = e.newValue || DEFAULT_LOCALE
+  } else if (e.key === STORAGE_THEME) {
+    theme.value = e.newValue || DEFAULT_THEME
   }
 }
 
@@ -44,21 +77,15 @@ const getAllBaseData = async () => {
     // console.log('获取到的统计数据', stats.value)
   })
 }
-provide('tagList', tagList)
-provide('categoryList', categoryList)
-provide('stats', stats)
+
 onMounted(() => {
-  // getAdressByLocation()
-  // testApi()
+  applyToHtml()
   getAllBaseData()
-  window.addEventListener('localestorageChange' as any, updateLocalStorageValue)
+  window.addEventListener('storage', onStorageChange)
   console.log('当前环境下的变量', import.meta.env)
 })
 onUnmounted(() => {
-  window.removeEventListener(
-    'localestorageChange' as any,
-    updateLocalStorageValue
-  )
+  window.removeEventListener('storage', onStorageChange)
 })
 </script>
 

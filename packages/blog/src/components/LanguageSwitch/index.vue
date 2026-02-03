@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 
-const locale = ref(localStorage.getItem('locale') || 'zh')
+const locale = inject<Ref<string>>('locale') || ref('zh')
 const changeLanguage = () => {
   locale.value = locale.value == 'zh' ? 'en' : 'zh'
-  localStorage.setItem('locale', locale.value)
 }
 </script>
 

@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 
 const prop = defineProps()
 
-const theme = ref(localStorage.getItem('theme') || 'sun-light')
+const theme = inject<Ref<string>>('theme') || ref('sun-light')
 const changTheme = () => {
   theme.value = theme.value === 'sun-light' ? 'sun-dark' : 'sun-light'
-  localStorage.setItem('theme', theme.value)
 }
 </script>
 
