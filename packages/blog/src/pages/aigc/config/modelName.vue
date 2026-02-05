@@ -46,8 +46,11 @@ const modelName = computed(() => {
 </script>
 
 <style scoped>
-.el-button + .el-button {
-  margin-left: 8px;
+.model-name {
+  /* margin-left: 8px; */
+  span {
+    font-size: var(--font-large);
+  }
 }
 .model-list {
   display: flex;

@@ -7,7 +7,7 @@ import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { ExportSvg, RobotSvg } from '@sun-world/icons'
 import ZBtn from '@/components/ZBtn/index.vue'
 import ChannelCard from '@/components/ChannelCard/index.vue'
-import { IMsg, MsgRole } from '@/types/ai.type'
+import { IMsg, ISession, MsgRole } from '@/types/ai.type'
 import { getUUID } from '@/util/common'
 import ChatInput from './config/chatInput.vue'
 import ChatList from './side.vue'
@@ -16,8 +16,19 @@ import ModelName from './config/modelName.vue'
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const userInput = ref('')
 const chatList = ref<IMsg[]>([])
-const SessionList = ref([])
-const currentSession = ref(null)
+const sessionList = ref<ISession[]>([
+  {
+    id: '1',
+    name: '对话1',
+    description: '对话1',
+  },
+  {
+    id: '2',
+    name: '对话2',
+    description: '对话2',
+  },
+])
+const currentSession = ref<string>('')
 const configModalVisible = ref(false)
 
 const openAi = new OpenAiLangChian({
@@ -43,12 +54,19 @@ const sendMsg = async () => {
     ElMessage.error('发送失败，请检查网络或 API Key')
   }
 }
+const selectSession = (id: string) => {
+  currentSession.value = id
+}
 </script>
 
 <template>
   <div class="aigc-container" :class="sidebarClass">
     <!-- 侧边栏 -->
-    <ChatList />
+    <ChatList
+      :list="sessionList"
+      :id="currentSession"
+      @select="selectSession"
+    />
 
     <!-- 主内容区 -->
     <main class="main-content">

@@ -12,8 +12,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #8a8a8a;
-  background-color: #242424;
+  color: var(--text-default);
+  background-color: var(--bg-page);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -48,9 +48,7 @@ html {
 
   --spacing: 0.25rem;
 }
-div {
-  cursor: default;
-}
+
 #app {
   /* max-width: 1280px; */
   margin: 0;
@@ -68,8 +66,8 @@ div {
   --color-danger: #f56c6c;
 
   /* ---------------------- 文本颜色 (Text) ---------------------- */
-  --text-default: #606266; /* 默认正文 */
-  --text-strong: #303133; /* 重要标题/重点文字 (原 --text-default-0) */
+  --text-default: #434447; /* 默认正文 */
+  --text-strong: #212224; /* 重要标题/重点文字 (原 --text-default-0) */
   --text-secondary: #909399; /* 次要/辅助文字 (原 --text-default-2) */
   --text-placeholder: #a8abb2; /* 占位符/禁用文字 (原 --text-default-3) */
   --text-active: var(--color-primary); /* 激活色 */
@@ -137,28 +135,36 @@ div {
   }
 }
 
-/* 设置滚动条的宽度和高度 */
-::-webkit-scrollbar {
-  width: 0.8rem;
-  /* 纵向滚动条宽度 */
-  height: 0.8rem;
-  /* 横向滚动条高度 */
-}
+.scroll {
+  background-color: red;
+  /* 🌟 核心 1：必须确保有滚动属性 */
+  overflow: auto !important;
 
-/* 设置滚动条轨道的样式 */
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 0.3rem;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-}
+  /* 🌟 核心 2：恢复 Firefox 的滚动条空间 */
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 
-/* 设置滚动条滑块的样式 */
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 0.3rem;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-  &:hover {
-    background: rgba(0, 0, 0, 0.24);
+  /* 针对 WebKit (Chrome/Safari) */
+  &::-webkit-scrollbar {
+    display: block !important; /* 强制显示 */
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 0.3rem;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 0.3rem;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.24);
+    }
   }
 }
 a {

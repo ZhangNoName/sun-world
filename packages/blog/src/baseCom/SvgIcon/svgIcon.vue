@@ -51,7 +51,7 @@ const customColor = computed(() =>
 <style scoped>
 .svg-icon {
   fill: currentColor; /* 继承父级 color */
-  color: #8a8a8a; /* 默认颜色 */
+  color: var(--text-default); /* 默认颜色 */
   transition: color 0.3s ease;
 }
 </style>

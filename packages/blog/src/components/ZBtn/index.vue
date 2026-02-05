@@ -82,20 +82,21 @@ const style = computed(() => {
 
 <style scoped>
 .sun-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  border-radius: var(--border-radius);
-  font-weight: 500;
-  transition: all 0.2s;
-  cursor: pointer;
-  outline: none;
-  /* gap: 8px; */
-  border: 1px solid transparent;
-  font-family: inherit;
-  box-sizing: border-box;
-
+  :where(&) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    outline: none;
+    /* gap: 8px; */
+    border: 1px solid transparent;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
   &:active {
     transform: scale(0.98);
   }
