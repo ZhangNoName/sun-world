@@ -16,6 +16,7 @@ import { debounce, getUUID } from './utils/common'
 import ViewportState from './viewport/viewport'
 import { NodeInfo } from './elements/ele.type'
 import { CursorManager } from './cursor/cursorManager'
+import { ControlManager } from './controlHandle/controlManager'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -43,6 +44,7 @@ export class SWEditor {
   private toolManager: ToolManager
   private transformer = new Transformer()
   private cursorManager: CursorManager
+
   private rule: Rule
   private inputEvents
   constructor(options: IEditorOptions) {
@@ -82,9 +84,12 @@ export class SWEditor {
     this.toolManager.activateTool('drag')
     this.viewportState.on(() => this.renderer.render())
 
+
+
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
+
 
   }
   // id，只读

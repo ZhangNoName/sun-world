@@ -2,6 +2,8 @@ import { ICursor } from "@/cursor/cursorManager";
 import { IBox, IPoint } from "@/types/common.type";
 
 export abstract class BaseControl {
+  /** 控件的边距 */
+  protected padding: number = 5
 
   constructor(protected ctx: CanvasRenderingContext2D) { }
 

@@ -1,10 +1,11 @@
-import { en } from '@/locales/en.json';
+
 import type { ElementManager } from '@/elements/elementManager'
 import { debounce, rafThrottle } from '../utils/common'
 import ViewportState from '@/viewport/viewport'
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
 import { applyToPoint, box2Point, matrix2Array } from '../utils/matrix'
+import { ControlManager } from '../controlHandle/controlManager'
 
 /**
  * 职责：管理 Canvas 元素、Context、处理尺寸变化、启动/停止渲染循环。
@@ -16,6 +17,7 @@ export class CanvasRenderer {
   private resizeObserver!: ResizeObserver
   private viewport: ViewportState
   private elementManager!: ElementManager
+  private controlManager!: ControlManager
   private rule?: Rule
   private isDirty = true // 控制是否需要重绘
   private devicePixelRatio: number = 1
@@ -39,6 +41,7 @@ export class CanvasRenderer {
     this.viewport = viewportState
     this.elementManager = elementManager
 
+
     // 获取设备像素比
     this.devicePixelRatio = window.devicePixelRatio || 1
 
@@ -49,6 +52,7 @@ export class CanvasRenderer {
 
     containerElement.appendChild(this.canvasElement)
     this.ctx = this.canvasElement.getContext('2d')!
+    this.controlManager = new ControlManager(this.ctx)
 
     // 2. 初始尺寸设置（考虑 devicePixelRatio）
     const { clientWidth, clientHeight } = containerElement
@@ -156,6 +160,7 @@ export class CanvasRenderer {
     const scale = this.viewport.scale
     ctx.transform(...matrix2Array(this.viewport.transform))
     if (selectedBox) {
+      this.controlManager.setBox(selectedBox)
       const { x, y, width, height } = box2Point(selectedBox)
       // this.transform()
       // ctx.setLineDash([6, 4])
@@ -166,6 +171,7 @@ export class CanvasRenderer {
       ctx.rect(x, y, width, height)
       ctx.fill()
       ctx.stroke()
+      this.controlManager.render()
     }
     if (marquee) {
       const { x, y, width, height } = box2Point(marquee)

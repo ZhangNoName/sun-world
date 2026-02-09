@@ -3,16 +3,24 @@ import { ICursor } from "@/cursor/cursorManager";
 import { IBox, IPoint } from "@/types/common.type";
 
 export class ResizeControl extends BaseControl {
-  constructor(ctx: CanvasRenderingContext2D) {
+  protected size = 10;
+  name: string;
+  pos: IPoint;
+  constructor(ctx: CanvasRenderingContext2D, config: {
+    name: string
+    pos: IPoint
+  }) {
     super(ctx)
+    this.name = config.name
+    this.pos = config.pos
   }
-  render(box: IBox): void {
+  render(): void {
     const ctx = this.ctx
     ctx.save()
-    ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
+    ctx.fillStyle = 'red'
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.rect(box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY)
+    ctx.rect(this.pos.x, this.pos.y, this.size, this.size)
     ctx.fill()
     ctx.restore()
   }
