@@ -31,15 +31,34 @@ export class ControlManager {
   private box: IBox | null = null
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx
+    this.init()
 
   }
+  init() {
+    this.resizeControl = [
+      new ResizeControl(this.ctx, {
+        name: IHandle.NW,
+      }),
+      new ResizeControl(this.ctx, {
+        name: IHandle.NE,
+      }),
+      new ResizeControl(this.ctx, {
+        name: IHandle.SW,
+      }),
+      new ResizeControl(this.ctx, {
+        name: IHandle.SE,
+      })
+    ]
+  }
+
   setBox(box: IBox) {
     this.box = box
-    this.getHandlePos()
+    this.initResizeControl()
+
+
   }
   render() {
     if (this.box == null) return;
-    const box = this.box
     console.log('控制手柄', this.resizeControl.length)
     // this.rotateControl.forEach(control => control.render(box))
     this.resizeControl.forEach(control => control.render())
@@ -52,35 +71,36 @@ export class ControlManager {
     // this.resizeControl.forEach(control => control.hitTest(point, box))
     // this.areaControl.forEach(control => control.hitTest(point, box))
   }
-  getHandlePos() {
+  initResizeControl() {
     if (this.box == null) return null;
     const box = this.box
     const size = 5
     const midSize = size / 2
+
     const pos: Partial<Record<IHandle, IPoint>> = {
+      /** 左上 */
       [IHandle.NW]: {
         x: box.minX - midSize,
         y: box.minY - midSize,
       },
+      /** 右上 */
       [IHandle.NE]: {
-        x: box.minX + midSize,
+        x: box.maxX - midSize,
         y: box.minY - midSize,
       },
+      /** 左下 */
       [IHandle.SW]: {
         x: box.minX - midSize,
-        y: box.maxY + midSize,
+        y: box.maxY - midSize,
       },
+      /** 右下 */
       [IHandle.SE]: {
-        x: box.minX + midSize,
-        y: box.maxY + midSize,
+        x: box.maxX - midSize,
+        y: box.maxY - midSize,
       },
     }
-    for (let handle in pos) {
-      this.resizeControl.push(new ResizeControl(this.ctx, {
-        name: handle,
-        pos: pos[handle as IHandle] as IPoint
-      }))
-    }
-    return pos
+    console.log('pos', pos)
+
+    this.resizeControl.forEach(control => control.setPos(pos[control.name as IHandle] as IPoint))
   }
 }

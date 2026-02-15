@@ -4,8 +4,20 @@ import { IBox, IPoint } from "@/types/common.type";
 export abstract class BaseControl {
   /** 控件的边距 */
   protected padding: number = 5
+  public name: string
+  protected pos: IPoint = { x: 0, y: 0 }
 
-  constructor(protected ctx: CanvasRenderingContext2D) { }
+
+  constructor(protected ctx: CanvasRenderingContext2D, config: {
+    name: string
+
+  } = { name: '' }) {
+    this.name = config.name
+
+  }
+  setPos(pos: IPoint) {
+    this.pos = pos
+  }
 
   /** 绘制逻辑 */
   abstract render(box: IBox): void;

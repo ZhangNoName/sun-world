@@ -4,15 +4,13 @@ import { IBox, IPoint } from "@/types/common.type";
 
 export class ResizeControl extends BaseControl {
   protected size = 10;
-  name: string;
-  pos: IPoint;
+
   constructor(ctx: CanvasRenderingContext2D, config: {
     name: string
-    pos: IPoint
+
   }) {
-    super(ctx)
-    this.name = config.name
-    this.pos = config.pos
+    super(ctx, config)
+
   }
   render(): void {
     const ctx = this.ctx
