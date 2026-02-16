@@ -49,6 +49,20 @@ export class ControlManager {
         name: IHandle.SE,
       })
     ]
+    this.rotateControl = [
+      new RotateControl(this.ctx, {
+        name: IHandle.NW,
+      }),
+      new RotateControl(this.ctx, {
+        name: IHandle.NE,
+      }),
+      new RotateControl(this.ctx, {
+        name: IHandle.SW,
+      }),
+      new RotateControl(this.ctx, {
+        name: IHandle.SE,
+      })
+    ]
   }
 
   setBox(box: IBox) {
@@ -99,8 +113,13 @@ export class ControlManager {
         y: box.maxY - midSize,
       },
     }
-    console.log('pos', pos)
+    // console.log('pos', pos)
 
     this.resizeControl.forEach(control => control.setPos(pos[control.name as IHandle] as IPoint))
+  }
+  initRotateControl() {
+    if (this.box == null) return null;
+
+
   }
 }
