@@ -3,8 +3,10 @@ import { ICursor } from "@/cursor/cursorManager";
 import { IBox, IPoint } from "@/types/common.type";
 
 export class RotateControl extends BaseControl {
-  constructor(ctx: CanvasRenderingContext2D) {
-    super(ctx)
+  constructor(ctx: CanvasRenderingContext2D, config: {
+    name: string
+  }) {
+    super(ctx, config)
   }
   render(box: IBox): void {
     const ctx = this.ctx
@@ -15,6 +17,9 @@ export class RotateControl extends BaseControl {
     ctx.rect(box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY)
     ctx.fill()
     ctx.restore()
+  }
+  setPos(pos: IPoint) {
+    this.pos = pos
   }
   hitTest(point: IPoint, box: IBox): string | null {
     throw new Error("Method not implemented.");
