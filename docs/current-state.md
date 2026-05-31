@@ -27,7 +27,7 @@ Last updated: 2026-05-31
 
 ## Automation
 
-sun-world-auto-deploy.timer checks and deploys main daily at 03:30 CST.
+`sun-world-auto-deploy.timer` checks and deploys `origin/main` daily at 03:30 CST.
 
 Useful commands:
 
@@ -51,10 +51,10 @@ It must link to:
 https://beian.miit.gov.cn/
 ```
 
-The desktop footer is rendered in packages/blog/src/layout/deskLayout.vue via ZFooter.
-The mobile filing link is rendered in packages/blog/src/layout/mobLayout.vue.
+The desktop footer is rendered in `packages/blog/src/layout/deskLayout.vue` via `ZFooter`.
+The mobile filing link is rendered in `packages/blog/src/layout/mobLayout.vue`.
 
 ## Known Issues
 
-- The production build currently prints TypeScript errors from packages/editor, but Vite still exits successfully. Treat this as technical debt; do not assume type-checking is clean.
-- Use docker build --no-cache when you need to be certain static assets have been regenerated.
+- The production build currently prints TypeScript errors from `packages/editor`, but Vite still exits successfully. Treat this as technical debt; do not assume type-checking is clean.
+- Use `docker build --no-cache -t blog-front:latest .` when you need to be certain static assets have been regenerated.

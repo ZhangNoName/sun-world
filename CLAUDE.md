@@ -4,7 +4,7 @@ Follow the same project contract as AGENTS.md.
 
 ## Role
 
-Claude Code is used as a server-side coding assistant through the claude-ds wrapper.
+Claude Code is used as a server-side coding assistant through the `claude-ds` wrapper.
 The wrapper loads DeepSeek-compatible Anthropic API settings from:
 
 ```bash
@@ -20,13 +20,14 @@ claude-ds
 
 ## Operating Rules
 
-- Read AGENTS.md and docs/current-state.md first.
+- Read AGENTS.md, docs/current-state.md, and docs/engineering-conventions.md first.
 - Prefer small, reviewable changes.
 - Show and explain diffs before committing when possible.
 - Keep all persistent context in repository docs, not only in the conversation.
 - Never print API keys, tokens, .env values, SSH keys, private certificates, or passwords.
 - Never expose Claude Code itself over a public web domain.
 - Use the website domains only for viewing application results, not for controlling the agent.
+- Follow the Git, naming, and file-size conventions in docs/engineering-conventions.md.
 
 ## Recommended Workflow
 
