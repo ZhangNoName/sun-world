@@ -20,7 +20,7 @@ claude-ds
 
 ## Operating Rules
 
-- Read AGENTS.md, docs/current-state.md, and docs/engineering-conventions.md first.
+- Read AGENTS.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md first.
 - Prefer small, reviewable changes.
 - Show and explain diffs before committing when possible.
 - Keep all persistent context in repository docs, not only in the conversation.
@@ -28,6 +28,7 @@ claude-ds
 - Never expose Claude Code itself over a public web domain.
 - Use the website domains only for viewing application results, not for controlling the agent.
 - Follow the Git, naming, and file-size conventions in docs/engineering-conventions.md.
+- Update docs/agent-handoff.md before handing work back to Codex or ending a task that is not fully deployed and verified.
 
 ## Recommended Workflow
 
@@ -35,5 +36,6 @@ claude-ds
 2. Make scoped edits.
 3. Run the narrowest useful verification.
 4. Summarize changes and any risks.
-5. Commit to main only when the user asks or when the workflow clearly requires it.
-6. Let the daily auto deploy pick up main, or manually run the deploy service for urgent updates.
+5. Update docs/agent-handoff.md when another agent may continue the work.
+6. Commit to main only when the user asks or when the workflow clearly requires it.
+7. Let the daily auto deploy pick up main, or manually run the deploy service for urgent updates.

@@ -44,6 +44,15 @@ These conventions capture the default coding habits for this repository. Prefer 
 - Use structured APIs/parsers for structured data instead of fragile string manipulation.
 - Add comments only for non-obvious behavior, browser quirks, production gotchas, or complex logic.
 
+## Context And Agent Handoff
+
+- Use AGENTS.md and CLAUDE.md for stable agent rules.
+- Use docs/current-state.md for stable runtime, domain, service, and deployment facts.
+- Use docs/agent-handoff.md for short-lived active task state.
+- Update handoff notes when work is paused, transferred between Codex and Claude Code, blocked, or completed but not yet deployed.
+- Keep handoff entries concise and factual. Include file paths, commands run, verification status, and next step.
+- Do not store secrets, full tokens, passwords, private keys, or private env values in handoff notes.
+
 ## Data And Database
 
 This repository is frontend-heavy today, but use these defaults for any backend or persistence work.

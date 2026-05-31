@@ -13,7 +13,7 @@ This repository is the source of truth for the Sun World site.
 
 ## Read First
 
-- Read this file, CLAUDE.md, README.md, docs/current-state.md, and docs/engineering-conventions.md before making changes.
+- Read this file, CLAUDE.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
 - Project-local instructions override the server-level /home/lighthouse/AGENTS.md contract.
 - Keep operational decisions, deploy notes, and gotchas in docs/current-state.md or focused docs under docs/.
 
@@ -26,6 +26,15 @@ This repository is the source of truth for the Sun World site.
 - If local and remote branches diverge, stop and report instead of merging, rebasing, resetting, or force-pushing automatically.
 - Do not commit secrets, API keys, .env values, certificates, private keys, or passwords.
 - Before deployment, check git status and verify the build or the narrowest useful command.
+
+## Context Handoff
+
+- Chat context is not the source of truth. Persist context in repository docs.
+- Use docs/current-state.md for stable environment, domain, service, and deploy state.
+- Use docs/agent-handoff.md for active or recently completed work that another agent may need to continue.
+- Update docs/agent-handoff.md before switching between Codex, Claude Code, local manual work, or a long pause.
+- A handoff update should include: current goal, status, important files touched, commands run, verification result, blockers, and next suggested step.
+- Never put secrets, tokens, passwords, private keys, or full env values in docs/agent-handoff.md.
 
 ## Build And Deploy
 
