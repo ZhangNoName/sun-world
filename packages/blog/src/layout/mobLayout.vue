@@ -17,6 +17,15 @@
       </RouterView>
     </div>
 
+    <a
+      class="mob-beian-link"
+      href="https://beian.miit.gov.cn/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      豫ICP备2024081960号
+    </a>
+
     <div class="mob-footer">
       <div
         class="bot-channel"
@@ -96,6 +105,14 @@ function toggleDrawer() {
     padding: 0 var(--horizontalGapPx);
     flex: auto;
     overflow: auto;
+  }
+  .mob-beian-link {
+    flex-shrink: 0;
+    color: var(--text-secondary, var(--text-default));
+    font-size: 12px;
+    line-height: 28px;
+    text-align: center;
+    text-decoration: none;
   }
   .mob-footer {
     flex-shrink: 0;
