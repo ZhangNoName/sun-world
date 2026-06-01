@@ -94,6 +94,7 @@ bash scripts/check-all.sh   # 完整检查 / Full verification
 
 - [当前状态 / Current State](docs/current-state.md)
 - [工程规范 / Engineering Conventions](docs/engineering-conventions.md)
+- [项目架构 / Project Architecture](docs/architecture/project-architecture.md)
 - [单体仓库迁移计划 / Monorepo Migration Plan](docs/architecture/monorepo-migration.md)
 - [部署切换指南 / Deployment Cutover Guide](docs/architecture/deployment-cutover.md)
 - [环境变量与密钥管理 / Secrets and Env Management](docs/architecture/secrets-and-env.md)
