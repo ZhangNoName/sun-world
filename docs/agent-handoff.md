@@ -5,61 +5,70 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 
 ## Current Handoff
 
-- Goal: Start Sun World monorepo migration by importing the existing backend repository into the frontend/product repository without changing production runtime.
-- Status: Phase 1 imported by Codex after Claude Code blocked on command approval. Not pushed, not merged, production runtime unchanged.
-- Scope:
-  - Source product repo: `/home/lighthouse/blog/sun-world`
-  - Source backend repo: `/home/lighthouse/blog/blog_end` or remote `git@github.com:ZhangNoName/blog_end.git`
-  - Target import path: `/home/lighthouse/blog/sun-world/apps/api`
-- Architecture plan:
-  - Read `docs/architecture/monorepo-migration.md`.
-  - Phase 1 only: repository unification, no runtime cutover.
-  - Do not introduce Prisma in this phase. Record Prisma as a future `packages/db` option only.
-## Phase 1 Result
+- Goal: Phase 1.5 monorepo layout normalization — COMPLETE.
+- Status: Executed by Claude Code on branch `monorepo-api-import`. Branch is local/unpushed, ready for Codex review.
+- Repo/path: `/home/lighthouse/blog/sun-world`
 
-- Branch: `monorepo-api-import`
-- Commits:
-  - `4daf9cb docs: plan monorepo migration`
-  - `d286b4b chore: import blog backend into monorepo`
-- Backend import:
-  - Imported from local remote `/home/lighthouse/blog/blog_end`
-  - Target path: `apps/api`
-  - Method: `git subtree add --prefix=apps/api blog_end_import main`
-  - Backend history is preserved through subtree history.
-- Production runtime:
-  - Unchanged. Backend still runs from `/home/lighthouse/blog/blog_end`.
-  - No systemd, Nginx, Docker, database, or secret files were changed.
-- Prisma:
-  - Not introduced. Keep as a future `packages/db` option only if a TypeScript backend/data service becomes real.
-- Allowed commands:
-  - `git status --short --branch`
-  - `git remote -v`, `git remote add`, `git fetch`
-  - `git subtree add --prefix=apps/api ...`
-  - `find`, `sed -n`, `git grep -IlE`
-  - `pnpm build:blog`
-  - `curl -fsS https://api.sunworld.site/healthz`
-  - `curl -I https://sunworld.site`
-  - `git diff --check`
-- Forbidden commands:
-  - Do not change or restart `blog-api.service`.
-  - Do not change Nginx.
-  - Do not rebuild/restart Docker.
-  - Do not remove `/home/lighthouse/blog/blog_end`.
-  - Do not push, merge, rebase, force-push, or delete branches.
-  - Do not use `git reset --hard`.
-  - Do not print secrets, env values, tokens, API keys, private keys, certificates, or database passwords.
-  - Do not add Prisma dependencies or create a real Prisma schema in this phase.
-## Verification To Complete
+## Execution Summary
 
-- `git diff --check`
-- `pnpm build:blog`
-- `curl -fsS https://api.sunworld.site/healthz`
-- `curl -I https://sunworld.site`
-- File-name-only sensitive pattern scan, without printing values:
-  `git grep -IlE "sk-[A-Za-z0-9]|password:|password=|token:|token=|secret:|secret=|api[_-]?key|BEGIN .*KEY" HEAD -- . ":!pnpm-lock.yaml" ":!poetry.lock" || true`
+### git mv
 
-## Review Notes
+`git mv packages/blog apps/web` — all 130+ files renamed cleanly with Git history preserved.
 
-- The branch should remain local/unpushed until Codex review completes.
-- Before merging to `main`, decide how to handle existing tracked frontend `.env*` files and backend config files that may contain sensitive-looking text.
-- Phase 2 should cut over `blog-api.service` to `apps/api` only after this branch is reviewed and merged.
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `packages/blog/*` → `apps/web/*` | `git mv` — all source files, config, assets |
+| `apps/web/vite.config.ts` | Alias paths: `../icons/src` → `../../packages/icons/src`, `../editor/src` → `../../packages/editor/src` |
+| `apps/web/tsconfig.json` | Path aliases: `../editor/src/` → `../../packages/editor/src/`, `../icons/src` → `../../packages/icons/src` |
+| `package.json` | Added `dev:web`, `build:web` canonical scripts; `dev:blog`/`build:blog` now delegate to canonical |
+| `pnpm-lock.yaml` | Codex ran `pnpm install --lockfile-only` so the workspace importer moved from `packages/blog` to `apps/web` |
+| `Dockerfile` | Copy path: `/app/packages/blog/dist` → `/app/apps/web/dist` |
+| `tsconfig.json` (root) | `@blog/*` path: `packages/blog/src/*` → `apps/web/src/*` |
+| `.gitignore` | `packages/blog/src/constant.ts` → `apps/web/src/constant.ts` |
+| `AGENTS.md` | Layout path references updated |
+| `docs/current-state.md` | Path references updated |
+| `docs/architecture/monorepo-migration.md` | Current shape updated, Phase 3 steps marked done |
+| `docs/agent-handoff.md` | This file — rewritten with results |
+
+### Not Changed
+
+- Package name remains `@sun-world/blog` (no dependency churn)
+- `pnpm-workspace.yaml` already had `apps/*` — no change needed
+- Backend (`apps/api`), Nginx, Docker deployment, systemd, databases, secrets — untouched
+- No Prisma introduced
+
+## Verification Results
+
+| Command | Result |
+|---------|--------|
+| `git status --short --branch` | On `monorepo-api-import`, all renames clean (`R`), modified configs listed (`M`) |
+| `git diff --check` | No whitespace errors |
+| `pnpm build:web` | ✅ Built in 1m 19s, 2716 modules, dist at `apps/web/dist/` |
+| `pnpm build:blog` | ✅ Compatibility alias works (delegates to `build:web`) |
+| `pnpm install --lockfile-only` | ✅ Updated `pnpm-lock.yaml` importer from `packages/blog` to `apps/web` |
+| `curl -fsS https://api.sunworld.site/healthz` | ✅ `{"status":"ok"}` |
+| `curl -I https://sunworld.site` | ✅ `HTTP/2 200` |
+
+### Sensitive Pattern Scan (filenames only)
+
+Sensitive scan reports pre-existing frontend/backend files that contain token/password/API-key-like text. Values were not printed. No new sensitive file class was introduced by this phase, but real secrets should still be removed/rotated before this branch is merged and deployed.
+
+## Target Shape Achieved
+
+```text
+sun-world/
+  apps/
+    web/      ← frontend application (was packages/blog)
+    api/      ← backend application
+  packages/
+    editor/   ← reusable library
+    icons/    ← reusable library
+```
+
+## Next Steps (for Codex review)
+
+1. Review the diff: `git diff main...monorepo-api-import`
+2. If approved, merge to `main`
+3. Phase 2: Deployment path cutover for backend (`apps/api`)

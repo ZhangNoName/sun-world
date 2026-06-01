@@ -118,51 +118,51 @@ importers:
         specifier: ^1.8.27
         version: 1.8.27(typescript@5.9.2)
 
-  packages/blog:
+  apps/web:
     dependencies:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
-        version: 2.3.2(vue@3.5.22(typescript@5.9.2))
+        version: 2.3.2(vue@3.5.22(typescript@5.9.3))
       '@sun-world/editor':
         specifier: workspace:*
-        version: link:../editor
+        version: link:../../packages/editor
       '@sun-world/icons':
         specifier: workspace:*
-        version: link:../icons
+        version: link:../../packages/icons
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
       element-plus:
         specifier: ^2.9.4
-        version: 2.11.4(vue@3.5.22(typescript@5.9.2))
+        version: 2.11.4(vue@3.5.22(typescript@5.9.3))
       vite-tsconfig-paths:
         specifier: ^5.1.4
-        version: 5.1.4(typescript@5.9.2)(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))
+        version: 5.1.4(typescript@5.9.3)(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))
       vue:
         specifier: ^3.4.21
-        version: 3.5.22(typescript@5.9.2)
+        version: 3.5.22(typescript@5.9.3)
       vue-i18n:
         specifier: ^11.1.1
-        version: 11.1.12(vue@3.5.22(typescript@5.9.2))
+        version: 11.1.12(vue@3.5.22(typescript@5.9.3))
       vue-router:
         specifier: ^4.5.0
-        version: 4.5.1(vue@3.5.22(typescript@5.9.2))
+        version: 4.5.1(vue@3.5.22(typescript@5.9.3))
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.4
-        version: 5.2.4(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))(vue@3.5.22(typescript@5.9.2))
+        version: 5.2.4(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
       terser:
         specifier: ^5.44.1
         version: 5.44.1
       typescript:
         specifier: ^5.2.2
-        version: 5.9.2
+        version: 5.9.3
       vite:
         specifier: ^5.2.0
         version: 5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)
       vue-tsc:
         specifier: ^2.0.6
-        version: 2.2.12(typescript@5.9.2)
+        version: 2.2.12(typescript@5.9.3)
 
   packages/editor:
     devDependencies:
@@ -4234,6 +4234,7 @@ packages:
   vue-i18n@11.1.12:
     resolution: {integrity: sha512-BnstPj3KLHLrsqbVU2UOrPmr0+Mv11bsUZG0PyCOzsawCivk8W00GMXHeVUWIDOgNaScCuZah47CZFE+Wnl8mw==}
     engines: {node: '>= 16'}
+    deprecated: This version is NOT deprecated. Previous deprecation was a mistake.
     peerDependencies:
       vue: ^3.0.0
 
@@ -4591,9 +4592,9 @@ snapshots:
 
   '@ctrl/tinycolor@3.6.1': {}
 
-  '@element-plus/icons-vue@2.3.2(vue@3.5.22(typescript@5.9.2))':
+  '@element-plus/icons-vue@2.3.2(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      vue: 3.5.22(typescript@5.9.2)
+      vue: 3.5.22(typescript@5.9.3)
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
@@ -5358,11 +5359,6 @@ snapshots:
       vite: 5.4.20(@types/node@20.19.18)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)
       vue: 3.5.22(typescript@5.9.2)
 
-  '@vitejs/plugin-vue@5.2.4(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))(vue@3.5.22(typescript@5.9.2))':
-    dependencies:
-      vite: 5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)
-      vue: 3.5.22(typescript@5.9.2)
-
   '@vitejs/plugin-vue@5.2.4(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       vite: 5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)
@@ -5543,19 +5539,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
 
-  '@vue/language-core@2.2.12(typescript@5.9.2)':
-    dependencies:
-      '@volar/language-core': 2.4.15
-      '@vue/compiler-dom': 3.5.22
-      '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.22
-      alien-signals: 1.0.13
-      minimatch: 9.0.5
-      muggle-string: 0.4.1
-      path-browserify: 1.0.1
-    optionalDependencies:
-      typescript: 5.9.2
-
   '@vue/language-core@2.2.12(typescript@5.9.3)':
     dependencies:
       '@volar/language-core': 2.4.15
@@ -5601,21 +5584,21 @@ snapshots:
 
   '@vue/shared@3.5.25': {}
 
-  '@vueuse/core@9.13.0(vue@3.5.22(typescript@5.9.2))':
+  '@vueuse/core@9.13.0(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.16
       '@vueuse/metadata': 9.13.0
-      '@vueuse/shared': 9.13.0(vue@3.5.22(typescript@5.9.2))
-      vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.2))
+      '@vueuse/shared': 9.13.0(vue@3.5.22(typescript@5.9.3))
+      vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.3))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
 
   '@vueuse/metadata@9.13.0': {}
 
-  '@vueuse/shared@9.13.0(vue@3.5.22(typescript@5.9.2))':
+  '@vueuse/shared@9.13.0(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.2))
+      vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.3))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
@@ -6198,15 +6181,15 @@ snapshots:
 
   electron-to-chromium@1.5.227: {}
 
-  element-plus@2.11.4(vue@3.5.22(typescript@5.9.2)):
+  element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@ctrl/tinycolor': 3.6.1
-      '@element-plus/icons-vue': 2.3.2(vue@3.5.22(typescript@5.9.2))
+      '@element-plus/icons-vue': 2.3.2(vue@3.5.22(typescript@5.9.3))
       '@floating-ui/dom': 1.7.4
       '@popperjs/core': '@sxzz/popperjs-es@2.11.7'
       '@types/lodash': 4.17.20
       '@types/lodash-es': 4.17.12
-      '@vueuse/core': 9.13.0(vue@3.5.22(typescript@5.9.2))
+      '@vueuse/core': 9.13.0(vue@3.5.22(typescript@5.9.3))
       async-validator: 4.2.5
       dayjs: 1.11.18
       escape-html: 1.0.3
@@ -6215,7 +6198,7 @@ snapshots:
       lodash-unified: 1.0.3(@types/lodash-es@4.17.12)(lodash-es@4.17.21)(lodash@4.17.21)
       memoize-one: 6.0.0
       normalize-wheel-es: 1.2.0
-      vue: 3.5.22(typescript@5.9.2)
+      vue: 3.5.22(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
 
@@ -8390,6 +8373,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
 
+  tsconfck@3.1.6(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
+
   tslib@2.3.0: {}
 
   tslib@2.8.1: {}
@@ -8630,11 +8617,11 @@ snapshots:
       - supports-color
       - typescript
 
-  vite-tsconfig-paths@5.1.4(typescript@5.9.2)(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)):
+  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
-      tsconfck: 3.1.6(typescript@5.9.2)
+      tsconfck: 3.1.6(typescript@5.9.3)
     optionalDependencies:
       vite: 5.4.20(@types/node@24.9.2)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.44.1)
     transitivePeerDependencies:
@@ -8667,21 +8654,21 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-demi@0.14.10(vue@3.5.22(typescript@5.9.2)):
+  vue-demi@0.14.10(vue@3.5.22(typescript@5.9.3)):
     dependencies:
-      vue: 3.5.22(typescript@5.9.2)
+      vue: 3.5.22(typescript@5.9.3)
 
-  vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.2)):
+  vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@intlify/core-base': 11.1.12
       '@intlify/shared': 11.1.12
       '@vue/devtools-api': 6.6.4
-      vue: 3.5.22(typescript@5.9.2)
+      vue: 3.5.22(typescript@5.9.3)
 
-  vue-router@4.5.1(vue@3.5.22(typescript@5.9.2)):
+  vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
-      vue: 3.5.22(typescript@5.9.2)
+      vue: 3.5.22(typescript@5.9.3)
 
   vue-template-compiler@2.7.16:
     dependencies:
@@ -8701,12 +8688,6 @@ snapshots:
       '@vue/language-core': 1.8.27(typescript@5.9.3)
       semver: 7.7.2
       typescript: 5.9.3
-
-  vue-tsc@2.2.12(typescript@5.9.2):
-    dependencies:
-      '@volar/typescript': 2.4.15
-      '@vue/language-core': 2.2.12(typescript@5.9.2)
-      typescript: 5.9.2
 
   vue-tsc@2.2.12(typescript@5.9.3):
     dependencies:

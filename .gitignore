@@ -1,6 +1,6 @@
 node_modules
 dist
-packages/blog/src/constant.ts
+apps/web/src/constant.ts
 sunworld.key
 sunworld.pem
 sunworld.site_bundle.crt

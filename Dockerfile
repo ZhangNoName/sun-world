@@ -16,6 +16,6 @@ RUN pnpm build
 
 # 使用 Nginx 运行应用
 FROM nginx:alpine
-COPY --from=0 /app/packages/blog/dist /usr/share/nginx/html
+COPY --from=0 /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

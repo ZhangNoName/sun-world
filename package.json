@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "run-p dev:icons dev:editor dev:blog  ",
-    "dev:blog": "pnpm -F @sun-world/blog dev",
+    "dev": "run-p dev:icons dev:editor dev:web",
+    "dev:web": "pnpm -F @sun-world/blog dev",
+    "dev:blog": "pnpm dev:web",
     "dev:icons": "pnpm -F @sun-world/icons dev",
     "watch:editor": "pnpm -F @sun-world/editor run watch",
-    "build": "pnpm build:editor && pnpm build:icons && pnpm build:blog",
+    "build": "pnpm build:editor && pnpm build:icons && pnpm build:web",
+    "build:web": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/blog run build",
+    "build:blog": "pnpm build:web",
     "build:editor": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/editor build",
-    "build:blog": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/blog run build",
     "build:icons": "NODE_OPTIONS='--max-old-space-size=2048' pnpm -F @sun-world/icons run build"
   },
   "devDependencies": {

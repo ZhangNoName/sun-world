@@ -14,8 +14,8 @@
     "types": ["element-plus/global", "vite-plugin-svg-icons/client"],
     "paths": {
       "@/*": ["./src/*"],
-      "@sun-world/editor": ["../editor/src/"],
-      "@sun-world/icons": ["../icons/src"]
+      "@sun-world/editor": ["../../packages/editor/src/"],
+      "@sun-world/icons": ["../../packages/icons/src"]
     }
   },
   "include": ["src", "node_modules/element-plus/global.d.ts"]

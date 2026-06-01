@@ -68,8 +68,8 @@ It must link to:
 https://beian.miit.gov.cn/
 ```
 
-The desktop footer is rendered in `packages/blog/src/layout/deskLayout.vue` via `ZFooter`.
-The mobile filing link is rendered in `packages/blog/src/layout/mobLayout.vue`.
+The desktop footer is rendered in `apps/web/src/layout/deskLayout.vue` via `ZFooter`.
+The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
 
 ## Known Issues
 

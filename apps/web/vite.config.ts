@@ -10,7 +10,7 @@ import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
 const version = `${pkg.version}`
 const root = process.cwd()
-const packagesDir = resolve(root, '../..') // 假设 blog 在 packages/blog/
+const packagesDir = resolve(root, '../..') // blog is now under apps/web/
 // ⭐ Type for rollup manualChunks（解决 TS 报错）
 type ManualChunksFn = (id: string) => string | undefined
 
@@ -58,12 +58,12 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
-        // '@sun-world/icons': resolve(__dirname, '../icons/src'),
-        // '@sun-world/editor': resolve(__dirname, '../editor/src'),
+        // '@sun-world/icons': resolve(__dirname, '../../packages/icons/src'),
+        // '@sun-world/editor': resolve(__dirname, '../../packages/editor/src'),
         ...(!isProd
           ? {
-            "@sun-world/icons": resolve(__dirname, "../icons/src"),
-            "@sun-world/editor": resolve(__dirname, "../editor/src"),
+            "@sun-world/icons": resolve(__dirname, "../../packages/icons/src"),
+            "@sun-world/editor": resolve(__dirname, "../../packages/editor/src"),
           }
           : {}),
       },

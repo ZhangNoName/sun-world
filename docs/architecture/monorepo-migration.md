@@ -16,7 +16,7 @@ This migration should improve context sharing first. Runtime changes must stay c
 - Server path: `/home/lighthouse/blog/sun-world`
 - Runtime: Docker container `my-frontend`, host port `8081`
 - Domains: `https://sunworld.site`, `https://www.sunworld.site`
-- Current shape: pnpm workspace with `packages/blog`, `packages/editor`, `packages/icons`
+- Current shape: pnpm workspace with `apps/web`, `packages/editor`, `packages/icons`
 
 ### Backend
 
@@ -78,6 +78,49 @@ Expected result:
 - Production continues using the already-running `/home/lighthouse/blog/blog_end`.
 - Agents can inspect frontend and backend together on the migration branch.
 
+### Phase 1.5 - App Layout Normalization
+
+Objective: make the monorepo directory semantics correct before any runtime cutover.
+
+The current transitional layout has the deployable frontend application under
+`packages/blog`. That name is historical. In a cleaner monorepo, deployable
+applications belong under `apps/`, while reusable libraries belong under
+`packages/`.
+
+Actions:
+
+1. Move the frontend application from `packages/blog` to `apps/web` with `git mv`.
+2. Keep the package name `@sun-world/blog` for now to reduce dependency churn.
+3. Keep reusable libraries in `packages/`:
+   - `packages/editor`
+   - `packages/icons`
+4. Update root scripts while preserving compatibility aliases:
+   - canonical: `dev:web`, `build:web`
+   - compatibility: `dev:blog`, `build:blog`
+5. Update `Dockerfile` to copy the frontend build from `/app/apps/web/dist`.
+6. Update documentation references from `packages/blog` to `apps/web`.
+7. Do not move backend runtime or production service paths in this phase.
+
+Expected result:
+
+```text
+sun-world/
+  apps/
+    web/
+    api/
+  packages/
+    editor/
+    icons/
+```
+
+Verification:
+
+- `pnpm build:web`
+- `pnpm build:blog` compatibility alias
+- `git diff --check`
+- `curl -fsS https://api.sunworld.site/healthz`
+- `curl -I https://sunworld.site`
+
 ### Phase 2 - Deployment Path Cutover
 
 Objective: make production backend run from `sun-world/apps/api`.
@@ -100,8 +143,8 @@ Objective: make the repository shape match the target architecture.
 
 Possible later actions:
 
-1. Move `packages/blog` to `apps/web`.
-2. Update `pnpm-workspace.yaml`, root scripts, Dockerfile, Vite aliases, and docs.
+1. ~~Move `packages/blog` to `apps/web`.~~ (done in Phase 1.5)
+2. ~~Update `pnpm-workspace.yaml`, root scripts, Dockerfile, Vite aliases, and docs.~~ (done in Phase 1.5)
 3. Add `packages/contracts` for generated OpenAPI/types.
 4. Decide whether to keep Python backend or migrate to TypeScript backend.
 5. Introduce `packages/db` with Prisma only if TypeScript backend/data layer becomes real.
