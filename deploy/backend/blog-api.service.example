@@ -1,0 +1,29 @@
+# blog-api.service.example
+# 这是 systemd 服务单元示例，不要直接安装到生产环境。
+# This is an example systemd service unit. Do not install to production directly.
+#
+# 路径使用当前 monorepo 目标路径。
+# Paths use the planned monorepo target paths.
+#
+# 关于切换的完整说明，请参见 docs/architecture/deployment-cutover.md
+# See docs/architecture/deployment-cutover.md for full cutover instructions.
+
+[Unit]
+Description=Sun World Blog API Service
+After=network.target
+
+[Service]
+Type=simple
+User=lighthouse
+WorkingDirectory=/home/lighthouse/blog/sun-world/apps/api
+EnvironmentFile=/home/lighthouse/.config/blog_end/auth.env
+ExecStart=/home/lighthouse/blog/sun-world/apps/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+# 当前生产配置 / Current production config (for reference):
+# WorkingDirectory=/home/lighthouse/blog/blog_end
+# ExecStart=/home/lighthouse/blog/blog_end/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000

@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-01
+Last updated: 2026-06-01 (monorepo-api-import branch, Phase 1.5+1 complete)
 
 ## Server
 
@@ -13,10 +13,23 @@ Last updated: 2026-06-01
 ## Repository Layout
 
 `main` is still the production branch. The migration branch `monorepo-api-import`
-imports the backend repository into this product repo at:
+contains the monorepo candidate:
 
 ```text
-apps/api
+sun-world/
+  apps/
+    web/           # blog frontend (Vue 3 + Vite)
+    api/           # FastAPI backend (imported from blog_end)
+  packages/
+    editor/        # rich text editor library
+    icons/         # icon component library
+    contracts/     # shared API contracts (planned placeholder)
+    db/            # database access layer (planned placeholder, inactive)
+  deploy/
+    frontend/      # frontend deployment docs
+    backend/       # backend deployment docs + systemd example
+  scripts/         # verification shell scripts
+  docs/            # project and architecture documentation
 ```
 
 Current production runtime has not been cut over yet:

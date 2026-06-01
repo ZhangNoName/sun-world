@@ -1,6 +1,15 @@
 # Sun World Monorepo Migration Plan
 
 Date: 2026-06-01
+Last updated: 2026-06-01
+
+## Progress
+
+- [x] Phase 1 — Repository Unification (backend subtree imported into `apps/api`)
+- [x] Phase 1.5 — App Layout Normalization (frontend moved from `packages/blog` to `apps/web`)
+- [x] Monorepo Completion — docs, contracts/db placeholders, deploy examples, verification scripts, env hardening
+- [ ] Phase 2 — Deployment Path Cutover (backend runtime to `apps/api`)
+- [ ] Phase 3 — Layout Cleanup (contracts generation, Prisma decision)
 
 ## Goal
 

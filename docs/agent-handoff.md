@@ -3,72 +3,91 @@
 This file is for short-lived context shared between Codex, Claude Code, and manual server work.
 Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engineering-conventions.md.
 
-## Current Handoff
+## Execution Summary — Monorepo Completion
 
-- Goal: Phase 1.5 monorepo layout normalization — COMPLETE.
-- Status: Executed by Claude Code on branch `monorepo-api-import`. Branch is local/unpushed, ready for Codex review.
-- Repo/path: `/home/lighthouse/blog/sun-world`
+- Date: 2026-06-01
+- Executor: Claude Code
+- Branch: `monorepo-api-import`
+- Commit: `bbf6b84` refactor: complete monorepo structure and documentation
+- Goal: Complete the monorepo migration candidate (docs, placeholders, hardening, verification). No deploy, no restart, no push, no merge.
 
-## Execution Summary
+## Files Changed (22 files, +817 / -83 lines)
 
-### git mv
+### Modified
+- `.gitignore` — added `.env` / `.env.*` ignore rules with `.env.example` exception
+- `README.md` — rewritten as bilingual Chinese/English monorepo overview
+- `package.json` — added `check:web`, `check:api`, `check` scripts
+- `docs/current-state.md` — updated repository layout and timestamp
+- `docs/architecture/monorepo-migration.md` — added progress checklist
 
-`git mv packages/blog apps/web` — all 130+ files renamed cleanly with Git history preserved.
+### Removed from Git tracking (local files kept)
+- `apps/web/.env` — `git rm --cached`
+- `apps/web/.env.development` — `git rm --cached`
+- `apps/web/.env.production` — `git rm --cached`
 
-### Files Changed
-
-| File | Change |
-|------|--------|
-| `packages/blog/*` → `apps/web/*` | `git mv` — all source files, config, assets |
-| `apps/web/vite.config.ts` | Alias paths: `../icons/src` → `../../packages/icons/src`, `../editor/src` → `../../packages/editor/src` |
-| `apps/web/tsconfig.json` | Path aliases: `../editor/src/` → `../../packages/editor/src/`, `../icons/src` → `../../packages/icons/src` |
-| `package.json` | Added `dev:web`, `build:web` canonical scripts; `dev:blog`/`build:blog` now delegate to canonical |
-| `pnpm-lock.yaml` | Codex ran `pnpm install --lockfile-only` so the workspace importer moved from `packages/blog` to `apps/web` |
-| `Dockerfile` | Copy path: `/app/packages/blog/dist` → `/app/apps/web/dist` |
-| `tsconfig.json` (root) | `@blog/*` path: `packages/blog/src/*` → `apps/web/src/*` |
-| `.gitignore` | `packages/blog/src/constant.ts` → `apps/web/src/constant.ts` |
-| `AGENTS.md` | Layout path references updated |
-| `docs/current-state.md` | Path references updated |
-| `docs/architecture/monorepo-migration.md` | Current shape updated, Phase 3 steps marked done |
-| `docs/agent-handoff.md` | This file — rewritten with results |
-
-### Not Changed
-
-- Package name remains `@sun-world/blog` (no dependency churn)
-- `pnpm-workspace.yaml` already had `apps/*` — no change needed
-- Backend (`apps/api`), Nginx, Docker deployment, systemd, databases, secrets — untouched
-- No Prisma introduced
+### Added
+- `apps/web/.env.example` — placeholder env vars (no real values)
+- `packages/contracts/package.json` — placeholder package
+- `packages/contracts/README.md` — planned usage docs
+- `packages/db/README.md` — explains Prisma is not active (backend is Python/FastAPI)
+- `deploy/README.md` — deployment overview
+- `deploy/frontend/README.md` — frontend deploy docs
+- `deploy/backend/README.md` — backend deploy docs
+- `deploy/backend/blog-api.service.example` — systemd unit for future cutover
+- `scripts/check-web.sh` — frontend build check
+- `scripts/check-api.sh` — backend Python syntax check (67 files)
+- `scripts/check-all.sh` — full verification including public health
+- `docs/architecture/secrets-and-env.md` — env/secret management guidelines
+- `docs/architecture/deployment-cutover.md` — Phase 2 cutover plan
 
 ## Verification Results
 
-| Command | Result |
-|---------|--------|
-| `git status --short --branch` | On `monorepo-api-import`, all renames clean (`R`), modified configs listed (`M`) |
-| `git diff --check` | No whitespace errors |
-| `pnpm build:web` | ✅ Built in 1m 19s, 2716 modules, dist at `apps/web/dist/` |
-| `pnpm build:blog` | ✅ Compatibility alias works (delegates to `build:web`) |
-| `pnpm install --lockfile-only` | ✅ Updated `pnpm-lock.yaml` importer from `packages/blog` to `apps/web` |
-| `curl -fsS https://api.sunworld.site/healthz` | ✅ `{"status":"ok"}` |
-| `curl -I https://sunworld.site` | ✅ `HTTP/2 200` |
+| Check | Result |
+|---|---|
+| `git diff --check` | ✅ clean |
+| `pnpm build:web` | ✅ built in 1m 17s (2716 modules) |
+| `pnpm build:blog` (alias) | ✅ built in 1m 21s |
+| `bash scripts/check-api.sh` | ✅ 67 Python files compiled OK |
+| `curl https://api.sunworld.site/healthz` | ✅ `{"status":"ok"}` |
+| `curl -I https://sunworld.site` | ✅ HTTP/2 200 |
+| Sensitive pattern scan | ✅ file paths only (pre-existing, known) |
 
-### Sensitive Pattern Scan (filenames only)
+## Current Repository Shape
 
-Sensitive scan reports pre-existing frontend/backend files that contain token/password/API-key-like text. Values were not printed. No new sensitive file class was introduced by this phase, but real secrets should still be removed/rotated before this branch is merged and deployed.
-
-## Target Shape Achieved
-
-```text
+```
 sun-world/
   apps/
-    web/      ← frontend application (was packages/blog)
-    api/      ← backend application
+    web/           # blog frontend (Vue 3 + Vite, @sun-world/blog)
+    api/           # FastAPI backend (imported from blog_end)
   packages/
-    editor/   ← reusable library
-    icons/    ← reusable library
+    editor/        # rich text editor library
+    icons/         # icon component library
+    contracts/     # shared API contracts (placeholder)
+    db/            # database access layer (placeholder, inactive)
+  deploy/
+    frontend/      # frontend deployment docs
+    backend/       # backend deployment docs + systemd example
+  scripts/         # verification shell scripts
+  docs/            # project and architecture documentation
 ```
 
-## Next Steps (for Codex review)
+## Status
 
-1. Review the diff: `git diff main...monorepo-api-import`
-2. If approved, merge to `main`
-3. Phase 2: Deployment path cutover for backend (`apps/api`)
+- ✅ Monorepo candidate is complete on `monorepo-api-import`.
+- ✅ Production is untouched — still runs from `main` (frontend Docker) and `/home/lighthouse/blog/blog_end` (backend systemd).
+- ✅ Tracked frontend `.env` files removed from Git, replaced by `.env.example`.
+- ✅ No real secrets printed or newly committed.
+- ✅ Branch is local and unpushed.
+- ✅ Branch switched back to `main` after work.
+
+## Next Step
+
+1. Codex review of the `monorepo-api-import` branch.
+2. Merge to `main` after review approval.
+3. Phase 2 (deployment cutover) when the backend runtime can be safely switched to `apps/api`.
+
+## Blockers / Risks
+
+- Sensitive-pattern scan finds pre-existing files (known issue, documented in `docs/current-state.md`).
+- Backend runtime cutover requires coordination and rollback plan (see `docs/architecture/deployment-cutover.md`).
+- `VITE_LANGCHAIN_API_KEY` was previously committed in frontend `.env` — values may exist in Git history. Rotate key on LangSmith side if needed.

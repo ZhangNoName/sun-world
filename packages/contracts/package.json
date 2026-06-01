@@ -1,0 +1,10 @@
+{
+  "name": "@sun-world/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared API contracts between frontend and backend",
+  "scripts": {
+    "build": "echo 'contracts build not yet configured'"
+  },
+  "files": []
+}
