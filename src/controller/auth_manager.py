@@ -1,6 +1,9 @@
+import base64
 from datetime import datetime, timedelta, timezone
+import hmac
 from typing import Optional
 import hashlib
+import secrets
 from jose import JWTError, jwt
 from loguru import logger
 from src.controller.user_manage import UserManager
@@ -8,26 +11,64 @@ from src.database.redis.redis_manage import RedisManager
 from src.type.auth_type import TokenModel
 from src.type.user_type import User
 
-SECRET_KEY = "b9WqXgK9Oq1wZtR3JpN4HcFv6uL2YsVq5D8Qn0TfGzA"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30000  # 默认值
 REFRESH_TOKEN_EXPIRE_DAYS = 7  # 默认值
+PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
+PASSWORD_HASH_ITERATIONS = 390000
 
 
 class AuthManager:
     def __init__(self, user_manager: UserManager, db: RedisManager, enable_permission: bool = False,
-                 access_token_expire_minutes: int = None, refresh_token_expire_days: int = None):
+                 access_token_expire_minutes: int = None, refresh_token_expire_days: int = None,
+                 secret_key: str = None):
+        if not secret_key:
+            raise ValueError("AuthManager requires a non-empty JWT secret key")
         self.user_manager = user_manager
         self.db = db
         self.enable_permission = enable_permission
         self.access_token_expire_minutes = access_token_expire_minutes or ACCESS_TOKEN_EXPIRE_MINUTES
         self.refresh_token_expire_days = refresh_token_expire_days or REFRESH_TOKEN_EXPIRE_DAYS
+        self.secret_key = secret_key
 
     def hash_password(self, password: str) -> str:
-        return hashlib.sha256(password.encode()).hexdigest()
+        salt = secrets.token_bytes(16)
+        digest = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt,
+            PASSWORD_HASH_ITERATIONS,
+        )
+        salt_text = base64.urlsafe_b64encode(salt).decode("ascii")
+        digest_text = base64.urlsafe_b64encode(digest).decode("ascii")
+        return f"{PASSWORD_HASH_ALGORITHM}${PASSWORD_HASH_ITERATIONS}${salt_text}${digest_text}"
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return self.hash_password(plain_password) == hashed_password
+        if not hashed_password:
+            return False
+
+        if hashed_password.startswith(f"{PASSWORD_HASH_ALGORITHM}$"):
+            try:
+                _, iterations_text, salt_text, digest_text = hashed_password.split("$", 3)
+                iterations = int(iterations_text)
+                salt = base64.urlsafe_b64decode(salt_text.encode("ascii"))
+                expected = base64.urlsafe_b64decode(digest_text.encode("ascii"))
+            except (ValueError, TypeError):
+                return False
+
+            actual = hashlib.pbkdf2_hmac(
+                "sha256",
+                plain_password.encode("utf-8"),
+                salt,
+                iterations,
+            )
+            return hmac.compare_digest(actual, expected)
+
+        legacy_hash = hashlib.sha256(plain_password.encode()).hexdigest()
+        return hmac.compare_digest(legacy_hash, hashed_password)
+
+    def password_needs_rehash(self, hashed_password: str) -> bool:
+        return not hashed_password.startswith(f"{PASSWORD_HASH_ALGORITHM}${PASSWORD_HASH_ITERATIONS}$")
 
     def _create_tokens(self, user_id: str, device_id: str) -> TokenModel:
         """生成 access_token 和 refresh_token，并存入 Redis"""
@@ -40,12 +81,12 @@ class AuthManager:
 
         access_token = jwt.encode(
             {**payload, "exp": int(access_exp.timestamp())},  # JWT exp 需要整数秒数
-            SECRET_KEY,
+            self.secret_key,
             algorithm=ALGORITHM
         )
         refresh_token = jwt.encode(
             {**payload, "exp": int(refresh_exp.timestamp())},  # JWT exp 需要整数秒数
-            SECRET_KEY,
+            self.secret_key,
             algorithm=ALGORITHM
         )
 
@@ -89,12 +130,18 @@ class AuthManager:
             return None
         if not user.status:
             return None
+        if self.password_needs_rehash(user.password):
+            try:
+                self.user_manager.update_user(user.id, password=self.hash_password(password))
+                logger.info(f"Password hash upgraded for user_id={user.id}")
+            except Exception as e:
+                logger.warning(f"Password hash upgrade failed for user_id={user.id}: {e}")
         return self._create_tokens(str(user.id), device_id)
 
     def refresh_access_token(self, refresh_token: str) -> Optional[TokenModel]:
         """使用 refresh_token 刷新 access_token"""
         try:
-            payload = jwt.decode(refresh_token, SECRET_KEY,
+            payload = jwt.decode(refresh_token, self.secret_key,
                                  algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
@@ -126,11 +173,10 @@ class AuthManager:
             check_redis: 是否检查 Redis 中的 token（对于 access_token，可以设为 False 以提高性能）
         """
         try:
-            logger.info(f"verify_token: {token}")
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, self.secret_key, algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
-            logger.info(f"user_id: {user_id}, device_id: {device_id}")
+            logger.debug(f"Token payload verified for user_id={user_id}")
             if not user_id or not device_id:
                 logger.warning(
                     f"Token missing user_id or device_id: user_id={user_id}, device_id={device_id}")
@@ -185,7 +231,7 @@ class AuthManager:
     def logout(self, token: str, all_devices: bool = False) -> bool:
         """退出登录：单设备 or 所有设备"""
         try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, self.secret_key, algorithms=[ALGORITHM])
             user_id = payload.get("sub")
             device_id = payload.get("device")
             exp = int(payload.get("exp", datetime.now(timezone.utc).timestamp()))

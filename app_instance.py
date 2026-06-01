@@ -25,19 +25,26 @@ from src.database.redis.redis_manage import RedisManager
 class Application(FastAPI):
     def __init__(self, **args):
         super(Application, self).__init__(**args)
+        allowed_origins = self.__get_allowed_origins()
         self.add_middleware(
             CORSMiddleware,
-            allow_origin_regex=r"https?://.*",
-            # allow_origins=["*"],
-            # allow_origins=[
-            #     "http://localhost:3000",
-            #     "http://127.0.0.1:3000",
-            #     "https://sunworld.site"  # 生产环境域名
-            # ],
+            allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
+    @staticmethod
+    def __get_allowed_origins():
+        raw = os.getenv("BLOG_CORS_ORIGINS")
+        if raw:
+            return [origin.strip() for origin in raw.split(",") if origin.strip()]
+        return [
+            "https://sunworld.site",
+            "https://www.sunworld.site",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
 
     async def init(self, env='dev'):
         self.load_config(env=env)
@@ -77,8 +84,8 @@ class Application(FastAPI):
 
         with open(config_path, 'r') as file:
             self.config = yaml.safe_load(file)
-        logger.info(f'{env}环境的配置{self.config}')
-        logger.debug(f'Loaded configuration for environment: {env}')
+        logger.info(f'Loaded {env} configuration from {config_path}')
+        logger.debug(f'Loaded configuration sections: {list((self.config or {}).keys())}')
 
     def __init__mongoDB(self):
         self.mongo = MongoDBManager(ip=self.config['mongo']['ip'], port=self.config['mongo']['port'], db=self.config['mongo']
@@ -151,6 +158,12 @@ class Application(FastAPI):
 
     def __init_auth_manager(self):
         auth_config = self.config.get('auth', {})
+        jwt_secret = os.getenv('BLOG_JWT_SECRET') or auth_config.get('jwt_secret')
+        if not jwt_secret:
+            raise RuntimeError(
+                "BLOG_JWT_SECRET is required. Set it in the service environment "
+                "or in a protected local config before starting the API."
+            )
         self.auth = AuthManager(
             user_manager=self.user,
             db=self.redis,
@@ -158,7 +171,8 @@ class Application(FastAPI):
             access_token_expire_minutes=auth_config.get(
                 'access_token_expire_minutes'),
             refresh_token_expire_days=auth_config.get(
-                'refresh_token_expire_days')
+                'refresh_token_expire_days'),
+            secret_key=jwt_secret
         )
 
     def __init_file_manager(self):

@@ -38,7 +38,7 @@ class PostgreSQLManager:
     def connect(self):
         """建立数据库连接"""
         logger.info(
-            f"尝试连接PostgreSQL数据库 {self.ip}:{self.port}/{self.db},用户: {self.user},密码: {self.password}")
+            f"尝试连接PostgreSQL数据库 {self.ip}:{self.port}/{self.db},用户: {self.user}")
         try:
             self.conn = psycopg2.connect(
                 host=self.ip,
@@ -95,7 +95,7 @@ class PostgreSQLManager:
             self.reconnect()
 
         try:
-            logger.debug(f"执行SQL: {sql} | 参数: {params}")
+            logger.debug(f"执行SQL: {sql} | 参数数量: {0 if params is None else len(params)}")
             self.cursor.execute(sql, params)
             self.conn.commit()
 
@@ -123,11 +123,11 @@ class PostgreSQLManager:
             self.reconnect()
 
         try:
-            logger.debug(f"查询一条记录: {sql} | 参数: {params}")
+            logger.debug(f"查询一条记录: {sql} | 参数数量: {0 if params is None else len(params)}")
             self.cursor.execute(sql, params)
             result = self.cursor.fetchone()
             if result:
-                logger.debug(f"查询结果: {dict(result)}")
+                logger.debug("查询一条记录命中")
             return dict(result) if result else None
         except psycopg2.Error as e:
             logger.error(f"查询失败: {e}")
@@ -148,7 +148,7 @@ class PostgreSQLManager:
             self.reconnect()
 
         try:
-            logger.debug(f"查询多条记录: {sql} | 参数: {params}")
+            logger.debug(f"查询多条记录: {sql} | 参数数量: {0 if params is None else len(params)}")
             self.cursor.execute(sql, params)
             results = self.cursor.fetchall()
             result_list = [dict(row) for row in results]

@@ -67,7 +67,16 @@ class BlogManager:
         result = self.contentDB.insert_one("blogs", {"blogId": id, "title": blog.title, "content": blog.content})
         if result:
             return id
+        logger.error(f"Mongo content insert failed for blog_id={id}; rolling back MySQL metadata")
+        self.rollback_blog_metadata(id)
         return None
+
+    def rollback_blog_metadata(self, blog_id: int) -> None:
+        try:
+            self.db.execute("DELETE FROM blog_tag WHERE blog_id = %s", (blog_id,))
+            self.db.execute("DELETE FROM blog WHERE id = %s", (blog_id,))
+        except Exception as e:
+            logger.error(f"Failed to roll back blog metadata for blog_id={blog_id}: {e}")
 
     def delete_blog(self, blog_id: str) -> bool:
         """
@@ -133,11 +142,12 @@ class BlogManager:
             }
 
         # 2. 查询 blog_tag 表，获取所有博客的 tag 关联关系
-        blog_tag_query = """
-            SELECT blog_id, tag_id FROM blog_tag WHERE blog_id IN (%s)
-        """ % (", ".join(map(str, blog_ids)))
-        
-        blog_tag_data = self.db.execute(blog_tag_query)  # 结果: [{'blog_id': 1, 'tag_id': 2}, ...]
+        placeholders = ", ".join(["%s"] * len(blog_ids))
+        blog_tag_query = f"""
+            SELECT blog_id, tag_id FROM blog_tag WHERE blog_id IN ({placeholders})
+        """
+
+        blog_tag_data = self.db.execute(blog_tag_query, tuple(blog_ids))  # 结果: [{'blog_id': 1, 'tag_id': 2}, ...]
 
         # 构建 blog_id -> tag_id 列表的映射
         blog_tag_map = {}

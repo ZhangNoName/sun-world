@@ -3,6 +3,18 @@ import pymysql
 import time
 from typing import Any, List, Optional, Tuple
 from pymysql.cursors import DictCursor  # 导入 DictCursor
+
+
+def _param_count(params) -> int:
+    if params is None:
+        return 0
+    if isinstance(params, dict):
+        return len(params)
+    if isinstance(params, (list, tuple)):
+        return len(params)
+    return 1
+
+
 class MySQLManager:
     """
     MySQL连接管理类，基于PyMySQL库实现。
@@ -92,7 +104,7 @@ class MySQLManager:
             self.reconnect()
 
         try:
-            logger.info(f"执行SQL: {sql} | 参数: {params}")
+            logger.debug(f"执行SQL: {sql} | 参数数量: {_param_count(params)}")
             self.cursor.execute(sql, params)
             self.cnx.commit()
             if sql.strip().lower().startswith("select"):
@@ -124,7 +136,7 @@ class MySQLManager:
         try:
             self.cursor.execute(sql, params)
             result = self.cursor.fetchone()
-            logger.info(f"查询一条记录: {sql} | 参数: {params} | 结果: {result}")
+            logger.debug(f"查询一条记录: {sql} | 参数数量: {_param_count(params)} | 命中: {bool(result)}")
             return result
         except pymysql.Error as e:
             logger.error(f"查询失败: {e}")
@@ -156,10 +168,10 @@ class MySQLManager:
 
         # 执行查询
         try:
-            logger.info(f"执行分页查询: {sql} | 参数: {params}")
+            logger.debug(f"执行分页查询: {sql} | 参数数量: {_param_count(params)}")
             self.cursor.execute(sql, params)
             result = self.cursor.fetchall()
-            logger.info(f"查询结果: {result}")
+            logger.debug(f"分页查询结果条数: {len(result)}")
             return result
         except pymysql.Error as e:
             logger.error(f"分页查询失败: {e}")
@@ -181,7 +193,7 @@ class MySQLManager:
         try:
             self.cursor.execute(sql, params)
             result = self.cursor.fetchall()
-            logger.info(f"查询多条记录: {sql} | 参数: {params} | 结果条数: {len(result)}")
+            logger.debug(f"查询多条记录: {sql} | 参数数量: {_param_count(params)} | 结果条数: {len(result)}")
             return result or []
         except pymysql.Error as e:
             logger.error(f"查询失败: {e}")
@@ -207,7 +219,7 @@ class MySQLManager:
         params = list(filter.values())
 
         try:
-            logger.info(f"执行计数查询: {sql} | 参数: {params}")
+            logger.debug(f"执行计数查询: {sql} | 参数数量: {_param_count(params)}")
             self.cursor.execute(sql, params)
             result = self.cursor.fetchone()
             return result['count'] if result else 0

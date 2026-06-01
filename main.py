@@ -8,6 +8,11 @@ from src.routers import blog_router, base_router, user_router, resource_router, 
 async def redirect_root_to_docs():
     return RedirectResponse("/docs")
 
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
 routers = [
     blog_router,
     base_router,
