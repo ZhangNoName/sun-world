@@ -1,69 +1,69 @@
 <script setup lang="ts">
-import { inject, ref, watchEffect } from 'vue'
-
 import Tag from '../Tag/index.vue'
 import { BlogCardProps } from '@/type'
 import { useRouter } from 'vue-router'
-import { StatsResponse } from '@/service/baseRequest'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
+
 const props = defineProps<BlogCardProps>()
 
 const {
   title,
   abstract,
-  // publishTime,
+  publishTime,
   lastUpdateTime,
   tags,
   category = 'js',
-  // cover = '1',
   byteNum = 10000,
   commentNum = 0,
   viewNum = 0,
   id,
 } = props
-const iconConfig = ref({
-  height: '1.8rem',
-  width: '1.8rem',
-})
 
 const router = useRouter()
 const showBlog = () => {
-  console.log('执行跳转')
   router.push({ path: '/blog', query: { id: id } })
 }
 </script>
 <template>
-  <article class="z-blog-card">
-    <div class="header">
-      <div class="tag">
-        <SvgIcon name="calender" />
+  <article
+    class="z-blog-card"
+    role="link"
+    tabindex="0"
+    @click="showBlog"
+    @keydown.enter="showBlog"
+    @keydown.space.prevent="showBlog"
+  >
+    <div class="meta-list">
+      <span class="meta-item">
+        <SvgIcon name="calender" size="small" />
         <span>{{ publishTime }}</span>
-      </div>
-      <div class="tag">
-        <SvgIcon name="comment" />
+      </span>
+      <span class="meta-item">
+        <SvgIcon name="comment" size="small" />
         <span>{{ commentNum.toLocaleString() }}</span>
-      </div>
-      <div class="tag">
-        <SvgIcon name="font-num" />
+      </span>
+      <span class="meta-item">
+        <SvgIcon name="font-num" size="small" />
         <span>{{ byteNum.toLocaleString() }}</span>
-      </div>
+      </span>
     </div>
-    <h1 class="title">
-      <a>{{ title }}</a>
+    <h1 class="card-title">
+      <span class="card-title-link">{{ title }}</span>
     </h1>
-    <div class="body">{{ abstract }}</div>
-    <div class="footer">
-      <div class="tag">
-        <SvgIcon name="tag" />
+    <p class="card-body">{{ abstract }}</p>
+    <div class="card-footer">
+      <div class="blog-tags" @click.stop.prevent>
+        <SvgIcon name="tag" size="small" />
         <Tag v-for="tag in tags" :key="tag" :tag="tag" :url="''" />
       </div>
-      <hr />
-      <div class="operate">
-        <a @click="showBlog">{{ $t('readMore') }}...</a>
-
+      <hr class="card-divider" />
+      <div class="card-actions">
+        <button class="read-more-btn" @click.stop="showBlog">
+          {{ $t('readMore') }}...
+        </button>
         <div class="last-update">
-          <SvgIcon name="calender" />
-          {{ lastUpdateTime }}
+          <SvgIcon name="calender" size="small" />
+          <span>{{ lastUpdateTime }}</span>
         </div>
       </div>
     </div>
@@ -72,7 +72,7 @@ const showBlog = () => {
 
 <style scoped>
 .z-blog-card {
-  border-color: var(--border-default);
+  border: 1px solid var(--border-default);
   background-color: var(--bg-brand-light);
   color: var(--text-default);
   border-radius: 0.5rem;
@@ -81,72 +81,152 @@ const showBlog = () => {
   justify-content: space-between;
   align-items: stretch;
   padding: var(--horizontalGapPx);
+  gap: 0.625rem;
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.z-blog-card:hover,
+.z-blog-card:focus-within {
+  box-shadow: var(--shadow-default);
+  border-color: var(--border-active);
+}
+
+/* ---- meta list ---- */
+.meta-list {
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--horizontalGapPx);
+  font-size: var(--font-small);
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* ---- title ---- */
+.card-title {
+  margin: 0;
+  font-size: var(--font-large);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.card-title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.card-title-link:hover,
+.z-blog-card:hover .card-title-link {
+  color: var(--text-hover);
+}
+
+/* ---- body (abstract) ---- */
+.card-body {
+  margin: 0;
+  text-align: left;
+  line-height: 1.6;
+  font-size: var(--font-medium);
+  color: var(--text-secondary);
+  /* clamp to 3 lines on desktop */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- footer ---- */
+.card-footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   gap: 0.5rem;
+  margin-top: auto;
+}
 
-  .header {
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--horizontalGapPx);
-    cursor: pointer;
-    .tag {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 5px;
-    }
+.blog-tags {
+  min-height: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.card-divider {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--border-lighter);
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.read-more-btn {
+  background-color: var(--bg-component);
+  color: var(--text-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--border-radius);
+  padding: 0 0.75rem;
+  cursor: pointer;
+  height: 30px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-small);
+  font-family: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.read-more-btn:hover {
+  background-color: var(--bg-active);
+  color: #fff;
+}
+
+.last-update {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: var(--font-small);
+  color: var(--text-secondary);
+  gap: 4px;
+}
+
+/* ---- mobile ---- */
+@media screen and (max-width: 600px) {
+  .z-blog-card {
+    padding: 0.75rem;
+    gap: 0.5rem;
   }
-  .title {
-    height: fit-content;
-    cursor: pointer;
-    font-size: var(--font-large);
-    /* font-weight: 600; */
-    text-align: left;
-    &:hover {
-      color: var(--text-hover);
-    }
+
+  .card-body {
+    -webkit-line-clamp: 4;
   }
-  .body {
-    text-align: left;
-  }
-  .footer {
-    height: 6rem;
-    display: flex;
+
+  .card-actions {
     flex-direction: column;
-    justify-content: center;
-    .tag {
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    hr {
-      width: 100%;
-    }
-    .operate {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    align-items: stretch;
+  }
 
-      & > :first-child {
-        background-color: var(--bg-component);
-        border-radius: var(--border-radius);
-        padding: 0 var(--paddingPx);
-        cursor: pointer;
-        height: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .last-update {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        font-size: var(--font-small);
-        gap: 0.5rem;
-      }
-    }
+  .read-more-btn {
+    width: 100%;
+  }
+
+  .last-update {
+    justify-content: flex-end;
   }
 }
 </style>

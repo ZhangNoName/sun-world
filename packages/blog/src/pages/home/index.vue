@@ -187,13 +187,6 @@ onMounted(async () => {
       </div>
       <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
       <BlogCard v-else v-for="item in blogList" :key="item.id" v-bind="item" />
-      <Waterfall v-if="listMode === 'waterfall'" :columnCount="3" />
-      <BlogCard
-        v-else
-        v-for="item in blogList"
-        :key="item.id + '_list'"
-        v-bind="item"
-      />
       <div class="loader-btn" ref="loaderRef">
         <el-button
           type="primary"

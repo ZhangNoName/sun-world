@@ -50,8 +50,12 @@ const customColor = computed(() =>
 
 <style scoped>
 .svg-icon {
-  fill: currentColor; /* 继承父级 color */
-  color: var(--text-default); /* 默认颜色 */
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  overflow: hidden;
+  fill: currentColor; /* 继承父级 color，Vite SVG 插件已移除 SVG 内联 fill/stroke 属性 */
+  color: inherit; /* 默认跟随父级颜色，可通过 props.color 覆盖 */
   transition: color 0.3s ease;
 }
 </style>
