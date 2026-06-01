@@ -78,7 +78,7 @@ const toggleExpand = () => {
 }
 
 .tree-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-surface-muted);
 }
 
 .tree-item.has-children {
@@ -91,8 +91,8 @@ const toggleExpand = () => {
   height: 16px;
   line-height: 16px;
   text-align: center;
-  font-size: 10px;
-  color: #666;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
   margin-right: 4px;
   flex-shrink: 0;
 }
@@ -110,8 +110,8 @@ const toggleExpand = () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
-  color: #333;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
 }
 
 .tree-children {

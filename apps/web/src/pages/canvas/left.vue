@@ -32,6 +32,6 @@ watch(
 .canvas-left-container {
   width: 241px;
   height: 100%;
-  background: #ffffff;
+  background: var(--color-surface-card);
 }
 </style>

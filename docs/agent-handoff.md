@@ -3,92 +3,87 @@
 This file is for short-lived context shared between Codex, Claude Code, and manual server work.
 Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engineering-conventions.md.
 
-## Execution Summary — Monorepo Completion
+## Execution Summary — Frontend Theme Tokens
 
 - Date: 2026-06-01
-- Executor: Claude Code
 - Branch: `monorepo-api-import`
-- Implementation commit: `eba9313` refactor: complete monorepo structure and documentation
-- Review follow-up: Codex corrected this handoff metadata after review; see the next docs commit on this branch.
-- Goal: Complete the monorepo migration candidate (docs, placeholders, hardening, verification). No deploy, no restart, no push, no merge.
+- Goal: Normalize frontend font sizes and color styles for easier theme switching.
+- Status: Complete and ready for review.
+- Deployment: Not deployed. No service restart, no Docker, no Nginx, no systemd, no push, no merge.
 
-## Files Changed (22 files, +817 / -83 lines)
+## Tailwind Decision
 
-### Modified
-- `.gitignore` — added `.env` / `.env.*` ignore rules with `.env.example` exception
-- `README.md` — rewritten as bilingual Chinese/English monorepo overview
-- `package.json` — added `check:web`, `check:api`, `check` scripts
-- `docs/current-state.md` — updated repository layout and timestamp
-- `docs/architecture/monorepo-migration.md` — added progress checklist
+Tailwind CSS was not introduced.
 
-### Removed from Git tracking (local files kept)
-- `apps/web/.env` — `git rm --cached`
-- `apps/web/.env.development` — `git rm --cached`
-- `apps/web/.env.production` — `git rm --cached`
+Reason:
+
+- The app already uses `sun-light` / `sun-dark` classes and CSS custom properties.
+- Vue SFC scoped styles and Element Plus already depend on CSS variables.
+- Adding Tailwind would add build-chain and migration work without improving the current theme switch mechanism.
+- A CSS variable design-token layer fits the existing codebase better.
+
+## Implementation Summary
 
 ### Added
-- `apps/web/.env.example` — placeholder env vars (no real values)
-- `packages/contracts/package.json` — placeholder package
-- `packages/contracts/README.md` — planned usage docs
-- `packages/db/README.md` — explains Prisma is not active (backend is Python/FastAPI)
-- `deploy/README.md` — deployment overview
-- `deploy/frontend/README.md` — frontend deploy docs
-- `deploy/backend/README.md` — backend deploy docs
-- `deploy/backend/blog-api.service.example` — systemd unit for future cutover
-- `scripts/check-web.sh` — frontend build check
-- `scripts/check-api.sh` — backend Python syntax check (67 files)
-- `scripts/check-all.sh` — full verification including public health
-- `docs/architecture/secrets-and-env.md` — env/secret management guidelines
-- `docs/architecture/deployment-cutover.md` — Phase 2 cutover plan
+
+- `apps/web/src/styles/design-tokens.css`
+  - Central typography, color, spacing, radius, shadow, component, scrollbar, header, and Element Plus bridge tokens.
+  - Keeps legacy aliases such as `--font-large`, `--font-medium`, `--text-default`, `--bg-page`, `--border-default`, and `--border-radius`.
+- `docs/architecture/frontend-theme-system.md`
+  - Documents token categories, theme switch flow, Element Plus mapping, future style rules, and why Tailwind is not used now.
+
+### Updated
+
+- `apps/web/src/style.css`
+  - Imports `design-tokens.css`.
+  - Keeps reset/layout only.
+  - Uses themed scrollbar tokens and removes the hard-coded red `.scroll` background.
+- `apps/web/src/text.css`
+  - Uses `--font-size-*` and `--line-height-*` tokens.
+  - Adds semantic text utility classes.
+- `README.md`
+  - Adds a link to the frontend theme system documentation.
+
+### Tokenized Components And Pages
+
+Common style values were replaced with semantic tokens in:
+
+- `apps/web/src/components/ZBtn/index.vue`
+- `apps/web/src/components/BlogCard/index.vue`
+- `apps/web/src/components/LoadMore/loadMopre.vue`
+- `apps/web/src/components/ThemeSwitch/index.vue`
+- `apps/web/src/components/Waterfall/waterfall.vue`
+- `apps/web/src/components/CutomBtn.vue`
+- `apps/web/src/layout/header/index.vue`
+- `apps/web/src/layout/mobLayout.vue`
+- `apps/web/src/pages/login/login.vue`
+- `apps/web/src/pages/login/register.vue`
+- `apps/web/src/pages/me/me.vue`
+- selected AIGC and canvas page styles.
 
 ## Verification Results
 
-| Check | Result |
+| Command | Result |
 |---|---|
-| `git diff --check` | ✅ clean |
-| `pnpm build:web` | ✅ built in 1m 17s (2716 modules) |
-| `pnpm build:blog` (alias) | ✅ built in 1m 21s |
-| `bash scripts/check-api.sh` | ✅ 67 Python files compiled OK |
-| `curl https://api.sunworld.site/healthz` | ✅ `{"status":"ok"}` |
-| `curl -I https://sunworld.site` | ✅ HTTP/2 200 |
-| Sensitive pattern scan | ✅ file paths only (pre-existing, known) |
+| `git diff --check` | Passed |
+| `pnpm build:web` | Passed; Vite build completed with existing Element Plus/Sass deprecation warnings |
+| `pnpm build:blog` | Passed; compatibility alias delegates to `build:web` |
+| `curl -I https://sunworld.site` | HTTP/2 200 |
 
-## Current Repository Shape
+## Remaining Follow-Up
 
-```
-sun-world/
-  apps/
-    web/           # blog frontend (Vue 3 + Vite, @sun-world/blog)
-    api/           # FastAPI backend (imported from blog_end)
-  packages/
-    editor/        # rich text editor library
-    icons/         # icon component library
-    contracts/     # shared API contracts (placeholder)
-    db/            # database access layer (placeholder, inactive)
-  deploy/
-    frontend/      # frontend deployment docs
-    backend/       # backend deployment docs + systemd example
-  scripts/         # verification shell scripts
-  docs/            # project and architecture documentation
-```
+The optional hard-coded style scan still reports some remaining matches. These are known follow-up areas rather than blockers for this token foundation:
 
-## Status
+- Older base components, such as `baseCom/btn` and `baseCom/input`
+- Some card/weather/avatar components with bespoke sizing
+- AIGC chat input accent colors
+- Telegram store test/demo colors
+- SVG assets and data-driven/default prop colors
 
-- ✅ Monorepo candidate is complete on `monorepo-api-import`.
-- ✅ Production is untouched — still runs from `main` (frontend Docker) and `/home/lighthouse/blog/blog_end` (backend systemd).
-- ✅ Tracked frontend `.env` files removed from Git, replaced by `.env.example`.
-- ✅ No real secrets printed or newly committed.
-- ✅ Branch is local and unpushed.
-- ✅ Claude Code switched back to `main` after work; Codex temporarily checked out this branch again for review and verification.
+Future cleanup should continue replacing direct `#xxxxxx`, `px` font sizes, and bespoke rem values with the new semantic tokens when those components are touched.
 
-## Next Step
+## Notes
 
-1. Codex review of the `monorepo-api-import` branch.
-2. Merge to `main` after review approval.
-3. Phase 2 (deployment cutover) when the backend runtime can be safely switched to `apps/api`.
-
-## Blockers / Risks
-
-- Sensitive-pattern scan finds pre-existing files (known issue, documented in `docs/current-state.md`).
-- Backend runtime cutover requires coordination and rollback plan (see `docs/architecture/deployment-cutover.md`).
-- `VITE_LANGCHAIN_API_KEY` was previously committed in frontend `.env` — values may exist in Git history. Rotate key on LangSmith side if needed.
+- Claude Code performed the initial broad edits but ran for a long time without returning output; Codex stopped the process, reviewed the diff, corrected the `.scroll` token issue, and ran verification.
+- No secrets or env values were read or printed.
+- After review and commit, switch the worktree back to `main` so the daily auto-deploy timer is not affected by the migration branch.

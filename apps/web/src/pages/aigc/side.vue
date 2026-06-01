@@ -124,8 +124,8 @@ const onClickOutside = () => {
 .sidebar {
   position: relative;
   width: 260px;
-  background-color: #f9f9f9;
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--color-surface-muted);
+  border-right: 1px solid var(--color-border-subtle);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -137,7 +137,7 @@ const onClickOutside = () => {
     margin-bottom: 20px;
     svg {
       cursor: pointer;
-      color: #666;
+      color: var(--color-text-secondary);
     }
   }
 
@@ -150,12 +150,12 @@ const onClickOutside = () => {
     cursor: pointer;
     transition: background 0.2s;
     &:hover {
-      background: #ececec;
+      background: var(--color-border-subtle);
     }
     .name {
       white-space: nowrap;
-      font-size: 0.9rem;
-      color: #333;
+      font-size: var(--font-size-md);
+      color: var(--color-text-primary);
     }
   }
 
@@ -165,8 +165,8 @@ const onClickOutside = () => {
     margin-top: 20px;
 
     .group-title {
-      font-size: 0.75rem;
-      color: #999;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-placeholder);
       margin: 10px 10px 5px;
     }
 
@@ -183,7 +183,7 @@ const onClickOutside = () => {
       &:hover,
       &.active,
       &.more-active {
-        background: #ececec;
+        background: var(--color-border-subtle);
       }
 
       &:has(.more-btn:hover) {
@@ -193,8 +193,8 @@ const onClickOutside = () => {
       .title {
         flex: 1;
         padding: 12px 0;
-        font-size: 0.9rem;
-        color: #333;
+        font-size: var(--font-size-md);
+        color: var(--color-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -241,14 +241,14 @@ const onClickOutside = () => {
 /* 全局样式，因为 Teleport 到了 Body */
 .custom-more-menu {
   position: fixed;
-  background: white;
+  background: var(--color-surface-card);
   overflow: hidden;
   border-radius: var(--border-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 0;
   min-width: 140px;
   z-index: 9999;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border-subtle);
   animation: menuFadeIn 0.15s ease-out;
   display: flex;
   flex-direction: column;

@@ -92,7 +92,7 @@ function toggleDrawer() {
     justify-content: space-between;
     height: 72px;
     padding: 0 12px 0 16px;
-    color: #fff;
+    color: var(--btn-text-color);
     top: 0;
     flex-shrink: 0;
     .right {
@@ -109,7 +109,7 @@ function toggleDrawer() {
   .mob-beian-link {
     flex-shrink: 0;
     color: var(--text-secondary, var(--text-default));
-    font-size: 12px;
+    font-size: var(--font-size-sm);
     line-height: 28px;
     text-align: center;
     text-decoration: none;
@@ -135,8 +135,6 @@ function toggleDrawer() {
         align-items: center;
         justify-content: center;
       }
-      .text {
-      }
     }
     .active {
       .svg-icon {
@@ -147,14 +145,14 @@ function toggleDrawer() {
 }
 
 .logo {
-  font-size: 1.2rem;
+  font-size: var(--font-size-xl);
   font-weight: bold;
 }
 
 .menu-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--btn-text-color);
   font-size: 2rem;
   cursor: pointer;
 }
@@ -166,7 +164,7 @@ function toggleDrawer() {
   width: 70vw;
   max-width: 260px;
   height: 100vh;
-  background: #fff;
+  background: var(--color-surface-card);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   z-index: 100;
   padding-top: 56px;
@@ -179,19 +177,19 @@ function toggleDrawer() {
 }
 
 .mob-drawer li {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .mob-drawer a {
   display: block;
-  padding: 16px;
-  color: #222;
+  padding: var(--space-4);
+  color: var(--color-text-primary);
   text-decoration: none;
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
 }
 
 .mob-drawer a:hover {
-  background: #f0f0f0;
+  background: var(--color-surface-muted);
 }
 
 .slide-enter-active,
@@ -205,7 +203,7 @@ function toggleDrawer() {
 
 .mob-main {
   flex: 1;
-  padding: 16px;
-  background: #f8f9fa;
+  padding: var(--space-4);
+  background: var(--color-surface-muted);
 }
 </style>

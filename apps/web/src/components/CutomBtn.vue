@@ -13,10 +13,10 @@ const count = ref(0);
 <style scoped>
 .custom-button {
   padding: 10px 20px;
-  background-color: #42b983;
+  background-color: var(--color-success);
   border: none;
   border-radius: 4px;
-  color: white;
+  color: var(--btn-text-color);
   cursor: pointer;
 }
 </style>

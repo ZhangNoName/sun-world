@@ -92,16 +92,16 @@ const handleSend = () => {
   font-family: var(--font-family, sans-serif);
 
   .input-card {
-    background: #f0f4f9;
+    background: var(--color-surface-muted);
     border-radius: 28px;
     padding: 0.8rem 1.2rem;
     transition: background-color 0.2s, box-shadow 0.2s;
     border: 1px solid transparent;
 
     &:focus-within {
-      background: #fff;
+      background: var(--color-surface-card);
       box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
-      border-color: #dee1e5;
+      border-color: var(--color-border-default);
     }
 
     .text-area-section {
@@ -112,16 +112,16 @@ const handleSend = () => {
         border: none;
         outline: none;
         background: transparent;
-        font-size: 1.1rem;
+        font-size: var(--font-size-lg);
         line-height: 1.5;
-        color: #1f1f1f;
+        color: var(--color-text-primary);
         resize: none;
         max-height: 200px;
         padding: 0;
         display: block;
 
         &::placeholder {
-          color: #757575;
+          color: var(--color-text-placeholder);
         }
       }
     }
@@ -152,7 +152,7 @@ const handleSend = () => {
 
         &.is-active {
           background: #1a73e8;
-          color: #fff;
+          color: var(--btn-text-color);
           cursor: pointer;
 
           &:hover {
@@ -174,8 +174,8 @@ const handleSend = () => {
   }
 
   .disclaimer {
-    font-size: 0.75rem;
-    color: #444746;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
     text-align: center;
     margin-top: 0.8rem;
   }

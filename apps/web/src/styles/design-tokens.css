@@ -1,0 +1,288 @@
+/* ============================================================
+   Sun World Design Tokens
+   设计令牌 — 所有颜色、字体、间距、圆角、阴影的集中定义。
+
+   主题切换通过 <html> 上的 .sun-light / .sun-dark 类驱动。
+   修改此文件可加新主题：复制一份并在 .sun-xxx 选择器内覆盖变量。
+
+   规则：
+   - 组件样式应优先使用语义令牌（如 --color-text-primary、--color-surface-card）。
+   - 避免在组件中直接写 #xxxxxx 颜色值或 px font-size。
+   - 旧变量别名保留以确保向后兼容。
+   - 不要在此文件中引入 Tailwind 或其他样式依赖。
+   ============================================================ */
+
+/* ============================================================
+   1. 全局基准 (Base — 挂载在 :root / html)
+   ============================================================ */
+:root,
+html {
+  /* ---------------------- 排版基础尺寸 ---------------------- */
+  --font-size-xs: 0.625rem;   /* 10px */
+  --font-size-sm: 0.75rem;    /* 12px */
+  --font-size-md: 0.875rem;   /* 14px */
+  --font-size-lg: 1rem;       /* 16px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.75rem;   /* 28px */
+
+  /* ---------------------- 排版行高 ---------------------- */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+
+  /* ---------------------- 间距 ---------------------- */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+
+  /* ---------------------- 圆角 ---------------------- */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-full: 9999px;
+
+  /* ---------------------- 阴影 ---------------------- */
+  --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0px 8px 32px rgba(0, 0, 0, 0.1);
+
+  /* ---------------------- 兼容别名 (旧变量 → 新令牌) ---------------------- */
+  --font-large: var(--font-size-lg);
+  --font-medium: var(--font-size-md);
+  --font-small: var(--font-size-sm);
+  --font-xsmall: var(--font-size-xs);
+
+  /* 旧间距/圆角别名 */
+  --horizontalGapPx: 12px;
+  --paddingPx: 12px;
+  --border-radius: var(--radius-md);
+
+  --spacing: var(--space-1);
+}
+
+/* ============================================================
+   2. 浅色主题 (Light Theme)
+   ============================================================ */
+.sun-light {
+  /* ---------------------- 品牌色彩 ---------------------- */
+  --color-brand:          #409eff;  /* 主品牌蓝 */
+  --color-brand-light:    #66b1ff;  /* 悬停/浅品牌 */
+  --color-brand-muted:    #a0cfff;  /* 禁用/更浅品牌 */
+  --color-brand-bg:       #e7f8ff;  /* 品牌浅色背景 */
+
+  --color-success:        #67c23a;
+  --color-warning:        #e6a23c;
+  --color-danger:         #f56c6c;
+
+  /* ---------------------- 文本颜色 ---------------------- */
+  --color-text-primary:     #212224;
+  --color-text-regular:     #434447;
+  --color-text-secondary:   #909399;
+  --color-text-placeholder: #a8abb2;
+
+  /* ---------------------- 表面/背景色 ---------------------- */
+  --color-surface-page:   #ffffff;
+  --color-surface-card:   #ffffff;
+  --color-surface-muted:  #f0f2f5;
+  --color-surface-hover:  #a0cfff;
+
+  /* ---------------------- 边框颜色 ---------------------- */
+  --color-border-default: #dcdfe6;
+  --color-border-subtle:  #ebeef5;
+  --color-border-darker:  #cdd0d6;
+  --color-border-active:  #d4d7de;
+
+  /* ---------------------- 兼容别名 ---------------------- */
+  --color-primary:        var(--color-brand);
+  --text-default:         var(--color-text-regular);
+  --text-strong:          var(--color-text-primary);
+  --text-secondary:       var(--color-text-secondary);
+  --text-placeholder:     var(--color-text-placeholder);
+  --text-active:          var(--color-brand);
+  --text-hover:           var(--color-text-secondary);
+
+  --bg-page:              var(--color-surface-page);
+  --bg-component:         var(--color-surface-card);
+  --bg-fill:              var(--color-surface-muted);
+  --bg-active:            var(--color-brand);
+  --bg-hover:             var(--color-surface-hover);
+  --bg-brand-light:       var(--color-brand-bg);
+
+  --border-default:       var(--color-border-default);
+  --border-lighter:       var(--color-border-subtle);
+  --border-darker:        var(--color-border-darker);
+  --border-active:        var(--color-border-active);
+
+  --shadow-default:       var(--shadow-md);
+  --shadow-aigc:          inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Element Plus 颜色映射 */
+  --el-color-primary:     var(--color-brand);
+  --el-color-success:     var(--color-success);
+  --el-color-warning:     var(--color-warning);
+  --el-color-danger:      var(--color-danger);
+  --el-text-color-primary:   var(--color-text-primary);
+  --el-text-color-regular:   var(--color-text-regular);
+  --el-text-color-secondary: var(--color-text-secondary);
+  --el-text-color-placeholder: var(--color-text-placeholder);
+  --el-border-color-base:    var(--color-border-default);
+  --el-border-color-light:   var(--color-border-subtle);
+  --el-border-color-lighter: var(--color-border-subtle);
+  --el-fill-color-blank:     var(--color-surface-page);
+  --el-bg-color:             var(--color-surface-page);
+  --el-bg-color-overlay:     var(--color-surface-card);
+
+  hr {
+    border-color: #7a7a7a;
+    opacity: 0.5;
+  }
+}
+
+/* ============================================================
+   3. 深色主题 (Dark Theme)
+   ============================================================ */
+.sun-dark {
+  /* ---------------------- 品牌色彩 (深色模式与浅色相同) ---------------------- */
+  --color-brand:          #409eff;
+  --color-brand-light:    #66b1ff;
+  --color-brand-muted:    #2a598a;
+  --color-brand-bg:       #18222c;
+
+  --color-success:        #67c23a;
+  --color-warning:        #e6a23c;
+  --color-danger:         #f56c6c;
+
+  /* ---------------------- 文本颜色 ---------------------- */
+  --color-text-primary:     #e5eaf3;
+  --color-text-regular:     #cfd3dc;
+  --color-text-secondary:   #a3a6ad;
+  --color-text-placeholder: #8d9095;
+
+  /* ---------------------- 表面/背景色 ---------------------- */
+  --color-surface-page:   #141414;
+  --color-surface-card:   #1d1e1f;
+  --color-surface-muted:  #1d3043;
+  --color-surface-hover:  #2a598a;
+
+  /* ---------------------- 边框颜色 ---------------------- */
+  --color-border-default: #4c4d4f;
+  --color-border-subtle:  #58585b;
+  --color-border-darker:  #363637;
+  --color-border-active:  #636466;
+
+  /* ---------------------- 兼容别名 ---------------------- */
+  --color-primary:        var(--color-brand);
+  --text-default:         var(--color-text-regular);
+  --text-strong:          var(--color-text-primary);
+  --text-secondary:       var(--color-text-secondary);
+  --text-placeholder:     var(--color-text-placeholder);
+  --text-active:          var(--color-brand);
+  --text-hover:           var(--color-text-secondary);
+
+  --bg-page:              var(--color-surface-page);
+  --bg-component:         var(--color-surface-card);
+  --bg-fill:              var(--color-surface-muted);
+  --bg-active:            var(--color-brand);
+  --bg-hover:             var(--color-surface-hover);
+  --bg-brand-light:       var(--color-brand-bg);
+
+  --border-default:       var(--color-border-default);
+  --border-lighter:       var(--color-border-subtle);
+  --border-darker:        var(--color-border-darker);
+  --border-active:        var(--color-border-active);
+
+  --shadow-default:       0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+  --shadow-aigc:          inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Element Plus 颜色映射 */
+  --el-color-primary:     var(--color-brand);
+  --el-color-success:     var(--color-success);
+  --el-color-warning:     var(--color-warning);
+  --el-color-danger:      var(--color-danger);
+  --el-text-color-primary:   var(--color-text-primary);
+  --el-text-color-regular:   var(--color-text-regular);
+  --el-text-color-secondary: var(--color-text-secondary);
+  --el-text-color-placeholder: var(--color-text-placeholder);
+  --el-border-color-base:    var(--color-border-default);
+  --el-border-color-light:   var(--color-border-subtle);
+  --el-border-color-lighter: var(--color-border-subtle);
+  --el-fill-color-blank:     var(--color-surface-page);
+  --el-bg-color:             var(--color-surface-page);
+  --el-bg-color-overlay:     var(--color-surface-card);
+
+  hr {
+    border-color: #7a7a7a;
+  }
+}
+
+/* ============================================================
+   4. 组件级语义令牌 (Component-Level Tokens)
+   这些变量在浅色/深色主题外定义，引用已存在的语义颜色。
+   ============================================================ */
+
+/* 按钮 */
+:root {
+  --btn-text-color:         #ffffff;
+  --btn-disabled-opacity:   0.5;
+
+  --btn-height-default:     36px;
+  --btn-height-sm:          32px;
+  --btn-height-lg:          44px;
+  --btn-height-icon:        36px;
+
+  --btn-padding-default:    0 16px;
+  --btn-padding-sm:         0 12px;
+  --btn-padding-lg:         0 24px;
+
+  --btn-font-size-default:  var(--font-size-md);
+  --btn-font-size-sm:       var(--font-size-sm);
+  --btn-font-size-lg:       var(--font-size-lg);
+}
+
+/* 卡片 */
+:root {
+  --card-bg:             var(--bg-brand-light);
+  --card-border-color:   var(--border-default);
+  --card-border-hover:   var(--border-active);
+  --card-shadow-hover:   var(--shadow-default);
+  --card-padding:        var(--horizontalGapPx);
+  --card-radius:         var(--radius-md);
+}
+
+/* 输入框 */
+:root {
+  --input-bg:               var(--bg-fill);
+  --input-border-color:     var(--border-default);
+  --input-text-color:       var(--text-default);
+  --input-placeholder-color: var(--text-placeholder);
+}
+
+/* 图标 */
+:root {
+  --icon-bg-hover-color:    var(--bg-fill);
+}
+
+/* 滚动条 */
+:root {
+  --scrollbar-thumb-bg:     rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover:  rgba(0, 0, 0, 0.24);
+  --scrollbar-track-bg:     rgba(0, 0, 0, 0.06);
+}
+
+/* 毛玻璃头部 */
+:root {
+  --header-bg:              rgba(255, 255, 255, 0.3);
+  --header-border-color:    var(--color-border-darker);
+}
+
+.sun-dark {
+  --header-bg:              rgba(20, 20, 20, 0.3);
+}

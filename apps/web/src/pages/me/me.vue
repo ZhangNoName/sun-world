@@ -73,7 +73,7 @@ const menus = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #333;
+  color: var(--color-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
     'Microsoft YaHei', sans-serif;
 }
@@ -102,9 +102,9 @@ const menus = [
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
-  color: #fff;
+  color: var(--btn-text-color);
   width: 90%;
   max-width: 800px;
 }
@@ -113,7 +113,7 @@ const menus = [
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--btn-text-color);
   object-fit: cover;
 }
 
@@ -122,20 +122,20 @@ const menus = [
 }
 
 .username {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   margin: 0;
 }
 
 .bio {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   opacity: 0.9;
   margin: 4px 0 10px 0;
 }
 
 .stats {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .stat-item {
@@ -146,10 +146,10 @@ const menus = [
 
 .num {
   font-weight: 600;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
 }
 .label {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 /* 菜单区 */
@@ -157,10 +157,10 @@ const menus = [
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background: #fff;
-  border-radius: 12px;
+  background: var(--color-surface-card);
+  border-radius: var(--radius-lg);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  margin-top: 16px;
+  margin-top: var(--space-4);
   width: 90%;
   max-width: 800px;
   padding: 10px 0;
@@ -170,8 +170,8 @@ const menus = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 13px;
-  color: #555;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: color 0.3s;
 }
@@ -202,7 +202,7 @@ const menus = [
 }
 
 .card {
-  background: #fff;
+  background: var(--color-surface-card);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);

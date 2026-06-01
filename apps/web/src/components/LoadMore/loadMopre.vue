@@ -30,22 +30,23 @@ function loadMore() {
 <style scoped>
 .load-more {
   text-align: center;
-  margin: 16px 0;
+  margin: var(--space-4) 0;
 }
 .load-more-btn {
-  padding: 8px 24px;
+  padding: var(--space-2) var(--space-6);
   border: none;
-  background: #409eff;
-  color: #fff;
-  border-radius: 4px;
+  background: var(--color-brand);
+  color: var(--btn-text-color);
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  font-size: var(--font-size-md);
 }
 .load-more-btn:hover {
-  background: #66b1ff;
+  background: var(--color-brand-light);
 }
 .load-more-loading,
 .load-more-finished {
-  color: #888;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
 }
 </style>

@@ -132,10 +132,10 @@ function goToRegister() {
 }
 
 .login-box {
-  background: #fff;
-  padding: 40px 32px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: var(--color-surface-card);
+  padding: var(--space-10) var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   width: 400px;
   display: flex;
   flex-direction: column;
@@ -144,21 +144,21 @@ function goToRegister() {
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-8);
   width: 100%;
 }
 
 .logo {
   width: 64px;
   height: 64px;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .title {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   font-weight: 600;
-  color: #303133;
+  color: var(--color-text-primary);
 }
 
 .login-form {
@@ -175,20 +175,20 @@ function goToRegister() {
 
 .login-btn {
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .login-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
-  color: #8590a6;
-  margin-top: 16px;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
 }
 
 .login-footer a {
-  color: #409eff;
+  color: var(--color-brand);
   text-decoration: none;
   margin: 0 4px;
   cursor: pointer;
@@ -196,11 +196,11 @@ function goToRegister() {
 }
 
 .login-footer a:hover {
-  color: #66b1ff;
+  color: var(--color-brand-light);
 }
 
 .login-footer span {
-  margin: 0 8px;
-  color: #dcdfe6;
+  margin: 0 var(--space-2);
+  color: var(--color-border-default);
 }
 </style>

@@ -1,16 +1,73 @@
-.text-large {
-  font-size: var(--font-large);
-  line-height: 1.2;
-}
-.text-medium {
-  font-size: var(--font-medium);
-  line-height: 1.2;
+/* ============================================================
+   排版工具类 / Typography Utility Classes
+   使用 design-tokens.css 中定义的 --font-size-* 令牌。
+   ============================================================ */
+
+/* ---- 尺寸级类 (Size-level) — 向后兼容旧类名 ---- */
+.text-xsmall {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
 }
 .text-small {
-  font-size: var(--font-small);
-  line-height: 1.2;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
 }
-.text-xsmall {
-  font-size: var(--font-xsmall);
-  line-height: 1.2;
+.text-medium {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-tight);
+}
+.text-large {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+}
+
+/* ---- 语义颜色类 (Semantic Color) ---- */
+.text-primary {
+  color: var(--color-text-primary);
+}
+.text-regular {
+  color: var(--color-text-regular);
+}
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-muted {
+  color: var(--color-text-placeholder);
+}
+.text-brand {
+  color: var(--color-brand);
+}
+.text-success {
+  color: var(--color-success);
+}
+.text-warning {
+  color: var(--color-warning);
+}
+.text-danger {
+  color: var(--color-danger);
+}
+
+/* ---- 字重 ---- */
+.text-normal {
+  font-weight: 400;
+}
+.text-medium-w {
+  font-weight: 500;
+}
+.text-semibold {
+  font-weight: 600;
+}
+.text-bold {
+  font-weight: 700;
+}
+
+/* ---- 对齐 ---- */
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
 }

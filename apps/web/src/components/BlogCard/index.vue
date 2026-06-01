@@ -193,7 +193,7 @@ const showBlog = () => {
 
 .read-more-btn:hover {
   background-color: var(--bg-active);
-  color: #fff;
+  color: var(--btn-text-color);
 }
 
 .last-update {

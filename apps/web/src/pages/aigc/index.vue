@@ -117,16 +117,16 @@ const selectSession = (id: string) => {
   display: flex;
   height: 100%;
   width: 100%;
-  background-color: #fff;
-  color: #0d0d0d;
+  background-color: var(--color-surface-page);
+  color: var(--color-text-primary);
 
   /* 主内容区样式 */
   .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
-    color: #343541;
+    background-color: var(--color-surface-page);
+    color: var(--color-text-regular);
     position: relative;
 
     .chat-header {
@@ -135,10 +135,10 @@ const selectSession = (id: string) => {
       align-items: center;
       justify-content: space-between;
       padding: 0 1.5rem 0 0.5rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid var(--color-border-subtle);
       .model-name {
         font-weight: 600;
-        font-size: 18px;
+        font-size: var(--font-size-xl);
         span {
           margin-right: var(--spacing);
           line-height: 28px;
@@ -164,7 +164,7 @@ const selectSession = (id: string) => {
         line-height: 1.6;
 
         &.ai {
-          background-color: #f7f7f8;
+          background-color: var(--color-surface-muted);
         }
 
         .avatar {
@@ -179,17 +179,17 @@ const selectSession = (id: string) => {
             width: 100%;
             height: 100%;
             background: #ab68ff;
-            color: #fff;
+            color: var(--btn-text-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: var(--font-size-xs);
           }
         }
 
         .message-content {
           flex: 1;
-          font-size: 1rem;
+          font-size: var(--font-size-lg);
           white-space: pre-wrap;
         }
       }
@@ -197,7 +197,7 @@ const selectSession = (id: string) => {
 
     .chat-footer {
       padding: 1rem 0 2rem;
-      background: linear-gradient(transparent, #fff 20%);
+      background: linear-gradient(transparent, var(--color-surface-page) 20%);
     }
   }
 }

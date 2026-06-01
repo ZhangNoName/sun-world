@@ -92,7 +92,6 @@ const style = computed(() => {
     transition: all 0.2s;
     cursor: pointer;
     outline: none;
-    /* gap: 8px; */
     border: 1px solid transparent;
     font-family: inherit;
     box-sizing: border-box;
@@ -103,7 +102,7 @@ const style = computed(() => {
 
   &.is-disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: var(--btn-disabled-opacity);
     &:active {
       transform: none;
     }
@@ -112,9 +111,9 @@ const style = computed(() => {
   /* Variants */
   &.sun-btn--default,
   &.sun-btn--primary {
-    background-color: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
+    background-color: var(--color-brand);
+    color: var(--btn-text-color);
+    border-color: var(--color-brand);
     &:hover:not(.is-disabled) {
       opacity: 0.9;
     }
@@ -123,7 +122,7 @@ const style = computed(() => {
   &.sun-btn--destructive,
   &.sun-btn--danger {
     background-color: var(--color-danger);
-    color: #ffffff;
+    color: var(--btn-text-color);
     border-color: var(--color-danger);
     &:hover:not(.is-disabled) {
       opacity: 0.9;
@@ -163,7 +162,7 @@ const style = computed(() => {
 
   &.sun-btn--link {
     background-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-brand);
     border-color: transparent;
     padding: 0;
     height: auto;
@@ -186,7 +185,7 @@ const style = computed(() => {
 
   &.sun-btn--success {
     background-color: var(--color-success);
-    color: #ffffff;
+    color: var(--btn-text-color);
     border-color: var(--color-success);
     &:hover:not(.is-disabled) {
       opacity: 0.9;
@@ -195,7 +194,7 @@ const style = computed(() => {
 
   &.sun-btn--warning {
     background-color: var(--color-warning);
-    color: #ffffff;
+    color: var(--btn-text-color);
     border-color: var(--color-warning);
     &:hover:not(.is-disabled) {
       opacity: 0.9;
@@ -204,27 +203,27 @@ const style = computed(() => {
 
   /* Sizes */
   &.sun-btn-size--default {
-    height: 36px;
-    padding: 0 16px;
-    font-size: 14px;
+    height: var(--btn-height-default);
+    padding: var(--btn-padding-default);
+    font-size: var(--btn-font-size-default);
   }
 
   &.sun-btn-size--sm {
-    height: 32px;
-    padding: 0 12px;
-    font-size: 12px;
+    height: var(--btn-height-sm);
+    padding: var(--btn-padding-sm);
+    font-size: var(--btn-font-size-sm);
     border-radius: calc(var(--border-radius) - 2px);
   }
 
   &.sun-btn-size--lg {
-    height: 44px;
-    padding: 0 24px;
-    font-size: 16px;
+    height: var(--btn-height-lg);
+    padding: var(--btn-padding-lg);
+    font-size: var(--btn-font-size-lg);
   }
 
   &.sun-btn-size--icon {
-    height: 36px;
-    width: 36px;
+    height: var(--btn-height-icon);
+    width: var(--btn-height-icon);
     padding: 0;
   }
 

@@ -149,34 +149,33 @@ watch(
 
 .waterfall-item {
   /* 小红书卡片样式 */
-  background-color: #fff;
-  border-radius: 10px; /* 圆角 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+  background-color: var(--color-surface-card);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .waterfall-item:hover {
-  transform: translateY(-4px); /* 悬停上浮效果 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 悬停阴影加重 */
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .waterfall-item img {
   display: block;
-  /* 图片圆角与卡片顶部圆角一致 */
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
 
 .waterfall-info {
-  padding: 8px; /* 增加内边距 */
+  padding: var(--space-2);
 }
 
 .waterfall-title {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
   /* 限制两行文字，超出显示省略号 */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -191,8 +190,8 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  color: #999;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .waterfall-author {
@@ -211,6 +210,6 @@ watch(
   width: 1em;
   height: 1em;
   margin-right: 4px;
-  color: #c0c0c0; /* 灰色爱心 */
+  color: var(--color-border-default);
 }
 </style>

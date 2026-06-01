@@ -34,7 +34,7 @@ const toggleExpand = (elementId: string) => {
 .canvas-tree-container {
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--color-surface-card);
   overflow-y: auto;
   padding: 8px;
 }

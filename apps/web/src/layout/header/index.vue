@@ -121,10 +121,10 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-columns: 2.5% 4fr 3fr 10rem 2.5%;
     grid-template-areas: '1 2 3 4 5';
-    border-bottom: 1px solid rgb(180, 180, 180);
-    background-color: rgba(255, 255, 255, 0.3); /* 半透明背景色 */
-    backdrop-filter: blur(10px); /* 毛玻璃效果 */
-    -webkit-backdrop-filter: blur(10px); /* 兼容 Safari */
+    border-bottom: 1px solid var(--color-border-darker);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 
     .left-menu {
       grid-column: 2 / 3;
@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: var(--font-large);
+      font-size: var(--font-size-lg);
     }
   }
 }

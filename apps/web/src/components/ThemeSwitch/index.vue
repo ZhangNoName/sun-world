@@ -94,8 +94,8 @@ const changTheme = () => {
 .theme-switch {
   width: 4rem;
   height: 2.2rem;
-  border: 1px solid rgba(60, 60, 60, 0.29);
-  border-radius: 1rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
 
@@ -105,7 +105,7 @@ const changTheme = () => {
     width: 1.8rem;
     border-radius: 50%;
     overflow: hidden;
-    background-color: rgba(60, 60, 60, 0.29);
+    background-color: var(--color-surface-muted);
     svg {
       position: absolute;
       top: 0.3rem;

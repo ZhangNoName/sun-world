@@ -44,6 +44,6 @@ const svg = computed(() => {
 .canvas-icon-container {
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--color-surface-card);
 }
 </style>

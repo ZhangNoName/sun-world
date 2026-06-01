@@ -92,7 +92,7 @@ onMounted(() => {
   align-items: stretch;
   position: relative;
   .left {
-    background: #ffffff;
+    background: var(--color-surface-card);
     width: var(--left-width);
     flex-shrink: 0;
   }
@@ -102,7 +102,7 @@ onMounted(() => {
     height: calc(100vh);
   }
   .right {
-    background: #ffffff;
+    background: var(--color-surface-card);
     width: var(--left-width);
     flex-shrink: 0;
   }
@@ -122,9 +122,9 @@ onMounted(() => {
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    background-color: #ffffff;
+    background-color: var(--color-surface-card);
     .tool {
-      color: white;
+      color: var(--btn-text-color);
       padding: 4px;
       border-radius: 5px;
       aspect-ratio: 1 / 1;
@@ -136,9 +136,9 @@ onMounted(() => {
       }
     }
     .active {
-      background-color: #0d99ff;
+      background-color: var(--color-brand);
       svg {
-        fill: white;
+        fill: var(--btn-text-color);
       }
     }
   }
