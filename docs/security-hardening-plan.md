@@ -30,6 +30,7 @@ Do not store secrets, tokens, passwords, private keys, certificates, or full env
 
 ## Operational Notes
 
+- See `docs/current-state.md` for the current deployment state, service commands, and health check details.
 - The secret file path is `/home/lighthouse/.config/blog_end/auth.env`.
 - The file must be user-readable only, for example `chmod 600`.
 - The file should contain `BLOG_JWT_SECRET=...`, but the value must never be copied into docs, logs, commits, or chat.
