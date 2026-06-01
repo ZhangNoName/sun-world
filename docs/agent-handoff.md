@@ -8,7 +8,8 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 - Date: 2026-06-01
 - Executor: Claude Code
 - Branch: `monorepo-api-import`
-- Commit: `bbf6b84` refactor: complete monorepo structure and documentation
+- Implementation commit: `eba9313` refactor: complete monorepo structure and documentation
+- Review follow-up: Codex corrected this handoff metadata after review; see the next docs commit on this branch.
 - Goal: Complete the monorepo migration candidate (docs, placeholders, hardening, verification). No deploy, no restart, no push, no merge.
 
 ## Files Changed (22 files, +817 / -83 lines)
@@ -78,7 +79,7 @@ sun-world/
 - ✅ Tracked frontend `.env` files removed from Git, replaced by `.env.example`.
 - ✅ No real secrets printed or newly committed.
 - ✅ Branch is local and unpushed.
-- ✅ Branch switched back to `main` after work.
+- ✅ Claude Code switched back to `main` after work; Codex temporarily checked out this branch again for review and verification.
 
 ## Next Step
 
