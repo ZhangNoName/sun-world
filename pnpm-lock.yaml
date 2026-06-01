@@ -164,6 +164,8 @@ importers:
         specifier: ^2.0.6
         version: 2.2.12(typescript@5.9.3)
 
+  packages/contracts: {}
+
   packages/editor:
     devDependencies:
       '@types/node':
