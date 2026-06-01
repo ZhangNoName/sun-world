@@ -14,7 +14,7 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 ## Current Handoff
 
 - Goal: Maintain and normalize SVG icon styling, then improve/refactor the homepage blog card component.
-- Status: Implemented by Claude Code on 2026-06-01, then reviewed and lightly corrected by Codex. Not committed yet.
+- Status: Complete. Implemented by Claude Code on 2026-06-01, reviewed and lightly corrected by Codex, committed, pushed, and deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world`
 
 ### Files Changed
@@ -51,10 +51,11 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 
 | Check | Result |
 |-------|--------|
-| `git status --short --branch` | ✅ 4 files modified, no untracked files, main == origin/main |
+| Commit | ✅ `f647832` (`refactor: normalize svg icons and blog cards`) pushed to `main` |
 | `git diff --check` | ✅ No whitespace issues |
 | Sensitive-pattern scan on changed files | ✅ No secrets in changed files. A pre-existing `sk-` pattern was reported outside this change set and was not modified this round. Other matches were false positives such as CSS class names, UI prop names, comments, and the scan pattern itself. |
 | `pnpm build:blog` | ✅ Passed. Vite exited 0. Only known toolchain warnings appeared: Vite CJS Node API deprecation and Sass legacy JS API deprecation. |
+| Docker deploy | ✅ `blog-front:latest` rebuilt, `my-frontend` restarted, `https://sunworld.site` and `https://www.sunworld.site` returned HTTP 200. |
 
 ### Design Decisions
 
@@ -64,6 +65,5 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 
 ### Next Step
 
-1. Commit with: `refactor: normalize SvgIcon layout and refactor BlogCard`
-2. Push `main`.
-3. Deploy via Docker rebuild if immediate production update is needed, or let daily auto-deploy pick it up.
+- No active unfinished work for this task.
+- Recommended follow-up: remove/rotate the pre-existing frontend `sk-` style secret pattern reported in `packages/blog/src/constant.ts` and move any real secret usage behind the backend API.
