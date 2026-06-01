@@ -6,7 +6,7 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 ## Current Handoff
 
 - Goal: Start Sun World monorepo migration by importing the existing backend repository into the frontend/product repository without changing production runtime.
-- Status: Ready for Claude Code execution on branch `monorepo-api-import`.
+- Status: Phase 1 imported by Codex after Claude Code blocked on command approval. Not pushed, not merged, production runtime unchanged.
 - Scope:
   - Source product repo: `/home/lighthouse/blog/sun-world`
   - Source backend repo: `/home/lighthouse/blog/blog_end` or remote `git@github.com:ZhangNoName/blog_end.git`
@@ -15,20 +15,22 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
   - Read `docs/architecture/monorepo-migration.md`.
   - Phase 1 only: repository unification, no runtime cutover.
   - Do not introduce Prisma in this phase. Record Prisma as a future `packages/db` option only.
-- Implementation plan:
-  1. Confirm `/home/lighthouse/blog/sun-world` is on branch `monorepo-api-import`.
-  2. Read `AGENTS.md`, `CLAUDE.md`, `docs/current-state.md`, `docs/engineering-conventions.md`, `docs/architecture/monorepo-migration.md`, and this file.
-  3. Import backend history into `apps/api`.
-     - Preferred: add/fetch a temporary local remote for `blog_end` and run `git subtree add --prefix=apps/api <remote> main -m "chore: import blog backend into monorepo"`.
-     - Fallback if `git subtree` is unavailable: report before using a non-history-preserving copy.
-  4. Do not move frontend folders yet. Keep `packages/blog`, `packages/editor`, and `packages/icons` working as-is.
-  5. Update docs to reflect the migration branch state:
-     - `docs/current-state.md`
-     - `docs/architecture/monorepo-migration.md` if needed
-     - `docs/agent-handoff.md`
-     - optionally root `README.md` if a short monorepo overview is useful
-  6. If useful, update `pnpm-workspace.yaml` to include `apps/*`, but only if `pnpm build:blog` still works.
-  7. Leave production runtime untouched.
+## Phase 1 Result
+
+- Branch: `monorepo-api-import`
+- Commits:
+  - `4daf9cb docs: plan monorepo migration`
+  - `d286b4b chore: import blog backend into monorepo`
+- Backend import:
+  - Imported from local remote `/home/lighthouse/blog/blog_end`
+  - Target path: `apps/api`
+  - Method: `git subtree add --prefix=apps/api blog_end_import main`
+  - Backend history is preserved through subtree history.
+- Production runtime:
+  - Unchanged. Backend still runs from `/home/lighthouse/blog/blog_end`.
+  - No systemd, Nginx, Docker, database, or secret files were changed.
+- Prisma:
+  - Not introduced. Keep as a future `packages/db` option only if a TypeScript backend/data service becomes real.
 - Allowed commands:
   - `git status --short --branch`
   - `git remote -v`, `git remote add`, `git fetch`
@@ -47,18 +49,17 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
   - Do not use `git reset --hard`.
   - Do not print secrets, env values, tokens, API keys, private keys, certificates, or database passwords.
   - Do not add Prisma dependencies or create a real Prisma schema in this phase.
-- Verification:
-  - `git status --short --branch`
-  - `git diff --check`
-  - `pnpm build:blog`
-  - `curl -fsS https://api.sunworld.site/healthz`
-  - `curl -I https://sunworld.site`
-  - File-name-only sensitive pattern scan, without printing values:
-    `git grep -IlE "sk-[A-Za-z0-9]|password:|password=|token:|token=|secret:|secret=|api[_-]?key|BEGIN .*KEY" HEAD -- . ":!pnpm-lock.yaml" ":!poetry.lock" || true`
-- Handoff back to Codex:
-  - Summarize commands run.
-  - Report whether `apps/api` import preserved history.
-  - Report changed files/paths.
-  - Report verification results.
-  - Report any sensitive-pattern filenames only, no values.
-  - Leave branch unpushed and unmerged for Codex review.
+## Verification To Complete
+
+- `git diff --check`
+- `pnpm build:blog`
+- `curl -fsS https://api.sunworld.site/healthz`
+- `curl -I https://sunworld.site`
+- File-name-only sensitive pattern scan, without printing values:
+  `git grep -IlE "sk-[A-Za-z0-9]|password:|password=|token:|token=|secret:|secret=|api[_-]?key|BEGIN .*KEY" HEAD -- . ":!pnpm-lock.yaml" ":!poetry.lock" || true`
+
+## Review Notes
+
+- The branch should remain local/unpushed until Codex review completes.
+- Before merging to `main`, decide how to handle existing tracked frontend `.env*` files and backend config files that may contain sensitive-looking text.
+- Phase 2 should cut over `blog-api.service` to `apps/api` only after this branch is reviewed and merged.

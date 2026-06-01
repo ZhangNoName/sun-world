@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## Server
 
@@ -10,12 +10,29 @@ Last updated: 2026-05-31
 - Project path: /home/lighthouse/blog/sun-world
 - Primary branch: main
 
+## Repository Layout
+
+`main` is still the production branch. The migration branch `monorepo-api-import`
+imports the backend repository into this product repo at:
+
+```text
+apps/api
+```
+
+Current production runtime has not been cut over yet:
+
+- Frontend production is still built from `/home/lighthouse/blog/sun-world`.
+- Backend production is still running from `/home/lighthouse/blog/blog_end`.
+- `apps/api` is present on the migration branch for review and context unification only.
+
 ## Services
 
 - Frontend container: my-frontend
 - Frontend image: blog-front:latest
 - Frontend host port: 8081
 - Backend service: uvicorn on port 8000
+- Backend source path today: `/home/lighthouse/blog/blog_end`
+- Backend monorepo candidate path: `/home/lighthouse/blog/sun-world/apps/api`
 - Nginx handles HTTPS and proxying.
 
 ## Domains
@@ -58,3 +75,4 @@ The mobile filing link is rendered in `packages/blog/src/layout/mobLayout.vue`.
 
 - The production build currently prints TypeScript errors from `packages/editor`, but Vite still exits successfully. Treat this as technical debt; do not assume type-checking is clean.
 - Use `docker build --no-cache -t blog-front:latest .` when you need to be certain static assets have been regenerated.
+- Sensitive-pattern filename scans report existing frontend and backend files that may contain token/password/API-key related text. Do not print their contents in agent logs. Review and rotate/move any real secrets before merging or cutting over runtime.
