@@ -63,6 +63,11 @@ Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engin
 | `grep "message" contracts/.../generated-api-types.ts` | ✅ No `message` |
 | Production runtime | ✅ Untouched |
 
+## Codex Review Follow-Up
+
+- Hardened HTTP exception `detail` handling so non-string details are converted to a safe `msg` string.
+- Added centralized frontend `notifyApiError()` so business, HTTP, and network errors are surfaced consistently instead of only warning on 401.
+
 ## Next Steps
 
 - Merge `monorepo-api-import` into `main` when ready.

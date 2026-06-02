@@ -48,7 +48,7 @@ service.interceptors.request.use(
   },
   (error) => {
     console.log(error)
-    Promise.reject(error)
+    return Promise.reject(error)
   }
 )
 
@@ -69,12 +69,9 @@ service.interceptors.response.use(
       }
       // 业务失败：构造 ApiError 并拒绝
       const msg = body.msg || body.message || '请求失败'
-      if (body.code === 401) {
-        ElMessage.warning('您的账号已登出或超时，即将登出...')
-      }
-      return Promise.reject(
-        new ApiError(body.code, msg, response.status, body)
-      )
+      const apiError = new ApiError(body.code, msg, response.status, body)
+      notifyApiError(apiError)
+      return Promise.reject(apiError)
     }
     // 非 envelope 响应（如 SSE、文件流）原样返回
     return response
@@ -86,29 +83,29 @@ service.interceptors.response.use(
       // 如果后端已返回 envelope 格式的错误响应，使用它
       if (data && typeof data === 'object' && 'code' in data) {
         const msg = data.msg || data.message || '请求失败'
-        return Promise.reject(
-          new ApiError(data.code, msg, error.response.status, data)
-        )
+        const apiError = new ApiError(data.code, msg, error.response.status, data)
+        notifyApiError(apiError)
+        return Promise.reject(apiError)
       }
       // HTTP 状态码错误转换为 ApiError
-      return Promise.reject(
-        new ApiError(
-          error.response.status,
-          getHttpStatusMessage(error.response.status),
-          error.response.status,
-          data
-        )
+      const apiError = new ApiError(
+        error.response.status,
+        getHttpStatusMessage(error.response.status),
+        error.response.status,
+        data
       )
+      notifyApiError(apiError)
+      return Promise.reject(apiError)
     }
     // 网络错误（无响应）
     if (error && error.message) {
-      return Promise.reject(
-        new ApiError(-1, error.message, undefined, null)
-      )
+      const apiError = new ApiError(-1, error.message, undefined, null)
+      notifyApiError(apiError)
+      return Promise.reject(apiError)
     }
-    return Promise.reject(
-      new ApiError(-1, '网络发生错误，请检查', undefined, null)
-    )
+    const apiError = new ApiError(-1, '网络发生错误，请检查', undefined, null)
+    notifyApiError(apiError)
+    return Promise.reject(apiError)
   }
 )
 // axios返回格式
@@ -142,6 +139,14 @@ export class ApiError extends Error {
     this.status = status
     this.payload = payload
   }
+}
+
+function notifyApiError(error: ApiError) {
+  if (error.code === 401 || error.status === 401) {
+    ElMessage.warning(error.msg || '您的账号已登出或超时，即将登出...')
+    return
+  }
+  ElMessage.error(error.msg || '请求失败')
 }
 
 // HTTP 状态码默认文案

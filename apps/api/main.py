@@ -12,11 +12,19 @@ from src.routers import blog_router, base_router, user_router, resource_router, 
 # ---- 全局异常处理器 — 统一使用 { code, data, msg } envelope ----
 
 
+def _safe_msg(detail, fallback: str = "请求失败") -> str:
+    if isinstance(detail, str):
+        return detail
+    if detail is None:
+        return fallback
+    return str(detail)
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(_request: Request, exc: StarletteHTTPException):
     return JSONResponse(
         status_code=exc.status_code,
-        content=fail(msg=exc.detail, code=exc.status_code).model_dump(),
+        content=fail(msg=_safe_msg(exc.detail), code=exc.status_code).model_dump(),
     )
 
 
