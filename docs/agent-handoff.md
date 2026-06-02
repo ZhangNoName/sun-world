@@ -3,87 +3,91 @@
 This file is for short-lived context shared between Codex, Claude Code, and manual server work.
 Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engineering-conventions.md.
 
-## Execution Summary — Frontend Theme Tokens
+## Execution Summary — API Contracts
 
-- Date: 2026-06-01
+- Date: 2026-06-02
 - Branch: `monorepo-api-import`
-- Goal: Normalize frontend font sizes and color styles for easier theme switching.
+- Goal: Implement the first real `packages/contracts` workflow for OpenAPI export and generated TypeScript API types.
 - Status: Complete and ready for review.
 - Deployment: Not deployed. No service restart, no Docker, no Nginx, no systemd, no push, no merge.
 
-## Tailwind Decision
+## Architecture Decision
 
-Tailwind CSS was not introduced.
+Prisma was not introduced.
 
 Reason:
 
-- The app already uses `sun-light` / `sun-dark` classes and CSS custom properties.
-- Vue SFC scoped styles and Element Plus already depend on CSS variables.
-- Adding Tailwind would add build-chain and migration work without improving the current theme switch mechanism.
-- A CSS variable design-token layer fits the existing codebase better.
+- The backend is Python/FastAPI.
+- Prisma is a Node/TypeScript database toolkit.
+- The frontend should depend on API request/response contracts, not database table schemas.
+- The shared package should therefore hold OpenAPI and generated TypeScript API types.
 
 ## Implementation Summary
 
 ### Added
 
-- `apps/web/src/styles/design-tokens.css`
-  - Central typography, color, spacing, radius, shadow, component, scrollbar, header, and Element Plus bridge tokens.
-  - Keeps legacy aliases such as `--font-large`, `--font-medium`, `--text-default`, `--bg-page`, `--border-default`, and `--border-radius`.
-- `docs/architecture/frontend-theme-system.md`
-  - Documents token categories, theme switch flow, Element Plus mapping, future style rules, and why Tailwind is not used now.
+- `scripts/export-openapi.py`
+  - Exports `packages/contracts/openapi.json`.
+  - Builds a schema-only FastAPI app and mounts routers.
+  - Stubs runtime-only AI objects that would otherwise require credentials at import time.
+  - Does not start uvicorn, run lifespan startup, initialize databases, connect to LLM providers, or read secret env files.
+- `scripts/generate-openapi.sh`
+  - Selects Python in this order:
+    1. `SUN_WORLD_API_PYTHON`
+    2. `apps/api/.venv/bin/python`
+    3. `python3`
+- `packages/contracts/openapi.json`
+- `packages/contracts/src/generated-api-types.ts`
+- `packages/contracts/src/index.ts`
+- `docs/architecture/api-contracts.md`
 
 ### Updated
 
-- `apps/web/src/style.css`
-  - Imports `design-tokens.css`.
-  - Keeps reset/layout only.
-  - Uses themed scrollbar tokens and removes the hard-coded red `.scroll` background.
-- `apps/web/src/text.css`
-  - Uses `--font-size-*` and `--line-height-*` tokens.
-  - Adds semantic text utility classes.
+- `packages/contracts/package.json`
+  - Adds `openapi-typescript`.
+  - Adds `generate:openapi`, `generate:types`, `generate`, and `build` scripts.
+- `packages/contracts/README.md`
+  - Documents API contracts, command usage, Python environment selection, frontend type usage, and Prisma status.
 - `README.md`
-  - Adds a link to the frontend theme system documentation.
+  - Links to `docs/architecture/api-contracts.md`.
+- `pnpm-lock.yaml`
+  - Records `openapi-typescript`.
 
-### Tokenized Components And Pages
+## Important Note
 
-Common style values were replaced with semantic tokens in:
-
-- `apps/web/src/components/ZBtn/index.vue`
-- `apps/web/src/components/BlogCard/index.vue`
-- `apps/web/src/components/LoadMore/loadMopre.vue`
-- `apps/web/src/components/ThemeSwitch/index.vue`
-- `apps/web/src/components/Waterfall/waterfall.vue`
-- `apps/web/src/components/CutomBtn.vue`
-- `apps/web/src/layout/header/index.vue`
-- `apps/web/src/layout/mobLayout.vue`
-- `apps/web/src/pages/login/login.vue`
-- `apps/web/src/pages/login/register.vue`
-- `apps/web/src/pages/me/me.vue`
-- selected AIGC and canvas page styles.
+Claude Code was asked to implement this task but stayed in planning/reading for several minutes without file changes. Codex stopped the Claude Code process and implemented the scoped plan directly.
 
 ## Verification Results
 
-| Command | Result |
-|---|---|
-| `git diff --check` | Passed |
-| `pnpm build:web` | Passed; Vite build completed with existing Element Plus/Sass deprecation warnings |
-| `pnpm build:blog` | Passed; compatibility alias delegates to `build:web` |
-| `curl -I https://sunworld.site` | HTTP/2 200 |
+The final review should run:
 
-## Remaining Follow-Up
+```bash
+git diff --check
+SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts build
+pnpm build:web
+bash scripts/check-api.sh
+curl -fsS https://api.sunworld.site/healthz
+curl -I https://sunworld.site
+```
 
-The optional hard-coded style scan still reports some remaining matches. These are known follow-up areas rather than blockers for this token foundation:
+Expected generated artifact checks:
 
-- Older base components, such as `baseCom/btn` and `baseCom/input`
-- Some card/weather/avatar components with bespoke sizing
-- AIGC chat input accent colors
-- Telegram store test/demo colors
-- SVG assets and data-driven/default prop colors
+```bash
+test -s packages/contracts/openapi.json
+test -s packages/contracts/src/generated-api-types.ts
+test -s packages/contracts/src/index.ts
+```
 
-Future cleanup should continue replacing direct `#xxxxxx`, `px` font sizes, and bespoke rem values with the new semantic tokens when those components are touched.
+## Current Known Constraint
 
-## Notes
+`apps/api/.venv` does not exist yet on the migration branch. On the current server, use:
 
-- Claude Code performed the initial broad edits but ran for a long time without returning output; Codex stopped the process, reviewed the diff, corrected the `.scroll` token issue, and ran verification.
-- No secrets or env values were read or printed.
-- After review and commit, switch the worktree back to `main` so the daily auto-deploy timer is not affected by the migration branch.
+```bash
+SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate
+```
+
+After backend runtime cutover, this should naturally use `apps/api/.venv/bin/python`.
+
+## Next Step
+
+Review and commit this contracts implementation on `monorepo-api-import`, then switch the worktree back to `main` so the daily auto-deploy timer is not affected.

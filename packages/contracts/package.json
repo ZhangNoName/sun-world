@@ -3,8 +3,25 @@
   "version": "0.0.1",
   "private": true,
   "description": "Shared API contracts between frontend and backend",
-  "scripts": {
-    "build": "echo 'contracts build not yet configured'"
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   },
-  "files": []
+  "scripts": {
+    "generate:openapi": "cd ../.. && bash scripts/generate-openapi.sh",
+    "generate:types": "openapi-typescript openapi.json -o src/generated-api-types.ts",
+    "generate": "pnpm generate:openapi && pnpm generate:types",
+    "build": "pnpm generate"
+  },
+  "files": [
+    "openapi.json",
+    "src"
+  ],
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0"
+  }
 }

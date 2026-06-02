@@ -1,35 +1,86 @@
 # @sun-world/contracts
 
-共享 API 契约包。用于存放前端和后端之间的共享类型定义和 API 规范。
-Shared API contracts package. Houses shared type definitions and API specifications between frontend and backend.
+共享 API 契约包。用于存放前端和后端之间的 OpenAPI 规范与生成的 TypeScript 类型。
 
-## 用途 / Purpose
+Shared API contracts package. Houses the OpenAPI specification and generated TypeScript types shared by the frontend and backend.
 
-当前状态：**规划中 / Planned**。尚未生成任何内容。
+## Purpose
 
-规划内容 / Planned contents:
+当前后端是 Python/FastAPI，前端是 Vue/TypeScript。因此共享层应该是 **API 契约**，不是数据库模型或 Prisma schema。
 
+The backend is Python/FastAPI and the frontend is Vue/TypeScript. The shared layer should therefore be the **API contract**, not database models or a Prisma schema.
+
+```text
+apps/api
+  FastAPI + Pydantic
+  schema-only OpenAPI export
+
+packages/contracts
+  openapi.json
+  src/generated-api-types.ts
+
+apps/web
+  imports API request/response types
 ```
+
+## Files
+
+```text
 packages/contracts/
-├── openapi.json            # OpenAPI 规范 / specification
+├── openapi.json
+├── package.json
 ├── src/
-│   └── generated-api-types.ts  # 生成的 TypeScript 类型 / Generated TypeScript types
+│   ├── generated-api-types.ts
+│   └── index.ts
 └── README.md
 ```
 
-## 生成方式 / Generation
+## Commands
 
-1. 从后端 FastAPI 生成 OpenAPI 规范。
-2. 使用 `openapi-typescript` 等工具从 OpenAPI 规范生成 TypeScript 类型。
-3. 前端直接引用 `@sun-world/contracts` 包中的类型。
+Generate OpenAPI and TypeScript types:
 
-1. Generate OpenAPI spec from the backend FastAPI app.
-2. Use `openapi-typescript` or similar to generate TypeScript types from the OpenAPI spec.
-3. Frontend imports types from the `@sun-world/contracts` package directly.
+```bash
+pnpm -F @sun-world/contracts generate
+```
 
-## 注意事项 / Notes
+Generate only OpenAPI:
 
-- 此包在 Phase 3 之前不需要功能代码。
-- 不要在前端和后端仓库之间手动同步类型——应使用代码生成方式。
-- This package does not need functional code until Phase 3 of the monorepo migration.
-- Do not manually synchronize types between frontend and backend repos — use code generation.
+```bash
+pnpm -F @sun-world/contracts generate:openapi
+```
+
+Generate only TypeScript types from `openapi.json`:
+
+```bash
+pnpm -F @sun-world/contracts generate:types
+```
+
+## Python Environment
+
+OpenAPI export imports the FastAPI app, so the Python interpreter must have backend dependencies installed.
+
+The wrapper chooses Python in this order:
+
+1. `SUN_WORLD_API_PYTHON`
+2. `apps/api/.venv/bin/python`
+3. `python3`
+
+Example:
+
+```bash
+SUN_WORLD_API_PYTHON=/path/to/python pnpm -F @sun-world/contracts generate
+```
+
+The export script builds a schema-only FastAPI app, mounts the project routers, and stubs runtime-only AI objects that would otherwise require credentials at import time. It does not start uvicorn, run lifespan startup, initialize databases, connect to LLM providers, or read secret env files.
+
+## Frontend Usage
+
+```ts
+import type { components, paths } from '@sun-world/contracts'
+```
+
+Frontend code should use API request/response types from this package rather than database schema types.
+
+## Prisma
+
+Prisma is not active in this package. Reconsider it only if the backend moves to Node/TypeScript or a dedicated TypeScript data service is introduced.
