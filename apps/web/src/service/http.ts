@@ -56,75 +56,59 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   function (response) {
     // token 在 cookie 中，不需要手动处理
-    // 如果响应中有新的过期时间，可以同步更新
     const authStore = useAuthStore()
     authStore.syncExpireFromCookie?.()
+
+    const body = response.data
+    // 检测是否为统一 envelope 响应（包含 code 字段）
+    if (body && typeof body === 'object' && 'code' in body) {
+      if (body.code === 1) {
+        // 业务成功：解包 data 字段，替换 response.data 为业务数据
+        response.data = body.data
+        return response
+      }
+      // 业务失败：构造 ApiError 并拒绝
+      const msg = body.msg || body.message || '请求失败'
+      if (body.code === 401) {
+        ElMessage.warning('您的账号已登出或超时，即将登出...')
+      }
+      return Promise.reject(
+        new ApiError(body.code, msg, response.status, body)
+      )
+    }
+    // 非 envelope 响应（如 SSE、文件流）原样返回
     return response
   },
   async (error) => {
     // 对响应错误做点什么
     if (error && error.response) {
-      // 防止重复请求的标志
-      const config = error.config as InternalAxiosRequestConfig & {
-        _retry?: boolean
+      const data = error.response.data
+      // 如果后端已返回 envelope 格式的错误响应，使用它
+      if (data && typeof data === 'object' && 'code' in data) {
+        const msg = data.msg || data.message || '请求失败'
+        return Promise.reject(
+          new ApiError(data.code, msg, error.response.status, data)
+        )
       }
-
-      // 如果已经重试过，直接拒绝
-      if (config._retry) {
-        return Promise.reject(error)
-      }
-
-      switch (error.response.status) {
-        case 307:
-          ElMessage.error('307临时重定向')
-          console.log(error)
-          break
-        case 400:
-          ElMessage.error('错误请求')
-          break
-        case 401:
-          // 暂时不刷新 token，直接返回错误
-          ElMessage.error('未授权，请重新登录')
-          break
-        case 403:
-          ElMessage.info('拒绝访问')
-          break
-        case 404:
-          ElMessage.info('请求错误，未找到资源')
-          break
-        case 405:
-          ElMessage.info('请求方法未允许')
-          break
-        case 408:
-          ElMessage.info('请求超时')
-          break
-        case 500:
-          ElMessage.info('服务端出错')
-          break
-        case 501:
-          ElMessage.info('网络未实现')
-          // 标记已处理，防止重复请求
-          if (config) {
-            config._retry = true
-          }
-          break
-        case 502:
-          ElMessage.info('网络错误')
-          break
-        case 503:
-          ElMessage.info('服务不可用')
-          break
-        case 504:
-          ElMessage.info('网络超时')
-          break
-        case 505:
-          ElMessage.info('http版本不支持该请求')
-          break
-        default:
-          ElMessage.info(`连接错误${error.response.status}`)
-      }
+      // HTTP 状态码错误转换为 ApiError
+      return Promise.reject(
+        new ApiError(
+          error.response.status,
+          getHttpStatusMessage(error.response.status),
+          error.response.status,
+          data
+        )
+      )
     }
-    return Promise.reject(error)
+    // 网络错误（无响应）
+    if (error && error.message) {
+      return Promise.reject(
+        new ApiError(-1, error.message, undefined, null)
+      )
+    }
+    return Promise.reject(
+      new ApiError(-1, '网络发生错误，请检查', undefined, null)
+    )
   }
 )
 // axios返回格式
@@ -134,23 +118,68 @@ interface AxiosTypes<T> {
   statusText: string
 }
 
-// 后台响应数据格式
-// 该接口用于规定后台返回的数据格式，意为必须携带 code、message 以及 data
-// 而 data 的数据格式由外部提供。如此即可根据不同需求，定制不同的数据格式
+// 后台响应 envelope 格式
+// 用于表示后端统一返回的 { code, data, msg } 结构
+export interface ApiEnvelope<T = unknown> {
+  code: number
+  data: T | null
+  msg: string
+  message?: string // 临时兼容旧版 message 字段
+}
+
+// ApiError: 统一业务/网络错误类型
+export class ApiError extends Error {
+  code: number
+  msg: string
+  status?: number
+  payload: unknown
+
+  constructor(code: number, msg: string, status?: number, payload?: unknown) {
+    super(msg)
+    this.name = 'ApiError'
+    this.code = code
+    this.msg = msg
+    this.status = status
+    this.payload = payload
+  }
+}
+
+// HTTP 状态码默认文案
+function getHttpStatusMessage(status: number): string {
+  const map: Record<number, string> = {
+    307: '307 临时重定向',
+    400: '错误请求',
+    401: '未授权，请重新登录',
+    403: '拒绝访问',
+    404: '请求错误，未找到资源',
+    405: '请求方法未允许',
+    408: '请求超时',
+    500: '服务端出错',
+    501: '网络未实现',
+    502: '网络错误',
+    503: '服务不可用',
+    504: '网络超时',
+    505: 'HTTP 版本不支持该请求',
+  }
+  return map[status] || `连接错误 ${status}`
+}
+
+// 兼容旧版 ResponseType（保留 message 字段以适配可能未更新的调用处）
 export interface ResponseType<T = any> {
   code: number
   message: string
+  msg: string
   data: T
 }
 
-// 核心处理代码 将返回一个 promise 调用 then 将可获取响应的业务数据
+// 核心处理代码 — interceptor 已完成 envelope 解包与 ApiError 转换
 const requestHandler = <T>(
   method: 'get' | 'post' | 'put' | 'delete',
   url: string,
   params: object = {},
   config: AxiosRequestConfig = {}
 ): Promise<T> => {
-  let response: Promise<AxiosTypes<ResponseType<T>>>
+  let response: Promise<AxiosTypes<T>>
   switch (method) {
     case 'get':
       response = service.get(url, { params: { ...params }, ...config })
@@ -171,28 +200,16 @@ const requestHandler = <T>(
   return new Promise<T>((resolve, reject) => {
     response
       .then((res) => {
-        // console.log('当前响应数据', res)
-        const data = res.data
-        // console.log('当前数据', data)
-
-        if (data.code !== 1) {
-          // 特定状态码处理特定的需求
-          if (data.code === 401) {
-            ElMessage.warning('您的账号已登出或超时，即将登出...')
-            console.log('登录异常，执行登出...')
-            // TODO:退出登录之后清空 cookie，并且跳转到登录界面
-            // window.location.href = '/login';
-            // navigate('/login');
-          }
-          reject(new Error(data.message || '请求失败'))
-        } else {
-          resolve(data.data) // 只返回业务数据部分
-        }
+        // interceptor 已将 envelope.data 解包到 res.data
+        resolve(res.data as T)
       })
       .catch((error) => {
-        const e = JSON.stringify(error)
-        ElMessage.warning('网络发生错误，请检查')
-        console.error(`网络错误：${e}`)
+        // interceptor 已将错误转换为 ApiError
+        // 仅在非 ApiError 时补充兜底消息
+        if (!(error instanceof ApiError)) {
+          console.error('网络错误：', error)
+          ElMessage.warning('网络发生错误，请检查')
+        }
         reject(error)
       })
   })

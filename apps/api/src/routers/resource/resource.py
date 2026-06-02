@@ -7,7 +7,7 @@ from src.controller.role_manager import RoleManager
 from src.controller.resource_manager import ResourceManager
 
 from app_instance import app
-from src.type.type import ResponseModel
+from src.core.response import ok, fail
 
 # ------------------------------
 # Pydantic 模型
@@ -63,28 +63,28 @@ def get_resource_manager() -> ResourceManager:
 @resource_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_resource(resource: ResourceCreateModel, manager: ResourceManager = Depends(get_resource_manager)):
     resource_id = manager.create_resource(resource.dict())
-    return ResponseModel(code=1, data={"id": resource_id}, message="创建成功")
+    return ok(data={"id": resource_id}, msg="创建成功")
 
 @resource_router.get("/{resource_id}")
 async def get_resource(resource_id: int, manager: ResourceManager = Depends(get_resource_manager)):
     res = manager.get_resource_by_id(resource_id)
     if not res:
-        return ResponseModel(code=0, data=None, message="资源不存在")
-    return ResponseModel(code=1, data=res, message="获取成功")
+        return fail(msg="资源不存在")
+    return ok(data=res, msg="获取成功")
 
 @resource_router.get("/")
 async def list_resources(page: int = 1, page_size: int = 10, manager: ResourceManager = Depends(get_resource_manager)):
     res_list = manager.list_resources(page=page, per_page=page_size)
-    return ResponseModel(code=1, data=res_list, message="获取成功")
+    return ok(data=res_list, msg="获取成功")
 
 @resource_router.put("/{resource_id}")
 async def update_resource(resource_id: int, data: ResourceUpdateModel, manager: ResourceManager = Depends(get_resource_manager)):
     res = manager.update_resource(resource_id, **data.dict(exclude_none=True))
-    return ResponseModel(code=1, data=res, message="更新成功")
+    return ok(data=res, msg="更新成功")
 
 @resource_router.delete("/{resource_id}")
 async def delete_resource(resource_id: int, manager: ResourceManager = Depends(get_resource_manager)):
     res = manager.delete_resource(resource_id)
     if not res:
-        return ResponseModel(code=0, data=False, message="资源不存在")
-    return ResponseModel(code=1, data=True, message="删除成功")
+        return fail(msg="资源不存在", data=False)
+    return ok(data=True, msg="删除成功")

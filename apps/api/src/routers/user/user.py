@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from src.controller.user_manage import UserManager
 from app_instance import app
 from src.type.user_type import User
-from src.type.type import ResponseModel
+from src.core.response import ok, fail
 from src.routers.auth.auth import get_current_user
 
 
@@ -39,9 +39,9 @@ async def create_user(user: User, user_manager: UserManager = Depends(get_user_m
     res = user_manager.create_user(user)
     logger.success(f'创建结果{res}')
     if res:
-        return ResponseModel(code=1, data={"id": user.id}, message="创建成功")
+        return ok(data={"id": user.id}, msg="创建成功")
     else:
-        return ResponseModel(code=0, data=None, message="创建失败")
+        return fail(msg="创建失败")
 
 
 # 获取当前登录用户信息（必须在 /{user_id} 之前定义）
@@ -56,7 +56,7 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     Returns:
         dict: 包含用户信息的响应
     """
-    return ResponseModel(code=1, data=current_user, message="获取成功")
+    return ok(data=current_user, msg="获取成功")
 
 
 # 根据id获取指定用户
@@ -75,11 +75,11 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
     logger.info(f'查找的结果-----{user}')
 
     if not user:
-        return ResponseModel(code=0, data=None, message="用户不存在")
+        return fail(msg="用户不存在")
 
     # user_dict = {item[0]: item[1] for item in user}
 
-    return ResponseModel(code=1, data=user, message="获取成功")
+    return ok(data=user, msg="获取成功")
 
 # 分页获取用户
 
@@ -103,7 +103,7 @@ async def get_users_paginated(
     """
 
     users = user_manager.get_user_by_name('', page, page_size)
-    return ResponseModel(code=1, data=users, message="获取成功")
+    return ok(data=users, msg="获取成功")
 
 
 # 删除指定用户
@@ -121,5 +121,5 @@ async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user
     res = user_manager.delete_user(user_id)
     # logger.info(f'停用用户的结果:{res}')
     if not res:
-        return ResponseModel(code=0, data=False, message="用户不存在")
-    return ResponseModel(code=1, data=True, message="停用成功")
+        return fail(msg="用户不存在", data=False)
+    return ok(data=True, msg="停用成功")

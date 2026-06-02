@@ -11,7 +11,7 @@ from src.controller.ai_manager import AiManager
 from src.llm.model.gemma import GemmaModel
 from src.llm.model.mistral_img import MistralImgModel
 from src.llm.model.qwen import QwenModel
-from src.type.type import ResponseModel
+from src.core.response import ok, fail
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -43,7 +43,7 @@ async def get_answer(request: Request, chat_data: ChatRequest, ai_manager: AiMan
     config = {"configurable": {
         "thread_id": chat_data.session_id, "ip": ip, "user_id": user_id}}
     answer = await ai_manager.invoke(chat_data.question, config)
-    return ResponseModel(code=1, data=answer, message="获取成功")
+    return ok(data=answer, msg="获取成功")
 
 
 @router.post("/chat_stream")
@@ -89,7 +89,7 @@ async def generate_image(request: Request, chat_data: ChatRequest, ai_manager: A
     # answer = await ai_manager.generate_image(chat_data.question, config)
     answer = await GemmaModel.ainvoke(chat_data.question)
     logger.info(f"generate_image: {answer}")
-    return ResponseModel(code=1, data=answer, message="获取成功")
+    return ok(data=answer, msg="获取成功")
 
 
 @router.post("/read-image")
@@ -114,4 +114,4 @@ async def generate_image(request: Request, uri: str, ai_manager: AiManager = Dep
     response = await QwenModel.ainvoke(messages)
     answer = response.content
     logger.info(f"generate_image: {answer}")
-    return ResponseModel(code=1, data=answer, message="获取成功")
+    return ok(data=answer, msg="获取成功")

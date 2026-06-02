@@ -7,7 +7,7 @@ from src.controller.file_manager import FileManager
 from src.controller.user_manage import UserManager
 from app_instance import app
 from src.type.user_type import User
-from src.type.type import ResponseModel
+from src.core.response import ok, fail
 from src.routers.auth.auth import get_current_user
 
 
@@ -69,14 +69,13 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
     # 假设你挂载了 /static 到 videos_dir
     master_url = f"/static/videos/{video_id}/master.m3u8"
 
-    return ResponseModel(
-        code=1,
+    return ok(
         data={
             "video_id": video_id,
             "url": master_url,
             "status": "processing"  # 告诉前端正在处理中
         },
-        message="上传成功，后台处理中"
+        msg="上传成功，后台处理中"
     )
 
 
@@ -128,15 +127,14 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
 
         logger.info(f"图片上传成功: {filename}, 大小: {file_size / 1024 / 1024:.2f}MB")
 
-        return ResponseModel(
-            code=1,
+        return ok(
             data={
                 "image_id": image_id,
                 "filename": filename,
                 # 假设有静态文件服务
                 "url": f"https://sunworld.site/static/imgs/{filename}"
             },
-            message="图片上传成功"
+            msg="图片上传成功"
         )
     except HTTPException:
         # 重新抛出HTTP异常

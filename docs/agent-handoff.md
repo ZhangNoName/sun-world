@@ -3,91 +3,68 @@
 This file is for short-lived context shared between Codex, Claude Code, and manual server work.
 Keep stable rules in AGENTS.md, CLAUDE.md, docs/current-state.md, and docs/engineering-conventions.md.
 
-## Execution Summary — API Contracts
+## Current Handoff
 
-- Date: 2026-06-02
-- Branch: `monorepo-api-import`
-- Goal: Implement the first real `packages/contracts` workflow for OpenAPI export and generated TypeScript API types.
-- Status: Complete and ready for review.
-- Deployment: Not deployed. No service restart, no Docker, no Nginx, no systemd, no push, no merge.
+- Goal: Normalize frontend/backend API response contracts with a typed `{ code, data, msg }` envelope.
+- Status: ✅ DONE — implemented and verified on `monorepo-api-import`.
+- Completed by: Claude Code (2026-06-02)
 
-## Architecture Decision
+## Completed Work Summary
 
-Prisma was not introduced.
+### Backend
 
-Reason:
+1. **Created `apps/api/src/core/response.py`** — unified response module:
+   - `ApiResponse[T]` Pydantic model: `{ code: int, data: Optional[T], msg: str }`
+   - `ok(data=None, msg="获取成功")` → code=1
+   - `fail(msg="请求失败", data=None, code=0)` → code≠1
+   - `not_found(msg="资源不存在")`, `unauthorized(msg="未授权...")`
 
-- The backend is Python/FastAPI.
-- Prisma is a Node/TypeScript database toolkit.
-- The frontend should depend on API request/response contracts, not database table schemas.
-- The shared package should therefore hold OpenAPI and generated TypeScript API types.
+2. **Updated `apps/api/src/type/type.py`** — `ResponseModel` now uses `msg` (not `message`).
 
-## Implementation Summary
+3. **Added global exception handlers in `apps/api/main.py`**:
+   - `StarletteHTTPException` → `{ code: status_code, data: null, msg: detail }`
+   - `RequestValidationError` → `{ code: 422, data: [...], msg: "参数校验失败" }`
+   - `Exception` catch-all → `{ code: 500, data: null, msg: "服务器内部错误" }`
 
-### Added
+4. **Updated 8 router files** to use `ok()`/`fail()` instead of `ResponseModel(code=..., message=...)`:
+   - blog, base, auth, user, role, resource, file, ai
+   - Streaming endpoints (ai chat_stream, chat-chunk-stream) left unwrapped.
 
-- `scripts/export-openapi.py`
-  - Exports `packages/contracts/openapi.json`.
-  - Builds a schema-only FastAPI app and mounts routers.
-  - Stubs runtime-only AI objects that would otherwise require credentials at import time.
-  - Does not start uvicorn, run lifespan startup, initialize databases, connect to LLM providers, or read secret env files.
-- `scripts/generate-openapi.sh`
-  - Selects Python in this order:
-    1. `SUN_WORLD_API_PYTHON`
-    2. `apps/api/.venv/bin/python`
-    3. `python3`
-- `packages/contracts/openapi.json`
-- `packages/contracts/src/generated-api-types.ts`
-- `packages/contracts/src/index.ts`
-- `docs/architecture/api-contracts.md`
+### Frontend
 
-### Updated
+5. **Refactored `apps/web/src/service/http.ts`**:
+   - Added `ApiEnvelope<T>` interface and `ApiError` class.
+   - Response interceptor: detects envelope, unwraps `data` on code===1, rejects `ApiError` on code!==1.
+   - Error interceptor: converts HTTP errors to `ApiError`, prefers backend `msg`.
+   - Simplified `requestHandler`: interceptor handles unwrap/errors now.
+   - Exports `request`, `ApiEnvelope`, `ApiError`.
 
-- `packages/contracts/package.json`
-  - Adds `openapi-typescript`.
-  - Adds `generate:openapi`, `generate:types`, `generate`, and `build` scripts.
-- `packages/contracts/README.md`
-  - Documents API contracts, command usage, Python environment selection, frontend type usage, and Prisma status.
-- `README.md`
-  - Links to `docs/architecture/api-contracts.md`.
-- `pnpm-lock.yaml`
-  - Records `openapi-typescript`.
+6. **Fixed `apps/web/src/service/request.ts`** — `postSaveBlog` now uses `request.post<any>` (was `ResponseType<any>`).
 
-## Important Note
+### Contracts
 
-Claude Code was asked to implement this task but stayed in planning/reading for several minutes without file changes. Codex stopped the Claude Code process and implemented the scoped plan directly.
+7. **Regenerated `packages/contracts/`** — OpenAPI and TypeScript types updated.
+   - Generated types have `msg` field, no `message` field.
 
-## Verification Results
+### Docs
 
-The final review should run:
+8. **Created `docs/architecture/api-response-envelope.md`** — full documentation.
 
-```bash
-git diff --check
-SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts build
-pnpm build:web
-bash scripts/check-api.sh
-curl -fsS https://api.sunworld.site/healthz
-curl -I https://sunworld.site
-```
+### Verification Results
 
-Expected generated artifact checks:
+| Check | Result |
+|-------|--------|
+| `bash scripts/check-api.sh` | ✅ 69 files compiled OK |
+| `pnpm -F @sun-world/contracts build` | ✅ Exported + types generated |
+| `pnpm build:web` | ✅ Built in 1m 15s |
+| `curl https://api.sunworld.site/healthz` | ✅ `{"status":"ok"}` |
+| `curl -I https://sunworld.site` | ✅ HTTP/2 200 |
+| `grep "msg" contracts/.../generated-api-types.ts` | ✅ `msg` present |
+| `grep "message" contracts/.../generated-api-types.ts` | ✅ No `message` |
+| Production runtime | ✅ Untouched |
 
-```bash
-test -s packages/contracts/openapi.json
-test -s packages/contracts/src/generated-api-types.ts
-test -s packages/contracts/src/index.ts
-```
+## Next Steps
 
-## Current Known Constraint
-
-`apps/api/.venv` does not exist yet on the migration branch. On the current server, use:
-
-```bash
-SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate
-```
-
-After backend runtime cutover, this should naturally use `apps/api/.venv/bin/python`.
-
-## Next Step
-
-Review and commit this contracts implementation on `monorepo-api-import`, then switch the worktree back to `main` so the daily auto-deploy timer is not affected.
+- Merge `monorepo-api-import` into `main` when ready.
+- Deploy backend from monorepo path (see `docs/architecture/deployment-cutover.md`).
+- Optionally add `response_model=ResponseModel[...]` to endpoints for richer OpenAPI types.

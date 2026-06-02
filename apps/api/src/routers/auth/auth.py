@@ -7,7 +7,7 @@ from loguru import logger
 
 from src.type.auth_type import QQModel, RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
 from src.controller.auth_manager import AuthManager
-from src.type.type import ResponseModel
+from src.core.response import ok, fail
 from src.type.user_type import User
 from src.util.func import get_seconds_until_expiry
 from app_instance import app
@@ -188,19 +188,18 @@ async def register(user: RegisterModel, request: Request, response: Response, au
 
         )
 
-        return ResponseModel(
-            code=1,
+        return ok(
             data={
                 "id": user_obj.id,
                 "refresh_token": tokens.refresh_token,
                 "refresh_token_expire": tokens.refresh_token_expire.isoformat()
             },
-            message="注册成功"
+            msg="注册成功"
         )
-    return ResponseModel(code=0, data=None, message="注册失败")
+    return fail(msg="注册失败")
 
 
-@router.post("/login", response_model=ResponseModel)
+@router.post("/login")
 async def login(form_data: LoginModel, request: Request, response: Response, auth: AuthManager = Depends(get_auth_manager)):
     # 优先从 cookie 获取 device_id，如果没有则生成新的
     device_id = request.cookies.get("device_id") or str(uuid.uuid4())
@@ -211,7 +210,7 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
         device_id
     )
     if not tokens:
-        return ResponseModel(code=0, data=None, message="用户名或密码错误")
+        return fail(msg="用户名或密码错误")
 
     # 设置 cookie
     refresh_expire_seconds = get_seconds_until_expiry(
@@ -235,26 +234,25 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
         max_age=refresh_expire_seconds
     )
 
-    return ResponseModel(
-        code=1,
+    return ok(
         data={
             "refresh_token": tokens.refresh_token,
             "refresh_token_expire": tokens.refresh_token_expire.isoformat()
         },
-        message="登录成功"
+        msg="登录成功"
     )
 
 
 @router.post("/reset_password/request")
 async def request_reset_password(req: ResetPasswordRequest,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 发送验证码或邮件
-    return ResponseModel(code=1, data=None, message="重置密码链接已发送")
+    return ok(data=None, msg="重置密码链接已发送")
 
 
 @router.post("/reset_password")
 async def reset_password(req: ResetPasswordModel,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 校验token并重置密码
-    return ResponseModel(code=1, data=None, message="密码已重置")
+    return ok(data=None, msg="密码已重置")
 
 
 @router.post("/logout")
@@ -283,7 +281,7 @@ async def logout(
     response.delete_cookie(key="refresh_token")
     response.delete_cookie(key="device_id")
 
-    return ResponseModel(code=1, data=None, message="登出成功")
+    return ok(data=None, msg="登出成功")
 
 
 @router.post("/refresh_token")
@@ -305,11 +303,11 @@ async def refresh_token(
         token = refresh_token
 
     if not token:
-        return ResponseModel(code=0, data=None, message="未找到 refresh_token")
+        return fail(msg="未找到 refresh_token")
 
     tokens = auth.refresh_access_token(token)
     if not tokens:
-        return ResponseModel(code=0, data=None, message="刷新Token失败")
+        return fail(msg="刷新Token失败")
 
     # 更新 cookie 中的 access_token
     cookie_settings = get_cookie_settings(request)
@@ -322,17 +320,16 @@ async def refresh_token(
         max_age=auth.access_token_expire_minutes * 60
     )
 
-    return ResponseModel(
-        code=1,
+    return ok(
         data={
             "refresh_token": tokens.refresh_token,
             "refresh_token_expire": tokens.refresh_token_expire.isoformat()
         },
-        message="Token刷新成功"
+        msg="Token刷新成功"
     )
 
 
 @router.post("/qq")
 async def qq(info: QQModel, auth: AuthManager = Depends(get_auth_manager)):
     logger.info(f"qq登录: {info}")
-    return ResponseModel(code=1, data=None, message="qq成功")
+    return ok(data=None, msg="qq成功")

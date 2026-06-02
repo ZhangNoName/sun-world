@@ -1,4 +1,4 @@
-import { request, ResponseType } from './http'
+import { request } from './http'
 /**
  * 测试接口
  * @returns {Promise<any>}
@@ -26,7 +26,7 @@ export const postSaveBlog = async (params: {
   category?: string
   tag?: TagInput[]
 }) => {
-  const response = await request.post<ResponseType<any>>('/blogs/', params)
+  const response = await request.post<any>('/blogs/', params)
   return response
 }
 export interface BlogDeatil {
