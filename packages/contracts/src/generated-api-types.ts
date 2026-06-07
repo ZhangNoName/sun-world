@@ -937,18 +937,12 @@ export interface components {
         };
         /** Body_upload_image_file_image_upload_post */
         Body_upload_image_file_image_upload_post: {
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
         };
         /** Body_upload_video_file_video_upload_post */
         Body_upload_video_file_video_upload_post: {
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
         };
         /** Category */
@@ -1250,6 +1244,10 @@ export interface components {
         };
         /** ValidationError */
         ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */

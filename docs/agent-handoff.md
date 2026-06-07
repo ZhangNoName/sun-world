@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: Implement Phase 6 account/user API contract alignment and Phase 7 frontend telemetry adapter foundation.
-- Status: Completed and verified locally on branch `monorepo-api-import`; server has recovered after reboot and is ready for bundle sync/final serial verification.
+- Status: Completed on branch `monorepo-api-import`; local commits were synced to the server with a git bundle and server-side serial verification passed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server, `/Users/zxy/Documents/project/sun-world` locally.
 - Branch: `monorepo-api-import`
 
@@ -40,9 +40,11 @@
 - `apps/web/src/service/http.ts`
   - emits API success timing and API error telemetry without changing request call sites.
 - `packages/contracts/openapi.json`
-  - regenerated OpenAPI schema.
+  - regenerated OpenAPI schema on the server Python environment.
+  - account/user endpoints now expose typed `ApiResponse[...]` schemas instead of `unknown`.
 - `packages/contracts/src/generated-api-types.ts`
-  - regenerated TypeScript contracts; account/user endpoints now expose typed `ApiResponse[...]` schemas instead of `unknown`.
+  - regenerated TypeScript contracts.
+  - server generation also normalized upload-file schema metadata and Pydantic validation error fields.
 - `docs/architecture/api-contracts.md`
   - documented account contract consumption.
 - `docs/architecture/observability-and-analytics.md` and `docs/architecture/frontend-platform-foundation.md`
@@ -59,14 +61,21 @@
 - `ssh -o ConnectTimeout=12 -i ~/.ssh/id_ed25519 lighthouse@81.70.43.189 'echo connected && uptime'`
 - `curl -I --max-time 15 https://sunworld.site`
 - `curl -fsS --max-time 15 https://api.sunworld.site/healthz`
+- `git bundle create /tmp/sun-world-monorepo-api-import.bundle f6a1ca0..monorepo-api-import`
+- `git stash push -u -m "codex-backup-before-local-bundle-sync-20260607-130025"`
+- `git fetch /tmp/sun-world-monorepo-api-import.bundle monorepo-api-import`
+- `git merge --ff-only FETCH_HEAD`
 
 ## Verification
 
-- Contracts generation passed on server before the instance became unresponsive, and passed locally with a temporary Python 3.12 venv.
+- Contracts generation passed on server after recovery and passed locally with a temporary Python 3.12 venv.
 - Backend syntax check passed locally.
+- Backend syntax check passed on server.
 - `git diff --check` passed locally.
+- `git diff --check` passed on server before final generated-contract commit.
 - `pnpm build:web` passed locally.
 - `pnpm check:web` passed locally.
+- `pnpm check:web` passed on server.
 - Server recovered after reboot:
   - SSH returned `connected` and normal uptime output.
   - `https://sunworld.site` returned HTTP 200.
@@ -83,6 +92,6 @@
 
 ## Next Step
 
-- Sync local commits to the server branch using a bundle or remote push, preserving server dirty changes with a stash backup if needed.
-- Rerun server-side final checks serially.
+- Sync the final server generated-contract commit back to the local clone with `git pull --ff-only`.
+- Keep the backup stash until the next work session confirms no old uncommitted server-only changes are needed.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.
