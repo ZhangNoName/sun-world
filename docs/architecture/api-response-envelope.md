@@ -130,6 +130,7 @@ class ApiError extends Error {
   msg: string
   status?: number
   payload: unknown
+  requestId?: string
 }
 ```
 
@@ -143,6 +144,9 @@ The axios response interceptor in `http.ts` handles envelopes automatically:
 4. Non-envelope responses pass through as-is.
 
 The error interceptor converts HTTP errors to `ApiError`, preferring the backend `msg` when the error response is also an envelope.
+`ApiError.requestId` is populated from `X-Request-ID` when the request went
+through the shared HTTP layer, which allows frontend telemetry to be matched to
+backend request logs.
 
 ### Service Files
 

@@ -41,6 +41,7 @@ export interface ApiTelemetryContext {
   duration: number
   status?: number
   code?: number | string
+  requestId?: string
 }
 
 type VitalReporter = (metric: Metric) => void
@@ -80,6 +81,7 @@ export function trackApiTiming(context: ApiTelemetryContext) {
       duration: Math.round(context.duration),
       status: context.status,
       code: context.code,
+      requestId: context.requestId,
     },
     'debug'
   )
@@ -99,6 +101,7 @@ export function trackApiError(error: unknown, context: ApiTelemetryContext) {
       duration: Math.round(context.duration),
       status: context.status,
       code: context.code ?? payload?.code,
+      requestId: context.requestId,
       errorName: payload?.name,
       message: payload?.message,
     },

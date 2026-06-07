@@ -1,5 +1,9 @@
 import { ElMessage } from 'element-plus'
-import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
+import axios, {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios'
 import { useAuthStore } from '@/store/auth'
 import { getDeviceId } from '@/util/auth'
 import {
@@ -7,6 +11,12 @@ import {
   isErrorCodeInNamespace,
   resolveErrorMessage,
 } from '@/shared/errors/error-codes'
+import {
+  createRequestId,
+  getRequestIdHeaderName,
+  readRequestIdFromHeaders,
+} from '@/shared/observability/request-id'
+import type { RequestTracingMeta } from '@/shared/observability/request-id'
 import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
@@ -15,6 +25,21 @@ import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 const baseURL = import.meta.env.VITE_BASE_URL
 //默认请求超时时间
 const timeout = 30000
+
+type TracedAxiosRequestConfig = InternalAxiosRequestConfig & {
+  metadata?: RequestTracingMeta
+}
+
+type TracedAxiosConfig = AxiosRequestConfig & {
+  metadata?: RequestTracingMeta
+}
+
+type AxiosErrorLike = {
+  config?: TracedAxiosConfig
+  response?: AxiosResponse
+  message?: string
+}
+
 //创建axios实例
 const service = axios.create({
   timeout,
@@ -26,6 +51,11 @@ const service = axios.create({
 //统一请求拦截 可配置自定义headers 例如 language、token等
 service.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    const tracedConfig = config as TracedAxiosRequestConfig
+    const requestId =
+      readRequestIdFromHeaders(config.headers as Record<string, unknown>) ??
+      createRequestId()
+
     // const authStore = useAuthStore()
 
     // 如果 token 即将过期，自动刷新（token 从 cookie 自动带过去）
@@ -48,8 +78,13 @@ service.interceptors.request.use(
     config.headers = {
       'Content-Type': 'application/json',
       ...config.headers,
+      [getRequestIdHeaderName()]: requestId,
       withCredentials: true, // 允许携带 cookie
     } as any
+    tracedConfig.metadata = {
+      ...(tracedConfig.metadata ?? {}),
+      requestId,
+    }
     return config
   },
   (error) => {
@@ -76,7 +111,13 @@ service.interceptors.response.use(
       }
       // 业务失败：构造 ApiError 并拒绝
       const msg = body.msg || body.message || '请求失败'
-      const apiError = new ApiError(body.code, msg, response.status, body)
+      const apiError = new ApiError(
+        body.code,
+        msg,
+        response.status,
+        body,
+        getResponseRequestId(response)
+      )
       notifyApiError(apiError)
       return Promise.reject(apiError)
     }
@@ -90,7 +131,13 @@ service.interceptors.response.use(
       // 如果后端已返回 envelope 格式的错误响应，使用它
       if (data && typeof data === 'object' && 'code' in data) {
         const msg = data.msg || data.message || '请求失败'
-        const apiError = new ApiError(data.code, msg, error.response.status, data)
+        const apiError = new ApiError(
+          data.code,
+          msg,
+          error.response.status,
+          data,
+          getAxiosErrorRequestId(error)
+        )
         notifyApiError(apiError)
         return Promise.reject(apiError)
       }
@@ -99,14 +146,21 @@ service.interceptors.response.use(
         error.response.status,
         getHttpStatusMessage(error.response.status),
         error.response.status,
-        data
+        data,
+        getAxiosErrorRequestId(error)
       )
       notifyApiError(apiError)
       return Promise.reject(apiError)
     }
     // 网络错误（无响应）
     if (error && error.message) {
-      const apiError = new ApiError(-1, error.message, undefined, null)
+      const apiError = new ApiError(
+        -1,
+        error.message,
+        undefined,
+        null,
+        getAxiosErrorRequestId(error)
+      )
       notifyApiError(apiError)
       return Promise.reject(apiError)
     }
@@ -115,13 +169,6 @@ service.interceptors.response.use(
     return Promise.reject(apiError)
   }
 )
-// axios返回格式
-interface AxiosTypes<T> {
-  data: T
-  status: number
-  statusText: string
-}
-
 // 后台响应 envelope 格式
 // 用于表示后端统一返回的 { code, data, msg } 结构
 //
@@ -140,12 +187,14 @@ export class ApiError extends Error {
   msg: string
   status?: number
   payload: unknown
+  requestId?: string
 
   constructor(
     code: number | string,
     msg: string,
     status?: number,
-    payload?: unknown
+    payload?: unknown,
+    requestId?: string
   ) {
     super(msg)
     this.name = 'ApiError'
@@ -153,6 +202,7 @@ export class ApiError extends Error {
     this.msg = msg
     this.status = status
     this.payload = payload
+    this.requestId = requestId
   }
 }
 
@@ -200,6 +250,23 @@ function getHttpStatusMessage(status: number): string {
   return map[status] || `连接错误 ${status}`
 }
 
+function getResponseRequestId(response: AxiosResponse): string | undefined {
+  return (
+    readRequestIdFromHeaders(response.headers as Record<string, unknown>) ??
+    (response.config as TracedAxiosConfig).metadata?.requestId
+  )
+}
+
+function getAxiosErrorRequestId(error: unknown): string | undefined {
+  const axiosError = error as AxiosErrorLike
+  return (
+    readRequestIdFromHeaders(
+      axiosError.response?.headers as Record<string, unknown> | undefined
+    ) ??
+    axiosError.config?.metadata?.requestId
+  )
+}
+
 // 兼容旧版 ResponseType（保留 message 字段以适配可能未更新的调用处）
 export interface ResponseType<T = any> {
   code: number
@@ -216,7 +283,7 @@ const requestHandler = <T>(
   config: AxiosRequestConfig = {}
 ): Promise<T> => {
   const startedAt = performance.now()
-  let response: Promise<AxiosTypes<T>>
+  let response: Promise<AxiosResponse<T>>
   switch (method) {
     case 'get':
       response = service.get(url, { params: { ...params }, ...config })
@@ -242,6 +309,7 @@ const requestHandler = <T>(
           url,
           duration: performance.now() - startedAt,
           status: res.status,
+          requestId: getResponseRequestId(res),
         })
         // interceptor 已将 envelope.data 解包到 res.data
         resolve(res.data as T)
@@ -253,6 +321,10 @@ const requestHandler = <T>(
           duration: performance.now() - startedAt,
           status: error instanceof ApiError ? error.status : undefined,
           code: error instanceof ApiError ? error.code : undefined,
+          requestId:
+            error instanceof ApiError
+              ? error.requestId
+              : getAxiosErrorRequestId(error),
         })
         // interceptor 已将错误转换为 ApiError
         // 仅在非 ApiError 时补充兜底消息

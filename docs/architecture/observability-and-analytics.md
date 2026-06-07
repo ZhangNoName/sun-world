@@ -20,6 +20,7 @@ This document describes the observability strategy for Sun World, covering both 
 | Route timing | Vue Router guards emitting `route_timing` events | `shared/telemetry/index.ts` |
 | Global errors | `window.onerror` + `unhandledrejection` events | `shared/telemetry/index.ts` |
 | API timing/errors | HTTP wrapper emits `api_timing` and `api_error` events | `service/http.ts` |
+| Frontend request correlation | `X-Request-ID` generation, propagation, and telemetry enrichment | `shared/observability/request-id.ts`, `service/http.ts` |
 
 ### Behaviour
 
@@ -32,6 +33,40 @@ This document describes the observability strategy for Sun World, covering both 
 
 - Add custom user-action events (button clicks, form submissions, search queries).
 - Consider a lightweight RUM (Real User Monitoring) dashboard in the admin module.
+
+### Phase 17 — Frontend Request Correlation (Implemented)
+
+The frontend now participates in the same request-id chain as the monorepo
+backend middleware. Every JSON API call automatically gets a safe
+`X-Request-ID`; when the backend runtime echoes the ID, frontend telemetry and
+`ApiError` preserve it for support and log lookup.
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `apps/web/src/shared/observability/request-id.ts` | Safe request-id generation, normalisation, header reading, and header-name constants. |
+| `apps/web/src/service/http.ts` | Adds `X-Request-ID` to every Axios request, captures response IDs, stores `requestId` on `ApiError`, and forwards it to telemetry. |
+| `apps/web/src/shared/telemetry/index.ts` | Extends `ApiTelemetryContext` so `api_timing` and `api_error` events can include `requestId`. |
+
+**Behaviour:**
+
+- If a caller already provides a safe `X-Request-ID`, the HTTP layer preserves it.
+- Otherwise the browser generates a new UUID-style ID.
+- The value is bounded to 128 characters and must match the same safe character
+  set accepted by the backend middleware.
+- `ApiError.requestId` is set from the backend response header when available,
+  falling back to the client-generated ID.
+- Telemetry event properties include `requestId`, but never include request
+  bodies, credentials, cookies, or query strings.
+
+**Debug flow:**
+
+1. User reports an error with a visible failure time.
+2. Frontend telemetry `api_error.properties.requestId` identifies the request.
+3. Backend logs can be searched for `request_id=<same-id>`.
+4. Admin request metrics remain aggregate; detailed inspection still comes from
+   logs or a future persistent telemetry store.
 
 ### Metrics Collected (Web Vitals)
 
@@ -292,6 +327,9 @@ interface TelemetryEvent {
   properties?: Record<string, unknown>
 }
 ```
+
+For `api_timing` and `api_error`, `properties.requestId` is present when the
+request went through the shared HTTP layer.
 
 Rules:
 

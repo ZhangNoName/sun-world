@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 16 admin metrics frontend boundary.
-- Status: Implemented and verified locally on branch `monorepo-api-import`; not deployed.
+- Goal: Implement Phase 17 frontend/backend request correlation.
+- Status: Implemented locally on branch `monorepo-api-import`; final verification pending.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -15,6 +15,22 @@
 
 ## Files Changed
 
+- `apps/web/src/shared/observability/request-id.ts` **(new)**
+  - Adds safe request-id generation, normalisation, header reading, and
+    `X-Request-ID` constants.
+- `apps/web/src/service/http.ts`
+  - Adds `X-Request-ID` to every shared Axios request.
+  - Captures echoed response request IDs and stores them on `ApiError`.
+  - Sends request IDs into API timing/error telemetry.
+- `apps/web/src/shared/telemetry/index.ts`
+  - Extends `ApiTelemetryContext` with `requestId`.
+  - Adds `requestId` to `api_timing` and `api_error` event properties.
+- `docs/architecture/observability-and-analytics.md`
+  - Documents Phase 17 frontend request correlation and debug flow.
+- `docs/architecture/api-response-envelope.md`
+  - Documents `ApiError.requestId`.
+- `docs/architecture/frontend-platform-foundation.md`
+  - Records the shared request-id utility and HTTP/telemetry behavior.
 - `apps/web/src/modules/admin/composables/useAdminMetrics.ts` **(new)**
   - Owns admin metrics loading/error state and derived view models.
   - Sorts route rows by error count and latency.
@@ -213,6 +229,11 @@
 
 ## Verification
 
+- Phase 17:
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
+  - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `git diff --check` → passed.
+  - `curl -fsS -D - -o /dev/null -H 'X-Request-ID: codex-smoke-20260607' https://api.sunworld.site/healthz` → production legacy backend returned 200 but did not expose `X-Request-ID`; end-to-end public header smoke remains pending until the monorepo API runtime is cut over.
 - Phase 16:
   - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
   - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
@@ -265,6 +286,7 @@
 
 ## Next Step
 
-- Commit Phase 16 on `monorepo-api-import`, push it for review, then continue
-  with persistent analytics/log views or remaining module/service boundaries.
+- Run Phase 17 verification, commit on `monorepo-api-import`, push it for
+  review, then continue with persistent analytics/log views or remaining
+  module/service boundaries.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.

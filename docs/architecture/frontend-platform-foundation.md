@@ -20,6 +20,8 @@ apps/web/src/
       index.ts            # Design token re-exports (breakpoints, future: theme registry, motion)
     errors/
       error-codes.ts      # Stable frontend error-code map (mirrors backend error_codes.py)
+    observability/
+      request-id.ts       # API request-id generation and header helpers
     seo/
       index.ts            # SEO/head helpers (usePageMeta, canonicalUrl, syncHeadFromRouteMeta)
     telemetry/
@@ -79,6 +81,8 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - `installRouteTiming(router)` records navigation duration via router guards.
 - `installGlobalErrorCapture()` listens for unhandled errors and rejections.
 - `service/http.ts` emits API timing and API error telemetry without changing request call sites.
+- `service/http.ts` injects and captures `X-Request-ID`; `api_timing`,
+  `api_error`, and `ApiError` all carry the request id when available.
 - In development: metrics are logged to console. In production: delivery is disabled unless `VITE_TELEMETRY_ENDPOINT` is configured.
 
 ## Error Codes
@@ -204,6 +208,18 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
   management shell.
 - The metrics page builds as its own Vite chunk; it is not loaded on the public
   homepage path.
+
+## Phase 17 Request Correlation
+
+- `shared/observability/request-id.ts` centralizes safe request-id generation,
+  normalisation, and header reads.
+- `service/http.ts` writes `X-Request-ID` on every shared Axios request.
+- Monorepo backend responses are expected to echo `X-Request-ID`; the HTTP
+  layer stores the echoed or generated ID on `ApiError.requestId`.
+- `shared/telemetry/index.ts` includes `requestId` in `api_timing` and
+  `api_error` event properties.
+- New network code outside the shared HTTP layer should either use
+  `@/shared/api` or manually follow the same request-id contract.
 
 ### Route Loading
 
