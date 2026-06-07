@@ -39,6 +39,9 @@ sudo journalctl -u blog-api.service -n 100 --no-pager
 # Local health check
 curl -fsS http://127.0.0.1:8000/healthz
 
+# Local readiness check
+curl -fsS http://127.0.0.1:8000/readyz
+
 # Public health check
 curl -fsS https://api.sunworld.site/healthz
 
@@ -49,6 +52,7 @@ curl -fsS https://api.sunworld.site/healthz
 .venv/bin/python - <<'PY'
 from main import app
 assert any(route.path == "/healthz" for route in app.routes)
+assert any(route.path == "/readyz" for route in app.routes)
 print("routes=ok")
 PY
 

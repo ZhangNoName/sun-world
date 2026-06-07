@@ -66,6 +66,8 @@ The envelope does **not** apply to:
 - **SSE / streaming** endpoints (`/ai/chat_stream`, etc.) — these return `StreamingResponse`.
 - **File / binary** responses — these return raw file/stream responses.
 - **Redirect** responses (e.g. `/` → `/docs`).
+- **Operational probes** (`/healthz`, `/readyz`) — these return small raw JSON
+  snapshots and use HTTP status codes directly for process/dependency state.
 
 ## Backend Usage
 

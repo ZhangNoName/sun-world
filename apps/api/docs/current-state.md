@@ -15,6 +15,7 @@ Date: 2026-06-01
 | **Port** | `8000` |
 | **Domain** | `api.sunworld.site` (reverse-proxied by Nginx) |
 | **Health** | `GET /healthz` → `{"status": "ok"}` |
+| **Readiness** | `GET /readyz` → dependency readiness snapshot |
 
 ## Secret Management
 
@@ -63,6 +64,7 @@ sudo journalctl -u blog-api.service -f
 ```bash
 # Local
 curl -fsS http://127.0.0.1:8000/healthz
+curl -fsS http://127.0.0.1:8000/readyz
 
 # Public
 curl -fsS https://api.sunworld.site/healthz
@@ -74,4 +76,5 @@ curl -fsS https://api.sunworld.site/healthz
 - Security hardening pass completed 2026-06-01 (see `docs/security-hardening-plan.md`)
 - `.venv` is excluded from Git and was rebuilt on the server with Python 3.12
 - No containerization yet (future item in security hardening plan)
-- No `/readyz` endpoint yet (future item)
+- The monorepo candidate exposes `/readyz`. The current production backend path
+  still needs a deliberate cutover/deploy before the public runtime reflects it.

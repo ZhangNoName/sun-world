@@ -148,6 +148,9 @@ typing and path-parameter interpolation.
   `fetchBlogCategories`, and `fetchBlogTags` for shared startup data.
 - `apps/web/src/util/request.ts` only composes startup category/tag fetches and
   no longer owns endpoint contracts.
+- `apps/api/src/routers/health/health.py` exposes `/healthz` and `/readyz` as
+  typed operational probes in OpenAPI. They intentionally do not use the
+  business response envelope.
 - UI-facing view models stay local to the module because they are presentation shapes, not API shapes.
 - Legacy `apps/web/src/service/request.ts` remains compatibility glue while new module consumers prefer `modules/*/api.ts`.
 

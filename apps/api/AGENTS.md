@@ -22,6 +22,7 @@
 - **Port**: `8000`
 - **Public domain**: `api.sunworld.site`
 - **Health check**: `GET /healthz` → `{"status": "ok"}`
+- **Readiness check**: `GET /readyz` → dependency readiness snapshot; returns HTTP 503 when required dependencies are not ready.
 - **Secret file path**: `/home/lighthouse/.config/blog_end/auth.env` (do not read, print, or commit)
 
 ## Databases
@@ -48,6 +49,7 @@ Config files live in `src/conf/<env>.yml`.
 - `git status --short --branch` — check repo state
 - `sudo systemctl status blog-api.service` — check service health
 - `curl -fsS http://127.0.0.1:8000/healthz` — local health check
+- `curl -fsS http://127.0.0.1:8000/readyz` — local readiness check
 - `curl -fsS https://api.sunworld.site/healthz` — public health check
 - `sudo journalctl -u blog-api.service -n 100 --no-pager` — recent service logs
 

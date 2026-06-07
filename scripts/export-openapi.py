@@ -87,6 +87,7 @@ def export_openapi(output: Path) -> None:
             routers_module.ai_router,
             routers_module.file_router,
             routers_module.admin_router,
+            routers_module.health_router,
         ]
         for router in routers:
             schema_app.include_router(router)

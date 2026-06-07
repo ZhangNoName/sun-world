@@ -46,6 +46,8 @@ Current production runtime has not been cut over yet:
 - Backend service: uvicorn on port 8000
 - Backend source path today: `/home/lighthouse/blog/blog_end`
 - Backend monorepo candidate path: `/home/lighthouse/blog/sun-world/apps/api`
+- Backend monorepo candidate exposes `/readyz` for dependency readiness; the
+  current production backend remains on the legacy path until deliberate cutover.
 - Nginx handles HTTPS and proxying.
 
 ## Domains

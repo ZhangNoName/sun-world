@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 20 frontend performance budgets.
-- Status: Implemented and verified locally on branch `monorepo-api-import`.
+- Goal: Implement Phase 21 backend readiness probe.
+- Status: Implemented locally on branch `monorepo-api-import`; contract generation and final verification pending.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -15,6 +15,30 @@
 
 ## Files Changed
 
+- `apps/api/src/routers/health/health.py` **(new)**
+  - Moves `/healthz` into a typed health router and adds `/readyz`.
+- `apps/api/src/core/readiness.py` **(new)**
+  - Runs bounded MySQL, MongoDB, Redis, and PostgreSQL readiness probes.
+- `apps/api/src/type/health_type.py` **(new)**
+  - Adds Pydantic response models for health/readiness snapshots.
+- `apps/api/src/routers/health/__init__.py` **(new)**
+- `apps/api/src/routers/__init__.py`
+- `apps/api/main.py`
+  - Registers the health router with the app.
+- `apps/api/src/core/observability.py`
+  - Treats `/readyz` as a noisy operational probe for logs/metrics.
+- `scripts/export-openapi.py`
+  - Includes health routes in schema-only OpenAPI export.
+- `apps/api/README.md`
+- `apps/api/AGENTS.md`
+- `apps/api/CLAUDE.md`
+- `apps/api/docs/current-state.md`
+- `docs/current-state.md`
+- `docs/architecture/api-contracts.md`
+- `docs/architecture/api-response-envelope.md`
+- `docs/architecture/observability-and-analytics.md`
+- `docs/agent-handoff.md`
+  - Document the liveness/readiness split and monorepo cutover caveat.
 - `apps/web/performance-budgets.json` **(new)**
   - Defines baseline gzip budgets for total JS, total CSS, largest asset,
     entry JS, and the admin metrics lazy chunk.
@@ -75,6 +99,13 @@
 
 ## Verification
 
+- Pending for Phase 21:
+  - `bash scripts/check-api.sh`
+  - OpenAPI/contracts regeneration
+  - server venv import/route smoke for `/healthz` and `/readyz`
+  - `git diff --check`
+- Phase 21 partial verification:
+  - `bash scripts/check-api.sh` passed before documentation updates.
 - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` passed.
 - `pnpm check:web` passed.
 - `git diff --check` passed.

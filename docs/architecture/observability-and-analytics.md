@@ -193,6 +193,36 @@ semantic content of the `message` field follows the Phase 8 log contract.
 Human-readable format with timestamp, level, module location, and
 message — identical to loguru's default sink format.
 
+### Phase 21 — Backend Readiness Probe
+
+The monorepo backend candidate now separates process liveness from dependency
+readiness.
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `apps/api/src/routers/health/health.py` | Owns `/healthz` and `/readyz` operational probe routes. |
+| `apps/api/src/core/readiness.py` | Runs bounded dependency probes and builds a safe readiness snapshot. |
+| `apps/api/src/type/health_type.py` | Pydantic models for health and readiness responses. |
+| `scripts/export-openapi.py` | Includes the health router in the schema-only OpenAPI export. |
+
+**Endpoint contract:**
+
+| Endpoint | Meaning | Status |
+|---|---|---|
+| `GET /healthz` | Process is alive and can serve a minimal response. | Always `200` while the process is running. |
+| `GET /readyz` | Required dependencies are reachable. | `200` when all probes pass, `503` when any probe fails or times out. |
+
+`/readyz` checks MySQL, MongoDB, Redis, and PostgreSQL through existing manager
+probe methods. Each check is bounded to one second and returns only dependency
+name, readiness status, and duration. It does not expose hosts, users, DSNs,
+passwords, query details, or exception messages.
+
+Both `/healthz` and `/readyz` are treated as noisy operational paths by the
+observability middleware, so they are logged at `DEBUG` level and excluded from
+the in-memory request metrics snapshot.
+
 ### Phase 10 — Admin Request Metrics Snapshot (Implemented)
 
 The backend exposes a small authenticated read model for the admin module.

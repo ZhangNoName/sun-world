@@ -16,6 +16,7 @@ from src.routers import (
     base_router,
     blog_router,
     file_router,
+    health_router,
     resource_router,
     role_router,
     user_router,
@@ -103,11 +104,8 @@ async def redirect_root_to_docs():
     return RedirectResponse("/docs")
 
 
-@app.get("/healthz")
-async def healthz():
-    return {"status": "ok"}
-
 routers = [
+    health_router,
     blog_router,
     base_router,
     user_router,

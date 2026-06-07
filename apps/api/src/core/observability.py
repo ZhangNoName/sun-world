@@ -26,7 +26,12 @@ from .request_context import (
 )
 
 # Paths that should never produce INFO-level request logs.
-_HEALTH_CHECK_PATHS: set[str] = {"/healthz", "/favicon.ico", "/robots.txt"}
+_HEALTH_CHECK_PATHS: set[str] = {
+    "/healthz",
+    "/readyz",
+    "/favicon.ico",
+    "/robots.txt",
+}
 
 _MAX_USER_AGENT_LENGTH = 200
 _MAX_LOG_VALUE_LENGTH = 200

@@ -8,8 +8,8 @@
 ./start.sh
 ```
 
-服务监听 `http://0.0.0.0:8000`，健康检查端点 `/healthz`。
-The server listens on `http://0.0.0.0:8000`. Health check at `/healthz`.
+服务监听 `http://0.0.0.0:8000`，进程健康检查端点 `/healthz`，依赖就绪检查端点 `/readyz`。
+The server listens on `http://0.0.0.0:8000`. Process health check at `/healthz`; dependency readiness check at `/readyz`.
 
 ## 部署 / Deployment
 
@@ -30,6 +30,7 @@ sudo systemctl status blog-api.service       # 查看状态 / check status
 sudo systemctl restart blog-api.service      # 重启 / restart
 sudo journalctl -u blog-api.service -n 100 --no-pager  # 最近日志 / recent logs
 curl -fsS http://127.0.0.1:8000/healthz      # 本地健康检查 / local health
+curl -fsS http://127.0.0.1:8000/readyz       # 本地就绪检查 / local readiness
 curl -fsS https://api.sunworld.site/healthz  # 公网健康检查 / public health
 ```
 
