@@ -28,6 +28,37 @@ All JSON API responses use the unified `{ code, data, msg }` envelope.
 - `data` is `null` when no payload (delete, logout, etc.).
 - `msg` is always present and human-readable.
 
+## Stable Error Codes
+
+Stable string error codes are the semantic contract between backend failures,
+frontend module copy, telemetry, and future admin analytics.
+
+Backend source:
+
+```python
+from src.core.error_codes import BLOG_NOT_FOUND, is_error_code_in_namespace
+```
+
+Frontend source:
+
+```ts
+import {
+  BLOG_NOT_FOUND,
+  resolveErrorMessage,
+  isErrorCodeInNamespace,
+} from '@/shared/errors/error-codes'
+```
+
+Rules:
+
+- Use namespaces: `COMMON`, `AUTH`, `BLOG`, `AI`, `FILE`, `EDITOR`, `ADMIN`.
+- Add every new stable code to backend `ERROR_CODE_NAMESPACES`.
+- Add every new stable code to frontend `ERROR_CODE_DETAILS` with default
+  message, severity, and retryability.
+- Module error files should resolve messages through `resolveErrorMessage()`
+  instead of duplicating `switch` statements.
+- Global HTTP notifications use the same registry for toast severity.
+
 ## Exceptions
 
 The envelope does **not** apply to:
@@ -108,7 +139,7 @@ The axios response interceptor in `http.ts` handles envelopes automatically:
 
 1. Detects envelope responses by checking for a `code` field.
 2. On `code === 1` or `code === "1"`: unwraps `data`, resolves the promise with business data.
-3. On any other `code`: shows an error message (for auth/session failures), rejects with `ApiError`.
+3. On any other `code`: resolves display copy through the shared error registry, shows a warning or error toast based on severity, and rejects with `ApiError`.
 4. Non-envelope responses pass through as-is.
 
 The error interceptor converts HTTP errors to `ApiError`, preferring the backend `msg` when the error response is also an envelope.
@@ -123,6 +154,9 @@ import { request } from '@/service/http'
 const user = await request.get<UserInfo>('/user/me')
 // user is UserInfo, not ApiEnvelope<UserInfo>
 ```
+
+New module APIs should prefer typed helpers from `@/shared/api`, while legacy
+service wrappers can keep using `request` during migration.
 
 ### Using Contract Types
 

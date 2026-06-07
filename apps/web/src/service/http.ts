@@ -2,6 +2,11 @@ import { ElMessage } from 'element-plus'
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/store/auth'
 import { getDeviceId } from '@/util/auth'
+import {
+  getErrorSeverity,
+  isErrorCodeInNamespace,
+  resolveErrorMessage,
+} from '@/shared/errors/error-codes'
 import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
@@ -152,11 +157,27 @@ export class ApiError extends Error {
 }
 
 function notifyApiError(error: ApiError) {
-  if (error.code === 401 || error.code === '401' || error.status === 401) {
-    ElMessage.warning(error.msg || '您的账号已登出或超时，即将登出...')
+  const message = resolveErrorMessage(error, {
+    fallback: '请求失败',
+    preferBackendMessage: true,
+  })
+  const isAuthError =
+    error.code === 401 ||
+    error.code === '401' ||
+    error.status === 401 ||
+    isErrorCodeInNamespace(error.code, 'AUTH')
+
+  if (isAuthError) {
+    ElMessage.warning(message || '您的账号已登出或超时，即将登出...')
     return
   }
-  ElMessage.error(error.msg || '请求失败')
+
+  if (getErrorSeverity(error.code) === 'warning') {
+    ElMessage.warning(message)
+    return
+  }
+
+  ElMessage.error(message)
 }
 
 // HTTP 状态码默认文案

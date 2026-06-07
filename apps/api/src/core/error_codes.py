@@ -22,6 +22,8 @@ Usage:
     return fail(msg="Resource not found", code=COMMON_NOT_FOUND)
 """
 
+from typing import Optional
+
 # ---------------------------------------------------------------------------
 # COMMON - 通用
 # ---------------------------------------------------------------------------
@@ -74,3 +76,49 @@ EDITOR_LOAD_FAILED = "EDITOR_LOAD_FAILED"
 # ---------------------------------------------------------------------------
 ADMIN_ACCESS_DENIED = "ADMIN_ACCESS_DENIED"
 ADMIN_OPERATION_FAILED = "ADMIN_OPERATION_FAILED"
+
+
+ERROR_CODE_NAMESPACES = {
+    COMMON_BAD_REQUEST: "COMMON",
+    COMMON_VALIDATION_ERROR: "COMMON",
+    COMMON_NOT_FOUND: "COMMON",
+    COMMON_INTERNAL_ERROR: "COMMON",
+    COMMON_RATE_LIMITED: "COMMON",
+    AUTH_UNAUTHORIZED: "AUTH",
+    AUTH_TOKEN_EXPIRED: "AUTH",
+    AUTH_FORBIDDEN: "AUTH",
+    AUTH_LOGIN_FAILED: "AUTH",
+    AUTH_REGISTER_CONFLICT: "AUTH",
+    BLOG_NOT_FOUND: "BLOG",
+    BLOG_CREATE_FAILED: "BLOG",
+    BLOG_UPDATE_FAILED: "BLOG",
+    BLOG_DELETE_FAILED: "BLOG",
+    AI_REQUEST_FAILED: "AI",
+    AI_RATE_LIMITED: "AI",
+    AI_MODEL_UNAVAILABLE: "AI",
+    FILE_UPLOAD_FAILED: "FILE",
+    FILE_TOO_LARGE: "FILE",
+    FILE_TYPE_UNSUPPORTED: "FILE",
+    FILE_NOT_FOUND: "FILE",
+    EDITOR_SAVE_FAILED: "EDITOR",
+    EDITOR_LOAD_FAILED: "EDITOR",
+    ADMIN_ACCESS_DENIED: "ADMIN",
+    ADMIN_OPERATION_FAILED: "ADMIN",
+}
+
+ERROR_CODES = frozenset(ERROR_CODE_NAMESPACES.keys())
+
+
+def is_known_error_code(code: object) -> bool:
+    """Return True when code is a stable string error code."""
+    return isinstance(code, str) and code in ERROR_CODES
+
+
+def get_error_namespace(code: object) -> Optional[str]:
+    """Return the namespace for a stable error code, if known."""
+    return ERROR_CODE_NAMESPACES.get(code) if isinstance(code, str) else None
+
+
+def is_error_code_in_namespace(code: object, namespace: str) -> bool:
+    """Return True when code belongs to the requested namespace."""
+    return get_error_namespace(code) == namespace

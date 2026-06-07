@@ -152,6 +152,12 @@ typing and path-parameter interpolation.
 - Failure codes may be legacy numbers or stable strings.
 - New domain errors should prefer stable string constants from backend `apps/api/src/core/error_codes.py` and frontend `apps/web/src/shared/errors/error-codes.ts`.
 - `ApiResponse.code` is typed as `int | str` in the backend and `number | string` in the frontend.
+- Backend `ERROR_CODE_NAMESPACES` and frontend `ERROR_CODE_DETAILS` are the
+  durable registries for stable string codes.
+- Frontend modules should use `resolveErrorMessage()` with their namespace
+  instead of maintaining local string switches.
+- Global API notifications use the registry's severity metadata, so stable
+  codes can drive user copy, telemetry grouping, and future admin analytics.
 
 ## Prisma Status
 

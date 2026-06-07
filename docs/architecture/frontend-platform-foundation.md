@@ -84,6 +84,9 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - Frontend error codes in `shared/errors/error-codes.ts` mirror backend definitions in `apps/api/src/core/error_codes.py`.
 - Namespaces: `COMMON`, `AUTH`, `BLOG`, `AI`, `FILE`, `EDITOR`, `ADMIN`.
 - Use these constants in error-handling logic instead of hard-coded numeric values.
+- `ERROR_CODE_DETAILS` is the frontend registry for default copy, severity, retryability, and namespace metadata.
+- `resolveErrorMessage()` is the shared resolver used by module-level error files; modules should provide a namespace and only override copy when the domain experience needs it.
+- `service/http.ts` uses the same registry for global toast severity so auth/session warnings, validation warnings, and server errors stay consistent.
 
 ## Bootstrap Hygiene
 
@@ -154,9 +157,35 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 
 ### Error Mapping
 
-- `modules/blog/errors.ts` maps shared `ApiError` values and stable blog error codes into user-facing blog-domain messages.
+- `modules/blog/errors.ts` maps stable blog error codes through the shared
+  `resolveErrorMessage()` registry instead of maintaining its own switch.
+- `modules/account/errors.ts` uses the same resolver with the `AUTH`
+  namespace.
 - `service/http.ts` supports both numeric legacy codes and string stable error codes.
 - Success remains `code === 1` or `code === '1'`; `code === 0` is treated as failure.
+
+## Phase 15 Error Registry
+
+### Shared Registry
+
+- `shared/errors/error-codes.ts` now owns constants, `ERROR_CODE_DETAILS`,
+  namespace helpers, severity helpers, retryability helpers, and
+  `resolveErrorMessage()`.
+- New frontend modules should call `resolveErrorMessage(error, { namespace,
+  fallback })` from their `modules/<name>/errors.ts` file.
+- Module code should not compare raw strings directly except through exported
+  constants or helpers such as `isErrorCodeInNamespace()`.
+
+### Backend Alignment
+
+- `apps/api/src/core/error_codes.py` now exposes `ERROR_CODE_NAMESPACES`,
+  `ERROR_CODES`, `is_known_error_code()`, `get_error_namespace()`, and
+  `is_error_code_in_namespace()`.
+- New backend routers should return failures through `fail(msg=..., code=...)`
+  with stable string codes where possible.
+- When a new stable error code is added, add it to both backend
+  `error_codes.py` and frontend `shared/errors/error-codes.ts`, then document
+  the intended namespace and default message.
 
 ### Route Loading
 

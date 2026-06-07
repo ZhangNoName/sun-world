@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 14 typed API contract helper.
+- Goal: Implement Phase 15 shared error-code registry and resolver.
 - Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,33 @@
 
 ## Files Changed
 
+- `apps/web/src/shared/errors/error-codes.ts`
+  - Upgrades the frontend error-code constants into a registry with namespace,
+    default message, severity, retryability, and resolver helpers.
+  - Adds `resolveErrorMessage()`, `isKnownErrorCode()`,
+    `isErrorCodeInNamespace()`, `getErrorSeverity()`, and
+    `isRetryableErrorCode()`.
+- `apps/web/src/service/http.ts`
+  - Uses the shared error registry for global API toast copy and warning/error
+    severity.
+  - Treats stable `AUTH_*` codes as auth warnings even when HTTP status is not
+    401.
+- `apps/web/src/modules/blog/errors.ts`
+  - Uses `resolveErrorMessage()` with the `BLOG` namespace instead of a local
+    switch and local Set.
+- `apps/web/src/modules/account/errors.ts`
+  - Uses `resolveErrorMessage()` with the `AUTH` namespace instead of a local
+    switch and local Set.
+- `apps/api/src/core/error_codes.py`
+  - Adds backend namespace helpers: `ERROR_CODE_NAMESPACES`, `ERROR_CODES`,
+    `is_known_error_code()`, `get_error_namespace()`, and
+    `is_error_code_in_namespace()`.
+- `docs/architecture/api-response-envelope.md`
+  - Documents the stable error-code registry and frontend resolver workflow.
+- `docs/architecture/api-contracts.md`
+  - Documents backend/frontend durable error-code registries.
+- `docs/architecture/frontend-platform-foundation.md`
+  - Records Phase 15 error registry behavior and module usage rules.
 - `packages/contracts/src/api-types.ts` **(new)**
   - Adds reusable OpenAPI helper types: method path lookup, response envelope
     extraction, success data unwrapping, request body, query params, and path
@@ -163,6 +190,11 @@
 
 ## Verification
 
+- Phase 15:
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
+  - `bash scripts/check-api.sh` → passed; 77 files compiled OK.
+  - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `git diff --check` → passed.
 - Phase 14:
   - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
   - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
@@ -203,6 +235,6 @@
 
 ## Next Step
 
-- Commit Phase 14 on `monorepo-api-import`, push it for review, then continue
-  migrating remaining legacy service wrappers behind the typed request boundary.
+- Commit Phase 15 on `monorepo-api-import`, push it for review, then continue
+  migrating remaining module/service boundaries.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.
