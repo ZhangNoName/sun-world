@@ -8,7 +8,7 @@
   - Commercial architecture, observability, and analytics documentation.
 - Repo/path: `/home/lighthouse/blog/sun-world`
 - Branch: `monorepo-api-import`
-- Commit: 3cf900d feat: 搭建商业化平台基础架构.
+- Commit: 568c314 feat: 搭建商业化平台基础架构.
 
 ## Implementation Summary
 
