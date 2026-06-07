@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/admin/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Admin Metrics
+         * @description Return a process-local backend request metrics snapshot.
+         */
+        get: operations["get_admin_metrics_admin_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/chat": {
         parameters: {
             query?: never;
@@ -645,6 +665,14 @@ export interface components {
             /** Msg */
             msg: string;
         };
+        /** ApiResponse[RequestMetricsSnapshot] */
+        ApiResponse_RequestMetricsSnapshot_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["RequestMetricsSnapshot"] | null;
+            /** Msg */
+            msg: string;
+        };
         /** ApiResponse[UserCreateResult] */
         ApiResponse_UserCreateResult_: {
             /** Code */
@@ -1003,6 +1031,39 @@ export interface components {
             /** Phone */
             phone: string | null;
         };
+        /** RequestMetricsSnapshot */
+        RequestMetricsSnapshot: {
+            /**
+             * Avg Duration Ms
+             * @description Average latency in milliseconds.
+             */
+            avg_duration_ms: number;
+            /**
+             * Error Requests
+             * @description Total recorded 5xx requests.
+             */
+            error_requests: number;
+            /**
+             * Generated At
+             * Format: date-time
+             * @description Snapshot generation time.
+             */
+            generated_at: string;
+            /**
+             * Max Duration Ms
+             * @description Maximum latency in milliseconds.
+             */
+            max_duration_ms: number;
+            /** Routes */
+            routes?: components["schemas"]["RouteMetric"][];
+            /** Statuses */
+            statuses?: components["schemas"]["StatusMetric"][];
+            /**
+             * Total Requests
+             * @description Total recorded requests.
+             */
+            total_requests: number;
+        };
         /** ResetPasswordModel */
         ResetPasswordModel: {
             /** New Password */
@@ -1070,6 +1131,52 @@ export interface components {
             description: string | null;
             /** Name */
             name: string | null;
+        };
+        /** RouteMetric */
+        RouteMetric: {
+            /**
+             * Avg Duration Ms
+             * @description Average latency in milliseconds.
+             */
+            avg_duration_ms: number;
+            /**
+             * Count
+             * @description Total requests for this route.
+             */
+            count: number;
+            /**
+             * Error Count
+             * @description 5xx requests for this route.
+             */
+            error_count: number;
+            /**
+             * Max Duration Ms
+             * @description Maximum latency in milliseconds.
+             */
+            max_duration_ms: number;
+            /**
+             * Method
+             * @description HTTP method, upper-case.
+             */
+            method: string;
+            /**
+             * Route
+             * @description FastAPI route template or bounded fallback path.
+             */
+            route: string;
+        };
+        /** StatusMetric */
+        StatusMetric: {
+            /**
+             * Count
+             * @description Total requests with this status.
+             */
+            count: number;
+            /**
+             * Status
+             * @description HTTP status code.
+             */
+            status: number;
         };
         /** TagBase */
         TagBase: {
@@ -1264,6 +1371,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_admin_metrics_admin_metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_RequestMetricsSnapshot_"];
+                };
+            };
+        };
+    };
     get_answer_ai_chat_post: {
         parameters: {
             query?: never;

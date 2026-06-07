@@ -158,12 +158,58 @@ semantic content of the `message` field follows the Phase 8 log contract.
 Human-readable format with timestamp, level, module location, and
 message — identical to loguru's default sink format.
 
+### Phase 10 — Admin Request Metrics Snapshot (Implemented)
+
+The backend exposes a small authenticated read model for the admin module.
+It is intentionally in-memory and process-local: metrics reset when the API
+process restarts and are not a substitute for long-term observability storage.
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `apps/api/src/core/metrics.py` | Thread-safe, bounded request metrics accumulator. |
+| `apps/api/src/core/observability.py` | Records request metrics after logging each non-noisy request. |
+| `apps/api/src/type/admin_type.py` | Pydantic response models for admin metrics contracts. |
+| `apps/api/src/routers/admin/admin.py` | Authenticated `GET /admin/metrics` endpoint. |
+| `apps/web/src/modules/admin/api.ts` | Typed frontend API for fetching admin metrics. |
+| `apps/web/src/modules/admin/types.ts` | Frontend types derived from generated OpenAPI contracts. |
+
+**Endpoint:**
+
+`GET /admin/metrics`
+
+- Requires the existing login cookie via `get_current_user`.
+- Returns the standard `{ code, data, msg }` envelope.
+- Skips noisy health/static probe paths (`/healthz`, `/favicon.ico`, `/robots.txt`).
+- Aggregates route templates where FastAPI exposes them, which avoids storing
+  high-cardinality raw IDs in metrics keys.
+
+**Snapshot fields:**
+
+| Field | Description |
+|---|---|
+| `generated_at` | Snapshot generation timestamp. |
+| `total_requests` | Total non-noisy requests observed by this process. |
+| `error_requests` | Total 5xx responses observed by this process. |
+| `avg_duration_ms` | Average request duration. |
+| `max_duration_ms` | Maximum request duration. |
+| `routes` | Per-method/per-route counts, 5xx counts, average latency, and max latency. |
+| `statuses` | Status-code distribution. |
+
+**Limitations by design:**
+
+- Process-local memory only; multi-process deployments need aggregation later.
+- No percentiles yet because no histogram backend is attached.
+- No user identifiers, request bodies, query strings, or credential headers are
+  recorded.
+
 ### Future Phases
 
-- **Phase 10 — OpenTelemetry hooks.** Add distributed tracing context
-  propagation (traceparent / tracestate) alongside the existing request ID.
-- **Phase 11 — Admin metrics endpoint.** Expose request volume, latency
-  percentiles, and error-code distribution for the admin dashboard.
+- **OpenTelemetry hooks.** Add distributed tracing context propagation
+  (`traceparent` / `tracestate`) alongside the existing request ID.
+- **Persistent analytics store.** Persist metrics/events for long-term admin
+  dashboards and historical trend analysis.
 - **Alerting thresholds.** Define alert rules for error rate, p95 latency,
   and availability.
 

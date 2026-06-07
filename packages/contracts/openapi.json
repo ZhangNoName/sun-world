@@ -283,6 +283,41 @@
         "title": "ApiResponse[NoneType]",
         "type": "object"
       },
+      "ApiResponse_RequestMetricsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequestMetricsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[RequestMetricsSnapshot]",
+        "type": "object"
+      },
       "ApiResponse_UserCreateResult_": {
         "properties": {
           "code": {
@@ -1033,6 +1068,63 @@
         "title": "RegisterModel",
         "type": "object"
       },
+      "RequestMetricsSnapshot": {
+        "properties": {
+          "avg_duration_ms": {
+            "description": "Average latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Avg Duration Ms",
+            "type": "number"
+          },
+          "error_requests": {
+            "description": "Total recorded 5xx requests.",
+            "minimum": 0.0,
+            "title": "Error Requests",
+            "type": "integer"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "max_duration_ms": {
+            "description": "Maximum latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Max Duration Ms",
+            "type": "number"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/RouteMetric"
+            },
+            "title": "Routes",
+            "type": "array"
+          },
+          "statuses": {
+            "items": {
+              "$ref": "#/components/schemas/StatusMetric"
+            },
+            "title": "Statuses",
+            "type": "array"
+          },
+          "total_requests": {
+            "description": "Total recorded requests.",
+            "minimum": 0.0,
+            "title": "Total Requests",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "total_requests",
+          "error_requests",
+          "avg_duration_ms",
+          "max_duration_ms"
+        ],
+        "title": "RequestMetricsSnapshot",
+        "type": "object"
+      },
       "ResetPasswordModel": {
         "properties": {
           "new_password": {
@@ -1252,6 +1344,75 @@
           "description"
         ],
         "title": "RoleUpdateModel",
+        "type": "object"
+      },
+      "RouteMetric": {
+        "properties": {
+          "avg_duration_ms": {
+            "description": "Average latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Avg Duration Ms",
+            "type": "number"
+          },
+          "count": {
+            "description": "Total requests for this route.",
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "error_count": {
+            "description": "5xx requests for this route.",
+            "minimum": 0.0,
+            "title": "Error Count",
+            "type": "integer"
+          },
+          "max_duration_ms": {
+            "description": "Maximum latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Max Duration Ms",
+            "type": "number"
+          },
+          "method": {
+            "description": "HTTP method, upper-case.",
+            "title": "Method",
+            "type": "string"
+          },
+          "route": {
+            "description": "FastAPI route template or bounded fallback path.",
+            "title": "Route",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "route",
+          "count",
+          "error_count",
+          "avg_duration_ms",
+          "max_duration_ms"
+        ],
+        "title": "RouteMetric",
+        "type": "object"
+      },
+      "StatusMetric": {
+        "properties": {
+          "count": {
+            "description": "Total requests with this status.",
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "status": {
+            "description": "HTTP status code.",
+            "title": "Status",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "StatusMetric",
         "type": "object"
       },
       "TagBase": {
@@ -1564,6 +1725,28 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/metrics": {
+      "get": {
+        "description": "Return a process-local backend request metrics snapshot.",
+        "operationId": "get_admin_metrics_admin_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequestMetricsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Metrics",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/ai/chat": {
       "post": {
         "operationId": "get_answer_ai_chat_post",

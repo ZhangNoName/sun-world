@@ -17,6 +17,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+from .metrics import record_request_metric
 from .request_context import (
     generate_request_id,
     get_request_id,
@@ -70,10 +71,12 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
             duration_ms = (time.monotonic() - start) * 1000
             response.headers["X-Request-ID"] = request_id
             self._log(request, response.status_code, duration_ms)
+            self._record_metrics(request, response.status_code, duration_ms)
             return response
         except Exception:
             duration_ms = (time.monotonic() - start) * 1000
             self._log(request, 500, duration_ms)
+            self._record_metrics(request, 500, duration_ms)
             raise
         finally:
             reset_request_id(context_token)
@@ -115,6 +118,29 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
             logger.debug(msg)
         else:
             logger.info(msg)
+
+    def _record_metrics(
+        self,
+        request: Request,
+        status_code: int,
+        duration_ms: float,
+    ) -> None:
+        path = request.url.path
+        if path in _HEALTH_CHECK_PATHS:
+            return
+
+        route_key = path
+        route = request.scope.get("route")
+        route_path = getattr(route, "path", "") if route is not None else ""
+        if route_path:
+            route_key = route_path
+
+        record_request_metric(
+            method=request.method,
+            route=route_key,
+            status_code=status_code,
+            duration_ms=duration_ms,
+        )
 
 
 def resolve_request_id(request: Request) -> str:

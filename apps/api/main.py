@@ -9,7 +9,17 @@ from app_instance import app  # Import the app instance
 from src.core.observability import safe_log_value
 from src.core.request_context import get_request_id
 from src.core.response import fail
-from src.routers import blog_router, base_router, user_router, resource_router, role_router, auth_router, ai_router, file_router
+from src.routers import (
+    admin_router,
+    ai_router,
+    auth_router,
+    base_router,
+    blog_router,
+    file_router,
+    resource_router,
+    role_router,
+    user_router,
+)
 
 
 # ---- 全局异常处理器 — 统一使用 { code, data, msg } envelope ----
@@ -105,7 +115,8 @@ routers = [
     resource_router,
     auth_router,
     ai_router,
-    file_router
+    file_router,
+    admin_router,
 ]
 
 # 使用循环一次性添加所有路由器
