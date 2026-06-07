@@ -602,6 +602,32 @@ export interface components {
             /** Msg */
             msg: string;
         };
+        /** ApiResponse[BlogStats] */
+        ApiResponse_BlogStats_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["BlogStats"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[List[Category]] */
+        ApiResponse_List_Category__: {
+            /** Code */
+            code: number | string;
+            /** Data */
+            data?: components["schemas"]["Category"][] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[List[TagBase]] */
+        ApiResponse_List_TagBase__: {
+            /** Code */
+            code: number | string;
+            /** Data */
+            data?: components["schemas"]["TagBase"][] | null;
+            /** Msg */
+            msg: string;
+        };
         /** ApiResponse[NoneType] */
         ApiResponse_NoneType_: {
             /** Code */
@@ -827,6 +853,34 @@ export interface components {
              */
             total: number;
         };
+        /** BlogStats */
+        BlogStats: {
+            /**
+             * Blog Count
+             * @description 博客文章的总数量
+             * @example 100
+             */
+            blog_count: number;
+            /**
+             * Category Count
+             * @description 博客种类的总数量
+             * @example 10
+             */
+            category_count: number;
+            /**
+             * Tag Count
+             * @description 博客标签的总数量
+             * @example 20
+             */
+            tag_count: number;
+            /**
+             * Total View Num
+             * @description 所有博客的总浏览量，默认为0
+             * @default 0
+             * @example 5000
+             */
+            total_view_num: number;
+        };
         /** Body_upload_image_file_image_upload_post */
         Body_upload_image_file_image_upload_post: {
             /** File */
@@ -836,6 +890,19 @@ export interface components {
         Body_upload_video_file_video_upload_post: {
             /** File */
             file: string;
+        };
+        /** Category */
+        Category: {
+            /**
+             * Id
+             * @description 分类 ID
+             */
+            id: number;
+            /**
+             * Name
+             * @description 分类名称
+             */
+            name: string;
         };
         /** ChatRequest */
         ChatRequest: {
@@ -949,6 +1016,19 @@ export interface components {
             description: string | null;
             /** Name */
             name: string | null;
+        };
+        /** TagBase */
+        TagBase: {
+            /**
+             * Id
+             * @description 标签 ID
+             */
+            id: number;
+            /**
+             * Name
+             * @description 标签名称
+             */
+            name: string;
         };
         /** TagNew */
         TagNew: {
@@ -1429,7 +1509,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_BlogStats_"];
                 };
             };
         };
@@ -1449,7 +1529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_List_Category__"];
                 };
             };
         };
@@ -1469,7 +1549,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_List_TagBase__"];
                 };
             };
         };

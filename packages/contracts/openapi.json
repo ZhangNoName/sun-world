@@ -106,6 +106,119 @@
         "title": "ApiResponse[BlogPage]",
         "type": "object"
       },
+      "ApiResponse_BlogStats_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogStats"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogStats]",
+        "type": "object"
+      },
+      "ApiResponse_List_Category__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[List[Category]]",
+        "type": "object"
+      },
+      "ApiResponse_List_TagBase__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TagBase"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[List[TagBase]]",
+        "type": "object"
+      },
       "ApiResponse_NoneType_": {
         "properties": {
           "code": {
@@ -476,6 +589,42 @@
         "title": "BlogPage",
         "type": "object"
       },
+      "BlogStats": {
+        "properties": {
+          "blog_count": {
+            "description": "博客文章的总数量",
+            "example": 100,
+            "title": "Blog Count",
+            "type": "integer"
+          },
+          "category_count": {
+            "description": "博客种类的总数量",
+            "example": 10,
+            "title": "Category Count",
+            "type": "integer"
+          },
+          "tag_count": {
+            "description": "博客标签的总数量",
+            "example": 20,
+            "title": "Tag Count",
+            "type": "integer"
+          },
+          "total_view_num": {
+            "default": 0,
+            "description": "所有博客的总浏览量，默认为0",
+            "example": 5000,
+            "title": "Total View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "blog_count",
+          "category_count",
+          "tag_count"
+        ],
+        "title": "BlogStats",
+        "type": "object"
+      },
       "Body_upload_image_file_image_upload_post": {
         "properties": {
           "file": {
@@ -502,6 +651,26 @@
           "file"
         ],
         "title": "Body_upload_video_file_video_upload_post",
+        "type": "object"
+      },
+      "Category": {
+        "properties": {
+          "id": {
+            "description": "分类 ID",
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "description": "分类名称",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Category",
         "type": "object"
       },
       "ChatRequest": {
@@ -844,6 +1013,26 @@
           "description"
         ],
         "title": "RoleUpdateModel",
+        "type": "object"
+      },
+      "TagBase": {
+        "properties": {
+          "id": {
+            "description": "标签 ID",
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "description": "标签名称",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TagBase",
         "type": "object"
       },
       "TagNew": {
@@ -1457,7 +1646,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogStats_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1478,7 +1669,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_Category__"
+                }
               }
             },
             "description": "Successful Response"
@@ -1499,7 +1692,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_TagBase__"
+                }
               }
             },
             "description": "Successful Response"

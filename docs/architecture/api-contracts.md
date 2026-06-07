@@ -89,6 +89,7 @@ The frontend should consume API request/response types. It should not depend on 
 
 - `apps/web/src/modules/blog/types.ts` imports generated `operations` and `components` from `@sun-world/contracts`.
 - Blog module list/detail/create types are derived from generated contract types where OpenAPI exposes a useful schema.
+- `apps/web/src/service/baseRequest.ts` imports generated base/category/tag contract types for shared startup data.
 - UI-facing view models stay local to the module because they are presentation shapes, not API shapes.
 - Legacy `apps/web/src/service/request.ts` remains compatibility glue while new module consumers prefer `modules/*/api.ts`.
 
