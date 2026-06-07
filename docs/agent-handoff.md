@@ -1,56 +1,59 @@
 ## Current Handoff
 
-- Goal: Implement Phase 3 blog module boundary and error/loading foundation for Sun World.
+- Goal: Implement Phase 4 backend error-code and API contract alignment for Sun World.
 - Status: Completed on branch `monorepo-api-import`; pending Codex commit at handoff write time.
 - Repo/path: `/home/lighthouse/blog/sun-world`
 - Branch: `monorepo-api-import`
 
 ## Files Changed
 
-- `apps/web/src/app/router/routes.ts`
-  - removed `/new_article` from core routes so blog owns article-editor routing.
-- `apps/web/src/modules/blog/index.ts`
-  - registered `/blog` and `/new_article` with blog-specific route metadata.
-- `apps/web/src/modules/blog/api.ts`
-  - added typed module API wrappers for blog list, detail, and creation.
+- `apps/api/src/core/response.py`
+  - changed `ApiResponse.code` to support `int | str`,
+  - allowed `fail()` to receive stable string error codes,
+  - updated helper failures to use stable common/auth codes.
+- `apps/api/src/type/type.py`
+  - aligned legacy `ResponseModel.code` with `int | str`.
+- `apps/api/src/type/blog_type.py`
+  - added `BlogDetail`, `BlogPage`, and `BlogCreateResult` Pydantic models for OpenAPI response schemas.
+- `apps/api/src/routers/blog/blog.py`
+  - added `response_model` declarations for blog list/detail/create/delete,
+  - used `BLOG_CREATE_FAILED` and `BLOG_NOT_FOUND` stable error codes in failure branches.
+- `packages/contracts/openapi.json`
+  - regenerated OpenAPI schema.
+- `packages/contracts/src/generated-api-types.ts`
+  - regenerated TypeScript contracts; blog response envelopes now expose `code: number | string`.
 - `apps/web/src/modules/blog/types.ts`
-  - added `BlogDetail`, `CreateBlogPayload`, and `CreateBlogResponse` types.
-- `apps/web/src/modules/blog/errors.ts`
-  - added blog-domain error-code checks and user-facing error message mapping.
+  - consumed generated `operations` and `components` from `@sun-world/contracts`,
+  - kept UI-facing view models local to the blog module,
+  - kept a form-compatible create payload while exposing `BlogCreateContract`.
+- `apps/web/src/modules/blog/composables/useBlogList.ts`
+  - hardened mapping for optional generated fields (`id`, `updated_at`, nullable tags).
 - `apps/web/src/pages/blog/index.vue`
-  - switched to module API/error helpers,
-  - added loading skeleton,
-  - removed debug logs,
-  - improved responsive layout and metadata rendering.
-- `apps/web/src/pages/article/index.vue`
-  - switched save flow to module `createBlog`,
-  - added save-in-progress state and module error messages,
-  - improved mobile form layout.
-- `apps/web/src/service/http.ts`
-  - widened envelope/error code typing to `number | string`,
-  - preserved success only for `code === 1` or `code === '1'`,
-  - kept `code === 0` as a failure path.
-- `apps/web/src/app/router/use-route-loading.ts`
-  - added reusable route transition loading state.
-- `apps/web/src/main.ts`
-  - installed route loading state and provided it to the app.
-- `apps/web/src/App.vue`
-  - rendered a token-based top route loading bar.
-- `docs/architecture/frontend-platform-foundation.md`
-  - documented Phase 3 route ownership, module API, error mapping, and route loading.
+  - aligned initial detail state with generated contract fields.
+- `docs/architecture/api-response-envelope.md`
+  - documented stable string error-code support and success semantics.
+- `docs/architecture/api-contracts.md`
+  - documented current generated-contract consumption and error-code contract.
+
+## Commands Run
+
+- `SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate`
+- `git diff --check`
+- `bash scripts/check-api.sh`
+- `pnpm build:web`
+- `pnpm check:web`
+- `curl -fsS https://api.sunworld.site/healthz`
+- `curl -I --max-time 15 https://sunworld.site`
 
 ## Verification
 
-- `git diff --check` - passed.
-- `pnpm build:web` - passed.
-- `bash scripts/check-api.sh` - passed.
-- `pnpm check:web` - passed.
-- Public health checks:
-  - `https://api.sunworld.site/healthz` - returned `{"status":"ok"}`.
-  - `https://sunworld.site` - returned HTTP 200.
-- Secret scan over source diff:
-  - no real secrets found,
-  - matches were documentation policy words such as `secret` and `token`.
+- Contracts generation passed.
+- Backend syntax check passed.
+- Frontend build passed.
+- `pnpm check:web` passed.
+- `https://api.sunworld.site/healthz` returned `{"status":"ok"}`.
+- `https://sunworld.site` returned HTTP 200.
+- Secret scan over source diff found no real secrets; only documentation policy words matched.
 - Known warnings:
   - Vite CJS Node API deprecation warning.
   - Element Plus Sass legacy JS API / `if()` deprecation warnings.
@@ -62,5 +65,5 @@
 
 ## Next Step
 
-- Next frontend hardening step: move the physical blog reader/editor page files under `modules/blog/pages/` once the legacy imports are no longer shared.
-- Next API contract step: align backend `ApiResponse.code` typing with stable string error codes and regenerate `packages/contracts`.
+- Continue adding explicit `response_model=ApiResponse[...]` declarations to non-blog routers so all generated contracts stop falling back to `unknown`.
+- Then migrate AI/editor modules to the same `modules/*/api.ts`, `types.ts`, and `errors.ts` pattern.

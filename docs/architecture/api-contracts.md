@@ -85,6 +85,20 @@ import type { paths, components } from '@sun-world/contracts'
 
 The frontend should consume API request/response types. It should not depend on database table schemas.
 
+## Current Consumption
+
+- `apps/web/src/modules/blog/types.ts` imports generated `operations` and `components` from `@sun-world/contracts`.
+- Blog module list/detail/create types are derived from generated contract types where OpenAPI exposes a useful schema.
+- UI-facing view models stay local to the module because they are presentation shapes, not API shapes.
+- Legacy `apps/web/src/service/request.ts` remains compatibility glue while new module consumers prefer `modules/*/api.ts`.
+
+## Error-Code Contract
+
+- Success remains numeric `1`.
+- Failure codes may be legacy numbers or stable strings.
+- New domain errors should prefer stable string constants from backend `apps/api/src/core/error_codes.py` and frontend `apps/web/src/shared/errors/error-codes.ts`.
+- `ApiResponse.code` is typed as `int | str` in the backend and `number | string` in the frontend.
+
 ## Prisma Status
 
 Prisma remains inactive in this architecture. Reconsider Prisma only if:

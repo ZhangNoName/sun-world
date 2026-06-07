@@ -16,14 +16,15 @@ All JSON API responses use the unified `{ code, data, msg }` envelope.
 
 | Field  | Type               | Description                              |
 | ------ | ------------------ | ---------------------------------------- |
-| `code` | `int`              | `1` = business success; otherwise fail   |
+| `code` | `int` or `string`  | `1` = business success; otherwise fail. Stable errors use string codes. |
 | `data` | `any` or `null`    | Typed business payload, `null` if absent |
 | `msg`  | `string`           | Human-readable message                   |
 
 ## Rules
 
-- `code === 1`: business success — frontend unwraps `data`.
-- `code !== 1`: business failure — frontend rejects with `ApiError`.
+- `code === 1` or `code === "1"`: business success — frontend unwraps `data`.
+- Any other `code`: business failure — frontend rejects with `ApiError`.
+- Stable domain errors should use string codes such as `BLOG_NOT_FOUND`.
 - `data` is `null` when no payload (delete, logout, etc.).
 - `msg` is always present and human-readable.
 
@@ -48,19 +49,19 @@ from src.core.response import ok, fail, not_found, unauthorized
 return ok(data=payload, msg="获取成功")
 
 # Failure
-return fail(msg="创建失败")
-return fail(msg="用户名或密码错误", code=0)
+return fail(msg="创建失败", code=BLOG_CREATE_FAILED)
+return fail(msg="用户名或密码错误", code=AUTH_LOGIN_FAILED)
 
 # Specialized helpers
-return not_found(msg="资源不存在")    # code=0
-return unauthorized()                 # code=401, msg="未授权，请重新登录"
+return not_found(msg="资源不存在")    # code=COMMON_NOT_FOUND
+return unauthorized()                 # code=AUTH_UNAUTHORIZED
 ```
 
 ### ApiResponse Model
 
 ```python
 class ApiResponse(BaseModel, Generic[T]):
-    code: int
+    code: int | str
     data: Optional[T] = None
     msg: str
 ```
@@ -86,7 +87,7 @@ import type { ApiEnvelope, ApiError } from '@/service/http'
 
 // ApiEnvelope<T> — the raw envelope shape
 interface ApiEnvelope<T = unknown> {
-  code: number
+  code: number | string
   data: T | null
   msg: string
   message?: string // legacy compatibility
@@ -94,7 +95,7 @@ interface ApiEnvelope<T = unknown> {
 
 // ApiError — thrown on any business or network failure
 class ApiError extends Error {
-  code: number
+  code: number | string
   msg: string
   status?: number
   payload: unknown
@@ -106,8 +107,8 @@ class ApiError extends Error {
 The axios response interceptor in `http.ts` handles envelopes automatically:
 
 1. Detects envelope responses by checking for a `code` field.
-2. On `code === 1`: unwraps `data`, resolves the promise with business data.
-3. On `code !== 1`: shows an error message (for 401), rejects with `ApiError`.
+2. On `code === 1` or `code === "1"`: unwraps `data`, resolves the promise with business data.
+3. On any other `code`: shows an error message (for auth/session failures), rejects with `ApiError`.
 4. Non-envelope responses pass through as-is.
 
 The error interceptor converts HTTP errors to `ApiError`, preferring the backend `msg` when the error response is also an envelope.

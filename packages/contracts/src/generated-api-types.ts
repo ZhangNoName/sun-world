@@ -578,10 +578,102 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApiResponse[BlogCreateResult] */
+        ApiResponse_BlogCreateResult_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["BlogCreateResult"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[BlogDetail] */
+        ApiResponse_BlogDetail_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["BlogDetail"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[BlogPage] */
+        ApiResponse_BlogPage_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["BlogPage"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[NoneType] */
+        ApiResponse_NoneType_: {
+            /** Code */
+            code: number | string;
+            /** Data */
+            data?: null;
+            /** Msg */
+            msg: string;
+        };
         /** BindResourcesModel */
         BindResourcesModel: {
             /** Resource Ids */
             resource_ids: number[];
+        };
+        /** BlogBase */
+        BlogBase: {
+            /**
+             * Abstract
+             * @description 文章摘要
+             */
+            abstract: string;
+            /**
+             * Author
+             * @description 作者
+             * @default zxy
+             */
+            author: string | null;
+            /**
+             * Byte Num
+             * @description 评论次数
+             * @default 0
+             */
+            byte_num: number;
+            /**
+             * Category
+             * @description 分类
+             */
+            category?: number | null;
+            /**
+             * Comment Num
+             * @description 评论次数
+             * @default 0
+             */
+            comment_num: number;
+            /**
+             * Id
+             * @description 博客的唯一标识符
+             */
+            id?: number;
+            /**
+             * Tag
+             * @description 标签
+             * @default []
+             */
+            tag: number[] | null;
+            /**
+             * Title
+             * @description 博客标题
+             */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description 更新时间
+             */
+            updated_at?: string;
+            /**
+             * View Num
+             * @description 浏览次数
+             * @default 0
+             */
+            view_num: number;
         };
         /** BlogCreate */
         BlogCreate: {
@@ -633,6 +725,107 @@ export interface components {
              * @description 更新时间
              */
             updated_at?: string;
+        };
+        /** BlogCreateResult */
+        BlogCreateResult: {
+            /**
+             * Id
+             * @description 新建博客 ID
+             */
+            id: number;
+        };
+        /** BlogDetail */
+        BlogDetail: {
+            /**
+             * Abstract
+             * @description 文章摘要
+             */
+            abstract: string;
+            /**
+             * Author
+             * @description 作者
+             * @default zxy
+             */
+            author: string | null;
+            /**
+             * Byte Num
+             * @description 评论次数
+             * @default 0
+             */
+            byte_num: number;
+            /**
+             * Category
+             * @description 分类
+             */
+            category?: number | null;
+            /**
+             * Comment Num
+             * @description 评论次数
+             * @default 0
+             */
+            comment_num: number;
+            /**
+             * Content
+             * @description 博客内容
+             */
+            content: string;
+            /**
+             * Created At
+             * Format: date-time
+             * @description 创建时间
+             */
+            created_at?: string;
+            /**
+             * Id
+             * @description 博客的唯一标识符
+             */
+            id?: number;
+            /**
+             * Tag
+             * @description 标签
+             * @default []
+             */
+            tag: number[] | null;
+            /**
+             * Title
+             * @description 博客标题
+             */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             * @description 更新时间
+             */
+            updated_at?: string;
+            /**
+             * View Num
+             * @description 浏览次数
+             * @default 0
+             */
+            view_num: number;
+        };
+        /** BlogPage */
+        BlogPage: {
+            /**
+             * List
+             * @description 当前页博客列表
+             */
+            list?: components["schemas"]["BlogBase"][];
+            /**
+             * Page
+             * @description 当前页码
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description 每页数量
+             */
+            page_size: number;
+            /**
+             * Total
+             * @description 总条数
+             */
+            total: number;
         };
         /** Body_upload_image_file_image_upload_post */
         Body_upload_image_file_image_upload_post: {
@@ -1299,7 +1492,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_BlogPage_"];
                 };
             };
             /** @description Validation Error */
@@ -1332,7 +1525,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_BlogCreateResult_"];
                 };
             };
             /** @description Validation Error */
@@ -1363,7 +1556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_BlogDetail_"];
                 };
             };
             /** @description Validation Error */
@@ -1394,7 +1587,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
                 };
             };
             /** @description Validation Error */

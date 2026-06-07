@@ -40,8 +40,8 @@ export function useBlogList(
     return {
       title: o.title,
       abstract: o.abstract,
-      lastUpdateTime: formatDate(o.updated_at),
-      id: o.id.toString(),
+      lastUpdateTime: o.updated_at ? formatDate(o.updated_at) : '-',
+      id: String(o.id ?? ''),
       commentNum: o.comment_num,
       byteNum: o.byte_num,
       tags: (o.tag ?? [])
@@ -49,9 +49,8 @@ export function useBlogList(
           resolvedTags.find((t) => String(t.id) === String(tagId))?.name
         )
         .filter(Boolean) as string[],
-      category:
-        resolvedCategories.find((c) => String(c.id) === String(o.category))
-          ?.name || '未分类',
+      category: resolvedCategories.find((c) => String(c.id) === String(o.category))
+        ?.name || '未分类',
       viewNum: o.view_num,
       publishTime: formatDate(o.created_at),
     }

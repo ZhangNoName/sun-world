@@ -41,3 +41,19 @@ class BlogBase(BaseModel):
     byte_num: int = Field(0, description="评论次数")
     tag: Optional[List[int]] = Field([], description="标签")
     category: Optional[int] = Field(None, description="分类")
+
+
+class BlogDetail(BlogBase):
+    content: str = Field(..., description="博客内容")
+    created_at: datetime = Field(default_factory=datetime.now, description="创建时间")
+
+
+class BlogPage(BaseModel):
+    list: List[BlogBase] = Field(default_factory=list, description="当前页博客列表")
+    page: int = Field(..., description="当前页码")
+    page_size: int = Field(..., description="每页数量")
+    total: int = Field(..., description="总条数")
+
+
+class BlogCreateResult(BaseModel):
+    id: int = Field(..., description="新建博客 ID")

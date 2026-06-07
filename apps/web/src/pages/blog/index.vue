@@ -26,11 +26,17 @@ const catalog = ref<VditorTreeItemType[]>([])
 const loading = ref(false)
 const blogInfo = ref<BlogDetail>({
   author: '',
+  abstract: '',
+  byte_num: 0,
+  category: null,
+  comment_num: 0,
   content: '',
   created_at: '',
-  id: '',
+  id: 0,
+  tag: [],
   title: '',
-  update_at: '',
+  updated_at: '',
+  view_num: 0,
 })
 
 const id = computed(() => String(route.query.id || ''))

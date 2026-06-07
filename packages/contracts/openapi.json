@@ -1,6 +1,140 @@
 {
   "components": {
     "schemas": {
+      "ApiResponse_BlogCreateResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogCreateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogCreateResult]",
+        "type": "object"
+      },
+      "ApiResponse_BlogDetail_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogDetail]",
+        "type": "object"
+      },
+      "ApiResponse_BlogPage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogPage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogPage]",
+        "type": "object"
+      },
+      "ApiResponse_NoneType_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "title": "Data",
+            "type": "null"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[NoneType]",
+        "type": "object"
+      },
       "BindResourcesModel": {
         "properties": {
           "resource_ids": {
@@ -15,6 +149,96 @@
           "resource_ids"
         ],
         "title": "BindResourcesModel",
+        "type": "object"
+      },
+      "BlogBase": {
+        "properties": {
+          "abstract": {
+            "description": "文章摘要",
+            "title": "Abstract",
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "zxy",
+            "description": "作者",
+            "title": "Author"
+          },
+          "byte_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Byte Num",
+            "type": "integer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "分类",
+            "title": "Category"
+          },
+          "comment_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Comment Num",
+            "type": "integer"
+          },
+          "id": {
+            "description": "博客的唯一标识符",
+            "title": "Id",
+            "type": "integer"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": [],
+            "description": "标签",
+            "title": "Tag"
+          },
+          "title": {
+            "description": "博客标题",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "view_num": {
+            "default": 0,
+            "description": "浏览次数",
+            "title": "View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "abstract"
+        ],
+        "title": "BlogBase",
         "type": "object"
       },
       "BlogCreate": {
@@ -100,6 +324,156 @@
           "category"
         ],
         "title": "BlogCreate",
+        "type": "object"
+      },
+      "BlogCreateResult": {
+        "properties": {
+          "id": {
+            "description": "新建博客 ID",
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "BlogCreateResult",
+        "type": "object"
+      },
+      "BlogDetail": {
+        "properties": {
+          "abstract": {
+            "description": "文章摘要",
+            "title": "Abstract",
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "zxy",
+            "description": "作者",
+            "title": "Author"
+          },
+          "byte_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Byte Num",
+            "type": "integer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "分类",
+            "title": "Category"
+          },
+          "comment_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Comment Num",
+            "type": "integer"
+          },
+          "content": {
+            "description": "博客内容",
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "创建时间",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "description": "博客的唯一标识符",
+            "title": "Id",
+            "type": "integer"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": [],
+            "description": "标签",
+            "title": "Tag"
+          },
+          "title": {
+            "description": "博客标题",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "view_num": {
+            "default": 0,
+            "description": "浏览次数",
+            "title": "View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "abstract",
+          "content"
+        ],
+        "title": "BlogDetail",
+        "type": "object"
+      },
+      "BlogPage": {
+        "properties": {
+          "list": {
+            "description": "当前页博客列表",
+            "items": {
+              "$ref": "#/components/schemas/BlogBase"
+            },
+            "title": "List",
+            "type": "array"
+          },
+          "page": {
+            "description": "当前页码",
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "每页数量",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "description": "总条数",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "BlogPage",
         "type": "object"
       },
       "Body_upload_image_file_image_upload_post": {
@@ -1168,7 +1542,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogPage_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1206,7 +1582,9 @@
           "201": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogCreateResult_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1247,7 +1625,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1286,7 +1666,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogDetail_"
+                }
               }
             },
             "description": "Successful Response"

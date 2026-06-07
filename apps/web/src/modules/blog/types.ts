@@ -1,31 +1,31 @@
 import type { Ref } from 'vue'
 import type { BlogCardProps } from '@/type'
+import type { components, operations } from '@sun-world/contracts'
+
+type BlogPageOperation =
+  operations['get_blogs_paginated_blogs__get']['responses'][200]['content']['application/json']
+type BlogDetailOperation =
+  operations['get_blog_blogs__blog_id__get']['responses'][200]['content']['application/json']
+type BlogCreateOperation =
+  operations['create_blog_blogs__post']['responses'][201]['content']['application/json']
+type BlogCreateBody =
+  operations['create_blog_blogs__post']['requestBody']['content']['application/json']
+export type BlogCreateContract = BlogCreateBody
 
 // ---- Raw API response shapes ----
 
-/** Shape returned by GET /blogs (paginated list endpoint). */
-export interface BlogListResponse {
-  list: BlogRawItem[]
-  page: number
-  page_size: number
-  total: number
+export type BlogApiEnvelope<T> = {
+  code: number | string
+  data: T | null
+  msg: string
 }
 
+/** Shape returned by GET /blogs (paginated list endpoint). */
+export type BlogListResponse =
+  BlogPageOperation extends BlogApiEnvelope<infer T> ? NonNullable<T> : BlogPage
+
 /** Raw blog item from the API before mapping. */
-export interface BlogRawItem {
-  title: string
-  abstract: string
-  created_at: string
-  updated_at: string
-  id: number | string
-  comment_num: number
-  byte_num: number
-  view_num: number
-  tag: (number | string)[]
-  category: number | string
-  author?: string
-  cover_url?: string
-}
+export type BlogRawItem = components['schemas']['BlogBase']
 
 // ---- Blog detail ----
 
@@ -35,35 +35,24 @@ export interface BlogRawItem {
  * Replaces the legacy `BlogDeatil` typo in `@/service/request` for new code.
  * Both interfaces are compatible at runtime; migrate callers gradually.
  */
-export interface BlogDetail {
-  author: string
-  content: string
-  created_at: string
-  id: string
-  title: string
-  update_at: string
-  updated_at?: string
-  comment_num?: number
-  byte_num?: number
-  view_num?: number
-}
+export type BlogDetail =
+  BlogDetailOperation extends BlogApiEnvelope<infer T>
+    ? NonNullable<T>
+    : components['schemas']['BlogDetail']
 
 // ---- Create blog payload ----
 
 /** Payload shape for creating or updating a blog post. */
-export interface CreateBlogPayload {
-  title: string
-  content: string
-  abstract: string
-  author?: string
-  category?: string
-  tag?: (string | { name: string })[]
+export type CreateBlogPayload = Omit<BlogCreateBody, 'category' | 'tag'> & {
+  category?: string | number
+  tag?: (string | number | { name: string })[]
 }
 
 /** Successful blog creation response. */
-export interface CreateBlogResponse {
-  id: number | string
-}
+export type CreateBlogResponse =
+  BlogCreateOperation extends BlogApiEnvelope<infer T>
+    ? NonNullable<T>
+    : components['schemas']['BlogCreateResult']
 
 // ---- View models ----
 

@@ -5,8 +5,10 @@ from loguru import logger
 from pydantic import BaseModel
 from src.controller.blog_manage import BlogManager
 from app_instance import app
-from src.type.blog_type import Blog, BlogCreate
+from src.type.blog_type import BlogCreate, BlogCreateResult, BlogDetail, BlogPage
 from src.core.response import ok, fail
+from src.core.response import ApiResponse
+from src.core.error_codes import BLOG_CREATE_FAILED, BLOG_NOT_FOUND
 
 
 # 创建博客 API 路由
@@ -19,7 +21,7 @@ def get_blog_manager() -> BlogManager:
     return app.blog
 
 # 创建新博客
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[BlogCreateResult])
 async def create_blog(blog: BlogCreate, blog_manager: BlogManager = Depends(get_blog_manager)):
     """
     创建新的博客
@@ -37,10 +39,10 @@ async def create_blog(blog: BlogCreate, blog_manager: BlogManager = Depends(get_
     if res:
         return ok(data={"id": res}, msg="创建成功")
     else:
-        return fail(msg="创建失败")
+        return fail(msg="创建失败", code=BLOG_CREATE_FAILED)
 
 # 获取指定博客
-@router.get("/{blog_id}")
+@router.get("/{blog_id}", response_model=ApiResponse[BlogDetail])
 async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_manager)):
     """
     获取指定 ID 的博客
@@ -55,14 +57,14 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
     logger.info(f'查找的结果-----{blog}')
     
     if not blog:
-        return fail(msg="博客不存在")
+        return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
 
     blog_dict = {item[0]: item[1] for item in blog}
 
     return ok(data=blog_dict, msg="获取成功")
 
 # 分页获取博客
-@router.get("/")
+@router.get("/", response_model=ApiResponse[BlogPage])
 async def get_blogs_paginated(
     page: int = 1,
     pageSize: int = 10,
@@ -85,7 +87,7 @@ async def get_blogs_paginated(
 
 
 # 删除指定博客
-@router.delete("/{blog_id}")
+@router.delete("/{blog_id}", response_model=ApiResponse[None])
 async def delete_blog(blog_id: str, blog_manager: BlogManager = Depends(get_blog_manager)):
     """
     删除指定 ID 的博客
@@ -97,6 +99,5 @@ async def delete_blog(blog_id: str, blog_manager: BlogManager = Depends(get_blog
         dict: 包含删除成功消息的字典
     """
     if not blog_manager.delete_blog(blog_id):
-        return fail(msg="博客不存在")
+        return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
     return ok(data=None, msg="删除成功")
-
