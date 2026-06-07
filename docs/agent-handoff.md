@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 19 SEO discovery foundation.
+- Goal: Implement Phase 20 frontend performance budgets.
 - Status: Implemented and verified locally on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,22 @@
 
 ## Files Changed
 
+- `apps/web/performance-budgets.json` **(new)**
+  - Defines baseline gzip budgets for total JS, total CSS, largest asset,
+    entry JS, and the admin metrics lazy chunk.
+- `docs/schemas/web-performance-budgets.schema.json` **(new)**
+  - Documents and validates the performance budget config shape.
+- `scripts/check-web-budgets.mjs` **(new)**
+  - Computes raw/gzip asset sizes from `apps/web/dist` and fails on budget
+    regressions.
+- `scripts/check-web.sh`
+  - Runs the performance budget check after the Vite build.
+- `package.json`
+  - Adds `check:web:budgets` for running the budget gate directly.
+- `docs/architecture/frontend-platform-foundation.md`
+- `docs/architecture/commercial-platform-blueprint.md`
+- `docs/agent-handoff.md`
+  - Document the Phase 20 budget gate and current heavy chunk baseline.
 - `apps/web/src/shared/seo/index.ts`
   - Upgrades `usePageMeta()` to accept reactive inputs.
   - Adds `useJsonLd()`, `buildWebsiteJsonLd()`, and
@@ -62,6 +78,10 @@
 - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` passed.
 - `pnpm check:web` passed.
 - `git diff --check` passed.
+- `node scripts/check-web-budgets.mjs` passed. Current totals:
+  - JS gzip: `1052.0 KiB / 1120.0 KiB`
+  - CSS gzip: `74.1 KiB / 85.0 KiB`
+  - Largest asset gzip: `397.0 KiB / 430.0 KiB`
 - `test -f apps/web/dist/robots.txt && test -f apps/web/dist/sitemap.xml`
   passed after the Vite build.
 - Browser check on `http://localhost:3001/` confirmed homepage canonical,

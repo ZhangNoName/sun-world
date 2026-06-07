@@ -14,6 +14,7 @@
     "build:editor": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/editor build",
     "build:icons": "NODE_OPTIONS='--max-old-space-size=2048' pnpm -F @sun-world/icons run build",
     "check:web": "bash scripts/check-web.sh",
+    "check:web:budgets": "node scripts/check-web-budgets.mjs",
     "check:api": "bash scripts/check-api.sh",
     "check": "bash scripts/check-all.sh"
   },

@@ -1,0 +1,36 @@
+{
+  "$schema": "../../docs/schemas/web-performance-budgets.schema.json",
+  "distDir": "apps/web/dist",
+  "budgets": [
+    {
+      "name": "total-js-gzip",
+      "type": "total",
+      "extensions": [".js"],
+      "maxGzipKiB": 1120
+    },
+    {
+      "name": "total-css-gzip",
+      "type": "total",
+      "extensions": [".css"],
+      "maxGzipKiB": 85
+    },
+    {
+      "name": "largest-asset-gzip",
+      "type": "largest",
+      "extensions": [".js", ".css"],
+      "maxGzipKiB": 430
+    },
+    {
+      "name": "entry-index-js-gzip",
+      "type": "pattern",
+      "pattern": "assets/index*.js",
+      "maxGzipKiB": 80
+    },
+    {
+      "name": "admin-metrics-chunk-gzip",
+      "type": "pattern",
+      "pattern": "assets/AdminMetricsPage*.js",
+      "maxGzipKiB": 8
+    }
+  ]
+}

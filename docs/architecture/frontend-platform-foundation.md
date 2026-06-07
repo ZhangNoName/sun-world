@@ -256,6 +256,24 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
   first static discovery assets for the public SPA. Dynamic article sitemap
   generation remains a future backend/static-generation task.
 
+## Phase 20 Frontend Performance Budgets
+
+- `apps/web/performance-budgets.json` defines the current bundle baseline for
+  JavaScript, CSS, largest asset, entry chunk, and admin metrics chunk gzip
+  sizes.
+- `scripts/check-web-budgets.mjs` reads `apps/web/dist`, computes raw and gzip
+  asset sizes without new dependencies, prints the largest assets, and fails
+  when a configured budget is exceeded.
+- `scripts/check-web.sh` runs the budget check after the Vite build, so the
+  normal `pnpm check:web` gate now covers type safety, build success, and
+  bundle-size regression.
+- The budgets are intentionally baseline-oriented: they pass the current
+  monorepo build while preventing accidental growth. Tightening them should
+  follow real chunk-splitting or dependency-reduction work.
+- Known heavy chunks remain `vendor`, `echarts`, `element`, `vditor`,
+  `zrender`, and `langchain`; future loading work should keep these route- or
+  feature-scoped where possible.
+
 ## Phase 12 Module SEO And Preload
 
 ### Module SEO Defaults

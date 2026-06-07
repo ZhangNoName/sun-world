@@ -188,6 +188,7 @@ Phase 1:
 - collect Web Vitals through a telemetry adapter
 - keep bundle visualizer command
 - define performance budgets
+- enforce baseline frontend bundle budgets in the normal web check
 
 Phase 2:
 
@@ -196,6 +197,7 @@ Phase 2:
 - CDN/cache headers
 - API latency metrics
 - slow route/dashboard reporting
+- tighten budgets after reducing heavy vendor, editor, chart, and AI chunks
 
 ## Observability And Analytics
 

@@ -13,3 +13,7 @@ echo "==> Frontend type check passed."
 echo "==> Running frontend build check..."
 pnpm build:web
 echo "==> Frontend build check passed."
+
+echo "==> Running frontend performance budget check..."
+node scripts/check-web-budgets.mjs
+echo "==> Frontend performance budget check passed."
