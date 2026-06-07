@@ -403,6 +403,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/healthz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Healthz */
+        get: operations["healthz_healthz_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/readyz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readyz */
+        get: operations["readyz_readyz_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/resource/": {
         parameters: {
             query?: never;
@@ -998,10 +1032,38 @@ export interface components {
              */
             session_id: string;
         };
+        /** DependencyReadiness */
+        DependencyReadiness: {
+            /**
+             * Duration Ms
+             * @description Probe duration in milliseconds.
+             */
+            duration_ms: number;
+            /**
+             * Name
+             * @description Dependency name.
+             */
+            name: string;
+            /**
+             * Status
+             * @description Dependency readiness.
+             * @enum {string}
+             */
+            status: "ready" | "not_ready";
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HealthSnapshot */
+        HealthSnapshot: {
+            /**
+             * Status
+             * @description Process liveness status.
+             * @constant
+             */
+            status: "ok";
         };
         /** LoginModel */
         LoginModel: {
@@ -1016,6 +1078,23 @@ export interface components {
             access_token: string;
             /** Expires In */
             expires_in: number;
+        };
+        /** ReadinessSnapshot */
+        ReadinessSnapshot: {
+            /** Checks */
+            checks?: components["schemas"]["DependencyReadiness"][];
+            /**
+             * Generated At
+             * Format: date-time
+             * @description Snapshot generation time.
+             */
+            generated_at: string;
+            /**
+             * Status
+             * @description Overall readiness.
+             * @enum {string}
+             */
+            status: "ready" | "not_ready";
         };
         /** RegisterModel */
         RegisterModel: {
@@ -2019,6 +2098,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    healthz_healthz_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthSnapshot"];
+                };
+            };
+        };
+    };
+    readyz_readyz_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadinessSnapshot"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadinessSnapshot"];
                 };
             };
         };

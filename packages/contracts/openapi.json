@@ -976,6 +976,37 @@
         "title": "ChatRequest",
         "type": "object"
       },
+      "DependencyReadiness": {
+        "properties": {
+          "duration_ms": {
+            "description": "Probe duration in milliseconds.",
+            "minimum": 0.0,
+            "title": "Duration Ms",
+            "type": "number"
+          },
+          "name": {
+            "description": "Dependency name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "description": "Dependency readiness.",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "duration_ms"
+        ],
+        "title": "DependencyReadiness",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -987,6 +1018,21 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthSnapshot": {
+        "properties": {
+          "status": {
+            "const": "ok",
+            "description": "Process liveness status.",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthSnapshot",
         "type": "object"
       },
       "LoginModel": {
@@ -1030,6 +1076,38 @@
           "expires_in"
         ],
         "title": "QQModel",
+        "type": "object"
+      },
+      "ReadinessSnapshot": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/DependencyReadiness"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "status": {
+            "description": "Overall readiness.",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "generated_at"
+        ],
+        "title": "ReadinessSnapshot",
         "type": "object"
       },
       "RegisterModel": {
@@ -2542,6 +2620,58 @@
         "summary": "Upload Video",
         "tags": [
           "文件"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthz",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readyz_readyz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessSnapshot"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Readyz",
+        "tags": [
+          "health"
         ]
       }
     },
