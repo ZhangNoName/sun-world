@@ -13,7 +13,11 @@ export const blogModule: AppModule = {
     {
       path: '/blog',
       component: () => import('@/pages/blog/index.vue'),
-      meta: { module: 'blog', title: '博客 - Sun World' },
+      meta: {
+        module: 'blog',
+        title: '博客 - Sun World',
+        description: '浏览 Sun World 的技术博客文章，覆盖前端、后端、AI、图形编辑器和工程实践。',
+      },
     },
   ],
   nav: [

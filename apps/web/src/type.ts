@@ -12,6 +12,7 @@ export interface BlogCardProps {
   cover?: string
   byteNum: number | string
   commentNum: number | string
+  viewNum?: number | string
 }
 
 export interface CatalogItemType {

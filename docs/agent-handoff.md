@@ -1,49 +1,66 @@
 ## Current Handoff
 
-- Goal: Build the Phase 1 commercial platform foundation for Sun World without deploying it.
-- Status: Codex-reviewed implementation ready on branch `monorepo-api-import`.
-- Scope:
-  - Frontend platform shell, feature module registry, SEO/head management, telemetry adapters.
-  - Backend/frontend stable error-code namespaces.
-  - Commercial architecture, observability, and analytics documentation.
+- Goal: Implement Phase 2 frontend experience foundation for Sun World on top of the commercial platform branch.
+- Status: Completed on branch `monorepo-api-import`; pending Codex commit at handoff write time.
 - Repo/path: `/home/lighthouse/blog/sun-world`
 - Branch: `monorepo-api-import`
-- Commit: 568c314 feat: 搭建商业化平台基础架构.
 
-## Implementation Summary
+## Files Changed
 
-- Added frontend platform layers under `apps/web/src/app`, `apps/web/src/shared`, and `apps/web/src/modules`.
-- Kept existing pages in place while moving ownership of feature routes into module manifests.
-- Preserved compatibility import from `@/router`.
-- Added duplicate route-path protection in the router factory.
-- Added `@unhead/vue` and `web-vitals` as Phase 1 infrastructure dependencies.
-- Added safe route-based document head synchronization for SEO metadata.
-- Deferred geolocation/weather side effects until after app mount.
-- Added Web Vitals, route timing, and global error-capture hooks with dev-console reporting only.
-- Added shared frontend error-code constants and backend `apps/api/src/core/error_codes.py`.
-- Added architecture docs:
-  - `docs/architecture/commercial-platform-blueprint.md`
-  - `docs/architecture/frontend-platform-foundation.md`
-  - `docs/architecture/observability-and-analytics.md`
+- `apps/web/src/App.vue`
+  - moved runtime theme class logic into shared design layer,
+  - kept locale persistence/cross-tab sync in App,
+  - removed development environment console output.
+- `apps/web/src/components/ThemeSwitch/index.vue`
+  - converted theme switch to an accessible button,
+  - added `aria-label`, `aria-pressed`, title, focus state, and token-based animation.
+- `apps/web/src/layout/mobLayout.vue`
+  - added real mobile drawer and overlay,
+  - added drawer navigation, theme/language controls, ESC close, route-change close,
+  - made ICP/footer visibility respect route meta.
+- `apps/web/src/pages/home/index.vue`
+  - replaced inline `any[]` blog loading logic with typed blog module composable,
+  - added initial skeleton loading and empty state,
+  - improved desktop/tablet/mobile responsive layout,
+  - removed duplicated weather cards,
+  - disabled waterfall mode on narrow screens and made columns responsive.
+- `apps/web/src/modules/blog/api.ts`
+  - added module API wrapper for paginated blog list.
+- `apps/web/src/modules/blog/composables/useBlogList.ts`
+  - added typed blog list data boundary and raw-to-view-model mapping.
+- `apps/web/src/modules/blog/types.ts`
+  - added blog API response and view-model types.
+- `apps/web/src/modules/blog/index.ts`
+  - added route description metadata.
+- `apps/web/src/shared/design/theme.ts`
+  - added theme controller with storage, DOM application, and cross-tab sync.
+- `apps/web/src/shared/design/index.ts`
+  - exported theme helpers.
+- `apps/web/src/shared/ui/LoadingSkeleton.vue`
+  - added reusable token-based skeleton with reduced-motion support.
+- `apps/web/src/styles/design-tokens.css`
+  - added motion tokens and container sizing tokens.
+- `apps/web/src/type.ts`
+  - added optional blog view count to `BlogCardProps`.
+- `docs/architecture/frontend-platform-foundation.md`
+  - documented Phase 2 theme, mobile, blog boundary, loading, and responsive behavior.
 
 ## Verification
 
-- `pnpm install --frozen-lockfile --offline` - passed.
-- `pnpm build:web` - passed.
-  - Known warnings: Vite CJS API deprecation and Element Plus Sass deprecation warnings.
-- `bash scripts/check-api.sh` - passed.
-- `curl -fsS https://api.sunworld.site/healthz` - returned `{"status":"ok"}`.
-- `curl -I --max-time 15 https://sunworld.site` - returned HTTP 200.
 - `git diff --check` - passed.
-- Secret scan over source diff - no real secrets found; only documentation policy terms matched.
+- `pnpm build:web` - passed.
+- `bash scripts/check-api.sh` - passed.
+- `pnpm check:web` - passed.
+- Known warnings:
+  - Vite CJS Node API deprecation warning.
+  - Element Plus Sass legacy JS API / `if()` deprecation warnings.
 
 ## Deployment
 
 - Not deployed.
-- No Nginx, systemd, database, certificate, or production secret changes were made.
-- Keep production worktree on `main` after Codex finalizes the branch so daily auto-deploy remains unaffected.
+- No Docker, Nginx, systemd, database, certificate, or secret files were changed.
 
 ## Next Step
 
-- Phase 2 should migrate each legacy page into its owning module folder and introduce module-level API clients, store slices, and error mapping.
-- Phase 2 can also add a `/admin` analytics/logs information architecture before wiring real metrics storage.
+- Codex should commit this Phase 2 foundation after final review.
+- Next product step: migrate the blog detail page and article editor into `modules/blog`, then add module-level error mapping and route-level loading states.

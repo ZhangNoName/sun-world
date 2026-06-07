@@ -42,6 +42,12 @@ html {
   --space-10: 2.5rem;   /* 40px */
   --space-12: 3rem;     /* 48px */
 
+  /* ---------------------- 动效 ---------------------- */
+  --motion-duration-fast: 0.16s;
+  --motion-duration: 0.24s;
+  --motion-duration-slow: 0.36s;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
   /* ---------------------- 圆角 ---------------------- */
   --radius-sm: 0.25rem;   /* 4px */
   --radius-md: 0.5rem;    /* 8px */
@@ -53,6 +59,10 @@ html {
   --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0px 8px 32px rgba(0, 0, 0, 0.1);
+
+  /* ---------------------- 响应式容器 ---------------------- */
+  --container-max-width: 1280px;
+  --container-inline-padding: clamp(12px, 3vw, 32px);
 
   /* ---------------------- 兼容别名 (旧变量 → 新令牌) ---------------------- */
   --font-large: var(--font-size-lg);

@@ -1,16 +1,27 @@
 <script lang="ts" setup>
-import { inject, ref, type Ref } from 'vue'
-
-const prop = defineProps()
+import { computed, inject, ref, type Ref } from 'vue'
 
 const theme = inject<Ref<string>>('theme') || ref('sun-light')
-const changTheme = () => {
+
+const toggleTheme = () => {
   theme.value = theme.value === 'sun-light' ? 'sun-dark' : 'sun-light'
 }
+
+const isPressed = computed(() => theme.value === 'sun-dark')
+const label = computed(() =>
+  theme.value === 'sun-light' ? '切换到深色主题' : '切换到浅色主题'
+)
 </script>
 
 <template>
-  <div class="theme-switch" @click="changTheme">
+  <button
+    class="theme-switch"
+    type="button"
+    :aria-label="label"
+    :aria-pressed="isPressed"
+    :title="label"
+    @click="toggleTheme"
+  >
     <span class="icon">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -59,8 +70,9 @@ const changTheme = () => {
         ></path>
       </svg>
     </span>
-  </div>
+  </button>
 </template>
+
 <style>
 .sun-light {
   .theme-switch {
@@ -98,22 +110,38 @@ const changTheme = () => {
   border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
+  padding: 0;
+  background: var(--color-surface-card);
+  cursor: pointer;
+  transition: border-color var(--motion-duration, 0.25s) ease,
+    background-color var(--motion-duration, 0.25s) ease;
+}
 
-  .icon {
-    position: relative;
-    height: 1.8rem;
-    width: 1.8rem;
-    border-radius: 50%;
-    overflow: hidden;
-    background-color: var(--color-surface-muted);
-    svg {
-      position: absolute;
-      top: 0.3rem;
-      left: 0.3rem;
-      width: 1.2rem;
-      height: 1.2rem;
-      transition: opacity 0.25s;
-    }
-  }
+.theme-switch:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.theme-switch:hover {
+  border-color: var(--border-active);
+}
+
+.icon {
+  position: relative;
+  height: 1.8rem;
+  width: 1.8rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-surface-muted);
+  transition: transform var(--motion-duration, 0.25s) ease;
+}
+
+.icon svg {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  transition: opacity var(--motion-duration, 0.25s) ease;
 }
 </style>

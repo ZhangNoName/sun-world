@@ -83,6 +83,37 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - They fire after `app.mount('#app')` via `initDeferredEffects()` so the first paint is never delayed.
 - Telemetry initialisation also runs post-mount.
 
+## Phase 2 Experience Foundation
+
+### Theme Runtime
+
+- `shared/design/theme.ts` owns runtime theme state, storage, cross-tab sync, and `<html>` class application.
+- Supported theme names remain `sun-light` and `sun-dark`.
+- Components should consume the provided `theme` ref or import shared design helpers instead of manipulating document classes directly.
+- `ThemeSwitch` is an accessible button with `aria-label`, `aria-pressed`, focus-visible state, and token-based motion.
+- Motion values are centralized in `styles/design-tokens.css` through `--motion-*` variables.
+
+### Mobile Layout
+
+- `layout/mobLayout.vue` renders a real slide-in drawer with overlay, ESC-close behavior, route-change close behavior, theme control, language control, and core navigation links.
+- Mobile bottom navigation is safe-area aware and respects route meta for fullscreen pages.
+- ICP footer visibility follows `route.meta.hideFooter`, which keeps canvas/editor style pages unobstructed.
+
+### Blog List Boundary
+
+- Blog list data mapping moved from `pages/home/index.vue` into `modules/blog/composables/useBlogList.ts`.
+- Raw API list shapes live in `modules/blog/types.ts`.
+- Endpoint access is wrapped by `modules/blog/api.ts`.
+- The home page consumes typed view models and no longer stores blog cards as `any[]`.
+
+### Loading And Responsive Behavior
+
+- `shared/ui/LoadingSkeleton.vue` provides a token-based skeleton state with reduced-motion support.
+- The homepage shows skeleton cards during initial blog loading and a stable empty state when there are no posts.
+- Desktop layout uses sidebar + content; tablet/mobile collapses to a single column.
+- Waterfall view is disabled on narrow screens and uses responsive column counts on tablet/desktop.
+- The homepage sidebar now renders one weather card instead of duplicated weather cards.
+
 ## Future Work (Phase 2+)
 
 - Migrate page components from `pages/` into their respective module folders.

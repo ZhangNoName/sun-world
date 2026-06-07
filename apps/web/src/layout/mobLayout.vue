@@ -1,14 +1,17 @@
 <template>
   <div class="mob-layout">
-    <div class="mob-header">
+    <!-- Header (conditionally shown) -->
+    <div v-if="showHeader" class="mob-header">
       <div class="left">
-        <img src="/logo.svg" alt="logo" srcset="" width="40px" height="40px" />
+        <img src="/logo.svg" alt="Sun World" width="40" height="40" />
       </div>
       <div class="right">
         <Btn icon="search" @click="toggleDrawer" type="icon" />
         <Btn icon="menu" @click="toggleDrawer" type="icon" />
       </div>
     </div>
+
+    <!-- Main content -->
     <div class="main-container" id="mf">
       <RouterView v-slot="{ Component, route }">
         <keep-alive>
@@ -17,7 +20,9 @@
       </RouterView>
     </div>
 
+    <!-- ICP filing -->
     <a
+      v-if="showFooter"
       class="mob-beian-link"
       href="https://beian.miit.gov.cn/"
       target="_blank"
@@ -26,10 +31,11 @@
       豫ICP备2024081960号
     </a>
 
-    <div class="mob-footer">
+    <!-- Bottom navigation (conditionally shown) -->
+    <nav v-if="showFooter" class="mob-footer">
       <div
         class="bot-channel"
-        :class="{ active: activePath == '/' || activePath == '/home' }"
+        :class="{ active: activePath === '/' || activePath === '/home' }"
       >
         <router-link to="/home">
           <SvgIcon name="home" alt="home" />
@@ -51,26 +57,150 @@
       <div class="bot-channel" :class="{ active: activePath === '/me' }">
         <router-link to="/me">
           <SvgIcon name="me" alt="me" />
-          <span class="text">个人中心</span>
+          <span class="text">我</span>
         </router-link>
       </div>
-    </div>
+    </nav>
+
+    <!-- Drawer overlay -->
+    <Transition name="drawer-fade">
+      <div
+        v-if="drawerOpen"
+        class="mob-drawer-overlay"
+        role="presentation"
+        @click="toggleDrawer"
+      />
+    </Transition>
+
+    <!-- Slide-in drawer -->
+    <Transition name="drawer-slide">
+      <aside
+        v-if="drawerOpen"
+        class="mob-drawer"
+        role="dialog"
+        aria-label="导航菜单"
+        aria-modal="true"
+      >
+        <div class="drawer-header">
+          <span class="drawer-title">Sun World</span>
+          <button
+            class="drawer-close"
+            type="button"
+            aria-label="关闭导航菜单"
+            @click="toggleDrawer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <nav class="drawer-nav">
+          <router-link
+            to="/home"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            首页
+          </router-link>
+          <router-link
+            to="/blog"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            博客
+          </router-link>
+          <router-link
+            to="/aigc"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            AI
+          </router-link>
+          <router-link
+            to="/canvas"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            画布
+          </router-link>
+          <router-link
+            to="/tools"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            工具
+          </router-link>
+          <router-link
+            to="/video"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            视频
+          </router-link>
+          <router-link
+            to="/me"
+            class="drawer-link"
+            @click="closeDrawer"
+          >
+            个人中心
+          </router-link>
+        </nav>
+
+        <div class="drawer-controls">
+          <span class="drawer-label">主题</span>
+          <ThemeSwitch />
+        </div>
+        <div class="drawer-controls">
+          <span class="drawer-label">语言</span>
+          <LanguageSwitch />
+        </div>
+      </aside>
+    </Transition>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Btn from '@/baseCom/btn/btn.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
-import { ref, computed } from 'vue'
+import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
+import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
+
 const route = useRoute()
 
-// 当前激活路径
+// Current active path
 const activePath = computed(() => route.path)
+
 const drawerOpen = ref(false)
+
 function toggleDrawer() {
   drawerOpen.value = !drawerOpen.value
 }
+
+function closeDrawer() {
+  drawerOpen.value = false
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeDrawer()
+}
+
+// Respect route meta for header/footer visibility
+const showHeader = computed(() => route.meta.hideHeader !== true)
+const showFooter = computed(() => route.meta.hideFooter !== true)
+
+watch(
+  () => route.fullPath,
+  () => closeDrawer()
+)
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style scoped>
@@ -81,129 +211,199 @@ function toggleDrawer() {
   background: var(--bg-page);
   width: 100%;
   z-index: 10;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
-  .mob-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 72px;
-    padding: 0 12px 0 16px;
-    color: var(--btn-text-color);
-    top: 0;
-    flex-shrink: 0;
-    .right {
-      display: flex;
-      align-items: center;
-      gap: var(--horizontalGapPx);
-    }
-  }
-  .main-container {
-    padding: 0 var(--horizontalGapPx);
-    flex: auto;
-    overflow: auto;
-  }
-  .mob-beian-link {
-    flex-shrink: 0;
-    color: var(--text-secondary, var(--text-default));
-    font-size: var(--font-size-sm);
-    line-height: 28px;
-    text-align: center;
-    text-decoration: none;
-  }
-  .mob-footer {
-    flex-shrink: 0;
-    display: flex;
-    .bot-channel {
-      flex-grow: 1;
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      @media screen and (max-width: 695px) {
-        .text {
-          display: none;
-        }
-      }
-      a {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    }
-    .active {
-      .svg-icon {
-        color: var(--text-active);
-      }
-    }
-  }
 }
 
-.logo {
-  font-size: var(--font-size-xl);
-  font-weight: bold;
-}
-
-.menu-btn {
-  background: none;
-  border: none;
+/* ---- Header ---- */
+.mob-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding: 0 12px 0 16px;
   color: var(--btn-text-color);
-  font-size: 2rem;
+  top: 0;
+  flex-shrink: 0;
+}
+
+.mob-header .right {
+  display: flex;
+  align-items: center;
+  gap: var(--horizontalGapPx);
+}
+
+/* ---- Main container ---- */
+.main-container {
+  padding: 0 var(--horizontalGapPx);
+  flex: auto;
+  overflow: auto;
+}
+
+/* ---- ICP link ---- */
+.mob-beian-link {
+  flex-shrink: 0;
+  color: var(--text-secondary, var(--text-default));
+  font-size: var(--font-size-sm);
+  line-height: 28px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ---- Bottom navigation ---- */
+.mob-footer {
+  flex-shrink: 0;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bot-channel {
+  flex-grow: 1;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
 }
 
+.bot-channel a {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  gap: 2px;
+}
+
+@media screen and (max-width: 695px) {
+  .bot-channel .text {
+    display: none;
+  }
+}
+
+.bot-channel.active .svg-icon {
+  color: var(--text-active);
+}
+
+.bot-channel.active a {
+  color: var(--text-active);
+}
+
+/* ---- Drawer overlay ---- */
+.mob-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 99;
+}
+
+/* ---- Drawer ---- */
 .mob-drawer {
   position: fixed;
   top: 0;
   left: 0;
   width: 70vw;
-  max-width: 260px;
-  height: 100vh;
-  background: var(--color-surface-card);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  max-width: 280px;
+  height: 100dvh;
+  background: var(--color-surface-card, var(--bg-page));
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   z-index: 100;
-  padding-top: 56px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.mob-drawer ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.mob-drawer li {
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.mob-drawer a {
-  display: block;
-  padding: var(--space-4);
-  color: var(--color-text-primary);
-  text-decoration: none;
+.drawer-title {
   font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary, var(--text-default));
 }
 
-.mob-drawer a:hover {
+.drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--color-text-secondary, var(--text-secondary));
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--border-radius);
+  transition: background-color 0.15s ease;
+}
+
+.drawer-close:hover {
   background: var(--color-surface-muted);
 }
 
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.2s;
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(-100%);
-}
-
-.mob-main {
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 1;
-  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.drawer-link {
+  display: block;
+  padding: 12px 12px;
+  color: var(--color-text-primary, var(--text-default));
+  text-decoration: none;
+  font-size: var(--font-size-md);
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.drawer-link:hover,
+.drawer-link:active {
   background: var(--color-surface-muted);
+}
+
+/* ---- Drawer controls (theme / language) ---- */
+.drawer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border-subtle, var(--border-default));
+}
+
+.drawer-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary, var(--text-secondary));
+}
+
+/* ---- Drawer transitions ---- */
+.drawer-fade-enter-active,
+.drawer-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.drawer-fade-enter-from,
+.drawer-fade-leave-to {
+  opacity: 0;
+}
+
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.25s ease;
+}
+
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(-100%);
 }
 </style>
