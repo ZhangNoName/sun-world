@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi.middleware.cors import CORSMiddleware
+from src.core.observability import ObservabilityMiddleware
 from fastapi.staticfiles import StaticFiles
 from src.controller.ai_manager import AiManager
 from src.controller.auth_manager import AuthManager
@@ -33,6 +34,9 @@ class Application(FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+        # Added after CORS so Starlette builds observability as the outer
+        # project middleware and records CORS/preflight outcomes too.
+        self.add_middleware(ObservabilityMiddleware)
 
     @staticmethod
     def __get_allowed_origins():

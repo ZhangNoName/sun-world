@@ -46,22 +46,85 @@ This document describes the observability strategy for Sun World, covering both 
 
 ## Backend
 
-### Current State
+### Phase 8 — Request Observability (Implemented)
 
-The backend uses the unified `{ code, data, msg }` envelope (`apps/api/src/core/response.py`). Error codes are defined in `apps/api/src/core/error_codes.py`.
+The backend now has request-level observability via a Starlette middleware and
+structured exception-handler logging.
 
-### Phase 2 Plan
+**Files:**
 
-- **Request ID middleware.** Assign a unique ID to every incoming request, returned in response headers and included in logs.
-- **Structured logging.** Move from `print()` / ad-hoc logging to structured JSON logs with timestamp, level, request ID, route, and error code.
-- **Request timing logs.** Log request duration for every endpoint (or sample for high-traffic routes).
-- **Error code and route tags.** Every log line related to a request should carry the route and the resulting error code when applicable.
+| File | Purpose |
+|---|---|
+| `apps/api/src/core/request_context.py` | `ContextVar`-backed `request_id` storage. |
+| `apps/api/src/core/observability.py` | `ObservabilityMiddleware` — request ID propagation, timing, and structured logging. |
+| `apps/api/main.py` | Exception handlers log `request_id`, method, path, and error context. |
+| `apps/api/app_instance.py` | Registers `ObservabilityMiddleware` after CORS so Starlette builds it as the outer project middleware. |
 
-### Phase 3 Plan
+**Behaviour:**
 
-- OpenTelemetry hooks for distributed tracing.
-- Backend metrics endpoint for admin dashboard consumption.
-- Alerting thresholds for error rate, latency, and availability.
+1. **Request ID propagation**
+   - Reads `X-Request-ID` or `X-Correlation-ID` from the incoming request.
+   - Accepts only bounded, safe request ID characters; invalid or oversized IDs
+     are replaced with a freshly generated ID.
+   - Falls back to a freshly generated UUID4 hex string when neither header is present.
+   - Stores the ID in a `ContextVar` (`request_context.get_request_id()`) so
+     controllers and services can attach it to their own log lines.
+   - Writes `X-Request-ID` into every response header.
+   - Resets the context after request handling to prevent cross-request leakage.
+
+2. **Per-request structured logging**
+   - Every non-noisy request logs one line at `INFO` level with these fields:
+     `request_id`, `method`, `path`, `status`, `duration_ms`, `client`, `ua`, `route`.
+   - Noisy paths (`/healthz`, `/favicon.ico`, `/robots.txt`) are logged at
+     `DEBUG` level to avoid flooding production logs.
+
+3. **Exception logging**
+   - `StarletteHTTPException` → logged at `WARNING` with `request_id`, method,
+     path, status, and detail.
+   - `RequestValidationError` → logged at `WARNING` with a validation-error count;
+     individual field errors are logged at `DEBUG`.
+   - General `Exception` → logged at `ERROR` with `logger.exception()` so the
+     traceback is captured, plus `request_id`, method, path, exception type,
+     and a bounded single-line detail.
+   - All exception handlers return the **same** `{ code, data, msg }` envelope
+     as before — response structure and status codes are unchanged.
+
+**Security / privacy rules (enforced by the implementation):**
+
+| Rule | How |
+|---|---|
+| No `Authorization`, `Cookie`, `X-Api-Key` in logs | Middleware never reads or logs credential headers. |
+| No query strings in logs | Only `request.url.path` is logged, never `query_string`. |
+| No request bodies in logs | Body is never read or logged by the middleware. |
+| No passwords, tokens, keys, or env values | Log statements use request metadata and bounded error summaries only. |
+| `User-Agent` truncation | Truncated to 200 characters (only first 80 chars appear in the log message). |
+| Incoming request ID safety | IDs longer than 128 chars or containing unsafe characters are discarded. |
+
+### Backend Log Contract
+
+Every INFO-level request log line follows this format:
+
+```
+request_id=<uuid4-hex> method=<VERB> path=<path> status=<code> duration_ms=<float> client=<host> ua=<truncated> route=<route_name>
+```
+
+Example (wrapped for readability):
+
+```
+2026-06-07T12:00:00.000+0800 INFO request_id=a1b2c3d4e5f6 method=GET path=/api/blogs status=200 duration_ms=42.17 client=10.0.0.1 ua=Mozilla/5.0... route=blog_list
+```
+
+### Future Phases
+
+- **Phase 9 — Structured JSON logging.** Configure loguru serialisation so
+  every log line is valid JSON; add timestamp, level, and service fields
+  automatically.
+- **Phase 10 — OpenTelemetry hooks.** Add distributed tracing context
+  propagation (traceparent / tracestate) alongside the existing request ID.
+- **Phase 11 — Admin metrics endpoint.** Expose request volume, latency
+  percentiles, and error-code distribution for the admin dashboard.
+- **Alerting thresholds.** Define alert rules for error rate, p95 latency,
+  and availability.
 
 ## Admin Dashboard (Future)
 
