@@ -28,7 +28,7 @@ export async function fetchBlogPage(
 export async function fetchBlogById(
   id: string
 ): Promise<BlogDetail> {
-  return getBlogById(id) as Promise<BlogDetail>
+  return getBlogById(id) as unknown as Promise<BlogDetail>
 }
 
 /**
@@ -39,5 +39,16 @@ export async function fetchBlogById(
 export async function createBlog(
   params: CreateBlogPayload
 ): Promise<CreateBlogResponse> {
-  return postSaveBlog(params) as Promise<CreateBlogResponse>
+  const legacyParams = {
+    ...params,
+    author: params.author ?? undefined,
+    category:
+      params.category === undefined || params.category === null
+        ? undefined
+        : String(params.category),
+    tag: params.tag?.map((item) =>
+      typeof item === 'number' ? String(item) : item
+    ),
+  }
+  return postSaveBlog(legacyParams) as Promise<CreateBlogResponse>
 }

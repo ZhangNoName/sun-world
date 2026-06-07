@@ -108,11 +108,10 @@ export function trackApiError(error: unknown, context: ApiTelemetryContext) {
 
 export async function initWebVitals() {
   try {
-    const { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } = await import(
+    const { onLCP, onCLS, onFCP, onTTFB, onINP } = await import(
       'web-vitals'
     )
     onLCP(reportVital)
-    onFID(reportVital)
     onCLS(reportVital)
     onFCP(reportVital)
     onTTFB(reportVital)

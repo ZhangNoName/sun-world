@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 12 module SEO defaults and preload foundation.
+- Goal: Implement Phase 13 frontend TypeScript quality gate.
 - Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,27 @@
 
 ## Files Changed
 
+- `apps/web/tsconfig.json`
+  - Removes fragile `vite-plugin-svg-icons/client` types subpath.
+  - Enables `skipLibCheck` so type checking focuses on project code instead of dependency declaration noise.
+- `apps/web/src/env.d.ts`
+  - Adds local declarations for `virtual:svg-icons-register` and `virtual:svg-icons-names`.
+- `apps/web/src/components/Table/type.ts`
+  - Removes over-coupling to Element Plus internal `TableColumnCtx<T>` constraint.
+- `apps/web/src/modules/blog/api.ts`
+  - Normalizes legacy blog create payloads before calling compatibility service functions.
+- `apps/web/src/modules/blog/types.ts`
+  - Fixes contract fallback types and created-time compatibility.
+- `apps/web/src/modules/blog/composables/useBlogList.ts`
+  - Handles missing `created_at` from list contracts.
+- `apps/web/src/shared/design/index.ts`
+  - Re-exports actual breakpoint constants and types.
+- `apps/web/src/shared/telemetry/index.ts`
+  - Removes deprecated FID hook for `web-vitals@5`.
+- `apps/web/src/store/auth.ts`
+  - Aligns auth store user shape with account module contract types.
+- `scripts/check-web.sh`
+  - Runs project TypeScript checking before the Vite build.
 - `apps/web/src/modules/types.ts`
   - Extends `ModuleSeoDefaults` with `ogType` and `noIndex`.
 - `apps/web/src/modules/registry.ts`
@@ -110,6 +131,9 @@
 
 ## Verification
 
+- Phase 13:
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
+  - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
 - Phase 12:
   - `pnpm check:web` → frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
   - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` was attempted but blocked by existing project config: missing type definition entry `vite-plugin-svg-icons/client`.

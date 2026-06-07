@@ -9,6 +9,7 @@
  * Phase 2: added theme controller composable and token helpers.
  */
 
-export { breakpoint as BREAKPOINTS } from '@/hooks/breakpoint/breakpoint'
+export { BREAKPOINTS } from '@/hooks/breakpoint/breakpoint.data'
+export type { BreakpointKey } from '@/hooks/breakpoint/breakpoint.data'
 export { useTheme } from './theme'
 export type { ThemeName } from './theme'

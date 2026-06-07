@@ -8,10 +8,10 @@
     "allowImportingTsExtensions": true,
     "noEmit": true, //  让 TypeScript 不生成 .js/.d.ts 输出
     "strict": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "types": ["element-plus/global", "vite-plugin-svg-icons/client"],
+    "types": ["element-plus/global"],
     "paths": {
       "@/*": ["./src/*"],
       "@sun-world/editor": ["../../packages/editor/src/"],

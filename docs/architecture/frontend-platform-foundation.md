@@ -94,6 +94,16 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
   resolution without blocking navigation, and warms the blog module during
   browser idle time.
 
+## Type Safety Gate
+
+- `scripts/check-web.sh` runs `tsc --noEmit -p apps/web/tsconfig.json` before
+  the Vite build.
+- `apps/web/tsconfig.json` keeps strict project checking enabled and uses
+  `skipLibCheck: true` so dependency declaration noise does not block
+  application-level type safety.
+- Vite virtual SVG modules are declared locally in `apps/web/src/env.d.ts`
+  instead of relying on a fragile `tsconfig.types` subpath entry.
+
 ## Phase 2 Experience Foundation
 
 ### Theme Runtime

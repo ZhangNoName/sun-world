@@ -14,7 +14,7 @@ import {
 } from '@/util/cookie'
 import type { TokenType } from '@/type'
 import { getUserMe } from '@/service/user.req'
-import { UserInfo } from '@/types/user.type'
+import type { UserInfo } from '@/modules/account'
 
 export const useAuthStore = defineStore('auth', () => {
   // 只存储过期时间，token 本身存储在 cookie 中

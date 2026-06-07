@@ -5,7 +5,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "==> Running frontend build check..."
+echo "==> Running frontend type check..."
 cd "$REPO_ROOT"
+pnpm exec tsc --noEmit -p apps/web/tsconfig.json
+echo "==> Frontend type check passed."
+
+echo "==> Running frontend build check..."
 pnpm build:web
 echo "==> Frontend build check passed."

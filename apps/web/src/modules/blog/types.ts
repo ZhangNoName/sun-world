@@ -22,10 +22,14 @@ export type BlogApiEnvelope<T> = {
 
 /** Shape returned by GET /blogs (paginated list endpoint). */
 export type BlogListResponse =
-  BlogPageOperation extends BlogApiEnvelope<infer T> ? NonNullable<T> : BlogPage
+  BlogPageOperation extends BlogApiEnvelope<infer T>
+    ? NonNullable<T>
+    : components['schemas']['BlogPage']
 
 /** Raw blog item from the API before mapping. */
-export type BlogRawItem = components['schemas']['BlogBase']
+export type BlogRawItem = components['schemas']['BlogBase'] & {
+  created_at?: string
+}
 
 // ---- Blog detail ----
 
@@ -46,6 +50,7 @@ export type BlogDetail =
 export type CreateBlogPayload = Omit<BlogCreateBody, 'category' | 'tag'> & {
   category?: string | number
   tag?: (string | number | { name: string })[]
+  author?: string | null
 }
 
 /** Successful blog creation response. */

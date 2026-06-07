@@ -1,5 +1,6 @@
 import type { AppModule } from './types'
 import type {
+  RouteMeta,
   RouteLocationNormalizedLoaded,
   RouteRecordRaw,
   Router,
@@ -50,21 +51,40 @@ function applyModuleRouteDefaults(
 ): RouteRecordRaw {
   const currentMeta = route.meta ?? {}
   const seo = module.seo ?? {}
+  const moduleId =
+    typeof currentMeta.module === 'string' ? currentMeta.module : module.id
 
-  return {
-    ...route,
-    meta: {
-      module: currentMeta.module ?? module.id,
-      title: currentMeta.title ?? seo.title,
-      description: currentMeta.description ?? seo.description,
-      ogType: currentMeta.ogType ?? seo.ogType,
-      noIndex: currentMeta.noIndex ?? seo.noIndex,
-      ...currentMeta,
-    },
-    children: route.children?.map((child) =>
-      applyModuleRouteDefaults(child, module)
-    ),
+  const meta = {
+    ...currentMeta,
+    module: moduleId,
+    title: stringMeta(currentMeta, 'title') ?? seo.title,
+    description: stringMeta(currentMeta, 'description') ?? seo.description,
+    ogType: stringMeta(currentMeta, 'ogType') ?? seo.ogType,
+    noIndex: booleanMeta(currentMeta, 'noIndex') ?? seo.noIndex,
   }
+
+  const normalizedRoute = {
+    ...route,
+    meta,
+  }
+
+  if (route.children) {
+    normalizedRoute.children = route.children.map((child) =>
+      applyModuleRouteDefaults(child, module)
+    )
+  }
+
+  return normalizedRoute as RouteRecordRaw
+}
+
+function stringMeta(meta: RouteMeta, key: string): string | undefined {
+  const value = meta[key]
+  return typeof value === 'string' ? value : undefined
+}
+
+function booleanMeta(meta: RouteMeta, key: string): boolean | undefined {
+  const value = meta[key]
+  return typeof value === 'boolean' ? value : undefined
 }
 
 /**

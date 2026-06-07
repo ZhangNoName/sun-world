@@ -52,7 +52,7 @@ export function useBlogList(
       category: resolvedCategories.find((c) => String(c.id) === String(o.category))
         ?.name || '未分类',
       viewNum: o.view_num,
-      publishTime: formatDate(o.created_at),
+      publishTime: o.created_at ? formatDate(o.created_at) : '-',
     }
   }
 

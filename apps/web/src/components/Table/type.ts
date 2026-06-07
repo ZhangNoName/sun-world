@@ -1,9 +1,15 @@
-import { ElPagination, ElTable, TableColumnCtx } from 'element-plus'
+import { ElPagination, ElTable } from 'element-plus'
 
 // 表格列定义
-export interface SunTableColumn<T = any> extends Partial<TableColumnCtx<T>> {
+export interface SunTableColumn<T extends Record<string, unknown> = Record<string, unknown>> {
   prop: string & keyof T // 确保 prop 既是 keyof T，又是 string 类型
   label: string
+  width?: number | string
+  minWidth?: number | string
+  fixed?: boolean | 'left' | 'right'
+  align?: 'left' | 'center' | 'right'
+  sortable?: boolean | 'custom'
+  [key: string]: unknown
 }
 
 // 表格操作按钮
