@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: Implement Phase 21 backend readiness probe.
-- Status: Implemented locally on branch `monorepo-api-import`; contract generation and final verification pending.
+- Status: Implemented and verified on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -99,13 +99,15 @@
 
 ## Verification
 
-- Pending for Phase 21:
-  - `bash scripts/check-api.sh`
-  - OpenAPI/contracts regeneration
-  - server venv import/route smoke for `/healthz` and `/readyz`
-  - `git diff --check`
-- Phase 21 partial verification:
-  - `bash scripts/check-api.sh` passed before documentation updates.
+- `bash scripts/check-api.sh` passed.
+- `SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate`
+  passed on the server branch and generated `/healthz` + `/readyz` contracts.
+- Server venv smoke using file-level health router import and fake dependency
+  managers passed: route paths include `/healthz` and `/readyz`; all-ready
+  fake app returns `status == "ready"`.
+- `rg '"/readyz"|ReadinessSnapshot|HealthSnapshot|readyz_readyz_get' packages/contracts/openapi.json packages/contracts/src/generated-api-types.ts apps/api/src -n`
+  confirmed OpenAPI and generated TypeScript contracts include the readiness
+  endpoint and models.
 - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` passed.
 - `pnpm check:web` passed.
 - `git diff --check` passed.
