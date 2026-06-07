@@ -5,8 +5,11 @@ import ZBtn from '@/components/ZBtn/index.vue'
 import { BlogEditorClass } from '@/blogEditor'
 import { createBlog } from '@/modules/blog/api'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
-import type { CreateBlogPayload } from '@/modules/blog/types'
-import type { CategoryResponse, TagResponse } from '@/service/baseRequest'
+import type {
+  CategoryResponse,
+  CreateBlogPayload,
+  TagResponse,
+} from '@/modules/blog/types'
 
 defineProps({
   id: { type: String, default: '' },

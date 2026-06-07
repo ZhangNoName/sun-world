@@ -12,7 +12,7 @@ import {
 } from 'vue'
 import { WeChatOutLined, QQOutlined, GithubOutlined } from '@sun-world/icons'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
-import { StatsResponse } from '@/service/baseRequest'
+import type { StatsResponse } from '@/modules/blog/types'
 import { DEFAULT_STATS } from '@/util/data'
 
 const prop = defineProps()

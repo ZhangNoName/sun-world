@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 17 frontend/backend request correlation.
-- Status: Implemented locally on branch `monorepo-api-import`; final verification pending.
+- Goal: Implement Phase 18 blog base-data typed boundary.
+- Status: Implemented and verified locally on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -15,6 +15,41 @@
 
 ## Files Changed
 
+- `apps/web/src/modules/blog/types.ts`
+  - Adds contract-derived base stats, category, and tag response aliases.
+- `apps/web/src/modules/blog/api.ts`
+  - Adds `fetchBlogStats()`, `fetchBlogCategories()`, and `fetchBlogTags()`
+    through the shared typed API layer.
+- `apps/web/src/util/request.ts`
+  - Keeps only startup category/tag composition.
+- `apps/web/src/App.vue`
+  - Loads stats through the blog module API.
+- `apps/web/src/modules/blog/composables/useBlogList.ts`
+- `apps/web/src/util/data.ts`
+- `apps/web/src/components/SelfInfoCard/index.vue`
+- `apps/web/src/pages/home/index.vue`
+- `apps/web/src/pages/article/index.vue`
+- `apps/web/src/pages/manage/blog/index.vue`
+  - Import base-data types from `modules/blog/types`.
+- `apps/web/src/service/baseRequest.ts` **(deleted)**
+  - Removed the legacy base-data request boundary.
+- `docs/architecture/api-contracts.md`
+- `docs/architecture/frontend-platform-foundation.md`
+- `docs/agent-handoff.md`
+  - Document the Phase 18 ownership boundary.
+
+## Verification
+
+- `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` passed.
+- `pnpm check:web` passed.
+- `git diff --check` passed.
+- `rg "service/baseRequest|baseRequest|getStats|getBlogCategories|getBlogTags" apps/web/src docs -n`
+  only finds documentation that records the deleted legacy boundary.
+
+## Next Step
+
+- Push `monorepo-api-import` to the server/GitHub remote and keep the server
+  working tree on `main`; do not deploy this branch yet.
 - `apps/web/src/shared/observability/request-id.ts` **(new)**
   - Adds safe request-id generation, normalisation, header reading, and
     `X-Request-ID` constants.

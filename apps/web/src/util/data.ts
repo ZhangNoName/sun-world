@@ -1,4 +1,4 @@
-import { StatsResponse } from '@/service/baseRequest'
+import type { StatsResponse } from '@/modules/blog/types'
 
 export const DEFAULT_STATS: StatsResponse = {
   blog_count: 0,

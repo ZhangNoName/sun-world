@@ -227,6 +227,20 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - `main.ts` provides this ref to the app shell.
 - `App.vue` renders a token-based top loading bar during route transitions.
 
+## Phase 18 Blog Base Data Boundary
+
+- The blog module now owns typed access for `/base/`, `/base/blog/category`,
+  and `/base/blog/tag`.
+- `modules/blog/types.ts` exposes `StatsResponse`, `CategoryResponse`,
+  `TagResponse`, `CategoryListResponse`, and `TagListResponse` as compatibility
+  aliases over contract-derived shapes.
+- `modules/blog/api.ts` exposes `fetchBlogStats()`, `fetchBlogCategories()`,
+  and `fetchBlogTags()` through the shared typed API layer.
+- `util/request.ts` only composes startup base data and does not declare API
+  endpoint contracts.
+- Legacy `service/baseRequest.ts` has been removed; new consumers should import
+  from `modules/blog/api` and `modules/blog/types`.
+
 ## Phase 12 Module SEO And Preload
 
 ### Module SEO Defaults

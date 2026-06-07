@@ -13,7 +13,7 @@ import SunForm from '@/components/Form/index.vue'
 import SunTable from '@/components/Table/index.vue'
 import { BlogTableColumns, BlogSearchFormData } from './data'
 import { inject, onMounted, ref } from 'vue'
-import { CategoryResponse, TagResponse } from '@/service/baseRequest'
+import type { CategoryResponse, TagResponse } from '@/modules/blog/types'
 // 定义表单类型
 interface BlogSearchForm {
   keyword: string

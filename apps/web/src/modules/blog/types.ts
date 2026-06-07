@@ -14,6 +14,32 @@ export type BlogListResponse =
     ? components['schemas']['BlogPage']
     : NonNullable<ApiSuccessData<'/blogs/', 'get'>>
 
+// ---- Base blog data ----
+
+export type BlogStats =
+  ApiSuccessData<'/base/', 'get'> extends never
+    ? components['schemas']['BlogStats']
+    : NonNullable<ApiSuccessData<'/base/', 'get'>>
+
+export type BlogCategory = components['schemas']['Category']
+export type BlogTag = components['schemas']['TagBase']
+
+export type BlogCategoryList =
+  ApiSuccessData<'/base/blog/category', 'get'> extends never
+    ? BlogCategory[]
+    : NonNullable<ApiSuccessData<'/base/blog/category', 'get'>>
+
+export type BlogTagList =
+  ApiSuccessData<'/base/blog/tag', 'get'> extends never
+    ? BlogTag[]
+    : NonNullable<ApiSuccessData<'/base/blog/tag', 'get'>>
+
+export type CategoryResponse = BlogCategory
+export type TagResponse = BlogTag
+export type StatsResponse = BlogStats
+export type CategoryListResponse = BlogCategoryList
+export type TagListResponse = BlogTagList
+
 /** Raw blog item from the API before mapping. */
 export type BlogRawItem = components['schemas']['BlogBase'] & {
   created_at?: string

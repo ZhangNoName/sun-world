@@ -1,11 +1,11 @@
-import { getBlogCategories, getBlogTags } from '@/service/baseRequest'
+import { fetchBlogCategories, fetchBlogTags } from '@/modules/blog/api'
 /**
  * 获取基础数据
  */
 export const fetchBaseData = async () => {
   const [categories, tags] = await Promise.all([
-    getBlogCategories(),
-    getBlogTags(),
+    fetchBlogCategories(),
+    fetchBlogTags(),
   ])
   return { categories, tags }
 }

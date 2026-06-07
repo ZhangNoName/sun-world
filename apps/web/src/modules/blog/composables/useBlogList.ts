@@ -1,8 +1,13 @@
 import { ref, reactive, type Ref } from 'vue'
-import type { CategoryResponse, TagResponse } from '@/service/baseRequest'
 import { formatDate } from '@/util/function'
 import { fetchBlogPage } from '../api'
-import type { BlogListItem, BlogListViewModel, BlogRawItem } from '../types'
+import type {
+  BlogListItem,
+  BlogListViewModel,
+  BlogRawItem,
+  CategoryResponse,
+  TagResponse,
+} from '../types'
 
 /**
  * Typed blog list composable.

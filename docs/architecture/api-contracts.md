@@ -142,7 +142,12 @@ typing and path-parameter interpolation.
 - `apps/web/src/modules/admin/types.ts` derives request metrics from
   `ApiSuccessData`.
 - `apps/web/src/modules/admin/api.ts` uses the shared typed request boundary.
-- `apps/web/src/service/baseRequest.ts` imports generated base/category/tag contract types for shared startup data.
+- `apps/web/src/modules/blog/types.ts` derives base stats/category/tag list
+  types from `ApiSuccessData`.
+- `apps/web/src/modules/blog/api.ts` exposes `fetchBlogStats`,
+  `fetchBlogCategories`, and `fetchBlogTags` for shared startup data.
+- `apps/web/src/util/request.ts` only composes startup category/tag fetches and
+  no longer owns endpoint contracts.
 - UI-facing view models stay local to the module because they are presentation shapes, not API shapes.
 - Legacy `apps/web/src/service/request.ts` remains compatibility glue while new module consumers prefer `modules/*/api.ts`.
 

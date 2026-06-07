@@ -1,8 +1,11 @@
 import { apiGet, apiPost } from '@/shared/api'
 import type {
+  BlogCategoryList,
   BlogCreateContract,
   BlogDetail,
   BlogListResponse,
+  BlogStats,
+  BlogTagList,
   CreateBlogPayload,
   CreateBlogResponse,
 } from './types'
@@ -20,23 +23,24 @@ export async function fetchBlogPage(
   return apiGet('/blogs/', { query: { page, pageSize } })
 }
 
-/**
- * Fetch a single blog post by ID.
- *
- * The legacy `getBlogById` returns the `BlogDeatil` shape which is
- * compatible with the typed `BlogDetail` at runtime.
- */
 export async function fetchBlogById(
   id: string
 ): Promise<BlogDetail> {
   return apiGet('/blogs/{blog_id}', { path: { blog_id: Number(id) } })
 }
 
-/**
- * Create a new blog post.
- *
- * Delegates to `postSaveBlog` under the hood. Returns the new blog ID.
- */
+export function fetchBlogStats(): Promise<BlogStats> {
+  return apiGet('/base/')
+}
+
+export function fetchBlogCategories(): Promise<BlogCategoryList> {
+  return apiGet('/base/blog/category')
+}
+
+export function fetchBlogTags(): Promise<BlogTagList> {
+  return apiGet('/base/blog/tag')
+}
+
 export async function createBlog(
   params: CreateBlogPayload
 ): Promise<CreateBlogResponse> {

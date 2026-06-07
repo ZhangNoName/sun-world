@@ -5,12 +5,12 @@ import { useI18n } from 'vue-i18n'
 import type { Ref } from 'vue'
 import SwLayout from '@/layout/layout.vue'
 import { fetchBaseData } from './util/request'
-import {
+import { fetchBlogStats } from '@/modules/blog/api'
+import type {
   CategoryResponse,
-  getStats,
   StatsResponse,
   TagResponse,
-} from '@/service/baseRequest'
+} from '@/modules/blog/types'
 import { DEFAULT_STATS } from './util/data'
 import { useTheme } from '@/shared/design'
 
@@ -61,7 +61,7 @@ const getAllBaseData = async () => {
     tagList.splice(0, tagList.length, ...res.tags)
     categoryList.splice(0, categoryList.length, ...res.categories)
   })
-  getStats().then((res) => {
+  fetchBlogStats().then((res) => {
     Object.assign(stats, res)
   })
 }
