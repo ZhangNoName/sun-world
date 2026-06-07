@@ -30,6 +30,7 @@ This keeps database implementation details inside `apps/api` and gives the front
 packages/contracts/
   openapi.json
   src/
+    api-types.ts
     generated-api-types.ts
     index.ts
 ```
@@ -77,20 +78,70 @@ The export script builds a schema-only FastAPI app, mounts the project routers, 
 
 ## Frontend Usage
 
-Use generated types from `@sun-world/contracts`:
+Use generated types and helper types from `@sun-world/contracts`:
 
 ```ts
-import type { paths, components } from '@sun-world/contracts'
+import type {
+  ApiRequestBody,
+  ApiSuccessData,
+  components,
+  paths,
+} from '@sun-world/contracts'
 ```
 
 The frontend should consume API request/response types. It should not depend on database table schemas.
 
+## Type Helpers
+
+`packages/contracts/src/api-types.ts` provides stable helper types on top of
+the generated OpenAPI output:
+
+- `MethodPath<'get' | 'post' | ...>`: valid paths for a method.
+- `ApiRequestBody<Path, Method>`: JSON request body for a path/method.
+- `ApiQueryParams<Path, Method>`: typed query parameters.
+- `ApiPathParams<Path, Method>`: typed path parameters such as `{ blog_id }`.
+- `ApiResponseEnvelope<Path, Method>`: raw `{ code, data, msg }` success
+  envelope from the OpenAPI schema.
+- `ApiSuccessData<Path, Method>`: successful business data after the frontend
+  HTTP interceptor unwraps `envelope.data`.
+
+`ApiSuccessData` removes `null` for endpoints with a real success data schema
+and preserves `null` for endpoints that intentionally return no business data.
+
+## Frontend Request Boundary
+
+New module APIs should import request helpers from `@/shared/api` instead of
+calling the legacy `@/service/http` wrapper directly:
+
+```ts
+import { apiGet, apiPost } from '@/shared/api'
+
+export function fetchBlogPage(page: number, pageSize: number) {
+  return apiGet('/blogs/', { query: { page, pageSize } })
+}
+
+export function fetchBlogById(blogId: number) {
+  return apiGet('/blogs/{blog_id}', { path: { blog_id: blogId } })
+}
+```
+
+The runtime implementation still delegates to the existing Axios instance, so
+cookies, telemetry, envelope unwrapping, and `ApiError` behavior remain
+unchanged. The typed helper layer only centralizes path/method/body/query
+typing and path-parameter interpolation.
+
 ## Current Consumption
 
-- `apps/web/src/modules/blog/types.ts` imports generated `operations` and `components` from `@sun-world/contracts`.
-- Blog module list/detail/create types are derived from generated contract types where OpenAPI exposes a useful schema.
-- `apps/web/src/modules/account/types.ts` derives login/register/session/current-user/reset-password types from generated contract operations.
-- Account API calls live in `apps/web/src/modules/account/api.ts`; legacy `service/auth.req.ts` and `service/user.req.ts` are compatibility wrappers.
+- `apps/web/src/modules/blog/types.ts` derives list/detail/create types from
+  `ApiSuccessData` and `ApiRequestBody`.
+- `apps/web/src/modules/blog/api.ts` uses `apiGet` / `apiPost`, including typed
+  query parameters and typed `{ blog_id }` path replacement.
+- `apps/web/src/modules/account/types.ts` derives login/register/session/current-user/reset-password types from `ApiSuccessData` and `ApiRequestBody`.
+- `apps/web/src/modules/account/api.ts` uses `apiGet` / `apiPost` from the
+  shared request boundary.
+- `apps/web/src/modules/admin/types.ts` derives request metrics from
+  `ApiSuccessData`.
+- `apps/web/src/modules/admin/api.ts` uses the shared typed request boundary.
 - `apps/web/src/service/baseRequest.ts` imports generated base/category/tag contract types for shared startup data.
 - UI-facing view models stay local to the module because they are presentation shapes, not API shapes.
 - Legacy `apps/web/src/service/request.ts` remains compatibility glue while new module consumers prefer `modules/*/api.ts`.

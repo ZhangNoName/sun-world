@@ -1,4 +1,4 @@
-import { request } from '@/service/http'
+import { apiGet, apiPost } from '@/shared/api'
 import type {
   AuthSession,
   LoginParams,
@@ -12,31 +12,31 @@ import type {
 } from './types'
 
 export function login(data: LoginParams): Promise<AuthSession> {
-  return request.post<AuthSession>('/auth/login', data)
+  return apiPost('/auth/login', data)
 }
 
 export function register(data: RegisterParams): Promise<RegisterSession> {
-  return request.post<RegisterSession>('/auth/register', data)
+  return apiPost('/auth/register', data)
 }
 
 export function logout(): Promise<LogoutResult> {
-  return request.post<LogoutResult>('/auth/logout')
+  return apiPost('/auth/logout')
 }
 
 export function refreshToken(): Promise<RefreshSession> {
-  return request.post<RefreshSession>('/auth/refresh_token', {})
+  return apiPost('/auth/refresh_token')
 }
 
 export function getCurrentUser(): Promise<UserInfo> {
-  return request.get<UserInfo>('/user/me')
+  return apiGet('/user/me')
 }
 
 export function requestResetPassword(
   data: ResetPasswordRequestParams
 ): Promise<null> {
-  return request.post<null>('/auth/reset_password/request', data)
+  return apiPost('/auth/reset_password/request', data)
 }
 
 export function resetPassword(data: ResetPasswordParams): Promise<null> {
-  return request.post<null>('/auth/reset_password', data)
+  return apiPost('/auth/reset_password', data)
 }

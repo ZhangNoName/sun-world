@@ -1,5 +1,6 @@
-import { getBlogByPage, getBlogById, postSaveBlog } from '@/service/request'
+import { apiGet, apiPost } from '@/shared/api'
 import type {
+  BlogCreateContract,
   BlogDetail,
   BlogListResponse,
   CreateBlogPayload,
@@ -16,7 +17,7 @@ export async function fetchBlogPage(
   page: number,
   pageSize: number
 ): Promise<BlogListResponse> {
-  return getBlogByPage(page, pageSize) as Promise<BlogListResponse>
+  return apiGet('/blogs/', { query: { page, pageSize } })
 }
 
 /**
@@ -28,7 +29,7 @@ export async function fetchBlogPage(
 export async function fetchBlogById(
   id: string
 ): Promise<BlogDetail> {
-  return getBlogById(id) as unknown as Promise<BlogDetail>
+  return apiGet('/blogs/{blog_id}', { path: { blog_id: Number(id) } })
 }
 
 /**
@@ -39,16 +40,30 @@ export async function fetchBlogById(
 export async function createBlog(
   params: CreateBlogPayload
 ): Promise<CreateBlogResponse> {
-  const legacyParams = {
+  const payload = {
     ...params,
     author: params.author ?? undefined,
     category:
       params.category === undefined || params.category === null
         ? undefined
-        : String(params.category),
-    tag: params.tag?.map((item) =>
-      typeof item === 'number' ? String(item) : item
-    ),
+        : Number(params.category),
+    tag: params.tag?.map(normalizeTagInput),
+  } as BlogCreateContract
+
+  return apiPost('/blogs/', payload)
+}
+
+function normalizeTagInput(
+  item: NonNullable<CreateBlogPayload['tag']>[number]
+): NonNullable<BlogCreateContract['tag']>[number] {
+  if (typeof item === 'number') {
+    return item
   }
-  return postSaveBlog(legacyParams) as Promise<CreateBlogResponse>
+
+  if (typeof item === 'string') {
+    const numericId = Number(item)
+    return Number.isFinite(numericId) ? numericId : { name: item }
+  }
+
+  return item
 }

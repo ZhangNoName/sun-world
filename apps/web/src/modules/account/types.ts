@@ -1,53 +1,42 @@
-import type { components, operations } from '@sun-world/contracts'
-
-type LoginOperation =
-  operations['login_auth_login_post']['responses'][200]['content']['application/json']
-type RegisterOperation =
-  operations['register_auth_register_post']['responses'][200]['content']['application/json']
-type RefreshOperation =
-  operations['refresh_token_auth_refresh_token_post']['responses'][200]['content']['application/json']
-type LogoutOperation =
-  operations['logout_auth_logout_post']['responses'][200]['content']['application/json']
-type MeOperation =
-  operations['get_current_user_info_user_me_get']['responses'][200]['content']['application/json']
-
-type ApiEnvelope<T> = {
-  code: number | string
-  data: T | null
-  msg: string
-}
+import type {
+  ApiRequestBody,
+  ApiSuccessData,
+  components,
+} from '@sun-world/contracts'
 
 export type LoginParams =
-  operations['login_auth_login_post']['requestBody']['content']['application/json']
+  ApiRequestBody<'/auth/login', 'post'>
 
 export type RegisterParams =
-  operations['register_auth_register_post']['requestBody']['content']['application/json']
+  ApiRequestBody<'/auth/register', 'post'>
 
 export type ResetPasswordRequestParams =
-  operations['request_reset_password_auth_reset_password_request_post']['requestBody']['content']['application/json']
+  ApiRequestBody<'/auth/reset_password/request', 'post'>
 
 export type ResetPasswordParams =
-  operations['reset_password_auth_reset_password_post']['requestBody']['content']['application/json']
+  ApiRequestBody<'/auth/reset_password', 'post'>
 
 export type AuthSession =
-  LoginOperation extends ApiEnvelope<infer T>
-    ? NonNullable<T>
-    : components['schemas']['AuthSession']
+  ApiSuccessData<'/auth/login', 'post'> extends never
+    ? components['schemas']['AuthSession']
+    : NonNullable<ApiSuccessData<'/auth/login', 'post'>>
 
 export type RegisterSession =
-  RegisterOperation extends ApiEnvelope<infer T>
+  ApiSuccessData<'/auth/register', 'post'> extends infer T
     ? NonNullable<T>
     : AuthSession
 
 export type RefreshSession =
-  RefreshOperation extends ApiEnvelope<infer T>
+  ApiSuccessData<'/auth/refresh_token', 'post'> extends infer T
     ? NonNullable<T>
     : AuthSession
 
 export type LogoutResult =
-  LogoutOperation extends ApiEnvelope<infer T> ? T : null
+  ApiSuccessData<'/auth/logout', 'post'> extends never
+    ? null
+    : ApiSuccessData<'/auth/logout', 'post'>
 
 export type UserInfo =
-  MeOperation extends ApiEnvelope<infer T>
-    ? NonNullable<T>
-    : components['schemas']['UserPublic']
+  ApiSuccessData<'/user/me', 'get'> extends never
+    ? components['schemas']['UserPublic']
+    : NonNullable<ApiSuccessData<'/user/me', 'get'>>

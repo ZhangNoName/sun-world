@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 13 frontend TypeScript quality gate.
+- Goal: Implement Phase 14 typed API contract helper.
 - Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,38 @@
 
 ## Files Changed
 
+- `packages/contracts/src/api-types.ts` **(new)**
+  - Adds reusable OpenAPI helper types: method path lookup, response envelope
+    extraction, success data unwrapping, request body, query params, and path
+    params.
+  - Treats success `data` as non-null when OpenAPI exposes a real schema, while
+    preserving `null` for no-content business responses.
+- `packages/contracts/src/index.ts`
+  - Exports the new API helper types from `@sun-world/contracts`.
+- `apps/web/src/shared/api/index.ts`
+  - Keeps legacy `request` and `ApiError` exports for compatibility.
+  - Adds `apiGet`, `apiPost`, `apiPut`, and `apiDelete` wrappers that are typed
+    by OpenAPI path/method and still delegate to the existing Axios layer.
+  - Adds typed path-parameter interpolation for paths such as
+    `/blogs/{blog_id}`.
+- `apps/web/src/modules/blog/api.ts`
+  - Migrates list/detail/create calls from legacy service glue to the shared
+    typed API boundary.
+  - Normalizes blog create category/tag values toward the OpenAPI contract.
+- `apps/web/src/modules/blog/types.ts`
+  - Reuses `ApiSuccessData` and `ApiRequestBody` instead of repeating envelope
+    conditional types.
+- `apps/web/src/modules/account/api.ts`
+  - Migrates account API calls to `apiGet` / `apiPost`.
+- `apps/web/src/modules/account/types.ts`
+  - Reuses `ApiSuccessData` and `ApiRequestBody` for login/register/session/user
+    types.
+- `apps/web/src/modules/admin/api.ts`
+  - Migrates admin metrics call to `apiGet`.
+- `apps/web/src/modules/admin/types.ts`
+  - Reuses `ApiSuccessData` for admin metrics.
+- `docs/architecture/api-contracts.md`
+  - Documents the typed contract helper layer and frontend usage rules.
 - `apps/web/tsconfig.json`
   - Removes fragile `vite-plugin-svg-icons/client` types subpath.
   - Enables `skipLibCheck` so type checking focuses on project code instead of dependency declaration noise.
@@ -131,6 +163,10 @@
 
 ## Verification
 
+- Phase 14:
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
+  - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `git diff --check` → passed.
 - Phase 13:
   - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
   - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
@@ -167,5 +203,6 @@
 
 ## Next Step
 
-- Run API checks, regenerate contracts, run frontend type/build checks, smoke-test metrics collector, and commit Phase 10 on `monorepo-api-import`.
+- Commit Phase 14 on `monorepo-api-import`, push it for review, then continue
+  migrating remaining legacy service wrappers behind the typed request boundary.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.
