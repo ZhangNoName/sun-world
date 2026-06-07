@@ -27,6 +27,44 @@ export interface BlogRawItem {
   cover_url?: string
 }
 
+// ---- Blog detail ----
+
+/**
+ * Typed blog detail shape (correct spelling).
+ *
+ * Replaces the legacy `BlogDeatil` typo in `@/service/request` for new code.
+ * Both interfaces are compatible at runtime; migrate callers gradually.
+ */
+export interface BlogDetail {
+  author: string
+  content: string
+  created_at: string
+  id: string
+  title: string
+  update_at: string
+  updated_at?: string
+  comment_num?: number
+  byte_num?: number
+  view_num?: number
+}
+
+// ---- Create blog payload ----
+
+/** Payload shape for creating or updating a blog post. */
+export interface CreateBlogPayload {
+  title: string
+  content: string
+  abstract: string
+  author?: string
+  category?: string
+  tag?: (string | { name: string })[]
+}
+
+/** Successful blog creation response. */
+export interface CreateBlogResponse {
+  id: number | string
+}
+
 // ---- View models ----
 
 /** Mapped view model consumed by BlogCard and list templates. */

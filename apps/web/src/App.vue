@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, provide, reactive, watch } from 'vue'
+import { onMounted, onUnmounted, provide, reactive, watch, inject } from 'vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { Ref } from 'vue'
 import SwLayout from '@/layout/layout.vue'
 import { fetchBaseData } from './util/request'
 import {
@@ -24,6 +25,9 @@ locale.value = localStorage.getItem(STORAGE_LOCALE) || DEFAULT_LOCALE
 
 provide('theme', theme)
 provide('locale', locale)
+
+// Route loading bar state (installed by useRouteLoading in main.ts)
+const routeLoading = inject<Ref<boolean>>('routeLoading')
 
 const tagList = reactive<TagResponse[]>([])
 const categoryList = reactive<CategoryResponse[]>([])
@@ -74,6 +78,13 @@ onUnmounted(() => {
 
 <template>
   <div :class="allClass">
+    <!-- Route-level loading bar -->
+    <div
+      v-if="routeLoading"
+      class="route-loading-bar"
+      aria-label="正在加载页面"
+      role="progressbar"
+    ></div>
     <SwLayout />
   </div>
 </template>
@@ -108,6 +119,48 @@ onUnmounted(() => {
     flex: 1;
   }
   .footer {
+  }
+}
+
+.route-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.route-loading-bar::before {
+  content: '';
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand),
+    var(--color-brand-light)
+  );
+  animation: route-loading-slide 1s var(--motion-ease-standard) infinite;
+}
+
+@keyframes route-loading-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(240%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-bar::before {
+    animation: none;
+    width: 100%;
   }
 }
 </style>

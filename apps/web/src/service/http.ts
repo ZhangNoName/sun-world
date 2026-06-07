@@ -62,7 +62,8 @@ service.interceptors.response.use(
     const body = response.data
     // 检测是否为统一 envelope 响应（包含 code 字段）
     if (body && typeof body === 'object' && 'code' in body) {
-      if (body.code === 1) {
+      const isSuccess = body.code === 1 || body.code === '1'
+      if (isSuccess) {
         // 业务成功：解包 data 字段，替换 response.data 为业务数据
         response.data = body.data
         return response
@@ -117,8 +118,11 @@ interface AxiosTypes<T> {
 
 // 后台响应 envelope 格式
 // 用于表示后端统一返回的 { code, data, msg } 结构
+//
+// code can be a number (legacy contracts) or a string (new error-code map).
+// Both are valid at runtime; the interceptor normalises success checks.
 export interface ApiEnvelope<T = unknown> {
-  code: number
+  code: number | string
   data: T | null
   msg: string
   message?: string // 临时兼容旧版 message 字段
@@ -126,12 +130,17 @@ export interface ApiEnvelope<T = unknown> {
 
 // ApiError: 统一业务/网络错误类型
 export class ApiError extends Error {
-  code: number
+  code: number | string
   msg: string
   status?: number
   payload: unknown
 
-  constructor(code: number, msg: string, status?: number, payload?: unknown) {
+  constructor(
+    code: number | string,
+    msg: string,
+    status?: number,
+    payload?: unknown
+  ) {
     super(msg)
     this.name = 'ApiError'
     this.code = code
@@ -142,7 +151,7 @@ export class ApiError extends Error {
 }
 
 function notifyApiError(error: ApiError) {
-  if (error.code === 401 || error.status === 401) {
+  if (error.code === 401 || error.code === '401' || error.status === 401) {
     ElMessage.warning(error.msg || '您的账号已登出或超时，即将登出...')
     return
   }

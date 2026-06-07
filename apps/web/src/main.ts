@@ -23,6 +23,7 @@ import {
   installGlobalErrorCapture,
 } from '@/shared/telemetry'
 import { syncDocumentHeadFromRouteMeta } from '@/shared/seo'
+import { useRouteLoading } from '@/app/router/use-route-loading'
 
 // ---- App bootstrap ----
 
@@ -44,9 +45,13 @@ function initDeferredEffects() {
     })
 }
 
+// Route loading foundation (install before app mount)
+const routeLoading = useRouteLoading(router)
+
 const app = createApp(App)
 
 // Providers
+app.provide('routeLoading', routeLoading.isLoading)
 app.directive('lazy', lazy)
 app.use(i18n)
 app.use(router)

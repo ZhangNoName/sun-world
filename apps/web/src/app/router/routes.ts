@@ -5,7 +5,6 @@ import type { RouteRecordRaw } from 'vue-router'
 // registered by module manifests under src/modules.
 
 const Home = () => import(/* webpackPrefetch: true */ '@/pages/home/index.vue')
-const NewArticle = () => import('@/pages/article/index.vue')
 const GameTiles = () => import('@/pages/gameTiles/index.vue')
 const Keep = () => import('@/pages/keep/keep.vue')
 const ToolsPage = () => import('@/pages/tools/tools.page.vue')
@@ -27,11 +26,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/home',
     component: Home,
     meta: { title: '首页 - Sun World' },
-  },
-  {
-    path: '/new_article',
-    component: NewArticle,
-    meta: { title: '文章 - Sun World' },
   },
   {
     path: '/game_tiles',

@@ -15,8 +15,17 @@ export const blogModule: AppModule = {
       component: () => import('@/pages/blog/index.vue'),
       meta: {
         module: 'blog',
-        title: '博客 - Sun World',
+        title: '博客详情 - Sun World',
         description: '浏览 Sun World 的技术博客文章，覆盖前端、后端、AI、图形编辑器和工程实践。',
+      },
+    },
+    {
+      path: '/new_article',
+      component: () => import('@/pages/article/index.vue'),
+      meta: {
+        module: 'blog',
+        title: '撰写文章 - Sun World',
+        description: '在 Sun World 创建一篇新的技术博客文章。',
       },
     },
   ],

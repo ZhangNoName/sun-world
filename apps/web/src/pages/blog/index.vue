@@ -1,29 +1,30 @@
 <script lang="ts" setup>
-import { inject, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
-import { useRoute } from 'vue-router'
-import { onMounted } from 'vue'
-import { BlogDeatil, getBlogById } from '@/service/request'
-import { ElMessage } from 'element-plus'
+import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
+import { fetchBlogById } from '@/modules/blog/api'
+import { getBlogErrorMessage } from '@/modules/blog/errors'
+import type { BlogDetail } from '@/modules/blog/types'
+import { formatDate } from '@/util/function'
+import { Calendar, WordCount, Comment } from '@sun-world/icons'
+import type { VditorTreeItemType } from '@/type'
 // @ts-ignore
 import VditorPreview from 'vditor/dist/method.min'
 
-import { Calendar, WordCount, Comment, Clock, TagSvg } from '@sun-world/icons'
-import { BlogEditorClass } from '@/blogEditor'
-import Vditor from 'vditor'
-import { VditorTreeItemType } from '@/type'
-interface Props {}
-const props: Props = defineProps()
-const iconConfig = ref({
-  height: '1.8rem',
-  width: '1.8rem',
-})
 const route = useRoute()
-const id = ref<string>((route.query.id as string) || '')
+
+const iconConfig = {
+  height: '1.6rem',
+  width: '1.6rem',
+}
+
 const blogPreview = ref<HTMLElement | null>(null)
 const catalog = ref<VditorTreeItemType[]>([])
-const blogInfo = ref<BlogDeatil>({
+const loading = ref(false)
+const blogInfo = ref<BlogDetail>({
   author: '',
   content: '',
   created_at: '',
@@ -31,134 +32,198 @@ const blogInfo = ref<BlogDeatil>({
   title: '',
   update_at: '',
 })
-const getCatalog = (): VditorTreeItemType[] => {
-  if (!blogPreview.value) return []
-  const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
 
+const id = computed(() => String(route.query.id || ''))
+const publishedAt = computed(() =>
+  blogInfo.value.created_at ? formatDate(blogInfo.value.created_at) : '-'
+)
+const commentCount = computed(() => blogInfo.value.comment_num ?? 0)
+const wordCount = computed(
+  () => blogInfo.value.byte_num ?? blogInfo.value.content.length
+)
+
+function getCatalog(): VditorTreeItemType[] {
+  if (!blogPreview.value) return []
+
+  const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
   return Array.from(headers).map((header) => ({
     text: header.textContent || '',
-    level: Number(header.tagName.charAt(1)), // 解析 h1~h6 级别
-    id: header.id, // Vditor 解析后会自动生成 id
+    level: Number(header.tagName.charAt(1)),
+    id: header.id,
   }))
 }
-const showBlog = (content: string) => {
-  // console.log('content', content)
-  if (blogPreview.value) {
-    // new Vditor('blog-preview', {
-    //   value: content,
-    //   mode: 'preview', // 使用所见即所得模式
-    //   preview: {
-    //     mode: 'both', // 预览模式
-    //     actions: [], // 可以自定义预览操作
-    //   },
-    //   toolbar: [], // 可以自定义工具栏
-    // })
-    VditorPreview.preview(blogPreview.value, content, {
-      theme: {
-        current: 'light',
-      },
-      hljs: {
-        style: 'github',
-      },
-    }).then(() => {
-      catalog.value = getCatalog()
-      console.log('获取道德标题:', catalog.value)
-    })
-  }
+
+async function renderPreview(content: string) {
+  await nextTick()
+  if (!blogPreview.value) return
+
+  await VditorPreview.preview(blogPreview.value, content, {
+    theme: {
+      current: 'light',
+    },
+    hljs: {
+      style: 'github',
+    },
+  })
+  catalog.value = getCatalog()
 }
-onMounted(() => {
+
+async function loadBlog() {
   if (!id.value) {
-    ElMessage.error('未找到相应的博客id')
+    ElMessage.error('未找到相应的博客 id')
     return
   }
-  getBlogById(id.value)
-    .then((res) => {
-      // console.log('获取到的博客内容', res)
-      blogInfo.value = res
-      showBlog(res.content)
-    })
-    .catch((err) => {
-      console.log('获取博客内容失败', err)
-      ElMessage.error('获取博客内容失败！')
-    })
-    .finally(() => {
-      console.log('获取博客内容完成')
-    })
+
+  loading.value = true
+  try {
+    const detail = await fetchBlogById(id.value)
+    blogInfo.value = detail
+    await renderPreview(detail.content)
+  } catch (error) {
+    ElMessage.error(getBlogErrorMessage(error))
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadBlog()
 })
 </script>
 
 <template>
   <div class="blog-page">
-    <div class="left-bg"></div>
-    <div class="left">
+    <aside class="left" aria-label="文章侧边栏">
       <SelfInfoCard />
       <CatalogCard :catalog="catalog" />
-    </div>
+    </aside>
 
-    <div class="right">
-      <div class="data-info">
-        <div class="tag">
-          <Calendar v-bind="iconConfig" />
-          <span>{{ blogInfo.created_at }}</span>
+    <main class="right">
+      <template v-if="loading">
+        <LoadingSkeleton :lines="5" />
+      </template>
+
+      <template v-else>
+        <div class="data-info" aria-label="文章信息">
+          <div class="meta-item">
+            <Calendar v-bind="iconConfig" />
+            <span>{{ publishedAt }}</span>
+          </div>
+          <div class="meta-item">
+            <Comment v-bind="iconConfig" />
+            <span>{{ commentCount.toLocaleString() }}</span>
+          </div>
+          <div class="meta-item">
+            <WordCount v-bind="iconConfig" />
+            <span>{{ wordCount.toLocaleString() }}</span>
+          </div>
         </div>
-        <div class="tag">
-          <Comment v-bind="iconConfig" />
-          <span>{{ 0 }}</span>
-        </div>
-        <div class="tag">
-          <WordCount v-bind="iconConfig" />
-          <span>{{ 1000 }}</span>
-        </div>
-      </div>
-      <h1>{{ blogInfo.title }}</h1>
-      <!-- {{ blogInfo.content }} -->
-      <div class="preview-container" ref="blogPreview" id="blog-preview"></div>
-    </div>
+
+        <h1 class="blog-title">{{ blogInfo.title }}</h1>
+        <div
+          class="preview-container"
+          ref="blogPreview"
+          id="blog-preview"
+        ></div>
+      </template>
+    </main>
   </div>
 </template>
 
 <style scoped>
 .blog-page {
   position: relative;
-  margin: 6.5rem auto 0 auto;
-  height: auto;
-  min-height: calc(100vh - 37rem);
+  width: 100%;
+  max-width: var(--container-max-width);
+  min-height: calc(100vh - 12rem);
+  margin: 0 auto;
+  padding: var(--space-8) var(--container-inline-padding) var(--space-12);
   background-color: var(--bg-page);
-  width: 85%;
   display: grid;
-  grid-template-columns: 35rem auto;
-  grid-template-rows: auto;
-  gap: 2.5rem;
+  grid-template-columns: minmax(240px, 32rem) minmax(0, 1fr);
+  gap: var(--space-8);
+}
+
+.left {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: var(--space-4);
+}
+
+.data-info {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.blog-title {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+}
+
+.preview-container {
+  min-width: 0;
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--card-radius);
+  background: var(--bg-component);
+  padding: var(--space-6);
+}
+
+@media screen and (max-width: 1024px) {
+  .blog-page {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
   .left {
-    width: 35rem;
-    display: flex;
-    flex-direction: column;
-    gap: var(--horizontalGapPx);
-    position: fixed;
+    display: none;
   }
-  .left-bg {
-    /* background-color: var(--bg-brand-light); */
-    /* background-color: #f8f9fa; */
+}
+
+@media screen and (max-width: 695px) {
+  .blog-page {
+    padding: var(--space-4) 0 var(--space-8);
   }
-  .right {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    gap: var(--horizontalGapPx);
-    .data-info {
-      height: 4rem;
-      font-size: 1.2rem;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: var(--horizontalGapPx);
-      .tag {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-    }
+
+  .blog-title,
+  .data-info {
+    padding-inline: var(--horizontalGapPx);
+  }
+
+  .blog-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .preview-container {
+    border-inline: none;
+    border-radius: 0;
+    padding: var(--space-4) var(--horizontalGapPx);
   }
 }
 </style>

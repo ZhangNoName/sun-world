@@ -1,70 +1,77 @@
 <script lang="ts" setup>
 import { inject, onMounted, ref } from 'vue'
-import { BlogEditorClass } from '@/blogEditor'
-import { ElMessage, ElInput, ElSelect, ElOption, ElTree } from 'element-plus'
+import { ElMessage, ElInput, ElSelect, ElOption } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
-import { getBlogById, postSaveBlog } from '@/service/request'
-import { CategoryResponse, TagResponse } from '@/service/baseRequest'
-const prop = defineProps({
+import { BlogEditorClass } from '@/blogEditor'
+import { createBlog } from '@/modules/blog/api'
+import { getBlogErrorMessage } from '@/modules/blog/errors'
+import type { CreateBlogPayload } from '@/modules/blog/types'
+import type { CategoryResponse, TagResponse } from '@/service/baseRequest'
+
+defineProps({
   id: { type: String, default: '' },
 })
 
-const editorEle = ref()
+const categoryList = inject<CategoryResponse[]>('categoryList', [])
+const tagList = inject<TagResponse[]>('tagList', [])
+
+const editorEle = ref<HTMLElement | null>(null)
 const blogWordCount = ref(0)
 const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
 const blogCategory = ref('')
 const blogTag = ref<string[]>([])
+const title = ref('')
+const saving = ref(false)
+
 const saveBlog = async () => {
-  if (title.value === '') return ElMessage.error('标题不能为空')
+  if (saving.value) return
+  if (title.value.trim() === '') {
+    ElMessage.error('标题不能为空')
+    return
+  }
 
   const content = blogEditor.value.getContent() || ''
-  // if (content.length < 50) return ElMessage.error('内容长度不少于50')
-  const tags = blogTag.value.map((o) => {
-    const item = tagList.find((i) => i.id == o)
+  const tags = blogTag.value.map((tagId) => {
+    const item = tagList.find((i) => String(i.id) === String(tagId))
     return item
-      ? o
+      ? tagId
       : {
-          name: o.toString(),
+          name: tagId.toString(),
         }
   })
-  const params = {
-    title: title.value,
+
+  const params: CreateBlogPayload = {
+    title: title.value.trim(),
     content,
     abstract: content.substring(0, 100),
     author: 'test',
     category: blogCategory.value,
     tag: tags,
   }
-  // console.log('保存博客', params)
 
-  await postSaveBlog(params).then((res) => {
-    // console.log('获取到返回的', res)
+  saving.value = true
+  try {
+    await createBlog(params)
     ElMessage.success('保存成功')
-  })
-  // blogEditor?.value.save()
+  } catch (error) {
+    ElMessage.error(getBlogErrorMessage(error))
+  } finally {
+    saving.value = false
+  }
 }
 
-const categoryList = inject<CategoryResponse[]>('categoryList', [])
-const tagList = inject<TagResponse[]>('tagList', [])
-
-const title = ref('')
-
 onMounted(() => {
+  if (!editorEle.value) return
+
   blogEditor.value.init(editorEle.value)
-  // console.log(blogEditor)
-  // 将blogEditor挂载到全局
-  ;(window as any).blogEditor = blogEditor
+  ;(window as unknown as { blogEditor?: BlogEditorClass }).blogEditor =
+    blogEditor.value
 
   blogEditor.value.setConfig({
-    input: (v) => {
-      blogWordCount.value = v.length
+    input: (value) => {
+      blogWordCount.value = value.length
     },
   })
-  if (prop.id) {
-    getBlogById(prop.id).then((res: any) => {
-      // console.log('获取到的博客内容', res)
-    })
-  }
 })
 </script>
 
@@ -73,9 +80,12 @@ onMounted(() => {
     <div class="func-bar">
       <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
       <div class="btn-container">
-        <ZBtn @click="saveBlog">{{ $t('save') }}</ZBtn>
+        <ZBtn :disabled="saving" @click="saveBlog">
+          {{ saving ? '保存中...' : $t('save') }}
+        </ZBtn>
       </div>
     </div>
+
     <div class="title-container">
       <ElInput
         class="title-input"
@@ -109,6 +119,7 @@ onMounted(() => {
         />
       </ElSelect>
     </div>
+
     <div ref="editorEle" class="editor-container"></div>
   </div>
 </template>
@@ -119,35 +130,69 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.func-bar {
+  min-height: 3rem;
+  width: 100%;
+  display: flex;
   align-items: center;
+  gap: var(--space-3);
+}
+
+.stastic {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.btn-container {
+  display: flex;
+  justify-content: flex-end;
   gap: var(--horizontalGapPx);
-  .func-bar {
-    height: 3rem;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    .stastic {
-      flex: 1;
-    }
-    .btn-container {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--horizontalGapPx);
-      align-items: center;
-    }
+  align-items: center;
+}
+
+.title-container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(160px, 1fr) minmax(160px, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.editor-container {
+  flex: 1;
+  min-height: 360px;
+}
+
+@media screen and (max-width: 768px) {
+  .article-page {
+    padding: var(--space-3) 0 var(--space-6);
   }
+
+  .func-bar,
   .title-container {
-    height: 3rem;
-    width: 100%;
-    display: grid;
-    /* justify-content: space-between; */
-    grid-template-rows: auto;
-    grid-template-columns: 3fr 1fr 1fr;
-    align-items: center;
-    gap: var(--horizontalGapPx);
+    padding-inline: var(--horizontalGapPx);
   }
+
+  .func-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .btn-container {
+    justify-content: stretch;
+  }
+
+  .title-container {
+    grid-template-columns: 1fr;
+  }
+
   .editor-container {
-    flex: 1;
+    min-height: 420px;
   }
 }
 </style>

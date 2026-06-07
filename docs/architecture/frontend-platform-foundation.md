@@ -114,6 +114,35 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - Waterfall view is disabled on narrow screens and uses responsive column counts on tablet/desktop.
 - The homepage sidebar now renders one weather card instead of duplicated weather cards.
 
+## Phase 3 Blog Module Boundary
+
+### Route Ownership
+
+- Blog-owned routes now live in `modules/blog/index.ts`.
+- `/blog` remains the reader/detail route and `/new_article` is owned by the blog module instead of the core router.
+- Core routes in `app/router/routes.ts` should stay limited to shell-level pages and catch-all behavior.
+
+### Module API And Types
+
+- `modules/blog/api.ts` wraps legacy service calls behind typed module functions:
+  - `fetchBlogPage(page, pageSize)`
+  - `fetchBlogById(id)`
+  - `createBlog(payload)`
+- `modules/blog/types.ts` owns raw API response, detail, create payload, create response, and list view-model types.
+- New blog consumers should import from `modules/blog/*`; legacy `service/request.ts` stays as compatibility glue.
+
+### Error Mapping
+
+- `modules/blog/errors.ts` maps shared `ApiError` values and stable blog error codes into user-facing blog-domain messages.
+- `service/http.ts` supports both numeric legacy codes and string stable error codes.
+- Success remains `code === 1` or `code === '1'`; `code === 0` is treated as failure.
+
+### Route Loading
+
+- `app/router/use-route-loading.ts` installs lightweight router guards and exposes a readonly loading ref.
+- `main.ts` provides this ref to the app shell.
+- `App.vue` renders a token-based top loading bar during route transitions.
+
 ## Future Work (Phase 2+)
 
 - Migrate page components from `pages/` into their respective module folders.
