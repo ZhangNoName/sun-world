@@ -1,5 +1,8 @@
 import type { AppModule } from '../types'
 
+const BlogDetailPage = () => import('@/pages/blog/index.vue')
+const ArticleEditorPage = () => import('@/pages/article/index.vue')
+
 /**
  * Blog module - public-facing blog pages.
  *
@@ -12,7 +15,7 @@ export const blogModule: AppModule = {
   routes: [
     {
       path: '/blog',
-      component: () => import('@/pages/blog/index.vue'),
+      component: BlogDetailPage,
       meta: {
         module: 'blog',
         title: '博客详情 - Sun World',
@@ -21,7 +24,7 @@ export const blogModule: AppModule = {
     },
     {
       path: '/new_article',
-      component: () => import('@/pages/article/index.vue'),
+      component: ArticleEditorPage,
       meta: {
         module: 'blog',
         title: '撰写文章 - Sun World',
@@ -36,4 +39,5 @@ export const blogModule: AppModule = {
     title: '博客 - Sun World',
     description: '浏览技术博客文章，涵盖前端、后端、AIGC 等主题。',
   },
+  preload: () => Promise.all([BlogDetailPage(), ArticleEditorPage()]),
 }

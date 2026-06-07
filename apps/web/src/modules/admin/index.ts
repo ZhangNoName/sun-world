@@ -1,5 +1,7 @@
 import type { AppModule } from '../types'
 
+const ManagePage = () => import('@/pages/manage/index.vue')
+
 /**
  * Admin module - analytics, logs, settings dashboard.
  *
@@ -13,7 +15,7 @@ export const adminModule: AppModule = {
   routes: [
     {
       path: '/manage',
-      component: () => import('@/pages/manage/index.vue'),
+      component: ManagePage,
       meta: { module: 'admin', title: '管理 - Sun World' },
     },
   ],
@@ -22,7 +24,10 @@ export const adminModule: AppModule = {
   ],
   seo: {
     title: '管理 - Sun World',
+    description: '查看 Sun World 后台数据、日志、指标和站点设置。',
+    noIndex: true,
   },
+  preload: ManagePage,
 }
 
 export * from './api'

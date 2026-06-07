@@ -53,7 +53,7 @@ Current production runtime has not been cut over yet:
 - https://sunworld.site -> frontend container on 127.0.0.1:8081
 - https://www.sunworld.site -> frontend container on 127.0.0.1:8081
 - https://api.sunworld.site -> backend on 127.0.0.1:8000
-- https://shop.sunworld.site -> LingDian web dev server on 127.0.0.1:5173
+- https://shop.sunworld.site -> frontend container on 127.0.0.1:8081
 
 ## Automation
 

@@ -60,6 +60,10 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - `createHead()` installed as a Vue plugin in `main.ts`.
 - `usePageMeta()` sets title, description, canonical, Open Graph, and Twitter Card tags from any component or composable.
 - `syncHeadFromRouteMeta()` provides a global afterEach hook that reads `route.meta` into document head.
+- Module route metadata is normalized by `collectModuleRoutes()` before router creation:
+  route-level meta wins, then module SEO defaults fill title/description/OG/noIndex.
+- `installSeoResourceHints()` installs conservative public resource hints such
+  as `preconnect`/`dns-prefetch` for the configured API origin.
 - Phase 2 may add SSG/prerendering if stronger indexing is needed.
 
 ## Telemetry
@@ -86,6 +90,9 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - Geolocation and weather side effects moved out of the blocking `main.ts` path.
 - They fire after `app.mount('#app')` via `initDeferredEffects()` so the first paint is never delayed.
 - Telemetry initialisation also runs post-mount.
+- `installModulePreloading(router)` starts module preload hooks during route
+  resolution without blocking navigation, and warms the blog module during
+  browser idle time.
 
 ## Phase 2 Experience Foundation
 
@@ -147,9 +154,28 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - `main.ts` provides this ref to the app shell.
 - `App.vue` renders a token-based top loading bar during route transitions.
 
+## Phase 12 Module SEO And Preload
+
+### Module SEO Defaults
+
+- `modules/registry.ts` applies module-level SEO defaults to each module route.
+- Route metadata still has priority. A page can override `title`,
+  `description`, `ogType`, and `noIndex`.
+- Account, admin, and editor modules default to `noIndex` because they are
+  authenticated, workflow, or tool pages rather than public content pages.
+
+### Module Preload Contract
+
+- `AppModule.preload` is now an active contract, not a placeholder.
+- Each module can expose a preload hook that imports its page chunks.
+- Preload promises are memoized by module id to avoid repeated work.
+- Route-adjacent preload is fire-and-forget; navigation is not delayed.
+- The public blog module is preloaded during browser idle time because it is
+  the likely next interaction from the home shell.
+
 ## Future Work (Phase 2+)
 
 - Migrate page components from `pages/` into their respective module folders.
 - Make `shared/api` consume `@sun-world/contracts` types.
-- Add prefetch strategy and route-level code splitting.
+- Extend preload strategy with hover/focus prefetch on nav items.
 - Evaluate SSG/SSR for blog article pages.

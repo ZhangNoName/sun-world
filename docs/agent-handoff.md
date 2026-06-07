@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 11 frontend theme, motion, and responsive baseline from Figma v1.
+- Goal: Implement Phase 12 module SEO defaults and preload foundation.
 - Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,25 @@
 
 ## Files Changed
 
+- `apps/web/src/modules/types.ts`
+  - Extends `ModuleSeoDefaults` with `ogType` and `noIndex`.
+- `apps/web/src/modules/registry.ts`
+  - Applies module SEO defaults to route meta before router creation.
+  - Adds memoized `preloadModuleById()` and `installModulePreloading()`.
+- `apps/web/src/modules/*/index.ts`
+  - Adds preload hooks for blog, AI, editor, account, and admin modules.
+  - Adds stronger default SEO descriptions and `noIndex` defaults for
+    non-public account/admin/editor routes.
+- `apps/web/src/shared/seo/index.ts`
+  - Adds stale `og:image` / `twitter:image` cleanup.
+  - Adds `installSeoResourceHints()` for conservative public preconnect and
+    DNS-prefetch hints.
+- `apps/web/src/main.ts`
+  - Installs module preloading and SEO resource hints during bootstrap.
+- `docs/architecture/frontend-platform-foundation.md`
+  - Documents module SEO defaults and preload contract.
+- `docs/current-state.md`
+  - Corrects `shop.sunworld.site` runtime target to 127.0.0.1:8081.
 - `apps/web/src/styles/design-tokens.css`
   - Aligns light/dark palette with the Figma v1 blue + teal accent direction.
   - Adds accent, raised surface, focus, overlay, mobile nav, drawer, card, and reduced-motion tokens.
@@ -91,6 +110,9 @@
 
 ## Verification
 
+- Phase 12:
+  - `pnpm check:web` → frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` was attempted but blocked by existing project config: missing type definition entry `vite-plugin-svg-icons/client`.
 - Phase 11:
   - `pnpm check:web` → frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
   - `git diff --check` → passed.

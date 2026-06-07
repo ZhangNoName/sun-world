@@ -1,5 +1,7 @@
 import type { AppModule } from '../types'
 
+const CanvasPage = () => import('@/pages/canvas/canvas.vue')
+
 /**
  * Editor module - canvas and rich-editor integration.
  *
@@ -12,7 +14,7 @@ export const editorModule: AppModule = {
   routes: [
     {
       path: '/canvas',
-      component: () => import('@/pages/canvas/canvas.vue'),
+      component: CanvasPage,
       meta: {
         module: 'editor',
         title: '画布 - Sun World',
@@ -27,5 +29,8 @@ export const editorModule: AppModule = {
   ],
   seo: {
     title: '画布 - Sun World',
+    description: '使用 Sun World 画布进行图形编辑、视觉实验和内容创作。',
+    noIndex: true,
   },
+  preload: CanvasPage,
 }

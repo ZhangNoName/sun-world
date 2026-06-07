@@ -8,6 +8,10 @@ export interface ModuleSeoDefaults {
   title?: string
   /** Fallback description for module pages */
   description?: string
+  /** Fallback Open Graph type */
+  ogType?: string
+  /** Whether module pages should be excluded from indexing by default */
+  noIndex?: boolean
 }
 
 /**

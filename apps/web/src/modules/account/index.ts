@@ -4,6 +4,11 @@ export * from './api'
 export * from './errors'
 export type * from './types'
 
+const LoginPage = () => import('@/pages/login/login.vue')
+const RegisterPage = () => import('@/pages/login/register.vue')
+const MePage = () => import('@/pages/me/me.vue')
+const QqCallbackPage = () => import('@/pages/login/qqCb.vue')
+
 /**
  * Account module - authentication, profile, and user settings.
  *
@@ -16,22 +21,22 @@ export const accountModule: AppModule = {
   routes: [
     {
       path: '/login',
-      component: () => import('@/pages/login/login.vue'),
+      component: LoginPage,
       meta: { module: 'account', title: '登录 - Sun World' },
     },
     {
       path: '/register',
-      component: () => import('@/pages/login/register.vue'),
+      component: RegisterPage,
       meta: { module: 'account', title: '注册 - Sun World' },
     },
     {
       path: '/me',
-      component: () => import('@/pages/me/me.vue'),
+      component: MePage,
       meta: { module: 'account', title: '个人中心 - Sun World' },
     },
     {
       path: '/qq',
-      component: () => import('@/pages/login/qqCb.vue'),
+      component: QqCallbackPage,
       meta: { module: 'account', title: 'QQ 登录 - Sun World' },
     },
   ],
@@ -40,5 +45,9 @@ export const accountModule: AppModule = {
   ],
   seo: {
     title: '账户 - Sun World',
+    description: '管理 Sun World 登录、个人资料和第三方授权。',
+    noIndex: true,
   },
+  preload: () =>
+    Promise.all([LoginPage(), RegisterPage(), MePage(), QqCallbackPage()]),
 }

@@ -10,7 +10,7 @@
  */
 
 import { useHead } from '@unhead/vue'
-import { SITE_URL } from '@/shared/config'
+import { API_BASE_URL, SITE_URL } from '@/shared/config'
 
 /** Default site-wide SEO values. */
 const DEFAULTS = {
@@ -112,14 +112,40 @@ function upsertMeta(selector: string, attributes: Record<string, string>) {
 }
 
 function upsertCanonical(href: string) {
-  const selector = 'link[rel="canonical"]'
+  upsertLink('link[rel="canonical"]', {
+    rel: 'canonical',
+    href,
+  })
+}
+
+function upsertLink(selector: string, attributes: Record<string, string>) {
   const current = document.head.querySelector<HTMLLinkElement>(selector)
   const element = current ?? document.createElement('link')
 
-  element.setAttribute('rel', 'canonical')
-  element.setAttribute('href', href)
+  for (const [name, value] of Object.entries(attributes)) {
+    element.setAttribute(name, value)
+  }
 
   if (!current) document.head.appendChild(element)
+}
+
+function upsertResourceHint(rel: 'preconnect' | 'dns-prefetch', href: string) {
+  const current = Array.from(
+    document.head.querySelectorAll<HTMLLinkElement>(`link[rel="${rel}"]`)
+  ).find((element) => element.href === href)
+  const element = current ?? document.createElement('link')
+
+  element.setAttribute('rel', rel)
+  element.setAttribute('href', href)
+  if (rel === 'preconnect') {
+    element.setAttribute('crossorigin', '')
+  }
+
+  if (!current) document.head.appendChild(element)
+}
+
+function removeMeta(selector: string) {
+  document.head.querySelector<HTMLMetaElement>(selector)?.remove()
 }
 
 /**
@@ -183,6 +209,13 @@ export function syncDocumentHeadFromRouteMeta(
       property: 'og:image',
       content: pageMeta.ogImage,
     })
+    upsertMeta('meta[name="twitter:image"]', {
+      name: 'twitter:image',
+      content: pageMeta.ogImage,
+    })
+  } else {
+    removeMeta('meta[property="og:image"]')
+    removeMeta('meta[name="twitter:image"]')
   }
 
   const robots = document.head.querySelector<HTMLMetaElement>(
@@ -204,4 +237,31 @@ export function syncHeadFromRouteMeta(
   path = window.location.pathname
 ) {
   syncDocumentHeadFromRouteMeta(meta, path)
+}
+
+function toOrigin(url: string): string | null {
+  if (!url) return null
+
+  try {
+    return new URL(url, SITE_URL).origin
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Install stable site-wide resource hints.
+ *
+ * These hints are intentionally conservative and derived from public runtime
+ * config only. They do not expose secrets and do not force-load heavy assets.
+ */
+export function installSeoResourceHints() {
+  const origins = new Set([toOrigin(SITE_URL), toOrigin(API_BASE_URL)])
+
+  for (const origin of origins) {
+    if (!origin || origin === window.location.origin) continue
+
+    upsertResourceHint('preconnect', origin)
+    upsertResourceHint('dns-prefetch', origin)
+  }
 }

@@ -22,8 +22,12 @@ import {
   installRouteTiming,
   installGlobalErrorCapture,
 } from '@/shared/telemetry'
-import { syncDocumentHeadFromRouteMeta } from '@/shared/seo'
+import {
+  installSeoResourceHints,
+  syncDocumentHeadFromRouteMeta,
+} from '@/shared/seo'
 import { useRouteLoading } from '@/app/router/use-route-loading'
+import { installModulePreloading } from '@/modules/registry'
 
 // ---- App bootstrap ----
 
@@ -47,6 +51,8 @@ function initDeferredEffects() {
 
 // Route loading foundation (install before app mount)
 const routeLoading = useRouteLoading(router)
+installModulePreloading(router)
+installSeoResourceHints()
 
 const app = createApp(App)
 
