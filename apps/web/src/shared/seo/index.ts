@@ -10,6 +10,8 @@
  */
 
 import { useHead } from '@unhead/vue'
+import { toValue } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
 import { API_BASE_URL, SITE_URL } from '@/shared/config'
 
 /** Default site-wide SEO values. */
@@ -39,40 +41,47 @@ interface NormalizedPageMeta {
   noIndex: boolean
 }
 
+type PageMetaInputSource = MaybeRefOrGetter<PageMetaInput | undefined>
+type JsonLdObject = Record<string, unknown>
+type JsonLdInputSource = MaybeRefOrGetter<JsonLdObject | null | undefined>
+
 /**
  * Set page-level head metadata.
  *
  * Call from any component or composable. Values not provided fall back
  * to site-wide defaults.
  */
-export function usePageMeta(input: PageMetaInput = {}) {
-  const title = input.title || DEFAULTS.title
-  const description = input.description || DEFAULTS.description
-  const canonical = input.canonical ?? SITE_URL
-  const ogType = input.ogType ?? 'website'
+export function usePageMeta(input: PageMetaInputSource = {}) {
+  useHead(() => {
+    const source = toValue(input) ?? {}
+    const title = source.title || DEFAULTS.title
+    const description = source.description || DEFAULTS.description
+    const canonical = source.canonical ?? SITE_URL
+    const ogType = source.ogType ?? 'website'
 
-  useHead({
-    title,
-    meta: [
-      { name: 'description', content: description },
-      // Open Graph
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:type', content: ogType },
-      { property: 'og:url', content: canonical },
-      { property: 'og:site_name', content: DEFAULTS.siteName },
-      { property: 'og:locale', content: DEFAULTS.locale },
-      ...(input.ogImage
-        ? [{ property: 'og:image', content: input.ogImage }]
-        : []),
-      // Twitter Card
-      { name: 'twitter:card', content: 'summary' },
-      { name: 'twitter:title', content: title },
-      { name: 'twitter:description', content: description },
-      // Robots
-      ...(input.noIndex ? [{ name: 'robots', content: 'noindex' }] : []),
-    ],
-    link: [{ rel: 'canonical', href: canonical }],
+    return {
+      title,
+      meta: [
+        { name: 'description', content: description },
+        // Open Graph
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:type', content: ogType },
+        { property: 'og:url', content: canonical },
+        { property: 'og:site_name', content: DEFAULTS.siteName },
+        { property: 'og:locale', content: DEFAULTS.locale },
+        ...(source.ogImage
+          ? [{ property: 'og:image', content: source.ogImage }]
+          : []),
+        // Twitter Card
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+        // Robots
+        ...(source.noIndex ? [{ name: 'robots', content: 'noindex' }] : []),
+      ],
+      link: [{ rel: 'canonical', href: canonical }],
+    }
   })
 }
 
@@ -264,4 +273,89 @@ export function installSeoResourceHints() {
     upsertResourceHint('preconnect', origin)
     upsertResourceHint('dns-prefetch', origin)
   }
+}
+
+// ---- Structured data ----
+
+export interface WebsiteJsonLdInput {
+  name?: string
+  url?: string
+  description?: string
+  inLanguage?: string
+}
+
+export interface BlogPostingJsonLdInput {
+  title: string
+  canonicalUrl: string
+  description?: string
+  author?: string | null
+  datePublished?: string | null
+  dateModified?: string | null
+  image?: string | null
+  wordCount?: number | null
+}
+
+export function useJsonLd(input: JsonLdInputSource, key = 'structured-data') {
+  useHead(() => {
+    const json = toValue(input)
+
+    return {
+      script: json
+        ? [
+            {
+              key,
+              type: 'application/ld+json',
+              textContent: JSON.stringify(json),
+            },
+          ]
+        : [],
+    }
+  })
+}
+
+export function buildWebsiteJsonLd(
+  input: WebsiteJsonLdInput = {}
+): JsonLdObject {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: input.name ?? DEFAULTS.siteName,
+    url: input.url ?? SITE_URL,
+    description: input.description ?? DEFAULTS.description,
+    inLanguage: input.inLanguage ?? 'zh-CN',
+  }
+}
+
+export function buildBlogPostingJsonLd(
+  input: BlogPostingJsonLdInput
+): JsonLdObject {
+  const json: JsonLdObject = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: input.title,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': input.canonicalUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: DEFAULTS.siteName,
+      url: SITE_URL,
+    },
+  }
+
+  if (input.description) json.description = input.description
+  if (input.datePublished) json.datePublished = input.datePublished
+  if (input.dateModified) json.dateModified = input.dateModified
+  if (input.image) json.image = input.image
+  if (input.wordCount) json.wordCount = input.wordCount
+
+  if (input.author) {
+    json.author = {
+      '@type': 'Person',
+      name: input.author,
+    }
+  }
+
+  return json
 }

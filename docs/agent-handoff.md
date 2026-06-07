@@ -1,6 +1,6 @@
 ## Current Handoff
 
-- Goal: Implement Phase 18 blog base-data typed boundary.
+- Goal: Implement Phase 19 SEO discovery foundation.
 - Status: Implemented and verified locally on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
@@ -15,6 +15,25 @@
 
 ## Files Changed
 
+- `apps/web/src/shared/seo/index.ts`
+  - Upgrades `usePageMeta()` to accept reactive inputs.
+  - Adds `useJsonLd()`, `buildWebsiteJsonLd()`, and
+    `buildBlogPostingJsonLd()` for schema.org structured data.
+- `apps/web/src/pages/home/index.vue`
+  - Registers homepage metadata, canonical URL, and WebSite JSON-LD.
+- `apps/web/src/pages/blog/index.vue`
+  - Registers reactive article metadata and BlogPosting JSON-LD once blog
+    detail data loads.
+- `apps/web/public/robots.txt` **(new)**
+  - Allows public content, excludes private/editor/account routes, and points
+    crawlers to the sitemap.
+- `apps/web/public/sitemap.xml` **(new)**
+  - Adds static public SPA routes for initial discovery.
+- `docs/architecture/frontend-platform-foundation.md`
+- `docs/architecture/commercial-platform-blueprint.md`
+- `docs/agent-handoff.md`
+  - Document the Phase 19 SEO foundation and the future dynamic article
+    sitemap task.
 - `apps/web/src/modules/blog/types.ts`
   - Adds contract-derived base stats, category, and tag response aliases.
 - `apps/web/src/modules/blog/api.ts`
@@ -43,13 +62,18 @@
 - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` passed.
 - `pnpm check:web` passed.
 - `git diff --check` passed.
-- `rg "service/baseRequest|baseRequest|getStats|getBlogCategories|getBlogTags" apps/web/src docs -n`
-  only finds documentation that records the deleted legacy boundary.
+- `test -f apps/web/dist/robots.txt && test -f apps/web/dist/sitemap.xml`
+  passed after the Vite build.
+- Browser check on `http://localhost:3001/` confirmed homepage canonical,
+  description, Open Graph URL, and WebSite JSON-LD injection.
+- `curl -fsS http://localhost:3001/robots.txt` and
+  `curl -fsS http://localhost:3001/sitemap.xml` returned the expected static
+  discovery assets.
 
 ## Next Step
 
 - Push `monorepo-api-import` to the server/GitHub remote and keep the server
-  working tree on `main`; do not deploy this branch yet.
+  working tree on `main`. Do not deploy this branch yet.
 - `apps/web/src/shared/observability/request-id.ts` **(new)**
   - Adds safe request-id generation, normalisation, header reading, and
     `X-Request-ID` constants.

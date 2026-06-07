@@ -241,6 +241,21 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - Legacy `service/baseRequest.ts` has been removed; new consumers should import
   from `modules/blog/api` and `modules/blog/types`.
 
+## Phase 19 SEO Discovery Foundation
+
+- `shared/seo/index.ts` supports reactive page metadata, so pages with async
+  content can update title, description, canonical URL, Open Graph, Twitter,
+  and robots tags after data loads.
+- `shared/seo/index.ts` exposes `useJsonLd()`, `buildWebsiteJsonLd()`, and
+  `buildBlogPostingJsonLd()` for schema.org structured data without adding a
+  new dependency.
+- The homepage registers WebSite JSON-LD and a stable canonical URL.
+- The blog detail page registers reactive article metadata and BlogPosting
+  JSON-LD after the article payload is loaded.
+- `apps/web/public/robots.txt` and `apps/web/public/sitemap.xml` provide the
+  first static discovery assets for the public SPA. Dynamic article sitemap
+  generation remains a future backend/static-generation task.
+
 ## Phase 12 Module SEO And Preload
 
 ### Module SEO Defaults

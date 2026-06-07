@@ -11,6 +11,12 @@ import type { CategoryResponse, TagResponse } from '@/modules/blog/types'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 import { useBreakpoint } from '@/hooks/breakpoint/breakpoint'
 import { useBlogList } from '@/modules/blog/composables/useBlogList'
+import {
+  buildWebsiteJsonLd,
+  canonicalUrl,
+  useJsonLd,
+  usePageMeta,
+} from '@/shared/seo'
 
 type ListModeType = 'list' | 'waterfall'
 
@@ -24,6 +30,14 @@ let observer: IntersectionObserver | null = null
 
 const { screen } = useBreakpoint()
 const blogList = useBlogList(tagList, categoryList)
+
+usePageMeta({
+  title: 'Sun World',
+  description:
+    'Sun World 是一个记录全栈开发、AI、图形编辑器和工程实践的个人技术博客。',
+  canonical: canonicalUrl('/'),
+})
+useJsonLd(buildWebsiteJsonLd(), 'website')
 
 const isInitialLoading = computed(
   () => blogList.loading.value && blogList.items.value.length === 0

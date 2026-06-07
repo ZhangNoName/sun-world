@@ -170,10 +170,12 @@ Phase 1:
 - canonical URL helper
 - Open Graph/Twitter metadata helper
 - JSON-LD helpers for blog/article pages
-- `robots.txt` and `sitemap.xml` generation plan
+- static `robots.txt` and `sitemap.xml` discovery assets
 
 Phase 2:
 
+- generate dynamic article sitemap entries from the backend or a build-time
+  content snapshot
 - decide whether blog pages need SSG/SSR for stronger indexing
 - evaluate Vite SSG, prerendering, or a Nuxt migration only if public content SEO becomes central
 

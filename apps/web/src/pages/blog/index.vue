@@ -8,6 +8,12 @@ import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
 import { fetchBlogById } from '@/modules/blog/api'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
 import type { BlogDetail } from '@/modules/blog/types'
+import {
+  buildBlogPostingJsonLd,
+  canonicalUrl,
+  useJsonLd,
+  usePageMeta,
+} from '@/shared/seo'
 import { formatDate } from '@/util/function'
 import { Calendar, WordCount, Comment } from '@sun-world/icons'
 import type { VditorTreeItemType } from '@/type'
@@ -40,12 +46,47 @@ const blogInfo = ref<BlogDetail>({
 })
 
 const id = computed(() => String(route.query.id || ''))
+const canonicalPath = computed(() =>
+  id.value ? `/blog?id=${encodeURIComponent(id.value)}` : '/blog'
+)
+const articleCanonical = computed(() => canonicalUrl(canonicalPath.value))
+const articleDescription = computed(
+  () =>
+    blogInfo.value.abstract ||
+    blogInfo.value.title ||
+    '浏览 Sun World 的技术博客文章。'
+)
 const publishedAt = computed(() =>
   blogInfo.value.created_at ? formatDate(blogInfo.value.created_at) : '-'
 )
 const commentCount = computed(() => blogInfo.value.comment_num ?? 0)
 const wordCount = computed(
   () => blogInfo.value.byte_num ?? blogInfo.value.content.length
+)
+
+usePageMeta(() => ({
+  title: blogInfo.value.title
+    ? `${blogInfo.value.title} - Sun World`
+    : '博客详情 - Sun World',
+  description: articleDescription.value,
+  canonical: articleCanonical.value,
+  ogType: 'article',
+}))
+
+useJsonLd(
+  () =>
+    blogInfo.value.id
+      ? buildBlogPostingJsonLd({
+          title: blogInfo.value.title,
+          description: articleDescription.value,
+          author: blogInfo.value.author,
+          datePublished: blogInfo.value.created_at,
+          dateModified: blogInfo.value.updated_at,
+          canonicalUrl: articleCanonical.value,
+          wordCount: wordCount.value,
+        })
+      : null,
+  'blog-posting'
 )
 
 function getCatalog(): VditorTreeItemType[] {
