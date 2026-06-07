@@ -32,6 +32,8 @@ apps/web/src/
     editor/index.ts       # Editor module (canvas, graphics)
     account/index.ts      # Account module (auth, profile)
     admin/index.ts        # Admin module (analytics, settings)
+      composables/        # Admin data composition, e.g. useAdminMetrics()
+      pages/              # Admin-owned route pages
   router/
     index.ts              # Compatibility re-export → app/router/create-router
   pages/                  # Legacy page entrypoints (gradual migration target)
@@ -186,6 +188,22 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 - When a new stable error code is added, add it to both backend
   `error_codes.py` and frontend `shared/errors/error-codes.ts`, then document
   the intended namespace and default message.
+
+## Phase 16 Admin Metrics Boundary
+
+- `modules/admin/index.ts` registers both the legacy `/manage` shell and the
+  direct `/manage/metrics` operations route.
+- `modules/admin/composables/useAdminMetrics.ts` owns the metrics data
+  lifecycle: loading state, admin-domain errors, sorted route rows, status-code
+  rows, and derived summary cards.
+- `modules/admin/pages/AdminMetricsPage.vue` renders the process-local backend
+  metrics snapshot with token-based responsive styles and reduced-motion
+  support.
+- `pages/manage/index.vue` lazy-loads the admin metrics page as a menu tab, so
+  the metrics UI remains module-owned while still being reachable from the old
+  management shell.
+- The metrics page builds as its own Vite chunk; it is not loaded on the public
+  homepage path.
 
 ### Route Loading
 

@@ -3,8 +3,13 @@ import { ElMenu, ElMenuItem } from 'element-plus'
 import ManageBlog from './blog/index.vue'
 import Home from './charts/index.vue'
 import ManageAigc from './aigc/index.vue'
-import { ref } from 'vue'
-type MenuIndex = 'total' | 'blog' | 'aigc'
+import { defineAsyncComponent, ref } from 'vue'
+
+const AdminMetricsPage = defineAsyncComponent(
+  () => import('@/modules/admin/pages/AdminMetricsPage.vue')
+)
+
+type MenuIndex = 'total' | 'blog' | 'aigc' | 'metrics'
 const activeMenu = ref<MenuIndex>('blog')
 
 const handleMenuSelect = (index: string) => {
@@ -29,24 +34,52 @@ const handleMenuSelect = (index: string) => {
       <ElMenuItem index="aigc">
         <span>AIGC</span>
       </ElMenuItem>
+      <ElMenuItem index="metrics">
+        <span>请求指标</span>
+      </ElMenuItem>
     </ElMenu>
     <!-- </div> -->
     <div class="right">
       <Home v-if="activeMenu === 'total'"></Home>
       <ManageBlog v-else-if="activeMenu === 'blog'"></ManageBlog>
       <ManageAigc v-else-if="activeMenu === 'aigc'"></ManageAigc>
+      <AdminMetricsPage v-else-if="activeMenu === 'metrics'" />
     </div>
   </div>
 </template>
 
 <style scoped>
 .manage-page {
-  min-height: calc(100vh - 37rem);
+  min-height: 100%;
   background-color: var(--bg-page);
 
   display: grid;
-  grid-template-columns: 25rem auto;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
   grid-template-rows: auto;
   gap: var(--horizontalGapPx);
+  padding: var(--space-4);
+  overflow: auto;
+}
+
+.left {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-component);
+}
+
+.right {
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .manage-page {
+    grid-template-columns: 1fr;
+  }
+
+  .left {
+    display: flex;
+    overflow-x: auto;
+  }
 }
 </style>

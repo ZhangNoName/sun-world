@@ -204,6 +204,39 @@ process restarts and are not a substitute for long-term observability storage.
 - No user identifiers, request bodies, query strings, or credential headers are
   recorded.
 
+### Phase 16 — Admin Metrics View (Implemented)
+
+The admin module now has a real frontend boundary for backend request metrics.
+This turns the Phase 10 endpoint into an inspectable operations surface without
+coupling the UI to legacy service folders.
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `apps/web/src/modules/admin/composables/useAdminMetrics.ts` | Fetches metrics, owns loading/error state, derives metric cards, sorted route rows, and status rows. |
+| `apps/web/src/modules/admin/errors.ts` | Admin-domain error resolver backed by the shared error registry. |
+| `apps/web/src/modules/admin/pages/AdminMetricsPage.vue` | Responsive metrics dashboard for request totals, errors, latency, route metrics, and status-code distribution. |
+| `apps/web/src/modules/admin/index.ts` | Registers `/manage/metrics`, SEO metadata, navigation item, and preload hook. |
+| `apps/web/src/pages/manage/index.vue` | Adds a "请求指标" tab and lazy-loads the metrics page from the admin module. |
+
+**UI contract:**
+
+- `/manage/metrics` is the direct metrics route.
+- `/manage` also exposes the metrics view through the existing management menu.
+- The view uses design tokens for color, spacing, border, typography, and
+  reduced-motion behavior.
+- Metrics cards and route/status lists are responsive down to mobile widths.
+- The page is lazy-loaded as its own Vite chunk.
+
+**Scope:**
+
+- This is an operational snapshot, not a historical analytics warehouse.
+- It uses the current in-memory API process snapshot and refreshes only on user
+  action.
+- Future persistent analytics should reuse the module boundary and replace the
+  data source behind `useAdminMetrics()`.
+
 ### Future Phases
 
 - **OpenTelemetry hooks.** Add distributed tracing context propagation
@@ -213,13 +246,15 @@ process restarts and are not a substitute for long-term observability storage.
 - **Alerting thresholds.** Define alert rules for error rate, p95 latency,
   and availability.
 
-## Admin Dashboard (Future)
+## Admin Dashboard
 
-The admin module (`modules/admin`) will eventually consume analytics data through a clean API:
+The admin module (`modules/admin`) consumes analytics data through clean module
+APIs and composables:
 
-- Frontend: Web Vitals trends, page-level performance, error rates.
-- Backend: Request volume, latency percentiles, error-code distribution.
-- Content: Article views, AI generation counts, editor session metrics.
+- Implemented: backend request volume, error count, average/max latency, route
+  metrics, and status-code distribution.
+- Future: frontend Web Vitals trends, page-level performance, error-code
+  distribution, content views, AI generation counts, and editor session metrics.
 
 This dashboard should be built from the telemetry primitives defined here, not from raw log scraping.
 

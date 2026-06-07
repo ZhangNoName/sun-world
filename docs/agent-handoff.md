@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 15 shared error-code registry and resolver.
-- Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
+- Goal: Implement Phase 16 admin metrics frontend boundary.
+- Status: Implemented and verified locally on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -15,6 +15,29 @@
 
 ## Files Changed
 
+- `apps/web/src/modules/admin/composables/useAdminMetrics.ts` **(new)**
+  - Owns admin metrics loading/error state and derived view models.
+  - Sorts route rows by error count and latency.
+  - Builds summary cards for total requests, errors, average latency, and max
+    latency.
+- `apps/web/src/modules/admin/errors.ts` **(new)**
+  - Adds admin-domain error resolution through the shared error registry.
+- `apps/web/src/modules/admin/pages/AdminMetricsPage.vue` **(new)**
+  - Adds responsive token-based operations UI for request metrics, route
+    latency, and status-code distribution.
+  - Uses loading skeletons, refresh state, reduced-motion handling, and an
+    isolated lazy-loaded route chunk.
+- `apps/web/src/modules/admin/index.ts`
+  - Registers `/manage/metrics` with admin SEO metadata and navigation.
+  - Preloads both the legacy manage shell and the metrics page.
+  - Exports admin error helpers.
+- `apps/web/src/pages/manage/index.vue`
+  - Adds a "请求指标" tab to the existing manage shell.
+  - Lazy-loads the module-owned metrics page.
+  - Adds responsive layout constraints for narrower screens.
+- `docs/architecture/observability-and-analytics.md`
+  - Documents Phase 16 admin metrics view, UI contract, scope, and future data
+    source migration path.
 - `apps/web/src/shared/errors/error-codes.ts`
   - Upgrades the frontend error-code constants into a registry with namespace,
     default message, severity, retryability, and resolver helpers.
@@ -190,6 +213,13 @@
 
 ## Verification
 
+- Phase 16:
+  - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
+  - `pnpm check:web` → type check and frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `git diff --check` → passed.
+  - Build output confirms `AdminMetricsPage` is emitted as its own lazy chunk.
+  - `curl -fsS http://localhost:3001/manage/metrics` → dev server returned the SPA HTML entry.
+  - Automated screenshot smoke was skipped because the local Node REPL environment does not have the `playwright` package available.
 - Phase 15:
   - `pnpm exec tsc --noEmit -p apps/web/tsconfig.json` → passed.
   - `bash scripts/check-api.sh` → passed; 77 files compiled OK.
@@ -235,6 +265,6 @@
 
 ## Next Step
 
-- Commit Phase 15 on `monorepo-api-import`, push it for review, then continue
-  migrating remaining module/service boundaries.
+- Commit Phase 16 on `monorepo-api-import`, push it for review, then continue
+  with persistent analytics/log views or remaining module/service boundaries.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.
