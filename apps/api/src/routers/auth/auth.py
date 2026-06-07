@@ -5,9 +5,11 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Header, status, Request, Response
 from loguru import logger
 
-from src.type.auth_type import QQModel, RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
+from src.type.auth_type import AuthSession, QQModel, RegisterModel, LoginModel, TokenModel, ResetPasswordRequest, ResetPasswordModel
 from src.controller.auth_manager import AuthManager
 from src.core.response import ok, fail
+from src.core.response import ApiResponse
+from src.core.error_codes import AUTH_LOGIN_FAILED, AUTH_REGISTER_CONFLICT, AUTH_TOKEN_EXPIRED
 from src.type.user_type import User
 from src.util.func import get_seconds_until_expiry
 from app_instance import app
@@ -145,7 +147,7 @@ def get_current_user(
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register")
+@router.post("/register", response_model=ApiResponse[AuthSession])
 async def register(user: RegisterModel, request: Request, response: Response, auth: AuthManager = Depends(get_auth_manager)):
     # 从 cookie 获取 device_id，如果没有则生成新的
     device_id = request.cookies.get("device_id") or str(uuid.uuid4())
@@ -196,10 +198,10 @@ async def register(user: RegisterModel, request: Request, response: Response, au
             },
             msg="注册成功"
         )
-    return fail(msg="注册失败")
+    return fail(msg="注册失败", code=AUTH_REGISTER_CONFLICT)
 
 
-@router.post("/login")
+@router.post("/login", response_model=ApiResponse[AuthSession])
 async def login(form_data: LoginModel, request: Request, response: Response, auth: AuthManager = Depends(get_auth_manager)):
     # 优先从 cookie 获取 device_id，如果没有则生成新的
     device_id = request.cookies.get("device_id") or str(uuid.uuid4())
@@ -210,7 +212,7 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
         device_id
     )
     if not tokens:
-        return fail(msg="用户名或密码错误")
+        return fail(msg="用户名或密码错误", code=AUTH_LOGIN_FAILED)
 
     # 设置 cookie
     refresh_expire_seconds = get_seconds_until_expiry(
@@ -243,19 +245,19 @@ async def login(form_data: LoginModel, request: Request, response: Response, aut
     )
 
 
-@router.post("/reset_password/request")
+@router.post("/reset_password/request", response_model=ApiResponse[None])
 async def request_reset_password(req: ResetPasswordRequest,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 发送验证码或邮件
     return ok(data=None, msg="重置密码链接已发送")
 
 
-@router.post("/reset_password")
+@router.post("/reset_password", response_model=ApiResponse[None])
 async def reset_password(req: ResetPasswordModel,  auth: AuthManager = Depends(get_auth_manager)):
     # TODO: 校验token并重置密码
     return ok(data=None, msg="密码已重置")
 
 
-@router.post("/logout")
+@router.post("/logout", response_model=ApiResponse[None])
 async def logout(
     request: Request,
     response: Response,
@@ -284,7 +286,7 @@ async def logout(
     return ok(data=None, msg="登出成功")
 
 
-@router.post("/refresh_token")
+@router.post("/refresh_token", response_model=ApiResponse[AuthSession])
 async def refresh_token(
     request: Request,
     response: Response,
@@ -303,11 +305,11 @@ async def refresh_token(
         token = refresh_token
 
     if not token:
-        return fail(msg="未找到 refresh_token")
+        return fail(msg="未找到 refresh_token", code=AUTH_TOKEN_EXPIRED)
 
     tokens = auth.refresh_access_token(token)
     if not tokens:
-        return fail(msg="刷新Token失败")
+        return fail(msg="刷新Token失败", code=AUTH_TOKEN_EXPIRED)
 
     # 更新 cookie 中的 access_token
     cookie_settings = get_cookie_settings(request)
@@ -329,7 +331,7 @@ async def refresh_token(
     )
 
 
-@router.post("/qq")
+@router.post("/qq", response_model=ApiResponse[None])
 async def qq(info: QQModel, auth: AuthManager = Depends(get_auth_manager)):
     logger.info(f"qq登录: {info}")
     return ok(data=None, msg="qq成功")

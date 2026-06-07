@@ -25,13 +25,13 @@ export interface UserInfo {
   phone: string
   email: string
   /** 密码哈希值 */
-  password: string
+  password?: string
   /** 生日，格式: YYYY-MM-DD */
   birth_day: string
   /** 创建时间，格式: ISO 8601 */
   create_time: string
   /** 状态: 1-启用, 0-禁用 (根据实际业务定义) */
-  status: number
+  status: number | boolean
   /** 性别: 0-未知/保密, 1-男, 2-女 (根据实际业务定义) */
   sex: number
   /** 用户所属角色列表 */

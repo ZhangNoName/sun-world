@@ -578,6 +578,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApiResponse[AuthSession] */
+        ApiResponse_AuthSession_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["AuthSession"] | null;
+            /** Msg */
+            msg: string;
+        };
         /** ApiResponse[BlogCreateResult] */
         ApiResponse_BlogCreateResult_: {
             /** Code */
@@ -636,6 +644,52 @@ export interface components {
             data?: null;
             /** Msg */
             msg: string;
+        };
+        /** ApiResponse[UserCreateResult] */
+        ApiResponse_UserCreateResult_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["UserCreateResult"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[UserPage] */
+        ApiResponse_UserPage_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["UserPage"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[UserPublic] */
+        ApiResponse_UserPublic_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["UserPublic"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[bool] */
+        ApiResponse_bool_: {
+            /** Code */
+            code: number | string;
+            /** Data */
+            data?: boolean | null;
+            /** Msg */
+            msg: string;
+        };
+        /** AuthSession */
+        AuthSession: {
+            /** Access Token */
+            access_token?: string | null;
+            /** Access Token Expire */
+            access_token_expire?: string | null;
+            /** Id */
+            id?: number | null;
+            /** Refresh Token */
+            refresh_token?: string | null;
+            /** Refresh Token Expire */
+            refresh_token_expire?: string | null;
         };
         /** BindResourcesModel */
         BindResourcesModel: {
@@ -883,12 +937,18 @@ export interface components {
         };
         /** Body_upload_image_file_image_upload_post */
         Body_upload_image_file_image_upload_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Body_upload_video_file_video_upload_post */
         Body_upload_video_file_video_upload_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Category */
@@ -1093,12 +1153,103 @@ export interface components {
              */
             status: boolean;
         };
+        /** UserCreateResult */
+        UserCreateResult: {
+            /**
+             * Id
+             * @description 新建用户 ID
+             */
+            id?: number | null;
+        };
+        /** UserPage */
+        UserPage: {
+            /**
+             * List
+             * @description 当前页用户列表
+             */
+            list?: components["schemas"]["UserPublic"][];
+            /**
+             * Page
+             * @description 当前页码
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description 每页数量
+             */
+            page_size: number;
+            /**
+             * Total
+             * @description 总条数
+             */
+            total: number;
+        };
+        /** UserPublic */
+        UserPublic: {
+            /**
+             * Age
+             * @description 年龄
+             */
+            age: number;
+            /**
+             * Birth Day
+             * Format: date
+             * @description 出生日期，格式为 YYYY-MM-DD
+             */
+            birth_day: string;
+            /**
+             * Create Time
+             * @description 创建时间
+             */
+            create_time?: string | null;
+            /**
+             * Email
+             * @description 邮箱
+             */
+            email: string;
+            /**
+             * Id
+             * @description 用户的唯一标识符，自增主键
+             */
+            id?: number | null;
+            /**
+             * Name
+             * @description 昵称
+             */
+            name: string;
+            /**
+             * Phone
+             * @description 手机号
+             */
+            phone: string;
+            /**
+             * Resources
+             * @description 用户资源权限
+             */
+            resources?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Roles
+             * @description 用户角色
+             */
+            roles?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Sex
+             * @description 性别
+             */
+            sex: number;
+            /**
+             * Status
+             * @description 用户是否启用，默认启用
+             * @default true
+             */
+            status: boolean;
+        };
         /** ValidationError */
         ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */
@@ -1297,7 +1448,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_AuthSession_"];
                 };
             };
             /** @description Validation Error */
@@ -1326,7 +1477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
                 };
             };
         };
@@ -1350,7 +1501,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
                 };
             };
             /** @description Validation Error */
@@ -1381,7 +1532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_AuthSession_"];
                 };
             };
             /** @description Validation Error */
@@ -1414,7 +1565,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_AuthSession_"];
                 };
             };
             /** @description Validation Error */
@@ -1447,7 +1598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
                 };
             };
             /** @description Validation Error */
@@ -1480,7 +1631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
                 };
             };
             /** @description Validation Error */
@@ -2124,7 +2275,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_UserPage_"];
                 };
             };
             /** @description Validation Error */
@@ -2157,7 +2308,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_UserCreateResult_"];
                 };
             };
             /** @description Validation Error */
@@ -2186,7 +2337,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_UserPublic_"];
                 };
             };
         };
@@ -2208,7 +2359,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_UserPublic_"];
                 };
             };
             /** @description Validation Error */
@@ -2239,7 +2390,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_bool_"];
                 };
             };
             /** @description Validation Error */

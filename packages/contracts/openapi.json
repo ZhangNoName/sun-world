@@ -1,6 +1,41 @@
 {
   "components": {
     "schemas": {
+      "ApiResponse_AuthSession_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthSession"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[AuthSession]",
+        "type": "object"
+      },
       "ApiResponse_BlogCreateResult_": {
         "properties": {
           "code": {
@@ -246,6 +281,210 @@
           "msg"
         ],
         "title": "ApiResponse[NoneType]",
+        "type": "object"
+      },
+      "ApiResponse_UserCreateResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserCreateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserCreateResult]",
+        "type": "object"
+      },
+      "ApiResponse_UserPage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserPage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserPage]",
+        "type": "object"
+      },
+      "ApiResponse_UserPublic_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserPublic]",
+        "type": "object"
+      },
+      "ApiResponse_bool_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[bool]",
+        "type": "object"
+      },
+      "AuthSession": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "access_token_expire": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token Expire"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "refresh_token_expire": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token Expire"
+          }
+        },
+        "title": "AuthSession",
         "type": "object"
       },
       "BindResourcesModel": {
@@ -628,7 +867,7 @@
       "Body_upload_image_file_image_upload_post": {
         "properties": {
           "file": {
-            "contentMediaType": "application/octet-stream",
+            "format": "binary",
             "title": "File",
             "type": "string"
           }
@@ -642,7 +881,7 @@
       "Body_upload_video_file_video_upload_post": {
         "properties": {
           "file": {
-            "contentMediaType": "application/octet-stream",
+            "format": "binary",
             "title": "File",
             "type": "string"
           }
@@ -1131,15 +1370,154 @@
         "title": "User",
         "type": "object"
       },
+      "UserCreateResult": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "新建用户 ID",
+            "title": "Id"
+          }
+        },
+        "title": "UserCreateResult",
+        "type": "object"
+      },
+      "UserPage": {
+        "properties": {
+          "list": {
+            "description": "当前页用户列表",
+            "items": {
+              "$ref": "#/components/schemas/UserPublic"
+            },
+            "title": "List",
+            "type": "array"
+          },
+          "page": {
+            "description": "当前页码",
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "每页数量",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "description": "总条数",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "UserPage",
+        "type": "object"
+      },
+      "UserPublic": {
+        "properties": {
+          "age": {
+            "description": "年龄",
+            "title": "Age",
+            "type": "integer"
+          },
+          "birth_day": {
+            "description": "出生日期，格式为 YYYY-MM-DD",
+            "format": "date",
+            "title": "Birth Day",
+            "type": "string"
+          },
+          "create_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "创建时间",
+            "title": "Create Time"
+          },
+          "email": {
+            "description": "邮箱",
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "用户的唯一标识符，自增主键",
+            "title": "Id"
+          },
+          "name": {
+            "description": "昵称",
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "手机号",
+            "title": "Phone",
+            "type": "string"
+          },
+          "resources": {
+            "description": "用户资源权限",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Resources",
+            "type": "array"
+          },
+          "roles": {
+            "description": "用户角色",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "sex": {
+            "description": "性别",
+            "title": "Sex",
+            "type": "integer"
+          },
+          "status": {
+            "default": true,
+            "description": "用户是否启用，默认启用",
+            "title": "Status",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "sex",
+          "age",
+          "phone",
+          "email",
+          "birth_day"
+        ],
+        "title": "UserPublic",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
-          },
-          "input": {
-            "title": "Input"
-          },
           "loc": {
             "items": {
               "anyOf": [
@@ -1392,7 +1770,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1422,7 +1802,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1451,7 +1833,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1499,7 +1883,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1538,7 +1924,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1577,7 +1965,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
               }
             },
             "description": "Successful Response"
@@ -1616,7 +2006,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
               }
             },
             "description": "Successful Response"
@@ -2471,7 +2863,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPage_"
+                }
               }
             },
             "description": "Successful Response"
@@ -2509,7 +2903,9 @@
           "201": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserCreateResult_"
+                }
               }
             },
             "description": "Successful Response"
@@ -2539,7 +2935,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPublic_"
+                }
               }
             },
             "description": "Successful Response"
@@ -2570,7 +2968,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_bool_"
+                }
               }
             },
             "description": "Successful Response"
@@ -2609,7 +3009,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPublic_"
+                }
               }
             },
             "description": "Successful Response"

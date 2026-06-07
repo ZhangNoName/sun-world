@@ -23,6 +23,14 @@ class TokenModel(BaseModel):
     refresh_token_expire: datetime
 
 
+class AuthSession(BaseModel):
+    id: Optional[int] = None
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    access_token_expire: Optional[datetime] = None
+    refresh_token_expire: Optional[datetime] = None
+
+
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
 

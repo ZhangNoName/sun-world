@@ -34,12 +34,18 @@ export const useAuthStore = defineStore('auth', () => {
   function updateTokenExpire(data: TokenType) {
     // 优先从 cookie 读取过期时间，如果没有则解析返回的时间字符串
     const accessExpire =
-      getAccessTokenExpire() || new Date(data.access_token_expire).getTime()
+      getAccessTokenExpire() ||
+      (data.access_token_expire
+        ? new Date(data.access_token_expire).getTime()
+        : null)
     const refreshExpire =
-      getRefreshTokenExpire() || new Date(data.refresh_token_expire).getTime()
+      getRefreshTokenExpire() ||
+      (data.refresh_token_expire
+        ? new Date(data.refresh_token_expire).getTime()
+        : null)
 
-    accessTokenExpire.value = accessExpire
-    refreshTokenExpire.value = refreshExpire
+    accessTokenExpire.value = accessExpire || null
+    refreshTokenExpire.value = refreshExpire || null
   }
 
   // 启动时从 cookie 同步过期时间
@@ -106,7 +112,6 @@ export const useAuthStore = defineStore('auth', () => {
     // token 会自动设置到 cookie，只需要更新过期时间
     updateTokenExpire(res)
     const user = await getUser()
-    console.log('user', user)
     return res
   }
 

@@ -1,15 +1,7 @@
-import { UserInfo } from '@/types/user.type'
-import { request } from './http'
-
-const prefix = '/user'
-interface RegisterParams {
-  name: string
-  phone: string
-  email: string
-  password: string
-}
+import { getCurrentUser } from '@/modules/account'
+import type { UserInfo } from '@/modules/account'
 
 export const getUserMe = async (): Promise<UserInfo> => {
-  const response = await request.get<UserInfo>(`${prefix}/me`)
+  const response = await getCurrentUser()
   return response
 }

@@ -1,5 +1,9 @@
 import type { AppModule } from '../types'
 
+export * from './api'
+export * from './errors'
+export type * from './types'
+
 /**
  * Account module - authentication, profile, and user settings.
  *

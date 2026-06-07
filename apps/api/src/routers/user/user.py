@@ -4,8 +4,10 @@ from loguru import logger
 from pydantic import BaseModel
 from src.controller.user_manage import UserManager
 from app_instance import app
-from src.type.user_type import User
+from src.type.user_type import User, UserCreateResult, UserPage, UserPublic
 from src.core.response import ok, fail
+from src.core.response import ApiResponse
+from src.core.error_codes import COMMON_INTERNAL_ERROR, COMMON_NOT_FOUND
 from src.routers.auth.auth import get_current_user
 
 
@@ -23,7 +25,7 @@ def get_user_manager() -> UserManager:
 
 
 # 创建新用户
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult])
 async def create_user(user: User, user_manager: UserManager = Depends(get_user_manager)):
     """
     创建新的用户
@@ -41,11 +43,11 @@ async def create_user(user: User, user_manager: UserManager = Depends(get_user_m
     if res:
         return ok(data={"id": user.id}, msg="创建成功")
     else:
-        return fail(msg="创建失败")
+        return fail(msg="创建失败", code=COMMON_INTERNAL_ERROR)
 
 
 # 获取当前登录用户信息（必须在 /{user_id} 之前定义）
-@router.get("/me")
+@router.get("/me", response_model=ApiResponse[UserPublic])
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
     获取当前登录用户的信息
@@ -60,7 +62,7 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 
 
 # 根据id获取指定用户
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=ApiResponse[UserPublic])
 async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
     """
     获取指定 ID 的用户
@@ -75,7 +77,7 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
     logger.info(f'查找的结果-----{user}')
 
     if not user:
-        return fail(msg="用户不存在")
+        return fail(msg="用户不存在", code=COMMON_NOT_FOUND)
 
     # user_dict = {item[0]: item[1] for item in user}
 
@@ -84,7 +86,7 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
 # 分页获取用户
 
 
-@router.get("/")
+@router.get("/", response_model=ApiResponse[UserPage])
 async def get_users_paginated(
     page: int = 1,
     page_size: int = 10,
@@ -103,11 +105,19 @@ async def get_users_paginated(
     """
 
     users = user_manager.get_user_by_name('', page, page_size)
-    return ok(data=users, msg="获取成功")
+    return ok(
+        data={
+            "list": users,
+            "page": page,
+            "page_size": page_size,
+            "total": len(users),
+        },
+        msg="获取成功",
+    )
 
 
 # 删除指定用户
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", response_model=ApiResponse[bool])
 async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
     """
     停用指定 ID 的用户
@@ -121,5 +131,5 @@ async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user
     res = user_manager.delete_user(user_id)
     # logger.info(f'停用用户的结果:{res}')
     if not res:
-        return fail(msg="用户不存在", data=False)
+        return fail(msg="用户不存在", data=False, code=COMMON_NOT_FOUND)
     return ok(data=True, msg="停用成功")
