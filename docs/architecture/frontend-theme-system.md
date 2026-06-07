@@ -11,7 +11,21 @@ This document describes the Sun World frontend theme system architecture, design
 - 浅色主题：`<html class="sun-light">`
 - 深色主题：`<html class="sun-dark">`
 
-主题切换逻辑在 `apps/web/src/App.vue` 中管理，通过 Vue 的 `provide/inject` 将当前主题传递给子组件，同时将主题类名写入 `document.documentElement`。
+主题切换逻辑在 `apps/web/src/shared/design/theme.ts` 中管理，通过 Vue 的 `provide/inject` 将当前主题传递给子组件，同时将主题类名写入 `document.documentElement`。
+
+## Figma Source
+
+V1 视觉方向沉淀在 Figma：
+
+[Sun World Design System v1](https://www.figma.com/design/6y7S8Pue0ykCD2trppB2QM)
+
+该文件包含：
+
+- 简洁主题封面与设计原则。
+- 桌面首页和移动首页方向稿。
+- 17 个 Figma 变量，覆盖 light/dark surface、text、border、brand、accent、danger。
+
+当前 Figma 账号的变量集合仅支持单 mode，因此 v1 在 Figma 中采用 `color/light/...` 和 `color/dark/...` 两组变量表达主题；代码中仍然使用 `.sun-light` / `.sun-dark` 两个 class 切换同名语义 CSS 变量。
 
 ## Design Token Files
 
@@ -70,6 +84,8 @@ main.ts
 --color-brand-light      /* 悬停态 */
 --color-brand-muted      /* 禁用/浅色 */
 --color-brand-bg         /* 品牌浅色背景 */
+--color-accent           /* 青绿色功能点缀 */
+--color-accent-bg        /* 青绿色浅背景 */
 
 /* 状态色 */
 --color-success
@@ -87,12 +103,15 @@ main.ts
 --color-surface-card     /* 卡片/组件背景 */
 --color-surface-muted    /* 填充/输入框背景 */
 --color-surface-hover    /* 悬停背景 */
+--color-surface-raised   /* 浮层/高层级表面 */
+--color-overlay-backdrop /* Drawer / modal 遮罩 */
 
 /* 边框色 */
 --color-border-default   /* 默认边框 */
 --color-border-subtle    /* 浅色分割线 */
 --color-border-darker    /* 深色边框 */
 --color-border-active    /* 激活边框 */
+--color-focus-ring       /* focus-visible ring */
 ```
 
 #### 兼容别名 (Legacy Aliases)
@@ -144,6 +163,7 @@ main.ts
 --shadow-sm:  0px 1px 3px rgba(0, 0, 0, 0.1);
 --shadow-md:  0px 2px 4px 0px rgba(0, 0, 0, 0.05);
 --shadow-lg:  0px 8px 32px rgba(0, 0, 0, 0.1);
+--shadow-focus
 ```
 
 ### 组件级令牌 (Component-Level)
@@ -156,12 +176,23 @@ main.ts
 --btn-font-size-default / --btn-font-size-sm / --btn-font-size-lg
 
 --card-bg
+--card-bg-subtle
 --card-border-color / --card-border-hover
 --card-shadow-hover
+--card-meta-color
 
 --header-bg
+--mobile-nav-bg / --mobile-nav-active-bg
+--drawer-bg / --drawer-shadow
 --scrollbar-thumb-bg / --scrollbar-thumb-hover / --scrollbar-track-bg
 ```
+
+## Motion Rules
+
+- Motion tokens live in `design-tokens.css`: `--motion-duration-*` and `--motion-ease-*`.
+- Use motion for feedback only: route loading, skeleton shimmer, hover lift, drawer transition.
+- Do not use decorative floating blobs, oversized gradients, or non-functional animation.
+- `prefers-reduced-motion: reduce` is handled globally in `style.css` and token values are reduced in `design-tokens.css`.
 
 ## Element Plus 集成
 
@@ -230,6 +261,8 @@ main.ts
 3. **使用组件级令牌**：按钮样式使用 `--btn-*` 变量，卡片样式使用 `--card-*` 变量。
 4. **保持向后兼容**：不要删除现有的 `--text-*`、`--bg-*`、`--border-*` 别名，它们映射到新的语义令牌。
 5. **不要在此架构中引入 Tailwind**：当前基于 CSS 自定义属性的主题系统已经满足需求，引入 Tailwind 会增加构建链复杂度且无法解决当前的主题切换问题。
+6. **移动端优先保护阅读体验**：小屏列表保持单列，底部导航和抽屉使用 `--mobile-*` / `--drawer-*` 令牌，并保留 safe-area。
+7. **动效必须可降级**：新增动画必须有 `prefers-reduced-motion` 兜底。
 
 ## Why Not Tailwind?
 

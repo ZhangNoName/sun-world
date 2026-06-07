@@ -72,33 +72,44 @@ const showBlog = () => {
 
 <style scoped>
 .z-blog-card {
-  border: 1px solid var(--border-default);
-  background-color: var(--bg-brand-light);
+  border: 1px solid var(--card-border-color);
+  background-color: var(--card-bg);
   color: var(--text-default);
-  border-radius: 0.5rem;
+  border-radius: var(--card-radius);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  padding: var(--horizontalGapPx);
-  gap: 0.625rem;
+  padding: var(--card-padding);
+  gap: var(--space-3);
   cursor: pointer;
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: var(--shadow-sm);
+  transition:
+    background-color var(--motion-duration) var(--motion-ease-standard),
+    border-color var(--motion-duration) var(--motion-ease-standard),
+    box-shadow var(--motion-duration) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-emphasized);
 }
 
 .z-blog-card:hover,
 .z-blog-card:focus-within {
-  box-shadow: var(--shadow-default);
-  border-color: var(--border-active);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--card-border-hover);
+  transform: translateY(-2px);
+}
+
+.z-blog-card:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
 }
 
 /* ---- meta list ---- */
 .meta-list {
-  color: var(--text-secondary);
+  color: var(--card-meta-color);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--horizontalGapPx);
+  gap: var(--space-3);
   font-size: var(--font-small);
 }
 
@@ -112,8 +123,8 @@ const showBlog = () => {
 /* ---- title ---- */
 .card-title {
   margin: 0;
-  font-size: var(--font-large);
-  line-height: 1.4;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
   text-align: left;
 }
 
@@ -125,14 +136,14 @@ const showBlog = () => {
 
 .card-title-link:hover,
 .z-blog-card:hover .card-title-link {
-  color: var(--text-hover);
+  color: var(--color-brand);
 }
 
 /* ---- body (abstract) ---- */
 .card-body {
   margin: 0;
   text-align: left;
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
   font-size: var(--font-medium);
   color: var(--text-secondary);
   /* clamp to 3 lines on desktop */
@@ -147,7 +158,7 @@ const showBlog = () => {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--space-2);
   margin-top: auto;
 }
 
@@ -157,7 +168,7 @@ const showBlog = () => {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .card-divider {
@@ -172,28 +183,34 @@ const showBlog = () => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .read-more-btn {
-  background-color: var(--bg-component);
+  background-color: var(--bg-accent-soft);
   color: var(--text-default);
-  border: 1px solid var(--border-default);
-  border-radius: var(--border-radius);
-  padding: 0 0.75rem;
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-full);
+  padding: 0 var(--space-4);
   cursor: pointer;
-  height: 30px;
+  min-height: var(--btn-height-sm);
   display: inline-flex;
   justify-content: center;
   align-items: center;
   font-size: var(--font-small);
   font-family: inherit;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color var(--motion-duration) var(--motion-ease-standard),
+    border-color var(--motion-duration) var(--motion-ease-standard),
+    color var(--motion-duration) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-emphasized);
 }
 
 .read-more-btn:hover {
   background-color: var(--bg-active);
+  border-color: var(--bg-active);
   color: var(--btn-text-color);
+  transform: translateY(-1px);
 }
 
 .last-update {
@@ -208,8 +225,17 @@ const showBlog = () => {
 /* ---- mobile ---- */
 @media screen and (max-width: 600px) {
   .z-blog-card {
-    padding: 0.75rem;
-    gap: 0.5rem;
+    padding: var(--space-4);
+    gap: var(--space-3);
+    border-radius: var(--radius-lg);
+  }
+
+  .meta-list {
+    gap: var(--space-2);
+  }
+
+  .card-title {
+    font-size: var(--font-size-lg);
   }
 
   .card-body {
@@ -227,6 +253,13 @@ const showBlog = () => {
 
   .last-update {
     justify-content: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .z-blog-card,
+  .read-more-btn {
+    transform: none !important;
   }
 }
 </style>

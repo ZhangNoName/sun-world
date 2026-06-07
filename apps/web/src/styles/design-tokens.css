@@ -47,6 +47,7 @@ html {
   --motion-duration: 0.24s;
   --motion-duration-slow: 0.36s;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   /* ---------------------- 圆角 ---------------------- */
   --radius-sm: 0.25rem;   /* 4px */
@@ -56,9 +57,10 @@ html {
   --radius-full: 9999px;
 
   /* ---------------------- 阴影 ---------------------- */
-  --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0px 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.12);
+  --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.18);
 
   /* ---------------------- 响应式容器 ---------------------- */
   --container-max-width: 1280px;
@@ -83,32 +85,37 @@ html {
    ============================================================ */
 .sun-light {
   /* ---------------------- 品牌色彩 ---------------------- */
-  --color-brand:          #409eff;  /* 主品牌蓝 */
-  --color-brand-light:    #66b1ff;  /* 悬停/浅品牌 */
-  --color-brand-muted:    #a0cfff;  /* 禁用/更浅品牌 */
-  --color-brand-bg:       #e7f8ff;  /* 品牌浅色背景 */
+  --color-brand:          #2563eb;
+  --color-brand-light:    #60a5fa;
+  --color-brand-muted:    #bfdbfe;
+  --color-brand-bg:       #eef6ff;
+  --color-accent:         #14b8a6;
+  --color-accent-bg:      #e6f6f3;
 
-  --color-success:        #67c23a;
-  --color-warning:        #e6a23c;
-  --color-danger:         #f56c6c;
+  --color-success:        #16a34a;
+  --color-warning:        #d97706;
+  --color-danger:         #e11d48;
 
   /* ---------------------- 文本颜色 ---------------------- */
-  --color-text-primary:     #212224;
-  --color-text-regular:     #434447;
-  --color-text-secondary:   #909399;
-  --color-text-placeholder: #a8abb2;
+  --color-text-primary:     #172033;
+  --color-text-regular:     #334155;
+  --color-text-secondary:   #64748b;
+  --color-text-placeholder: #94a3b8;
 
   /* ---------------------- 表面/背景色 ---------------------- */
-  --color-surface-page:   #ffffff;
+  --color-surface-page:   #f7fafc;
   --color-surface-card:   #ffffff;
-  --color-surface-muted:  #f0f2f5;
-  --color-surface-hover:  #a0cfff;
+  --color-surface-muted:  #eef4f8;
+  --color-surface-hover:  #e6f6f3;
+  --color-surface-raised: #ffffff;
+  --color-overlay-backdrop: rgba(15, 23, 42, 0.36);
 
   /* ---------------------- 边框颜色 ---------------------- */
-  --color-border-default: #dcdfe6;
-  --color-border-subtle:  #ebeef5;
-  --color-border-darker:  #cdd0d6;
-  --color-border-active:  #d4d7de;
+  --color-border-default: #dce6ee;
+  --color-border-subtle:  #e8eef5;
+  --color-border-darker:  #cbd5e1;
+  --color-border-active:  #93c5fd;
+  --color-focus-ring:     rgba(37, 99, 235, 0.2);
 
   /* ---------------------- 兼容别名 ---------------------- */
   --color-primary:        var(--color-brand);
@@ -125,6 +132,8 @@ html {
   --bg-active:            var(--color-brand);
   --bg-hover:             var(--color-surface-hover);
   --bg-brand-light:       var(--color-brand-bg);
+  --bg-accent-soft:       var(--color-accent-bg);
+  --bg-raised:            var(--color-surface-raised);
 
   --border-default:       var(--color-border-default);
   --border-lighter:       var(--color-border-subtle);
@@ -132,7 +141,7 @@ html {
   --border-active:        var(--color-border-active);
 
   --shadow-default:       var(--shadow-md);
-  --shadow-aigc:          inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-aigc:          inset -1px 0 0 rgba(15, 23, 42, 0.08);
 
   /* Element Plus 颜色映射 */
   --el-color-primary:     var(--color-brand);
@@ -161,32 +170,37 @@ html {
    ============================================================ */
 .sun-dark {
   /* ---------------------- 品牌色彩 (深色模式与浅色相同) ---------------------- */
-  --color-brand:          #409eff;
-  --color-brand-light:    #66b1ff;
-  --color-brand-muted:    #2a598a;
-  --color-brand-bg:       #18222c;
+  --color-brand:          #7dd3fc;
+  --color-brand-light:    #bae6fd;
+  --color-brand-muted:    #1e3a5f;
+  --color-brand-bg:       #102a43;
+  --color-accent:         #2dd4bf;
+  --color-accent-bg:      #153831;
 
-  --color-success:        #67c23a;
-  --color-warning:        #e6a23c;
-  --color-danger:         #f56c6c;
+  --color-success:        #4ade80;
+  --color-warning:        #fbbf24;
+  --color-danger:         #fb7185;
 
   /* ---------------------- 文本颜色 ---------------------- */
-  --color-text-primary:     #e5eaf3;
-  --color-text-regular:     #cfd3dc;
-  --color-text-secondary:   #a3a6ad;
-  --color-text-placeholder: #8d9095;
+  --color-text-primary:     #f8fafc;
+  --color-text-regular:     #dbe5ef;
+  --color-text-secondary:   #aab6c5;
+  --color-text-placeholder: #748198;
 
   /* ---------------------- 表面/背景色 ---------------------- */
-  --color-surface-page:   #141414;
-  --color-surface-card:   #1d1e1f;
-  --color-surface-muted:  #1d3043;
-  --color-surface-hover:  #2a598a;
+  --color-surface-page:   #0f172a;
+  --color-surface-card:   #172033;
+  --color-surface-muted:  #223047;
+  --color-surface-hover:  #153831;
+  --color-surface-raised: #1d293d;
+  --color-overlay-backdrop: rgba(2, 6, 23, 0.58);
 
   /* ---------------------- 边框颜色 ---------------------- */
-  --color-border-default: #4c4d4f;
-  --color-border-subtle:  #58585b;
-  --color-border-darker:  #363637;
-  --color-border-active:  #636466;
+  --color-border-default: #334155;
+  --color-border-subtle:  #29364b;
+  --color-border-darker:  #475569;
+  --color-border-active:  #38bdf8;
+  --color-focus-ring:     rgba(125, 211, 252, 0.24);
 
   /* ---------------------- 兼容别名 ---------------------- */
   --color-primary:        var(--color-brand);
@@ -203,14 +217,16 @@ html {
   --bg-active:            var(--color-brand);
   --bg-hover:             var(--color-surface-hover);
   --bg-brand-light:       var(--color-brand-bg);
+  --bg-accent-soft:       var(--color-accent-bg);
+  --bg-raised:            var(--color-surface-raised);
 
   --border-default:       var(--color-border-default);
   --border-lighter:       var(--color-border-subtle);
   --border-darker:        var(--color-border-darker);
   --border-active:        var(--color-border-active);
 
-  --shadow-default:       0px 2px 4px 0px rgba(0, 0, 0, 0.2);
-  --shadow-aigc:          inset -2px 0 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-default:       0 14px 32px rgba(0, 0, 0, 0.28);
+  --shadow-aigc:          inset -1px 0 0 rgba(148, 163, 184, 0.08);
 
   /* Element Plus 颜色映射 */
   --el-color-primary:     var(--color-brand);
@@ -259,12 +275,14 @@ html {
 
 /* 卡片 */
 :root {
-  --card-bg:             var(--bg-brand-light);
+  --card-bg:             var(--bg-component);
   --card-border-color:   var(--border-default);
   --card-border-hover:   var(--border-active);
   --card-shadow-hover:   var(--shadow-default);
-  --card-padding:        var(--horizontalGapPx);
-  --card-radius:         var(--radius-md);
+  --card-padding:        var(--space-5);
+  --card-radius:         var(--radius-xl);
+  --card-bg-subtle:      var(--bg-accent-soft);
+  --card-meta-color:     var(--text-secondary);
 }
 
 /* 输入框 */
@@ -278,21 +296,38 @@ html {
 /* 图标 */
 :root {
   --icon-bg-hover-color:    var(--bg-fill);
+  --icon-active-color:      var(--color-accent);
 }
 
 /* 滚动条 */
 :root {
-  --scrollbar-thumb-bg:     rgba(0, 0, 0, 0.12);
-  --scrollbar-thumb-hover:  rgba(0, 0, 0, 0.24);
-  --scrollbar-track-bg:     rgba(0, 0, 0, 0.06);
+  --scrollbar-thumb-bg:     rgba(100, 116, 139, 0.28);
+  --scrollbar-thumb-hover:  rgba(37, 99, 235, 0.38);
+  --scrollbar-track-bg:     rgba(100, 116, 139, 0.08);
 }
 
 /* 毛玻璃头部 */
 :root {
-  --header-bg:              rgba(255, 255, 255, 0.3);
-  --header-border-color:    var(--color-border-darker);
+  --header-bg:              rgba(255, 255, 255, 0.76);
+  --header-border-color:    var(--color-border-default);
+  --mobile-nav-bg:          rgba(255, 255, 255, 0.9);
+  --mobile-nav-active-bg:   var(--color-accent-bg);
+  --drawer-bg:              var(--color-surface-card);
+  --drawer-shadow:          12px 0 36px rgba(15, 23, 42, 0.14);
 }
 
 .sun-dark {
-  --header-bg:              rgba(20, 20, 20, 0.3);
+  --header-bg:              rgba(15, 23, 42, 0.78);
+  --mobile-nav-bg:          rgba(23, 32, 51, 0.9);
+  --mobile-nav-active-bg:   var(--color-accent-bg);
+  --drawer-bg:              var(--color-surface-raised);
+  --drawer-shadow:          12px 0 36px rgba(0, 0, 0, 0.36);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0.01ms;
+    --motion-duration: 0.01ms;
+    --motion-duration-slow: 0.01ms;
+  }
 }

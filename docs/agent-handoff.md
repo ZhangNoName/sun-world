@@ -1,12 +1,33 @@
 ## Current Handoff
 
-- Goal: Implement Phase 10 authenticated admin request metrics snapshot.
-- Status: In progress on branch `monorepo-api-import`; not deployed.
+- Goal: Implement Phase 11 frontend theme, motion, and responsive baseline from Figma v1.
+- Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
+## Design Source
+
+- Figma: `Sun World Design System v1`
+- URL: `https://www.figma.com/design/6y7S8Pue0ykCD2trppB2QM`
+- Notes:
+  - Figma variable collections are single-mode in the current plan, so v1 uses `color/light/...` and `color/dark/...` variables there.
+  - Code keeps `.sun-light` / `.sun-dark` CSS variable switching.
+
 ## Files Changed
 
+- `apps/web/src/styles/design-tokens.css`
+  - Aligns light/dark palette with the Figma v1 blue + teal accent direction.
+  - Adds accent, raised surface, focus, overlay, mobile nav, drawer, card, and reduced-motion tokens.
+- `apps/web/src/style.css`
+  - Adds page background, selection color, global focus-visible ring, overscroll handling, and reduced-motion guard.
+- `apps/web/src/components/BlogCard/index.vue`
+  - Uses card semantic tokens, hover lift, focus-visible, refined mobile spacing, and reduced-motion fallback.
+- `apps/web/src/pages/home/index.vue`
+  - Uses tokenized page background, content entrance motion, stable mobile single-column padding, and horizontal tag scrolling.
+- `apps/web/src/layout/mobLayout.vue`
+  - Tokenizes mobile header/footer/drawer, safe-area handling, bottom-nav active state, overlay, and drawer transitions.
+- `docs/architecture/frontend-theme-system.md`
+  - Records the Figma source, single-mode variable limitation, token additions, motion rules, and mobile theme rules.
 - `apps/api/src/core/metrics.py` **(new)**
   - Process-local request metrics collector.
   - Tracks total requests, 5xx requests, status distribution, and per-route latency/counts.
@@ -70,6 +91,15 @@
 
 ## Verification
 
+- Phase 11:
+  - `pnpm check:web` → frontend build passed. Existing Vite CJS and Element Plus Sass deprecation warnings remain.
+  - `git diff --check` → passed.
+  - `rg -n "#[0-9a-fA-F]{3,8}|rgba?\\(" apps/web/src/components/BlogCard/index.vue apps/web/src/pages/home/index.vue apps/web/src/layout/mobLayout.vue apps/web/src/style.css apps/web/src/styles/design-tokens.css` → hardcoded color values are limited to `design-tokens.css` token definitions; component/page/layout/style files use variables.
+  - Figma validation via `use_figma` confirmed frames:
+    - `Cover / Theme Direction` 1280x720
+    - `Desktop Home / 1440` 1440x1024
+    - `Mobile Home / 390` 390x844
+  - Attempted local Playwright screenshot smoke, but local Node REPL did not have the `playwright` module available.
 - `bash scripts/check-api.sh` → 77 files compiled OK.
 - `SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate` → passed; generated `GET /admin/metrics` contracts.
 - `grep -R "get_admin_metrics_admin_metrics_get" packages/contracts/src/generated-api-types.ts packages/contracts/openapi.json` → operation exists in both generated outputs.

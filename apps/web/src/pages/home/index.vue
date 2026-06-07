@@ -194,11 +194,14 @@ onUnmounted(() => {
   max-width: var(--container-max-width);
   margin: 0 auto;
   padding: var(--space-8) var(--container-inline-padding) var(--space-12);
-  background-color: var(--bg-page);
+  background:
+    linear-gradient(180deg, var(--bg-accent-soft), transparent 18rem),
+    var(--bg-page);
   display: grid;
   grid-template-columns: minmax(260px, 35rem) minmax(0, 1fr);
-  gap: var(--space-4);
+  gap: var(--space-6);
   align-items: start;
+  min-height: 100%;
 }
 
 .left {
@@ -220,18 +223,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  animation: home-content-in var(--motion-duration-slow)
+    var(--motion-ease-emphasized) both;
 }
 
 .summary-card {
   padding: var(--space-4);
-  background-color: var(--bg-brand-light);
+  background-color: var(--card-bg-subtle);
   border: 1px solid var(--border-lighter);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   min-height: 6rem;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .tag {
@@ -250,7 +256,7 @@ onUnmounted(() => {
 
 .tag:hover,
 .tag:focus-visible {
-  background-color: var(--bg-hover);
+  background-color: var(--bg-raised);
   border-color: var(--border-active);
   transform: translateY(-1px);
 }
@@ -260,6 +266,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  padding-inline: var(--space-1);
 }
 
 .des {
@@ -281,7 +288,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 0.5rem;
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   color: var(--text-secondary);
   background: var(--bg-component);
   transition: background-color var(--motion-duration) var(--motion-ease-standard),
@@ -305,12 +312,12 @@ onUnmounted(() => {
 .empty-state {
   min-height: 180px;
   border: 1px dashed var(--border-default);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  background: var(--bg-brand-light);
+  background: var(--card-bg-subtle);
 }
 
 .loader-btn {
@@ -322,11 +329,24 @@ onUnmounted(() => {
 .load-more {
   width: fit-content;
   margin: auto;
+  min-width: 8rem;
+}
+
+@keyframes home-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media screen and (max-width: 1024px) {
   .home-page {
     grid-template-columns: 1fr;
+    padding-top: var(--space-6);
   }
 
   .left {
@@ -336,24 +356,31 @@ onUnmounted(() => {
 
 @media screen and (max-width: 695px) {
   .home-page {
-    padding: var(--space-4) 0 var(--space-8);
+    padding: var(--space-4) var(--space-3) var(--space-10);
     gap: var(--space-3);
   }
 
   .summary-card {
-    margin-inline: calc(-1 * var(--horizontalGapPx));
-    padding-inline: var(--horizontalGapPx);
+    margin-inline: calc(-1 * var(--space-3));
+    padding-inline: var(--space-3);
     min-height: auto;
     border-inline: none;
     border-radius: 0;
     flex-wrap: nowrap;
     overflow-x: auto;
     scroll-snap-type: x proximity;
+    box-shadow: none;
   }
 
   .tag {
     white-space: nowrap;
     scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .right {
+    animation: none;
   }
 }
 </style>
