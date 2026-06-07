@@ -65,11 +65,15 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 ## Telemetry
 
 - Powered by the `web-vitals` library.
+- `shared/telemetry/index.ts` owns the vendor-neutral telemetry event envelope, reporter adapter, and delivery fallback.
+- `trackEvent()` is the shared primitive for Web Vitals, route timing, global errors, API timing/errors, and future user-action analytics.
+- `setTelemetryReporter()` can swap delivery to a vendor SDK or self-hosted collector without rewriting module code.
+- `VITE_TELEMETRY_ENDPOINT` optionally enables production JSON delivery through `sendBeacon` or `fetch keepalive`.
 - `initWebVitals()` dynamically imports `web-vitals` and listens for LCP, FID, CLS, FCP, TTFB, and INP.
 - `installRouteTiming(router)` records navigation duration via router guards.
 - `installGlobalErrorCapture()` listens for unhandled errors and rejections.
-- In development: metrics logged to console. In production: no-op.
-- Phase 2+: replace the adapter with a real analytics backend.
+- `service/http.ts` emits API timing and API error telemetry without changing request call sites.
+- In development: metrics are logged to console. In production: delivery is disabled unless `VITE_TELEMETRY_ENDPOINT` is configured.
 
 ## Error Codes
 

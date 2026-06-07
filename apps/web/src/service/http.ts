@@ -2,6 +2,7 @@ import { ElMessage } from 'element-plus'
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/store/auth'
 import { getDeviceId } from '@/util/auth'
+import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -193,6 +194,7 @@ const requestHandler = <T>(
   params: object = {},
   config: AxiosRequestConfig = {}
 ): Promise<T> => {
+  const startedAt = performance.now()
   let response: Promise<AxiosTypes<T>>
   switch (method) {
     case 'get':
@@ -214,10 +216,23 @@ const requestHandler = <T>(
   return new Promise<T>((resolve, reject) => {
     response
       .then((res) => {
+        trackApiTiming({
+          method,
+          url,
+          duration: performance.now() - startedAt,
+          status: res.status,
+        })
         // interceptor 已将 envelope.data 解包到 res.data
         resolve(res.data as T)
       })
       .catch((error) => {
+        trackApiError(error, {
+          method,
+          url,
+          duration: performance.now() - startedAt,
+          status: error instanceof ApiError ? error.status : undefined,
+          code: error instanceof ApiError ? error.code : undefined,
+        })
         // interceptor 已将错误转换为 ApiError
         // 仅在非 ApiError 时补充兜底消息
         if (!(error instanceof ApiError)) {

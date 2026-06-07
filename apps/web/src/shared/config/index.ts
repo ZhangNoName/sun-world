@@ -19,3 +19,12 @@ export const IS_DEVELOPMENT: boolean = import.meta.env.DEV
 
 /** Canonical public site URL. */
 export const SITE_URL = 'https://sunworld.site'
+
+/**
+ * Optional endpoint for frontend telemetry events.
+ *
+ * Leave empty to keep production reporting disabled. When configured, the
+ * telemetry adapter sends JSON events with `sendBeacon`/`fetch keepalive`.
+ */
+export const TELEMETRY_ENDPOINT: string =
+  import.meta.env.VITE_TELEMETRY_ENDPOINT ?? ''

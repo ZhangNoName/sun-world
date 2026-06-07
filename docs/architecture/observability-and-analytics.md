@@ -15,20 +15,22 @@ This document describes the observability strategy for Sun World, covering both 
 
 | Capability | Implementation | Location |
 |---|---|---|
+| Telemetry client | Vendor-neutral `trackEvent()` + replaceable reporter | `shared/telemetry/index.ts` |
 | Web Vitals | `web-vitals` library, dynamic import | `shared/telemetry/index.ts` |
-| Route timing | Vue Router guards | `shared/telemetry/index.ts` |
-| Global errors | `window.onerror` + `unhandledrejection` | `shared/telemetry/index.ts` |
+| Route timing | Vue Router guards emitting `route_timing` events | `shared/telemetry/index.ts` |
+| Global errors | `window.onerror` + `unhandledrejection` events | `shared/telemetry/index.ts` |
+| API timing/errors | HTTP wrapper emits `api_timing` and `api_error` events | `service/http.ts` |
 
 ### Behaviour
 
-- **Development:** All metrics logged to the console with `[telemetry]` prefix.
-- **Production:** Adapter is a no-op — metrics are captured but not forwarded anywhere yet.
+- **Development:** Events are logged to the console with `[telemetry]` prefix.
+- **Production without endpoint:** Adapter is a no-op.
+- **Production with `VITE_TELEMETRY_ENDPOINT`:** Events are sent as JSON through `navigator.sendBeacon` or `fetch(..., keepalive: true)`.
+- **Custom reporter:** `setTelemetryReporter()` can replace delivery with a self-hosted collector or vendor SDK without changing feature modules.
 
 ### Phase 2 Plan
 
-- Forward Web Vitals to a self-hosted or vendor analytics endpoint.
 - Add custom user-action events (button clicks, form submissions, search queries).
-- Add API request timing integration (`shared/api` interceptor hook).
 - Consider a lightweight RUM (Real User Monitoring) dashboard in the admin module.
 
 ### Metrics Collected (Web Vitals)
@@ -83,3 +85,31 @@ Instrumentation  →  Adapter  →  Backend
 ```
 
 Switching from console to a real backend means replacing the adapter — the instrumented code does not change.
+
+## Event Contract
+
+Frontend events use this stable envelope:
+
+```ts
+interface TelemetryEvent {
+  name:
+    | 'web_vital'
+    | 'route_timing'
+    | 'global_error'
+    | 'unhandled_rejection'
+    | 'api_timing'
+    | 'api_error'
+    | 'user_action'
+  severity: 'debug' | 'info' | 'warning' | 'error'
+  timestamp: string
+  page: string
+  sessionId: string
+  properties?: Record<string, unknown>
+}
+```
+
+Rules:
+
+- Do not include passwords, tokens, private keys, raw request bodies, or full PII values.
+- API URLs are normalised without query strings.
+- Production delivery is disabled until `VITE_TELEMETRY_ENDPOINT` is configured.

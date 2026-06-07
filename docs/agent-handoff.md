@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 6 account/user API contract alignment and keep the monorepo web build reproducible.
-- Status: Completed and verified locally on branch `monorepo-api-import`; server final verification is pending because the Tencent Cloud instance is currently reachable by ping but SSH/Web requests time out.
+- Goal: Implement Phase 6 account/user API contract alignment and Phase 7 frontend telemetry adapter foundation.
+- Status: Completed and verified locally on branch `monorepo-api-import`; server has recovered after reboot and is ready for bundle sync/final serial verification.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server, `/Users/zxy/Documents/project/sun-world` locally.
 - Branch: `monorepo-api-import`
 
@@ -32,12 +32,21 @@
   - made token-expiry handling tolerant of cookie-only access tokens and optional response fields.
 - `apps/web/vite.config.ts`
   - made `@sun-world/icons` and `@sun-world/editor` source aliases work in production builds so `pnpm build:web` does not require prebuilt package dist files.
+- `apps/web/src/shared/telemetry/index.ts`
+  - replaced the dev-only telemetry hook with a vendor-neutral telemetry client.
+  - added a stable frontend event envelope, reporter adapter, Web Vitals, route timing, global error, API timing, and API error events.
+- `apps/web/src/shared/config/index.ts`
+  - added optional `VITE_TELEMETRY_ENDPOINT` runtime config.
+- `apps/web/src/service/http.ts`
+  - emits API success timing and API error telemetry without changing request call sites.
 - `packages/contracts/openapi.json`
   - regenerated OpenAPI schema.
 - `packages/contracts/src/generated-api-types.ts`
   - regenerated TypeScript contracts; account/user endpoints now expose typed `ApiResponse[...]` schemas instead of `unknown`.
 - `docs/architecture/api-contracts.md`
   - documented account contract consumption.
+- `docs/architecture/observability-and-analytics.md` and `docs/architecture/frontend-platform-foundation.md`
+  - documented telemetry event contract and adapter behavior.
 
 ## Commands Run
 
@@ -58,11 +67,11 @@
 - `git diff --check` passed locally.
 - `pnpm build:web` passed locally.
 - `pnpm check:web` passed locally.
-- Server final verification is pending:
-  - SSH currently fails with `Connection timed out during banner exchange`.
-  - `https://sunworld.site` currently times out after 15 seconds.
-  - `https://api.sunworld.site/healthz` currently times out after 15 seconds.
-  - ICMP ping to `81.70.43.189` was previously successful, so the instance likely needs console reboot or load recovery.
+- Server recovered after reboot:
+  - SSH returned `connected` and normal uptime output.
+  - `https://sunworld.site` returned HTTP 200.
+  - `https://api.sunworld.site/healthz` returned `{"status":"ok"}`.
+  - No leftover `vite build`, `check-web`, `pnpm`, or `node` build processes were found.
 - Known warnings:
   - Vite CJS Node API deprecation warning.
   - Element Plus Sass legacy JS API / `if()` deprecation warnings.
@@ -74,5 +83,6 @@
 
 ## Next Step
 
-- After the server is reachable, clear any leftover Vite/pnpm build processes, verify `git status`, sync this commit if needed, and rerun server-side final checks serially.
+- Sync local commits to the server branch using a bundle or remote push, preserving server dirty changes with a stash backup if needed.
+- Rerun server-side final checks serially.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.
