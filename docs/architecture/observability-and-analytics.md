@@ -114,11 +114,52 @@ Example (wrapped for readability):
 2026-06-07T12:00:00.000+0800 INFO request_id=a1b2c3d4e5f6 method=GET path=/api/blogs status=200 duration_ms=42.17 client=10.0.0.1 ua=Mozilla/5.0... route=blog_list
 ```
 
+### Phase 9 — Structured JSON Logging (Implemented)
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `apps/api/src/core/logging.py` | `configure_logging()` — idempotent loguru sink setup. |
+| `apps/api/app_instance.py` | Calls `configure_logging()` early, before the `Application` class. |
+
+**Behaviour:**
+
+`configure_logging()` reads non-secret environment variables and configures
+loguru with a single sink to `sys.stderr`.  No files are written.  The
+function is safe to call multiple times — subsequent calls are no-ops.
+
+| Env variable | Default | Effect |
+|---|---|---|
+| `BLOG_LOG_FORMAT=json` | (unset) | Enables `serialize=True` on the stderr sink so every log line is a valid JSON object. |
+| `BLOG_LOG_LEVEL` | `INFO` | Sets the minimum log level; must be one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.  Invalid values fall back to `INFO`. |
+| `BLOG_LOG_BACKTRACE` | `false` | When set to `true`/`1`/`yes`/`on`, enables loguru `backtrace` (default **off** — avoid exposing internal state in production logs). |
+| `BLOG_LOG_DIAGNOSE` | `false` | When set to `true`/`1`/`yes`/`on`, enables loguru `diagnose` (default **off** — avoid exposing variable values in production logs). |
+
+**Security / safety rules:**
+
+| Rule | How |
+|---|---|
+| `backtrace` and `diagnose` are disabled by default | Env-var opt-in only; production must not enable them casually. |
+| No file sinks | All log output goes to `sys.stderr` — the process manager (e.g. systemd/journald) handles persistence. |
+| No new dependencies | Uses the existing `loguru` dependency already relied on by the application. |
+| Idempotent | Repeated calls to `configure_logging()` produce exactly one loguru sink. |
+| No secrets in env reading | Only well-known configuration env vars are read; no credential-like variables are accessed. |
+
+**Log contract (JSON mode):**
+
+When `BLOG_LOG_FORMAT=json`, every log line is a single JSON object with
+loguru's standard record fields (`time`, `level`, `message`, `module`,
+`function`, `line`, `process`, `thread`, `exception`, etc.).  The
+semantic content of the `message` field follows the Phase 8 log contract.
+
+**Log contract (text mode, default):**
+
+Human-readable format with timestamp, level, module location, and
+message — identical to loguru's default sink format.
+
 ### Future Phases
 
-- **Phase 9 — Structured JSON logging.** Configure loguru serialisation so
-  every log line is valid JSON; add timestamp, level, and service fields
-  automatically.
 - **Phase 10 — OpenTelemetry hooks.** Add distributed tracing context
   propagation (traceparent / tracestate) alongside the existing request ID.
 - **Phase 11 — Admin metrics endpoint.** Expose request volume, latency

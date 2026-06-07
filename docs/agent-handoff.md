@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 8 backend request observability (request ID middleware, structured request/error logging).
-- Status: Implemented and verified on branch `monorepo-api-import`; Codex review tightened request-id safety/context reset; not deployed.
+- Goal: Implement Phase 9 backend structured logging configuration.
+- Status: Implemented and verified on branch `monorepo-api-import`; not deployed.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -27,9 +27,16 @@
   - Response envelope structure and status codes are unchanged.
 - `apps/api/app_instance.py`
   - Registers `ObservabilityMiddleware` after CORS so Starlette builds it as the outer project middleware.
+- `apps/api/src/core/logging.py` **(new)**
+  - Adds idempotent `configure_logging()` for loguru.
+  - Defaults to human-readable stderr logs.
+  - Supports `BLOG_LOG_FORMAT=json` for serialized JSON logs.
+  - Supports safe `BLOG_LOG_LEVEL` normalization.
+  - Keeps `BLOG_LOG_BACKTRACE` and `BLOG_LOG_DIAGNOSE` disabled by default.
+- `apps/api/app_instance.py`
+  - Calls `configure_logging()` during module import before `Application` is created.
 - `docs/architecture/observability-and-analytics.md`
-  - Replaced Backend "Current State" / "Phase 2 Plan" with "Phase 8 — Request Observability (Implemented)".
-  - Documented behaviour, security rules, log contract, and future phases (9–11).
+  - Adds Phase 9 structured logging configuration, env flags, JSON/text log contracts, and safety rules.
 
 ## Commands Run
 
@@ -40,17 +47,18 @@
 - `PYTHONPATH=apps/api /home/lighthouse/blog/blog_end/.venv/bin/python - <<'PY' ... minimal ObservabilityMiddleware TestClient smoke ...`
 - `curl -fsS https://api.sunworld.site/healthz`
 - `grep -RInE "sk-[A-Za-z0-9]|BEGIN (RSA|OPENSSH|PRIVATE)|password\\s*=|token\\s*=|secret\\s*=" ...`
+- `BLOG_LOG_FORMAT=json BLOG_LOG_LEVEL=DEBUG PYTHONPATH=apps/api /home/lighthouse/blog/blog_end/.venv/bin/python - <<'PY' ... configure_logging smoke ...`
 
 ## Verification
 
-- `bash scripts/check-api.sh` → 72 files compiled OK.
+- `bash scripts/check-api.sh` → 73 files compiled OK.
 - `SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate` → passed; no generated contract diff.
 - `git diff --check` → passed.
-- Minimal `ObservabilityMiddleware` TestClient smoke → passed:
-  - valid `X-Request-ID` is propagated to response header and context.
-  - unsafe request ID is replaced with a generated UUID4 hex.
+- Minimal `configure_logging()` smoke → passed:
+  - repeated calls do not duplicate sinks.
+  - `BLOG_LOG_FORMAT=json` emits serialized JSON without errors.
 - `curl -fsS https://api.sunworld.site/healthz` → `{"status":"ok"}`.
-- Final diff secret scan found no secret values; only `context_token` variable name matched the generic token pattern.
+- Final diff secret scan found no secret values in new logging code. Existing `app_instance.py` config-key names such as `password`/`jwt_secret` matched the broad pattern but no secret values were printed or added.
 
 ## Deployment
 
@@ -59,7 +67,6 @@
 
 ## Next Step
 
-- Commit on `monorepo-api-import` when ready.
-- Phase 9: structured JSON logging with loguru serialisation.
-- Phase 10: OpenTelemetry distributed tracing hooks.
+- Commit Phase 9 on `monorepo-api-import`.
+- Phase 10: OpenTelemetry distributed tracing hooks or backend admin metrics read model.
 - Keep production `main` clean and do not deploy this feature branch until the broader refactor is ready.

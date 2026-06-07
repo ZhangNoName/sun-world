@@ -5,6 +5,7 @@ import yaml
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
+from src.core.logging import configure_logging
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.observability import ObservabilityMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -21,6 +22,8 @@ from src.database.mongo.mongodb_manage import MongoDBManager
 from src.database.mysql.mysql_manage import MySQLManager
 from src.database.postgresql.postgresql_manager import PostgreSQLManager
 from src.database.redis.redis_manage import RedisManager
+
+configure_logging()
 
 
 class Application(FastAPI):
