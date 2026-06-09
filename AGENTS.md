@@ -13,7 +13,7 @@ This repository is the source of truth for the Sun World site.
 
 ## Read First
 
-- Read this file, CLAUDE.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
+- Read this file, CLAUDE.md, .ai/README.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
 - Project-local instructions override the server-level /home/lighthouse/AGENTS.md contract.
 - Keep operational decisions, deploy notes, and gotchas in docs/current-state.md or focused docs under docs/.
 
@@ -30,6 +30,8 @@ This repository is the source of truth for the Sun World site.
 ## Context Handoff
 
 - Chat context is not the source of truth. Persist context in repository docs.
+- Use `.ai/README.md` as the AI workspace entrypoint for plans, sync protocol,
+  and server resource policy.
 - Use docs/current-state.md for stable environment, domain, service, and deploy state.
 - Use docs/agent-handoff.md for active or recently completed work that another agent may need to continue.
 - Update docs/agent-handoff.md before switching between Codex, Claude Code, local manual work, or a long pause.

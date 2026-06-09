@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: Implement Phase 21 backend readiness probe.
-- Status: Implemented and verified on branch `monorepo-api-import`.
+- Goal: Create `.ai` workspace for project plans and sync protocol.
+- Status: Implemented and verified locally on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
 
@@ -15,6 +15,21 @@
 
 ## Files Changed
 
+- `.ai/README.md` **(new)**
+  - Adds the AI workspace entrypoint and read order.
+- `.ai/plans/platform-roadmap.md` **(new)**
+  - Summarizes completed platform phases and next candidate phases.
+- `.ai/protocols/sync-protocol.md` **(new)**
+  - Documents local/server/GitHub branch synchronization and forbidden sync
+    actions.
+- `.ai/protocols/server-resource-policy.md` **(new)**
+  - Documents the 2-core/2GB server constraint and when to avoid server-side
+    cc/DeepSeek work.
+- `AGENTS.md`
+- `CLAUDE.md`
+- `docs/engineering-conventions.md`
+- `docs/agent-handoff.md`
+  - Point future agents at `.ai/README.md`.
 - `apps/api/src/routers/health/health.py` **(new)**
   - Moves `/healthz` into a typed health router and adds `/readyz`.
 - `apps/api/src/core/readiness.py` **(new)**
@@ -99,6 +114,8 @@
 
 ## Verification
 
+- `find .ai -maxdepth 3 -type f -print` confirmed the AI workspace files.
+- `git diff --check` passed.
 - `bash scripts/check-api.sh` passed.
 - `SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @sun-world/contracts generate`
   passed on the server branch and generated `/healthz` + `/readyz` contracts.

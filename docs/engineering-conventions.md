@@ -47,6 +47,8 @@ These conventions capture the default coding habits for this repository. Prefer 
 ## Context And Agent Handoff
 
 - Use AGENTS.md and CLAUDE.md for stable agent rules.
+- Use `.ai/README.md` as the AI-facing workspace entrypoint for project plans,
+  synchronization protocol, and server resource policy.
 - Use docs/current-state.md for stable runtime, domain, service, and deployment facts.
 - Use docs/agent-handoff.md for short-lived active task state.
 - Update handoff notes when work is paused, transferred between Codex and Claude Code, blocked, or completed but not yet deployed.

@@ -20,7 +20,7 @@ claude-ds
 
 ## Operating Rules
 
-- Read AGENTS.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md first.
+- Read AGENTS.md, .ai/README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md first.
 - Prefer small, reviewable changes.
 - Show and explain diffs before committing when possible.
 - Keep all persistent context in repository docs, not only in the conversation.
