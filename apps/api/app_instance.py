@@ -1,5 +1,6 @@
 # app_instance.py
 import os
+from pathlib import Path
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 import yaml
 from fastapi import FastAPI
@@ -37,6 +38,22 @@ def _deep_merge(base, override):
         else:
             merged[key] = value
     return merged
+
+
+def _resolve_config_path(raw_path: str) -> Path:
+    path = Path(raw_path).expanduser()
+    if path.is_absolute():
+        return path
+    return (Path(__file__).resolve().parent / path).resolve()
+
+
+def _require_mapping_config(config: object, config_path: Path, description: str) -> dict:
+    if not isinstance(config, dict):
+        raise ValueError(
+            f"{description} must be a YAML mapping/object; "
+            f"got {type(config).__name__} from {config_path}"
+        )
+    return config
 
 
 class Application(FastAPI):
@@ -96,23 +113,36 @@ class Application(FastAPI):
             pass
 
     def load_config(self, env='dev'):
-        config_path = f'./src/conf/{env}.yml'
+        config_path = _resolve_config_path(f'./src/conf/{env}.yml')
 
-        if not os.path.exists(config_path):
+        if not config_path.exists():
             raise FileNotFoundError(
                 f"Configuration file not found: {config_path}")
 
-        with open(config_path, 'r') as file:
-            self.config = yaml.safe_load(file)
+        with open(config_path, 'r', encoding='utf-8') as file:
+            self.config = _require_mapping_config(
+                yaml.safe_load(file), config_path, "Base config"
+            )
 
         override_path = os.getenv(
             'BLOG_CONFIG_OVERRIDE',
             f'./src/conf/{env}.override.yml'
         )
-        if os.path.exists(override_path):
-            with open(override_path, 'r') as file:
-                override_config = yaml.safe_load(file) or {}
-            self.config = _deep_merge(self.config or {}, override_config)
+        override_path = _resolve_config_path(override_path)
+
+        if override_path.exists():
+            with open(override_path, 'r', encoding='utf-8') as file:
+                raw_override = yaml.safe_load(file)
+                if raw_override is None:
+                    override_config = {}
+                else:
+                    override_config = _require_mapping_config(
+                        raw_override,
+                        override_path,
+                        "Override config",
+                    )
+
+            self.config = _deep_merge(self.config, override_config)
             logger.info(f'Loaded {env} override configuration from {override_path}')
         logger.info(f'Loaded {env} configuration from {config_path}')
         logger.debug(f'Loaded configuration sections: {list((self.config or {}).keys())}')

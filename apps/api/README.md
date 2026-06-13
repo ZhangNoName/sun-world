@@ -14,8 +14,11 @@ The server listens on `http://0.0.0.0:8000`. Process health check at `/healthz`;
 ## 本地数据库覆盖 / Local Database Overrides
 
 The API loads `src/conf/<env>.yml` first, then overlays `src/conf/<env>.override.yml`
-when that file exists. You can also point to another override file with
-`BLOG_CONFIG_OVERRIDE`.
+when that file exists. `src/conf/<env>.override.yml` is the recommended path.
+
+You can also point to another override file with `BLOG_CONFIG_OVERRIDE`, but that
+file should live in a Git-ignored location (for example outside repo tracked
+files) and must not contain committed secrets.
 
 For local development against the server databases:
 
@@ -24,7 +27,9 @@ cp src/conf/local.override.example.yml src/conf/local.override.yml
 ```
 
 Then fill only local machine values and secrets in `local.override.yml`.
-Override files are ignored by Git; do not commit real database credentials.
+By default, this override path is recommended and expected to remain Git-ignored.
+If you use a custom path via `BLOG_CONFIG_OVERRIDE`, keep it outside version control
+and do not commit real database credentials.
 
 ## 部署 / Deployment
 
