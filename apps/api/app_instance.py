@@ -26,6 +26,19 @@ from src.database.redis.redis_manage import RedisManager
 configure_logging()
 
 
+def _deep_merge(base, override):
+    if not isinstance(base, dict) or not isinstance(override, dict):
+        return override
+
+    merged = dict(base)
+    for key, value in override.items():
+        if key in merged:
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 class Application(FastAPI):
     def __init__(self, **args):
         super(Application, self).__init__(**args)
@@ -91,6 +104,16 @@ class Application(FastAPI):
 
         with open(config_path, 'r') as file:
             self.config = yaml.safe_load(file)
+
+        override_path = os.getenv(
+            'BLOG_CONFIG_OVERRIDE',
+            f'./src/conf/{env}.override.yml'
+        )
+        if os.path.exists(override_path):
+            with open(override_path, 'r') as file:
+                override_config = yaml.safe_load(file) or {}
+            self.config = _deep_merge(self.config or {}, override_config)
+            logger.info(f'Loaded {env} override configuration from {override_path}')
         logger.info(f'Loaded {env} configuration from {config_path}')
         logger.debug(f'Loaded configuration sections: {list((self.config or {}).keys())}')
 

@@ -11,6 +11,21 @@
 服务监听 `http://0.0.0.0:8000`，进程健康检查端点 `/healthz`，依赖就绪检查端点 `/readyz`。
 The server listens on `http://0.0.0.0:8000`. Process health check at `/healthz`; dependency readiness check at `/readyz`.
 
+## 本地数据库覆盖 / Local Database Overrides
+
+The API loads `src/conf/<env>.yml` first, then overlays `src/conf/<env>.override.yml`
+when that file exists. You can also point to another override file with
+`BLOG_CONFIG_OVERRIDE`.
+
+For local development against the server databases:
+
+```bash
+cp src/conf/local.override.example.yml src/conf/local.override.yml
+```
+
+Then fill only local machine values and secrets in `local.override.yml`.
+Override files are ignored by Git; do not commit real database credentials.
+
 ## 部署 / Deployment
 
 后端以 systemd 服务运行在 Nginx 之后。
