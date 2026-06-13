@@ -1,9 +1,23 @@
 ## Current Handoff
 
-- Goal: Create `.ai` workspace for project plans and sync protocol.
-- Status: Implemented and verified locally on branch `monorepo-api-import`.
+- Goal: Synchronize agent/Claude Code protocol changes and formalize the
+  Codex/subagent/`claude-ds` relay pipeline.
+- Status: In progress locally on branch `monorepo-api-import`.
 - Repo/path: `/home/lighthouse/blog/sun-world` on server.
 - Branch: `monorepo-api-import`
+- Scope:
+  - Added `.ai/protocols/agent-pipeline.md`.
+  - Updated `.ai/README.md`, `.ai/protocols/sync-protocol.md`, `AGENTS.md`,
+    and `CLAUDE.md` so protocol changes must be broadcast to active subagents
+    and included in future Claude Code / `claude-ds` prompts.
+  - Removed the local-only `server-agent-context/` mirror from the working tree;
+    server-level context remains on the server at `/home/lighthouse/agent-context`.
+- Verification:
+  - Pending final `git diff --check`.
+- Next step:
+  - Broadcast the protocol delta to active subagents, prepare the `claude-ds`
+    task packet convention, then commit and push if the user asks to sync remote
+    state.
 
 ## Design Source
 

@@ -12,11 +12,13 @@ without relying on chat history.
 2. `../CLAUDE.md` - server-side Claude Code conventions.
 3. `./protocols/sync-protocol.md` - how Codex, Claude Code, server, local, and
    GitHub stay in sync.
-4. `./plans/platform-roadmap.md` - commercial platform refactor roadmap.
-5. `./protocols/server-resource-policy.md` - what should and should not run on
+4. `./protocols/agent-pipeline.md` - subagent, Codex, and Claude Code
+   communication and handoff rules.
+5. `./plans/platform-roadmap.md` - commercial platform refactor roadmap.
+6. `./protocols/server-resource-policy.md` - what should and should not run on
    the 2-core / 2GB server.
-6. `../docs/current-state.md` - current runtime and deployment state.
-7. `../docs/agent-handoff.md` - latest task handoff and verification notes.
+7. `../docs/current-state.md` - current runtime and deployment state.
+8. `../docs/agent-handoff.md` - latest task handoff and verification notes.
 
 ## Folder Map
 
@@ -26,6 +28,7 @@ without relying on chat history.
   plans/
     platform-roadmap.md
   protocols/
+    agent-pipeline.md
     sync-protocol.md
     server-resource-policy.md
 ```
@@ -37,6 +40,8 @@ without relying on chat history.
   Codex/Claude skills already read that path.
 - `.ai/` is the lightweight control plane: read it first, then follow links to
   the deeper project documents.
+- Protocol changes must update durable docs first, then be broadcast to active
+  subagents and any Claude Code / `claude-ds` task prompt before work continues.
 
 ## Current Branch Strategy
 

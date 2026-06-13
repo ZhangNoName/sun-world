@@ -20,7 +20,9 @@ claude-ds
 
 ## Operating Rules
 
-- Read AGENTS.md, .ai/README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md first.
+- Read AGENTS.md, .ai/README.md, .ai/protocols/agent-pipeline.md,
+  docs/current-state.md, docs/engineering-conventions.md, and
+  docs/agent-handoff.md first.
 - Prefer small, reviewable changes.
 - Show and explain diffs before committing when possible.
 - Keep all persistent context in repository docs, not only in the conversation.
@@ -29,6 +31,8 @@ claude-ds
 - Use the website domains only for viewing application results, not for controlling the agent.
 - Follow the Git, naming, and file-size conventions in docs/engineering-conventions.md.
 - Update docs/agent-handoff.md before handing work back to Codex or ending a task that is not fully deployed and verified.
+- If a prompt mentions a protocol update, treat repository docs as the source of
+  truth and follow the updated agent-pipeline rules before editing.
 
 ## Recommended Workflow
 
