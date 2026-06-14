@@ -36,6 +36,9 @@ This repository is the source of truth for the Sun World site.
   communication and handoff rules.
 - Use docs/current-state.md for stable environment, domain, service, and deploy state.
 - Use docs/agent-handoff.md for active or recently completed work that another agent may need to continue.
+- Keep `docs/` as the durable project documentation root. If agent task context
+  is migrated later, use lowercase `.task/` for task state/plans/protocol relay
+  and update all read-order references before moving files.
 - Update docs/agent-handoff.md before switching between Codex, Claude Code, local manual work, or a long pause.
 - When any protocol or agent rule changes, update repository docs first, then
   broadcast the delta to active subagents and include it in the next Claude Code

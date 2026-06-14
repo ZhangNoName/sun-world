@@ -12,6 +12,10 @@
     bounded implementation; `判官` owns review; `阎王` is reserved for high-level
     tradeoff work; `牛头` owns Claude Code / `claude-ds` packets only when
     server-side work is useful.
+  - Context naming decision: keep `docs/` as the durable project documentation
+    root. If agent task context is moved later, introduce lowercase `.task/`
+    for task state, plans, protocol relay, and handoff context; do not rename
+    `docs/` wholesale.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.

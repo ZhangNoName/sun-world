@@ -51,6 +51,10 @@ These conventions capture the default coding habits for this repository. Prefer 
   synchronization protocol, and server resource policy.
 - Use docs/current-state.md for stable runtime, domain, service, and deployment facts.
 - Use docs/agent-handoff.md for short-lived active task state.
+- Keep `docs/` for durable human/project documentation. If we later introduce
+  `.task/`, use it for agent task state, task plans, protocol relay, and handoff
+  context only; migrate files gradually and update read-order references in the
+  same change.
 - Update handoff notes when work is paused, transferred between Codex and Claude Code, blocked, or completed but not yet deployed.
 - Keep handoff entries concise and factual. Include file paths, commands run, verification status, and next step.
 - Do not store secrets, full tokens, passwords, private keys, or private env values in handoff notes.

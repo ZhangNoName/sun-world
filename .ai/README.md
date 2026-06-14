@@ -40,6 +40,10 @@ without relying on chat history.
   Codex/Claude skills already read that path.
 - `.ai/` is the lightweight control plane: read it first, then follow links to
   the deeper project documents.
+- Do not rename `../docs/` to `.task`; `docs/` remains the durable project
+  documentation root. If task context is migrated later, introduce a lowercase
+  `.task/` workspace for agent task state, plans, protocols, and relay notes,
+  then move files gradually with read-order updates in the same commit.
 - Protocol changes must update durable docs first, then be broadcast to active
   subagents and any Claude Code / `claude-ds` task prompt before work continues.
 
