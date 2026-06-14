@@ -39,8 +39,8 @@ export function useBlogList(
 
   /** Map a raw API item to the BlogListItem view model. */
   const mapItem = (o: BlogRawItem): BlogListItem => {
-    const resolvedTags = resolve(tagList)
-    const resolvedCategories = resolve(categoryList)
+    const resolvedTags: TagResponse[] = resolve(tagList)
+    const resolvedCategories: CategoryResponse[] = resolve(categoryList)
 
     return {
       title: o.title,

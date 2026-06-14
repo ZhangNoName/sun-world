@@ -1,7 +1,7 @@
 ## Current Handoff
 
-- Goal: continue frontend modular platform architecture.
-- Current status: P1.10 completed; continue frontend modular platform architecture with build still green and focused type-noise reduction.
+- Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
+- Current status: P1.11 completed (editor boundary isolation) and continues toward deeper module decoupling.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -104,16 +104,30 @@
     - `apps/web/src/env.d.ts` added `declare module '@vue/runtime-core'` augmentation with:
       - `ComponentCustomProperties.$t: import('vue-i18n').ComposerTranslation`.
     - kept Vite env and virtual svg declarations unchanged; no top-level imports were introduced.
+  - P1.11 completed: temporary editor boundary isolation for web typecheck.
+    - `apps/web/src/modules/blog/composables/useBlogList.ts`
+      - fixed `resolvedTags`/`resolvedCategories` inferred types by annotating source resolution to `TagResponse[]` / `CategoryResponse[]`, removing `{}`-inferred `.name` error risk.
+    - `apps/web/tsconfig.json`
+      - switched `@sun-world/editor` path from `../../packages/editor/src/` to local shim type file `./src/types/sun-world-editor.d.ts`.
+    - `apps/web/src/types/sun-world-editor.d.ts` (new)
+      - added minimal module declarations for `@sun-world/editor` to keep web compile-time API expectations in scope.
+    - Judge review status: no blocking findings; `getActiveToolName` return type was tightened to `ToolName | null` during follow-up.
+    - result: web no longer typechecks directly into `packages/editor/src`.
 - Verification:
   - `git diff --check`
-    - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
+    - `LF to CRLF` warning only on touched files.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Command still fails, with remaining major debt in `packages/editor` path/type area.
-    - Filtered check for `\$t|QC|ComponentCustomProperties` shows no target errors; remaining are `packages/editor` issues.
+    - Command still fails on baseline project Vue/typing debt.
+    - Filtered check for `packages/editor|useBlogList.*name|@sun-world/editor` had no matching target errors.
+    - Current remaining noise is still in broader baseline areas.
   - `pnpm -C apps/web build`
     - Passed.
 - Next step:
-  - P1.11: isolate/fix `packages/editor` path/type debt being pulled into apps/web typecheck, or review `apps/web/tsconfig.json` type path strategy (e.g., using package type artifacts instead of direct `packages/editor/src` paths).
+  - Keep `apps/web/src/types/sun-world-editor.d.ts` as a temporary boundary.
+  - After `packages/editor` publishes stable package types, migrate web back to package exports/dist types and remove the shim.
+- Remaining risks:
+  - shim is a temporary API subset; if new editor symbols are used by web, types should be extended.
+  - web still has broader Vue/implicit-any type debt independent of this task.
 
 ## Archived Handoff History
 
