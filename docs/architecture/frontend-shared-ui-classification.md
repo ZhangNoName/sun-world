@@ -79,7 +79,8 @@ These are historical cleanup records, not current migration targets. Remaining f
 2. Move feature-owned components into matching feature modules first:
    - `aigc`: `ChannelCard`
    - `manage/blog`: `Form`, `Table` moved in P1.21 to `apps/web/src/modules/blog/ui/manage`
-   - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; close the charts page route boundary next
+   - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; charts page route boundary closed in P1.23 by moving
+     `apps/web/src/pages/manage/charts/index.vue` to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`
    - `video`: `Video`
    - `home`: `WeatherCard`
 3. Promote `shared primitives` into `shared/ui` once dependency ownership and imports are explicit.
@@ -87,6 +88,12 @@ These are historical cleanup records, not current migration targets. Remaining f
 ### P1.22 admin/charts ownership closure update
 
 - `ChartsCard` is now moved into the admin module UI at `apps/web/src/modules/admin/ui/ChartsCard.vue` with config at `apps/web/src/modules/admin/ui/chartConfig.ts`.
+
+### P1.23 admin/charts route-boundary closure update
+
+- Legacy page shell moved to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`.
+- `apps/web/src/pages/manage/index.vue` now imports `AdminChartsPage` via module path.
+- `apps/web/src/pages/manage/charts` directory is removed; legacy manage page tab remains the same.
 
 ## Guardrails
 

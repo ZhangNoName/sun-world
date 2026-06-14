@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ElMenu, ElMenuItem } from 'element-plus'
 import ManageBlog from './blog/index.vue'
-import Home from './charts/index.vue'
 import ManageAigc from './aigc/index.vue'
+import AdminChartsPage from '@/modules/admin/pages/AdminChartsPage.vue'
 import { defineAsyncComponent, ref } from 'vue'
 
 const AdminMetricsPage = defineAsyncComponent(
@@ -40,7 +40,7 @@ const handleMenuSelect = (index: string) => {
     </ElMenu>
     <!-- </div> -->
     <div class="right">
-      <Home v-if="activeMenu === 'total'"></Home>
+      <AdminChartsPage v-if="activeMenu === 'total'"></AdminChartsPage>
       <ManageBlog v-else-if="activeMenu === 'blog'"></ManageBlog>
       <ManageAigc v-else-if="activeMenu === 'aigc'"></ManageAigc>
       <AdminMetricsPage v-else-if="activeMenu === 'metrics'" />

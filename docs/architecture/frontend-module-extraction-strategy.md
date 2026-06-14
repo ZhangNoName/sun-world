@@ -173,6 +173,25 @@ Verification for this step aligns with the shared frontend verification cadence:
 - `pnpm -C apps/web build`
 - `git diff --check`
 
+### P1.23 admin/charts Route Boundary Closure - Completed
+
+`apps/web/src/pages/manage/charts/index.vue` has been moved to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`, and
+`apps/web/src/pages/manage/index.vue` now uses `AdminChartsPage` from the admin module.
+
+This closes the last legacy `pages/` dependency of the admin charts page on admin
+private UI by moving the route shell into the feature module:
+
+- Removed legacy directory `apps/web/src/pages/manage/charts` (no remaining files).
+- Kept `pages/manage/index.vue` menu index and rendering behavior unchanged
+  (`total` tab still renders the charts page content).
+- No behavioral changes to chart content, cards, or layout.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
 ## Agent Division
 
 - Main Codex owns architecture direction, task slicing, integration decisions,

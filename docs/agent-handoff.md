@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.22 completed on `monorepo-api-import`; next focus is closing the admin charts page route boundary before moving unrelated feature UI.
+- Current status: P1.23 completed on `monorepo-api-import`; admin charts route boundary is now closed.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -16,6 +16,15 @@
     root. If agent task context is moved later, introduce lowercase `.task/`
     for task state, plans, protocol relay, and handoff context; do not rename
     `docs/` wholesale.
+- Verification for this step:
+  - `rg "pages/manage/charts|\.\/charts/index\.vue|AdminChartsPage|ChartsCard" apps/web/src docs/architecture docs/agent-handoff.md -n`
+    - Passed.
+  - `pnpm -C apps/web exec vue-tsc --noEmit`
+    - Passed.
+  - `pnpm -C apps/web build`
+    - Passed (existing Sass deprecation warnings only).
+  - `git diff --check`
+    - Passed (`LF will be replaced by CRLF` warnings only on touched files).
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -25,6 +34,9 @@
     - `apps/web/src/pages/manage/blog/index.vue`
     - `apps/web/src/modules/blog/ui/SelfInfoCard.vue`
   - Removed `apps/web/src/util/request.ts` and `apps/web/src/util/data.ts` after migrating usage to module ownership.
+  - P1.23 closure: moved `apps/web/src/pages/manage/charts/index.vue` to
+    `apps/web/src/modules/admin/pages/AdminChartsPage.vue` and updated
+    `apps/web/src/pages/manage/index.vue` to import it as `AdminChartsPage`.
 - Review findings addressed:
   - Home page base-data fetch no longer blocks `blogList.loadFirstPage()` on failure (error is handled and ignored for list flow).
   - Fire-and-forget `loadBlogBaseData()` calls now have explicit `.catch(...)` handling in the four consumers.
@@ -257,9 +269,25 @@
       - Passed (existing Vite CJS and Sass deprecation warnings only).
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.23 completed: admin/charts route-boundary closure in place.
+  - Moved `apps/web/src/pages/manage/charts/index.vue` to
+    `apps/web/src/modules/admin/pages/AdminChartsPage.vue`.
+  - Updated `apps/web/src/pages/manage/index.vue` to import and render `AdminChartsPage` on the `total` tab.
+  - Deleted legacy directory `apps/web/src/pages/manage/charts`.
+  - `docs/architecture/frontend-module-extraction-strategy.md`,
+    `docs/architecture/frontend-shared-ui-classification.md` and `docs/agent-handoff.md`
+    updated for P1.23.
+  - Verification commands and results:
+    - `rg "pages/manage/charts|\.\/charts/index\.vue|AdminChartsPage|ChartsCard" apps/web/src docs/architecture docs/agent-handoff.md -n`
+      - Passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Sass deprecation warnings only).
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
 - Next step:
-  - P1.23: move the legacy charts page from `apps/web/src/pages/manage/charts` into `apps/web/src/modules/admin/pages` so legacy `pages/` no longer depends on admin-private UI.
-  - After the admin route boundary is closed, continue remaining feature-owned component migrations (`ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
+  - P1.24: continue feature-owned component migrations (`ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new
