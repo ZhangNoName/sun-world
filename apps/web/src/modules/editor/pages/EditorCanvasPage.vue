@@ -2,8 +2,8 @@
 import { BaseElement, SWEditor, type ToolName } from '@sun-world/editor'
 import { CommentSvg, HandSvg, RectSvg, SelectSvg } from '@sun-world/icons'
 import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
-import CanvasLeft from './left.vue'
-import CanvasRight from './right.vue'
+import EditorCanvasLeft from '../ui/EditorCanvasLeft.vue'
+import EditorCanvasRight from '../ui/EditorCanvasRight.vue'
 const tg = window.Telegram?.WebApp
 // 创建一个 canvas 的 ref
 const canvasRef = ref<HTMLDivElement | null>(null)
@@ -45,11 +45,11 @@ onMounted(() => {
 <template>
   <div class="canvas-page">
     <div class="left">
-      <CanvasLeft v-if="editor" :editor="(editor as SWEditor)" />
+      <EditorCanvasLeft v-if="editor" :editor="(editor as SWEditor)" />
     </div>
     <div class="canvas" ref="canvasRef"></div>
     <div class="right">
-      <CanvasRight v-if="editor" :editor="(editor as SWEditor)" />
+      <EditorCanvasRight v-if="editor" :editor="(editor as SWEditor)" />
     </div>
     <div class="tools-container">
       <div class="tool" :class="{ active: activeTool === 'select' }">

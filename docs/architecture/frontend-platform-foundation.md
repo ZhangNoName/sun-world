@@ -62,6 +62,7 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 
 - 先做 app 内模块化，逐步沉淀到 package。
 - 模块目标边界：每个模块应具备 pages / api / types / composables / ui / adapters 边界。
+- 长期可抽离策略见 `frontend-module-extraction-strategy.md`：模块先形成可迁移垂直切片，再评估是否提升为 `packages/<name>`。
 - P0（已完成）：Blog 模块核心类型收口完成。
   - `BlogCardProps`、`CatalogItemType`、`VditorTreeItemType` 已迁入 `apps/web/src/modules/blog/types.ts`。
 - P0.1（已完成）：`apps/web/src/type.ts` 作为兼容入口保留 re-export/alias，旧 `@/type` 可继续导入，但不再是定义源。

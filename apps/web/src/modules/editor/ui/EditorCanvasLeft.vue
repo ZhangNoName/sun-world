@@ -1,7 +1,7 @@
 <script setup lang="ts" name="canvasLeft">
 import { BaseElement, NodeInfo, SWEditor } from '@sun-world/editor'
 import { ref, watch, shallowRef } from 'vue'
-import CanvasTree from './coms/tree.vue'
+import EditorCanvasTree from './EditorCanvasTree.vue'
 const props = defineProps<{
   editor: SWEditor | null
 }>()
@@ -24,7 +24,7 @@ watch(
 <template>
   <div class="canvas-left-container">
     <div class="elements-container">
-      <CanvasTree :elements="root" />
+      <EditorCanvasTree :elements="root" />
     </div>
   </div>
 </template>

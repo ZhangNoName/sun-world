@@ -1,7 +1,7 @@
 <script setup lang="ts" name="canvasTree">
 import { NodeInfo } from '@sun-world/editor'
 import { computed, ref } from 'vue'
-import TreeNode from './treeNode.vue'
+import EditorCanvasTreeNode from './EditorCanvasTreeNode.vue'
 
 const props = defineProps<{
   elements: NodeInfo[]
@@ -19,14 +19,14 @@ const toggleExpand = (elementId: string) => {
 
 <template>
   <div class="canvas-tree-container">
-    <TreeNode
-      v-for="element in props.elements"
-      :key="element.id"
-      :element="element"
-      :level="0"
-      :expanded-items="expandedItems"
-      @toggle-expand="toggleExpand"
-    />
+      <EditorCanvasTreeNode
+        v-for="element in props.elements"
+        :key="element.id"
+        :element="element"
+        :level="0"
+        :expanded-items="expandedItems"
+        @toggle-expand="toggleExpand"
+      />
   </div>
 </template>
 

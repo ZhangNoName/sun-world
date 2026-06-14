@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NodeInfo } from '@sun-world/editor'
 import { computed } from 'vue'
-import EleIcon from './icon.vue'
+import EditorCanvasIcon from './EditorCanvasIcon.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<{
   element: NodeInfo
@@ -40,14 +40,14 @@ const toggleExpand = () => {
       </span>
       <span v-else class="tree-expand-placeholder"></span>
       <div class="icon">
-        <EleIcon :type="element.type" />
+        <EditorCanvasIcon :type="element.type" />
       </div>
       <span class="tree-item-name" @click.stop="toggleExpand">
         {{ element.name || element.type }}
       </span>
     </div>
     <div  class="tree-children">
-      <TreeNode
+      <EditorCanvasTreeNode
         v-for="child in element.children"
         :key="child.id"
         :element="child"

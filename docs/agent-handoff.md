@@ -1,7 +1,18 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.15 completed (editor internal dts diagnostics first cleanup) and we continue toward deeper module decoupling.
+- Current status: P1.16 completed (editor module route closure) and ready for
+  final verification/commit review.
+- Current architecture decision:
+  - New module extraction strategy is documented in
+    `docs/architecture/frontend-module-extraction-strategy.md`.
+  - Modules should form vertical slices with `index.ts`, `api.ts`, `types.ts`,
+    `errors.ts`, `composables/`, `pages/`, `ui/`, and optional `adapters/`
+    before being considered package candidates.
+  - Main Codex owns architecture/integration/verification; `coding` owns
+    bounded implementation; `判官` owns review; `阎王` is reserved for high-level
+    tradeoff work; `牛头` owns Claude Code / `claude-ds` packets only when
+    server-side work is useful.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -138,6 +149,16 @@
     - `BaseTool` now provides default no-op hooks and unified key hook modifier signatures for optional events.
     - `InputManager` now follows public tool access via `getToolManager().getActiveTool()` instead of private/editor-internal member reads.
     - `Transformer.setTransform` now uses explicit parameter typing.
+  - P1.16 completed: editor app-integration route boundary is closed:
+    - legacy `apps/web/src/pages/canvas/**` files were moved into
+      `apps/web/src/modules/editor`.
+    - `/canvas` still keeps the same route path/meta/nav/preload behavior, but
+      `apps/web/src/modules/editor/index.ts` now lazy-loads
+      `./pages/EditorCanvasPage.vue`.
+    - route shell lives at
+      `apps/web/src/modules/editor/pages/EditorCanvasPage.vue`.
+    - editor route-owned panels/tree/icon UI live under
+      `apps/web/src/modules/editor/ui/`.
 - Verification:
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
@@ -158,7 +179,10 @@
     - `git diff --check` reports only LF/CRLF warnings.
     - judge review follow-up: initial P0 found for binding precedence is resolved and no blocking findings remain.
 - Next step:
-  - Continue to migrate package/editor type contract to cleaner package-owned types and decide whether to keep using `src/public-api.d.ts` or `dist/index.d.ts` once editor internal dts/build diagnostics are cleaned.
+  - Continue to migrate package/editor type contract to cleaner
+    package-owned types and decide whether to keep using
+    `src/public-api.d.ts` or `dist/index.d.ts` once editor internal dts/build
+    diagnostics are cleaned.
 - Remaining risks:
   - Editor internal dts/build diagnostics remain noisy and must be cleaned before web can rely on generated `dist/index.d.ts` as sole public contract.
   - `packages/editor/src/public-api.d.ts` is a package-owned public API subset contract and is still a temporary/incomplete public contract; if web consumes new editor symbols, this contract should be extended.

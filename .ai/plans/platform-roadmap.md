@@ -47,6 +47,8 @@ grade, extensible content and creation platform.
 ## Next Candidate Phases
 
 - Move more legacy blog pages/components fully into `modules/blog`.
+- Close the editor app-integration boundary by moving legacy canvas route files
+  into `modules/editor` before deeper editor package work.
 - Add a typed frontend health/readiness admin surface if it becomes useful.
 - Add backend persistent telemetry/log read models after the runtime cutover.
 - Split or defer heavy frontend chunks: editor, charting, AI/LangChain, and
@@ -60,6 +62,7 @@ grade, extensible content and creation platform.
 
 - `../../docs/architecture/commercial-platform-blueprint.md`
 - `../../docs/architecture/frontend-platform-foundation.md`
+- `../../docs/architecture/frontend-module-extraction-strategy.md`
 - `../../docs/architecture/observability-and-analytics.md`
 - `../../docs/architecture/api-contracts.md`
 - `../../docs/architecture/monorepo-migration.md`

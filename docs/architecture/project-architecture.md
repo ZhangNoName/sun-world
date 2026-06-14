@@ -230,6 +230,7 @@ Recommended order:
 
 - `docs/current-state.md`
 - `docs/architecture/monorepo-migration.md`
+- `docs/architecture/frontend-module-extraction-strategy.md`
 - `docs/architecture/deployment-cutover.md`
 - `docs/architecture/secrets-and-env.md`
 - `deploy/README.md`

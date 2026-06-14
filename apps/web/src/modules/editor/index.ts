@@ -1,12 +1,12 @@
 import type { AppModule } from '../types'
 
-const CanvasPage = () => import('@/pages/canvas/canvas.vue')
+const CanvasPage = () => import('./pages/EditorCanvasPage.vue')
 
 /**
  * Editor module - canvas and rich-editor integration.
  *
- * Phase 1 references the existing canvas page.
- * Future phases will add graphics editor features.
+ * The route shell is owned by this module; the reusable editor engine lives in
+ * `@sun-world/editor`.
  */
 export const editorModule: AppModule = {
   id: 'editor',
