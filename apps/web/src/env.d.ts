@@ -14,6 +14,21 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+declare const QC: {
+  Login: {
+    showPopup(options: {
+      appId: string
+      redirectURI: string
+    }): void
+  }
+}
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $t: import('vue-i18n').ComposerTranslation
+  }
+}
+
 declare module 'virtual:svg-icons-register' {
   const register: void
   export default register

@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: continue frontend modular platform architecture.
-- Current status: P1.9 completed; continue frontend modular platform architecture with build still green and focused type-noise reduction.
+- Current status: P1.10 completed; continue frontend modular platform architecture with build still green and focused type-noise reduction.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -98,18 +98,22 @@
       - added local type `ArtplayerWithHls = Artplayer & { hls?: Hls }` so `art.hls` runtime extension is safely typed.
       - HLS init/destroy flow behavior is unchanged.
     - review outcome: no blocking findings; chart page keeps 4 cards, video page cast is localized and behavior-safe.
+  - P1.10 completed: reduced global type-check noise on app-wide runtime surfaces:
+    - `apps/web/src/env.d.ts` added minimal `QC` global declaration for current call shape:
+      - `QC.Login.showPopup({ appId, redirectURI })`.
+    - `apps/web/src/env.d.ts` added `declare module '@vue/runtime-core'` augmentation with:
+      - `ComponentCustomProperties.$t: import('vue-i18n').ComposerTranslation`.
+    - kept Vite env and virtual svg declarations unchanged; no top-level imports were introduced.
 - Verification:
   - `git diff --check`
     - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Command still has blocking type debt from `packages/editor` path/type issues in the current environment.
-    - Filtered check `pages/manage/charts|video.page|TS2345|TS2322|destroy` now only shows `packages/editor` old `TS2345`.
+    - Command still fails, with remaining major debt in `packages/editor` path/type area.
+    - Filtered check for `\$t|QC|ComponentCustomProperties` shows no target errors; remaining are `packages/editor` issues.
   - `pnpm -C apps/web build`
     - Passed.
 - Next step:
-  - Continue moduleization with low-risk slices while keeping `build` green:
-    - P1.10: isolate/fix `packages/editor` path/type debt so `vue-tsc` cleanly includes current project scope.
-    - Continue migrating blog list/reader/authoring pieces into `modules/blog/adapters`/`modules/blog/composables` if desired.
+  - P1.11: isolate/fix `packages/editor` path/type debt being pulled into apps/web typecheck, or review `apps/web/tsconfig.json` type path strategy (e.g., using package type artifacts instead of direct `packages/editor/src` paths).
 
 ## Archived Handoff History
 
