@@ -26,6 +26,12 @@
       - `BlogCard`
       - `CatalogCard`
       - `CatalogItem`
+  - P1.4 completed: homepage feed/list UI is extracted to module feed UI:
+    - `apps/web/src/modules/blog/ui/BlogHomeFeed.vue` now owns homepage right-side blog feed logic, template, and scoped styles (base data + list logic, list mode/waterfall mode, summary/tag strip, load-more states).
+    - `apps/web/src/pages/home/index.vue` now keeps only page-level shell concerns:
+      - SEO / JSON-LD (`usePageMeta`, `useJsonLd`, `canonicalUrl`, `buildWebsiteJsonLd`)
+      - left sidebar (`SelfInfoCard`, `WeatherCard`), sticky/sentinel scroll observer logic
+      - page grid/layout wrapper (`.home-page` / `.left` / `.sidebar-sentinel`) and `<BlogHomeFeed />` composition
   - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
     - category formatter resolves via current `categoryList`.
     - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
@@ -39,7 +45,7 @@
     - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - Continue splitting blog reader/list/authoring into adapters/composables boundaries and keep tightening module layers.
+  - Continue the same stream for reader/authoring by deepening adapters/composables boundaries (including optional decomposition of `BlogHomeFeed` internals), not home feed relocation.
 
 ## Archived Handoff History
 
