@@ -20,5 +20,9 @@
     "skipLibCheck": true,
     "useDefineForClassFields": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/types/keybinding.example.ts",
+    "src/types/input-binding-demo.ts"
+  ]
 }

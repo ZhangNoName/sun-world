@@ -5,10 +5,10 @@ export class Transformer {
   x = 0
   y = 0
 
-  setTransform({ scale, x, y }) {
-    this.scale = scale
-    this.x = x
-    this.y = y
+  setTransform(params: { scale?: number; x?: number; y?: number }): void {
+    this.scale = params.scale ?? this.scale
+    this.x = params.x ?? this.x
+    this.y = params.y ?? this.y
   }
 
   toCanvas(e: MouseEvent) {

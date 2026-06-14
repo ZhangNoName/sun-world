@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.14 completed (editor public API contract moved into package) and we continue toward deeper module decoupling.
+- Current status: P1.15 completed (editor internal dts diagnostics first cleanup) and we continue toward deeper module decoupling.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -131,6 +131,13 @@
     - Updated `packages/editor/package.json` to point `types` and `exports['.'].types` at `./src/public-api.d.ts`.
     - Updated `apps/web/tsconfig.json` `@sun-world/editor` alias to `../../packages/editor/src/public-api.d.ts`.
     - Removed app-local shim `apps/web/src/types/sun-world-editor.d.ts`; web now consumes package-owned contract.
+  - P1.15 completed: first batch of editor internal dts/type cleanup in package boundary:
+    - `packages/editor/tsconfig.app.json` excludes keybinding demo/example files from dts diagnostics scope.
+    - `BaseElement` internals adjusted for AABB flow (`_updateAABBCache` call signature and `hitTest` use of available AABB access).
+    - `InputBindingManager` now keeps `bindings`/`handlers` separated and enforces same-id replace-on-write for registrations, so action bindings added later (e.g., save/delete/copy/wheel-zoom) are not swallowed by default non-action bindings.
+    - `BaseTool` now provides default no-op hooks and unified key hook modifier signatures for optional events.
+    - `InputManager` now follows public tool access via `getToolManager().getActiveTool()` instead of private/editor-internal member reads.
+    - `Transformer.setTransform` now uses explicit parameter typing.
 - Verification:
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
@@ -144,6 +151,12 @@
   - Review: judge review had no blocking findings.
   - P1.14 validation:
     - `pnpm -C packages/editor build` exits 0; diagnostics are still printed from editor internal type generation but do not break package build success.
+  - P1.15 validation:
+    - `pnpm -C packages/editor build` passed, dts diagnostics no longer print TS errors; only API Extractor version notice (`bundled TS 5.4.2` vs project `TS 5.9.3`) remains.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm -C apps/web build` passed with existing Sass/Vite warnings.
+    - `git diff --check` reports only LF/CRLF warnings.
+    - judge review follow-up: initial P0 found for binding precedence is resolved and no blocking findings remain.
 - Next step:
   - Continue to migrate package/editor type contract to cleaner package-owned types and decide whether to keep using `src/public-api.d.ts` or `dist/index.d.ts` once editor internal dts/build diagnostics are cleaned.
 - Remaining risks:
@@ -154,6 +167,8 @@
   - `packages/icons/dist` is expected as build output and remains ignored/untracked for now; `@sun-world/icons` web alias still points to source during this phase.
   - `packages/icons` DTS generation no longer covers `src/App.vue`/demo files; it is now scoped to `src/index.ts` and `src/icons/**`.
   - `packages/icons` DTS include currently targets only `src/index.ts` and `src/icons/**`; if future public exports are added from `src/type.ts`, `src/constant.ts`, or other modules, extend dts include/exports together to avoid coverage gaps.
+  - `InputBindingManager.addBinding()` uses same-id replace semantics by design; if future features require multiple runtime rules per id, we should rework the merge/lookup strategy instead of restoring append behavior.
+  - `packages/editor/src/public-api.d.ts` remains a temporary/partial package-owned API contract; editor internal dts/type debt remains until we can safely rely on generated `dist/index.d.ts` as the canonical exported surface.
 
 ## Archived Handoff History
 
