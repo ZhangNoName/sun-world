@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: continue frontend modular platform architecture.
-- Current status: P1-prep completed and in review-fix loop (behavior risk fixes applied).
+- Current status: P1.8 completed; frontend build verification environment is stabilized for this modularization track.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -83,17 +83,24 @@
       - `blogCategory: string | number`
       - `blogTag: Array<string | number>`
       - `useBlogAuthoring(): BlogAuthoringViewModel`
+  - P1.8 completed: build dependency blockers removed for extraction validation:
+    - `pnpm install --frozen-lockfile` restored missing `web-vitals@5.3.0` and recovered dependency state.
+    - `@vue/shared: 3.5.22` was added explicitly in `apps/web/package.json` and synced in `pnpm-lock.yaml` for Element Plus internal import compatibility.
+    - `pnpm install --force --frozen-lockfile` rebuilt workspace link layout.
+    - `pnpm -C apps/web build` now passes.
+    - `useBlogAuthoring` switched to `shallowRef<BlogEditorClass>` for editor instance ownership.
+    - `useBlogManagement` now calls exposed `validate` / `resetFields` through function-level optional chaining.
 - Verification:
   - `git diff --check`
     - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
+    - Command runs and surfaces existing project-level type debt (`$t`, `QC`, `packages/editor`) unrelated to this modularization cycle.
+    - Filtering `useBlogAuthoring|useBlogManagement|TS2741|TS2722` has no hits in current output.
   - `pnpm -C apps/web build`
-    - Failed due to existing build-time dependency resolution issue: Rollup/Vite cannot resolve `web-vitals` imported by `apps/web/src/shared/telemetry/index.ts`.
-    - Not introduced by this P1.6 change; dependency resolution risk is logged for subsequent build environment verification.
+    - Passed.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - P1.8: first, stabilize frontend build env (`web-vitals` resolution/dependency state), then continue migrating table/data adapter concerns for blog management in small, low-risk slices.
+  - P1.9: prefer low-risk type-baseline hardening first (Vue i18n `$t` global typing, `QC` global declaration, etc.), then continue remaining `modules/blog` adapters while keeping build green.
 
 ## Archived Handoff History
 

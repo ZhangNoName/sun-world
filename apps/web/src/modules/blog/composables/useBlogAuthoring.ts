@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref, shallowRef, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { BlogEditorClass } from '@/blogEditor'
 import { createBlog } from '../api'
@@ -24,7 +24,7 @@ export function useBlogAuthoring(): BlogAuthoringViewModel {
 
   const editorEle = ref<HTMLElement | null>(null)
   const blogWordCount = ref(0)
-  const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
+  const blogEditor = shallowRef<BlogEditorClass>(new BlogEditorClass())
   const blogCategory = ref<string | number>('')
   const blogTag = ref<Array<string | number>>([])
   const title = ref('')

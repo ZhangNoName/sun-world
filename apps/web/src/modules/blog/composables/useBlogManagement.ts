@@ -98,7 +98,8 @@ export function useBlogManagement(): BlogManagementViewModel {
   const formRef = ref<SunFormExpose>()
 
   const onSubmit = () => {
-    formRef.value?.formRef?.validate((valid: boolean) => {
+    const validate = formRef.value?.formRef?.validate
+    validate?.((valid: boolean) => {
       if (valid) {
         ElMessage.success('查询成功!')
         console.log('提交的表单数据:', form.value)
@@ -109,7 +110,8 @@ export function useBlogManagement(): BlogManagementViewModel {
   }
 
   const onReset = () => {
-    formRef.value?.formRef?.resetFields()
+    const resetFields = formRef.value?.formRef?.resetFields
+    resetFields?.()
   }
 
   const blogTableColumns = computed(() => {

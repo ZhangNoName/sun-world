@@ -132,6 +132,9 @@ importers:
       '@unhead/vue':
         specifier: ^1.11.20
         version: 1.11.20(vue@3.5.22(typescript@5.9.3))
+      '@vue/shared':
+        specifier: 3.5.22
+        version: 3.5.22
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
@@ -4392,7 +4395,6 @@ packages:
 
   whatwg-encoding@1.0.5:
     resolution: {integrity: sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw==}
-    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@2.3.0:
     resolution: {integrity: sha512-M4yMwr6mAnQz76TbJm914+gPpB/nCwvZbJU28cUD6dR004SAxDLOOSUaB1JDRqLtaOV/vi0IC5lEAGFgrjGv/g==}
@@ -5570,7 +5572,7 @@ snapshots:
       '@babel/types': 7.28.4
       '@vue/babel-helper-vue-transform-on': 1.5.0
       '@vue/babel-plugin-resolve-type': 1.5.0(@babel/core@7.28.4)
-      '@vue/shared': 3.5.22
+      '@vue/shared': 3.5.25
     optionalDependencies:
       '@babel/core': 7.28.4
     transitivePeerDependencies:
@@ -5660,7 +5662,7 @@ snapshots:
       '@volar/language-core': 1.11.1
       '@volar/source-map': 1.11.1
       '@vue/compiler-dom': 3.5.22
-      '@vue/shared': 3.5.22
+      '@vue/shared': 3.5.25
       computeds: 0.0.1
       minimatch: 9.0.5
       muggle-string: 0.3.1
@@ -5674,7 +5676,7 @@ snapshots:
       '@volar/language-core': 1.11.1
       '@volar/source-map': 1.11.1
       '@vue/compiler-dom': 3.5.22
-      '@vue/shared': 3.5.22
+      '@vue/shared': 3.5.25
       computeds: 0.0.1
       minimatch: 9.0.5
       muggle-string: 0.3.1
@@ -5701,7 +5703,7 @@ snapshots:
       '@volar/language-core': 2.4.15
       '@vue/compiler-dom': 3.5.22
       '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.22
+      '@vue/shared': 3.5.25
       alien-signals: 1.0.13
       minimatch: 9.0.5
       muggle-string: 0.4.1
