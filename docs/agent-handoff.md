@@ -9,11 +9,14 @@
     - `apps/web/src/pages/home/index.vue`
     - `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
     - `apps/web/src/pages/manage/blog/index.vue`
-    - `apps/web/src/components/SelfInfoCard/index.vue`
+    - `apps/web/src/modules/blog/ui/SelfInfoCard.vue`
   - Removed `apps/web/src/util/request.ts` and `apps/web/src/util/data.ts` after migrating usage to module ownership.
 - Review findings addressed:
   - Home page base-data fetch no longer blocks `blogList.loadFirstPage()` on failure (error is handled and ignored for list flow).
   - Fire-and-forget `loadBlogBaseData()` calls now have explicit `.catch(...)` handling in the four consumers.
+  - P1.2 completed: `SelfInfoCard` ownership is closed by moving component into blog module UI:
+    - moved from shared `components` to `apps/web/src/modules/blog/ui/SelfInfoCard.vue`
+    - both usage sites now import explicitly (`apps/web/src/pages/home/index.vue`, `apps/web/src/modules/blog/pages/BlogDetailPage.vue`)
   - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
     - category formatter resolves via current `categoryList`.
     - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
@@ -27,7 +30,7 @@
     - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - Resolve SelfInfoCard ownership: decide whether it belongs to the blog module or should be adapted as shared blog UI.
+  - Continue blog UI boundary work: move BlogCard/CatalogCard ownership into explicit module boundaries (reader/list/authoring surfaces), and further split adapters/composables as data flows tighten.
 
 ## Archived Handoff History
 

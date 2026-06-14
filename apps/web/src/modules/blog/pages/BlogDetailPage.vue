@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
+import SelfInfoCard from '../ui/SelfInfoCard.vue'
 import CatalogCard from '@/components/CatalogCard/index.vue'
 import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
 import { fetchBlogById } from '@/modules/blog/api'
