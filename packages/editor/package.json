@@ -4,10 +4,10 @@
   "type": "module",
   "main": "./dist/editor.cjs.js",
   "module": "./dist/editor.es.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/public-api.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/public-api.d.ts",
       "import": "./dist/editor.es.js",
       "require": "./dist/editor.cjs.js"
     },

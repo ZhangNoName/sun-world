@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.13 completed (icons package build/type boundary) and we continue toward deeper module decoupling.
+- Current status: P1.14 completed (editor public API contract moved into package) and we continue toward deeper module decoupling.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -126,6 +126,11 @@
     - `pnpm -C packages/icons build` now emits `packages/icons/dist/types/index.d.ts`.
     - Web remains temporarily aliased to `packages/icons/src` in web config; no web resolver switch in this round.
     - DTS generation is now scoped to `src/index.ts` + `src/icons/**`; demo app files such as `src/App.vue` are no longer in declaration emit scope.
+  - P1.14 completed: editor public API contract moved into `packages/editor` package-owned shim.
+    - Added `packages/editor/src/public-api.d.ts` with `@sun-world/editor` exports used by web (`ElementType` / `ToolName` / `NodeInfo` / `BaseElement` / `SWEditor` / `IEditorOptions`).
+    - Updated `packages/editor/package.json` to point `types` and `exports['.'].types` at `./src/public-api.d.ts`.
+    - Updated `apps/web/tsconfig.json` `@sun-world/editor` alias to `../../packages/editor/src/public-api.d.ts`.
+    - Removed app-local shim `apps/web/src/types/sun-world-editor.d.ts`; web now consumes package-owned contract.
 - Verification:
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
@@ -137,16 +142,18 @@
     - `LF to CRLF` warning only.
   - Filtered check for `packages/editor|useBlogList.*name|@sun-world/editor` had no matching target errors.
   - Review: judge review had no blocking findings.
+  - P1.14 validation:
+    - `pnpm -C packages/editor build` exits 0; diagnostics are still printed from editor internal type generation but do not break package build success.
+- Next step:
+  - Continue to migrate package/editor type contract to cleaner package-owned types and decide whether to keep using `src/public-api.d.ts` or `dist/index.d.ts` once editor internal dts/build diagnostics are cleaned.
 - Remaining risks:
-  - shim is a temporary API subset; if new editor symbols are used by web, types should be extended.
+  - Editor internal dts/build diagnostics remain noisy and must be cleaned before web can rely on generated `dist/index.d.ts` as sole public contract.
+  - `packages/editor/src/public-api.d.ts` is a package-owned public API subset contract and is still a temporary/incomplete public contract; if web consumes new editor symbols, this contract should be extended.
+  - Since `packages/editor/package.json` now points `types` / `exports['.'].types` to `./src/public-api.d.ts`, any future `files` whitelist or package publish trimming must include this file, otherwise package type entry resolution may become invalid.
   - Future global/runtime augmentations should prefer external-module + `declare global` + module-augmentation pattern, rather than script-mode `declare module '@vue/runtime-core'`.
   - `packages/icons/dist` is expected as build output and remains ignored/untracked for now; `@sun-world/icons` web alias still points to source during this phase.
   - `packages/icons` DTS generation no longer covers `src/App.vue`/demo files; it is now scoped to `src/index.ts` and `src/icons/**`.
   - `packages/icons` DTS include currently targets only `src/index.ts` and `src/icons/**`; if future public exports are added from `src/type.ts`, `src/constant.ts`, or other modules, extend dts include/exports together to avoid coverage gaps.
-
-- Next step:
-  - Keep `apps/web/src/types/sun-world-editor.d.ts` as a temporary boundary.
-  - After `packages/editor` publishes stable package types, migrate web back to package exports/dist types and remove the shim.
 
 ## Archived Handoff History
 
