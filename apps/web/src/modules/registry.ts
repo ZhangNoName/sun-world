@@ -10,6 +10,7 @@ import { aiModule } from './ai'
 import { editorModule } from './editor'
 import { accountModule } from './account'
 import { adminModule } from './admin'
+import { videoModule } from './video'
 
 /**
  * Central module registry.
@@ -28,6 +29,7 @@ export const appModules: AppModule[] = [
   editorModule,
   accountModule,
   adminModule,
+  videoModule,
 ]
 
 const appModulesById = new Map(appModules.map((module) => [module.id, module]))

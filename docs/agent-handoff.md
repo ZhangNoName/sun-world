@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.23 completed on `monorepo-api-import`; admin charts route boundary is now closed.
+- Current status: P1.24 completed on `monorepo-api-import`; video route and player boundary are now module-owned under `apps/web/src/modules/video`.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -17,6 +17,10 @@
     for task state, plans, protocol relay, and handoff context; do not rename
     `docs/` wholesale.
 - Verification for this step:
+  - `rg "@/pages/video|pages/video|@/components/Video|components/Video" apps/web/src -n`
+    - Passed; no legacy video page/component production references remain.
+  - `rg "videoModule|VideoPage|VideoPlayer" apps/web/src docs/architecture docs/agent-handoff.md -n`
+    - Passed; matches are the new module-owned paths and historical docs.
   - `rg "pages/manage/charts|\.\/charts/index\.vue|AdminChartsPage|ChartsCard" apps/web/src docs/architecture docs/agent-handoff.md -n`
     - Passed.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
@@ -26,6 +30,13 @@
   - `git diff --check`
     - Passed (`LF will be replaced by CRLF` warnings only on touched files).
 - Scope completed in this stage:
+  - P1.24 completed: moved video page and player into `apps/web/src/modules/video`:
+    - `apps/web/src/pages/video/video.page.vue` -> `apps/web/src/modules/video/pages/VideoPage.vue`
+    - `apps/web/src/components/Video/video.com.vue` -> `apps/web/src/modules/video/ui/VideoPlayer.vue`
+    - `apps/web/src/pages/video` and `apps/web/src/components/Video` directories removed
+    - `apps/web/src/app/router/routes.ts` no longer imports or routes legacy `VideoPage` directly
+    - `apps/web/src/modules/registry.ts` now registers `videoModule`
+    - `apps/web/src/modules/video/index.ts` created with `/video` route and preload
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
   - Blog consumers now load base data on demand via `useBlogBaseData`:
@@ -287,7 +298,7 @@
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings on touched files).
 - Next step:
-  - P1.24: continue feature-owned component migrations (`ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
+  - P1.25: continue feature-owned component migrations (`ChannelCard`, `WeatherCard`) before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

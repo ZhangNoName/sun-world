@@ -12,7 +12,7 @@ import { ElMessage } from 'element-plus'
 import Artplayer, { type Option } from 'artplayer'
 import Hls from 'hls.js'
 import artplayerPluginHlsControl from 'artplayer-plugin-hls-control'
-import VideoPlayer from '@/components/Video/video.com.vue'
+import VideoPlayer from '@/modules/video/ui/VideoPlayer.vue'
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import artplayerPluginDocumentPip from 'artplayer-plugin-document-pip'
 const route = useRoute()

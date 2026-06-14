@@ -192,6 +192,38 @@ Verification for this step aligns with the shared frontend verification cadence:
 - `pnpm -C apps/web build`
 - `git diff --check`
 
+### P1.24 video Route Boundary + Player Closure - Completed
+
+`/video` is now routed through the new video module manifest and the page no longer
+depends on legacy `@/pages` or `@/components/Video` imports:
+
+- created `apps/web/src/modules/video/index.ts` with module manifest:
+  - `id: 'video'`
+  - `/video` route registered under module ownership
+  - `preload` hook declared for future-friendly lazy-boot behavior
+  - route meta preserved as `title: '视频 - Sun World'`
+- moved page shell:
+  - `apps/web/src/pages/video/video.page.vue` -> `apps/web/src/modules/video/pages/VideoPage.vue`
+- moved player component:
+  - `apps/web/src/components/Video/video.com.vue` -> `apps/web/src/modules/video/ui/VideoPlayer.vue`
+- updated legacy wiring:
+  - `apps/web/src/app/router/routes.ts` removes direct `/video` route import and component mapping
+  - `apps/web/src/modules/registry.ts` imports and registers `videoModule`
+  - `VideoPage.vue` imports `VideoPlayer` from `@/modules/video/ui/VideoPlayer.vue`
+- removed legacy empty directories:
+  - `apps/web/src/pages/video`
+  - `apps/web/src/components/Video`
+
+This step closes the video page/player boundary in `apps/web/src/pages` and
+`apps/web/src/components`, matching existing module route semantics without changing
+runtime playback behavior or menu route.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
 ## Agent Division
 
 - Main Codex owns architecture direction, task slicing, integration decisions,

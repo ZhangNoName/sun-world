@@ -42,9 +42,6 @@ explicitly removed from feature migration paths:
 ### 3. Feature-owned components (move with feature modules first)
 
 Bound to a concrete feature surface and should only be promoted shared after module ownership is complete:
-- `Video` (`Video/video.com.vue`)
-  - Consumers: `apps/web/src/pages/video/video.page.vue`
-  - Video feature-specific behavior and player lifecycle
 - `WeatherCard` (`WeatherCard/index.vue`)
   - Consumers: `apps/web/src/pages/home/index.vue`
   - Home shell area with weather/domain data source
@@ -81,7 +78,7 @@ These are historical cleanup records, not current migration targets. Remaining f
    - `manage/blog`: `Form`, `Table` moved in P1.21 to `apps/web/src/modules/blog/ui/manage`
    - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; charts page route boundary closed in P1.23 by moving
      `apps/web/src/pages/manage/charts/index.vue` to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`
-   - `video`: `Video`
+   - `video`: `Video` moved in P1.24 to `apps/web/src/modules/video`
    - `home`: `WeatherCard`
 3. Promote `shared primitives` into `shared/ui` once dependency ownership and imports are explicit.
 
@@ -94,6 +91,14 @@ These are historical cleanup records, not current migration targets. Remaining f
 - Legacy page shell moved to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`.
 - `apps/web/src/pages/manage/index.vue` now imports `AdminChartsPage` via module path.
 - `apps/web/src/pages/manage/charts` directory is removed; legacy manage page tab remains the same.
+
+### P1.24 video ownership update
+
+- `Video` moved from `apps/web/src/components/Video/video.com.vue` into
+  `apps/web/src/modules/video/ui/VideoPlayer.vue`, with route ownership closed
+  via `apps/web/src/modules/video/pages/VideoPage.vue` and module route registration.
+- Consumer references now use `@/modules/video/ui/VideoPlayer.vue` from
+  `apps/web/src/modules/video/pages/VideoPage.vue`.
 
 ## Guardrails
 

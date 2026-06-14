@@ -1,14 +1,13 @@
 import type { RouteRecordRaw } from 'vue-router'
 
 // ---- Core lazy page imports (existing legacy pages) ----
-// Feature-owned routes such as blog, AI, account, admin, and editor are
+// Feature-owned routes such as blog, AI, account, admin, editor, and video are
 // registered by module manifests under src/modules.
 
 const Home = () => import(/* webpackPrefetch: true */ '@/pages/home/index.vue')
 const GameTiles = () => import('@/pages/gameTiles/index.vue')
 const Keep = () => import('@/pages/keep/keep.vue')
 const ToolsPage = () => import('@/pages/tools/tools.page.vue')
-const VideoPage = () => import('@/pages/video/video.page.vue')
 const NotFound = () => import('@/router/NotFound.vue')
 
 // ---- Route definitions ----
@@ -41,11 +40,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/keep',
     component: Keep,
     meta: { title: '收藏 - Sun World' },
-  },
-  {
-    path: '/video',
-    component: VideoPage,
-    meta: { title: '视频 - Sun World' },
   },
   {
     path: '/:pathMatch(.*)*',
