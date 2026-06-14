@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.16 completed (editor module route closure) and ready for
+- Current status: P1.17 completed (editor package public type boundary alignment) and ready for
   final verification/commit review.
 - Current architecture decision:
   - New module extraction strategy is documented in
@@ -159,40 +159,36 @@
       `apps/web/src/modules/editor/pages/EditorCanvasPage.vue`.
     - editor route-owned panels/tree/icon UI live under
       `apps/web/src/modules/editor/ui/`.
+  - P1.17 completed: editor public type boundary now points to package-owned source entry + canonical d.ts:
+    - removed hand-written `packages/editor/src/public-api.d.ts`.
+    - added `packages/editor/src/public-api.ts` and re-exported it from `packages/editor/src/index.ts`.
+    - `packages/editor/package.json` `types`/`exports['.'].types` now target `./dist/index.d.ts`.
+    - `apps/web/tsconfig.json` maps `@sun-world/editor` to `../../packages/editor/src/index.ts` and adds editor `@/*` fallback alias for clean source-level type checks.
 - Verification:
-  - `git diff --check`
-    - `LF to CRLF` warning only on touched files.
+  - `pnpm -C packages/editor build`
+    - Passed; generated `packages/editor/dist/index.d.ts`.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
     - Passed.
   - `pnpm -C apps/web build`
-    - Passed, with existing third-party Sass/Vite deprecation warnings.
-  - `git diff --check -- apps/web/src/env.d.ts`
-    - `LF to CRLF` warning only.
-  - Filtered check for `packages/editor|useBlogList.*name|@sun-world/editor` had no matching target errors.
-  - Review: judge review had no blocking findings.
-  - P1.14 validation:
-    - `pnpm -C packages/editor build` exits 0; diagnostics are still printed from editor internal type generation but do not break package build success.
-  - P1.15 validation:
-    - `pnpm -C packages/editor build` passed, dts diagnostics no longer print TS errors; only API Extractor version notice (`bundled TS 5.4.2` vs project `TS 5.9.3`) remains.
-    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
-    - `pnpm -C apps/web build` passed with existing Sass/Vite warnings.
-    - `git diff --check` reports only LF/CRLF warnings.
-    - judge review follow-up: initial P0 found for binding precedence is resolved and no blocking findings remain.
+    - Passed (existing third-party Sass/Vite deprecation warnings remain).
+  - `git diff --check`
+    - `LF to CRLF` warning only on touched files.
+  - `rg "public-api\\.d\\.ts|@sun-world/editor" packages/editor apps/web docs/agent-handoff.md -n`
+    - `public-api.d.ts` removed from active package contract; web editor mapping now uses `src/index.ts`.
+  - Review: judge review had no blocking findings for P1.17.
 - Next step:
-  - Continue to migrate package/editor type contract to cleaner
-    package-owned types and decide whether to keep using
-    `src/public-api.d.ts` or `dist/index.d.ts` once editor internal dts/build
-    diagnostics are cleaned.
+  - P1.18: tighten package `types`/exports publication baseline and run a clean environment validation (`rm -rf node_modules`, reinstall, and verify web/editor typecheck/build without editor-source alias fallbacks).
 - Remaining risks:
-  - Editor internal dts/build diagnostics remain noisy and must be cleaned before web can rely on generated `dist/index.d.ts` as sole public contract.
-  - `packages/editor/src/public-api.d.ts` is a package-owned public API subset contract and is still a temporary/incomplete public contract; if web consumes new editor symbols, this contract should be extended.
-  - Since `packages/editor/package.json` now points `types` / `exports['.'].types` to `./src/public-api.d.ts`, any future `files` whitelist or package publish trimming must include this file, otherwise package type entry resolution may become invalid.
+  - `apps/web/tsconfig.json` currently includes a type-checking fallback alias
+    `@/* -> ../../packages/editor/src/*`; this should be reviewed if editor package
+    internal alias strategy changes.
+  - `InputBindingManager` same-id replace semantics remains deliberate; if later we need multi-binding rules per id, we need a new merge strategy.
+  - `packages/editor/dist/index.d.ts` is canonical now, but package API surface remains a partial boundary until full package-owned consumer-facing type contract is validated end-to-end.
   - Future global/runtime augmentations should prefer external-module + `declare global` + module-augmentation pattern, rather than script-mode `declare module '@vue/runtime-core'`.
   - `packages/icons/dist` is expected as build output and remains ignored/untracked for now; `@sun-world/icons` web alias still points to source during this phase.
   - `packages/icons` DTS generation no longer covers `src/App.vue`/demo files; it is now scoped to `src/index.ts` and `src/icons/**`.
   - `packages/icons` DTS include currently targets only `src/index.ts` and `src/icons/**`; if future public exports are added from `src/type.ts`, `src/constant.ts`, or other modules, extend dts include/exports together to avoid coverage gaps.
   - `InputBindingManager.addBinding()` uses same-id replace semantics by design; if future features require multiple runtime rules per id, we should rework the merge/lookup strategy instead of restoring append behavior.
-  - `packages/editor/src/public-api.d.ts` remains a temporary/partial package-owned API contract; editor internal dts/type debt remains until we can safely rely on generated `dist/index.d.ts` as the canonical exported surface.
 
 ## Archived Handoff History
 

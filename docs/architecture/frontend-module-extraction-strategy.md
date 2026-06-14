@@ -80,19 +80,31 @@ Verification:
 - `pnpm -C apps/web build`
 - `git diff --check`
 
-### P1.17 Editor Package Type Boundary
+### P1.17 Editor Package Type Boundary - Completed
 
-Continue replacing the temporary `packages/editor/src/public-api.d.ts` contract
-with generated package declarations once `packages/editor` can emit a stable
-`dist/index.d.ts` public surface.
+The temporary hand-written `packages/editor/src/public-api.d.ts` contract has
+been replaced by a real source public entry:
+
+- `packages/editor/src/public-api.ts` exports the current app-facing editor
+  surface.
+- `packages/editor/src/index.ts` re-exports `./public-api`, so the package root
+  no longer exports broad internals.
+- `packages/editor/package.json` points `types` and `exports["."].types` to the
+  generated `./dist/index.d.ts`.
+- `apps/web` typechecks against the source public entry so a clean checkout does
+  not require ignored `dist` files before running web type checks.
 
 Verification:
 
 - `pnpm -C packages/editor build`
-- confirm no TypeScript diagnostics beyond known API Extractor version notice
+- confirm `packages/editor/dist/index.d.ts` exists
 - confirm `apps/web` still typechecks through the package public entry
 
 ### P1.18 Shared UI Classification
+
+Before or alongside shared UI classification, remove the temporary
+`apps/web/tsconfig.json` editor-source fallback alias once editor internals no
+longer require app-level `@/*` resolution during source type checks.
 
 Classify `apps/web/src/components` into:
 

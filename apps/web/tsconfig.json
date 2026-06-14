@@ -13,8 +13,8 @@
     "baseUrl": ".",
     "types": ["element-plus/global"],
     "paths": {
-      "@/*": ["./src/*"],
-      "@sun-world/editor": ["../../packages/editor/src/public-api.d.ts"],
+      "@/*": ["./src/*", "../../packages/editor/src/*"],
+      "@sun-world/editor": ["../../packages/editor/src/index.ts"],
       "@sun-world/icons": ["../../packages/icons/src"]
     }
   },
