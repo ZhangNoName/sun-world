@@ -1,4 +1,4 @@
-# Frontend Platform Foundation
+﻿# Frontend Platform Foundation
 
 This document describes the frontend architecture built in Phase 1 of the commercial platform blueprint.
 
@@ -15,7 +15,7 @@ apps/web/src/
     api/
       index.ts            # Typed API request layer (re-exports http service + ApiError)
     config/
-      index.ts            # Public runtime constants (API_BASE_URL, IS_PRODUCTION, SITE_URL, …)
+      index.ts            # Public runtime constants (API_BASE_URL, IS_PRODUCTION, SITE_URL, ...
     design/
       index.ts            # Design token re-exports (breakpoints, future: theme registry, motion)
     errors/
@@ -37,7 +37,7 @@ apps/web/src/
       composables/        # Admin data composition, e.g. useAdminMetrics()
       pages/              # Admin-owned route pages
   router/
-    index.ts              # Compatibility re-export → app/router/create-router
+    index.ts              # Compatibility re-export -> app/router/create-router
   pages/                  # Legacy page entrypoints (gradual migration target)
 ```
 
@@ -56,16 +56,20 @@ export interface AppModule {
 }
 ```
 
-The router is assembled from module manifests through `collectModuleRoutes()`. Adding a new module means creating a manifest — no edits to the core route list are needed.
+The router is assembled from module manifests through `collectModuleRoutes()`. Adding a new module means creating a manifest - no edits to the core route list are needed.
 
 ## Module Extraction Roadmap / 模块可抽离路线
 
-- 阶段 A：先在 `apps/web/src` 内完成模块化。先实现模块边界，再评估 package 化。
-- 模块边界应包括 `pages`、`api`、`types`、`composables`、`ui`、`adapters`，并保持边界内职责单一。
-- Blog 子域建议按以下面向拆分：`list`、`reader`、`authoring`、`cards`、`catalog`、`api`、`adapters`、`theme`。
-- Package 化前置条件（P1+）：禁止依赖 `@/pages` 与 `@/type`，禁止依赖全局 provide/inject 作为领域状态来源，禁止依赖 app 私有 CSS（`@/assets`/`layout` 内样式）。
-- 本轮 P0 已完成：`BlogCardProps`、`CatalogItemType`、`VditorTreeItemType` 已迁入并从 `apps/web/src/modules/blog/types.ts` 被业务消费者引用。
-- 兼容说明：`apps/web/src/type.ts` 中对应类型暂未删除，当前阶段保留为兼容层；后续再执行 `alias/re-export` 收口或移除。
+- 先做 app 内模块化，逐步沉淀到 package。
+- 模块目标边界：每个模块应具备 pages / api / types / composables / ui / adapters 边界。
+- P0（已完成）：Blog 模块核心类型收口完成。
+  - `BlogCardProps`、`CatalogItemType`、`VditorTreeItemType` 已迁入 `apps/web/src/modules/blog/types.ts`。
+- P0.1（已完成）：`apps/web/src/type.ts` 作为兼容入口保留 re-export/alias，旧 `@/type` 可继续导入，但不再是定义源。
+- P0.2（已完成）：`pages/blog` 与 `pages/article` 路由页已迁入模块：
+  - `apps/web/src/pages/blog/index.vue` -> `apps/web/src/modules/blog/pages/BlogDetailPage.vue`
+  - `apps/web/src/pages/article/index.vue` -> `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
+  - `apps/web/src/modules/blog/index.ts` 的 lazy import 已切换为 `./pages/BlogDetailPage.vue` 与 `./pages/ArticleEditorPage.vue`。
+- 下一阶段（P1 前置）：继续处理 `App.vue` 的 blog provide/inject 泄漏；并逐步把 blog reader/authoring/list 状态下沉到 `modules/blog/adapters` 与 `modules/blog/composables`。
 
 ## SEO / Head
 
@@ -304,7 +308,7 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
 
 ## Future Work (Phase 2+)
 
-- Migrate page components from `pages/` into their respective module folders.
+- `P0.2` 已完成 blog 路由页内迁移（`pages/blog`、`pages/article` 已迁入 `modules/blog/pages`）；其余页面继续按模块优先级逐步迁移。
 - Make `shared/api` consume `@sun-world/contracts` types.
 - Extend preload strategy with hover/focus prefetch on nav items.
 - Evaluate SSG/SSR for blog article pages.

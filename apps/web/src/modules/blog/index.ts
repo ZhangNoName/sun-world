@@ -1,13 +1,12 @@
 import type { AppModule } from '../types'
 
-const BlogDetailPage = () => import('@/pages/blog/index.vue')
-const ArticleEditorPage = () => import('@/pages/article/index.vue')
+const BlogDetailPage = () => import('./pages/BlogDetailPage.vue')
+const ArticleEditorPage = () => import('./pages/ArticleEditorPage.vue')
 
 /**
  * Blog module - public-facing blog pages.
  *
- * Phase 1 references existing legacy page components via lazy imports.
- * Phase 2 will move pages into this module folder.
+ * Blog module owned public pages.
  */
 export const blogModule: AppModule = {
   id: 'blog',
