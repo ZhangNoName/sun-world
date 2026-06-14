@@ -14,6 +14,9 @@
 - Review findings addressed:
   - Home page base-data fetch no longer blocks `blogList.loadFirstPage()` on failure (error is handled and ignored for list flow).
   - Fire-and-forget `loadBlogBaseData()` calls now have explicit `.catch(...)` handling in the four consumers.
+  - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
+    - category formatter resolves via current `categoryList`.
+    - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
 - Verification:
   - Ran the requested rg command set and confirmed no remaining old inject/provide or deleted-bridge usage in source code.
   - `rg -n "loadBlogBaseData\(\)" ...`

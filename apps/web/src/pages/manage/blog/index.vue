@@ -12,7 +12,7 @@ import {
 import SunForm from '@/components/Form/index.vue'
 import SunTable from '@/components/Table/index.vue'
 import { BlogTableColumns, BlogSearchFormData } from './data'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
 // 定义表单类型
 interface BlogSearchForm {
@@ -27,15 +27,6 @@ const form = ref<BlogSearchForm>({
   category: undefined,
   publishDate: undefined,
 })
-
-const categoryFormatter = (row, column, v: string, index) => {
-  return categoryList.find((c) => c.id === v)?.name || ''
-}
-const tagFormatter = (row, column, v: string[], index) => {
-  return (
-    v.map((id) => categoryList.find((c) => c.id === id)?.name).join(',') || ''
-  )
-}
 
 // 表单校验规则
 const rules = {
@@ -61,13 +52,40 @@ const onSubmit = () => {
 const onReset = () => {
   formRef.value?.resetFields()
 }
+
+const blogTableColumns = computed(() => {
+  const categoryNameMap = new Map(
+    categoryList.map((item) => [String(item.id), item.name])
+  )
+  const tagNameMap = new Map(tagList.map((item) => [String(item.id), item.name]))
+
+  return BlogTableColumns.map((column, index) => {
+    if (index === 2) {
+      return {
+        ...column,
+        formatter: (row: unknown, column: unknown, v: unknown) =>
+          categoryNameMap.get(String(v)) || '',
+      }
+    }
+
+    if (index === 3) {
+      return {
+        ...column,
+        formatter: (row: unknown, column: unknown, v: unknown) => {
+          if (!Array.isArray(v)) return ''
+          return v.map((id) => tagNameMap.get(String(id)) || '').join(',') || ''
+        },
+      }
+    }
+
+    return column
+  })
+})
+
 onMounted(() => {
   loadBlogBaseData().catch((error) => {
     console.error('获取博客基础数据失败:', error)
   })
-
-  BlogTableColumns[2].formatter = categoryFormatter
-  BlogTableColumns[3].formatter = tagFormatter
 })
 </script>
 
@@ -79,7 +97,7 @@ onMounted(() => {
     <div class="mid"></div>
     <div class="bootom">
       <SunTable
-        :columns="BlogTableColumns"
+        :columns="blogTableColumns"
         :tableOptions="{
           showIndex: false,
           showSelection: true,
