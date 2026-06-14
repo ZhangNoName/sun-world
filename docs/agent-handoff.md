@@ -16,6 +16,10 @@
     `判官`, `牛头`), reuse existing role agents instead of spawning per
     iteration, close completed runtime agents after integration, and reserve
     `阎王` / `gpt-5.5` for architecture tradeoffs only.
+  - Agent naming rule: ignore random runtime nicknames in coordination; all
+    prompts, handoff notes, reviews, and user-facing summaries must use the
+    stable role names (`coding`, `阎王`, `判官`, `牛头`). Start each delegated
+    prompt with `你的角色名是 <role>`.
   - Context naming decision: keep `docs/` as the durable project documentation
     root. If agent task context is moved later, introduce lowercase `.task/`
     for task state, plans, protocol relay, and handoff context; do not rename

@@ -314,3 +314,6 @@ Agent lifecycle rule:
 - Use `coding` or Claude Code / `claude-ds` for implementation, `判官` for
   review, `牛头` for Claude Code relay, and reserve `阎王` / `gpt-5.5` for
   high-level architecture tradeoffs only.
+- Ignore random runtime nicknames. Coordination, handoff, and reports must use
+  the stable role names, and delegated prompts should start with
+  `你的角色名是 <role>`.
