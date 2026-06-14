@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import type { CatalogItemType, VditorTreeItemType } from '@/type'
+import type {
+  CatalogItemType,
+  VditorTreeItemType,
+} from '@/modules/blog/types'
 // import { CatalogListData } from './index.data'
 import CatalogItem from './CatalogItem/index.vue'
 import Vditor from 'vditor'

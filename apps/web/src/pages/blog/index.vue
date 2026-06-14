@@ -7,7 +7,7 @@ import CatalogCard from '@/components/CatalogCard/index.vue'
 import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
 import { fetchBlogById } from '@/modules/blog/api'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
-import type { BlogDetail } from '@/modules/blog/types'
+import type { BlogDetail, VditorTreeItemType } from '@/modules/blog/types'
 import {
   buildBlogPostingJsonLd,
   canonicalUrl,
@@ -16,7 +16,6 @@ import {
 } from '@/shared/seo'
 import { formatDate } from '@/util/function'
 import { Calendar, WordCount, Comment } from '@sun-world/icons'
-import type { VditorTreeItemType } from '@/type'
 // @ts-ignore
 import VditorPreview from 'vditor/dist/method.min'
 

@@ -1,10 +1,39 @@
 import type { Ref } from 'vue'
-import type { BlogCardProps } from '@/type'
+import type { DefineComponent } from 'vue'
 import type {
   ApiRequestBody,
   ApiSuccessData,
   components,
 } from '@sun-world/contracts'
+
+export interface BlogCardProps {
+  id: string | number
+  title: string
+  abstract: string
+  publishTime: string
+  lastUpdateTime: string
+  tags: string[]
+  category?: string
+  cover?: string
+  byteNum: number | string
+  commentNum: number | string
+  viewNum?: number | string
+}
+
+export interface CatalogItemType {
+  id: string
+  name: string
+  level: number | string
+  children?: CatalogItemType[]
+  isopen?: boolean
+  icon?: DefineComponent | SVGAElement | Element
+}
+
+export interface VditorTreeItemType {
+  text: string
+  level: number
+  id: string
+}
 
 export type BlogCreateContract = ApiRequestBody<'/blogs/', 'post'>
 

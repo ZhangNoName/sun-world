@@ -1,4 +1,4 @@
-import { CatalogItemType } from '@/type'
+import type { CatalogItemType } from '@/modules/blog/types'
 
 export const CatalogListData: CatalogItemType[] = [
   {

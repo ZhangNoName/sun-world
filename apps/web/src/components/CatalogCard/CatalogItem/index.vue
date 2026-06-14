@@ -1,5 +1,5 @@
 <script lang="ts" setup name="CatalogListItem">
-import type { CatalogItemType } from '@/type'
+import type { CatalogItemType } from '@/modules/blog/types'
 import { computed, ref } from 'vue'
 import { FoldSvg } from '@sun-world/icons'
 
