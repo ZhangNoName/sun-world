@@ -121,14 +121,20 @@ Verification:
 
 ### P1.19 Shared UI Classification
 
-Classify `apps/web/src/components` into:
+P1.19 classification is completed and documented:
 
-- app shell primitives (`ThemeSwitch`, `LanguageSwitch`, layout-only controls)
-- shared UI primitives (`Form`, `Table`, `Tag`, `Waterfall`, `LoadingSkeleton`)
-- feature-owned components that should move into a module
+The component ownership baseline now lives in:
 
-No broad rewrite should happen until the classification is documented. This
-prevents turning `shared/ui` into a second junk drawer.
+- `docs/architecture/frontend-shared-ui-classification.md`
+
+Current categories include:
+
+- app shell primitives (`ThemeSwitch`, `LanguageSwitch`, `Avator`)
+- shared UI primitive candidates (`ZBtn`, `Tag`, `Waterfall`)
+- feature-owned components (`Form`, `Table`, `ChannelCard`, `ChartsCard`, `WeatherCard`, `Video`)
+- orphan/demo cleanup targets (`DIalogCard`, `CutomBtn`, `LoadMore`, Waterfall demo/test assets)
+
+No broad rewrite occurred in this round; only classification documentation was added.
 
 ## Agent Division
 

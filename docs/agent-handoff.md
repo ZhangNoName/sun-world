@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.18 completed (editor source alias cleanup in `apps/web`) and ready for
+- Current status: P1.19 completed (shared UI classification baseline) and ready for
   final verification/commit review.
 - Current architecture decision:
   - New module extraction strategy is documented in
@@ -171,6 +171,10 @@
     - to `"@/*": ["./src/*"]`
   - Kept `"@sun-world/editor": ["../../packages/editor/src/index.ts"]` unchanged so editor imports remain explicit.
   - Verified `packages/editor` can build and web typecheck/build can run without the temporary editor-source fallback.
+- P1.19 completed: shared UI classification phase added to prevent junk drawer drift.
+  - Added `docs/architecture/frontend-shared-ui-classification.md` with source-of-truth ownership mapping for
+    `apps/web/src/components` across app-shell primitives, shared UI candidates, feature-owned components, package candidates, and orphan/demo artifacts.
+  - Updated `docs/architecture/frontend-module-extraction-strategy.md` P1.19 status to reference the new baseline.
 - Verification:
   - `pnpm -C packages/editor build`
     - Passed; generated `packages/editor/dist/index.d.ts`.
@@ -191,10 +195,13 @@
   - `rg "public-api\\.d\\.ts|@sun-world/editor" packages/editor apps/web docs/agent-handoff.md -n`
     - `public-api.d.ts` removed from active package contract; web editor mapping now uses `src/index.ts`.
   - Review: no blocking findings; P1.18 alias cleanup unblocks app-level editor source fallback removal.
+  - P1.19 review: no blocking findings; doc nits for status, verification
+    indentation, and Waterfall demo/test risk were addressed.
 - Next step:
-  - P1.19: classify `apps/web/src/components` into app shell primitives,
-    shared UI primitives, and feature-owned components before moving more UI
-    files.
+  - P1.20+: execute migration according to `docs/architecture/frontend-shared-ui-classification.md` in safe order:
+    1) clear orphan/demo cleanup,
+    2) move feature-owned components into feature modules,
+    3) then promote shared primitives into `shared/ui`.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new
