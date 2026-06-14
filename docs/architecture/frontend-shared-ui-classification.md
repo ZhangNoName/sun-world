@@ -29,7 +29,7 @@ Domain-neutral and reusable enough to be promoted first once `components.d.ts`/g
 explicitly removed from feature migration paths:
 
 - `ZBtn` (`ZBtn/index.vue`, `ZBtn/index.data.ts`)
-  - Consumers: `apps/web/src/pages/aigc/*`, `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
+  - Consumers: `apps/web/src/modules/ai/pages/AigcPage.vue`, `apps/web/src/modules/ai/ui/*`, `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
   - Generic button behavior with controlled style variants
 - `Tag` (`Tag/index.vue`)
   - Consumers: `apps/web/src/modules/blog/ui/BlogCard.vue`
@@ -46,7 +46,8 @@ Bound to a concrete feature surface and should only be promoted shared after mod
   - Consumers: `apps/web/src/pages/home/index.vue`
   - Home shell area with weather/domain data source
 - `ChannelCard` (`ChannelCard/index.vue`)
-  - Consumers: `apps/web/src/pages/aigc/index.vue`
+  - P1.25 moved to `apps/web/src/modules/ai/ui/ChannelCard.vue`
+  - Consumer reference lives in `apps/web/src/modules/ai/pages/AigcPage.vue`
   - AIGC list-session domain component
 
 ### 4. Package candidates (later stage)
@@ -74,7 +75,7 @@ These are historical cleanup records, not current migration targets. Remaining f
 
 1. P1.20 completed: orphan/demo artifacts and dead imports have been cleaned.
 2. Move feature-owned components into matching feature modules first:
-   - `aigc`: `ChannelCard`
+   - `aigc`: `ChannelCard` moved in P1.25 to `apps/web/src/modules/ai/ui`
    - `manage/blog`: `Form`, `Table` moved in P1.21 to `apps/web/src/modules/blog/ui/manage`
    - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; charts page route boundary closed in P1.23 by moving
      `apps/web/src/pages/manage/charts/index.vue` to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`
@@ -99,6 +100,15 @@ These are historical cleanup records, not current migration targets. Remaining f
   via `apps/web/src/modules/video/pages/VideoPage.vue` and module route registration.
 - Consumer references now use `@/modules/video/ui/VideoPlayer.vue` from
   `apps/web/src/modules/video/pages/VideoPage.vue`.
+
+### P1.25 AI/AIGC ownership update
+
+- `ChannelCard` moved from `apps/web/src/components/ChannelCard/index.vue` into
+  `apps/web/src/modules/ai/ui/ChannelCard.vue`.
+- The AIGC route page and its local UI moved from `apps/web/src/pages/aigc` into
+  `apps/web/src/modules/ai/pages` and `apps/web/src/modules/ai/ui`.
+- Global `ChannelCard` component declaration was removed from
+  `apps/web/src/components.d.ts`.
 
 ## Guardrails
 

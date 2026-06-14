@@ -1,12 +1,9 @@
 import type { AppModule } from '../types'
 
-const AigcPage = () => import('@/pages/aigc/index.vue')
+const AigcPage = () => import('./pages/AigcPage.vue')
 
 /**
  * AI module - AI chat and generation workflows.
- *
- * Phase 1 references existing legacy AIGC page.
- * Phase 2 will add dedicated AI feature pages.
  */
 export const aiModule: AppModule = {
   id: 'ai',

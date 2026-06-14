@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.24 completed on `monorepo-api-import`; video route and player boundary are now module-owned under `apps/web/src/modules/video`.
+- Current status: P1.25 completed on `monorepo-api-import`; AI/AIGC route, local UI, and `ChannelCard` ownership are now module-owned under `apps/web/src/modules/ai`.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -17,19 +17,27 @@
     for task state, plans, protocol relay, and handoff context; do not rename
     `docs/` wholesale.
 - Verification for this step:
-  - `rg "@/pages/video|pages/video|@/components/Video|components/Video" apps/web/src -n`
-    - Passed; no legacy video page/component production references remain.
-  - `rg "videoModule|VideoPage|VideoPlayer" apps/web/src docs/architecture docs/agent-handoff.md -n`
-    - Passed; matches are the new module-owned paths and historical docs.
-  - `rg "pages/manage/charts|\.\/charts/index\.vue|AdminChartsPage|ChartsCard" apps/web/src docs/architecture docs/agent-handoff.md -n`
-    - Passed.
+  - `rg "@/pages/aigc|pages/aigc|@/components/ChannelCard|components/ChannelCard" apps/web/src -n`
+    - Passed; no legacy AIGC page or `ChannelCard` production references remain.
+  - `rg "AigcPage|ChannelCard|ChatInput|ChatList|ConfigModal|ModelName" apps/web/src docs/architecture docs/agent-handoff.md -n`
+    - Passed; matches are new module-owned paths and historical docs.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
     - Passed.
   - `pnpm -C apps/web build`
-    - Passed (existing Sass deprecation warnings only).
+    - Passed (existing Vite CJS and Sass deprecation warnings only).
   - `git diff --check`
     - Passed (`LF will be replaced by CRLF` warnings only on touched files).
 - Scope completed in this stage:
+  - P1.25 completed: moved AIGC page, local UI, and `ChannelCard` into `apps/web/src/modules/ai`:
+    - `apps/web/src/pages/aigc/index.vue` -> `apps/web/src/modules/ai/pages/AigcPage.vue`
+    - `apps/web/src/pages/aigc/side.vue` -> `apps/web/src/modules/ai/ui/ChatList.vue`
+    - `apps/web/src/pages/aigc/config/chatInput.vue` -> `apps/web/src/modules/ai/ui/ChatInput.vue`
+    - `apps/web/src/pages/aigc/config/configModal.vue` -> `apps/web/src/modules/ai/ui/ConfigModal.vue`
+    - `apps/web/src/pages/aigc/config/modelName.vue` -> `apps/web/src/modules/ai/ui/ModelName.vue`
+    - `apps/web/src/components/ChannelCard/index.vue` -> `apps/web/src/modules/ai/ui/ChannelCard.vue`
+    - `apps/web/src/modules/ai/index.ts` now lazy-loads `./pages/AigcPage.vue`
+    - `apps/web/src/components.d.ts` no longer declares global `ChannelCard`
+    - `apps/web/src/pages/aigc` and `apps/web/src/components/ChannelCard` directories removed
   - P1.24 completed: moved video page and player into `apps/web/src/modules/video`:
     - `apps/web/src/pages/video/video.page.vue` -> `apps/web/src/modules/video/pages/VideoPage.vue`
     - `apps/web/src/components/Video/video.com.vue` -> `apps/web/src/modules/video/ui/VideoPlayer.vue`
@@ -298,7 +306,7 @@
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings on touched files).
 - Next step:
-  - P1.25: continue feature-owned component migrations (`ChannelCard`, `WeatherCard`) before promoting shared primitives.
+  - P1.26: continue feature-owned component migration for `WeatherCard` before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

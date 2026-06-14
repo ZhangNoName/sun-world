@@ -224,6 +224,36 @@ Verification for this step aligns with the shared frontend verification cadence:
 - `pnpm -C apps/web build`
 - `git diff --check`
 
+### P1.25 AI/AIGC Route Boundary + ChannelCard Closure - Completed
+
+The AI/AIGC route shell and its local UI are now owned by `apps/web/src/modules/ai`:
+
+- moved route shell:
+  - `apps/web/src/pages/aigc/index.vue` -> `apps/web/src/modules/ai/pages/AigcPage.vue`
+- moved AIGC local UI:
+  - `apps/web/src/pages/aigc/side.vue` -> `apps/web/src/modules/ai/ui/ChatList.vue`
+  - `apps/web/src/pages/aigc/config/chatInput.vue` -> `apps/web/src/modules/ai/ui/ChatInput.vue`
+  - `apps/web/src/pages/aigc/config/configModal.vue` -> `apps/web/src/modules/ai/ui/ConfigModal.vue`
+  - `apps/web/src/pages/aigc/config/modelName.vue` -> `apps/web/src/modules/ai/ui/ModelName.vue`
+- moved feature-owned component:
+  - `apps/web/src/components/ChannelCard/index.vue` -> `apps/web/src/modules/ai/ui/ChannelCard.vue`
+- updated module wiring:
+  - `apps/web/src/modules/ai/index.ts` lazy-loads `./pages/AigcPage.vue`
+  - `AigcPage.vue` imports local UI from `@/modules/ai/ui/*`
+  - `apps/web/src/components.d.ts` no longer declares global `ChannelCard`
+- removed legacy empty directories:
+  - `apps/web/src/pages/aigc`
+  - `apps/web/src/components/ChannelCard`
+
+No AI request flow, API key constant access, session/message behavior, or style
+semantics changed in this step.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
 ## Agent Division
 
 - Main Codex owns architecture direction, task slicing, integration decisions,

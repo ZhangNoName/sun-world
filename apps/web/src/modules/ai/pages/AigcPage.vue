@@ -6,13 +6,13 @@ import { ElMessage } from 'element-plus'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { ExportSvg, RobotSvg } from '@sun-world/icons'
 import ZBtn from '@/components/ZBtn/index.vue'
-import ChannelCard from '@/components/ChannelCard/index.vue'
+import ChannelCard from '@/modules/ai/ui/ChannelCard.vue'
 import { IMsg, ISession, MsgRole } from '@/types/ai.type'
 import { getUUID } from '@/util/common'
-import ChatInput from './config/chatInput.vue'
-import ChatList from './side.vue'
-import ConfigModal from './config/configModal.vue'
-import ModelName from './config/modelName.vue'
+import ChatInput from '@/modules/ai/ui/ChatInput.vue'
+import ChatList from '@/modules/ai/ui/ChatList.vue'
+import ConfigModal from '@/modules/ai/ui/ConfigModal.vue'
+import ModelName from '@/modules/ai/ui/ModelName.vue'
 const sidebarClass = ref<'expend' | 'hide'>('expend')
 const userInput = ref('')
 const chatList = ref<IMsg[]>([])
