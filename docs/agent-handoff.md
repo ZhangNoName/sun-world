@@ -113,21 +113,30 @@
       - added minimal module declarations for `@sun-world/editor` to keep web compile-time API expectations in scope.
     - Judge review status: no blocking findings; `getActiveToolName` return type was tightened to `ToolName | null` during follow-up.
     - result: web no longer typechecks directly into `packages/editor/src`.
+  - P1.12 completed: fixed web Vue type baseline by converting `apps/web/src/env.d.ts` into a proper external module declaration file.
+    - Changed `apps/web/src/env.d.ts` to use:
+      - `import type { ComposerTranslation } from 'vue-i18n'`
+      - `export {}`
+    - Moved `ImportMetaEnv`, `ImportMeta`, and `QC` declarations under `declare global`.
+    - Kept `@vue/runtime-core` augmentation focused on `ComponentCustomProperties.$t`.
+    - Kept `virtual:svg-icons-register` and `virtual:svg-icons-names` module declarations.
 - Verification:
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Command still fails on baseline project Vue/typing debt.
-    - Filtered check for `packages/editor|useBlogList.*name|@sun-world/editor` had no matching target errors.
-    - Current remaining noise is still in broader baseline areas.
-  - `pnpm -C apps/web build`
     - Passed.
+  - `pnpm -C apps/web build`
+    - Passed, with existing third-party Sass/Vite deprecation warnings.
+  - `git diff --check -- apps/web/src/env.d.ts`
+    - `LF to CRLF` warning only.
+  - Filtered check for `packages/editor|useBlogList.*name|@sun-world/editor` had no matching target errors.
+  - Review: judge review had no blocking findings.
+- Remaining risks:
+  - shim is a temporary API subset; if new editor symbols are used by web, types should be extended.
+  - Future global/runtime augmentations should prefer external-module + `declare global` + module-augmentation pattern, rather than script-mode `declare module '@vue/runtime-core'`.
 - Next step:
   - Keep `apps/web/src/types/sun-world-editor.d.ts` as a temporary boundary.
   - After `packages/editor` publishes stable package types, migrate web back to package exports/dist types and remove the shim.
-- Remaining risks:
-  - shim is a temporary API subset; if new editor symbols are used by web, types should be extended.
-  - web still has broader Vue/implicit-any type debt independent of this task.
 
 ## Archived Handoff History
 
