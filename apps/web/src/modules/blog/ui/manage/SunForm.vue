@@ -2,7 +2,7 @@
 <script lang="ts" setup name="SunForm">
 import { ref, reactive, watchEffect } from 'vue'
 import type { PropType } from 'vue'
-import { FormItem } from './type'
+import { FormItem } from './formTypes'
 import {
   ElSelect,
   ElInput,

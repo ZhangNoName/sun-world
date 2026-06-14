@@ -42,10 +42,6 @@ explicitly removed from feature migration paths:
 ### 3. Feature-owned components (move with feature modules first)
 
 Bound to a concrete feature surface and should only be promoted shared after module ownership is complete:
-
-- `Form` + `Table` (`Form/*`, `Table/*`)
-  - Consumers: `apps/web/src/pages/manage/blog/index.vue`, `apps/web/src/modules/blog/composables/useBlogManagement.ts`
-  - Strong coupling: `useBlogManagement` and `/blogs` contract
 - `ChartsCard` (`ChartsCard/*`)
   - Consumers: `apps/web/src/pages/manage/charts/index.vue`
   - Currently admin/dashboard-owned
@@ -85,7 +81,7 @@ These are historical cleanup records, not current migration targets. Remaining f
 1. P1.20 completed: orphan/demo artifacts and dead imports have been cleaned.
 2. Move feature-owned components into matching feature modules first:
    - `aigc`: `ChannelCard`
-   - `manage/blog`: `Form`, `Table`
+   - `manage/blog`: `Form`, `Table` moved in P1.21 to `apps/web/src/modules/blog/ui/manage`
    - `admin/charts`: `ChartsCard`
    - `video`: `Video`
    - `home`: `WeatherCard`

@@ -136,6 +136,21 @@ Current categories include:
 
 No broad rewrite occurred in this round; only classification documentation was added.
 
+### P1.21 Blog Management Feature-Owned UI Ownership Closure - Completed
+
+`Form` and `Table` component ownership for the blog management page is now closed inside the blog module:
+
+- `apps/web/src/components/Form/*` -> `apps/web/src/modules/blog/ui/manage/SunForm.vue` + `formTypes.ts`
+- `apps/web/src/components/Table/*` -> `apps/web/src/modules/blog/ui/manage/SunTable.vue` + `tableTypes.ts`
+- `apps/web/src/pages/manage/blog/index.vue` now imports module-owned UI components directly.
+- `apps/web/src/modules/blog/composables/useBlogManagement.ts` now imports module-owned management UI types.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
 ## Agent Division
 
 - Main Codex owns architecture direction, task slicing, integration decisions,

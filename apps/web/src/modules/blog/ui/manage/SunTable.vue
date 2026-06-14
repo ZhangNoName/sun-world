@@ -12,7 +12,7 @@ import {
   DEFAULT_TABLE_OPTIONS,
   SunTableProps,
   CLOUMN_WIDTH,
-} from './type'
+} from './tableTypes'
 import { getDataByPage } from '@/service/manageRequest'
 
 const props = withDefaults(defineProps<SunTableProps>(), {

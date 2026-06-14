@@ -1,7 +1,7 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { FormItem } from '@/components/Form/type'
-import type { SunTableColumn } from '@/components/Table/type'
+import type { FormItem } from '@/modules/blog/ui/manage/formTypes'
+import type { SunTableColumn } from '@/modules/blog/ui/manage/tableTypes'
 import { useBlogBaseData } from './useBlogBaseData'
 
 const BlogSearchFormData: FormItem[] = [

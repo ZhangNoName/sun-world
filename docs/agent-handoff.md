@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.20 completed (orphan/demo component cleanup); continuing with feature-owned component migrations next.
+- Current status: P1.21 in-progress/just-completed for blog management Form/Table ownership closure; next focus is remaining feature-owned UI moves (`ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`).
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -215,8 +215,31 @@
       - Passed.
     - `pnpm -C apps/web build`
       - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
+- P1.21 completed: blog management feature-owned UI moved into `apps/web/src/modules/blog/ui/manage`.
+  - Migrated component/type files:
+    - `apps/web/src/components/Form/index.vue` -> `apps/web/src/modules/blog/ui/manage/SunForm.vue`
+    - `apps/web/src/components/Form/type.ts` -> `apps/web/src/modules/blog/ui/manage/formTypes.ts`
+    - `apps/web/src/components/Table/index.vue` -> `apps/web/src/modules/blog/ui/manage/SunTable.vue`
+    - `apps/web/src/components/Table/type.ts` -> `apps/web/src/modules/blog/ui/manage/tableTypes.ts`
+  - Updated usages:
+    - `apps/web/src/pages/manage/blog/index.vue`
+    - `apps/web/src/modules/blog/composables/useBlogManagement.ts`
+  - Removed old directories:
+    - `apps/web/src/components/Form`
+    - `apps/web/src/components/Table`
+  - `docs/architecture/frontend-shared-ui-classification.md` and
+    `docs/architecture/frontend-module-extraction-strategy.md` updated for P1.21 closure.
+  - Verification:
+    - `rg "@/components/(Form|Table)|components/Form|components/Table|SunForm|SunTable|FormItem|SunTableColumn" apps/web/src -n`
+      - Passed; old `@/components/Form` / `@/components/Table` references are gone, and remaining `SunForm` / `SunTable` matches point at module-owned paths.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings only on touched files).
 - Next step:
-  - P1.21: continue with feature-owned component migrations (e.g., `Form`, `Table`, `ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
+  - P1.22: continue with remaining feature-owned component migrations (`ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

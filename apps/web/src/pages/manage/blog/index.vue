@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import SunForm from '@/components/Form/index.vue'
-import SunTable from '@/components/Table/index.vue'
+import SunForm from '@/modules/blog/ui/manage/SunForm.vue'
+import SunTable from '@/modules/blog/ui/manage/SunTable.vue'
 import { onMounted } from 'vue'
 import { useBlogManagement } from '@/modules/blog/composables/useBlogManagement'
 
