@@ -1,7 +1,7 @@
-import { ElementManager } from '@/elements/elementManager'
-import { InputManager } from '@/input/inputManager'
-import ViewportState from '@/viewport/viewport'
-import { CursorManager } from '@/cursor/cursorManager'
+import { ElementManager } from "../elements/elementManager"
+import { InputManager } from "../input/inputManager"
+import ViewportState from "../viewport/viewport"
+import { CursorManager } from "../cursor/cursorManager"
 
 export type ToolName =
   | 'rect'

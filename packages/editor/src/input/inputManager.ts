@@ -1,4 +1,4 @@
-import { SWEditor } from '@/editor'
+import { SWEditor } from "../editor"
 
 /**
  * InputManager

@@ -1,4 +1,4 @@
-import { Point } from '@/types/common.type'
+import { Point } from "../types/common.type"
 
 export class Transformer {
   scale = 1

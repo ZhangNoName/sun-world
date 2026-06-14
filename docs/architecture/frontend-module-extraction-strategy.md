@@ -100,11 +100,26 @@ Verification:
 - confirm `packages/editor/dist/index.d.ts` exists
 - confirm `apps/web` still typechecks through the package public entry
 
-### P1.18 Shared UI Classification
+### P1.18 Editor Source Alias Cleanup - Completed
 
-Before or alongside shared UI classification, remove the temporary
-`apps/web/tsconfig.json` editor-source fallback alias once editor internals no
-longer require app-level `@/*` resolution during source type checks.
+The temporary `apps/web/tsconfig.json` editor-source fallback alias has been
+removed. `apps/web` now maps `@/*` only to its own `src/*`, while
+`@sun-world/editor` remains an explicit source public-entry mapping during
+local monorepo type checks.
+
+To make that safe, all `packages/editor/src` imports that used the editor-local
+`@/...` alias were rewritten to package-relative imports. This keeps editor
+internal path resolution inside the editor package instead of making the web app
+resolve editor internals.
+
+Verification:
+
+- `rg "@/" packages/editor/src -n`
+- `pnpm -C packages/editor build`
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+
+### P1.19 Shared UI Classification
 
 Classify `apps/web/src/components` into:
 

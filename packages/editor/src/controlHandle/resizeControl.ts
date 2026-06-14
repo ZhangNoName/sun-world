@@ -1,6 +1,6 @@
 import { BaseControl } from "./control";
-import { ICursor } from "@/cursor/cursorManager";
-import { IBox, IPoint } from "@/types/common.type";
+import { ICursor } from "../cursor/cursorManager";
+import { IBox, IPoint } from "../types/common.type";
 
 export class ResizeControl extends BaseControl {
   protected size = 10;

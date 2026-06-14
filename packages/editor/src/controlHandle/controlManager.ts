@@ -1,4 +1,4 @@
-import { IBox, IPoint } from "@/types/common.type"
+import { IBox, IPoint } from "../types/common.type"
 import { BaseControl } from "./control"
 import { CornerControl } from "./cornerControl"
 import { ResizeControl } from "./resizeControl"

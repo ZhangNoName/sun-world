@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.17 completed (editor package public type boundary alignment) and ready for
+- Current status: P1.18 completed (editor source alias cleanup in `apps/web`) and ready for
   final verification/commit review.
 - Current architecture decision:
   - New module extraction strategy is documented in
@@ -164,6 +164,13 @@
     - added `packages/editor/src/public-api.ts` and re-exported it from `packages/editor/src/index.ts`.
     - `packages/editor/package.json` `types`/`exports['.'].types` now target `./dist/index.d.ts`.
     - `apps/web/tsconfig.json` maps `@sun-world/editor` to `../../packages/editor/src/index.ts` and adds editor `@/*` fallback alias for clean source-level type checks.
+- P1.18 completed: editor source alias boundary cleanup for `apps/web`.
+  - Rewrote all `packages/editor/src` imports that used `@/...` alias to package-relative imports.
+  - Removed the editor fallback from `apps/web/tsconfig.json`:
+    - changed `"@/*": ["./src/*", "../../packages/editor/src/*"]`
+    - to `"@/*": ["./src/*"]`
+  - Kept `"@sun-world/editor": ["../../packages/editor/src/index.ts"]` unchanged so editor imports remain explicit.
+  - Verified `packages/editor` can build and web typecheck/build can run without the temporary editor-source fallback.
 - Verification:
   - `pnpm -C packages/editor build`
     - Passed; generated `packages/editor/dist/index.d.ts`.
@@ -173,22 +180,30 @@
     - Passed (existing third-party Sass/Vite deprecation warnings remain).
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
+  - `rg "@/" packages/editor/src -n`
+    - no matches (excluding comments left in untouched files).
+  - `pnpm -C packages/editor build`
+    - Passed.
+  - `pnpm -C apps/web exec vue-tsc --noEmit`
+    - Passed.
+  - `pnpm -C apps/web build`
+    - Passed (existing deprecation warnings only).
   - `rg "public-api\\.d\\.ts|@sun-world/editor" packages/editor apps/web docs/agent-handoff.md -n`
     - `public-api.d.ts` removed from active package contract; web editor mapping now uses `src/index.ts`.
-  - Review: judge review had no blocking findings for P1.17.
+  - Review: no blocking findings; P1.18 alias cleanup unblocks app-level editor source fallback removal.
 - Next step:
-  - P1.18: tighten package `types`/exports publication baseline and run a clean environment validation (`rm -rf node_modules`, reinstall, and verify web/editor typecheck/build without editor-source alias fallbacks).
+  - P1.19: classify `apps/web/src/components` into app shell primitives,
+    shared UI primitives, and feature-owned components before moving more UI
+    files.
 - Remaining risks:
-  - `apps/web/tsconfig.json` currently includes a type-checking fallback alias
-    `@/* -> ../../packages/editor/src/*`; this should be reviewed if editor package
-    internal alias strategy changes.
-  - `InputBindingManager` same-id replace semantics remains deliberate; if later we need multi-binding rules per id, we need a new merge strategy.
+  - `InputBindingManager.addBinding()` same-id replace semantics remains
+    deliberate; if later we need multiple runtime rules per id, we need a new
+    merge strategy.
   - `packages/editor/dist/index.d.ts` is canonical now, but package API surface remains a partial boundary until full package-owned consumer-facing type contract is validated end-to-end.
   - Future global/runtime augmentations should prefer external-module + `declare global` + module-augmentation pattern, rather than script-mode `declare module '@vue/runtime-core'`.
   - `packages/icons/dist` is expected as build output and remains ignored/untracked for now; `@sun-world/icons` web alias still points to source during this phase.
   - `packages/icons` DTS generation no longer covers `src/App.vue`/demo files; it is now scoped to `src/index.ts` and `src/icons/**`.
   - `packages/icons` DTS include currently targets only `src/index.ts` and `src/icons/**`; if future public exports are added from `src/type.ts`, `src/constant.ts`, or other modules, extend dts include/exports together to avoid coverage gaps.
-  - `InputBindingManager.addBinding()` uses same-id replace semantics by design; if future features require multiple runtime rules per id, we should rework the merge/lookup strategy instead of restoring append behavior.
 
 ## Archived Handoff History
 

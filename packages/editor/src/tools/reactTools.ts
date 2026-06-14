@@ -8,11 +8,11 @@
  *
  * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
  */
-import type { ElementManager } from '@/elements/elementManager'
+import type { ElementManager } from "../elements/elementManager"
 import { RectElement } from '../elements/react'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../viewport/viewport"
 import { ElementType } from '../elements/element.config'
 import { composeTRS, setTranslation, translate } from '../utils/matrix'
 
