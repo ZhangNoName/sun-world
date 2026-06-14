@@ -58,6 +58,15 @@ export interface AppModule {
 
 The router is assembled from module manifests through `collectModuleRoutes()`. Adding a new module means creating a manifest — no edits to the core route list are needed.
 
+## Module Extraction Roadmap / 模块可抽离路线
+
+- 阶段 A：先在 `apps/web/src` 内完成模块化。先实现模块边界，再评估 package 化。
+- 模块边界应包括 `pages`、`api`、`types`、`composables`、`ui`、`adapters`，并保持边界内职责单一。
+- Blog 子域建议按以下面向拆分：`list`、`reader`、`authoring`、`cards`、`catalog`、`api`、`adapters`、`theme`。
+- Package 化前置条件（P1+）：禁止依赖 `@/pages` 与 `@/type`，禁止依赖全局 provide/inject 作为领域状态来源，禁止依赖 app 私有 CSS（`@/assets`/`layout` 内样式）。
+- 本轮 P0 已完成：`BlogCardProps`、`CatalogItemType`、`VditorTreeItemType` 已迁入并从 `apps/web/src/modules/blog/types.ts` 被业务消费者引用。
+- 兼容说明：`apps/web/src/type.ts` 中对应类型暂未删除，当前阶段保留为兼容层；后续再执行 `alias/re-export` 收口或移除。
+
 ## SEO / Head
 
 - Powered by `@unhead/vue` (Phase 1: client-side head management only).
