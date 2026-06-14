@@ -35,6 +35,22 @@
   - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
     - category formatter resolves via current `categoryList`.
     - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
+  - P1.7 completed: blog management-specific configuration/logic moved to module composable:
+    - added `apps/web/src/modules/blog/composables/useBlogManagement.ts` to own management page concerns:
+      - `blogSearchFormData` and internal `BlogTableColumns`
+      - `useBlogBaseData` loading for `categoryList` / `tagList`
+      - formatter-augmented `blogTableColumns`
+      - `form`, `rules`, `formRef`, `onSubmit`, `onReset`
+      - `initializeBlogManagement()` with existing error log path
+    - `apps/web/src/pages/manage/blog/index.vue` now acts as page shell:
+      - keeps template/style structure with `SunForm` + `SunTable`
+      - `onMounted` calls `initializeBlogManagement()`
+      - binds composable outputs only
+    - removed `apps/web/src/pages/manage/blog/data.ts` after migrating references.
+    - review outcome: no blocking findings; review follow-ups applied:
+      - `rules` aligned to `title`
+      - `formRef` adapted to component expose path (`formRef?.formRef?.validate/resetFields`)
+      - `blogTableColumns` typed as `ComputedRef<SunTableColumn[]>`
   - P1.5 completed: reader logic extraction into `apps/web/src/modules/blog/composables/useBlogReader.ts`:
     - moved blog detail loading, Vditor preview render, catalog extraction, and derived states for:
       - `blogPreview`
@@ -77,7 +93,7 @@
     - Not introduced by this P1.6 change; dependency resolution risk is logged for subsequent build environment verification.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - P1.7: continue authoring boundary closure for edit/update capabilities, or migrate/manage blog table/list into module-owned boundaries; prefer small reviewable slices.
+  - P1.8: first, stabilize frontend build env (`web-vitals` resolution/dependency state), then continue migrating table/data adapter concerns for blog management in small, low-risk slices.
 
 ## Archived Handoff History
 
