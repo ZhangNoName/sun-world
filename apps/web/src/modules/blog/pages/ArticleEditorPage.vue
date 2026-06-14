@@ -1,80 +1,28 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { ElMessage, ElInput, ElSelect, ElOption } from 'element-plus'
+import { onMounted } from 'vue'
+import { ElInput, ElSelect, ElOption } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
-import { BlogEditorClass } from '@/blogEditor'
-import { createBlog } from '@/modules/blog/api'
-import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
-import { getBlogErrorMessage } from '@/modules/blog/errors'
-import type { CreateBlogPayload } from '@/modules/blog/types'
+import { useBlogAuthoring } from '@/modules/blog/composables/useBlogAuthoring'
 
 defineProps({
   id: { type: String, default: '' },
 })
 
-const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
-
-const editorEle = ref<HTMLElement | null>(null)
-const blogWordCount = ref(0)
-const blogEditor = ref<BlogEditorClass>(new BlogEditorClass())
-const blogCategory = ref('')
-const blogTag = ref<string[]>([])
-const title = ref('')
-const saving = ref(false)
-
-const saveBlog = async () => {
-  if (saving.value) return
-  if (title.value.trim() === '') {
-    ElMessage.error('标题不能为空')
-    return
-  }
-
-  const content = blogEditor.value.getContent() || ''
-  const tags = blogTag.value.map((tagId) => {
-    const item = tagList.find((i) => String(i.id) === String(tagId))
-    return item
-      ? tagId
-      : {
-          name: tagId.toString(),
-        }
-  })
-
-  const params: CreateBlogPayload = {
-    title: title.value.trim(),
-    content,
-    abstract: content.substring(0, 100),
-    author: 'test',
-    category: blogCategory.value,
-    tag: tags,
-  }
-
-  saving.value = true
-  try {
-    await createBlog(params)
-    ElMessage.success('保存成功')
-  } catch (error) {
-    ElMessage.error(getBlogErrorMessage(error))
-  } finally {
-    saving.value = false
-  }
-}
+const {
+  editorEle,
+  blogWordCount,
+  blogCategory,
+  blogTag,
+  title,
+  saving,
+  categoryList,
+  tagList,
+  initializeAuthoring,
+  saveBlog,
+} = useBlogAuthoring()
 
 onMounted(() => {
-  loadBlogBaseData().catch((error) => {
-    console.error('获取博客基础数据失败:', error)
-  })
-
-  if (!editorEle.value) return
-
-  blogEditor.value.init(editorEle.value)
-  ;(window as unknown as { blogEditor?: BlogEditorClass }).blogEditor =
-    blogEditor.value
-
-  blogEditor.value.setConfig({
-    input: (value) => {
-      blogWordCount.value = value.length
-    },
-  })
+  initializeAuthoring()
 })
 </script>
 

@@ -48,17 +48,36 @@
       - `articleCanonical`
     - `BlogDetailPage` keeps page responsibilities (route id handling, SEO/JSON-LD registration, error prompts, layout/template rendering).
     - review outcome: no blocking findings; `wordCount` is now typed as `ComputedRef<number>`.
+  - P1.6 completed: authoring logic extraction into `apps/web/src/modules/blog/composables/useBlogAuthoring.ts`:
+    - moved blog editor flow into module composable, including:
+      - base data loading for authoring page
+      - editor instance creation and initialization
+      - `window.blogEditor` debug attach
+      - word count tracking
+      - title/category/tag state
+      - save dedupe guard
+      - title-empty validation
+      - tag normalization and `CreateBlogPayload` composition
+      - `createBlog` invoke + success/error feedback
+    - `ArticleEditorPage.vue` now behaves as page shell:
+      - keeps props/template/styles
+      - `onMounted` calls `initializeAuthoring()`
+      - binds actions/state only from composable
+    - review outcome: no blocking findings; typing follow-up applied:
+      - `blogCategory: string | number`
+      - `blogTag: Array<string | number>`
+      - `useBlogAuthoring(): BlogAuthoringViewModel`
 - Verification:
-  - Ran the requested rg command set and confirmed no remaining old inject/provide or deleted-bridge usage in source code.
-  - `rg -n "loadBlogBaseData\(\)" ...`
-    - Four call sites updated with explicit error handling on fire-and-forget invocations.
   - `git diff --check`
     - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
   - `pnpm -C apps/web exec vue-tsc --noEmit`
     - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
+  - `pnpm -C apps/web build`
+    - Failed due to existing build-time dependency resolution issue: Rollup/Vite cannot resolve `web-vitals` imported by `apps/web/src/shared/telemetry/index.ts`.
+    - Not introduced by this P1.6 change; dependency resolution risk is logged for subsequent build environment verification.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - P1.6 first priority: extract blog authoring into `useBlogAuthoring`-style composable from `ArticleEditorPage.vue` (editor init, payload normalization, save flow/state).
+  - P1.7: continue authoring boundary closure for edit/update capabilities, or migrate/manage blog table/list into module-owned boundaries; prefer small reviewable slices.
 
 ## Archived Handoff History
 
