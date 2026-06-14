@@ -10,5 +10,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["index.ts", "components/**/*.ts", "components/**/*.vue"]
+  "include": ["src/index.ts", "src/icons/**/*", "src/type.ts", "src/**/*.d.ts"]
 }

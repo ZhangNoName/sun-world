@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.11 completed (editor boundary isolation) and continues toward deeper module decoupling.
+- Current status: P1.13 completed (icons package build/type boundary) and we continue toward deeper module decoupling.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -120,6 +120,12 @@
     - Moved `ImportMetaEnv`, `ImportMeta`, and `QC` declarations under `declare global`.
     - Kept `@vue/runtime-core` augmentation focused on `ComponentCustomProperties.$t`.
     - Kept `virtual:svg-icons-register` and `virtual:svg-icons-names` module declarations.
+  - P1.13 completed: improved `packages/icons` package build/type boundary.
+    - Fixed `packages/icons/tsconfig.json` include set to match source layout under `src` and include Vue files for declaration generation.
+    - Added package `exports` map in `packages/icons/package.json` with `.` entry exposing `types/import/require/default` and marked package `sideEffects: false` for tree-shaking friendliness.
+    - `pnpm -C packages/icons build` now emits `packages/icons/dist/types/index.d.ts`.
+    - Web remains temporarily aliased to `packages/icons/src` in web config; no web resolver switch in this round.
+    - DTS generation is now scoped to `src/index.ts` + `src/icons/**`; demo app files such as `src/App.vue` are no longer in declaration emit scope.
 - Verification:
   - `git diff --check`
     - `LF to CRLF` warning only on touched files.
@@ -134,6 +140,10 @@
 - Remaining risks:
   - shim is a temporary API subset; if new editor symbols are used by web, types should be extended.
   - Future global/runtime augmentations should prefer external-module + `declare global` + module-augmentation pattern, rather than script-mode `declare module '@vue/runtime-core'`.
+  - `packages/icons/dist` is expected as build output and remains ignored/untracked for now; `@sun-world/icons` web alias still points to source during this phase.
+  - `packages/icons` DTS generation no longer covers `src/App.vue`/demo files; it is now scoped to `src/index.ts` and `src/icons/**`.
+  - `packages/icons` DTS include currently targets only `src/index.ts` and `src/icons/**`; if future public exports are added from `src/type.ts`, `src/constant.ts`, or other modules, extend dts include/exports together to avoid coverage gaps.
+
 - Next step:
   - Keep `apps/web/src/types/sun-world-editor.d.ts` as a temporary boundary.
   - After `packages/editor` publishes stable package types, migrate web back to package exports/dist types and remove the shim.

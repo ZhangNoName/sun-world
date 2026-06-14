@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       dts({
         outDir: 'dist/types',
         insertTypesEntry: true,
-        include: ['src'],
+        include: ['src/index.ts', 'src/icons/**'],
       }),
     ],
 
