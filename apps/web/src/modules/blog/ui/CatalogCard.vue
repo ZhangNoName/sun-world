@@ -4,8 +4,7 @@ import type {
   CatalogItemType,
   VditorTreeItemType,
 } from '@/modules/blog/types'
-// import { CatalogListData } from './index.data'
-import CatalogItem from './CatalogItem/index.vue'
+import CatalogItem from './CatalogItem.vue'
 import Vditor from 'vditor'
 
 const prop = defineProps<{

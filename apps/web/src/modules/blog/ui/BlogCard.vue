@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Tag from '../Tag/index.vue'
+import Tag from '@/components/Tag/index.vue'
 import type { BlogCardProps } from '@/modules/blog/types'
 import { useRouter } from 'vue-router'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'

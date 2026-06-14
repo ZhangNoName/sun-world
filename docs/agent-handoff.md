@@ -17,6 +17,15 @@
   - P1.2 completed: `SelfInfoCard` ownership is closed by moving component into blog module UI:
     - moved from shared `components` to `apps/web/src/modules/blog/ui/SelfInfoCard.vue`
     - both usage sites now import explicitly (`apps/web/src/pages/home/index.vue`, `apps/web/src/modules/blog/pages/BlogDetailPage.vue`)
+  - P1.3 completed: Blog UI ownership is closed:
+    - `apps/web/src/components/BlogCard/index.vue` -> `apps/web/src/modules/blog/ui/BlogCard.vue`
+    - `apps/web/src/components/CatalogCard/index.vue` -> `apps/web/src/modules/blog/ui/CatalogCard.vue`
+    - `apps/web/src/components/CatalogCard/CatalogItem/index.vue` -> `apps/web/src/modules/blog/ui/CatalogItem.vue`
+    - removed production-orphaned `apps/web/src/components/CatalogCard/index.data.ts`
+    - usage points now import explicitly, and legacy `apps/web/src/components.d.ts` global declarations were cleaned:
+      - `BlogCard`
+      - `CatalogCard`
+      - `CatalogItem`
   - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
     - category formatter resolves via current `categoryList`.
     - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
@@ -30,7 +39,7 @@
     - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - Continue blog UI boundary work: move BlogCard/CatalogCard ownership into explicit module boundaries (reader/list/authoring surfaces), and further split adapters/composables as data flows tighten.
+  - Continue splitting blog reader/list/authoring into adapters/composables boundaries and keep tightening module layers.
 
 ## Archived Handoff History
 

@@ -48,7 +48,7 @@ const changeOpen = () => {
   </template>
 </template>
 <script lang="ts">
-import CatalogListItem from './index.vue'
+import CatalogListItem from './CatalogItem.vue'
 </script>
 
 <style scoped>

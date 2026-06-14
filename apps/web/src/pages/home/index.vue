@@ -1,7 +1,7 @@
 <script setup lang="ts" name="content">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
-import BlogCard from '@/components/BlogCard/index.vue'
+import BlogCard from '@/modules/blog/ui/BlogCard.vue'
 import SelfInfoCard from '@/modules/blog/ui/SelfInfoCard.vue'
 import WeatherCard from '@/components/WeatherCard/index.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'

@@ -8,9 +8,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    BlogCard: typeof import('./components/BlogCard/index.vue')['default']
-    CatalogCard: typeof import('./components/CatalogCard/index.vue')['default']
-    CatalogItem: typeof import('./components/CatalogCard/CatalogItem/index.vue')['default']
     ChannelCard: typeof import('./components/ChannelCard/index.vue')['default']
     CutomBtn: typeof import('./components/CutomBtn.vue')['default']
     DIalogCard: typeof import('./components/DIalogCard/index.vue')['default']
