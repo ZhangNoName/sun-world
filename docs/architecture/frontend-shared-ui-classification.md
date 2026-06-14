@@ -1,4 +1,4 @@
-# Frontend Shared UI Classification (P1.19)
+# Frontend Shared UI Classification (P1.20)
 
 This document records a durable ownership baseline before further `apps/web/src/components` moves.
 It is used to prevent `shared/ui` from becoming an uncontrolled catch-all.
@@ -37,7 +37,7 @@ explicitly removed from feature migration paths:
 - `Waterfall` (`Waterfall/waterfall.vue`)
   - Consumers: `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
   - Generic layout component but currently used by blog feed only
-  - Must clean demo/test dependency and legacy comments before promotion
+  - Demo/test dependency was removed in P1.20; legacy comments should still be cleaned before promotion
 
 ### 3. Feature-owned components (move with feature modules first)
 
@@ -67,22 +67,22 @@ Bound to a concrete feature surface and should only be promoted shared after mod
 
 These may become package candidates only if their dependency surface stabilizes outside app-only callers.
 
-### 5. Orphans / demo data (remove/cleanup before moves)
+### 5. Removed or cleaned demo assets (P1.20)
 
-- `DIalogCard/index.vue` (currently empty)
-- `CutomBtn.vue` (unused typo-named button stub)
-- `LoadMore/loadMopre.vue` (unused)
-- `Waterfall/useWaterfall.ts` (empty)
-- `Waterfall/test.ts` (demo type/data payload)
-- `Waterfall/waterfall.vue` currently imports demo/test data and must be
-  decoupled before being promoted to `shared/ui`
-- `Form/testData.ts` (demo data fixture)
+- Removed `DIalogCard/index.vue` (empty)
+- Removed `CutomBtn.vue` (unused typo-named button stub)
+- Removed `LoadMore/loadMopre.vue` (unused)
+- Removed `Waterfall/useWaterfall.ts` (empty)
+- Removed `Waterfall/test.ts` (demo type/data payload)
+- Cleaned `Waterfall/waterfall.vue` so it no longer imports demo/test data; it now uses a local
+  `WaterfallItem` type
+- Removed `Form/testData.ts` (demo data fixture)
 
-These should be archived/removed or replaced before any broader move so shared/ui does not absorb dead artifacts.
+These are historical cleanup records, not current migration targets. Remaining feature-owned moves still use explicit module ownership before any `shared/ui` promotions.
 
 ## Safe next migration sequence
 
-1. Clean orphan/demo artifacts and update declarations/imports accordingly.
+1. P1.20 completed: orphan/demo artifacts and dead imports have been cleaned.
 2. Move feature-owned components into matching feature modules first:
    - `aigc`: `ChannelCard`
    - `manage/blog`: `Form`, `Table`

@@ -1,8 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.19 completed (shared UI classification baseline) and ready for
-  final verification/commit review.
+- Current status: P1.20 completed (orphan/demo component cleanup); continuing with feature-owned component migrations next.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -175,6 +174,13 @@
   - Added `docs/architecture/frontend-shared-ui-classification.md` with source-of-truth ownership mapping for
     `apps/web/src/components` across app-shell primitives, shared UI candidates, feature-owned components, package candidates, and orphan/demo artifacts.
   - Updated `docs/architecture/frontend-module-extraction-strategy.md` P1.19 status to reference the new baseline.
+- P1.20 completed: orphan/demo and demo fixture cleanup in `apps/web/src/components`.
+  - Deleted orphan/dead assets: `DIalogCard/index.vue`, `CutomBtn.vue`,
+    `LoadMore/loadMopre.vue`, `Waterfall/useWaterfall.ts`, `Waterfall/test.ts`,
+    `Form/testData.ts` after decoupling `Waterfall` from demo payload import.
+  - Removed deleted legacy global declarations from `apps/web/src/components.d.ts`
+    (`CutomBtn`, `DIalogCard`).
+  - `apps/web/src/components/Waterfall/waterfall.vue` now defines `WaterfallItem` locally.
 - Verification:
   - `pnpm -C packages/editor build`
     - Passed; generated `packages/editor/dist/index.d.ts`.
@@ -194,14 +200,19 @@
     - Passed (existing deprecation warnings only).
   - `rg "public-api\\.d\\.ts|@sun-world/editor" packages/editor apps/web docs/agent-handoff.md -n`
     - `public-api.d.ts` removed from active package contract; web editor mapping now uses `src/index.ts`.
+    - P1.20 doc/asset cleanup verification passed by removing dangling component references.
   - Review: no blocking findings; P1.18 alias cleanup unblocks app-level editor source fallback removal.
   - P1.19 review: no blocking findings; doc nits for status, verification
     indentation, and Waterfall demo/test risk were addressed.
+  - P1.20 verification:
+    - `rg "DIalogCard|CutomBtn|LoadMore|loadMopre|Waterfall/test|useWaterfall|Form/testData|TestList" apps/web/src -n`
+      - no active import/usage references remain; only historical comments already cleaned in touched files.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
 - Next step:
-  - P1.20+: execute migration according to `docs/architecture/frontend-shared-ui-classification.md` in safe order:
-    1) clear orphan/demo cleanup,
-    2) move feature-owned components into feature modules,
-    3) then promote shared primitives into `shared/ui`.
+  - P1.21: continue with feature-owned component migrations (e.g., `Form`, `Table`, `ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

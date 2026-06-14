@@ -53,8 +53,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
-// 假设 WaterfallItem 接口和 TestList 已经定义并导出
-import { TestList, WaterfallItem } from './test'
+interface WaterfallItem {
+  id?: string | number
+  title: string
+  author: string
+  likes: number
+  cover_url: string
+  aspect_ratio: number
+}
 
 // ... Props 定义保持不变
 
