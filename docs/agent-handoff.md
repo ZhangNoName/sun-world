@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: continue frontend modular platform architecture.
-- Current status: P1.8 completed; frontend build verification environment is stabilized for this modularization track.
+- Current status: P1.9 completed; continue frontend modular platform architecture with build still green and focused type-noise reduction.
 - Scope completed in this stage:
   - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
   - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
@@ -90,17 +90,26 @@
     - `pnpm -C apps/web build` now passes.
     - `useBlogAuthoring` switched to `shallowRef<BlogEditorClass>` for editor instance ownership.
     - `useBlogManagement` now calls exposed `validate` / `resetFields` through function-level optional chaining.
+  - P1.9 completed: narrowed remaining page-level vue-tsc noise while keeping behavior unchanged:
+    - `apps/web/src/pages/manage/charts/index.vue`
+      - chart cards are rendered with `v-for` using existing `chart.options`.
+      - chart options are constrained with `import type { EChartsOption } from 'echarts'` to avoid runtime type imports.
+    - `apps/web/src/pages/video/video.page.vue`
+      - added local type `ArtplayerWithHls = Artplayer & { hls?: Hls }` so `art.hls` runtime extension is safely typed.
+      - HLS init/destroy flow behavior is unchanged.
+    - review outcome: no blocking findings; chart page keeps 4 cards, video page cast is localized and behavior-safe.
 - Verification:
   - `git diff --check`
     - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Command runs and surfaces existing project-level type debt (`$t`, `QC`, `packages/editor`) unrelated to this modularization cycle.
-    - Filtering `useBlogAuthoring|useBlogManagement|TS2741|TS2722` has no hits in current output.
+    - Command still has blocking type debt from `packages/editor` path/type issues in the current environment.
+    - Filtered check `pages/manage/charts|video.page|TS2345|TS2322|destroy` now only shows `packages/editor` old `TS2345`.
   - `pnpm -C apps/web build`
     - Passed.
 - Next step:
-  - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - P1.9: prefer low-risk type-baseline hardening first (Vue i18n `$t` global typing, `QC` global declaration, etc.), then continue remaining `modules/blog` adapters while keeping build green.
+  - Continue moduleization with low-risk slices while keeping `build` green:
+    - P1.10: isolate/fix `packages/editor` path/type debt so `vue-tsc` cleanly includes current project scope.
+    - Continue migrating blog list/reader/authoring pieces into `modules/blog/adapters`/`modules/blog/composables` if desired.
 
 ## Archived Handoff History
 

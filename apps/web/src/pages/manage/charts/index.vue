@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 import ChartsCard from '@/components/ChartsCard/index.vue'
+import type { EChartsOption } from 'echarts'
+
 const statistics = ref([
   { title: 'Statistic 1', value: 100 },
   { title: 'Statistic 2', value: 200 },
@@ -8,28 +10,28 @@ const statistics = ref([
   { title: 'Statistic 4', value: 400 },
 ])
 
-const charts = ref([
+const charts: { options: EChartsOption }[] = [
   {
     options: {
       /* chart options for chart 1 */
-    },
+    } as EChartsOption,
   },
   {
     options: {
       /* chart options for chart 2 */
-    },
+    } as EChartsOption,
   },
   {
     options: {
       /* chart options for chart 3 */
-    },
+    } as EChartsOption,
   },
   {
     options: {
       /* chart options for chart 4 */
-    },
+    } as EChartsOption,
   },
-])
+]
 </script>
 
 <template>
@@ -45,13 +47,11 @@ const charts = ref([
       </div>
     </div>
     <div class="charts-grid">
-      <ChartsCard />
-      <ChartsCard />
-      <ChartsCard />
-      <ChartsCard />
-      <!-- <div class="chart-item" v-for="(chart, index) in charts" :key="index">
-        <div :options="chart.options"></div>
-      </div> -->
+      <ChartsCard
+        v-for="(chart, index) in charts"
+        :key="index"
+        :options="chart.options"
+      />
     </div>
   </div>
 </template>

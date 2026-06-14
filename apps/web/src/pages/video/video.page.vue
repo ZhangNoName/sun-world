@@ -17,6 +17,7 @@ import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import artplayerPluginDocumentPip from 'artplayer-plugin-document-pip'
 const route = useRoute()
 const player = shallowRef<Artplayer | null>(null)
+type ArtplayerWithHls = Artplayer & { hls?: Hls }
 
 // 从路由参数获取视频 URL，如果没有则使用默认值
 const videoUrl = ref<string>(
@@ -105,17 +106,18 @@ const option = reactive<Partial<Option>>({
   ],
   customType: {
     m3u8: function playM3u8(video, url, art) {
+      const player = art as ArtplayerWithHls
       if (Hls.isSupported()) {
-        if (art.hls) art.hls.destroy()
+        if (player.hls) player.hls.destroy()
         const hls = new Hls()
         hls.loadSource(url)
         hls.attachMedia(video)
-        art.hls = hls
-        art.on('destroy', () => hls.destroy())
+        player.hls = hls
+        player.on('destroy', () => hls.destroy())
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url
       } else {
-        art.notice.show = 'Unsupported playback format: m3u8'
+        player.notice.show = 'Unsupported playback format: m3u8'
       }
     },
   },
