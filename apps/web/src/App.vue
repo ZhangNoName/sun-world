@@ -1,17 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, provide, reactive, watch, inject } from 'vue'
+import { onMounted, onUnmounted, provide, watch, inject } from 'vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Ref } from 'vue'
 import SwLayout from '@/layout/layout.vue'
-import { fetchBaseData } from './util/request'
-import { fetchBlogStats } from '@/modules/blog/api'
-import type {
-  CategoryResponse,
-  StatsResponse,
-  TagResponse,
-} from '@/modules/blog/types'
-import { DEFAULT_STATS } from './util/data'
 import { useTheme } from '@/shared/design'
 
 const STORAGE_LOCALE = 'locale'
@@ -28,13 +20,6 @@ provide('locale', locale)
 
 // Route loading bar state (installed by useRouteLoading in main.ts)
 const routeLoading = inject<Ref<boolean>>('routeLoading')
-
-const tagList = reactive<TagResponse[]>([])
-const categoryList = reactive<CategoryResponse[]>([])
-const stats = reactive<StatsResponse>(DEFAULT_STATS)
-provide('tagList', tagList)
-provide('categoryList', categoryList)
-provide('stats', stats)
 
 const allClass = computed(() => 'app-container')
 
@@ -56,19 +41,8 @@ const onStorageChange = (e: StorageEvent) => {
   }
 }
 
-const getAllBaseData = async () => {
-  fetchBaseData().then((res) => {
-    tagList.splice(0, tagList.length, ...res.tags)
-    categoryList.splice(0, categoryList.length, ...res.categories)
-  })
-  fetchBlogStats().then((res) => {
-    Object.assign(stats, res)
-  })
-}
-
 onMounted(() => {
   applyLocale()
-  getAllBaseData()
   window.addEventListener('storage', onStorageChange)
 })
 onUnmounted(() => {

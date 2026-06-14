@@ -12,16 +12,15 @@ import {
 import SunForm from '@/components/Form/index.vue'
 import SunTable from '@/components/Table/index.vue'
 import { BlogTableColumns, BlogSearchFormData } from './data'
-import { inject, onMounted, ref } from 'vue'
-import type { CategoryResponse, TagResponse } from '@/modules/blog/types'
+import { onMounted, ref } from 'vue'
+import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
 // 定义表单类型
 interface BlogSearchForm {
   keyword: string
   category: string | undefined
   publishDate: string | undefined
 }
-const categoryList = inject<CategoryResponse[]>('categoryList', [])
-const tagList = inject<TagResponse[]>('tagList', [])
+const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
 // 表单数据
 const form = ref<BlogSearchForm>({
   keyword: '',
@@ -63,6 +62,10 @@ const onReset = () => {
   formRef.value?.resetFields()
 }
 onMounted(() => {
+  loadBlogBaseData().catch((error) => {
+    console.error('获取博客基础数据失败:', error)
+  })
+
   BlogTableColumns[2].formatter = categoryFormatter
   BlogTableColumns[3].formatter = tagFormatter
 })

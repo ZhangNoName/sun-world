@@ -1,22 +1,18 @@
 <script lang="ts" setup>
-import { inject, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage, ElInput, ElSelect, ElOption } from 'element-plus'
 import ZBtn from '@/components/ZBtn/index.vue'
 import { BlogEditorClass } from '@/blogEditor'
 import { createBlog } from '@/modules/blog/api'
+import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
-import type {
-  CategoryResponse,
-  CreateBlogPayload,
-  TagResponse,
-} from '@/modules/blog/types'
+import type { CreateBlogPayload } from '@/modules/blog/types'
 
 defineProps({
   id: { type: String, default: '' },
 })
 
-const categoryList = inject<CategoryResponse[]>('categoryList', [])
-const tagList = inject<TagResponse[]>('tagList', [])
+const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
 
 const editorEle = ref<HTMLElement | null>(null)
 const blogWordCount = ref(0)
@@ -64,6 +60,10 @@ const saveBlog = async () => {
 }
 
 onMounted(() => {
+  loadBlogBaseData().catch((error) => {
+    console.error('获取博客基础数据失败:', error)
+  })
+
   if (!editorEle.value) return
 
   blogEditor.value.init(editorEle.value)

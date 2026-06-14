@@ -1,23 +1,25 @@
 <script lang="ts" setup>
 import {
   computed,
-  inject,
   onBeforeUnmount,
   onMounted,
-  Ref,
   ref,
   toRefs,
-  watch,
   watchEffect,
 } from 'vue'
 import { WeChatOutLined, QQOutlined, GithubOutlined } from '@sun-world/icons'
 import { HeFengWeatherData, openGithub, CurrentLocationArea } from '@/util'
-import type { StatsResponse } from '@/modules/blog/types'
-import { DEFAULT_STATS } from '@/util/data'
+import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
 
 const prop = defineProps()
-const stats = inject<StatsResponse>('stats', DEFAULT_STATS)!
+const { stats, loadBlogBaseData } = useBlogBaseData()
 const { blog_count, category_count, tag_count, total_view_num } = toRefs(stats)
+
+onMounted(() => {
+  loadBlogBaseData().catch((error) => {
+    console.error('获取博客统计数据失败:', error)
+  })
+})
 
 const weatherIcon = computed(() => {
   // console.log(HeFengWeatherData.now.icon)

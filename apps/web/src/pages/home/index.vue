@@ -1,5 +1,5 @@
 <script setup lang="ts" name="content">
-import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
 import BlogCard from '@/components/BlogCard/index.vue'
 import SelfInfoCard from '@/components/SelfInfoCard/index.vue'
@@ -7,7 +7,7 @@ import WeatherCard from '@/components/WeatherCard/index.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
-import type { CategoryResponse, TagResponse } from '@/modules/blog/types'
+import { useBlogBaseData } from '@/modules/blog/composables/useBlogBaseData'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 import { useBreakpoint } from '@/hooks/breakpoint/breakpoint'
 import { useBlogList } from '@/modules/blog/composables/useBlogList'
@@ -20,17 +20,14 @@ import {
 
 type ListModeType = 'list' | 'waterfall'
 
-const categoryList = inject<CategoryResponse[]>('categoryList', [])
-const tagList = inject<TagResponse[]>('tagList', [])
-
+const { tagList, categoryList, loadBlogBaseData } = useBlogBaseData()
+const blogList = useBlogList(tagList, categoryList)
 const listMode = ref<ListModeType>('list')
 const leftRef = ref<HTMLElement | null>(null)
 const bottomRef = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
 const { screen } = useBreakpoint()
-const blogList = useBlogList(tagList, categoryList)
-
 usePageMeta({
   title: 'Sun World',
   description:
@@ -80,6 +77,10 @@ watch(canUseWaterfall, (enabled) => {
 })
 
 onMounted(async () => {
+  await loadBlogBaseData().catch((error) => {
+    console.error('获取博客基础数据失败:', error)
+  })
+
   try {
     await blogList.loadFirstPage()
   } catch (error) {

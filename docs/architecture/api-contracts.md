@@ -146,8 +146,9 @@ typing and path-parameter interpolation.
   types from `ApiSuccessData`.
 - `apps/web/src/modules/blog/api.ts` exposes `fetchBlogStats`,
   `fetchBlogCategories`, and `fetchBlogTags` for shared startup data.
-- `apps/web/src/util/request.ts` only composes startup category/tag fetches and
-  no longer owns endpoint contracts.
+- `apps/web/src/modules/blog/composables/useBlogBaseData.ts` composes startup base-data
+  fetches for `/base/`, `/base/blog/category`, and `/base/blog/tag`, and reuses shared typed blog
+  API contracts from `apps/web/src/modules/blog/api.ts` / `apps/web/src/modules/blog/types.ts`.
 - `apps/api/src/routers/health/health.py` exposes `/healthz` and `/readyz` as
   typed operational probes in OpenAPI. They intentionally do not use the
   business response envelope.

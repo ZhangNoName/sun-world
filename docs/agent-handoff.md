@@ -1,25 +1,30 @@
 ## Current Handoff
 
-- Goal: continue frontend modular platform architecture, now at P0.2 completion.
-- Pages migrated in this round:
-  - `apps/web/src/pages/blog/index.vue` -> `apps/web/src/modules/blog/pages/BlogDetailPage.vue`
-  - `apps/web/src/pages/article/index.vue` -> `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
-  - `apps/web/src/modules/blog/index.ts` lazy imports now use `./pages/BlogDetailPage.vue` and `./pages/ArticleEditorPage.vue`.
-- Review conclusion:
-  - Migration itself is clean and low-risk.
-  - Page moves are 100% renames.
-  - Route behavior remains unchanged (`/blog`, `/new_article`, plus meta/nav/preload semantics).
-- Verification (this round):
-  - `rg -n "@/pages/(blog|article)|pages/blog|pages/article" apps/web/src/modules apps/web/src/pages docs/agent-handoff.md docs/architecture/frontend-platform-foundation.md`
-    - No old code-path imports in `apps/web/src`; code-side references are removed.
-    - Only narrative mentions remain in docs.
+- Goal: continue frontend modular platform architecture.
+- Current status: P1-prep completed and in review-fix loop (behavior risk fixes applied).
+- Scope completed in this stage:
+  - `App.vue` no longer provides blog base data (`tagList` / `categoryList` / `stats`) at app root.
+  - New module composable `apps/web/src/modules/blog/composables/useBlogBaseData.ts` is introduced as the blog base data boundary.
+  - Blog consumers now load base data on demand via `useBlogBaseData`:
+    - `apps/web/src/pages/home/index.vue`
+    - `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
+    - `apps/web/src/pages/manage/blog/index.vue`
+    - `apps/web/src/components/SelfInfoCard/index.vue`
+  - Removed `apps/web/src/util/request.ts` and `apps/web/src/util/data.ts` after migrating usage to module ownership.
+- Review findings addressed:
+  - Home page base-data fetch no longer blocks `blogList.loadFirstPage()` on failure (error is handled and ignored for list flow).
+  - Fire-and-forget `loadBlogBaseData()` calls now have explicit `.catch(...)` handling in the four consumers.
+- Verification:
+  - Ran the requested rg command set and confirmed no remaining old inject/provide or deleted-bridge usage in source code.
+  - `rg -n "loadBlogBaseData\(\)" ...`
+    - Four call sites updated with explicit error handling on fire-and-forget invocations.
   - `git diff --check`
-    - Only CRLF line-ending warning.
+    - Warning only: LF to CRLF conversion note on touched web files (no diff format errors).
   - `pnpm -C apps/web exec vue-tsc --noEmit`
-    - Existing toolchain compatibility error remains (`Search string not found: "/supportedTSExtensions = .*(?=;)/"`), not a blocker for this migration.
-- Next step (P1 prep):
-  - Fix blog provide/inject leakage in `App.vue`.
-  - Gradually sink blog reader/authoring/list state into `modules/blog/adapters` and `modules/blog/composables`.
+    - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
+- Next step:
+  - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
+  - Resolve SelfInfoCard ownership: decide whether it belongs to the blog module or should be adapted as shared blog UI.
 
 ## Archived Handoff History
 

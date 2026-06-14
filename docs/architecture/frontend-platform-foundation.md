@@ -69,7 +69,7 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
   - `apps/web/src/pages/blog/index.vue` -> `apps/web/src/modules/blog/pages/BlogDetailPage.vue`
   - `apps/web/src/pages/article/index.vue` -> `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
   - `apps/web/src/modules/blog/index.ts` 的 lazy import 已切换为 `./pages/BlogDetailPage.vue` 与 `./pages/ArticleEditorPage.vue`。
-- 下一阶段（P1 前置）：继续处理 `App.vue` 的 blog provide/inject 泄漏；并逐步把 blog reader/authoring/list 状态下沉到 `modules/blog/adapters` 与 `modules/blog/composables`。
+- P1-prep（已完成）：`App.vue` 的 blog provide/inject 泄漏已处理，blog base 数据边界已下沉到 `modules/blog/composables/useBlogBaseData.ts`；继续推进 blog reader/list/authoring 的 UI 与 adapters/composables 分层。
 
 ## SEO / Head
 
@@ -249,8 +249,8 @@ The router is assembled from module manifests through `collectModuleRoutes()`. A
   aliases over contract-derived shapes.
 - `modules/blog/api.ts` exposes `fetchBlogStats()`, `fetchBlogCategories()`,
   and `fetchBlogTags()` through the shared typed API layer.
-- `util/request.ts` only composes startup base data and does not declare API
-  endpoint contracts.
+- `modules/blog/composables/useBlogBaseData.ts` owns base-data composition and memoized loading for `/base/`,
+  `/base/blog/category`, and `/base/blog/tag` startup composition.
 - Legacy `service/baseRequest.ts` has been removed; new consumers should import
   from `modules/blog/api` and `modules/blog/types`.
 
