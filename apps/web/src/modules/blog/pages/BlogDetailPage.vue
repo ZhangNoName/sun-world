@@ -1,67 +1,39 @@
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import SelfInfoCard from '../ui/SelfInfoCard.vue'
 import CatalogCard from '../ui/CatalogCard.vue'
 import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
-import { fetchBlogById } from '@/modules/blog/api'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
-import type { BlogDetail, VditorTreeItemType } from '@/modules/blog/types'
+import { useBlogReader } from '../composables/useBlogReader'
 import {
   buildBlogPostingJsonLd,
-  canonicalUrl,
   useJsonLd,
   usePageMeta,
 } from '@/shared/seo'
-import { formatDate } from '@/util/function'
 import { Calendar, WordCount, Comment } from '@sun-world/icons'
-// @ts-ignore
-import VditorPreview from 'vditor/dist/method.min'
 
 const route = useRoute()
+const id = computed(() => String(route.query.id || ''))
+
+const {
+  blogPreview,
+  catalog,
+  loading,
+  blogInfo,
+  articleCanonical,
+  articleDescription,
+  publishedAt,
+  commentCount,
+  wordCount,
+  loadBlog,
+} = useBlogReader(id)
 
 const iconConfig = {
   height: '1.6rem',
   width: '1.6rem',
 }
-
-const blogPreview = ref<HTMLElement | null>(null)
-const catalog = ref<VditorTreeItemType[]>([])
-const loading = ref(false)
-const blogInfo = ref<BlogDetail>({
-  author: '',
-  abstract: '',
-  byte_num: 0,
-  category: null,
-  comment_num: 0,
-  content: '',
-  created_at: '',
-  id: 0,
-  tag: [],
-  title: '',
-  updated_at: '',
-  view_num: 0,
-})
-
-const id = computed(() => String(route.query.id || ''))
-const canonicalPath = computed(() =>
-  id.value ? `/blog?id=${encodeURIComponent(id.value)}` : '/blog'
-)
-const articleCanonical = computed(() => canonicalUrl(canonicalPath.value))
-const articleDescription = computed(
-  () =>
-    blogInfo.value.abstract ||
-    blogInfo.value.title ||
-    '浏览 Sun World 的技术博客文章。'
-)
-const publishedAt = computed(() =>
-  blogInfo.value.created_at ? formatDate(blogInfo.value.created_at) : '-'
-)
-const commentCount = computed(() => blogInfo.value.comment_num ?? 0)
-const wordCount = computed(
-  () => blogInfo.value.byte_num ?? blogInfo.value.content.length
-)
 
 usePageMeta(() => ({
   title: blogInfo.value.title
@@ -88,52 +60,15 @@ useJsonLd(
   'blog-posting'
 )
 
-function getCatalog(): VditorTreeItemType[] {
-  if (!blogPreview.value) return []
-
-  const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
-  return Array.from(headers).map((header) => ({
-    text: header.textContent || '',
-    level: Number(header.tagName.charAt(1)),
-    id: header.id,
-  }))
-}
-
-async function renderPreview(content: string) {
-  await nextTick()
-  if (!blogPreview.value) return
-
-  await VditorPreview.preview(blogPreview.value, content, {
-    theme: {
-      current: 'light',
-    },
-    hljs: {
-      style: 'github',
-    },
-  })
-  catalog.value = getCatalog()
-}
-
-async function loadBlog() {
+onMounted(() => {
   if (!id.value) {
     ElMessage.error('未找到相应的博客 id')
     return
   }
 
-  loading.value = true
-  try {
-    const detail = await fetchBlogById(id.value)
-    blogInfo.value = detail
-    await renderPreview(detail.content)
-  } catch (error) {
+  loadBlog().catch((error) => {
     ElMessage.error(getBlogErrorMessage(error))
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  loadBlog()
+  })
 })
 </script>
 

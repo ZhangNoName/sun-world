@@ -35,6 +35,19 @@
   - `apps/web/src/pages/manage/blog/index.vue` no longer mutates global `BlogTableColumns[2/3].formatter`; it now uses local computed `blogTableColumns`.
     - category formatter resolves via current `categoryList`.
     - tag formatter resolves via current `tagList`, with number/string id compatibility and guard for non-array tag values.
+  - P1.5 completed: reader logic extraction into `apps/web/src/modules/blog/composables/useBlogReader.ts`:
+    - moved blog detail loading, Vditor preview render, catalog extraction, and derived states for:
+      - `blogPreview`
+      - `catalog`
+      - `loading`
+      - `blogInfo`
+      - `publishedAt`
+      - `commentCount`
+      - `wordCount`
+      - `articleDescription`
+      - `articleCanonical`
+    - `BlogDetailPage` keeps page responsibilities (route id handling, SEO/JSON-LD registration, error prompts, layout/template rendering).
+    - review outcome: no blocking findings; `wordCount` is now typed as `ComputedRef<number>`.
 - Verification:
   - Ran the requested rg command set and confirmed no remaining old inject/provide or deleted-bridge usage in source code.
   - `rg -n "loadBlogBaseData\(\)" ...`
@@ -45,7 +58,7 @@
     - Known toolchain compatibility error remains: `Search string not found: "/supportedTSExtensions = .*(?=;)/"`.
 - Next step:
   - Continue split work for `modules/blog` layers: continue separating blog list/reader/authoring UI from shared shells and move toward `modules/blog/adapters`/`modules/blog/composables`.
-  - Continue the same stream for reader/authoring by deepening adapters/composables boundaries (including optional decomposition of `BlogHomeFeed` internals), not home feed relocation.
+  - P1.6 first priority: extract blog authoring into `useBlogAuthoring`-style composable from `ArticleEditorPage.vue` (editor init, payload normalization, save flow/state).
 
 ## Archived Handoff History
 
