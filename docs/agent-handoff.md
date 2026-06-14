@@ -12,6 +12,10 @@
     bounded implementation; `判官` owns review; `阎王` is reserved for high-level
     tradeoff work; `牛头` owns Claude Code / `claude-ds` packets only when
     server-side work is useful.
+  - Agent lifecycle rule: maintain only four logical roles (`coding`, `阎王`,
+    `判官`, `牛头`), reuse existing role agents instead of spawning per
+    iteration, close completed runtime agents after integration, and reserve
+    `阎王` / `gpt-5.5` for architecture tradeoffs only.
   - Context naming decision: keep `docs/` as the durable project documentation
     root. If agent task context is moved later, introduce lowercase `.task/`
     for task state, plans, protocol relay, and handoff context; do not rename

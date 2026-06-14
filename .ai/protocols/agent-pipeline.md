@@ -41,6 +41,26 @@ truth for protocols, architecture decisions, or handoff state.
   - must read AGENTS.md, CLAUDE.md, `.ai/README.md`, and task-specific docs
     before acting.
 
+## Agent Pool And Lifecycle
+
+- Maintain four logical roles only: `coding`, `阎王`, `判官`, and `牛头`.
+- Do not spawn a new subagent for every iteration. Reuse an existing role agent
+  when that role already exists and its context is still relevant.
+- Do not keep completed subagents open. After their final result is integrated,
+  broadcast the outcome if useful, then close the runtime agent.
+- Treat the role name as stable and the runtime id as disposable. If a runtime
+  id is closed or unavailable, create at most one replacement for that role.
+- Use `coding` or Claude Code / `claude-ds` for bounded implementation work.
+- Use `判官` for review after implementation, not for duplicate exploration.
+- Reserve `阎王` / `gpt-5.5` for high-level architecture tradeoffs, irreversible
+  sequencing decisions, or cases where the main Codex thread is explicitly
+  asking for second-opinion architecture. Do not use it for routine patches.
+- Use `牛头` only when a Claude Code / `claude-ds` packet or server-side relay is
+  actually needed.
+- Before spawning, check whether the work can be handled by the main thread,
+  an existing active role agent, or Claude Code. Spawning is the fallback, not
+  the default.
+
 ## Protocol Sync Rule
 
 Every protocol change must be synchronized in this order:

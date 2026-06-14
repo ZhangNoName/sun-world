@@ -302,3 +302,15 @@ Verification for this step aligns with the shared frontend verification cadence:
 
 For this stage, use `coding` for implementation and `判官` for review. Do not
 spawn additional agents.
+
+Agent lifecycle rule:
+
+- Maintain four logical roles only: `coding`, `阎王`, `判官`, and `牛头`.
+- Reuse existing role agents instead of creating a new subagent per iteration.
+- Close completed runtime agents after integration and review notes are
+  synchronized.
+- Treat runtime agent ids as disposable implementation detail; the role name is
+  the stable contract.
+- Use `coding` or Claude Code / `claude-ds` for implementation, `判官` for
+  review, `牛头` for Claude Code relay, and reserve `阎王` / `gpt-5.5` for
+  high-level architecture tradeoffs only.
