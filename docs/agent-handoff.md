@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.25 completed on `monorepo-api-import`; AI/AIGC route, local UI, and `ChannelCard` ownership are now module-owned under `apps/web/src/modules/ai`.
+- Current status: P1.26 completed on `monorepo-api-import`; home route shell and `WeatherCard` ownership are now module-owned under `apps/web/src/modules/home`.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -17,10 +17,12 @@
     for task state, plans, protocol relay, and handoff context; do not rename
     `docs/` wholesale.
 - Verification for this step:
-  - `rg "@/pages/aigc|pages/aigc|@/components/ChannelCard|components/ChannelCard" apps/web/src -n`
-    - Passed; no legacy AIGC page or `ChannelCard` production references remain.
-  - `rg "AigcPage|ChannelCard|ChatInput|ChatList|ConfigModal|ModelName" apps/web/src docs/architecture docs/agent-handoff.md -n`
+  - `rg "@/pages/home|pages/home|@/components/WeatherCard|components/WeatherCard" apps/web/src -n`
+    - Passed; no legacy home page or `WeatherCard` production references remain.
+  - `rg "homeModule|HomePage|WeatherCard" apps/web/src docs/architecture docs/agent-handoff.md -n`
     - Passed; matches are new module-owned paths and historical docs.
+  - `apps/web/src/app/router/create-router.ts`
+    - Checked and fixed route merge order so module routes are registered before the core catch-all route.
   - `pnpm -C apps/web exec vue-tsc --noEmit`
     - Passed.
   - `pnpm -C apps/web build`
@@ -28,6 +30,15 @@
   - `git diff --check`
     - Passed (`LF will be replaced by CRLF` warnings only on touched files).
 - Scope completed in this stage:
+  - P1.26 completed: moved home route shell and `WeatherCard` into `apps/web/src/modules/home`:
+    - `apps/web/src/pages/home/index.vue` -> `apps/web/src/modules/home/pages/HomePage.vue`
+    - `apps/web/src/components/WeatherCard/index.vue` -> `apps/web/src/modules/home/ui/WeatherCard.vue`
+    - `apps/web/src/modules/home/index.ts` created with `/` and `/home` routes and preload
+    - `apps/web/src/app/router/routes.ts` no longer imports legacy `Home` or declares `/` and `/home`
+    - `apps/web/src/app/router/create-router.ts` now keeps core catch-all routes after module routes
+    - `apps/web/src/modules/registry.ts` now registers `homeModule`
+    - `apps/web/src/components.d.ts` no longer declares global `WeatherCard`
+    - `apps/web/src/pages/home` and `apps/web/src/components/WeatherCard` directories removed
   - P1.25 completed: moved AIGC page, local UI, and `ChannelCard` into `apps/web/src/modules/ai`:
     - `apps/web/src/pages/aigc/index.vue` -> `apps/web/src/modules/ai/pages/AigcPage.vue`
     - `apps/web/src/pages/aigc/side.vue` -> `apps/web/src/modules/ai/ui/ChatList.vue`
@@ -306,7 +317,7 @@
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings on touched files).
 - Next step:
-  - P1.26: continue feature-owned component migration for `WeatherCard` before promoting shared primitives.
+  - Continue remaining shared primitive decisions (`ZBtn`, `Tag`, `Waterfall`) only after ownership boundaries stay explicit.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

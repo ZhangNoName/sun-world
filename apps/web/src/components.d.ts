@@ -13,7 +13,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Tag: typeof import('./components/Tag/index.vue')['default']
     ThemeSwitch: typeof import('./components/ThemeSwitch/index.vue')['default']
-    WeatherCard: typeof import('./components/WeatherCard/index.vue')['default']
     ZBtn: typeof import('./components/ZBtn/index.vue')['default']
   }
 }

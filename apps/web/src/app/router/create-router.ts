@@ -7,8 +7,16 @@ function mergeRoutes(
 ): RouteRecordRaw[] {
   const seenPaths = new Set<string>()
   const merged: RouteRecordRaw[] = []
+  const baseCatchAllRoutes = baseRoutes.filter(isCatchAllRoute)
+  const baseRoutesBeforeFallback = baseRoutes.filter(
+    (route) => !isCatchAllRoute(route)
+  )
 
-  for (const route of [...baseRoutes, ...moduleRoutes]) {
+  for (const route of [
+    ...baseRoutesBeforeFallback,
+    ...moduleRoutes,
+    ...baseCatchAllRoutes,
+  ]) {
     if (seenPaths.has(route.path)) {
       if (import.meta.env.DEV) {
         console.warn(`[router] duplicate route path skipped: ${route.path}`)
@@ -21,6 +29,10 @@ function mergeRoutes(
   }
 
   return merged
+}
+
+function isCatchAllRoute(route: RouteRecordRaw): boolean {
+  return route.path.includes(':pathMatch(.*)')
 }
 
 /**

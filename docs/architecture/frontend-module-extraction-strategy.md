@@ -254,6 +254,40 @@ Verification for this step aligns with the shared frontend verification cadence:
 - `pnpm -C apps/web build`
 - `git diff --check`
 
+### P1.26 home Route Boundary + WeatherCard Closure - Completed
+
+The public homepage route shell and its weather sidebar widget are now owned by
+`apps/web/src/modules/home`:
+
+- created `apps/web/src/modules/home/index.ts` with module manifest:
+  - `id: 'home'`
+  - `/` and `/home` routes registered under module ownership
+  - both routes lazy-load `./pages/HomePage.vue`
+  - `preload` hook declared for the homepage route shell
+  - route meta preserves the previous core route title/description semantics
+- moved homepage shell:
+  - `apps/web/src/pages/home/index.vue` -> `apps/web/src/modules/home/pages/HomePage.vue`
+- moved feature-owned weather sidebar UI:
+  - `apps/web/src/components/WeatherCard/index.vue` -> `apps/web/src/modules/home/ui/WeatherCard.vue`
+- updated legacy wiring:
+  - `apps/web/src/app/router/routes.ts` no longer imports legacy `Home` or declares `/` and `/home`
+  - `apps/web/src/app/router/create-router.ts` keeps core catch-all fallback routes after module routes
+  - `apps/web/src/modules/registry.ts` imports and registers `homeModule`
+  - `HomePage.vue` imports `WeatherCard` from `@/modules/home/ui/WeatherCard.vue`
+  - `apps/web/src/components.d.ts` no longer declares global `WeatherCard`
+- removed legacy empty directories:
+  - `apps/web/src/pages/home`
+  - `apps/web/src/components/WeatherCard`
+
+No homepage layout, blog feed ownership, `SelfInfoCard` ownership, weather data
+utility behavior, or SEO content changed in this step.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
 ## Agent Division
 
 - Main Codex owns architecture direction, task slicing, integration decisions,

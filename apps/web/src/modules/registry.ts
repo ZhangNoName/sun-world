@@ -6,6 +6,7 @@ import type {
   Router,
 } from 'vue-router'
 import { blogModule } from './blog'
+import { homeModule } from './home'
 import { aiModule } from './ai'
 import { editorModule } from './editor'
 import { accountModule } from './account'
@@ -24,6 +25,7 @@ import { videoModule } from './video'
  * 3. Import and add it to the array below
  */
 export const appModules: AppModule[] = [
+  homeModule,
   blogModule,
   aiModule,
   editorModule,

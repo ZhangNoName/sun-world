@@ -1,7 +1,7 @@
 <script setup lang="ts" name="content">
 import { onMounted, onUnmounted, ref } from 'vue'
 import SelfInfoCard from '@/modules/blog/ui/SelfInfoCard.vue'
-import WeatherCard from '@/components/WeatherCard/index.vue'
+import WeatherCard from '@/modules/home/ui/WeatherCard.vue'
 import BlogHomeFeed from '@/modules/blog/ui/BlogHomeFeed.vue'
 import {
   buildWebsiteJsonLd,

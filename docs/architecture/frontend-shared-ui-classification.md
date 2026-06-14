@@ -43,7 +43,8 @@ explicitly removed from feature migration paths:
 
 Bound to a concrete feature surface and should only be promoted shared after module ownership is complete:
 - `WeatherCard` (`WeatherCard/index.vue`)
-  - Consumers: `apps/web/src/pages/home/index.vue`
+  - P1.26 moved to `apps/web/src/modules/home/ui/WeatherCard.vue`
+  - Consumer reference lives in `apps/web/src/modules/home/pages/HomePage.vue`
   - Home shell area with weather/domain data source
 - `ChannelCard` (`ChannelCard/index.vue`)
   - P1.25 moved to `apps/web/src/modules/ai/ui/ChannelCard.vue`
@@ -80,7 +81,7 @@ These are historical cleanup records, not current migration targets. Remaining f
    - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; charts page route boundary closed in P1.23 by moving
      `apps/web/src/pages/manage/charts/index.vue` to `apps/web/src/modules/admin/pages/AdminChartsPage.vue`
    - `video`: `Video` moved in P1.24 to `apps/web/src/modules/video`
-   - `home`: `WeatherCard`
+   - `home`: `WeatherCard` moved in P1.26 to `apps/web/src/modules/home/ui`
 3. Promote `shared primitives` into `shared/ui` once dependency ownership and imports are explicit.
 
 ### P1.22 admin/charts ownership closure update
@@ -108,6 +109,16 @@ These are historical cleanup records, not current migration targets. Remaining f
 - The AIGC route page and its local UI moved from `apps/web/src/pages/aigc` into
   `apps/web/src/modules/ai/pages` and `apps/web/src/modules/ai/ui`.
 - Global `ChannelCard` component declaration was removed from
+  `apps/web/src/components.d.ts`.
+
+### P1.26 home ownership update
+
+- `WeatherCard` moved from `apps/web/src/components/WeatherCard/index.vue` into
+  `apps/web/src/modules/home/ui/WeatherCard.vue`.
+- The homepage route shell moved from `apps/web/src/pages/home/index.vue` into
+  `apps/web/src/modules/home/pages/HomePage.vue`, with `/` and `/home` now
+  registered by `apps/web/src/modules/home/index.ts`.
+- Global `WeatherCard` component declaration was removed from
   `apps/web/src/components.d.ts`.
 
 ## Guardrails

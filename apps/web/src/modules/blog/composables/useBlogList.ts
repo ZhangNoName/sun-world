@@ -12,7 +12,7 @@ import type {
 /**
  * Typed blog list composable.
  *
- * Replaces the inline `any[]` blog-list logic in `pages/home/index.vue`
+ * Replaces the inline `any[]` blog-list logic in `modules/home/pages/HomePage.vue`
  * with a reusable, testable data boundary. Consumes the existing
  * `getBlogByPage` endpoint and maps raw items to the `BlogListItem`
  * view model using injected tag / category lookups.
