@@ -4,3 +4,4 @@ pymongo
 aioredis
 redis
 motor
+socksio

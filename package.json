@@ -6,6 +6,8 @@
     "dev": "run-p dev:icons dev:editor dev:web",
     "dev:web": "pnpm -F @sun-world/blog dev",
     "dev:blog": "pnpm dev:web",
+    "dev:api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1",
+    "dev:api:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1 -InstallOnly",
     "dev:icons": "pnpm -F @sun-world/icons dev",
     "watch:editor": "pnpm -F @sun-world/editor run watch",
     "build": "pnpm build:editor && pnpm build:icons && pnpm build:web",

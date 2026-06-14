@@ -1,11 +1,56 @@
-node_modules
-dist
-# env files — keep .env.example trackable
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Frontend / package build outputs
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+.vite/
+**/.vite/
+*.tsbuildinfo
+apps/web/stats.html
+packages/*/stats.html
+
+# Python runtime and test artifacts
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Logs and local runtime files
+logs/
+**/logs/
+*.log
+*.pid
+*.pid.lock
+tmp/
+temp/
+.tmp/
+
+# Local env/config files. Keep examples trackable.
 .env
 .env.*
 !.env.example
 *.override.yml
 *.override.yaml
+!*.override.example.yml
+!*.override.example.yaml
+
+# Local-only app config and certificates
 apps/web/src/constant.ts
 sunworld.key
 sunworld.pem
