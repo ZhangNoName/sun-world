@@ -119,7 +119,7 @@ Verification:
 - `pnpm -C apps/web exec vue-tsc --noEmit`
 - `pnpm -C apps/web build`
 
-### P1.19 Shared UI Classification
+### P1.19 Shared UI Classification - Completed Historical Snapshot
 
 P1.19 classification is completed and documented:
 
@@ -127,7 +127,7 @@ The component ownership baseline now lives in:
 
 - `docs/architecture/frontend-shared-ui-classification.md`
 
-Current categories include:
+Current categories at the time of P1.19 included:
 
 - app shell primitives (`ThemeSwitch`, `LanguageSwitch`, `Avator`)
 - shared UI primitive candidates (`ZBtn`, `Tag`, `Waterfall`)
@@ -135,6 +135,8 @@ Current categories include:
 - orphan/demo cleanup targets (`DIalogCard`, `CutomBtn`, `LoadMore`, Waterfall demo/test assets)
 
 No broad rewrite occurred in this round; only classification documentation was added.
+Later P1.20+ sections are authoritative for migration progress after this
+historical snapshot.
 
 ### P1.21 Blog Management Feature-Owned UI Ownership Closure - Completed
 
@@ -144,6 +146,26 @@ No broad rewrite occurred in this round; only classification documentation was a
 - `apps/web/src/components/Table/*` -> `apps/web/src/modules/blog/ui/manage/SunTable.vue` + `tableTypes.ts`
 - `apps/web/src/pages/manage/blog/index.vue` now imports module-owned UI components directly.
 - `apps/web/src/modules/blog/composables/useBlogManagement.ts` now imports module-owned management UI types.
+
+Verification for this step aligns with the shared frontend verification cadence:
+
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+- `git diff --check`
+
+### P1.22 admin/charts Ownership Closure - Completed
+
+`ChartsCard` has been moved into the admin module private UI, and chart-page imports now reference the module-local component directly:
+
+- `apps/web/src/components/ChartsCard/index.vue` -> `apps/web/src/modules/admin/ui/ChartsCard.vue`
+- `apps/web/src/components/ChartsCard/config.ts` -> `apps/web/src/modules/admin/ui/chartConfig.ts`
+- `apps/web/src/pages/manage/charts/index.vue` now imports `@/modules/admin/ui/ChartsCard.vue`
+
+The `ChartsCard` feature-owned component is no longer listed in the pending
+`Feature-Owned Component Migration` queue in the shared UI classification baseline.
+The chart page still lives under legacy `apps/web/src/pages/manage/charts`; a
+later admin route-boundary step should move that page into `modules/admin/pages`
+so legacy pages do not depend on admin-private UI long term.
 
 Verification for this step aligns with the shared frontend verification cadence:
 

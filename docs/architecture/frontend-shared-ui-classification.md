@@ -42,9 +42,6 @@ explicitly removed from feature migration paths:
 ### 3. Feature-owned components (move with feature modules first)
 
 Bound to a concrete feature surface and should only be promoted shared after module ownership is complete:
-- `ChartsCard` (`ChartsCard/*`)
-  - Consumers: `apps/web/src/pages/manage/charts/index.vue`
-  - Currently admin/dashboard-owned
 - `Video` (`Video/video.com.vue`)
   - Consumers: `apps/web/src/pages/video/video.page.vue`
   - Video feature-specific behavior and player lifecycle
@@ -82,10 +79,14 @@ These are historical cleanup records, not current migration targets. Remaining f
 2. Move feature-owned components into matching feature modules first:
    - `aigc`: `ChannelCard`
    - `manage/blog`: `Form`, `Table` moved in P1.21 to `apps/web/src/modules/blog/ui/manage`
-   - `admin/charts`: `ChartsCard`
+   - `admin/charts`: `ChartsCard` moved in P1.22 to `apps/web/src/modules/admin/ui`; close the charts page route boundary next
    - `video`: `Video`
    - `home`: `WeatherCard`
 3. Promote `shared primitives` into `shared/ui` once dependency ownership and imports are explicit.
+
+### P1.22 admin/charts ownership closure update
+
+- `ChartsCard` is now moved into the admin module UI at `apps/web/src/modules/admin/ui/ChartsCard.vue` with config at `apps/web/src/modules/admin/ui/chartConfig.ts`.
 
 ## Guardrails
 

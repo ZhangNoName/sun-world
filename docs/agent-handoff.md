@@ -1,7 +1,7 @@
 ## Current Handoff
 
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
-- Current status: P1.21 in-progress/just-completed for blog management Form/Table ownership closure; next focus is remaining feature-owned UI moves (`ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`).
+- Current status: P1.22 completed on `monorepo-api-import`; next focus is closing the admin charts page route boundary before moving unrelated feature UI.
 - Current architecture decision:
   - New module extraction strategy is documented in
     `docs/architecture/frontend-module-extraction-strategy.md`.
@@ -238,8 +238,28 @@
       - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings only on touched files).
+- P1.22 completed: admin/charts feature-owned UI moved into admin module private UI.
+  - Migrated component/type files:
+    - `apps/web/src/components/ChartsCard/index.vue` -> `apps/web/src/modules/admin/ui/ChartsCard.vue`
+    - `apps/web/src/components/ChartsCard/config.ts` -> `apps/web/src/modules/admin/ui/chartConfig.ts`
+  - Updated usage:
+    - `apps/web/src/pages/manage/charts/index.vue` now imports `@/modules/admin/ui/ChartsCard.vue`
+  - Deleted old directory:
+    - `apps/web/src/components/ChartsCard`
+  - `docs/architecture/frontend-shared-ui-classification.md` and
+    `docs/architecture/frontend-module-extraction-strategy.md` updated for P1.22 ownership closure.
+  - Verification commands and results:
+    - `rg "@/components/ChartsCard|components/ChartsCard|ChartsCard|DefaultChartOptions" apps/web/src -n`
+      - Passed (`DefaultChartOptions` / `ChartsCard` now point to `apps/web/src/modules/admin/ui`).
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Sass deprecation warnings only).
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
 - Next step:
-  - P1.22: continue with remaining feature-owned component migrations (`ChartsCard`, `ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
+  - P1.23: move the legacy charts page from `apps/web/src/pages/manage/charts` into `apps/web/src/modules/admin/pages` so legacy `pages/` no longer depends on admin-private UI.
+  - After the admin route boundary is closed, continue remaining feature-owned component migrations (`ChannelCard`, `Video`, `WeatherCard`) before promoting shared primitives.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new

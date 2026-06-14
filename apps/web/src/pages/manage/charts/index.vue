@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import ChartsCard from '@/components/ChartsCard/index.vue'
+import ChartsCard from '@/modules/admin/ui/ChartsCard.vue'
 import type { EChartsOption } from 'echarts'
 
 const statistics = ref([

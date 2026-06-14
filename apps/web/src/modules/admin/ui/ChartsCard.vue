@@ -2,7 +2,7 @@
 // 创建 ECharts 实例的 ref
 import { ref, onMounted, watch } from 'vue'
 import * as echarts from 'echarts'
-import { DefaultChartOptions } from './config'
+import { DefaultChartOptions } from './chartConfig'
 // 定义 props 类型
 interface Props {
   options: echarts.EChartsOption
