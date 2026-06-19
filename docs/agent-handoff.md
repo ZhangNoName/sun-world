@@ -1,5 +1,53 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-19, P1.55 local dev launcher):
+  - Goal: add root-level development launchers that can start the Python API
+    and web client together, or either service alone, while supporting Windows,
+    macOS, and VSCode integrated terminals.
+  - Status: implemented locally; no deploy was run.
+  - Important files touched:
+    - `.vscode/tasks.json`
+    - `dev.mjs`
+    - `dev.ps1`
+    - `dev.sh`
+    - `scripts/start-api.mjs`
+    - `scripts/check-dev-launcher.mjs`
+    - `start.md`
+    - `package.json`
+  - Launcher behavior:
+    - Windows: `.\dev.ps1` or `pnpm dev:local` opens separate PowerShell
+      terminals for API and web.
+    - macOS: `sh dev.sh` or `pnpm dev:local` opens separate Terminal.app
+      windows for API and web.
+    - Single-service aliases remain `py`/`api` for backend and `client`/`web`
+      for frontend.
+    - VSCode users should run `Tasks: Run Task` -> `Sun World: Dev All`,
+      `Sun World: Dev API`, or `Sun World: Dev Web` so terminals stay inside
+      the VSCode Terminal panel.
+    - Root `pnpm dev:api` now uses cross-platform `scripts/start-api.mjs`
+      instead of the Windows-only PowerShell API starter.
+    - `start.md` documents VSCode task usage, Windows/macOS commands,
+      single-service modes, and the launcher layering.
+  - Verification:
+    - `node scripts/check-dev-launcher.mjs` first failed as expected because
+      root `dev.ps1` did not exist.
+    - After adding VSCode/macOS support, `pnpm check:dev-launcher` first
+      failed on the missing `dev.mjs`, `dev.sh`, `.vscode/tasks.json`, and
+      `dev:local`, then passed after implementation.
+    - `pnpm check:dev-launcher` passed after implementation.
+    - PowerShell parser check for `dev.ps1` passed.
+    - `node --check dev.mjs` and `node --check scripts/start-api.mjs` passed.
+    - `node scripts/start-api.mjs --install-only --no-install` passed without
+      starting the API server.
+    - `node dev.mjs invalid-mode` returned the expected usage error.
+    - `pnpm check:dev-launcher` first failed after the doc guard was added
+      because `start.md` was missing, then passed after adding the document.
+    - `git diff --check` passed with existing Windows CRLF conversion warnings
+      on touched/dirty files.
+  - Next suggested step:
+    - Use the VSCode tasks when working inside VSCode; use `.\dev.ps1`,
+      `sh dev.sh`, or `pnpm dev:local` when launching external terminals.
+
 - Previous task addendum (2026-06-19, P1.29 platform chain, monitoring, build plan):
   - Goal: decide commit/push cadence, assess frontend-backend chain, add a
     minimum performance monitoring platform, document iteration plan, and start
