@@ -47,6 +47,9 @@ if (workflow) {
     '.github/workflows/deploy.yml|.github/workflows/ci.yml)',
     'Workflow-only changes should validate the pipeline shape but',
     'should not redeploy production images.',
+    'deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)',
+    'Deployment docs and local verification scripts do not enter',
+    'the production images.',
     'build-web:',
     'build-api:',
     'deploy:',
@@ -122,6 +125,16 @@ if (workflow) {
   ) {
     violations.push(
       'workflow-only changes must not be grouped with package/deployable changes'
+    )
+  }
+
+  if (
+    /scripts\/check-github-actions-deploy\.mjs\|scripts\/check-github-actions-ci\.mjs|scripts\/check-web\*|scripts\/run-api-check\.mjs/.test(
+      workflow
+    )
+  ) {
+    violations.push(
+      'local verification scripts must not be treated as deployment targets'
     )
   }
 }

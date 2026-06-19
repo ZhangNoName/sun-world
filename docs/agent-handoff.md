@@ -17,9 +17,10 @@
     - `.github/workflows/ci.yml` and `.github/workflows/deploy.yml` ignore
       documentation-only push changes through `paths-ignore`; manual dispatch
       remains available.
-    - Workflow-only changes still validate `.github/workflows/deploy.yml`, but
-      they are not deploy targets and exit through `no-deploy` instead of
-      rebuilding and transferring production images.
+    - Workflow-only, deploy-doc, and local verification script changes still
+      validate `.github/workflows/deploy.yml`, but they are not deploy targets
+      and exit through `no-deploy` instead of rebuilding and transferring
+      production images.
     - GitHub Actions still builds frontend and API images in CI.
     - Image tags are local commit-SHA tags:
       `sun-world-frontend:<git-sha>` and `sun-world-api:<git-sha>`.

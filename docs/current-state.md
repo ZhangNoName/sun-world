@@ -58,8 +58,9 @@ been cut over yet:
   downloads the changed artifacts, transfers them to Lighthouse with `scp`,
   runs `docker load`, then switches only the changed target(s). If both web and
   API changed, both image artifacts must be ready before deployment starts.
-  Workflow-only changes validate the workflow but are not deployment targets,
-  so they exit through the `no-deploy` job.
+  Workflow-only, deploy-doc, and local verification script changes validate
+  the workflow but are not deployment targets, so they exit through the
+  `no-deploy` job.
 - The deploy workflow intentionally avoids GHCR/TCR application-image pulls
   because server-side registry pulls from Lighthouse were too slow. Retained
   artifacts are the current rollback/audit source for built images and

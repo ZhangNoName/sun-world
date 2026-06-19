@@ -81,15 +81,9 @@ jobs:
               apps/api/*|apps/api/**|deploy/backend/*|deploy/backend/**)
                 api_changed=true
                 ;;
-              deploy/frontend/*|deploy/frontend/**|scripts/check-github-actions-deploy.mjs|scripts/check-github-actions-ci.mjs|scripts/check-all.mjs)
-                web_changed=true
-                api_changed=true
-                ;;
-              scripts/check-web*|scripts/generate-web-*|scripts/check-contract*|scripts/run-workspace-script.mjs)
-                web_changed=true
-                ;;
-              scripts/run-api-check.mjs|scripts/check-api*|scripts/check-admin*|scripts/check-metrics*|scripts/check-request*|scripts/check-rum*)
-                api_changed=true
+              deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)
+                # Deployment docs and local verification scripts do not enter
+                # the production images.
                 ;;
             esac
           done <<< "$changed_files"
