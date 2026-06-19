@@ -40,8 +40,19 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install API dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ./apps/api
 
       - name: Run frontend checks
         run: pnpm check:web

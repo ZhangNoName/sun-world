@@ -22,10 +22,6 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-import pymysql
-import yaml
-from pymysql.cursors import DictCursor
-
 
 MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
     "users": {
@@ -289,6 +285,8 @@ def resolve_config_path(raw_path: str) -> Path:
 
 
 def load_api_config() -> dict[str, Any]:
+    import yaml
+
     env = os.getenv("ENV", "local")
     base_path = resolve_config_path(f"./src/conf/{env}.yml")
     if not base_path.exists():
@@ -317,6 +315,9 @@ def deep_merge(base: Any, override: Any) -> Any:
 
 
 def connect_mysql(config: dict[str, Any]) -> Any:
+    import pymysql
+    from pymysql.cursors import DictCursor
+
     mysql_config = config["mysql"]
     return pymysql.connect(
         host=mysql_config["ip"],
