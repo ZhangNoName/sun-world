@@ -43,6 +43,12 @@ These conventions capture the default coding habits for this repository. Prefer 
 - Avoid introducing new dependencies unless they clearly reduce complexity.
 - Use structured APIs/parsers for structured data instead of fragile string manipulation.
 - Add comments only for non-obvious behavior, browser quirks, production gotchas, or complex logic.
+- JavaScript, TypeScript, Vue, JSON, YAML, CSS, and SCSS formatting is defined
+  by `.prettierrc.json`. Run `pnpm format` to format changed supported files,
+  or `pnpm format:check` to verify changed supported files without editing.
+- The first Prettier baseline intentionally excludes Markdown and Python.
+  Python formatting should be introduced separately through a Python-native
+  formatter such as Ruff.
 
 ## Context And Agent Handoff
 
@@ -75,6 +81,9 @@ This repository is frontend-heavy today, but use these defaults for any backend 
 ## Verification
 
 - Run the narrowest useful verification for the change.
+- Run `pnpm format:check` when changing code or machine-readable config that is
+  covered by Prettier. The check intentionally targets changed files so the
+  first baseline does not require reformatting historical code in one commit.
 - For frontend changes, prefer `pnpm build:blog` or the documented Docker build when deployment output matters.
 - After production deployment, verify:
 

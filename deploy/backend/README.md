@@ -43,23 +43,19 @@ part of routine verification.
 
 ## GitHub Actions API Image
 
-The frontend deployment workflow also builds the Python API image after the
-frontend package/check stage succeeds.
+The deployment workflow builds the Python API image when API-related files
+change.
 
-Image tags:
+Image tag:
 
 ```text
-ghcr.io/zhangnoname/sun-world-api:<git-sha>
-ghcr.io/zhangnoname/sun-world-api:latest
+sun-world-api:<git-sha>
 ```
 
-When Tencent Cloud Container Registry is configured in GitHub Actions, the same
-API image tags are also pushed to `TCR_API_IMAGE_NAME`, and the Lighthouse
-deploy step pulls that TCR tag instead of GHCR. This keeps API schema apply
-close to the Tencent Cloud server and avoids slow cross-registry pulls.
-
-The workflow keeps an `api-deploy-metadata-<git-sha>` artifact with the image
-tag and commit. It does not start the API container and does not replace
+The workflow saves the image as `api-image-<git-sha>`, transfers the changed
+image archive to Lighthouse with `scp`, and loads it with `docker load`. It
+also keeps an `api-deploy-metadata-<git-sha>` artifact with the image tag and
+commit. It does not start the API container and does not replace
 `blog-api.service`; backend traffic remains on the existing production service
 until a separate cutover is approved.
 
@@ -85,7 +81,7 @@ image with the production secret env file mounted read-only:
 ```bash
 sudo docker run --rm --network host \
   -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
-  ghcr.io/zhangnoname/sun-world-api:<git-sha> \
+  sun-world-api:<git-sha> \
   /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 ```
 

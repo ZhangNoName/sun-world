@@ -1,5 +1,104 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-19, P1.59 no-registry deployment path):
+  - Goal: remove the GHCR/TCR server pull path because Lighthouse deployment
+    was spending 40+ minutes retrying GHCR layer downloads.
+  - Status: implementation in progress locally; not committed yet. The
+    in-progress GitHub Actions run `27832982559` was cancelled after it reached
+    46+ minutes in the old GHCR deploy step.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `deploy/frontend/README.md`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - GitHub Actions still builds frontend and API images in CI.
+    - Image tags are local commit-SHA tags:
+      `sun-world-frontend:<git-sha>` and `sun-world-api:<git-sha>`.
+    - Build jobs save compressed image archives as retained artifacts:
+      `frontend-image-<git-sha>` and `api-image-<git-sha>`.
+    - The deploy job downloads only changed image artifacts, copies them to
+      Lighthouse with `scp`, runs `docker load`, and then switches the changed
+      target(s).
+    - The workflow intentionally avoids GHCR/TCR application-image push/pull,
+      `docker login`, and server-side `docker pull`.
+    - API behavior is unchanged: the API image is only used for
+      `schema_migration --mode apply`; it does not start the API container,
+      change Nginx, or restart `blog-api.service`.
+  - Reference context:
+    - The user's Tencent deployment docs recommend TCR as the best long-term
+      solution. Since this project does not currently have TCR, the artifact
+      transfer path is the practical fallback that preserves the key principle:
+      build in CI, do not build on the server, and avoid cross-registry pulls.
+  - Verification:
+    - Read the user's reference docs:
+      `腾讯云部署加速方案.md` and `流水线部署流程.md`.
+    - `gh run cancel 27832982559` submitted cancellation for the old
+      GHCR-pull deploy run.
+    - `pnpm format` passed and did not need to change formatted files after
+      the no-registry rewrite.
+    - `pnpm format:check` passed on changed Prettier-supported files.
+    - `pnpm check:github-actions:deploy` passed and now rejects registry
+      push/pull deployment paths.
+    - `pnpm check:api:deploy-schema` passed and now verifies API schema apply
+      uses the loaded local image artifact.
+    - Python/PyYAML parsed `.github/workflows/ci.yml` and
+      `.github/workflows/deploy.yml`.
+    - `node --check` passed for the modified deploy/schema/format guard
+      scripts.
+    - `pnpm check` passed all 12 checks. Docker CLI remains unavailable
+      locally, so compose validation stayed on the existing static path and no
+      deployment command was run.
+
+- Latest task addendum (2026-06-19, P1.58 CI and formatting baseline):
+  - Goal: rename the deployment workflow now that it deploys more than the
+    frontend, add a local executable formatting baseline, and add a CI workflow
+    for format checks and unit checks without committing yet.
+  - Status: implementation in progress locally; the user explicitly asked not
+    to commit this checkpoint yet.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `.github/workflows/ci.yml`
+    - `.prettierrc.json`
+    - `.prettierignore`
+    - `scripts/check-github-actions-ci.mjs`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-all.mjs`
+    - `package.json`
+    - `pnpm-lock.yaml`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/engineering-conventions.md`
+  - Behavior:
+    - The deployment workflow file is renamed from
+      `.github/workflows/deploy-frontend.yml` to `.github/workflows/deploy.yml`
+      and shown in GitHub Actions as `Deploy Sun World`.
+    - Prettier is the first formatting baseline for JS/TS/Vue/JSON/YAML/CSS/SCSS.
+      `scripts/format-changed.mjs` targets changed supported files only so this
+      checkpoint does not reformat historical code in bulk. Markdown and Python
+      are intentionally excluded until they receive focused baselines.
+    - `.github/workflows/ci.yml` runs formatting checks, GitHub Actions protocol
+      guards, frontend checks, API checks, UI package tests, and contracts tests
+      without deploying or pushing images.
+  - Verification:
+    - `pnpm format` formatted only changed Prettier-supported files.
+    - `pnpm format:check` passed on the changed-file formatting baseline.
+    - `pnpm check:github-actions:ci` passed.
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:api:deploy-schema` passed after updating the workflow path
+      to `.github/workflows/deploy.yml`.
+    - Python/PyYAML parsed `.github/workflows/ci.yml` and
+      `.github/workflows/deploy.yml`.
+    - `node --check` passed for the modified GitHub Actions and formatting
+      guard scripts.
+    - `pnpm check` passed all 12 checks after installing local API
+      dependencies in the current Python environment to match the CI install
+      step. Docker CLI remains unavailable locally, so compose validation stayed
+      on the existing static path and no deployment command was run.
+
 - Latest task addendum (2026-06-19, P1.57 API image build and MySQL schema guard):
   - Goal: after the frontend packaging/deploy workflow succeeds, also build
     and publish the Python API image, while keeping MySQL application schema

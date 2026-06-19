@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.turbo
+.vite
+.cache
+.venv
+apps/api/.venv
+apps/web/dist
+packages/*/dist
+pnpm-lock.yaml
+*.log
+
+# Keep the first formatting baseline focused on code and machine-readable config.
+*.md
+*.py

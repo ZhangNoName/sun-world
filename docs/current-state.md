@@ -50,18 +50,18 @@ been cut over yet:
 - Backend monorepo source path: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source exposes `/readyz` for dependency readiness; the
   current production backend remains on the legacy path until deliberate cutover.
-- GitHub Actions deploy is split by changed deploy target:
+- GitHub Actions deploy is defined in `.github/workflows/deploy.yml` and split
+  by changed deploy target:
   `detect-changes` decides whether web, API, both, or neither need deployment.
-  `build-web` and `build-api` run only for their changed target and can prepare
-  images independently. The final deploy job opens one Lighthouse SSH session
-  and only pulls/switches the changed image(s). If both web and API changed,
-  both images must be ready before deployment starts.
-- The workflow always pushes frontend/API images to GHCR. If Tencent Cloud TCR
-  variables/secrets are configured, it also pushes the same tags to TCR and the
-  server deploy pulls the TCR image tag. Tencent Cloud Docker mirror
-  `https://mirror.ccs.tencentyun.com` remains a separate one-time server Docker
-  daemon setting for DockerHub base-image acceleration; it does not replace TCR
-  for Sun World application images.
+  `build-web` and `build-api` run only for their changed target and save local
+  Docker images as compressed GitHub Actions artifacts. The final deploy job
+  downloads the changed artifacts, transfers them to Lighthouse with `scp`,
+  runs `docker load`, then switches only the changed target(s). If both web and
+  API changed, both image artifacts must be ready before deployment starts.
+- The deploy workflow intentionally avoids GHCR/TCR application-image pulls
+  because server-side registry pulls from Lighthouse were too slow. Retained
+  artifacts are the current rollback/audit source for built images and
+  metadata.
 - API deployment still only runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image, so missing MySQL application tables/columns can be created
@@ -73,6 +73,14 @@ been cut over yet:
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
   the same API config as the app; `apply` only creates missing tables/columns
   and fails on incompatible existing column types instead of rewriting data.
+- GitHub Actions CI is defined in `.github/workflows/ci.yml`. It runs on pull
+  requests, `main` pushes, and manual dispatch; it verifies the Prettier
+  formatting protocol, GitHub Actions protocol guards, frontend checks, API
+  checks, UI package tests, and contracts tests without deploying.
+- Prettier formatting is configured by `.prettierrc.json` and runs through
+  `scripts/format-changed.mjs`, which checks or writes changed supported files
+  only. Markdown and Python are intentionally excluded in `.prettierignore` for
+  the first formatting baseline.
 - Monorepo API now includes a process-local RUM telemetry baseline:
   - `POST /telemetry/events`
   - `GET /admin/telemetry`
@@ -154,7 +162,8 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   Root `build:web`, `build:editor`, and `build:icons` use
   `scripts/run-workspace-script.mjs` for portable `NODE_OPTIONS`.
 - Root `pnpm check` is cross-platform through `scripts/check-all.mjs`. It runs
-  root script protocol, platform goal audit, `git diff --check`,
+  root script protocol, GitHub Actions deploy/CI protocol guards,
+  changed-file `pnpm format:check`, platform goal audit, `git diff --check`,
   `pnpm test:ui`, `pnpm build:ui`, `pnpm check:web`, `pnpm check:api`, and
   `pnpm check:compose` without deployment or public health probes.
 - `pnpm check:platform` runs `scripts/check-platform-goal-audit.mjs`, which

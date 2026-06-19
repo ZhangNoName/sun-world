@@ -15,6 +15,16 @@ const checks = [
     args: ['check:github-actions:deploy'],
   },
   {
+    label: 'GitHub Actions CI protocol',
+    command: 'pnpm',
+    args: ['check:github-actions:ci'],
+  },
+  {
+    label: 'Formatting protocol',
+    command: 'pnpm',
+    args: ['format:check'],
+  },
+  {
     label: 'API deploy/schema protocol',
     command: 'pnpm',
     args: ['check:api:deploy-schema'],

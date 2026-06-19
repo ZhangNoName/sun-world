@@ -25,10 +25,9 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 
 ## GitHub Actions Deploy
 
-`.github/workflows/deploy-frontend.yml` defines the GitHub Actions frontend
-deployment pipeline. It runs on every `main` branch push and can also be run
-manually with `workflow_dispatch`; choose the `main` branch for manual
-production deploys.
+`.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
+It runs on every `main` branch push and can also be run manually with
+`workflow_dispatch`; choose the `main` branch for manual production deploys.
 
 The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
 `main` changes arrive while a deploy is still running, the older in-progress run
@@ -39,31 +38,32 @@ The pipeline is split by changed deploy target:
 1. `detect-changes` checks the pushed file list.
 2. `build-web` runs only when frontend-related files changed.
 3. `build-api` runs only when API-related files changed.
-4. `deploy` waits for the required image builds, then opens one SSH session to
-   the Lighthouse server.
-5. If only frontend changed, deploy pulls and recreates `my-frontend` only.
-6. If only API changed, deploy pulls the API image and runs only the MySQL
+4. Each build job creates a local Docker image and saves it as a compressed
+   artifact instead of pushing it to a registry.
+5. `deploy` waits for the required image artifacts, downloads them inside
+   GitHub Actions, copies them to Lighthouse with `scp`, then runs `docker load`
+   on the server.
+6. If only frontend changed, deploy loads and recreates `my-frontend` only.
+7. If only API changed, deploy loads the API image and runs only the MySQL
    schema migration command.
-7. If both changed, both images are built first, then the deploy job performs
-   the frontend switch and API schema apply in one server session.
-8. If no deployable files changed, the workflow exits through the `no-deploy`
+8. If both changed, both image artifacts are ready before the deploy job
+   performs the frontend switch and API schema apply in one server session.
+9. If no deployable files changed, the workflow exits through the `no-deploy`
    job.
 
-Frontend images are pushed with both tags:
+Frontend images are tagged locally with the commit SHA:
 
 ```text
-ghcr.io/zhangnoname/sun-world-frontend:<git-sha>
-ghcr.io/zhangnoname/sun-world-frontend:latest
+sun-world-frontend:<git-sha>
 ```
 
-The server deploy step uses the `<git-sha>` tag instead of `latest` so a
-specific deployment can be audited or rolled back.
+The server deploy step uses the `<git-sha>` tag so a specific deployment can be
+audited or rolled back from retained artifacts.
 
-The API image is also pushed with both tags:
+The API image is also tagged locally:
 
 ```text
-ghcr.io/zhangnoname/sun-world-api:<git-sha>
-ghcr.io/zhangnoname/sun-world-api:latest
+sun-world-api:<git-sha>
 ```
 
 The API image is not started by this workflow. It is used to run
@@ -76,36 +76,13 @@ The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the
 `docker` group.
 
-## Tencent Cloud TCR And Docker Mirror
+## Image Transfer
 
-The workflow always pushes images to GHCR. If Tencent Cloud Container Registry
-variables and secrets are configured, it also pushes the same commit and
-`latest` tags to TCR, and the server deploy step prefers the TCR image tags.
-This is the recommended production pull path because the Lighthouse server is
-also on Tencent Cloud.
-
-Tencent Cloud's Docker mirror
-`https://mirror.ccs.tencentyun.com` is a separate one-time server Docker daemon
-setting. It accelerates DockerHub image downloads from Tencent Cloud intranet,
-but it does not mirror private GHCR images. Use both:
-
-- TCR for Sun World application images.
-- Tencent Cloud Docker mirror for DockerHub base image pulls on the server.
-
-One-time server mirror configuration:
-
-```bash
-sudo mkdir -p /etc/docker
-sudo tee /etc/docker/daemon.json >/dev/null <<'JSON'
-{
-  "registry-mirrors": [
-    "https://mirror.ccs.tencentyun.com"
-  ]
-}
-JSON
-sudo systemctl restart docker
-sudo docker info
-```
+The deploy job intentionally does not pull application images from a registry.
+Server-side registry pulls were too slow from Lighthouse. GitHub Actions now
+keeps `frontend-image-<git-sha>` and `api-image-<git-sha>` artifacts, transfers
+the changed archive files over SSH, and runs `sudo docker load -i ...` on the
+server.
 
 ## Required GitHub Variables
 
@@ -124,9 +101,6 @@ Optional GitHub Actions variables:
 ```text
 VITE_BASE_URL
 VITE_TELEMETRY_ENDPOINT
-TCR_REGISTRY
-TCR_FRONTEND_IMAGE_NAME
-TCR_API_IMAGE_NAME
 ```
 
 When unset, the workflow uses the production defaults:
@@ -144,30 +118,18 @@ Configure this under GitHub repository settings as a Secret:
 LIGHTHOUSE_SSH_KEY
 ```
 
-Optional Tencent Cloud Container Registry secrets:
-
-```text
-TCR_USERNAME
-TCR_PASSWORD
-```
-
-When all TCR variables and secrets are present, the workflow pushes to TCR and
-the Lighthouse deploy pulls from TCR. When any TCR value is missing, the
-workflow falls back to GHCR only.
-
-Do not commit SSH keys, GHCR tokens, `.env` values, or server secrets to the
+Do not commit SSH keys, `.env` values, or server secrets to the
 repository.
-
-GitHub Actions publishes to GHCR with the built-in `GITHUB_TOKEN` and requires
-workflow package write permission. The server must already be able to pull the
-GHCR image, for example through a prior `docker login ghcr.io`.
 
 Artifacts are retained for 30 days:
 
 - `frontend-dist-<git-sha>` keeps the generated `apps/web/dist` output.
 - `frontend-deploy-metadata-<git-sha>` keeps the image tag, commit, build
   manifest, and build summary.
+- `frontend-image-<git-sha>` keeps the compressed frontend Docker image
+  archive.
 - `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
+- `api-image-<git-sha>` keeps the compressed API Docker image archive.
 
 Each retained artifact is tied to the commit-specific image tag written by the
 job that actually ran.

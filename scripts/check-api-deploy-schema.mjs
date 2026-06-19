@@ -4,8 +4,16 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
-const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy-frontend.yml')
-const migrationPath = join(repoRoot, 'apps', 'api', 'src', 'database', 'mysql', 'schema_migration.py')
+const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy.yml')
+const migrationPath = join(
+  repoRoot,
+  'apps',
+  'api',
+  'src',
+  'database',
+  'mysql',
+  'schema_migration.py'
+)
 const runApiCheckPath = join(repoRoot, 'scripts', 'run-api-check.mjs')
 const backendDocPath = join(repoRoot, 'deploy', 'backend', 'README.md')
 const packageJsonPath = join(repoRoot, 'package.json')
@@ -22,7 +30,7 @@ const backendDoc = readIfExists(backendDocPath)
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
 if (!workflow) {
-  violations.push('.github/workflows/deploy-frontend.yml must exist')
+  violations.push('.github/workflows/deploy.yml must exist')
 }
 
 if (!migration) {
@@ -31,16 +39,18 @@ if (!migration) {
 
 if (workflow) {
   const requiredFragments = [
-    'GHCR_API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api',
-    'TCR_API_IMAGE_NAME',
+    'API_IMAGE_NAME: sun-world-api',
     'api_changed:',
     'build-api:',
     'Run API checks',
-    'Build and push API image',
+    'Build API image artifact',
+    'docker save',
+    'api-image.tar.gz',
     'api-deploy-metadata-${{ github.sha }}',
     'API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}',
     'API_IMAGE: ${{ needs.build-api.outputs.deploy_image }}',
     'if [ "$API_CHANGED" = "true" ]; then',
+    'sudo docker load -i "$REMOTE_RELEASE_DIR/api-image.tar.gz"',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
     '/home/lighthouse/.config/blog_end/auth.env',
@@ -48,12 +58,20 @@ if (workflow) {
 
   for (const fragment of requiredFragments) {
     if (!workflow.includes(fragment)) {
-      violations.push(`deploy workflow must contain API deploy fragment: ${fragment}`)
+      violations.push(
+        `deploy workflow must contain API deploy fragment: ${fragment}`
+      )
     }
   }
 
-  if (/docker compose --profile api up|systemctl restart blog-api\.service|my-api|sun-world-api.*-p 8000:8000/.test(workflow)) {
-    violations.push('deploy workflow must not cut over the production API service implicitly')
+  if (
+    /docker compose --profile api up|systemctl restart blog-api\.service|my-api|sun-world-api.*-p 8000:8000|ghcr\.io|TCR_|docker pull/.test(
+      workflow
+    )
+  ) {
+    violations.push(
+      'deploy workflow must not cut over the production API service implicitly'
+    )
   }
 }
 
@@ -76,15 +94,25 @@ if (migration) {
 }
 
 if (!runApiCheck.includes('schema_migration.py')) {
-  violations.push('scripts/run-api-check.mjs must include the MySQL schema migration static check')
+  violations.push(
+    'scripts/run-api-check.mjs must include the MySQL schema migration static check'
+  )
 }
 
-if (packageJson.scripts?.['check:api:deploy-schema'] !== 'node scripts/check-api-deploy-schema.mjs') {
+if (
+  packageJson.scripts?.['check:api:deploy-schema'] !==
+  'node scripts/check-api-deploy-schema.mjs'
+) {
   violations.push('root package.json must expose check:api:deploy-schema')
 }
 
-if (!backendDoc.includes('sun-world-api') || !backendDoc.includes('schema_migration')) {
-  violations.push('backend deploy doc must describe the API image and schema_migration command')
+if (
+  !backendDoc.includes('sun-world-api') ||
+  !backendDoc.includes('schema_migration')
+) {
+  violations.push(
+    'backend deploy doc must describe the API image and schema_migration command'
+  )
 }
 
 if (violations.length) {
