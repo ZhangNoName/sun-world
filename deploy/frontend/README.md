@@ -28,7 +28,9 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 `.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
 It runs on non-documentation `main` branch pushes and can also be run manually
 with `workflow_dispatch`; choose the `main` branch for manual production
-deploys. Documentation-only pushes are ignored.
+deploys. Documentation-only pushes are ignored. Workflow-only changes still
+validate the deployment workflow shape, but they exit through `no-deploy`
+instead of rebuilding and transferring production images.
 
 The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
 `main` changes arrive while a deploy is still running, the older in-progress run
@@ -50,7 +52,7 @@ The pipeline is split by changed deploy target:
 8. If both changed, both image artifacts are ready before the deploy job
    performs the frontend switch and API schema apply in one server session.
 9. If no deployable files changed, the workflow exits through the `no-deploy`
-   job.
+   job. This includes changes limited to GitHub Actions workflow files.
 
 Frontend images are tagged locally with the commit SHA:
 

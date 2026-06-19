@@ -3,9 +3,8 @@
 - Latest task addendum (2026-06-19, P1.59 no-registry deployment path):
   - Goal: remove the GHCR/TCR server pull path because Lighthouse deployment
     was spending 40+ minutes retrying GHCR layer downloads.
-  - Status: implementation in progress locally; not committed yet. The
-    in-progress GitHub Actions run `27832982559` was cancelled after it reached
-    46+ minutes in the old GHCR deploy step.
+  - Status: pushed to `main`. Follow-up commit added docs-only push skipping
+    and workflow-only no-deploy behavior.
   - Important files touched:
     - `.github/workflows/deploy.yml`
     - `scripts/check-github-actions-deploy.mjs`
@@ -18,6 +17,9 @@
     - `.github/workflows/ci.yml` and `.github/workflows/deploy.yml` ignore
       documentation-only push changes through `paths-ignore`; manual dispatch
       remains available.
+    - Workflow-only changes still validate `.github/workflows/deploy.yml`, but
+      they are not deploy targets and exit through `no-deploy` instead of
+      rebuilding and transferring production images.
     - GitHub Actions still builds frontend and API images in CI.
     - Image tags are local commit-SHA tags:
       `sun-world-frontend:<git-sha>` and `sun-world-api:<git-sha>`.
@@ -41,6 +43,10 @@
       `腾讯云部署加速方案.md` and `流水线部署流程.md`.
     - `gh run cancel 27832982559` submitted cancellation for the old
       GHCR-pull deploy run.
+    - The first no-registry deploy run showed image artifact sizes around
+      30 MB for frontend and 128 MB for API. The server upload step became the
+      next bottleneck when both images were transferred for a workflow-only
+      commit, so workflow-only pushes now skip deployment.
     - `pnpm format` passed and did not need to change formatted files after
       the no-registry rewrite.
     - `pnpm format:check` passed on changed Prettier-supported files.

@@ -67,7 +67,11 @@ jobs:
           while IFS= read -r file; do
             [ -n "$file" ] || continue
             case "$file" in
-              .github/workflows/deploy.yml|.github/workflows/ci.yml|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|tsconfig.json)
+              .github/workflows/deploy.yml|.github/workflows/ci.yml)
+                # Workflow-only changes should validate the pipeline shape but
+                # should not redeploy production images.
+                ;;
+              package.json|pnpm-lock.yaml|pnpm-workspace.yaml|tsconfig.json)
                 web_changed=true
                 api_changed=true
                 ;;

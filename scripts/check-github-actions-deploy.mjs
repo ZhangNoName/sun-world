@@ -44,6 +44,9 @@ if (workflow) {
     'web_changed:',
     'api_changed:',
     'any_changed:',
+    '.github/workflows/deploy.yml|.github/workflows/ci.yml)',
+    'Workflow-only changes should validate the pipeline shape but',
+    'should not redeploy production images.',
     'build-web:',
     'build-api:',
     'deploy:',
@@ -109,6 +112,16 @@ if (workflow) {
   ) {
     violations.push(
       'deploy workflow must not depend on registry push/pull for application images'
+    )
+  }
+
+  if (
+    /\.github\/workflows\/deploy\.yml\|\.github\/workflows\/ci\.yml\|package\.json/.test(
+      workflow
+    )
+  ) {
+    violations.push(
+      'workflow-only changes must not be grouped with package/deployable changes'
     )
   }
 }
