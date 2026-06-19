@@ -23,7 +23,7 @@ jobs:
     name: Build, push, and deploy frontend
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
@@ -146,7 +146,7 @@ jobs:
           key: ${{ secrets.LIGHTHOUSE_SSH_KEY }}
           port: ${{ vars.LIGHTHOUSE_PORT || '22' }}
           envs: FRONTEND_IMAGE,API_IMAGE
-          command_timeout: 30m
+          command_timeout: 90m
           script: |
             set -euo pipefail
             sudo docker pull "$FRONTEND_IMAGE"
