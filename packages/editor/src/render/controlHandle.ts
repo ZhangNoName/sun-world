@@ -1,4 +1,4 @@
-import { IBox, IPoint } from "@/types/common.type"
+import { IBox, IPoint } from "../types/common.type"
 
 export class ControlHandle {
   private ctx: CanvasRenderingContext2D

@@ -1,8 +1,73 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
 .worktrees/
-sun_world_deploy_key*
+
+# Frontend / package build outputs
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+.vite/
+**/.vite/
+*.tsbuildinfo
+apps/web/stats.html
+packages/*/stats.html
+
+# Python runtime and test artifacts
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+*.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Logs and local runtime files
+.codex/
+logs/
+**/logs/
+*.log
+*.pid
+*.pid.lock
+tmp/
+temp/
+.tmp/
+data/metrics-snapshots.json
+apps/api/data/metrics-snapshots.json
+
+# Local env/config files. Keep examples trackable.
+.env
+.env.*
+!.env.example
+*.override.yml
+*.override.yaml
+!*.override.example.yml
+!*.override.example.yaml
+
+# Backend local/runtime-only files
+apps/api/**/*.ipynb
+!apps/api/**/*.example.ipynb
+apps/api/src/conf/local.override.yml
+apps/api/src/conf/local.override.yaml
+apps/api/uploads/
+apps/api/runtime/
+
+# Local-only app config and certificates
+apps/web/src/constant.ts
 packages/blog/src/constant.ts
+sun_world_deploy_key*
 sunworld.key
 sunworld.pem
 sunworld.site_bundle.crt

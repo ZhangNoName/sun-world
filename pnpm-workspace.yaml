@@ -1,2 +1,3 @@
 packages:
+  - 'apps/*'
   - 'packages/*' # 让 pnpm 识别 packages 目录下的所有子项目

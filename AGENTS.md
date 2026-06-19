@@ -13,7 +13,7 @@ This repository is the source of truth for the Sun World site.
 
 ## Read First
 
-- Read this file, CLAUDE.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
+- Read this file, CLAUDE.md, .ai/README.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
 - Project-local instructions override the server-level /home/lighthouse/AGENTS.md contract.
 - Keep operational decisions, deploy notes, and gotchas in docs/current-state.md or focused docs under docs/.
 
@@ -30,9 +30,19 @@ This repository is the source of truth for the Sun World site.
 ## Context Handoff
 
 - Chat context is not the source of truth. Persist context in repository docs.
+- Use `.ai/README.md` as the AI workspace entrypoint for plans, sync protocol,
+  and server resource policy.
+- Use `.ai/protocols/agent-pipeline.md` for subagent, Codex, and Claude Code
+  communication and handoff rules.
 - Use docs/current-state.md for stable environment, domain, service, and deploy state.
 - Use docs/agent-handoff.md for active or recently completed work that another agent may need to continue.
+- Keep `docs/` as the durable project documentation root. If agent task context
+  is migrated later, use lowercase `.task/` for task state/plans/protocol relay
+  and update all read-order references before moving files.
 - Update docs/agent-handoff.md before switching between Codex, Claude Code, local manual work, or a long pause.
+- When any protocol or agent rule changes, update repository docs first, then
+  broadcast the delta to active subagents and include it in the next Claude Code
+  / `claude-ds` prompt.
 - A handoff update should include: current goal, status, important files touched, commands run, verification result, blockers, and next suggested step.
 - Never put secrets, tokens, passwords, private keys, or full env values in docs/agent-handoff.md.
 
@@ -71,5 +81,5 @@ curl -I https://www.sunworld.site
 
 For ICP filing compliance, the homepage footer must show `豫ICP备2024081960号` and link to `https://beian.miit.gov.cn/`.
 
-The desktop footer is rendered in `packages/blog/src/layout/deskLayout.vue` via `ZFooter`.
-The mobile filing link is rendered in `packages/blog/src/layout/mobLayout.vue`.
+The desktop footer is rendered in `apps/web/src/layout/deskLayout.vue` via `ZFooter`.
+The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.

@@ -1,0 +1,60 @@
+.sun-list {
+  color: var(--sun-ui-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  width: 100%;
+}
+
+.sun-list__state {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  padding: var(--space-4, 1rem);
+}
+
+.sun-list-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.sun-list-table th,
+.sun-list-table td {
+  border-bottom: 1px solid var(--sun-ui-border-color);
+  padding: var(--space-2, 0.5rem);
+  text-align: left;
+}
+
+.sun-list-table tr {
+  cursor: pointer;
+}
+
+.sun-list-table tr[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.sun-list__cards {
+  display: grid;
+  gap: var(--space-3, 0.75rem);
+}
+
+.sun-list-card {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+  display: grid;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-4, 1rem);
+  text-align: left;
+}
+
+.sun-list-card__line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4, 1rem);
+}
+
+.sun-list-card__label {
+  color: var(--text-secondary, #64748b);
+}

@@ -1,0 +1,16 @@
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+logs
+uploads
+runtime
+src/conf/local.override.yml
+src/conf/local.override.yaml
+*.env
+.env
+*.ipynb

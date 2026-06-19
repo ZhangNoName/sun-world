@@ -1,0 +1,41 @@
+.sun-pagination {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.sun-pagination__pages {
+  display: inline-flex;
+  gap: var(--space-1, 0.25rem);
+}
+
+.sun-pagination__mobile-scroll {
+  max-height: 96px;
+  overflow-y: auto;
+}
+
+.sun-pagination__page {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.sun-pagination__page.is-active {
+  border-color: var(--sun-ui-color-primary);
+  color: var(--sun-ui-color-primary);
+}
+
+.sun-pagination__load-more {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 var(--space-3, 0.75rem);
+  width: 100%;
+}

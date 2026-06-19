@@ -1,6 +1,6 @@
-import { BaseElement } from '@/elements/baseElement.class'
+import { BaseElement } from "../../elements/baseElement.class"
 import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../../viewport/viewport"
 import { SystemCursor } from '../../cursor/cursorManager'
 
 export default class DragTool extends BaseTool {
