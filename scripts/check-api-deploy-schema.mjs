@@ -31,11 +31,16 @@ if (!migration) {
 
 if (workflow) {
   const requiredFragments = [
-    'API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api',
+    'GHCR_API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api',
+    'TCR_API_IMAGE_NAME',
+    'api_changed:',
+    'build-api:',
     'Run API checks',
     'Build and push API image',
     'api-deploy-metadata-${{ github.sha }}',
-    'API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ github.sha }}',
+    'API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}',
+    'API_IMAGE: ${{ needs.build-api.outputs.deploy_image }}',
+    'if [ "$API_CHANGED" = "true" ]; then',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
     '/home/lighthouse/.config/blog_end/auth.env',

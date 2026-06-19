@@ -50,14 +50,24 @@ been cut over yet:
 - Backend monorepo source path: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source exposes `/readyz` for dependency readiness; the
   current production backend remains on the legacy path until deliberate cutover.
-- GitHub Actions now builds and pushes the monorepo API image
-  `ghcr.io/zhangnoname/sun-world-api:<git-sha>` after the frontend
-  package/check stage. The workflow uses that image to run
-  `python -m src.database.mysql.schema_migration --mode apply` on the server,
-  so missing MySQL application tables/columns can be created conservatively.
-  The workflow does not start the API container, change Nginx, or restart
-  `blog-api.service`; API traffic still stays on the existing production
-  service until explicit cutover approval.
+- GitHub Actions deploy is split by changed deploy target:
+  `detect-changes` decides whether web, API, both, or neither need deployment.
+  `build-web` and `build-api` run only for their changed target and can prepare
+  images independently. The final deploy job opens one Lighthouse SSH session
+  and only pulls/switches the changed image(s). If both web and API changed,
+  both images must be ready before deployment starts.
+- The workflow always pushes frontend/API images to GHCR. If Tencent Cloud TCR
+  variables/secrets are configured, it also pushes the same tags to TCR and the
+  server deploy pulls the TCR image tag. Tencent Cloud Docker mirror
+  `https://mirror.ccs.tencentyun.com` remains a separate one-time server Docker
+  daemon setting for DockerHub base-image acceleration; it does not replace TCR
+  for Sun World application images.
+- API deployment still only runs
+  `python -m src.database.mysql.schema_migration --mode apply` from the new API
+  image, so missing MySQL application tables/columns can be created
+  conservatively. The workflow does not start the API container, change Nginx,
+  or restart `blog-api.service`; API traffic still stays on the existing
+  production service until explicit cutover approval.
 - The API MySQL schema guard is declared in
   `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use

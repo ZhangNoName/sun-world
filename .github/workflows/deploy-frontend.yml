@@ -15,15 +15,106 @@ permissions:
   packages: write
 
 env:
-  FRONTEND_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-frontend
-  API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api
+  GHCR_FRONTEND_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-frontend
+  GHCR_API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api
+  TCR_REGISTRY: ${{ vars.TCR_REGISTRY }}
+  TCR_FRONTEND_IMAGE_NAME: ${{ vars.TCR_FRONTEND_IMAGE_NAME }}
+  TCR_API_IMAGE_NAME: ${{ vars.TCR_API_IMAGE_NAME }}
 
 jobs:
-  build-push-deploy:
-    name: Build, push, and deploy frontend
+  detect-changes:
+    name: Detect changed deploy targets
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    outputs:
+      web_changed: ${{ steps.detect.outputs.web_changed }}
+      api_changed: ${{ steps.detect.outputs.api_changed }}
+      any_changed: ${{ steps.detect.outputs.any_changed }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed deploy targets
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          web_changed=false
+          api_changed=false
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            web_changed=true
+            api_changed=true
+            changed_files=".github/workflows/deploy-frontend.yml"
+          else
+            before="${{ github.event.before }}"
+            after="${{ github.sha }}"
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+              if git rev-parse "$after^" >/dev/null 2>&1; then
+                before="$after^"
+                changed_files="$(git diff --name-only "$before" "$after")"
+              else
+                changed_files="$(git ls-tree -r --name-only "$after")"
+              fi
+            else
+              changed_files="$(git diff --name-only "$before" "$after")"
+            fi
+          fi
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            case "$file" in
+              .github/workflows/deploy-frontend.yml|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|tsconfig.json)
+                web_changed=true
+                api_changed=true
+                ;;
+              Dockerfile|apps/web/*|apps/web/**|packages/contracts/*|packages/contracts/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
+                web_changed=true
+                ;;
+              apps/api/*|apps/api/**|deploy/backend/*|deploy/backend/**)
+                api_changed=true
+                ;;
+              deploy/frontend/*|deploy/frontend/**|scripts/check-github-actions-deploy.mjs|scripts/check-all.mjs)
+                web_changed=true
+                api_changed=true
+                ;;
+              scripts/check-web*|scripts/generate-web-*|scripts/check-contract*|scripts/run-workspace-script.mjs)
+                web_changed=true
+                ;;
+              scripts/run-api-check.mjs|scripts/check-api*|scripts/check-admin*|scripts/check-metrics*|scripts/check-request*|scripts/check-rum*)
+                api_changed=true
+                ;;
+            esac
+          done <<< "$changed_files"
+
+          if [ "$web_changed" = "true" ] || [ "$api_changed" = "true" ]; then
+            any_changed=true
+          else
+            any_changed=false
+          fi
+
+          {
+            echo "web_changed=$web_changed"
+            echo "api_changed=$api_changed"
+            echo "any_changed=$any_changed"
+          } >> "$GITHUB_OUTPUT"
+
+          printf 'Changed files:\n%s\n' "$changed_files"
+          printf 'web_changed=%s api_changed=%s any_changed=%s\n' \
+            "$web_changed" "$api_changed" "$any_changed"
+
+  build-web:
+    name: Build and push frontend image
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web_changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
     steps:
       - name: Checkout
@@ -60,10 +151,32 @@ jobs:
       - name: Prepare build artifacts
         run: |
           mkdir -p deploy-artifacts
-          printf '%s\n' "${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}" > deploy-artifacts/image.txt
           printf '%s\n' "${{ github.sha }}" > deploy-artifacts/commit.txt
           cp apps/web/dist/build-manifest.json deploy-artifacts/build-manifest.json
           cp apps/web/dist/build-summary.json deploy-artifacts/build-summary.json
+
+      - name: Prepare frontend image tags
+        id: image-meta
+        env:
+          TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+          TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_image="${GHCR_FRONTEND_IMAGE_NAME}:${{ github.sha }}"
+          {
+            echo "tags<<EOF"
+            echo "${GHCR_FRONTEND_IMAGE_NAME}:${{ github.sha }}"
+            echo "${GHCR_FRONTEND_IMAGE_NAME}:latest"
+            if [ -n "${TCR_REGISTRY:-}" ] && [ -n "${TCR_FRONTEND_IMAGE_NAME:-}" ] && [ -n "${TCR_USERNAME:-}" ] && [ -n "${TCR_PASSWORD:-}" ]; then
+              echo "${TCR_FRONTEND_IMAGE_NAME}:${{ github.sha }}"
+              echo "${TCR_FRONTEND_IMAGE_NAME}:latest"
+              deploy_image="${TCR_FRONTEND_IMAGE_NAME}:${{ github.sha }}"
+            fi
+            echo "EOF"
+            echo "deploy_image=$deploy_image"
+          } >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$deploy_image" > deploy-artifacts/image.txt
 
       - name: Upload frontend dist artifact
         uses: actions/upload-artifact@v4
@@ -89,15 +202,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to TCR
+        env:
+          TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+          TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${TCR_REGISTRY:-}" ] && [ -n "${TCR_USERNAME:-}" ] && [ -n "${TCR_PASSWORD:-}" ]; then
+            echo "$TCR_PASSWORD" | docker login "$TCR_REGISTRY" -u "$TCR_USERNAME" --password-stdin
+          else
+            echo "TCR credentials are not configured; pushing frontend image to GHCR only."
+          fi
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
-          tags: |
-            ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.FRONTEND_IMAGE_NAME }}:latest
+          tags: ${{ steps.image-meta.outputs.tags }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -105,14 +229,74 @@ jobs:
             VITE_BASE_URL=${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
             VITE_TELEMETRY_ENDPOINT=${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
 
+  build-api:
+    name: Build and push API image
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api_changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install API dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ./apps/api
+
       - name: Run API checks
         run: pnpm check:api
 
       - name: Prepare API deploy artifacts
         run: |
           mkdir -p api-deploy-artifacts
-          printf '%s\n' "${{ env.API_IMAGE_NAME }}:${{ github.sha }}" > api-deploy-artifacts/image.txt
           printf '%s\n' "${{ github.sha }}" > api-deploy-artifacts/commit.txt
+
+      - name: Prepare API image tags
+        id: image-meta
+        env:
+          TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+          TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_image="${GHCR_API_IMAGE_NAME}:${{ github.sha }}"
+          {
+            echo "tags<<EOF"
+            echo "${GHCR_API_IMAGE_NAME}:${{ github.sha }}"
+            echo "${GHCR_API_IMAGE_NAME}:latest"
+            if [ -n "${TCR_REGISTRY:-}" ] && [ -n "${TCR_API_IMAGE_NAME:-}" ] && [ -n "${TCR_USERNAME:-}" ] && [ -n "${TCR_PASSWORD:-}" ]; then
+              echo "${TCR_API_IMAGE_NAME}:${{ github.sha }}"
+              echo "${TCR_API_IMAGE_NAME}:latest"
+              deploy_image="${TCR_API_IMAGE_NAME}:${{ github.sha }}"
+            fi
+            echo "EOF"
+            echo "deploy_image=$deploy_image"
+          } >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$deploy_image" > api-deploy-artifacts/image.txt
 
       - name: Upload API deployment metadata artifact
         uses: actions/upload-artifact@v4
@@ -121,41 +305,102 @@ jobs:
           path: api-deploy-artifacts
           retention-days: 30
 
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to TCR
+        env:
+          TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+          TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${TCR_REGISTRY:-}" ] && [ -n "${TCR_USERNAME:-}" ] && [ -n "${TCR_PASSWORD:-}" ]; then
+            echo "$TCR_PASSWORD" | docker login "$TCR_REGISTRY" -u "$TCR_USERNAME" --password-stdin
+          else
+            echo "TCR credentials are not configured; pushing API image to GHCR only."
+          fi
+
       - name: Build and push API image
         uses: docker/build-push-action@v6
         with:
           context: apps/api
           file: apps/api/Dockerfile
           push: true
-          tags: |
-            ${{ env.API_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.API_IMAGE_NAME }}:latest
+          tags: ${{ steps.image-meta.outputs.tags }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.title=sun-world-api
 
+  deploy:
+    name: Deploy changed images on Lighthouse
+    needs:
+      - detect-changes
+      - build-web
+      - build-api
+    if: |
+      always() &&
+      needs.detect-changes.outputs.any_changed == 'true' &&
+      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped') &&
+      (needs.build-api.result == 'success' || needs.build-api.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
       - name: Deploy frontend and apply API schema on Lighthouse
         uses: appleboy/ssh-action@v1
         env:
-          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
-          API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+          WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}
+          API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
+          FRONTEND_IMAGE: ${{ needs.build-web.outputs.deploy_image }}
+          API_IMAGE: ${{ needs.build-api.outputs.deploy_image }}
+          TCR_REGISTRY: ${{ vars.TCR_REGISTRY }}
+          TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+          TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
         with:
           host: ${{ vars.LIGHTHOUSE_HOST }}
           username: ${{ vars.LIGHTHOUSE_USER }}
           key: ${{ secrets.LIGHTHOUSE_SSH_KEY }}
           port: ${{ vars.LIGHTHOUSE_PORT || '22' }}
-          envs: FRONTEND_IMAGE,API_IMAGE
+          envs: WEB_CHANGED,API_CHANGED,FRONTEND_IMAGE,API_IMAGE,TCR_REGISTRY,TCR_USERNAME,TCR_PASSWORD
           command_timeout: 90m
           script: |
             set -euo pipefail
-            sudo docker pull "$FRONTEND_IMAGE"
-            sudo docker rm -f my-frontend || true
-            sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
-            sudo docker pull "$API_IMAGE"
-            sudo docker run --rm --network host \
-              -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
-              "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+            if [ -n "${TCR_REGISTRY:-}" ] && [ -n "${TCR_USERNAME:-}" ] && [ -n "${TCR_PASSWORD:-}" ]; then
+              echo "$TCR_PASSWORD" | sudo docker login "$TCR_REGISTRY" -u "$TCR_USERNAME" --password-stdin
+            fi
+            if [ "$WEB_CHANGED" = "true" ]; then
+              sudo docker pull "$FRONTEND_IMAGE"
+              sudo docker rm -f my-frontend || true
+              sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
+            else
+              echo "No frontend deploy needed."
+            fi
+            if [ "$API_CHANGED" = "true" ]; then
+              sudo docker pull "$API_IMAGE"
+              sudo docker run --rm --network host \
+                -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
+                "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+            else
+              echo "No API schema apply needed."
+            fi
             sudo docker image prune -f
             curl -fsSI https://sunworld.site
             curl -fsSI https://www.sunworld.site
+
+  no-deploy:
+    name: No deployable changes
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any_changed == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip deploy
+        run: echo "No frontend or API deployable changes detected."

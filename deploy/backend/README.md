@@ -53,6 +53,11 @@ ghcr.io/zhangnoname/sun-world-api:<git-sha>
 ghcr.io/zhangnoname/sun-world-api:latest
 ```
 
+When Tencent Cloud Container Registry is configured in GitHub Actions, the same
+API image tags are also pushed to `TCR_API_IMAGE_NAME`, and the Lighthouse
+deploy step pulls that TCR tag instead of GHCR. This keeps API schema apply
+close to the Tencent Cloud server and avoids slow cross-registry pulls.
+
 The workflow keeps an `api-deploy-metadata-<git-sha>` artifact with the image
 tag and commit. It does not start the API container and does not replace
 `blog-api.service`; backend traffic remains on the existing production service

@@ -4,11 +4,11 @@
   - Goal: after the frontend packaging/deploy workflow succeeds, also build
     and publish the Python API image, while keeping MySQL application schema
     fields correct for new builds.
-  - Status: implemented on clean PR branch
-    `codex/api-image-schema-clean4`; draft PR opened at
-    `https://github.com/ZhangNoName/sun-world/pull/4` with GitGuardian
-    passing and merge state `CLEAN`. Older draft PRs #1, #2, and #3 were
-    closed as superseded. No production API cutover was run.
+  - Status: merged to `main` through PR #4, then refined directly on `main`.
+    The workflow is being optimized from one serial deploy job into
+    change-detected `build-web`, `build-api`, and unified `deploy` jobs with
+    optional Tencent Cloud TCR image push/pull. Older draft PRs #1, #2, and #3
+    were closed as superseded. No production API cutover was run.
   - Important files touched:
     - `.github/workflows/deploy-frontend.yml`
     - `apps/api/src/database/mysql/schema_migration.py`
@@ -22,11 +22,15 @@
     - `deploy/frontend/README.md`
     - `docs/current-state.md`
   - Workflow behavior:
-    - Frontend check/build/artifacts still run first.
-    - The workflow now runs `pnpm check:api`, uploads
-      `api-deploy-metadata-<git-sha>`, builds and pushes
-      `ghcr.io/zhangnoname/sun-world-api:<git-sha>` and `latest`.
-    - On the Lighthouse server, the workflow pulls the API image and runs
+    - `detect-changes` classifies each push as web, API, both, or no deploy.
+    - `build-web` runs `pnpm check:web`, retains frontend artifacts, and
+      pushes the frontend image only when web files changed.
+    - `build-api` runs `pnpm check:api`, retains API deploy metadata, and
+      pushes the API image only when API files changed.
+    - Both image jobs always push GHCR tags. If all TCR variables/secrets are
+      present, they also push TCR tags and the server deploy uses TCR images.
+    - The deploy job waits for required image builds, then opens one SSH
+      session and only pulls/switches changed targets. If API changed, it runs
       `python -m src.database.mysql.schema_migration --mode apply` from that
       image with the production secret env file mounted read-only.
     - The workflow does not start the API container, change Nginx, or restart
@@ -58,10 +62,23 @@
     - GitGuardian passed on PR #4 after excluding historical `.env*` deletion
       diff lines and rewording a PostgreSQL docstring that looked like a
       generic password declaration.
+    - After PR #4 merged, main workflow failures were fixed in follow-up
+      commits:
+      - `e8a49f8` made contract route file scanning independent of `rg`.
+      - `c68d497` made legacy API file scanning independent of `rg`.
+      - `d88d151` installed API Python dependencies in CI and lazy-loaded
+        MySQL migration database dependencies for static checks.
+      - `cf842a0` increased deploy timeout after first API image pull exceeded
+        30 minutes.
+    - Latest optimization work adds change detection, split web/API builds,
+      optional TCR image push/pull, and server deploy that only touches changed
+      targets. Local protocol checks passed before pushing this optimization:
+      `pnpm check:github-actions:deploy`, `pnpm check:api:deploy-schema`, YAML
+      workflow parsing, and `git diff --check`.
   - Next suggested step:
-    - Review draft PR #4 before merging. When it reaches `main`, the first
-      Actions run should be watched closely because it will execute the
-      production MySQL schema `apply` path from the API image.
+    - Push the split/TCR workflow optimization to `main`, then watch the next
+      GitHub Actions run. Configure Tencent Cloud TCR variables/secrets before
+      expecting the server to pull TCR image tags.
 
 - Latest task addendum (2026-06-19, P1.56 GitHub Actions frontend deploy):
   - Goal: add a GitHub Actions workflow that deploys the frontend on every
