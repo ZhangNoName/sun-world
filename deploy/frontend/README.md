@@ -26,8 +26,9 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 ## GitHub Actions Deploy
 
 `.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
-It runs on every `main` branch push and can also be run manually with
-`workflow_dispatch`; choose the `main` branch for manual production deploys.
+It runs on non-documentation `main` branch pushes and can also be run manually
+with `workflow_dispatch`; choose the `main` branch for manual production
+deploys. Documentation-only pushes are ignored.
 
 The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
 `main` changes arrive while a deploy is still running, the older in-progress run

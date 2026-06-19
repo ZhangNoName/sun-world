@@ -74,9 +74,10 @@ been cut over yet:
   the same API config as the app; `apply` only creates missing tables/columns
   and fails on incompatible existing column types instead of rewriting data.
 - GitHub Actions CI is defined in `.github/workflows/ci.yml`. It runs on pull
-  requests, `main` pushes, and manual dispatch; it verifies the Prettier
-  formatting protocol, GitHub Actions protocol guards, frontend checks, API
-  checks, UI package tests, and contracts tests without deploying.
+  requests, non-documentation `main` pushes, and manual dispatch; it verifies
+  the Prettier formatting protocol, GitHub Actions protocol guards, frontend
+  checks, API checks, UI package tests, and contracts tests without deploying.
+  Documentation-only push changes are ignored by the workflow trigger.
 - Prettier formatting is configured by `.prettierrc.json` and runs through
   `scripts/format-changed.mjs`, which checks or writes changed supported files
   only. Markdown and Python are intentionally excluded in `.prettierignore` for
