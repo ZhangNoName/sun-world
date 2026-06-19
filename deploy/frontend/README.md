@@ -1,9 +1,9 @@
 # Frontend Deploy
 
-前端通过 Docker 部署，容器名 `my-frontend`，宿主机端口 `8081`。
-The frontend is deployed via Docker, container name `my-frontend`, host port `8081`.
+The frontend is deployed via Docker, container name `my-frontend`, host port
+`8081`.
 
-## 手动部署 / Manual Deploy
+## Manual Deploy
 
 ```bash
 cd /home/lighthouse/blog/sun-world
@@ -12,10 +12,10 @@ docker rm -f my-frontend || true
 docker run -d --restart unless-stopped --name my-frontend -p 8081:80 blog-front:latest
 ```
 
-## 自动部署 / Auto Deploy
+## Auto Deploy
 
-`sun-world-auto-deploy.timer` 每日 03:30 CST 从 `origin/main` 自动构建部署。
-The systemd timer `sun-world-auto-deploy.timer` auto-builds from `origin/main` daily at 03:30 CST.
+The systemd timer `sun-world-auto-deploy.timer` auto-builds from `origin/main`
+daily at 03:30 CST.
 
 ```bash
 sudo systemctl status sun-world-auto-deploy.timer
@@ -50,7 +50,7 @@ The pipeline:
 12. runs the API image's MySQL schema migration command,
 13. verifies `https://sunworld.site` and `https://www.sunworld.site`.
 
-Images are pushed with both tags:
+Frontend images are pushed with both tags:
 
 ```text
 ghcr.io/zhangnoname/sun-world-frontend:<git-sha>
@@ -73,15 +73,21 @@ new backend builds can add missing MySQL tables or columns before a later API
 cutover. Existing incompatible columns make the workflow fail rather than
 rewriting data.
 
-### Required GitHub Variables
+The Lighthouse deploy user currently runs Docker through passwordless
+`sudo docker`, so the workflow does not require the SSH user to be in the
+`docker` group.
+
+## Required GitHub Variables
 
 Configure these under GitHub repository settings as Variables:
 
 ```text
-LIGHTHOUSE_HOST      # server host or IP
-LIGHTHOUSE_USER      # SSH user, for example lighthouse
-LIGHTHOUSE_PORT      # optional, defaults to 22
+LIGHTHOUSE_HOST
+LIGHTHOUSE_USER
+LIGHTHOUSE_PORT
 ```
+
+`LIGHTHOUSE_PORT` can be set to `22` for the default SSH port.
 
 Optional GitHub Actions variables:
 
@@ -90,12 +96,19 @@ VITE_BASE_URL
 VITE_TELEMETRY_ENDPOINT
 ```
 
-### Required GitHub Secrets
+When unset, the workflow uses the production defaults:
+
+```text
+https://api.sunworld.site
+https://api.sunworld.site/telemetry/events
+```
+
+## Required GitHub Secrets
 
 Configure this under GitHub repository settings as a Secret:
 
 ```text
-LIGHTHOUSE_SSH_KEY   # private SSH key for deployment
+LIGHTHOUSE_SSH_KEY
 ```
 
 Do not commit SSH keys, GHCR tokens, `.env` values, or server secrets to the
@@ -105,13 +118,6 @@ GitHub Actions publishes to GHCR with the built-in `GITHUB_TOKEN` and requires
 workflow package write permission. The server must already be able to pull the
 GHCR image, for example through a prior `docker login ghcr.io`.
 
-When unset, the workflow uses the production defaults:
-
-```text
-https://api.sunworld.site
-https://api.sunworld.site/telemetry/events
-```
-
 Artifacts are retained for 30 days:
 
 - `frontend-dist-<git-sha>` keeps the generated `apps/web/dist` output.
@@ -119,7 +125,7 @@ Artifacts are retained for 30 days:
   manifest, and build summary.
 - `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
 
-## 验证 / Verification
+## Verification
 
 ```bash
 curl -I https://sunworld.site
@@ -128,17 +134,13 @@ curl -I https://www.sunworld.site
 
 ## Dockerfile
 
-根目录的 `Dockerfile` 是构建来源。
-The root `Dockerfile` is the build source.
+The root `Dockerfile` is the frontend image build source.
 
-构建流程 / Build flow:
-1. 使用 Node 22 镜像安装 pnpm 并构建 `apps/web`
-2. 将 `apps/web/dist` 复制到 Nginx Alpine 镜像中
-3. Nginx 在 80 端口提供静态文件服务
+Build flow:
 
-1. Node 22 image installs pnpm and builds `apps/web`
-2. `apps/web/dist` is copied into the Nginx Alpine image
-3. Nginx serves static files on port 80
+1. Node 22 image installs pnpm and builds `apps/web`.
+2. `apps/web/dist` is copied into the Nginx Alpine image.
+3. Nginx serves static files on port 80.
 
 ## Compose
 
