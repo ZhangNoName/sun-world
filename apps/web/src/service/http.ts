@@ -3,6 +3,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios'
+import { API_BASE_URL } from '@/shared/config'
 import { useAuthStore } from '@/store/auth'
 import { getDeviceId } from '@/util/auth'
 import {
@@ -21,7 +22,7 @@ import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
 
-const baseURL = import.meta.env.VITE_BASE_URL
+const baseURL = API_BASE_URL
 //默认请求超时时间
 const timeout = 30000
 

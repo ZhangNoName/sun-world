@@ -33,6 +33,7 @@ function stripRouteOnlyPreloadsPlugin() {
 export default defineConfig(({ mode }) => {
   // 加载 .env.[mode] 文件
   const env = loadEnv(mode, process.cwd())
+  const devApiTarget = env.VITE_DEV_API_TARGET || 'http://127.0.0.1:8000'
 
   const isProd = mode === 'production'
   const isNeedVisualizer = mode === 'visualizer'
@@ -66,6 +67,13 @@ export default defineConfig(({ mode }) => {
         '127.0.0.1',
         'transequatorial-jeanice-enabling.ngrok-free.dev',
       ],
+      proxy: {
+        '/api': {
+          target: devApiTarget,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+      },
       fs: {
         allow: ['..'],
       },

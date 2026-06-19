@@ -36,6 +36,10 @@ run('Legacy API entrypoint check', 'node', [
   'scripts/check-legacy-api-entrypoints.mjs',
 ])
 
+run('Frontend API base and dev proxy check', 'node', [
+  'scripts/check-web-api-config.mjs',
+])
+
 run('Contracts tests', 'pnpm', ['test:contracts'])
 
 run('Contracts generate script check', 'pnpm', ['check:contracts:generate'])

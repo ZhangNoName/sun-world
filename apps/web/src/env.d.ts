@@ -11,6 +11,8 @@ declare global {
     readonly VITE_LANGCHAIN_API_KEY: string
     readonly VITE_LANGCHAIN_PROJECT: string
     readonly VITE_BASE_URL: string
+    /** Local Vite proxy target for backend API development. */
+    readonly VITE_DEV_API_TARGET?: string
     /** AI 服务地址，不配置则使用 VITE_BASE_URL */
     readonly VITE_AI_URL?: string
   }

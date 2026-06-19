@@ -1,4 +1,5 @@
 import { API_ROUTES } from '@sun-world/contracts'
+import { API_BASE_URL } from '@/shared/config'
 import { apiPost } from '@/shared/api'
 import type { AiChatPayload, AiStreamMessage, AiStreamOptions } from './types'
 
@@ -159,9 +160,7 @@ function handleStreamLine(line: string, options: AiStreamOptions): boolean {
 
 function buildAiUrl(path: string): string {
   const baseUrl = (
-    import.meta.env.VITE_AI_URL ||
-    import.meta.env.VITE_BASE_URL ||
-    ''
+    import.meta.env.VITE_AI_URL || API_BASE_URL
   ).trim()
 
   if (!baseUrl) {
