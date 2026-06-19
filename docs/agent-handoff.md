@@ -1,5 +1,52 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.60 Tencent CCR deploy path):
+  - Goal: replace slow GitHub Actions to Lighthouse image archive uploads with
+    Tencent CCR personal edition push/pull, and allow manual rollback to a
+    previous known-good image tag.
+  - Status: implemented locally; not committed yet.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `deploy/frontend/README.md`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Automatic deploy now runs through `workflow_run` only after the `CI`
+      workflow succeeds on `main`.
+    - GitHub Actions logs in to Tencent CCR personal edition and pushes
+      commit-SHA frontend/API image tags under
+      `ccr.ccs.tencentyun.com/<namespace>/...`.
+    - Lighthouse no longer receives image tar archives from GitHub Actions.
+      The deploy job SSHes to the server and runs `sudo docker pull` for the
+      changed CCR images.
+    - Manual deploy supports `build-and-deploy`, `build-only`, and
+      `deploy-existing`. `deploy-existing` requires `image_tag` and can restore
+      a previous known-good frontend/API image without rebuilding.
+    - API behavior is unchanged: the API image is only used for
+      `schema_migration --mode apply`; it does not start the API container,
+      change Nginx, or restart `blog-api.service`.
+  - Required configuration:
+    - GitHub Variables: `TENCENT_CCR_REGISTRY`,
+      `TENCENT_CCR_NAMESPACE`, `TENCENT_CCR_USERNAME`, plus existing
+      Lighthouse SSH variables.
+    - GitHub Secret: `TENCENT_CCR_PASSWORD`, plus existing
+      `LIGHTHOUSE_SSH_KEY`.
+    - Server Docker login has already succeeded for
+      `ccr.ccs.tencentyun.com`.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:api:deploy-schema` passed.
+    - `pnpm check:github-actions:ci` passed.
+    - `pnpm format:check` passed after running `pnpm format` on changed
+      Prettier-supported workflow/script files.
+    - Python/PyYAML parsed `.github/workflows/ci.yml` and
+      `.github/workflows/deploy.yml`.
+    - `node --check` passed for the modified GitHub Actions guard scripts.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+
 - Latest task addendum (2026-06-19, P1.59 no-registry deployment path):
   - Goal: remove the GHCR/TCR server pull path because Lighthouse deployment
     was spending 40+ minutes retrying GHCR layer downloads.

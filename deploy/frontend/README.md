@@ -26,12 +26,24 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 ## GitHub Actions Deploy
 
 `.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
-It runs on non-documentation `main` branch pushes and can also be run manually
-with `workflow_dispatch`; choose the `main` branch for manual production
-deploys. Documentation-only pushes are ignored. Workflow-only, deploy-doc, and
-local verification script changes still validate the deployment workflow shape,
-but they exit through `no-deploy` instead of rebuilding and transferring
-production images.
+It runs automatically after the `CI` workflow succeeds on the `main` branch and
+can also be run manually with `workflow_dispatch`; choose the `main` branch for
+manual production deploys. Documentation-only pushes are ignored by CI, so they
+do not trigger deployment. Workflow-only, deploy-doc, and local verification
+script changes still validate the deployment workflow shape, but they exit
+through `no-deploy` instead of rebuilding production images.
+
+Manual runs support three modes:
+
+- `build-and-deploy`: build current ref images, push them to Tencent CCR, then
+  deploy the selected target.
+- `build-only`: build current ref images and push them to Tencent CCR without
+  touching production.
+- `deploy-existing`: skip builds and deploy an existing CCR image tag. Use this
+  with a previous commit SHA when rolling back after a bad upgrade.
+
+Manual runs also accept `target` as `all`, `web`, or `api`. The `image_tag`
+input is required only for `deploy-existing`.
 
 The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
 `main` changes arrive while a deploy is still running, the older in-progress run
@@ -42,33 +54,33 @@ The pipeline is split by changed deploy target:
 1. `detect-changes` checks the pushed file list.
 2. `build-web` runs only when frontend-related files changed.
 3. `build-api` runs only when API-related files changed.
-4. Each build job creates a local Docker image and saves it as a compressed
-   artifact instead of pushing it to a registry.
-5. `deploy` waits for the required image artifacts, downloads them inside
-   GitHub Actions, copies them to Lighthouse with `scp`, then runs `docker load`
-   on the server.
-6. If only frontend changed, deploy loads and recreates `my-frontend` only.
-7. If only API changed, deploy loads the API image and runs only the MySQL
+4. Automatic deploys rely on the completed CI result. Manual deploys also run
+   the frontend/API checks inside their build jobs before publishing images.
+5. Each build job pushes a commit-specific Docker image to Tencent CCR.
+6. `deploy` waits for the required pushed images, SSHes to Lighthouse, and runs
+   `docker pull` from Tencent CCR on the server.
+7. If only frontend changed, deploy pulls and recreates `my-frontend` only.
+8. If only API changed, deploy pulls the API image and runs only the MySQL
    schema migration command.
-8. If both changed, both image artifacts are ready before the deploy job
+9. If both changed, both images are pushed before the deploy job
    performs the frontend switch and API schema apply in one server session.
-9. If no deployable files changed, the workflow exits through the `no-deploy`
+10. If no deployable files changed, the workflow exits through the `no-deploy`
    job. This includes changes limited to GitHub Actions workflow files,
    deployment docs, or local verification scripts.
 
-Frontend images are tagged locally with the commit SHA:
+Frontend images are tagged in Tencent CCR with the commit SHA:
 
 ```text
-sun-world-frontend:<git-sha>
+ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:<git-sha>
 ```
 
 The server deploy step uses the `<git-sha>` tag so a specific deployment can be
-audited or rolled back from retained artifacts.
+audited or rolled back from the registry.
 
-The API image is also tagged locally:
+The API image is also tagged in Tencent CCR:
 
 ```text
-sun-world-api:<git-sha>
+ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha>
 ```
 
 The API image is not started by this workflow. It is used to run
@@ -81,13 +93,13 @@ The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the
 `docker` group.
 
-## Image Transfer
+## Image Registry
 
-The deploy job intentionally does not pull application images from a registry.
-Server-side registry pulls were too slow from Lighthouse. GitHub Actions now
-keeps `frontend-image-<git-sha>` and `api-image-<git-sha>` artifacts, transfers
-the changed archive files over SSH, and runs `sudo docker load -i ...` on the
-server.
+GitHub Actions pushes application images to Tencent Cloud Container Registry
+personal edition at `ccr.ccs.tencentyun.com`. Lighthouse is already logged in to
+the registry with Docker, so deployment only needs to run `sudo docker pull`
+for the changed commit-specific image tags. This avoids long cross-border image
+archive uploads from GitHub Actions to the server.
 
 ## Required GitHub Variables
 
@@ -97,9 +109,13 @@ Configure these under GitHub repository settings as Variables:
 LIGHTHOUSE_HOST
 LIGHTHOUSE_USER
 LIGHTHOUSE_PORT
+TENCENT_CCR_REGISTRY
+TENCENT_CCR_NAMESPACE
+TENCENT_CCR_USERNAME
 ```
 
 `LIGHTHOUSE_PORT` can be set to `22` for the default SSH port.
+`TENCENT_CCR_REGISTRY` can be `ccr.ccs.tencentyun.com`.
 
 Optional GitHub Actions variables:
 
@@ -121,6 +137,7 @@ Configure this under GitHub repository settings as a Secret:
 
 ```text
 LIGHTHOUSE_SSH_KEY
+TENCENT_CCR_PASSWORD
 ```
 
 Do not commit SSH keys, `.env` values, or server secrets to the
@@ -131,13 +148,18 @@ Artifacts are retained for 30 days:
 - `frontend-dist-<git-sha>` keeps the generated `apps/web/dist` output.
 - `frontend-deploy-metadata-<git-sha>` keeps the image tag, commit, build
   manifest, and build summary.
-- `frontend-image-<git-sha>` keeps the compressed frontend Docker image
-  archive.
 - `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
-- `api-image-<git-sha>` keeps the compressed API Docker image archive.
 
 Each retained artifact is tied to the commit-specific image tag written by the
 job that actually ran.
+
+Rollback example:
+
+1. Open the `Deploy Sun World` workflow in GitHub Actions.
+2. Select `Run workflow` on `main`.
+3. Set `mode` to `deploy-existing`.
+4. Set `target` to `web`, `api`, or `all`.
+5. Set `image_tag` to the last known good commit SHA.
 
 ## Verification
 

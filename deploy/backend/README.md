@@ -49,15 +49,15 @@ change.
 Image tag:
 
 ```text
-sun-world-api:<git-sha>
+ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha>
 ```
 
-The workflow saves the image as `api-image-<git-sha>`, transfers the changed
-image archive to Lighthouse with `scp`, and loads it with `docker load`. It
-also keeps an `api-deploy-metadata-<git-sha>` artifact with the image tag and
-commit. It does not start the API container and does not replace
-`blog-api.service`; backend traffic remains on the existing production service
-until a separate cutover is approved.
+The workflow pushes the API image to Tencent CCR and the Lighthouse deploy step
+runs `sudo docker pull` for the changed commit-specific tag. It also keeps an
+`api-deploy-metadata-<git-sha>` artifact with the image tag and commit. It does
+not start the API container and does not replace `blog-api.service`; backend
+traffic remains on the existing production service until a separate cutover is
+approved.
 
 ## MySQL Schema Guard
 
@@ -81,7 +81,7 @@ image with the production secret env file mounted read-only:
 ```bash
 sudo docker run --rm --network host \
   -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
-  sun-world-api:<git-sha> \
+  ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha> \
   /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 ```
 

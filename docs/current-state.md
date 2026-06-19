@@ -53,18 +53,22 @@ been cut over yet:
 - GitHub Actions deploy is defined in `.github/workflows/deploy.yml` and split
   by changed deploy target:
   `detect-changes` decides whether web, API, both, or neither need deployment.
-  `build-web` and `build-api` run only for their changed target and save local
-  Docker images as compressed GitHub Actions artifacts. The final deploy job
-  downloads the changed artifacts, transfers them to Lighthouse with `scp`,
-  runs `docker load`, then switches only the changed target(s). If both web and
-  API changed, both image artifacts must be ready before deployment starts.
+  Automatic deploy runs only after the `CI` workflow succeeds on `main`.
+  `build-web` and `build-api` run only for their changed target and push
+  commit-specific images to Tencent CCR personal edition at
+  `ccr.ccs.tencentyun.com`. The final deploy job SSHes to Lighthouse, runs
+  `docker pull` for changed images, then switches only the changed target(s).
+  If both web and API changed, both images must be pushed before deployment
+  starts.
   Workflow-only, deploy-doc, and local verification script changes validate
   the workflow but are not deployment targets, so they exit through the
   `no-deploy` job.
-- The deploy workflow intentionally avoids GHCR/TCR application-image pulls
-  because server-side registry pulls from Lighthouse were too slow. Retained
-  artifacts are the current rollback/audit source for built images and
-  metadata.
+- Manual deployment supports `build-and-deploy`, `build-only`, and
+  `deploy-existing` modes. `deploy-existing` skips builds and redeploys a
+  previous CCR image tag, usually a known-good commit SHA.
+- The deploy workflow intentionally avoids GHCR and GitHub-to-server image
+  archive uploads. Retained metadata artifacts and CCR commit-SHA image tags
+  are the current rollback/audit source for built images.
 - API deployment still only runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image, so missing MySQL application tables/columns can be created

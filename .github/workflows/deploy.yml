@@ -1,13 +1,35 @@
 name: Deploy Sun World
 
 'on':
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Deployment mode
+        required: true
+        default: build-and-deploy
+        type: choice
+        options:
+          - build-and-deploy
+          - build-only
+          - deploy-existing
+      target:
+        description: Deployment target
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - web
+          - api
+      image_tag:
+        description: Existing CCR image tag for deploy-existing, usually a commit SHA
+        required: false
+        type: string
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -17,24 +39,31 @@ permissions:
   contents: read
 
 env:
+  TENCENT_CCR_REGISTRY: ${{ vars.TENCENT_CCR_REGISTRY || 'ccr.ccs.tencentyun.com' }}
   FRONTEND_IMAGE_NAME: sun-world-frontend
   API_IMAGE_NAME: sun-world-api
 
 jobs:
   detect-changes:
     name: Detect changed deploy targets
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     outputs:
       web_changed: ${{ steps.detect.outputs.web_changed }}
       api_changed: ${{ steps.detect.outputs.api_changed }}
       any_changed: ${{ steps.detect.outputs.any_changed }}
+      build_needed: ${{ steps.detect.outputs.build_needed }}
+      deploy_needed: ${{ steps.detect.outputs.deploy_needed }}
+      image_tag: ${{ steps.detect.outputs.image_tag }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Detect changed deploy targets
         id: detect
@@ -44,23 +73,62 @@ jobs:
 
           web_changed=false
           api_changed=false
+          build_needed=true
+          deploy_needed=true
+          image_tag=""
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            web_changed=true
-            api_changed=true
+            mode="${{ inputs.mode }}"
+            target="${{ inputs.target }}"
+            image_tag="${{ inputs.image_tag }}"
+
+            case "$target" in
+              all)
+                web_changed=true
+                api_changed=true
+                ;;
+              web)
+                web_changed=true
+                ;;
+              api)
+                api_changed=true
+                ;;
+              *)
+                echo "Unsupported target: $target" >&2
+                exit 1
+                ;;
+            esac
+
+            case "$mode" in
+              build-and-deploy)
+                image_tag="${{ github.sha }}"
+                ;;
+              build-only)
+                image_tag="${{ github.sha }}"
+                deploy_needed=false
+                ;;
+              deploy-existing)
+                build_needed=false
+                if [ -z "$image_tag" ]; then
+                  echo "image_tag is required when mode=deploy-existing." >&2
+                  exit 1
+                fi
+                ;;
+              *)
+                echo "Unsupported mode: $mode" >&2
+                exit 1
+                ;;
+            esac
+
             changed_files=".github/workflows/deploy.yml"
           else
-            before="${{ github.event.before }}"
-            after="${{ github.sha }}"
-            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
-              if git rev-parse "$after^" >/dev/null 2>&1; then
-                before="$after^"
-                changed_files="$(git diff --name-only "$before" "$after")"
-              else
-                changed_files="$(git ls-tree -r --name-only "$after")"
-              fi
-            else
+            after="${{ github.event.workflow_run.head_sha }}"
+            image_tag="$after"
+            if git rev-parse "$after^" >/dev/null 2>&1; then
+              before="$after^"
               changed_files="$(git diff --name-only "$before" "$after")"
+            else
+              changed_files="$(git ls-tree -r --name-only "$after")"
             fi
           fi
 
@@ -98,16 +166,19 @@ jobs:
             echo "web_changed=$web_changed"
             echo "api_changed=$api_changed"
             echo "any_changed=$any_changed"
+            echo "build_needed=$build_needed"
+            echo "deploy_needed=$deploy_needed"
+            echo "image_tag=$image_tag"
           } >> "$GITHUB_OUTPUT"
 
           printf 'Changed files:\n%s\n' "$changed_files"
-          printf 'web_changed=%s api_changed=%s any_changed=%s\n' \
-            "$web_changed" "$api_changed" "$any_changed"
+          printf 'web_changed=%s api_changed=%s any_changed=%s build_needed=%s deploy_needed=%s image_tag=%s\n' \
+            "$web_changed" "$api_changed" "$any_changed" "$build_needed" "$deploy_needed" "$image_tag"
 
   build-web:
-    name: Build frontend image artifact
+    name: Build and push frontend image
     needs: detect-changes
-    if: needs.detect-changes.outputs.web_changed == 'true'
+    if: needs.detect-changes.outputs.web_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -116,6 +187,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect-changes.outputs.image_tag }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -143,16 +216,24 @@ jobs:
           python -m pip install ./apps/api
 
       - name: Run frontend checks
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm check:web
+
+      - name: Build frontend deployment artifacts
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          pnpm build:web
+          pnpm build:web:manifest
+          pnpm build:web:summary
 
       - name: Prepare build artifacts
         id: image-meta
         shell: bash
         run: |
           set -euo pipefail
-          deploy_image="${FRONTEND_IMAGE_NAME}:${{ github.sha }}"
+          deploy_image="${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
           mkdir -p deploy-artifacts
-          printf '%s\n' "${{ github.sha }}" > deploy-artifacts/commit.txt
+          printf '%s\n' "${{ needs.detect-changes.outputs.image_tag }}" > deploy-artifacts/commit.txt
           printf '%s\n' "$deploy_image" > deploy-artifacts/image.txt
           cp apps/web/dist/build-manifest.json deploy-artifacts/build-manifest.json
           cp apps/web/dist/build-summary.json deploy-artifacts/build-summary.json
@@ -161,26 +242,33 @@ jobs:
       - name: Upload frontend dist artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist-${{ github.sha }}
+          name: frontend-dist-${{ needs.detect-changes.outputs.image_tag }}
           path: apps/web/dist
           retention-days: 30
 
       - name: Upload frontend deployment metadata artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-deploy-metadata-${{ github.sha }}
+          name: frontend-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}
           path: deploy-artifacts
           retention-days: 30
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build frontend image locally
+      - name: Login to Tencent CCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.TENCENT_CCR_REGISTRY }}
+          username: ${{ vars.TENCENT_CCR_USERNAME }}
+          password: ${{ secrets.TENCENT_CCR_PASSWORD }}
+
+      - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          load: true
+          push: true
           tags: ${{ steps.image-meta.outputs.deploy_image }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
@@ -189,23 +277,10 @@ jobs:
             VITE_BASE_URL=${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
             VITE_TELEMETRY_ENDPOINT=${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
 
-      - name: Save frontend image artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker save "${{ steps.image-meta.outputs.deploy_image }}" | gzip > deploy-artifacts/frontend-image.tar.gz
-
-      - name: Upload frontend image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-image-${{ github.sha }}
-          path: deploy-artifacts/frontend-image.tar.gz
-          retention-days: 30
-
   build-api:
-    name: Build API image artifact
+    name: Build and push API image
     needs: detect-changes
-    if: needs.detect-changes.outputs.api_changed == 'true'
+    if: needs.detect-changes.outputs.api_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     outputs:
@@ -214,6 +289,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect-changes.outputs.image_tag }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -241,6 +318,7 @@ jobs:
           python -m pip install ./apps/api
 
       - name: Run API checks
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm check:api
 
       - name: Prepare API deploy artifacts
@@ -248,49 +326,43 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          deploy_image="${API_IMAGE_NAME}:${{ github.sha }}"
+          deploy_image="${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
           mkdir -p api-deploy-artifacts
-          printf '%s\n' "${{ github.sha }}" > api-deploy-artifacts/commit.txt
+          printf '%s\n' "${{ needs.detect-changes.outputs.image_tag }}" > api-deploy-artifacts/commit.txt
           printf '%s\n' "$deploy_image" > api-deploy-artifacts/image.txt
           echo "deploy_image=$deploy_image" >> "$GITHUB_OUTPUT"
 
       - name: Upload API deployment metadata artifact
         uses: actions/upload-artifact@v4
         with:
-          name: api-deploy-metadata-${{ github.sha }}
+          name: api-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}
           path: api-deploy-artifacts
           retention-days: 30
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build API image locally
+      - name: Login to Tencent CCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.TENCENT_CCR_REGISTRY }}
+          username: ${{ vars.TENCENT_CCR_USERNAME }}
+          password: ${{ secrets.TENCENT_CCR_PASSWORD }}
+
+      - name: Build and push API image
         uses: docker/build-push-action@v6
         with:
           context: apps/api
           file: apps/api/Dockerfile
-          load: true
+          push: true
           tags: ${{ steps.image-meta.outputs.deploy_image }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.title=sun-world-api
 
-      - name: Save API image artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker save "${{ steps.image-meta.outputs.deploy_image }}" | gzip > api-deploy-artifacts/api-image.tar.gz
-
-      - name: Upload API image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-image-${{ github.sha }}
-          path: api-deploy-artifacts/api-image.tar.gz
-          retention-days: 30
-
   deploy:
-    name: Deploy changed image artifacts on Lighthouse
+    name: Deploy changed CCR images on Lighthouse
     needs:
       - detect-changes
       - build-web
@@ -298,26 +370,13 @@ jobs:
     if: |
       always() &&
       needs.detect-changes.outputs.any_changed == 'true' &&
+      needs.detect-changes.outputs.deploy_needed == 'true' &&
       (needs.build-web.result == 'success' || needs.build-web.result == 'skipped') &&
       (needs.build-api.result == 'success' || needs.build-api.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
     steps:
-      - name: Download frontend image artifact
-        if: needs.detect-changes.outputs.web_changed == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-image-${{ github.sha }}
-          path: deploy-images
-
-      - name: Download API image artifact
-        if: needs.detect-changes.outputs.api_changed == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: api-image-${{ github.sha }}
-          path: deploy-images
-
       - name: Prepare SSH
         env:
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
@@ -331,57 +390,29 @@ jobs:
           chmod 600 ~/.ssh/sun_world_deploy_key
           ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
 
-      - name: Upload changed image archives
+      - name: Pull images and deploy on Lighthouse
         env:
           WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}
           API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
+          FRONTEND_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
+          API_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
           LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
           LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
-          REMOTE_RELEASE_DIR: /tmp/sun-world-deploy-${{ github.sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
-            "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" "mkdir -p '$REMOTE_RELEASE_DIR'"
-
-          if [ "$WEB_CHANGED" = "true" ]; then
-            scp -i ~/.ssh/sun_world_deploy_key -P "$LIGHTHOUSE_PORT" \
-              deploy-images/frontend-image.tar.gz \
-              "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST:$REMOTE_RELEASE_DIR/frontend-image.tar.gz"
-          fi
-
-          if [ "$API_CHANGED" = "true" ]; then
-            scp -i ~/.ssh/sun_world_deploy_key -P "$LIGHTHOUSE_PORT" \
-              deploy-images/api-image.tar.gz \
-              "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST:$REMOTE_RELEASE_DIR/api-image.tar.gz"
-          fi
-
-      - name: Load images and deploy on Lighthouse
-        env:
-          WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}
-          API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
-          FRONTEND_IMAGE: ${{ needs.build-web.outputs.deploy_image }}
-          API_IMAGE: ${{ needs.build-api.outputs.deploy_image }}
-          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
-          LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
-          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
-          REMOTE_RELEASE_DIR: /tmp/sun-world-deploy-${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
-            "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" "$REMOTE_RELEASE_DIR" <<'REMOTE'
+            "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" <<'REMOTE'
           set -euo pipefail
           WEB_CHANGED="$1"
           API_CHANGED="$2"
           FRONTEND_IMAGE="$3"
           API_IMAGE="$4"
-          REMOTE_RELEASE_DIR="$5"
 
           if [ "$WEB_CHANGED" = "true" ]; then
-            sudo docker load -i "$REMOTE_RELEASE_DIR/frontend-image.tar.gz"
+            sudo docker pull "$FRONTEND_IMAGE"
             sudo docker rm -f my-frontend || true
             sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
           else
@@ -389,7 +420,7 @@ jobs:
           fi
 
           if [ "$API_CHANGED" = "true" ]; then
-            sudo docker load -i "$REMOTE_RELEASE_DIR/api-image.tar.gz"
+            sudo docker pull "$API_IMAGE"
             sudo docker run --rm --network host \
               -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
               "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
@@ -397,17 +428,16 @@ jobs:
             echo "No API schema apply needed."
           fi
 
-          rm -rf "$REMOTE_RELEASE_DIR"
           sudo docker image prune -f
           curl -fsSI https://sunworld.site
           curl -fsSI https://www.sunworld.site
           REMOTE
 
   no-deploy:
-    name: No deployable changes
+    name: No production deploy
     needs: detect-changes
-    if: needs.detect-changes.outputs.any_changed == 'false'
+    if: needs.detect-changes.outputs.any_changed == 'false' || needs.detect-changes.outputs.deploy_needed == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Skip deploy
-        run: echo "No frontend or API deployable changes detected."
+        run: echo "No production deploy will run for this workflow."

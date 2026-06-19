@@ -42,15 +42,14 @@ if (workflow) {
     'API_IMAGE_NAME: sun-world-api',
     'api_changed:',
     'build-api:',
-    'Run API checks',
-    'Build API image artifact',
-    'docker save',
-    'api-image.tar.gz',
-    'api-deploy-metadata-${{ github.sha }}',
+    'Build and push API image',
+    'docker/login-action@v3',
+    'push: true',
+    'api-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}',
     'API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}',
-    'API_IMAGE: ${{ needs.build-api.outputs.deploy_image }}',
+    'API_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}',
     'if [ "$API_CHANGED" = "true" ]; then',
-    'sudo docker load -i "$REMOTE_RELEASE_DIR/api-image.tar.gz"',
+    'sudo docker pull "$API_IMAGE"',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
     '/home/lighthouse/.config/blog_end/auth.env',
@@ -65,7 +64,7 @@ if (workflow) {
   }
 
   if (
-    /docker compose --profile api up|systemctl restart blog-api\.service|my-api|sun-world-api.*-p 8000:8000|ghcr\.io|TCR_|docker pull/.test(
+    /docker compose --profile api up|systemctl restart blog-api\.service|my-api|sun-world-api.*-p 8000:8000|ghcr\.io|docker load|api-image\.tar\.gz/.test(
       workflow
     )
   ) {
