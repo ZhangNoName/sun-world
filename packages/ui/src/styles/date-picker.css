@@ -1,0 +1,78 @@
+.sun-date-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.sun-date-picker__input {
+  min-height: 32px;
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  padding: 0 var(--space-3, 0.75rem);
+}
+
+.sun-date-picker__clear {
+  border: 0;
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-muted-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+}
+
+.sun-date-picker--range {
+  flex-wrap: wrap;
+}
+
+.sun-date-picker__range-separator {
+  color: var(--text-secondary, #64748b);
+}
+
+.sun-date-picker__trigger {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 var(--space-3, 0.75rem);
+  width: 100%;
+}
+
+.sun-date-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-backdrop, rgba(15, 23, 42, 0.36));
+  z-index: 20;
+}
+
+.sun-date-picker__drawer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 21;
+  border-radius: var(--sun-ui-radius) var(--sun-ui-radius) 0 0;
+  background: var(--sun-ui-surface);
+  box-shadow: var(--shadow-lg, 0 18px 48px rgba(15, 23, 42, 0.12));
+  display: grid;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-4, 1rem);
+}
+
+.sun-date-picker__drawer-title {
+  color: var(--sun-ui-strong-text);
+  font-weight: 600;
+}
+
+.sun-date-picker__option {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--sun-ui-radius);
+  background: var(--sun-ui-surface);
+  color: var(--sun-ui-text);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-3, 0.75rem);
+}

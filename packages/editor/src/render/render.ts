@@ -1,7 +1,7 @@
 
-import type { ElementManager } from '@/elements/elementManager'
+import type { ElementManager } from "../elements/elementManager"
 import { debounce, rafThrottle } from '../utils/common'
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../viewport/viewport"
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
 import { applyToPoint, box2Point, matrix2Array } from '../utils/matrix'

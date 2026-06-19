@@ -1,6 +1,6 @@
 import { SystemCursor } from '../cursor/cursorManager'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../viewport/viewport"
 
 export default class DragTool extends BaseTool {
   name: ToolName = 'drag'

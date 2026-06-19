@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Sun World: Dev API",
+      "type": "shell",
+      "command": "pnpm dev:api",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "dedicated",
+        "group": "sun-world-dev",
+        "reveal": "always",
+        "focus": false,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Sun World: Dev Web",
+      "type": "shell",
+      "command": "pnpm dev:web",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "dedicated",
+        "group": "sun-world-dev",
+        "reveal": "always",
+        "focus": false,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Sun World: Dev All",
+      "dependsOn": [
+        "Sun World: Dev API",
+        "Sun World: Dev Web"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "dedicated",
+        "group": "sun-world-dev",
+        "reveal": "always",
+        "focus": false,
+        "clear": false
+      }
+    }
+  ]
+}

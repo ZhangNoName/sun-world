@@ -22,12 +22,15 @@ import { SWEditor } from '../editor'
  * 7. 维护输入状态（键盘修饰键+鼠标按键状态）
  */
 export class InputBindingManager {
-  private handlers: Map<string, InputBinding[]> = new Map<
+  private bindings: Map<string, InputBinding[]> = new Map<
     string,
     InputBinding[]
   >()
+  private handlers: Map<string, InputBindingHandler> = new Map<
+    string,
+    InputBindingHandler
+  >()
   private enabled = true
-  private editor: SWEditor
   private platform: 'mac' | 'win' = this.detectPlatform()
 
   // 输入状态管理 - 实时反映当前输入设备状态
@@ -50,9 +53,11 @@ export class InputBindingManager {
   }
 
   constructor(editor: SWEditor, config?: Partial<InputBindingConfig>) {
-    this.editor = editor
-    // this.config = this.mergeConfig(DEFAULT_INPUT_BINDINGS, config)
-    // this.enabled = this.config.enabled ?? true
+    const mergedConfig = this.mergeConfig(DEFAULT_INPUT_BINDINGS, config)
+    this.enabled = mergedConfig.enabled ?? true
+    Object.values(mergedConfig.bindings).forEach((binding) =>
+      this.addBinding(binding)
+    )
 
     console.log('InputBindingManager 初始化完成，平台:', this.platform)
   }
@@ -214,9 +219,8 @@ export class InputBindingManager {
    * @param binding 绑定配置
    */
   addBinding(binding: InputBinding): void {
-    const handlers = this.handlers.get(binding.id) || []
-    handlers.push(binding)
-    this.handlers.set(binding.id, handlers)
+    // 同 ID 的 binding 以“后注册优先”保存，避免旧默认绑定在事件匹配时被优先命中。
+    this.bindings.set(binding.id, [binding])
   }
 
   /**
@@ -225,6 +229,7 @@ export class InputBindingManager {
    */
   removeBinding(bindingId: string): void {
     this.handlers.delete(bindingId)
+    this.bindings.delete(bindingId)
   }
 
   /**
@@ -247,7 +252,7 @@ export class InputBindingManager {
    * @returns 匹配的绑定或null
    */
   private matchBinding(event: Event): InputBinding | null {
-    for (const bindings of this.handlers.values()) {
+    for (const bindings of this.bindings.values()) {
       for (const binding of bindings) {
         const condition = this.getPlatformCondition(binding)
         if (condition && this.matchesCondition(condition, event)) {
@@ -381,14 +386,15 @@ export class InputBindingManager {
    * 获取所有绑定
    */
   getBindings(): InputBinding[] {
-    return Object.values(this.config.bindings)
+    return Array.from(this.bindings.values()).flat()
   }
 
   /**
    * 根据ID查找绑定
    */
   getBinding(bindingId: string): InputBinding | undefined {
-    return this.config.bindings[bindingId]
+    const bindings = this.bindings.get(bindingId)
+    return bindings?.[0]
   }
 
   /**
@@ -396,5 +402,6 @@ export class InputBindingManager {
    */
   destroy(): void {
     this.handlers.clear()
+    this.bindings.clear()
   }
 }

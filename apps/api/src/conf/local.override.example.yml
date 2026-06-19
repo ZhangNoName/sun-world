@@ -1,0 +1,24 @@
+# Copy this file to local.override.yml for local development overrides.
+# Keep real credentials out of Git.
+
+redis:
+  ip: 81.70.43.189
+
+mongo:
+  ip: 81.70.43.189
+
+mysql:
+  ip: 81.70.43.189
+
+postgresql:
+  ip: 81.70.43.189
+
+auth:
+  # For plain HTTP local frontend/backend testing, override these if needed.
+  # cookie_secure: false
+  # cookie_samesite: "lax"
+
+file:
+  # Override to local writable paths if /data is unavailable on your machine.
+  # videos_dir: ./data/videos
+  # images_dir: ./data/imgs

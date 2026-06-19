@@ -1,5 +1,5 @@
-import { ICursor } from "@/cursor/cursorManager";
-import { IBox, IPoint } from "@/types/common.type";
+import { ICursor } from "../cursor/cursorManager";
+import { IBox, IPoint } from "../types/common.type";
 
 export abstract class BaseControl {
   /** 控件的边距 */

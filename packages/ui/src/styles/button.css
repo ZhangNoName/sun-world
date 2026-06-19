@@ -1,0 +1,70 @@
+.sun-button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--sun-ui-radius);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1.2;
+  min-height: 32px;
+  padding: 0 var(--space-3, 0.75rem);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.sun-button--primary {
+  background: var(--sun-ui-color-primary);
+  border-color: var(--sun-ui-color-primary);
+  color: #fff;
+}
+
+.sun-button--danger {
+  background: var(--sun-ui-color-danger);
+  border-color: var(--sun-ui-color-danger);
+  color: #fff;
+}
+
+.sun-button--secondary {
+  background: var(--sun-ui-muted-surface);
+  border-color: var(--sun-ui-border-color);
+  color: var(--sun-ui-strong-text);
+}
+
+.sun-button--ghost,
+.sun-button--link,
+.sun-button--icon {
+  background: transparent;
+  border-color: transparent;
+  color: var(--sun-ui-color-primary);
+}
+
+.sun-button--link {
+  min-height: auto;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.sun-button--sm {
+  min-height: 28px;
+  padding: 0 var(--space-2, 0.5rem);
+}
+
+.sun-button--lg {
+  min-height: 40px;
+  padding: 0 var(--space-4, 1rem);
+}
+
+.sun-button--icon {
+  aspect-ratio: 1 / 1;
+  min-height: 32px;
+  padding: 0;
+}
+
+.sun-button:disabled {
+  cursor: not-allowed;
+}

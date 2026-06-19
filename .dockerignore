@@ -3,3 +3,26 @@ node_modules
 .gitignore
 *.md
 dist
+
+# Frontend/backend dependency caches and build outputs
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.vite
+**/dist
+**/dist-ssr
+*.pyc
+*.pyo
+*.tsbuildinfo
+
+# Local-only backend runtime/config files
+apps/api/**/*.ipynb
+apps/api/src/conf/local.override.yml
+apps/api/src/conf/local.override.yaml
+apps/api/uploads
+apps/api/runtime
+*.env
+.env

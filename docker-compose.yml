@@ -1,0 +1,32 @@
+name: sun-world
+
+services:
+  frontend:
+    image: blog-front:latest
+    container_name: my-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BASE_URL: ${VITE_BASE_URL:-https://api.sunworld.site}
+        VITE_TELEMETRY_ENDPOINT: ${VITE_TELEMETRY_ENDPOINT:-https://api.sunworld.site/telemetry/events}
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+
+  api:
+    profiles:
+      - api
+    image: sun-world-api:latest
+    container_name: sun-world-api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    env_file:
+      - ${BLOG_API_ENV_FILE:-/home/lighthouse/.config/blog_end/auth.env}
+    environment:
+      ENV: ${BLOG_API_ENV:-prod}
+      PORT: "8000"
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped

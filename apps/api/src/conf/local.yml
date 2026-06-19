@@ -1,0 +1,45 @@
+# memory_folder: ./src/database/memory
+# conversation: ./src/database/conversation/conversation.pkl
+
+redis:
+  auth: example
+  ip: localhost
+  port: 6379
+  db: 0
+
+mongo:
+  ip: localhost
+  port: 27017
+  db: sun_world
+  user: blog
+  password: example
+
+mysql:
+  ip: localhost
+  port: 3306
+  db: blog
+  user: blog
+  password: example
+
+postgresql:
+  ip: localhost
+  port: 5432
+  db: blog
+  user: blog
+  password: example
+
+auth:
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
+  # Cookie 设置
+  # 注意：samesite="none" 必须配合 secure=True（需要 HTTPS）
+  # 对于本地开发，如果遇到跨域 cookie 问题，建议：
+  # 1. 使用 HTTPS（即使是自签名证书）
+  # 2. 使用代理让前后端在同一域名下
+  # 3. 或者使用 localStorage 代替 cookie
+  cookie_secure: true  # 本地开发设为 false，生产环境设为 true
+  cookie_samesite: "none"  # 可选值: "lax", "strict", "none"（none 需要 secure=true）
+
+file:
+  videos_dir: /data/blog/videos
+  images_dir: /data/blog/imgs
