@@ -1,3 +1,14 @@
+FROM python:3.12-slim AS requirements
+
+WORKDIR /app
+
+COPY pyproject.toml poetry.lock ./
+
+RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir poetry==2.2.1 poetry-plugin-export \
+    && poetry export --only main --format requirements.txt --without-hashes --output requirements.txt
+
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -5,14 +16,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock README.md ./
-COPY src ./src
-COPY __init__.py app_instance.py main.py start.sh ./
+COPY --from=requirements /app/requirements.txt ./requirements.txt
 
 RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
     && pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir . \
-    && chmod +x ./start.sh
+    && pip install --no-cache-dir -r requirements.txt
+
+COPY README.md ./
+COPY src ./src
+COPY __init__.py app_instance.py main.py start.sh ./
+
+RUN chmod +x ./start.sh
 
 EXPOSE 8000
 

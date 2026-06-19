@@ -335,6 +335,9 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.image-meta.outputs.deploy_image }}
+          cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
+          provenance: false
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -347,7 +350,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.api_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     outputs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
@@ -417,6 +420,9 @@ jobs:
           file: apps/api/Dockerfile
           push: true
           tags: ${{ steps.image-meta.outputs.deploy_image }}
+          cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache,mode=max
+          provenance: false
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

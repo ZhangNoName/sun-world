@@ -50,7 +50,9 @@ input is required only for `deploy-existing`.
 The workflow uses one production concurrency group with
 `cancel-in-progress: true`, so if multiple `main` or manual production runs
 overlap, the older in-progress run is canceled and the newest run wins. The
-quality, build, and deploy jobs each have a 15-minute timeout.
+quality, frontend build, and deploy jobs each have a 15-minute timeout. The API
+image build has a 30-minute timeout because the Python dependency layer is
+larger and the first cache warm-up can take longer.
 
 The pipeline is split by changed deploy target:
 
@@ -103,6 +105,16 @@ personal edition at `ccr.ccs.tencentyun.com`. Lighthouse is already logged in to
 the registry with Docker, so deployment only needs to run `sudo docker pull`
 for the changed commit-specific image tags. This avoids long cross-border image
 archive uploads from GitHub Actions to the server.
+
+Frontend and API image builds also use Tencent CCR registry cache tags:
+
+```text
+ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:buildcache
+ccr.ccs.tencentyun.com/<namespace>/sun-world-api:buildcache
+```
+
+The first API build after a Dockerfile or dependency change may still be slow,
+but later API source-only builds should reuse the Python dependency layer.
 
 ## Required GitHub Variables
 

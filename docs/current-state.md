@@ -177,6 +177,15 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   changed-file `pnpm format:check`, platform goal audit, `git diff --check`,
   `pnpm test:ui`, `pnpm build:ui`, `pnpm check:web`, `pnpm check:api`, and
   `pnpm check:compose` without deployment or public health probes.
+- `pnpm check:compose` also verifies the API Dockerfile cache layout. The API
+  image now exports locked Poetry dependencies to `requirements.txt`, installs
+  those dependencies before copying `src`, and then copies API source files in
+  the final lightweight layer. Source-only API changes should not invalidate
+  the full Python dependency installation layer.
+- GitHub Actions Docker builds use Tencent CCR registry cache tags for both
+  frontend and API images. API build timeout is 30 minutes to allow the first
+  Python dependency cache warm-up; quality, frontend build, and deploy jobs
+  remain capped at 15 minutes.
 - `pnpm check:platform` runs `scripts/check-platform-goal-audit.mjs`, which
   verifies the repository has durable evidence for the commit policy,
   frontend-backend chain, monitoring platform, packaging/build optimization,

@@ -1,5 +1,38 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.62 API Dockerfile cache optimization):
+  - Goal: reduce repeated API image build time by separating Python dependency
+    installation from API source-copy layers and enabling registry-backed
+    Docker build cache.
+  - Status: implemented locally; not committed yet.
+  - Important files touched:
+    - `apps/api/Dockerfile`
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-api-dockerfile-cache.mjs`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `package.json`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - API Docker builds now generate a locked `requirements.txt` from
+      Poetry metadata in a requirements stage.
+    - The final API image installs `requirements.txt` before copying `src`.
+      Source-only API changes should no longer force a full Python dependency
+      reinstall layer.
+    - `pnpm check:compose` now includes the API Dockerfile cache guard.
+    - Frontend and API Docker builds use Tencent CCR `:buildcache` registry
+      cache tags.
+    - API image build timeout is 30 minutes; quality, frontend build, and
+      deploy jobs stay at 15 minutes.
+  - Verification:
+    - `pnpm check:api-dockerfile` first failed on the old Dockerfile because
+      dependency installation happened after source copy.
+    - `pnpm check:api-dockerfile` passed after the Dockerfile rewrite.
+    - `pnpm check:compose` passed through static validation; local Docker CLI
+      is unavailable, so no local image build was run.
+    - `pnpm check:api` passed.
+
 - Latest task addendum (2026-06-20, P1.61 single GitHub pipeline timeout):
   - Goal: collapse CI and deploy into one GitHub Actions workflow and keep
     stuck deploys from occupying the production pipeline for too long.
