@@ -35,6 +35,7 @@ if (workflow) {
     'actions/upload-artifact@v4',
     'retention-days: 30',
     'appleboy/ssh-action@v1',
+    'command_timeout: 30m',
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
