@@ -1,5 +1,5 @@
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../viewport/viewport"
 
 export default class CommentTool extends BaseTool {
   name: ToolName = 'comment'

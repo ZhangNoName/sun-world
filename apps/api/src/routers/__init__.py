@@ -1,0 +1,25 @@
+from .base import base_router
+from .blog import blog_router
+from .user import user_router
+from .role import role_router
+from .resource import resource_router
+from .auth import auth_router
+from .ai import ai_router
+from .file import file_router
+from .admin import admin_router
+from .health import health_router
+from .telemetry import telemetry_router
+
+__all__ = [
+    "base_router",
+    "blog_router",
+    "user_router",
+    "role_router",
+    "resource_router",
+    "auth_router",
+    "ai_router",
+    "file_router",
+    "admin_router",
+    "health_router",
+    "telemetry_router",
+]

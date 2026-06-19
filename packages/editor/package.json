@@ -10,8 +10,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/editor.es.js",
       "require": "./dist/editor.cjs.js"
-    },
-    "./src/*": "./src/*"
+    }
   },
   "sideEffects": false,
   "scripts": {

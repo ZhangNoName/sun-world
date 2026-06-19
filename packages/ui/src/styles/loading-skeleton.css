@@ -1,0 +1,53 @@
+.sun-loading-skeleton {
+  border: 1px solid var(--sun-ui-border-color);
+  border-radius: var(--card-radius, var(--sun-ui-radius));
+  background: var(--bg-brand-light, var(--sun-ui-muted-surface));
+  padding: var(--card-padding, 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+  min-height: 168px;
+  overflow: hidden;
+}
+
+.sun-skeleton-line {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-full, 9999px);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-muted, #eef4f8) 0%,
+    var(--color-surface-card, #ffffff) 45%,
+    var(--color-surface-muted, #eef4f8) 90%
+  );
+  background-size: 240% 100%;
+  animation: sun-skeleton-shimmer 1.3s var(--motion-ease-standard, ease) infinite;
+}
+
+.sun-skeleton-line-short {
+  width: 34%;
+}
+
+.sun-skeleton-line-title {
+  width: 72%;
+  height: 18px;
+}
+
+.sun-skeleton-line-muted {
+  width: 58%;
+}
+
+@keyframes sun-skeleton-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sun-skeleton-line {
+    animation: none;
+  }
+}

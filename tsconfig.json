@@ -19,7 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["packages/*/src"],
-      "@blog/*": ["packages/blog/src/*"],
+      "@blog/*": ["apps/web/src/*"],
       "@icons/*": ["packages/icons/src/*"],
       "@editor/*": ["packages/editor/src/*"]
     }

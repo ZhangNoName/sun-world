@@ -1,4 +1,4 @@
-import { Matrix, Optional } from "@/types/common.type"
+import { Matrix, Optional } from "../types/common.type"
 import { ElementType, FillStyle } from "./element.config"
 
 export interface EleAttrs {

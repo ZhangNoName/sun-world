@@ -164,7 +164,7 @@ export abstract class BaseElement {
    */
   markDirty(store?: StoreLike) {
     if (store) {
-      this._updateAABBCache(store)
+      this._updateAABBCache()
     }
 
     for (const child of this.children) {
@@ -320,8 +320,7 @@ export abstract class BaseElement {
    * 命中检测
    */
   hitTest(px: IPoint, py: IPoint, store: StoreLike): boolean {
-
-    const aabb = this.getAABB()
+    const aabb = this.box
     if (!aabb) return false
     const startX = Math.min(aabb.minX, px.x,)
     const endX = Math.max(aabb.maxX, px.x,)

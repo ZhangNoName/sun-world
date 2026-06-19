@@ -1,7 +1,7 @@
-import { ElementManager } from '@/elements/elementManager'
-import { InputManager } from '@/input/inputManager'
-import ViewportState from '@/viewport/viewport'
-import { CursorManager } from '@/cursor/cursorManager'
+import { ElementManager } from "../elements/elementManager"
+import { InputManager } from "../input/inputManager"
+import ViewportState from "../viewport/viewport"
+import { CursorManager } from "../cursor/cursorManager"
 
 export type ToolName =
   | 'rect'
@@ -32,12 +32,31 @@ export abstract class BaseTool {
 
   abstract name: ToolName
 
-  abstract onMouseDown(e: MouseEvent): void
-  abstract onMouseMove(e: MouseEvent): void
-  abstract onMouseUp(): void
-  abstract onKeyDown(e: KeyboardEvent): void
-  abstract onWheel(e: WheelEvent): void
+  onMouseDown(e: MouseEvent): void {}
+  onMouseMove(e: MouseEvent): void {}
+  onMouseUp(_e?: MouseEvent): void {}
+  onKeyDown(
+    e: KeyboardEvent,
+    _modifiers?: {
+      shift: boolean
+      alt: boolean
+      ctrl: boolean
+      meta: boolean
+      space: boolean
+    }
+  ): void {}
+  onKeyUp(
+    _e: KeyboardEvent,
+    _modifiers?: {
+      shift: boolean
+      alt: boolean
+      ctrl: boolean
+      meta: boolean
+      space: boolean
+    }
+  ): void {}
+  onWheel(e: WheelEvent): void {}
 
-  abstract activate(): void
-  abstract deactivate(): void
+  activate(): void {}
+  deactivate(): void {}
 }

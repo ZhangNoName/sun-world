@@ -15,7 +15,8 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/zhangnoname/sun-world-frontend
+  FRONTEND_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-frontend
+  API_IMAGE_NAME: ghcr.io/zhangnoname/sun-world-api
 
 jobs:
   build-push-deploy:
@@ -42,20 +43,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend
-        run: pnpm build
+      - name: Run frontend checks
+        run: pnpm check:web
 
       - name: Prepare build artifacts
         run: |
           mkdir -p deploy-artifacts
-          printf '%s\n' "${{ env.IMAGE_NAME }}:${{ github.sha }}" > deploy-artifacts/image.txt
+          printf '%s\n' "${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}" > deploy-artifacts/image.txt
           printf '%s\n' "${{ github.sha }}" > deploy-artifacts/commit.txt
+          cp apps/web/dist/build-manifest.json deploy-artifacts/build-manifest.json
+          cp apps/web/dist/build-summary.json deploy-artifacts/build-summary.json
 
       - name: Upload frontend dist artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist-${{ github.sha }}
-          path: packages/blog/dist
+          path: apps/web/dist
           retention-days: 30
 
       - name: Upload deployment metadata artifact
@@ -82,28 +85,66 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            VITE_BASE_URL=${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
+            VITE_TELEMETRY_ENDPOINT=${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
 
-      - name: Deploy frontend on Lighthouse
+      - name: Run API checks
+        run: pnpm check:api
+
+      - name: Prepare API deploy artifacts
+        run: |
+          mkdir -p api-deploy-artifacts
+          printf '%s\n' "${{ env.API_IMAGE_NAME }}:${{ github.sha }}" > api-deploy-artifacts/image.txt
+          printf '%s\n' "${{ github.sha }}" > api-deploy-artifacts/commit.txt
+
+      - name: Upload API deployment metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-deploy-metadata-${{ github.sha }}
+          path: api-deploy-artifacts
+          retention-days: 30
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.API_IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=sun-world-api
+
+      - name: Deploy frontend and apply API schema on Lighthouse
         uses: appleboy/ssh-action@v1
         env:
-          IMAGE: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+          API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ github.sha }}
         with:
           host: ${{ vars.LIGHTHOUSE_HOST }}
           username: ${{ vars.LIGHTHOUSE_USER }}
           key: ${{ secrets.LIGHTHOUSE_SSH_KEY }}
           port: ${{ vars.LIGHTHOUSE_PORT || '22' }}
-          envs: IMAGE
+          envs: FRONTEND_IMAGE,API_IMAGE
           command_timeout: 30m
           script: |
             set -euo pipefail
-            sudo docker pull "$IMAGE"
+            sudo docker pull "$FRONTEND_IMAGE"
             sudo docker rm -f my-frontend || true
-            sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$IMAGE"
+            sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
+            sudo docker pull "$API_IMAGE"
+            sudo docker run --rm --network host \
+              -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
+              "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
             sudo docker image prune -f
             curl -fsSI https://sunworld.site
             curl -fsSI https://www.sunworld.site
