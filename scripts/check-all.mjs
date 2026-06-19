@@ -10,6 +10,16 @@ const checks = [
     args: ['scripts/check-root-check-script.mjs'],
   },
   {
+    label: 'GitHub Actions deploy protocol',
+    command: 'pnpm',
+    args: ['check:github-actions:deploy'],
+  },
+  {
+    label: 'API deploy/schema protocol',
+    command: 'pnpm',
+    args: ['check:api:deploy-schema'],
+  },
+  {
     label: 'Platform goal audit',
     command: 'pnpm',
     args: ['check:platform'],

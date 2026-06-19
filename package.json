@@ -30,6 +30,8 @@
     "check:web:ui-boundary": "node scripts/check-ui-package-boundary.mjs",
     "check:root-script": "node scripts/check-root-check-script.mjs",
     "check:dev-launcher": "node scripts/check-dev-launcher.mjs",
+    "check:github-actions:deploy": "node scripts/check-github-actions-deploy.mjs",
+    "check:api:deploy-schema": "node scripts/check-api-deploy-schema.mjs",
     "check:platform": "node scripts/check-platform-goal-audit.mjs",
     "check:web:chunks": "node scripts/check-web-chunks.mjs",
     "compose:config": "docker compose config",

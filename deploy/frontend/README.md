@@ -23,6 +23,102 @@ sudo systemctl start sun-world-auto-deploy.service
 sudo tail -100 /var/log/sun-world-auto-deploy.log
 ```
 
+## GitHub Actions Deploy
+
+`.github/workflows/deploy-frontend.yml` defines the GitHub Actions frontend
+deployment pipeline. It runs on every `main` branch push and can also be run
+manually with `workflow_dispatch`; choose the `main` branch for manual
+production deploys.
+
+The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
+`main` changes arrive while a deploy is still running, the older in-progress run
+is canceled and the newest commit wins.
+
+The pipeline:
+
+1. installs dependencies with pnpm,
+2. runs `pnpm check:web`,
+3. uploads the generated frontend `dist` directory as an artifact,
+4. uploads deployment metadata as an artifact,
+5. builds and pushes `ghcr.io/zhangnoname/sun-world-frontend`,
+6. runs `pnpm check:api`,
+7. builds and pushes `ghcr.io/zhangnoname/sun-world-api`,
+8. uploads API deployment metadata as an artifact,
+9. SSHes to the Lighthouse server,
+10. pulls the commit-specific frontend image tag,
+11. recreates the `my-frontend` container,
+12. runs the API image's MySQL schema migration command,
+13. verifies `https://sunworld.site` and `https://www.sunworld.site`.
+
+Images are pushed with both tags:
+
+```text
+ghcr.io/zhangnoname/sun-world-frontend:<git-sha>
+ghcr.io/zhangnoname/sun-world-frontend:latest
+```
+
+The server deploy step uses the `<git-sha>` tag instead of `latest` so a
+specific deployment can be audited or rolled back.
+
+The API image is also pushed with both tags:
+
+```text
+ghcr.io/zhangnoname/sun-world-api:<git-sha>
+ghcr.io/zhangnoname/sun-world-api:latest
+```
+
+The API image is not started by this workflow. It is used to run
+`python -m src.database.mysql.schema_migration --mode apply` on the server, so
+new backend builds can add missing MySQL tables or columns before a later API
+cutover. Existing incompatible columns make the workflow fail rather than
+rewriting data.
+
+### Required GitHub Variables
+
+Configure these under GitHub repository settings as Variables:
+
+```text
+LIGHTHOUSE_HOST      # server host or IP
+LIGHTHOUSE_USER      # SSH user, for example lighthouse
+LIGHTHOUSE_PORT      # optional, defaults to 22
+```
+
+Optional GitHub Actions variables:
+
+```text
+VITE_BASE_URL
+VITE_TELEMETRY_ENDPOINT
+```
+
+### Required GitHub Secrets
+
+Configure this under GitHub repository settings as a Secret:
+
+```text
+LIGHTHOUSE_SSH_KEY   # private SSH key for deployment
+```
+
+Do not commit SSH keys, GHCR tokens, `.env` values, or server secrets to the
+repository.
+
+GitHub Actions publishes to GHCR with the built-in `GITHUB_TOKEN` and requires
+workflow package write permission. The server must already be able to pull the
+GHCR image, for example through a prior `docker login ghcr.io`.
+
+When unset, the workflow uses the production defaults:
+
+```text
+https://api.sunworld.site
+https://api.sunworld.site/telemetry/events
+```
+
+Artifacts are retained for 30 days:
+
+- `frontend-dist-<git-sha>` keeps the generated `apps/web/dist` output.
+- `frontend-deploy-metadata-<git-sha>` keeps the image tag, commit, build
+  manifest, and build summary.
+- `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
+
 ## 验证 / Verification
 
 ```bash

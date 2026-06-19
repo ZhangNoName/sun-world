@@ -1,5 +1,98 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-19, P1.57 API image build and MySQL schema guard):
+  - Goal: after the frontend packaging/deploy workflow succeeds, also build
+    and publish the Python API image, while keeping MySQL application schema
+    fields correct for new builds.
+  - Status: implemented locally on `monorepo-api-import`; no production API
+    cutover was run.
+  - Important files touched:
+    - `.github/workflows/deploy-frontend.yml`
+    - `apps/api/src/database/mysql/schema_migration.py`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `scripts/run-api-check.mjs`
+    - `scripts/check-all.mjs`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `package.json`
+    - `deploy/backend/README.md`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+  - Workflow behavior:
+    - Frontend check/build/artifacts still run first.
+    - The workflow now runs `pnpm check:api`, uploads
+      `api-deploy-metadata-<git-sha>`, builds and pushes
+      `ghcr.io/zhangnoname/sun-world-api:<git-sha>` and `latest`.
+    - On the Lighthouse server, the workflow pulls the API image and runs
+      `python -m src.database.mysql.schema_migration --mode apply` from that
+      image with the production secret env file mounted read-only.
+    - The workflow does not start the API container, change Nginx, or restart
+      `blog-api.service`; backend traffic remains on the existing production
+      service until explicit cutover approval.
+  - MySQL schema guard:
+    - Declares the current minimal application schema for `users`, `roles`,
+      `resources`, `user_roles`, `role_resources`, `tag`, `category`, `blog`,
+      and `blog_tag`.
+    - `--mode check` is static and runs in `pnpm check:api`.
+    - Database modes are `plan`, `validate`, and `apply`.
+    - `apply` only creates missing tables/columns and fails on incompatible
+      existing column types instead of rewriting data.
+  - Verification:
+    - `node scripts/check-api-deploy-schema.mjs` first failed as expected on
+      missing API image/schema workflow wiring.
+    - `apps\api\.venv\Scripts\python.exe apps\api\src\database\mysql\schema_migration.py --mode check` passed.
+    - `node scripts/check-api-deploy-schema.mjs` passed after implementation.
+    - `node scripts/check-github-actions-deploy.mjs` passed.
+    - `node --check scripts/check-api-deploy-schema.mjs` passed.
+    - `node --check scripts/run-api-check.mjs` passed.
+    - `pnpm check:api` passed and included
+      `MySQL schema contract check passed: 9 tables, 43 columns.`
+    - Python/PyYAML parsed `.github/workflows/deploy-frontend.yml` and found
+      the API image and deploy/schema steps.
+  - Next suggested step:
+    - Run the broader local checks, then decide whether this branch should be
+      merged to `main`. When it reaches `main`, the first Actions run should be
+      watched closely because it will execute the production MySQL schema
+      `apply` path from the API image.
+
+- Latest task addendum (2026-06-19, P1.56 GitHub Actions frontend deploy):
+  - Goal: add a GitHub Actions workflow that deploys the frontend on every
+    `main` change, cancels older overlapping runs, and retains build artifacts.
+  - Status: implemented locally; not pushed or run on GitHub yet.
+  - Important files touched:
+    - `.github/workflows/deploy-frontend.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-all.mjs`
+    - `package.json`
+    - `deploy/frontend/README.md`
+  - Workflow behavior:
+    - `Deploy Frontend` runs on `main` push and `workflow_dispatch`.
+    - Deployment job is gated to `refs/heads/main`.
+    - `concurrency.cancel-in-progress: true` cancels older overlapping
+      frontend deploy runs for the same ref.
+    - The workflow runs `pnpm check:web`, uploads `apps/web/dist` and deploy
+      metadata artifacts for 30 days, builds/pushes
+      `ghcr.io/zhangnoname/sun-world-frontend` with both SHA and `latest`
+      tags, then SSHes to the Lighthouse server to recreate `my-frontend`.
+    - Backend/API deployment remains intentionally excluded until the
+      `blog_end` to `apps/api` production cutover is approved.
+  - Required GitHub Secrets:
+    - `LIGHTHOUSE_HOST`
+    - `LIGHTHOUSE_USER`
+    - `LIGHTHOUSE_SSH_KEY`
+    - optional `LIGHTHOUSE_PORT`
+  - Verification:
+    - `node scripts/check-github-actions-deploy.mjs` first failed as expected
+      because workflow/docs/package wiring were missing.
+    - `pnpm check:github-actions:deploy` passed after implementation.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `node --check scripts/check-all.mjs` passed.
+    - Python/PyYAML parsed `.github/workflows/deploy-frontend.yml` and
+      confirmed the `on` trigger key.
+    - `git diff --check` passed with existing Windows CRLF conversion warnings.
+  - Next suggested step:
+    - Add the required GitHub Secrets, push this branch/merge to `main`, then
+      watch the first `Deploy Frontend` run under GitHub Actions.
+
 - Latest task addendum (2026-06-19, P1.55 local dev launcher):
   - Goal: add root-level development launchers that can start the Python API
     and web client together, or either service alone, while supporting Windows,

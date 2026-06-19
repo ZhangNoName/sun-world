@@ -50,6 +50,19 @@ been cut over yet:
 - Backend monorepo source path: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source exposes `/readyz` for dependency readiness; the
   current production backend remains on the legacy path until deliberate cutover.
+- GitHub Actions now builds and pushes the monorepo API image
+  `ghcr.io/zhangnoname/sun-world-api:<git-sha>` after the frontend
+  package/check stage. The workflow uses that image to run
+  `python -m src.database.mysql.schema_migration --mode apply` on the server,
+  so missing MySQL application tables/columns can be created conservatively.
+  The workflow does not start the API container, change Nginx, or restart
+  `blog-api.service`; API traffic still stays on the existing production
+  service until explicit cutover approval.
+- The API MySQL schema guard is declared in
+  `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
+  static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
+  the same API config as the app; `apply` only creates missing tables/columns
+  and fails on incompatible existing column types instead of rewriting data.
 - Monorepo API now includes a process-local RUM telemetry baseline:
   - `POST /telemetry/events`
   - `GET /admin/telemetry`
@@ -214,7 +227,8 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   the generated `index.html` preload/style tags. Those chunks still exist and
   load through route-level dynamic imports when their routes are visited.
 - `pnpm check:api` runs backend migration, metrics snapshot store, request
-  metrics, RUM metrics, and metrics alert protocol checks. Request metrics
-  expose `p50_duration_ms`, `p95_duration_ms`, and `p99_duration_ms`; RUM Web
-  Vitals expose `p50_value`, `p95_value`, and `p99_value`. Alert evaluation is
-  local only and does not send notifications yet.
+  metrics, RUM metrics, metrics alert protocol checks, and the static MySQL
+  schema contract check. Request metrics expose `p50_duration_ms`,
+  `p95_duration_ms`, and `p99_duration_ms`; RUM Web Vitals expose
+  `p50_value`, `p95_value`, and `p99_value`. Alert evaluation is local only
+  and does not send notifications yet.

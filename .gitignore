@@ -2,6 +2,7 @@
 node_modules/
 **/node_modules/
 .pnpm-store/
+.worktrees/
 
 # Frontend / package build outputs
 dist/
@@ -65,6 +66,7 @@ apps/api/runtime/
 
 # Local-only app config and certificates
 apps/web/src/constant.ts
+sun_world_deploy_key*
 sunworld.key
 sunworld.pem
 sunworld.site_bundle.crt
