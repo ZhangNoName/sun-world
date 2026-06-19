@@ -4,9 +4,11 @@
   - Goal: after the frontend packaging/deploy workflow succeeds, also build
     and publish the Python API image, while keeping MySQL application schema
     fields correct for new builds.
-  - Status: implemented and pushed on `monorepo-api-import`; draft PR opened
-    at `https://github.com/ZhangNoName/sun-world/pull/1`. No production API
-    cutover was run.
+  - Status: implemented on clean PR branch
+    `codex/api-image-schema-clean4`; draft PR opened at
+    `https://github.com/ZhangNoName/sun-world/pull/4` with GitGuardian
+    passing and merge state `CLEAN`. Older draft PRs #1, #2, and #3 were
+    closed as superseded. No production API cutover was run.
   - Important files touched:
     - `.github/workflows/deploy-frontend.yml`
     - `apps/api/src/database/mysql/schema_migration.py`
@@ -14,6 +16,7 @@
     - `scripts/run-api-check.mjs`
     - `scripts/check-all.mjs`
     - `scripts/check-github-actions-deploy.mjs`
+    - `apps/api/src/database/postgresql/postgresql_manager.py`
     - `package.json`
     - `deploy/backend/README.md`
     - `deploy/frontend/README.md`
@@ -49,8 +52,14 @@
       `MySQL schema contract check passed: 9 tables, 43 columns.`
     - Python/PyYAML parsed `.github/workflows/deploy-frontend.yml` and found
       the API image and deploy/schema steps.
+    - `git diff --check origin/main..HEAD` passed on clean PR branch.
+    - `pnpm check:github-actions:deploy` passed on clean PR branch.
+    - `pnpm check:api:deploy-schema` passed on clean PR branch.
+    - GitGuardian passed on PR #4 after excluding historical `.env*` deletion
+      diff lines and rewording a PostgreSQL docstring that looked like a
+      generic password declaration.
   - Next suggested step:
-    - Review draft PR #1 before merging. When it reaches `main`, the first
+    - Review draft PR #4 before merging. When it reaches `main`, the first
       Actions run should be watched closely because it will execute the
       production MySQL schema `apply` path from the API image.
 
