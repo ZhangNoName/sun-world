@@ -4,7 +4,8 @@
   - Goal: after the frontend packaging/deploy workflow succeeds, also build
     and publish the Python API image, while keeping MySQL application schema
     fields correct for new builds.
-  - Status: implemented locally on `monorepo-api-import`; no production API
+  - Status: implemented and pushed on `monorepo-api-import`; draft PR opened
+    at `https://github.com/ZhangNoName/sun-world/pull/1`. No production API
     cutover was run.
   - Important files touched:
     - `.github/workflows/deploy-frontend.yml`
@@ -49,10 +50,9 @@
     - Python/PyYAML parsed `.github/workflows/deploy-frontend.yml` and found
       the API image and deploy/schema steps.
   - Next suggested step:
-    - Run the broader local checks, then decide whether this branch should be
-      merged to `main`. When it reaches `main`, the first Actions run should be
-      watched closely because it will execute the production MySQL schema
-      `apply` path from the API image.
+    - Review draft PR #1 before merging. When it reaches `main`, the first
+      Actions run should be watched closely because it will execute the
+      production MySQL schema `apply` path from the API image.
 
 - Latest task addendum (2026-06-19, P1.56 GitHub Actions frontend deploy):
   - Goal: add a GitHub Actions workflow that deploys the frontend on every
