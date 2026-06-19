@@ -146,12 +146,12 @@ jobs:
               Dockerfile|apps/web/*|apps/web/**|packages/contracts/*|packages/contracts/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
                 web_changed=true
                 ;;
-              apps/api/*|apps/api/**|deploy/backend/*|deploy/backend/**)
-                api_changed=true
-                ;;
-              deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)
+              deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)
                 # Deployment docs and local verification scripts do not enter
                 # the production images.
+                ;;
+              apps/api/*|apps/api/**|deploy/backend/*|deploy/backend/**)
+                api_changed=true
                 ;;
             esac
           done <<< "$changed_files"

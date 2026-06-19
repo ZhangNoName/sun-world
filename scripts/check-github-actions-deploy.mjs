@@ -60,7 +60,7 @@ if (workflow) {
     '.github/workflows/deploy.yml|.github/workflows/ci.yml)',
     'Workflow-only changes should validate the pipeline shape but',
     'should not redeploy production images.',
-    'deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)',
+    'deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)',
     'Deployment docs and local verification scripts do not enter',
     'the production images.',
     'build-web:',
