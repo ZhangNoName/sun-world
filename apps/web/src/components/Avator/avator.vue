@@ -1,7 +1,7 @@
 <script setup lang="ts" name="avator">
 import { useAuthStore } from '@/store/auth'
 import { storeToRefs } from 'pinia'
-import SwBtn from '@/baseCom/btn/btn.vue'
+import { SunButton } from '@sun-world/ui/button'
 import { useRouter } from 'vue-router'
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
@@ -20,10 +20,10 @@ const logoutHandle = () => {
       <div class="avator-text">
         {{ user.name }}
       </div>
-      <SwBtn type="danger" @click="logoutHandle">登出</SwBtn>
+      <SunButton variant="danger" @click="logoutHandle">登出</SunButton>
     </template>
     <template v-else>
-      <SwBtn type="primary" @click="loginHandle">登录</SwBtn>
+      <SunButton variant="primary" @click="loginHandle">登录</SunButton>
     </template>
   </div>
 </template>

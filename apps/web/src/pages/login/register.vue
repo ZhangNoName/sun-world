@@ -1,14 +1,15 @@
 <script setup lang="ts" name="register">
-import router from '@/router'
 import { reactive, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SwInput from '@/baseCom/input/input.vue'
-import SwButton from '@/baseCom/button/button.vue'
+import { useRouter } from 'vue-router'
+import { SunInput } from '@sun-world/ui/input'
+import { SunButton } from '@sun-world/ui/button'
 import { ElMessage, ElForm, ElFormItem } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
 
 const { t } = useI18n()
+const router = useRouter()
 
 const form = reactive({
   password: '123456',
@@ -133,37 +134,37 @@ function goToLogin() {
         label-position="top"
       >
         <el-form-item :label="$t('register.nickname')" prop="name">
-          <SwInput
+          <SunInput
             v-model="form.name"
             :placeholder="$t('register.nicknamePlaceholder')"
-            size="large"
+            size="lg"
             clearable
           />
         </el-form-item>
         <el-form-item :label="$t('register.phone')" prop="phone">
-          <SwInput
+          <SunInput
             v-model="form.phone"
             :placeholder="$t('register.phonePlaceholder')"
-            size="large"
+            size="lg"
             clearable
           />
         </el-form-item>
         <el-form-item :label="$t('register.email')" prop="email">
-          <SwInput
+          <SunInput
             v-model="form.email"
             type="email"
             :placeholder="$t('register.emailPlaceholder')"
-            size="large"
+            size="lg"
             clearable
           />
         </el-form-item>
 
         <el-form-item :label="$t('register.password')" prop="password">
-          <SwInput
+          <SunInput
             v-model="form.password"
             type="password"
             :placeholder="$t('register.passwordPlaceholder')"
-            size="large"
+            size="lg"
             show-password
             clearable
           />
@@ -172,26 +173,26 @@ function goToLogin() {
           :label="$t('register.confirmPassword')"
           prop="confirmPassword"
         >
-          <SwInput
+          <SunInput
             v-model="form.confirmPassword"
             type="password"
             :placeholder="$t('register.confirmPasswordPlaceholder')"
-            size="large"
+            size="lg"
             show-password
             clearable
           />
         </el-form-item>
 
         <el-form-item>
-          <SwButton
-            type="primary"
-            size="large"
+          <SunButton
+            variant="primary"
+            size="lg"
             :loading="loading"
             class="register-btn"
             @click="handleRegister"
           >
             {{ $t('register.registerBtn') }}
-          </SwButton>
+          </SunButton>
         </el-form-item>
       </el-form>
       <div class="register-footer">

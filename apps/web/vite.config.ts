@@ -14,6 +14,22 @@ const packagesDir = resolve(root, '../..') // blog is now under apps/web/
 // ⭐ Type for rollup manualChunks（解决 TS 报错）
 type ManualChunksFn = (id: string) => string | undefined
 
+const routeOnlyPreloadPattern =
+  /\/assets\/(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|vditor-(?:preview|editor)|echarts|zrender|element)\./
+
+function stripRouteOnlyPreloadsPlugin() {
+  return {
+    name: 'sun-world-strip-route-only-preloads',
+    enforce: 'post' as const,
+    transformIndexHtml(html: string) {
+      return html
+        .split('\n')
+        .filter((line) => !routeOnlyPreloadPattern.test(line))
+        .join('\n')
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // 加载 .env.[mode] 文件
   const env = loadEnv(mode, process.cwd())
@@ -60,6 +76,7 @@ export default defineConfig(({ mode }) => {
         '@': resolve(__dirname, 'src'),
         '@sun-world/icons': resolve(__dirname, '../../packages/icons/src'),
         '@sun-world/editor': resolve(__dirname, '../../packages/editor/src'),
+        '@sun-world/ui': resolve(__dirname, '../../packages/ui/src'),
       },
     },
 
@@ -85,6 +102,7 @@ export default defineConfig(({ mode }) => {
       }),
 
       visualizerPlugin,
+      isProd ? stripRouteOnlyPreloadsPlugin() : null,
     ],
 
     optimizeDeps: {
@@ -92,6 +110,15 @@ export default defineConfig(({ mode }) => {
     },
 
     build: {
+      modulePreload: {
+        resolveDependencies: (_filename, deps) =>
+          deps.filter(
+            (dep) =>
+              !/(?:^|\/)(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|vditor-(?:preview|editor)|echarts|zrender|element)\./.test(
+                dep
+              )
+          ),
+      },
       target: 'esnext',
       cssTarget: 'chrome61',
 
@@ -125,27 +152,106 @@ export default defineConfig(({ mode }) => {
            * - 确保不会报错
            */
           manualChunks: ((id: string) => {
+            const normalizedId = id.replaceAll('\\', '/')
+            const isWebAppSource = normalizedId.includes('/apps/web/src/')
+            if (id.includes('plugin-vue:export-helper')) return 'vue-helpers'
+            if (normalizedId.includes('/packages/icons/src/')) return 'icons'
+            if (normalizedId.includes('/packages/contracts/src/'))
+              return 'contracts'
+            if (normalizedId.includes('/packages/editor/src/')) return 'editor'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/baseCom/SvgIcon/')
+            )
+              return 'legacy-icons'
+            if (
+              isWebAppSource &&
+              (normalizedId.includes('/src/app/router/') ||
+                normalizedId.includes('/src/router/index.ts'))
+            )
+              return 'app-router'
+            if (
+              isWebAppSource &&
+              (normalizedId.includes('/src/modules/registry.ts') ||
+                normalizedId.includes('/src/modules/types.ts') ||
+                /\/src\/modules\/[^/]+\/index\.ts$/.test(normalizedId))
+            )
+              return 'module-registry'
+            if (isWebAppSource && normalizedId.includes('/src/shared/api/'))
+              return 'shared-api'
+            if (isWebAppSource && normalizedId.includes('/src/store/'))
+              return 'stores'
+            if (isWebAppSource && normalizedId.includes('/src/service/http.ts'))
+              return 'http-client'
+            if (isWebAppSource && normalizedId.includes('/src/shared/telemetry/'))
+              return 'telemetry'
+            if (isWebAppSource && normalizedId.includes('/src/shared/config/'))
+              return 'shared-config'
+            if (
+              isWebAppSource &&
+              (normalizedId.includes(
+                '/src/modules/admin/pages/AdminChartsPage.vue'
+              ) ||
+                normalizedId.includes('/src/modules/admin/ui/ChartsCard.vue') ||
+                normalizedId.includes('/src/modules/admin/ui/chartConfig.ts'))
+            )
+              return 'admin-charts'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/gameTiles/index.vue')
+            )
+              return 'page-game-tiles'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/tools/tools.page.vue')
+            )
+              return 'page-tools'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/keep/keep.vue')
+            )
+              return 'page-keep'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/login/login.vue')
+            )
+              return 'page-login'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/login/register.vue')
+            )
+              return 'page-register'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/login/qqCb.vue')
+            )
+              return 'page-qq-callback'
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/pages/me/me.vue')
+            )
+              return 'page-me'
+            if (isWebAppSource && normalizedId.includes('/src/pages/manage/'))
+              return 'manage-shell'
             // 只处理 node_modules
             if (id.includes('node_modules')) {
+              if (id.includes('artplayer') || id.includes('hls.js'))
+                return 'video-player'
+              if (id.includes('jszip')) return 'tile-export'
+              if (id.includes('vditor/dist/method.min'))
+                return 'vditor-preview'
+              if (id.includes('vditor')) return 'vditor-editor'
               if (id.includes('echarts')) return 'echarts'
               if (id.includes('element-plus')) return 'element'
               if (id.includes('axios')) return 'vendor-axios'
               if (id.includes('dayjs')) return 'vendor-dayjs'
               if (id.includes('@sun-world/editor')) return 'editor'
               if (id.includes('@sun-world/icons')) return 'icons'
-              if (id.includes('vditor')) return 'vditor'
               if (id.includes('lodash')) return 'lodash'
-              if (id.includes('langchain') || id.includes('langsmith'))
-                return 'langchain'
               if (id.includes('zrender')) return 'zrender'
 
               // 其余全部放 vendor
               return 'vendor'
-            }
-            // 小页面组件合并到 index
-            // pages 下的 vue 文件全部合并到 index
-            if (/src\/pages\/.+\.vue$/.test(id)) {
-              return 'index'
             }
           }) as ManualChunksFn,
         },

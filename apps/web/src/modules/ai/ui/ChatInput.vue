@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import ZBtn from '@/components/ZBtn/index.vue'
+import { SunButton } from '@sun-world/ui/button'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { AddSvg, RobotSvg } from '@sun-world/icons' // 假设这些图标已存在，或使用文字替代
 
@@ -48,34 +48,34 @@ const handleSend = () => {
       <!-- 下方：工具栏 -->
       <div class="bottom-toolbar">
         <div class="left-actions">
-          <z-btn
-            type="icon"
+          <SunButton
+            variant="icon"
             size="icon"
             title="上传文件"
             @click="emit('upload')"
           >
             <SvgIcon name="ai-add" />
-          </z-btn>
-          <z-btn
-            type="icon"
+          </SunButton>
+          <SunButton
+            variant="icon"
             size="icon"
             title="语音输入"
             @click="emit('voice')"
           >
             <SvgIcon name="ai-voice" />
-          </z-btn>
+          </SunButton>
         </div>
 
         <div class="right-actions">
-          <z-btn
-            type="icon"
+          <SunButton
+            variant="icon"
             size="icon"
             class="send-btn"
             @click="handleSend"
             :disabled="content.length === 0 || loading"
           >
             <SvgIcon name="ai-send" size="large" color="var(--color-primary)" />
-          </z-btn>
+          </SunButton>
         </div>
       </div>
     </div>

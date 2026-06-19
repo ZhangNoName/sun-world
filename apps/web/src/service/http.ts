@@ -1,4 +1,3 @@
-import { ElMessage } from 'element-plus'
 import axios, {
   AxiosRequestConfig,
   AxiosResponse,
@@ -38,6 +37,38 @@ type AxiosErrorLike = {
   config?: TracedAxiosConfig
   response?: AxiosResponse
   message?: string
+}
+
+type MessageKind = 'warning' | 'error' | 'success'
+
+let elementMessagePromise:
+  | Promise<typeof import('element-plus')['ElMessage']>
+  | undefined
+
+function loadElementMessage() {
+  if (!elementMessagePromise) {
+    elementMessagePromise = Promise.all([
+      import('element-plus/es/components/message/style/css'),
+      import('element-plus'),
+    ]).then(([, elementPlus]) => elementPlus.ElMessage)
+  }
+
+  return elementMessagePromise
+}
+
+function showMessage(kind: MessageKind, message: string) {
+  void loadElementMessage()
+    .then((ElMessage) => {
+      ElMessage[kind](message)
+    })
+    .catch(() => {
+      if (kind === 'error') {
+        console.error(message)
+        return
+      }
+
+      console.warn(message)
+    })
 }
 
 //创建axios实例
@@ -218,16 +249,16 @@ function notifyApiError(error: ApiError) {
     isErrorCodeInNamespace(error.code, 'AUTH')
 
   if (isAuthError) {
-    ElMessage.warning(message || '您的账号已登出或超时，即将登出...')
+    showMessage('warning', message || '您的账号已登出或超时，即将登出...')
     return
   }
 
   if (getErrorSeverity(error.code) === 'warning') {
-    ElMessage.warning(message)
+    showMessage('warning', message)
     return
   }
 
-  ElMessage.error(message)
+  showMessage('error', message)
 }
 
 // HTTP 状态码默认文案
@@ -330,7 +361,7 @@ const requestHandler = <T>(
         // 仅在非 ApiError 时补充兜底消息
         if (!(error instanceof ApiError)) {
           console.error('网络错误：', error)
-          ElMessage.warning('网络发生错误，请检查')
+          showMessage('warning', '网络发生错误，请检查')
         }
         reject(error)
       })

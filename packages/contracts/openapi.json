@@ -1,6 +1,84 @@
 {
   "components": {
     "schemas": {
+      "AdminAlertsSnapshot": {
+        "properties": {
+          "alert_count": {
+            "description": "Total active alerts.",
+            "minimum": 0.0,
+            "title": "Alert Count",
+            "type": "integer"
+          },
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/MetricAlert"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "critical_count": {
+            "description": "Active critical alerts.",
+            "minimum": 0.0,
+            "title": "Critical Count",
+            "type": "integer"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "warning_count": {
+            "description": "Active warning alerts.",
+            "minimum": 0.0,
+            "title": "Warning Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "alert_count",
+          "warning_count",
+          "critical_count"
+        ],
+        "title": "AdminAlertsSnapshot",
+        "type": "object"
+      },
+      "ApiResponse_AdminAlertsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdminAlertsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[AdminAlertsSnapshot]",
+        "type": "object"
+      },
       "ApiResponse_AuthSession_": {
         "properties": {
           "code": {
@@ -254,6 +332,41 @@
         "title": "ApiResponse[List[TagBase]]",
         "type": "object"
       },
+      "ApiResponse_MetricsHistorySnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MetricsHistorySnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[MetricsHistorySnapshot]",
+        "type": "object"
+      },
       "ApiResponse_NoneType_": {
         "properties": {
           "code": {
@@ -316,6 +429,76 @@
           "msg"
         ],
         "title": "ApiResponse[RequestMetricsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_RumMetricsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RumMetricsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[RumMetricsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_TelemetryIngestResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelemetryIngestResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[TelemetryIngestResult]",
         "type": "object"
       },
       "ApiResponse_UserCreateResult_": {
@@ -457,6 +640,42 @@
           "msg"
         ],
         "title": "ApiResponse[bool]",
+        "type": "object"
+      },
+      "ApiResponse_str_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[str]",
         "type": "object"
       },
       "AuthSession": {
@@ -902,7 +1121,7 @@
       "Body_upload_image_file_image_upload_post": {
         "properties": {
           "file": {
-            "contentMediaType": "application/octet-stream",
+            "format": "binary",
             "title": "File",
             "type": "string"
           }
@@ -916,7 +1135,7 @@
       "Body_upload_video_file_video_upload_post": {
         "properties": {
           "file": {
-            "contentMediaType": "application/octet-stream",
+            "format": "binary",
             "title": "File",
             "type": "string"
           }
@@ -1060,6 +1279,97 @@
         "title": "LoginModel",
         "type": "object"
       },
+      "MetricAlert": {
+        "properties": {
+          "actual": {
+            "description": "Observed metric value.",
+            "minimum": 0.0,
+            "title": "Actual",
+            "type": "number"
+          },
+          "key": {
+            "description": "Stable alert key for client-side grouping.",
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "description": "Human-readable alert label.",
+            "title": "Label",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Alert severity.",
+            "enum": [
+              "warning",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "threshold": {
+            "description": "Threshold that triggered the alert.",
+            "minimum": 0.0,
+            "title": "Threshold",
+            "type": "number"
+          },
+          "unit": {
+            "description": "Metric unit, for example ratio or ms.",
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "severity",
+          "actual",
+          "threshold",
+          "unit"
+        ],
+        "title": "MetricAlert",
+        "type": "object"
+      },
+      "MetricsHistorySnapshot": {
+        "properties": {
+          "kind": {
+            "description": "Snapshot history kind.",
+            "enum": [
+              "request",
+              "rum"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Requested bounded history size.",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "snapshot_count": {
+            "description": "Returned snapshot count.",
+            "minimum": 0.0,
+            "title": "Snapshot Count",
+            "type": "integer"
+          },
+          "snapshots": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Snapshots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "limit",
+          "snapshot_count"
+        ],
+        "title": "MetricsHistorySnapshot",
+        "type": "object"
+      },
       "QQModel": {
         "properties": {
           "access_token": {
@@ -1172,6 +1482,24 @@
             "title": "Max Duration Ms",
             "type": "number"
           },
+          "p50_duration_ms": {
+            "description": "p50 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P50 Duration Ms",
+            "type": "number"
+          },
+          "p95_duration_ms": {
+            "description": "p95 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P95 Duration Ms",
+            "type": "number"
+          },
+          "p99_duration_ms": {
+            "description": "p99 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P99 Duration Ms",
+            "type": "number"
+          },
           "routes": {
             "items": {
               "$ref": "#/components/schemas/RouteMetric"
@@ -1198,6 +1526,9 @@
           "total_requests",
           "error_requests",
           "avg_duration_ms",
+          "p50_duration_ms",
+          "p95_duration_ms",
+          "p99_duration_ms",
           "max_duration_ms"
         ],
         "title": "RequestMetricsSnapshot",
@@ -1455,6 +1786,24 @@
             "title": "Method",
             "type": "string"
           },
+          "p50_duration_ms": {
+            "description": "p50 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P50 Duration Ms",
+            "type": "number"
+          },
+          "p95_duration_ms": {
+            "description": "p95 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P95 Duration Ms",
+            "type": "number"
+          },
+          "p99_duration_ms": {
+            "description": "p99 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P99 Duration Ms",
+            "type": "number"
+          },
           "route": {
             "description": "FastAPI route template or bounded fallback path.",
             "title": "Route",
@@ -1467,9 +1816,189 @@
           "count",
           "error_count",
           "avg_duration_ms",
+          "p50_duration_ms",
+          "p95_duration_ms",
+          "p99_duration_ms",
           "max_duration_ms"
         ],
         "title": "RouteMetric",
+        "type": "object"
+      },
+      "RumEventSample": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page": {
+            "title": "Page",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "title": "Properties",
+            "type": "object"
+          },
+          "sessionId": {
+            "title": "Sessionid",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "timestamp": {
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "severity",
+          "timestamp",
+          "page",
+          "path",
+          "sessionId"
+        ],
+        "title": "RumEventSample",
+        "type": "object"
+      },
+      "RumMetricsSnapshot": {
+        "properties": {
+          "accepted_events": {
+            "minimum": 0.0,
+            "title": "Accepted Events",
+            "type": "integer"
+          },
+          "events_by_name": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Events By Name",
+            "type": "object"
+          },
+          "events_by_severity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Events By Severity",
+            "type": "object"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/RumEventSample"
+            },
+            "title": "Recent Events",
+            "type": "array"
+          },
+          "rejected_events": {
+            "minimum": 0.0,
+            "title": "Rejected Events",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "total_events": {
+            "minimum": 0.0,
+            "title": "Total Events",
+            "type": "integer"
+          },
+          "web_vitals": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RumWebVitalMetric"
+            },
+            "title": "Web Vitals",
+            "type": "object"
+          }
+        },
+        "required": [
+          "generated_at",
+          "started_at",
+          "total_events",
+          "accepted_events",
+          "rejected_events"
+        ],
+        "title": "RumMetricsSnapshot",
+        "type": "object"
+      },
+      "RumWebVitalMetric": {
+        "properties": {
+          "avg_value": {
+            "minimum": 0.0,
+            "title": "Avg Value",
+            "type": "number"
+          },
+          "count": {
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "good_count": {
+            "minimum": 0.0,
+            "title": "Good Count",
+            "type": "integer"
+          },
+          "max_value": {
+            "minimum": 0.0,
+            "title": "Max Value",
+            "type": "number"
+          },
+          "needs_improvement_count": {
+            "minimum": 0.0,
+            "title": "Needs Improvement Count",
+            "type": "integer"
+          },
+          "p50_value": {
+            "minimum": 0.0,
+            "title": "P50 Value",
+            "type": "number"
+          },
+          "p95_value": {
+            "minimum": 0.0,
+            "title": "P95 Value",
+            "type": "number"
+          },
+          "p99_value": {
+            "minimum": 0.0,
+            "title": "P99 Value",
+            "type": "number"
+          },
+          "poor_count": {
+            "minimum": 0.0,
+            "title": "Poor Count",
+            "type": "integer"
+          },
+          "total_value": {
+            "minimum": 0.0,
+            "title": "Total Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "total_value",
+          "avg_value",
+          "max_value",
+          "p50_value",
+          "p95_value",
+          "p99_value",
+          "good_count",
+          "needs_improvement_count",
+          "poor_count"
+        ],
+        "title": "RumWebVitalMetric",
         "type": "object"
       },
       "StatusMetric": {
@@ -1525,6 +2054,95 @@
           "name"
         ],
         "title": "TagNew",
+        "type": "object"
+      },
+      "TelemetryEventPayload": {
+        "properties": {
+          "name": {
+            "description": "Frontend telemetry event name.",
+            "enum": [
+              "web_vital",
+              "route_timing",
+              "global_error",
+              "unhandled_rejection",
+              "api_timing",
+              "api_error",
+              "user_action"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Browser page path.",
+            "title": "Page"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "title": "Properties",
+            "type": "object"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Anonymous session ID.",
+            "title": "Sessionid"
+          },
+          "severity": {
+            "default": "info",
+            "enum": [
+              "debug",
+              "info",
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client event timestamp.",
+            "title": "Timestamp"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TelemetryEventPayload",
+        "type": "object"
+      },
+      "TelemetryIngestResult": {
+        "properties": {
+          "accepted": {
+            "description": "Whether the event was accepted.",
+            "title": "Accepted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accepted"
+        ],
+        "title": "TelemetryIngestResult",
         "type": "object"
       },
       "User": {
@@ -1757,13 +2375,6 @@
       },
       "ValidationError": {
         "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
-          },
-          "input": {
-            "title": "Input"
-          },
           "loc": {
             "items": {
               "anyOf": [
@@ -1803,6 +2414,28 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/alerts": {
+      "get": {
+        "description": "Return active local request/RUM alert thresholds.",
+        "operationId": "get_admin_alerts_admin_alerts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AdminAlertsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Alerts",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/admin/metrics": {
       "get": {
         "description": "Return a process-local backend request metrics snapshot.",
@@ -1825,6 +2458,88 @@
         ]
       }
     },
+    "/admin/metrics/history": {
+      "get": {
+        "description": "Return bounded metrics snapshot history for admin trend views.",
+        "operationId": "get_admin_metrics_history_admin_metrics_history_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "request",
+              "enum": [
+                "request",
+                "rum"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MetricsHistorySnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Admin Metrics History",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/telemetry": {
+      "get": {
+        "description": "Return a process-local frontend RUM metrics snapshot.",
+        "operationId": "get_admin_telemetry_admin_telemetry_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RumMetricsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Telemetry",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/ai/chat": {
       "post": {
         "operationId": "get_answer_ai_chat_post",
@@ -1842,7 +2557,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_str_"
+                }
               }
             },
             "description": "Successful Response"
@@ -3150,6 +3867,48 @@
         "summary": "Bind Resources",
         "tags": [
           "role"
+        ]
+      }
+    },
+    "/telemetry/events": {
+      "post": {
+        "description": "Ingest one frontend RUM event into the process-local metrics collector.",
+        "operationId": "ingest_telemetry_event_telemetry_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryEventPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_TelemetryIngestResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest Telemetry Event",
+        "tags": [
+          "telemetry"
         ]
       }
     },

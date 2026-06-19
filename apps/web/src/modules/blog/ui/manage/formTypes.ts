@@ -1,13 +1,13 @@
 import {
   ElSelect,
-  ElInput,
-  ElDatePicker,
   ElCheckboxGroup,
   ElRadioGroup,
   ElUpload,
   ElSwitch,
   ElRate,
 } from 'element-plus'
+import type { SunDatePickerProps } from '@sun-world/ui/date-picker'
+import type { SunInputProps } from '@sun-world/ui/input'
 
 // 支持的 FormItem 类型
 export type FormItemType =
@@ -42,13 +42,13 @@ export interface SelectItem extends FormItemBase {
 // 输入框类型 (继承 FormItem 类型)
 export interface InputItem extends FormItemBase {
   type: 'input' // 限定类型为 'input'
-  config?: Partial<InstanceType<typeof ElInput>> // ElInput 配置 (可选)
+  config?: Partial<SunInputProps> // SunInput 配置
 }
 
 // 日期选择类型 (继承 FormItem 类型)
 export interface DateItem extends FormItemBase {
   type: 'date' // 限定类型为 'date'
-  config?: Partial<InstanceType<typeof ElDatePicker>> // ElDatePicker 配置 (可选)
+  config?: Partial<SunDatePickerProps> // SunDatePicker 配置
 }
 
 // 复选框类型 (继承 FormItem 类型)
@@ -85,7 +85,7 @@ export interface UploadItem extends FormItemBase {
 export interface TextareaItem extends FormItemBase {
   type: 'textarea' // 限定类型为 'textarea'
   rows?: number // 文本框的行数
-  config?: Partial<InstanceType<typeof ElInput>> // ElInput 配置 (可选)
+  config?: Partial<SunInputProps> // SunInput 配置
 }
 
 // 开关组件类型 (继承 FormItem 类型)

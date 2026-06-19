@@ -29,3 +29,12 @@ deploy/
 - 部署切换前，请先阅读 `docs/architecture/deployment-cutover.md`。
 - Example configs use placeholder values and contain no real secrets.
 - Read `docs/architecture/deployment-cutover.md` before any deployment cutover.
+
+## Monorepo Status
+
+- Backend code lives in `apps/api`.
+- Production backend traffic still uses the existing `blog-api.service` runtime
+  until a deliberate cutover is approved.
+- Docker Compose configuration is safe to validate with `docker compose config`;
+  do not use it to start the API profile in production during documentation or
+  build verification tasks.

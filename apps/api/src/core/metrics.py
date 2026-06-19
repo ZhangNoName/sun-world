@@ -7,12 +7,16 @@ restarts and should later be replaced or backed by persistent telemetry.
 
 from __future__ import annotations
 
-from collections import Counter
-from dataclasses import dataclass
+from collections import Counter, deque
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from math import ceil
 from threading import Lock
 
+from src.core.metrics_store import save_metrics_snapshot
+
 _MAX_ROUTE_KEYS = 200
+_MAX_DURATION_SAMPLES = 200
 _OTHER_ROUTE = "__other__"
 
 
@@ -22,6 +26,9 @@ class _RouteAccumulator:
     error_count: int = 0
     total_duration_ms: float = 0.0
     max_duration_ms: float = 0.0
+    duration_samples: deque[float] = field(
+        default_factory=lambda: deque(maxlen=_MAX_DURATION_SAMPLES)
+    )
 
     def record(self, status_code: int, duration_ms: float) -> None:
         self.count += 1
@@ -29,6 +36,7 @@ class _RouteAccumulator:
             self.error_count += 1
         self.total_duration_ms += duration_ms
         self.max_duration_ms = max(self.max_duration_ms, duration_ms)
+        self.duration_samples.append(duration_ms)
 
 
 class RequestMetricsCollector:
@@ -40,6 +48,7 @@ class RequestMetricsCollector:
         self._error_requests = 0
         self._total_duration_ms = 0.0
         self._max_duration_ms = 0.0
+        self._duration_samples: deque[float] = deque(maxlen=_MAX_DURATION_SAMPLES)
         self._statuses: Counter[int] = Counter()
         self._routes: dict[tuple[str, str], _RouteAccumulator] = {}
 
@@ -72,9 +81,10 @@ class RequestMetricsCollector:
                 self._error_requests += 1
             self._total_duration_ms += duration_ms
             self._max_duration_ms = max(self._max_duration_ms, duration_ms)
+            self._duration_samples.append(duration_ms)
             self._statuses[int(status_code)] += 1
 
-    def snapshot(self) -> dict:
+    def snapshot(self, *, persist: bool = True) -> dict:
         with self._lock:
             total_requests = self._total_requests
             avg_duration_ms = _average(self._total_duration_ms, total_requests)
@@ -86,6 +96,15 @@ class RequestMetricsCollector:
                     "error_count": item.error_count,
                     "avg_duration_ms": _round_ms(
                         _average(item.total_duration_ms, item.count)
+                    ),
+                    "p50_duration_ms": _percentile_ms(
+                        list(item.duration_samples), 50
+                    ),
+                    "p95_duration_ms": _percentile_ms(
+                        list(item.duration_samples), 95
+                    ),
+                    "p99_duration_ms": _percentile_ms(
+                        list(item.duration_samples), 99
                     ),
                     "max_duration_ms": _round_ms(item.max_duration_ms),
                 }
@@ -99,15 +118,21 @@ class RequestMetricsCollector:
         routes.sort(key=lambda item: item["count"], reverse=True)
         statuses.sort(key=lambda item: item["status"])
 
-        return {
+        snapshot = {
             "generated_at": datetime.now(timezone.utc),
             "total_requests": total_requests,
             "error_requests": self._error_requests,
             "avg_duration_ms": _round_ms(avg_duration_ms),
+            "p50_duration_ms": _percentile_ms(list(self._duration_samples), 50),
+            "p95_duration_ms": _percentile_ms(list(self._duration_samples), 95),
+            "p99_duration_ms": _percentile_ms(list(self._duration_samples), 99),
             "max_duration_ms": _round_ms(self._max_duration_ms),
             "routes": routes,
             "statuses": statuses,
         }
+        if persist:
+            save_metrics_snapshot("request", snapshot)
+        return snapshot
 
 
 request_metrics = RequestMetricsCollector()
@@ -128,8 +153,8 @@ def record_request_metric(
     )
 
 
-def get_request_metrics_snapshot() -> dict:
-    return request_metrics.snapshot()
+def get_request_metrics_snapshot(*, persist: bool = True) -> dict:
+    return request_metrics.snapshot(persist=persist)
 
 
 def _normalise_route(route: str) -> str:
@@ -149,3 +174,12 @@ def _average(total: float, count: int) -> float:
 
 def _round_ms(value: float) -> float:
     return round(float(value), 2)
+
+
+def _percentile_ms(values: list[float], percentile: int) -> float:
+    if not values:
+        return 0.0
+    sorted_values = sorted(values)
+    rank = ceil((percentile / 100) * len(sorted_values))
+    index = min(max(rank - 1, 0), len(sorted_values) - 1)
+    return _round_ms(sorted_values[index])

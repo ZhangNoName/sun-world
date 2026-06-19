@@ -1,5 +1,4 @@
 import moment from 'moment'
-import JSZip from 'jszip'
 /**
  * 格式化日期字符串
  *
@@ -22,6 +21,7 @@ export const saveTilesAsZip = async (
   }[][],
   zipFileName: string = 'tiles.zip'
 ) => {
+  const { default: JSZip } = await import('jszip')
   const zip = new JSZip() // 创建新的 ZIP 文件
   // 遍历瓦片数据，并获取行和列的索引
   for (let rowIndex = 0; rowIndex < tiles.length; rowIndex++) {

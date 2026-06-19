@@ -1,59 +1,53 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { OpenAiLangChian } from '@/aigc/openai_langchian'
-import { OPENAI_API_KEY } from '@/constant'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { ExportSvg, RobotSvg } from '@sun-world/icons'
-import ZBtn from '@/components/ZBtn/index.vue'
-import ChannelCard from '@/modules/ai/ui/ChannelCard.vue'
-import { IMsg, ISession, MsgRole } from '@/types/ai.type'
+import { SunButton } from '@sun-world/ui/button'
+import { sendAiMessage } from '@/modules/ai/api'
+import type { IMsg, ISession } from '@/types/ai.type'
+import { MsgRole } from '@/types/ai.type'
 import { getUUID } from '@/util/common'
 import ChatInput from '@/modules/ai/ui/ChatInput.vue'
 import ChatList from '@/modules/ai/ui/ChatList.vue'
 import ConfigModal from '@/modules/ai/ui/ConfigModal.vue'
 import ModelName from '@/modules/ai/ui/ModelName.vue'
+
 const sidebarClass = ref<'expend' | 'hide'>('expend')
-const userInput = ref('')
+const isSending = ref(false)
 const chatList = ref<IMsg[]>([])
 const sessionList = ref<ISession[]>([
   {
     id: '1',
-    name: '对话1',
-    description: '对话1',
+    name: '对话 1',
+    description: '默认对话',
   },
   {
     id: '2',
-    name: '对话2',
-    description: '对话2',
+    name: '对话 2',
+    description: '备用对话',
   },
 ])
-const currentSession = ref<string>('')
-const configModalVisible = ref(false)
+const currentSession = ref<string>('1')
 
-const openAi = new OpenAiLangChian({
-  apiKey: OPENAI_API_KEY,
-  modelType: 'gpt-3.5-turbo',
-  needParser: true,
-  baseUrl: 'https://apikeyplus.com/v1',
-})
-
-const sendMsg = async () => {
-  if (!userInput.value.trim()) {
+const sendMsg = async (rawMessage: string) => {
+  const message = rawMessage.trim()
+  if (!message) {
     return ElMessage.error('请输入内容')
   }
 
-  const msg = userInput.value
-  chatList.value.push({ id: getUUID(), role: MsgRole.USER, content: msg })
-  userInput.value = ''
+  chatList.value.push({ id: getUUID(), role: MsgRole.USER, content: message })
+  isSending.value = true
 
   try {
-    let res = await openAi.sendMsg({ text: msg })
-    chatList.value.push({ id: getUUID(), role: MsgRole.AI, content: res })
+    const answer = await sendAiMessage(message, currentSession.value || '1')
+    chatList.value.push({ id: getUUID(), role: MsgRole.AI, content: answer })
   } catch (error) {
-    ElMessage.error('发送失败，请检查网络或 API Key')
+    ElMessage.error('发送失败，请检查网络或稍后再试')
+  } finally {
+    isSending.value = false
   }
 }
+
 const selectSession = (id: string) => {
   currentSession.value = id
 }
@@ -61,26 +55,23 @@ const selectSession = (id: string) => {
 
 <template>
   <div class="aigc-container" :class="sidebarClass">
-    <!-- 侧边栏 -->
     <ChatList
       :list="sessionList"
       :id="currentSession"
       @select="selectSession"
     />
 
-    <!-- 主内容区 -->
     <main class="main-content">
       <header class="chat-header">
-        <model-name model="gpt-3.5-t" />
+        <ModelName model="gpt-3.5-t" />
         <div class="header-actions">
-          <ZBtn type="icon" size="icon" title="导出聊天记录">
+          <SunButton variant="icon" size="icon" title="导出聊天记录">
             <ExportSvg #icon width="1.4rem" height="1.4rem" />
-          </ZBtn>
-          <config-modal />
+          </SunButton>
+          <ConfigModal />
         </div>
       </header>
 
-      <!-- 聊天列表 -->
       <div class="chat-body">
         <div
           v-for="(chat, index) in chatList"
@@ -89,7 +80,7 @@ const selectSession = (id: string) => {
         >
           <div class="avatar">
             <RobotSvg
-              v-if="chat.role === 'ai'"
+              v-if="chat.role === MsgRole.AI"
               width="2.4rem"
               height="2.4rem"
             />
@@ -103,13 +94,11 @@ const selectSession = (id: string) => {
         </div>
       </div>
 
-      <!-- 输入区域 -->
       <footer class="chat-footer">
-        <chat-input />
+        <ChatInput :loading="isSending" @send="sendMsg" />
       </footer>
     </main>
   </div>
-  <!-- <config-modal v-model:visible="configModalVisible" /> -->
 </template>
 
 <style scoped>
@@ -120,7 +109,6 @@ const selectSession = (id: string) => {
   background-color: var(--color-surface-page);
   color: var(--color-text-primary);
 
-  /* 主内容区样式 */
   .main-content {
     flex: 1;
     display: flex;
@@ -136,14 +124,17 @@ const selectSession = (id: string) => {
       justify-content: space-between;
       padding: 0 1.5rem 0 0.5rem;
       border-bottom: 1px solid var(--color-border-subtle);
+
       .model-name {
         font-weight: 600;
         font-size: var(--font-size-xl);
+
         span {
           margin-right: var(--spacing);
           line-height: 28px;
         }
       }
+
       .header-actions {
         display: flex;
         gap: 0.5rem;
@@ -175,6 +166,7 @@ const selectSession = (id: string) => {
           display: flex;
           align-items: center;
           justify-content: center;
+
           .user-avatar {
             width: 100%;
             height: 100%;
@@ -202,7 +194,6 @@ const selectSession = (id: string) => {
   }
 }
 
-/* 移动端适配或窄屏处理 */
 @media (max-width: 768px) {
   .chat-body .message-row {
     padding: 1.5rem 1rem;

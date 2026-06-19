@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/admin/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Admin Alerts
+         * @description Return active local request/RUM alert thresholds.
+         */
+        get: operations["get_admin_alerts_admin_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/metrics": {
         parameters: {
             query?: never;
@@ -16,6 +36,46 @@ export interface paths {
          * @description Return a process-local backend request metrics snapshot.
          */
         get: operations["get_admin_metrics_admin_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/metrics/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Admin Metrics History
+         * @description Return bounded metrics snapshot history for admin trend views.
+         */
+        get: operations["get_admin_metrics_history_admin_metrics_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/telemetry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Admin Telemetry
+         * @description Return a process-local frontend RUM metrics snapshot.
+         */
+        get: operations["get_admin_telemetry_admin_telemetry_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -528,6 +588,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/telemetry/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ingest Telemetry Event
+         * @description Ingest one frontend RUM event into the process-local metrics collector.
+         */
+        post: operations["ingest_telemetry_event_telemetry_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user/": {
         parameters: {
             query?: never;
@@ -632,6 +712,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminAlertsSnapshot */
+        AdminAlertsSnapshot: {
+            /**
+             * Alert Count
+             * @description Total active alerts.
+             */
+            alert_count: number;
+            /** Alerts */
+            alerts?: components["schemas"]["MetricAlert"][];
+            /**
+             * Critical Count
+             * @description Active critical alerts.
+             */
+            critical_count: number;
+            /**
+             * Generated At
+             * Format: date-time
+             * @description Snapshot generation time.
+             */
+            generated_at: string;
+            /**
+             * Warning Count
+             * @description Active warning alerts.
+             */
+            warning_count: number;
+        };
+        /** ApiResponse[AdminAlertsSnapshot] */
+        ApiResponse_AdminAlertsSnapshot_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["AdminAlertsSnapshot"] | null;
+            /** Msg */
+            msg: string;
+        };
         /** ApiResponse[AuthSession] */
         ApiResponse_AuthSession_: {
             /** Code */
@@ -690,6 +804,14 @@ export interface components {
             /** Msg */
             msg: string;
         };
+        /** ApiResponse[MetricsHistorySnapshot] */
+        ApiResponse_MetricsHistorySnapshot_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["MetricsHistorySnapshot"] | null;
+            /** Msg */
+            msg: string;
+        };
         /** ApiResponse[NoneType] */
         ApiResponse_NoneType_: {
             /** Code */
@@ -704,6 +826,22 @@ export interface components {
             /** Code */
             code: number | string;
             data?: components["schemas"]["RequestMetricsSnapshot"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[RumMetricsSnapshot] */
+        ApiResponse_RumMetricsSnapshot_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["RumMetricsSnapshot"] | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[TelemetryIngestResult] */
+        ApiResponse_TelemetryIngestResult_: {
+            /** Code */
+            code: number | string;
+            data?: components["schemas"]["TelemetryIngestResult"] | null;
             /** Msg */
             msg: string;
         };
@@ -737,6 +875,15 @@ export interface components {
             code: number | string;
             /** Data */
             data?: boolean | null;
+            /** Msg */
+            msg: string;
+        };
+        /** ApiResponse[str] */
+        ApiResponse_str_: {
+            /** Code */
+            code: number | string;
+            /** Data */
+            data?: string | null;
             /** Msg */
             msg: string;
         };
@@ -999,12 +1146,18 @@ export interface components {
         };
         /** Body_upload_image_file_image_upload_post */
         Body_upload_image_file_image_upload_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Body_upload_video_file_video_upload_post */
         Body_upload_video_file_video_upload_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Category */
@@ -1072,6 +1225,63 @@ export interface components {
             /** Username */
             username: string | null;
         };
+        /** MetricAlert */
+        MetricAlert: {
+            /**
+             * Actual
+             * @description Observed metric value.
+             */
+            actual: number;
+            /**
+             * Key
+             * @description Stable alert key for client-side grouping.
+             */
+            key: string;
+            /**
+             * Label
+             * @description Human-readable alert label.
+             */
+            label: string;
+            /**
+             * Severity
+             * @description Alert severity.
+             * @enum {string}
+             */
+            severity: "warning" | "critical";
+            /**
+             * Threshold
+             * @description Threshold that triggered the alert.
+             */
+            threshold: number;
+            /**
+             * Unit
+             * @description Metric unit, for example ratio or ms.
+             */
+            unit: string;
+        };
+        /** MetricsHistorySnapshot */
+        MetricsHistorySnapshot: {
+            /**
+             * Kind
+             * @description Snapshot history kind.
+             * @enum {string}
+             */
+            kind: "request" | "rum";
+            /**
+             * Limit
+             * @description Requested bounded history size.
+             */
+            limit: number;
+            /**
+             * Snapshot Count
+             * @description Returned snapshot count.
+             */
+            snapshot_count: number;
+            /** Snapshots */
+            snapshots?: {
+                [key: string]: unknown;
+            }[];
+        };
         /** QQModel */
         QQModel: {
             /** Access Token */
@@ -1133,6 +1343,21 @@ export interface components {
              * @description Maximum latency in milliseconds.
              */
             max_duration_ms: number;
+            /**
+             * P50 Duration Ms
+             * @description p50 latency in milliseconds.
+             */
+            p50_duration_ms: number;
+            /**
+             * P95 Duration Ms
+             * @description p95 latency in milliseconds.
+             */
+            p95_duration_ms: number;
+            /**
+             * P99 Duration Ms
+             * @description p99 latency in milliseconds.
+             */
+            p99_duration_ms: number;
             /** Routes */
             routes?: components["schemas"]["RouteMetric"][];
             /** Statuses */
@@ -1239,10 +1464,100 @@ export interface components {
              */
             method: string;
             /**
+             * P50 Duration Ms
+             * @description p50 latency in milliseconds.
+             */
+            p50_duration_ms: number;
+            /**
+             * P95 Duration Ms
+             * @description p95 latency in milliseconds.
+             */
+            p95_duration_ms: number;
+            /**
+             * P99 Duration Ms
+             * @description p99 latency in milliseconds.
+             */
+            p99_duration_ms: number;
+            /**
              * Route
              * @description FastAPI route template or bounded fallback path.
              */
             route: string;
+        };
+        /** RumEventSample */
+        RumEventSample: {
+            /** Name */
+            name: string;
+            /** Page */
+            page: string;
+            /** Path */
+            path: string;
+            /** Properties */
+            properties?: {
+                [key: string]: unknown;
+            };
+            /** Sessionid */
+            sessionId: string;
+            /** Severity */
+            severity: string;
+            /** Timestamp */
+            timestamp: string;
+        };
+        /** RumMetricsSnapshot */
+        RumMetricsSnapshot: {
+            /** Accepted Events */
+            accepted_events: number;
+            /** Events By Name */
+            events_by_name?: {
+                [key: string]: number;
+            };
+            /** Events By Severity */
+            events_by_severity?: {
+                [key: string]: number;
+            };
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Recent Events */
+            recent_events?: components["schemas"]["RumEventSample"][];
+            /** Rejected Events */
+            rejected_events: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Total Events */
+            total_events: number;
+            /** Web Vitals */
+            web_vitals?: {
+                [key: string]: components["schemas"]["RumWebVitalMetric"];
+            };
+        };
+        /** RumWebVitalMetric */
+        RumWebVitalMetric: {
+            /** Avg Value */
+            avg_value: number;
+            /** Count */
+            count: number;
+            /** Good Count */
+            good_count: number;
+            /** Max Value */
+            max_value: number;
+            /** Needs Improvement Count */
+            needs_improvement_count: number;
+            /** P50 Value */
+            p50_value: number;
+            /** P95 Value */
+            p95_value: number;
+            /** P99 Value */
+            p99_value: number;
+            /** Poor Count */
+            poor_count: number;
+            /** Total Value */
+            total_value: number;
         };
         /** StatusMetric */
         StatusMetric: {
@@ -1277,6 +1592,48 @@ export interface components {
              * @description 新增标签的名称
              */
             name: string;
+        };
+        /** TelemetryEventPayload */
+        TelemetryEventPayload: {
+            /**
+             * Name
+             * @description Frontend telemetry event name.
+             * @enum {string}
+             */
+            name: "web_vital" | "route_timing" | "global_error" | "unhandled_rejection" | "api_timing" | "api_error" | "user_action";
+            /**
+             * Page
+             * @description Browser page path.
+             */
+            page?: string | null;
+            /** Properties */
+            properties?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Sessionid
+             * @description Anonymous session ID.
+             */
+            sessionId?: string | null;
+            /**
+             * Severity
+             * @default info
+             * @enum {string}
+             */
+            severity: "debug" | "info" | "warning" | "error";
+            /**
+             * Timestamp
+             * @description Client event timestamp.
+             */
+            timestamp?: string | null;
+        };
+        /** TelemetryIngestResult */
+        TelemetryIngestResult: {
+            /**
+             * Accepted
+             * @description Whether the event was accepted.
+             */
+            accepted: boolean;
         };
         /** User */
         User: {
@@ -1430,10 +1787,6 @@ export interface components {
         };
         /** ValidationError */
         ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */
@@ -1450,6 +1803,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_admin_alerts_admin_alerts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AdminAlertsSnapshot_"];
+                };
+            };
+        };
+    };
     get_admin_metrics_admin_metrics_get: {
         parameters: {
             query?: never;
@@ -1466,6 +1839,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_RequestMetricsSnapshot_"];
+                };
+            };
+        };
+    };
+    get_admin_metrics_history_admin_metrics_history_get: {
+        parameters: {
+            query?: {
+                kind?: "request" | "rum";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MetricsHistorySnapshot_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_admin_telemetry_admin_telemetry_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_RumMetricsSnapshot_"];
                 };
             };
         };
@@ -1489,7 +1914,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ApiResponse_str_"];
                 };
             };
             /** @description Validation Error */
@@ -2497,6 +2922,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ingest_telemetry_event_telemetry_events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TelemetryEventPayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_TelemetryIngestResult_"];
                 };
             };
             /** @description Validation Error */

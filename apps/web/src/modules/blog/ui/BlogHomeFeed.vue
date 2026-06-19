@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { ElButton, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import BlogCard from './BlogCard.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
-import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
+import { SunButton } from '@sun-world/ui/button'
+import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
@@ -132,8 +133,8 @@ onMounted(async () => {
     </template>
 
     <div class="loader-btn" ref="loaderRef">
-      <el-button
-        type="primary"
+      <SunButton
+        variant="primary"
         class="load-more"
         :loading="blogList.loading.value && blogList.items.value.length > 0"
         :disabled="blogList.loading.value || !blogList.hasMore.value"
@@ -146,7 +147,7 @@ onMounted(async () => {
               ? '加载更多'
               : '没有更多了'
         }}
-      </el-button>
+      </SunButton>
     </div>
   </main>
 </template>

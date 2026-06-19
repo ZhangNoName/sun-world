@@ -1,11 +1,8 @@
 <script setup lang="ts" name="videoPage">
 import {
-  onBeforeUnmount,
-  onMounted,
   reactive,
   ref,
   shallowRef,
-  watch,
 } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'

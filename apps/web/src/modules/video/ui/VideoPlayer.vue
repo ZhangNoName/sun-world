@@ -1,8 +1,6 @@
 <script setup lang="ts" name="VideoPlayer">
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import Artplayer, { type Option } from 'artplayer'
-import artplayerPluginDocumentPip from 'artplayer-plugin-document-pip'
-import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 
 const props = defineProps<{ option: Partial<Option> }>()
 const emit = defineEmits(['getInstance'])

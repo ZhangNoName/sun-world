@@ -1,26 +1,24 @@
 <script lang="ts" setup name="SunTable">
 import { ref, defineProps, watch, computed, watchEffect } from 'vue'
 import {
-  ElButton,
-  ElPagination,
   ElTableColumn,
   ElTable,
   TableColumnCtx,
 } from 'element-plus'
+import { SunButton } from '@sun-world/ui/button'
+import { SunPagination } from '@sun-world/ui/pagination'
 import {
   DEFAULT_PAGE_CONFIG,
   DEFAULT_TABLE_OPTIONS,
   SunTableProps,
   CLOUMN_WIDTH,
 } from './tableTypes'
-import { getDataByPage } from '@/service/manageRequest'
 
 const props = withDefaults(defineProps<SunTableProps>(), {
   loading: false,
   tableConfig: () => ({}),
   tableOptions: () => ({ ...DEFAULT_TABLE_OPTIONS }), // 复制默认值，避免被修改
   pageConfig: () => ({ ...DEFAULT_PAGE_CONFIG }),
-  url: '',
 })
 
 const loading = ref(props.loading || false)
@@ -64,15 +62,17 @@ watch(
   { deep: true }
 )
 
-watchEffect(() => {
+watchEffect(async () => {
   console.log('出发变化')
-  getDataByPage(props.url, {
-    page_size: paginationConfig.value.pageSize,
+  loading.value = true
+  const res = await props.fetchPage({
+    pageSize: paginationConfig.value.pageSize,
     page: paginationConfig.value.currentPage,
-  }).then((res) => {
-    console.log('表格数据更新', res)
-    tableData.value = res.list
   })
+    console.log('表格数据更新', res)
+  tableData.value = res.list
+  paginationConfig.value.total = res.total
+  loading.value = false
 })
 </script>
 
@@ -119,14 +119,14 @@ watchEffect(() => {
         fixed="right"
       >
         <template #default="scope">
-          <ElButton
+          <SunButton
             v-for="action in tableOptions.actions"
             :key="action.label"
-            :type="action.type || 'primary'"
+            :variant="action.type === 'danger' ? 'danger' : 'primary'"
             @click="() => action.handler(scope.row)"
           >
             {{ action.label }}
-          </ElButton>
+          </SunButton>
         </template>
       </ElTableColumn>
     </ElTable>
@@ -134,12 +134,13 @@ watchEffect(() => {
     <!-- 分页组件（可选） -->
     <div class="sun-table-pagination">
       <span class="pagination-total">共 {{ tableOptions.total }} 条数据</span>
-      <ElPagination
+      <SunPagination
         v-if="tableOptions.showPagination"
-        v-bind="paginationConfig"
-        v-model:page-size="paginationConfig.pageSize"
-        v-model:current-page="paginationConfig.currentPage"
-      ></ElPagination>
+        :page="paginationConfig.currentPage"
+        :page-size="paginationConfig.pageSize"
+        :total="paginationConfig.total"
+        @update:page="(page) => (paginationConfig.currentPage = page)"
+      />
     </div>
   </div>
 </template>

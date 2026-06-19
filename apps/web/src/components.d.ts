@@ -11,8 +11,6 @@ declare module 'vue' {
     LanguageSwitch: typeof import('./components/LanguageSwitch/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Tag: typeof import('./components/Tag/index.vue')['default']
     ThemeSwitch: typeof import('./components/ThemeSwitch/index.vue')['default']
-    ZBtn: typeof import('./components/ZBtn/index.vue')['default']
   }
 }

@@ -13,7 +13,6 @@ import {
   InterceptLocalStorage,
 } from '@/util'
 import lazy from '@/directives/lazy'
-import 'element-plus/theme-chalk/src/index.scss'
 import { createPinia } from 'pinia'
 import 'virtual:svg-icons-register'
 

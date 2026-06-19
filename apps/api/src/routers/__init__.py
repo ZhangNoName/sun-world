@@ -8,6 +8,7 @@ from .ai import ai_router
 from .file import file_router
 from .admin import admin_router
 from .health import health_router
+from .telemetry import telemetry_router
 
 __all__ = [
     "base_router",
@@ -20,4 +21,5 @@ __all__ = [
     "file_router",
     "admin_router",
     "health_router",
+    "telemetry_router",
 ]

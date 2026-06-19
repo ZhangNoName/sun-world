@@ -1,9 +1,9 @@
 <script setup lang="ts" name="config-modal">
 import { ref, reactive } from 'vue'
-import { ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { ElDialog, ElForm, ElFormItem } from 'element-plus'
 import { SettingSvg } from '@sun-world/icons'
-import ZBtn from '@/components/ZBtn/index.vue'
-import ZInput from '@/baseCom/input/input.vue'
+import { SunButton } from '@sun-world/ui/button'
+import { SunInput } from '@sun-world/ui/input'
 import type { FormInstance } from 'element-plus'
 
 const formRef = ref<FormInstance>()
@@ -37,9 +37,9 @@ const resetForm = (formEl: FormInstance | undefined) => {
 </script>
 
 <template>
-  <z-btn type="icon" size="icon" @click="open = true" title="设置">
+  <SunButton variant="icon" size="icon" @click="open = true" title="设置">
     <SettingSvg #icon width="1.4rem" height="1.4rem" />
-  </z-btn>
+  </SunButton>
   <el-dialog
     width="500px"
     v-model="open"
@@ -57,14 +57,14 @@ const resetForm = (formEl: FormInstance | undefined) => {
         :rules="rules"
       >
         <el-form-item label="Token" prop="token">
-          <z-input v-model="form.token" />
+          <SunInput v-model="form.token" />
         </el-form-item>
       </el-form>
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <z-btn type="outline" @click="resetForm(formRef)">取消</z-btn>
-        <z-btn type="primary" @click="submitForm(formRef)">保存</z-btn>
+        <SunButton variant="secondary" @click="resetForm(formRef)">取消</SunButton>
+        <SunButton variant="primary" @click="submitForm(formRef)">保存</SunButton>
       </div>
     </template>
   </el-dialog>

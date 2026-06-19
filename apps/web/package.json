@@ -10,6 +10,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "@sun-world/editor": "workspace:*",
     "@sun-world/icons": "workspace:*",
+    "@sun-world/ui": "workspace:*",
     "@unhead/vue": "^1.11.20",
     "@vue/shared": "3.5.22",
     "echarts": "^5.6.0",

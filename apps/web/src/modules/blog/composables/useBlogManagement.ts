@@ -1,8 +1,12 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormItem } from '@/modules/blog/ui/manage/formTypes'
-import type { SunTableColumn } from '@/modules/blog/ui/manage/tableTypes'
+import type {
+  SunTableColumn,
+  SunTableFetchPage,
+} from '@/modules/blog/ui/manage/tableTypes'
 import { useBlogBaseData } from './useBlogBaseData'
+import { fetchBlogPage } from '../api'
 
 const BlogSearchFormData: FormItem[] = [
   {
@@ -79,6 +83,7 @@ export interface BlogManagementViewModel {
   onSubmit: () => void
   onReset: () => void
   blogTableColumns: ComputedRef<SunTableColumn[]>
+  fetchBlogTablePage: SunTableFetchPage
   initializeBlogManagement: () => void
 }
 
@@ -143,6 +148,16 @@ export function useBlogManagement(): BlogManagementViewModel {
     })
   })
 
+  const fetchBlogTablePage: SunTableFetchPage = async ({ page, pageSize }) => {
+    const res = await fetchBlogPage(page, pageSize)
+    return {
+      list: (res.list ?? []) as Record<string, any>[],
+      page: res.page,
+      pageSize: res.page_size,
+      total: res.total,
+    }
+  }
+
   const initializeBlogManagement = () => {
     loadBlogBaseData().catch((error) => {
       console.error('获取博客基础数据失败:', error)
@@ -157,6 +172,7 @@ export function useBlogManagement(): BlogManagementViewModel {
     onSubmit,
     onReset,
     blogTableColumns,
+    fetchBlogTablePage,
     initializeBlogManagement,
   }
 }

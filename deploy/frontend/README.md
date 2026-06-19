@@ -43,3 +43,18 @@ The root `Dockerfile` is the build source.
 1. Node 22 image installs pnpm and builds `apps/web`
 2. `apps/web/dist` is copied into the Nginx Alpine image
 3. Nginx serves static files on port 80
+
+## Compose
+
+The frontend can also be built and run through Docker Compose:
+
+```bash
+docker compose build frontend
+docker compose up -d frontend
+```
+
+This keeps the same production container name and port mapping:
+
+- Container: `my-frontend`
+- Host port: `8081`
+- Container port: `80`

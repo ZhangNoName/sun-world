@@ -3,10 +3,10 @@
 import { ref, reactive, watchEffect } from 'vue'
 import type { PropType } from 'vue'
 import { FormItem } from './formTypes'
+import { SunDatePicker } from '@sun-world/ui/date-picker'
+import { SunInput } from '@sun-world/ui/input'
 import {
   ElSelect,
-  ElInput,
-  ElDatePicker,
   ElCheckboxGroup,
   ElForm,
   ElFormItem,
@@ -47,12 +47,13 @@ const formData = reactive<Record<string, any>>({ ...props.initialValues })
       :prop="item.key"
     >
       <!-- 输入框 -->
-      <ElInput
+      <SunInput
         v-if="item.type === 'input'"
         v-model="formData[item.key]"
-        :type="item.type"
+        type="text"
         :placeholder="`请输入${item.label}`"
         clearable
+        v-bind="item.config"
       />
 
       <!-- 下拉选择 -->
@@ -71,12 +72,11 @@ const formData = reactive<Record<string, any>>({ ...props.initialValues })
       </ElSelect>
 
       <!-- 日期选择 -->
-      <ElDatePicker
+      <SunDatePicker
         v-else-if="item.type === 'date'"
         v-model="formData[item.key]"
-        :type="item.type"
         :placeholder="`选择${item.label}`"
-        value-format="YYYY-MM-DD"
+        v-bind="item.config"
       />
 
       <!-- 复选框 -->

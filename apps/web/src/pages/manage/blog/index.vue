@@ -9,6 +9,7 @@ const {
   form,
   formRef,
   blogTableColumns,
+  fetchBlogTablePage,
   initializeBlogManagement,
 } = useBlogManagement()
 
@@ -30,7 +31,7 @@ onMounted(() => {
           showIndex: false,
           showSelection: true,
         }"
-        url="/blogs"
+        :fetchPage="fetchBlogTablePage"
         style="width: 100%"
       ></SunTable>
     </div>

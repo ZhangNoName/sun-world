@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import { ElInput, ElSelect, ElOption } from 'element-plus'
-import ZBtn from '@/components/ZBtn/index.vue'
+import { ElSelect, ElOption } from 'element-plus'
+import { SunButton } from '@sun-world/ui/button'
+import { SunInput } from '@sun-world/ui/input'
 import { useBlogAuthoring } from '@/modules/blog/composables/useBlogAuthoring'
 
 defineProps({
@@ -31,14 +32,14 @@ onMounted(() => {
     <div class="func-bar">
       <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
       <div class="btn-container">
-        <ZBtn :disabled="saving" @click="saveBlog">
+        <SunButton :disabled="saving" @click="saveBlog">
           {{ saving ? '保存中...' : $t('save') }}
-        </ZBtn>
+        </SunButton>
       </div>
     </div>
 
     <div class="title-container">
-      <ElInput
+      <SunInput
         class="title-input"
         placeholder="标题"
         maxlength="100"

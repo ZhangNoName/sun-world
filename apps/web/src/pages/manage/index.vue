@@ -2,8 +2,11 @@
 import { ElMenu, ElMenuItem } from 'element-plus'
 import ManageBlog from './blog/index.vue'
 import ManageAigc from './aigc/index.vue'
-import AdminChartsPage from '@/modules/admin/pages/AdminChartsPage.vue'
 import { defineAsyncComponent, ref } from 'vue'
+
+const AdminChartsPage = defineAsyncComponent(
+  () => import('@/modules/admin/pages/AdminChartsPage.vue')
+)
 
 const AdminMetricsPage = defineAsyncComponent(
   () => import('@/modules/admin/pages/AdminMetricsPage.vue')

@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import SelfInfoCard from '../ui/SelfInfoCard.vue'
 import CatalogCard from '../ui/CatalogCard.vue'
-import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
+import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
 import { useBlogReader } from '../composables/useBlogReader'
 import {

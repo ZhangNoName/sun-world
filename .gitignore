@@ -30,6 +30,8 @@ __pycache__/
 .coverage
 coverage/
 htmlcov/
+*.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
 # Logs and local runtime files
 logs/
@@ -40,6 +42,8 @@ logs/
 tmp/
 temp/
 .tmp/
+data/metrics-snapshots.json
+apps/api/data/metrics-snapshots.json
 
 # Local env/config files. Keep examples trackable.
 .env
@@ -49,6 +53,14 @@ temp/
 *.override.yaml
 !*.override.example.yml
 !*.override.example.yaml
+
+# Backend local/runtime-only files
+apps/api/**/*.ipynb
+!apps/api/**/*.example.ipynb
+apps/api/src/conf/local.override.yml
+apps/api/src/conf/local.override.yaml
+apps/api/uploads/
+apps/api/runtime/
 
 # Local-only app config and certificates
 apps/web/src/constant.ts

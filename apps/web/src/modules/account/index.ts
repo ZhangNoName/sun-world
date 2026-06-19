@@ -1,9 +1,5 @@
 import type { AppModule } from '../types'
 
-export * from './api'
-export * from './errors'
-export type * from './types'
-
 const LoginPage = () => import('@/pages/login/login.vue')
 const RegisterPage = () => import('@/pages/login/register.vue')
 const MePage = () => import('@/pages/me/me.vue')
@@ -48,6 +44,4 @@ export const accountModule: AppModule = {
     description: '管理 Sun World 登录、个人资料和第三方授权。',
     noIndex: true,
   },
-  preload: () =>
-    Promise.all([LoginPage(), RegisterPage(), MePage(), QqCallbackPage()]),
 }

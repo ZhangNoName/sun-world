@@ -52,6 +52,10 @@ Generate only OpenAPI:
 pnpm -F @sun-world/contracts generate:openapi
 ```
 
+This command is cross-platform. It runs `scripts/generate-openapi.mjs`, which
+selects Python and then calls `scripts/export-openapi.py` from the repository
+root.
+
 Generate only TypeScript types from an existing OpenAPI file:
 
 ```bash
@@ -65,8 +69,10 @@ OpenAPI export imports the FastAPI app, so the selected Python environment must 
 The generator chooses Python in this order:
 
 1. `SUN_WORLD_API_PYTHON`
-2. `apps/api/.venv/bin/python`
-3. `python3`
+2. `apps/api/.venv/Scripts/python.exe` on Windows
+3. `apps/api/.venv/bin/python` on Unix-like systems
+4. `python`
+5. `python3`
 
 On a machine where the API venv has not been created yet, provide the interpreter explicitly:
 

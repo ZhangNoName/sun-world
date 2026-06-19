@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import LoadingSkeleton from '@/shared/ui/LoadingSkeleton.vue'
+import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { useAdminMetrics } from '../composables/useAdminMetrics'
 
 const {
   snapshot,
   routes,
   statuses,
+  webVitals,
+  recentRumEvents,
+  activeAlerts,
   metricCards,
+  telemetryCards,
+  alertCards,
+  historyCards,
   loading,
   errorMessage,
   lastLoadedAt,
@@ -46,11 +52,85 @@ const {
       {{ errorMessage }}
     </section>
 
+    <section class="metrics-grid" aria-label="Alert overview">
+      <LoadingSkeleton v-if="loading && !alertCards.length" :lines="3" />
+
+      <article
+        v-for="card in alertCards"
+        v-else
+        :key="card.key"
+        class="metric-card"
+        :class="`metric-card-${card.tone}`"
+      >
+        <p class="metric-label">{{ card.label }}</p>
+        <strong class="metric-value">{{ card.value }}</strong>
+        <span class="metric-caption">{{ card.caption }}</span>
+      </article>
+    </section>
+
+    <section class="metrics-panel alerts-panel" aria-label="Active alerts">
+      <div class="panel-heading">
+        <h2>Active alerts</h2>
+        <span>{{ activeAlerts.length }} rules</span>
+      </div>
+
+      <div class="alert-list">
+        <div v-if="!activeAlerts.length" class="empty-state">No active alerts</div>
+        <div
+          v-for="alert in activeAlerts"
+          :key="alert.key"
+          class="alert-row"
+          :class="`alert-row-${alert.severity}`"
+        >
+          <span class="alert-severity">{{ alert.severity }}</span>
+          <div class="alert-copy">
+            <strong>{{ alert.label }}</strong>
+            <span>
+              {{ formatNumber(alert.actual) }} {{ alert.unit }}
+              / threshold {{ formatNumber(alert.threshold) }} {{ alert.unit }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Metrics history overview">
+      <LoadingSkeleton v-if="loading && !historyCards.length" :lines="3" />
+
+      <article
+        v-for="card in historyCards"
+        v-else
+        :key="card.key"
+        class="metric-card"
+        :class="`metric-card-${card.tone}`"
+      >
+        <p class="metric-label">{{ card.label }}</p>
+        <strong class="metric-value">{{ card.value }}</strong>
+        <span class="metric-caption">{{ card.caption }}</span>
+      </article>
+    </section>
+
     <section class="metrics-grid" aria-label="请求指标概览">
       <LoadingSkeleton v-if="loading && !snapshot" :lines="3" />
 
       <article
         v-for="card in metricCards"
+        v-else
+        :key="card.key"
+        class="metric-card"
+        :class="`metric-card-${card.tone}`"
+      >
+        <p class="metric-label">{{ card.label }}</p>
+        <strong class="metric-value">{{ card.value }}</strong>
+        <span class="metric-caption">{{ card.caption }}</span>
+      </article>
+    </section>
+
+    <section class="metrics-grid" aria-label="RUM metrics overview">
+      <LoadingSkeleton v-if="loading && !telemetryCards.length" :lines="3" />
+
+      <article
+        v-for="card in telemetryCards"
         v-else
         :key="card.key"
         class="metric-card"
@@ -83,6 +163,8 @@ const {
             <div class="route-stats">
               <span>{{ formatNumber(route.count) }} 次</span>
               <span>{{ formatNumber(route.avg_duration_ms) }}ms 平均</span>
+              <span>{{ formatNumber(route.p95_duration_ms) }}ms p95</span>
+              <span>{{ formatNumber(route.p99_duration_ms) }}ms p99</span>
               <span>{{ formatNumber(route.max_duration_ms) }}ms 峰值</span>
               <span
                 class="route-errors"
@@ -128,6 +210,69 @@ const {
               ></span>
             </div>
             <strong>{{ formatNumber(item.count) }}</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="metrics-content rum-content">
+      <article class="metrics-panel">
+        <div class="panel-heading">
+          <h2>Web Vitals</h2>
+          <span>{{ webVitals.length }} metrics</span>
+        </div>
+
+        <div class="route-list">
+          <div v-if="!webVitals.length" class="empty-state">No RUM metrics yet</div>
+          <div
+            v-for="item in webVitals"
+            :key="item.metric"
+            class="route-row"
+          >
+            <div class="route-main">
+              <span class="method">{{ item.metric }}</span>
+              <span class="route-path">
+                avg {{ formatNumber(item.avg_value) }},
+                p95 {{ formatNumber(item.p95_value) }},
+                p99 {{ formatNumber(item.p99_value) }},
+                max {{ formatNumber(item.max_value) }}
+              </span>
+            </div>
+            <div class="route-stats">
+              <span>{{ formatNumber(item.count) }} samples</span>
+              <span>{{ formatNumber(item.good_count) }} good</span>
+              <span>{{ formatNumber(item.needs_improvement_count) }} needs work</span>
+              <span
+                class="route-errors"
+                :class="{ active: item.poor_count > 0 }"
+              >
+                {{ formatNumber(item.poor_count) }} poor
+              </span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="metrics-panel status-panel">
+        <div class="panel-heading">
+          <h2>Recent RUM</h2>
+          <span>{{ recentRumEvents.length }} events</span>
+        </div>
+
+        <div class="route-list">
+          <div v-if="!recentRumEvents.length" class="empty-state">No events yet</div>
+          <div
+            v-for="event in recentRumEvents"
+            :key="`${event.name}:${event.timestamp}:${event.page}`"
+            class="route-row"
+          >
+            <div class="route-main">
+              <span class="method">{{ event.severity }}</span>
+              <span class="route-path">{{ event.name }}</span>
+            </div>
+            <div class="route-stats">
+              <span>{{ event.page || '-' }}</span>
+            </div>
           </div>
         </div>
       </aside>
@@ -237,6 +382,61 @@ h2 {
   margin-bottom: var(--space-6);
 }
 
+.alerts-panel {
+  margin-bottom: var(--space-6);
+}
+
+.alert-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-raised);
+}
+
+.alert-row-critical {
+  border-color: var(--color-danger);
+}
+
+.alert-row-warning {
+  border-color: var(--color-warning);
+}
+
+.alert-severity {
+  flex: 0 0 auto;
+  min-width: 72px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-strong);
+  background: var(--bg-component);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.alert-copy {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.alert-copy strong {
+  overflow-wrap: anywhere;
+  color: var(--text-strong);
+  font-size: var(--font-size-md);
+}
+
 .metric-card,
 .metrics-panel {
   border: 1px solid var(--border-default);
@@ -281,6 +481,10 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
   gap: var(--space-4);
   align-items: start;
+}
+
+.rum-content {
+  margin-top: var(--space-4);
 }
 
 .metrics-panel {

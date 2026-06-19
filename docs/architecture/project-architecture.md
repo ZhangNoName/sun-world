@@ -11,12 +11,13 @@ Sun World is organized as a full-stack monorepo:
 - `apps/web` is the public blog frontend.
 - `apps/api` is the backend API imported from the previous `blog_end` repository.
 - `packages/editor` and `packages/icons` are reusable frontend libraries.
-- `packages/contracts` is reserved for shared API contracts and generated types.
+- `packages/contracts` owns shared API contracts and generated frontend types.
 - `packages/db` is reserved for a future database/data-access package, but it is not active today.
 - `deploy` stores deployment documentation and examples only.
 - `docs` stores project context, architecture decisions, and handoff records.
 
-The monorepo branch is a code and context unification step. Production has not yet been cut over to run the backend from `apps/api`.
+The backend code has been migrated into the monorepo under `apps/api`.
+Production has not yet been cut over to run the backend from that path.
 
 ## High-Level Diagram
 
@@ -26,7 +27,7 @@ flowchart TB
   Nginx --> Web["apps/web\nVue 3 + Vite"]
   Nginx --> Api["apps/api\nFastAPI"]
 
-  Web --> Contracts["packages/contracts\nPlanned API types"]
+  Web --> Contracts["packages/contracts\nAPI contract types"]
   Web --> Editor["packages/editor\nRich text editor"]
   Web --> Icons["packages/icons\nIcon library"]
   Web --> Api
@@ -69,7 +70,10 @@ packages/
   db/           # future database package placeholder
 ```
 
-`packages/contracts` is the preferred next shared layer because the backend is Python and the frontend is TypeScript. It can later hold OpenAPI specs, generated TypeScript types, and API client helpers.
+`packages/contracts` is the shared API boundary because the backend is Python
+and the frontend is TypeScript. It holds OpenAPI specs, generated TypeScript
+types, route constants, and small protocol types. It must not contain business
+runtime code.
 
 `packages/db` is intentionally inactive. Prisma should only be introduced if a real TypeScript data service or TypeScript backend is added.
 
@@ -95,9 +99,9 @@ Current production still uses the pre-cutover runtime paths:
   - `https://sunworld.site` and `https://www.sunworld.site` route to the frontend.
   - `https://api.sunworld.site` routes to the backend API.
 
-### Monorepo Candidate
+### Monorepo Source Layout
 
-The migration branch contains the intended target source layout:
+The repository contains the intended source layout:
 
 - Frontend source: `/home/lighthouse/blog/sun-world/apps/web`
 - Backend source: `/home/lighthouse/blog/sun-world/apps/api`

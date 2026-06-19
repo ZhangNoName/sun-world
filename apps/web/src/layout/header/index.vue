@@ -11,7 +11,6 @@ import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElButton } from 'element-plus'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import Avator from '@/components/Avator/avator.vue'
 const time = ref('')

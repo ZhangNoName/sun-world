@@ -5,7 +5,6 @@ import type {
   VditorTreeItemType,
 } from '@/modules/blog/types'
 import CatalogItem from './CatalogItem.vue'
-import Vditor from 'vditor'
 
 const prop = defineProps<{
   catalog: VditorTreeItemType[]

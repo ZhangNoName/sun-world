@@ -1,4 +1,5 @@
-import { ElPagination, ElTable } from 'element-plus'
+import { ElTable } from 'element-plus'
+import type { SunPaginationProps } from '@sun-world/ui/pagination'
 
 // 表格列定义
 export interface SunTableColumn<T extends Record<string, unknown> = Record<string, unknown>> {
@@ -20,6 +21,22 @@ export interface TableAction {
   handler: (row: any) => void
 }
 
+export interface SunTablePageRequest {
+  page: number
+  pageSize: number
+}
+
+export interface SunTablePageResult {
+  list: Record<string, any>[]
+  page?: number
+  pageSize?: number
+  total: number
+}
+
+export type SunTableFetchPage = (
+  request: SunTablePageRequest
+) => Promise<SunTablePageResult>
+
 // 表格 Props 定义
 export interface SunTableProps {
   columns: SunTableColumn[]
@@ -27,8 +44,8 @@ export interface SunTableProps {
   loading?: boolean
   tableConfig?: Partial<InstanceType<typeof ElTable>>
   tableOptions?: Partial<typeof DEFAULT_TABLE_OPTIONS> // 允许部分覆盖默认值
-  pageConfig?: Partial<InstanceType<typeof ElPagination>> // 分页配置
-  url: string
+  pageConfig?: Partial<SunPaginationProps> // SunPagination 配置
+  fetchPage: SunTableFetchPage
 }
 
 // 默认的表格配置

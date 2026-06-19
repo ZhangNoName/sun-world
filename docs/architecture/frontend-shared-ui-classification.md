@@ -28,12 +28,10 @@ Keep in app shell layer and do not move to `shared/ui` without a separate shell 
 Domain-neutral and reusable enough to be promoted first once `components.d.ts`/global auto registration is
 explicitly removed from feature migration paths:
 
-- `ZBtn` (`ZBtn/index.vue`, `ZBtn/index.data.ts`)
-  - Consumers: `apps/web/src/modules/ai/pages/AigcPage.vue`, `apps/web/src/modules/ai/ui/*`, `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
-  - Generic button behavior with controlled style variants
-- `Tag` (`Tag/index.vue`)
-  - Consumers: `apps/web/src/modules/blog/ui/BlogCard.vue`
-  - Generic chip-like UI; currently used only by blog tag list
+- `ZBtn`
+  - P1.27 replaced by `SunButton` from `@sun-world/ui/button`; legacy files removed.
+- `Tag`
+  - P1.27 replaced by `SunTag` from `@sun-world/ui/tag`; legacy file removed.
 - `Waterfall` (`Waterfall/waterfall.vue`)
   - Consumers: `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
   - Generic layout component but currently used by blog feed only
@@ -53,11 +51,13 @@ Bound to a concrete feature surface and should only be promoted shared after mod
 
 ### 4. Package candidates (later stage)
 
-- `ZBtn`
-- `Tag`
+- `SunButton`
+- `SunTag`
 - `Waterfall`
 
 These may become package candidates only if their dependency surface stabilizes outside app-only callers.
+`Waterfall` remains deferred because this package pass intentionally focuses on
+interactive controls rather than layout primitives.
 
 ### 5. Removed or cleaned demo assets (P1.20)
 
@@ -83,6 +83,30 @@ These are historical cleanup records, not current migration targets. Remaining f
    - `video`: `Video` moved in P1.24 to `apps/web/src/modules/video`
    - `home`: `WeatherCard` moved in P1.26 to `apps/web/src/modules/home/ui`
 3. Promote `shared primitives` into `shared/ui` once dependency ownership and imports are explicit.
+
+### P1.27 UI package contract foundation update
+
+- Added `@sun-world/ui` as the package-owned protocol layer for interactive UI
+  components.
+- First package components are:
+  - `SunButton`
+  - `SunInput`
+  - `SunDatePicker`
+  - `SunList`
+  - `SunPagination`
+  - `SunTag`
+  - `SunLoadingSkeleton`
+  - `SunThemeProvider`
+- Every first-pass component supports normal, disabled, and labeled forms.
+- Mobile-specific protocol is explicit:
+  - `SunList` supports card rendering through `mobile`.
+  - `SunPagination` supports mobile load-more plus scroll-end loading.
+  - `SunDatePicker` supports mobile bottom-drawer date selection without
+    rendering a keyboard-opening input.
+- Theme color switching is exposed through `SunThemeProvider` and package CSS
+  variables.
+- App runtime imports use package subpaths such as `@sun-world/ui/button` so
+  unused components are excluded from the web bundle.
 
 ### P1.22 admin/charts ownership closure update
 

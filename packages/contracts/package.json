@@ -12,7 +12,8 @@
     }
   },
   "scripts": {
-    "generate:openapi": "cd ../.. && bash scripts/generate-openapi.sh",
+    "test": "vitest run",
+    "generate:openapi": "node ../../scripts/generate-openapi.mjs",
     "generate:types": "openapi-typescript openapi.json -o src/generated-api-types.ts",
     "generate": "pnpm generate:openapi && pnpm generate:types",
     "build": "pnpm generate"
@@ -22,6 +23,7 @@
     "src"
   ],
   "devDependencies": {
-    "openapi-typescript": "^7.13.0"
+    "openapi-typescript": "^7.13.0",
+    "vitest": "^2.1.9"
   }
 }

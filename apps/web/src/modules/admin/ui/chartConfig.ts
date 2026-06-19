@@ -1,4 +1,4 @@
-import {
+import type {
   // 系列类型的定义后缀都为 SeriesOption
   BarSeriesOption,
   EChartsOption,

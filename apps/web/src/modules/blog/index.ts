@@ -38,5 +38,5 @@ export const blogModule: AppModule = {
     title: '博客 - Sun World',
     description: '浏览技术博客文章，涵盖前端、后端、AIGC 等主题。',
   },
-  preload: () => Promise.all([BlogDetailPage(), ArticleEditorPage()]),
+  preload: BlogDetailPage,
 }

@@ -13,7 +13,8 @@ The backend runs via systemd service `blog-api.service` on port `8000`.
 ## 未来切换 / Future Cutover
 
 切换至 monorepo 路径时，需要更新：
-When cutting over to the monorepo path, update:
+Backend code now lives in `apps/api`, but production traffic is not cut over by
+that fact alone. When cutting over to the monorepo path, update:
 
 1. `blog-api.service` 的 `WorkingDirectory` 改为 `/home/lighthouse/blog/sun-world/apps/api`
 2. 在 `apps/api` 下重建 `.venv` 或配置运行时虚拟环境
@@ -22,6 +23,23 @@ When cutting over to the monorepo path, update:
 
 详见 `docs/architecture/deployment-cutover.md`。
 See `docs/architecture/deployment-cutover.md` for details.
+
+## Compose Candidate
+
+`docker-compose.yml` may include an `api` service behind an explicit `api`
+profile. This is for build and cutover rehearsal only. Do not start it against
+production ports unless the backend cutover task explicitly authorizes that
+change.
+
+Safe validation commands:
+
+```bash
+docker compose config
+docker compose --profile api build api
+```
+
+Starting the API profile is a deployment/cutover action and is intentionally not
+part of routine verification.
 
 ## 验证 / Verification
 

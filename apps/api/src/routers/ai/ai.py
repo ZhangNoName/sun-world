@@ -6,12 +6,8 @@ from fastapi.responses import StreamingResponse
 from loguru import logger
 from pydantic import BaseModel
 from app_instance import app
-from src.controller import ai_manager
 from src.controller.ai_manager import AiManager
-from src.llm.model.gemma import GemmaModel
-from src.llm.model.mistral_img import MistralImgModel
-from src.llm.model.qwen import QwenModel
-from src.core.response import ok, fail
+from src.core.response import ApiResponse, ok, fail
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -35,7 +31,7 @@ class ChatRequest(BaseModel):
     image_url: Optional[str] = None
 
 
-@router.post("/chat")
+@router.post("/chat", response_model=ApiResponse[str])
 async def get_answer(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
     # user_id = request.state.user_id
     user_id = 2
@@ -82,6 +78,8 @@ async def chat_chunk_stream(request: Request, chat_data: ChatRequest, ai_manager
 
 @router.post("/generate-image")
 async def generate_image(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
+    from src.llm.model.gemma import GemmaModel
+
     user_id = 2
     ip = request.headers.get("x-forwarded-for") or request.client.host
     config = {"configurable": {
@@ -94,6 +92,8 @@ async def generate_image(request: Request, chat_data: ChatRequest, ai_manager: A
 
 @router.post("/read-image")
 async def generate_image(request: Request, uri: str, ai_manager: AiManager = Depends(get_ai_manager)):
+    from src.llm.model.qwen import QwenModel
+
     messages = [
         {
             "role": "user",

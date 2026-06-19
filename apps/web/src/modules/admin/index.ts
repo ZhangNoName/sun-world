@@ -38,9 +38,4 @@ export const adminModule: AppModule = {
     description: '查看 Sun World 后台数据、日志、指标和站点设置。',
     noIndex: true,
   },
-  preload: () => Promise.all([ManagePage(), AdminMetricsPage()]),
 }
-
-export * from './api'
-export * from './errors'
-export type * from './types'

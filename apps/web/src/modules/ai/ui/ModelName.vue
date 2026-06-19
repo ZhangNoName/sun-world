@@ -6,10 +6,10 @@
     trigger="click"
   >
     <template #reference>
-      <z-btn type="ghost" class="model-name" title="选择模型">
+      <SunButton variant="ghost" class="model-name" title="选择模型">
         <span>{{ modelName }}</span>
         <SvgIcon name="select" width="16px" height="16px" />
-      </z-btn>
+      </SunButton>
     </template>
     <template #default>
       <div class="model-list">
@@ -23,7 +23,7 @@
 
 <script lang="ts" setup name="modle-name">
 import { ElPopover } from 'element-plus'
-import ZBtn from '@/components/ZBtn/index.vue'
+import { SunButton } from '@sun-world/ui/button'
 import { ref, computed } from 'vue'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 

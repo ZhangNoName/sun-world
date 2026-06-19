@@ -49,6 +49,9 @@ Generate only OpenAPI:
 pnpm -F @sun-world/contracts generate:openapi
 ```
 
+This command is cross-platform and uses `scripts/generate-openapi.mjs` instead
+of a shell-specific wrapper.
+
 Generate only TypeScript types from `openapi.json`:
 
 ```bash
@@ -62,8 +65,10 @@ OpenAPI export imports the FastAPI app, so the Python interpreter must have back
 The wrapper chooses Python in this order:
 
 1. `SUN_WORLD_API_PYTHON`
-2. `apps/api/.venv/bin/python`
-3. `python3`
+2. `apps/api/.venv/Scripts/python.exe` on Windows
+3. `apps/api/.venv/bin/python` on Unix-like systems
+4. `python`
+5. `python3`
 
 Example:
 
@@ -80,6 +85,19 @@ import type { components, paths } from '@sun-world/contracts'
 ```
 
 Frontend code should use API request/response types from this package rather than database schema types.
+
+The package also exposes stable route constants and small shared protocol types:
+
+```ts
+import { API_ROUTES, DEFAULT_PAGE_SIZE } from '@sun-world/contracts'
+import type { ApiResponse, PageResult } from '@sun-world/contracts'
+```
+
+Rules:
+
+- Keep business runtime code out of this package.
+- Keep Python models as the OpenAPI source of truth.
+- Add only route constants and protocol types that are consumed by more than one frontend/backend boundary.
 
 ## Prisma
 

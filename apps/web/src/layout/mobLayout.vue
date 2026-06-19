@@ -6,8 +6,12 @@
         <img src="/logo.svg" alt="Sun World" width="40" height="40" />
       </div>
       <div class="right">
-        <Btn icon="search" @click="toggleDrawer" type="icon" />
-        <Btn icon="menu" @click="toggleDrawer" type="icon" />
+        <SunButton variant="icon" size="icon" aria-label="搜索" @click="toggleDrawer">
+          <SvgIcon name="search" />
+        </SunButton>
+        <SunButton variant="icon" size="icon" aria-label="菜单" @click="toggleDrawer">
+          <SvgIcon name="menu" />
+        </SunButton>
       </div>
     </div>
 
@@ -159,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import Btn from '@/baseCom/btn/btn.vue'
+import { SunButton } from '@sun-world/ui/button'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'

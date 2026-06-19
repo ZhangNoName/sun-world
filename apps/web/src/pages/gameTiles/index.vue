@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import {
-  ElButton,
   ElDialog,
   ElIcon,
   ElInputNumber,
@@ -12,6 +11,7 @@ import {
   ElCheckbox,
 } from 'element-plus'
 import { AddSvg } from '@sun-world/icons'
+import { SunButton } from '@sun-world/ui/button'
 import type { UploadProps } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { computed } from 'vue'
@@ -279,7 +279,7 @@ onMounted(() => {
                 :value="item"
               />
             </ElSelect>
-            <ElButton type="danger" @click="clearAllTiles">清空画布</ElButton>
+            <SunButton variant="danger" @click="clearAllTiles">清空画布</SunButton>
           </div>
         </div>
 
@@ -342,7 +342,7 @@ onMounted(() => {
               <ElCheckbox label="区块" value="split" />
               <ElCheckbox label="瓦片json" value="json" />
             </ElCheckboxGroup>
-            <ElButton type="primary" @click="exportImage">导出</ElButton>
+            <SunButton variant="primary" @click="exportImage">导出</SunButton>
           </div>
         </div>
         <div class="config-item">
@@ -393,8 +393,8 @@ onMounted(() => {
                   </ElUpload>
                 </div>
                 <div class="item-footer">
-                  <ElButton type="primary" @click="resetTile">替换</ElButton>
-                  <ElButton type="primary" @click="resetTile">重置</ElButton>
+                  <SunButton variant="primary" @click="resetTile">替换</SunButton>
+                  <SunButton variant="primary" @click="resetTile">重置</SunButton>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Tag from '@/components/Tag/index.vue'
+import { SunTag } from '@sun-world/ui/tag'
 import type { BlogCardProps } from '@/modules/blog/types'
 import { useRouter } from 'vue-router'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
@@ -54,7 +54,7 @@ const showBlog = () => {
     <div class="card-footer">
       <div class="blog-tags" @click.stop.prevent>
         <SvgIcon name="tag" size="small" />
-        <Tag v-for="tag in tags" :key="tag" :tag="tag" :url="''" />
+        <SunTag v-for="tag in tags" :key="tag" :label="tag" />
       </div>
       <hr class="card-divider" />
       <div class="card-actions">

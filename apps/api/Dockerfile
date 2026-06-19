@@ -1,17 +1,19 @@
 FROM python:3.12-slim
 
-WORKDIR /src
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
+WORKDIR /app
 
+COPY pyproject.toml poetry.lock README.md ./
+COPY src ./src
+COPY __init__.py app_instance.py main.py start.sh ./
 
-# 复制 requirements.txt 文件到工作目录
-COPY requirements.txt /src/
-RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . /src
+RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir . \
+    && chmod +x ./start.sh
 
 EXPOSE 8000
 
 CMD ["./start.sh"]
-

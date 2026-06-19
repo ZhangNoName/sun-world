@@ -1,3 +1,4 @@
+import { API_ROUTES } from '@sun-world/contracts'
 import { apiGet, apiPost } from '@/shared/api'
 import type {
   BlogCategoryList,
@@ -20,25 +21,25 @@ export async function fetchBlogPage(
   page: number,
   pageSize: number
 ): Promise<BlogListResponse> {
-  return apiGet('/blogs/', { query: { page, pageSize } })
+  return apiGet(API_ROUTES.blog.list, { query: { page, pageSize } })
 }
 
 export async function fetchBlogById(
   id: string
 ): Promise<BlogDetail> {
-  return apiGet('/blogs/{blog_id}', { path: { blog_id: Number(id) } })
+  return apiGet(API_ROUTES.blog.detail, { path: { blog_id: Number(id) } })
 }
 
 export function fetchBlogStats(): Promise<BlogStats> {
-  return apiGet('/base/')
+  return apiGet(API_ROUTES.base.summary)
 }
 
 export function fetchBlogCategories(): Promise<BlogCategoryList> {
-  return apiGet('/base/blog/category')
+  return apiGet(API_ROUTES.base.categories)
 }
 
 export function fetchBlogTags(): Promise<BlogTagList> {
-  return apiGet('/base/blog/tag')
+  return apiGet(API_ROUTES.base.tags)
 }
 
 export async function createBlog(
@@ -54,7 +55,7 @@ export async function createBlog(
     tag: params.tag?.map(normalizeTagInput),
   } as BlogCreateContract
 
-  return apiPost('/blogs/', payload)
+  return apiPost(API_ROUTES.blog.create, payload)
 }
 
 function normalizeTagInput(

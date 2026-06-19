@@ -1,3 +1,4 @@
+import { API_ROUTES } from '@sun-world/contracts'
 import { apiGet, apiPost } from '@/shared/api'
 import type {
   AuthSession,
@@ -12,31 +13,31 @@ import type {
 } from './types'
 
 export function login(data: LoginParams): Promise<AuthSession> {
-  return apiPost('/auth/login', data)
+  return apiPost(API_ROUTES.auth.login, data)
 }
 
 export function register(data: RegisterParams): Promise<RegisterSession> {
-  return apiPost('/auth/register', data)
+  return apiPost(API_ROUTES.auth.register, data)
 }
 
 export function logout(): Promise<LogoutResult> {
-  return apiPost('/auth/logout')
+  return apiPost(API_ROUTES.auth.logout)
 }
 
 export function refreshToken(): Promise<RefreshSession> {
-  return apiPost('/auth/refresh_token')
+  return apiPost(API_ROUTES.auth.refreshToken)
 }
 
 export function getCurrentUser(): Promise<UserInfo> {
-  return apiGet('/user/me')
+  return apiGet(API_ROUTES.user.me)
 }
 
 export function requestResetPassword(
   data: ResetPasswordRequestParams
 ): Promise<null> {
-  return apiPost('/auth/reset_password/request', data)
+  return apiPost(API_ROUTES.auth.resetPasswordRequest, data)
 }
 
 export function resetPassword(data: ResetPasswordParams): Promise<null> {
-  return apiPost('/auth/reset_password', data)
+  return apiPost(API_ROUTES.auth.resetPassword, data)
 }

@@ -79,8 +79,8 @@ export type BlogRawItem = components['schemas']['BlogBase'] & {
 /**
  * Typed blog detail shape (correct spelling).
  *
- * Replaces the legacy `BlogDeatil` typo in `@/service/request` for new code.
- * Both interfaces are compatible at runtime; migrate callers gradually.
+ * Replaces the old misspelled `BlogDeatil` shape for new module code.
+ * Keep callers on this module-owned type.
  */
 export type BlogDetail =
   ApiSuccessData<'/blogs/{blog_id}', 'get'> extends never

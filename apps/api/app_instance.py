@@ -1,7 +1,6 @@
 # app_instance.py
 import os
 from pathlib import Path
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 import yaml
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
@@ -166,6 +165,7 @@ class Application(FastAPI):
     async def __init__ai_manager(self):
         """初始化 AI Manager（异步）"""
         from urllib.parse import quote_plus
+        from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
         db_user = self.config['postgresql']['user']
         db_password = self.config['postgresql']['password']
         db_host = self.config['postgresql']['ip']

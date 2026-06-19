@@ -3,7 +3,7 @@ import { ref, onUnmounted } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { ISession } from '@/types/ai.type'
-import ZBtn from '@/components/ZBtn/index.vue'
+import { SunButton } from '@sun-world/ui/button'
 
 const props = defineProps<{
   list: ISession[]
@@ -108,14 +108,14 @@ const onClickOutside = () => {
       :style="menuStyle"
       @click.stop
     >
-      <z-btn type="ghost" class="menu-option" @click="handleRename">
+      <SunButton variant="ghost" class="menu-option" @click="handleRename">
         <SvgIcon name="edit" size="small" />
         重命名
-      </z-btn>
-      <z-btn type="ghost" class="menu-option delete" @click="handleDelete">
+      </SunButton>
+      <SunButton variant="ghost" class="menu-option delete" @click="handleDelete">
         <SvgIcon name="delete" size="small" />
         删除
-      </z-btn>
+      </SunButton>
     </div>
   </teleport>
 </template>

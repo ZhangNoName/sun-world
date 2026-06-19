@@ -19,6 +19,7 @@ from src.routers import (
     health_router,
     resource_router,
     role_router,
+    telemetry_router,
     user_router,
 )
 
@@ -114,6 +115,7 @@ routers = [
     auth_router,
     ai_router,
     file_router,
+    telemetry_router,
     admin_router,
 ]
 

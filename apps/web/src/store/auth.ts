@@ -1,20 +1,20 @@
 import { defineStore } from 'pinia'
 import { onMounted, ref } from 'vue'
 import {
-  postLogin,
-  postLogout,
-  postRefreshToken,
-  postRegister,
-} from '@/service/auth.req'
+  getCurrentUser,
+  login as accountLogin,
+  register as accountRegister,
+} from '@/modules/account/api'
+import type {
+  AuthSession,
+  UserInfo,
+} from '@/modules/account/types'
 import { getDeviceId } from '@/util/auth'
 import {
   getAccessTokenExpire,
   getRefreshTokenExpire,
   getCookie,
 } from '@/util/cookie'
-import type { TokenType } from '@/type'
-import { getUserMe } from '@/service/user.req'
-import type { UserInfo } from '@/modules/account'
 
 export const useAuthStore = defineStore('auth', () => {
   // 只存储过期时间，token 本身存储在 cookie 中
@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** 更新 token 过期时间（token 本身在 cookie 中，不需要存储） */
-  function updateTokenExpire(data: TokenType) {
+  function updateTokenExpire(data: AuthSession) {
     // 优先从 cookie 读取过期时间，如果没有则解析返回的时间字符串
     const accessExpire =
       getAccessTokenExpire() ||
@@ -95,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // 调用刷新接口，refresh_token 会从 cookie 自动带过去
       // 刷新成功后，新的 token 会设置到 cookie，只需要更新过期时间
-      // const res = await postRefreshToken()
+      // const res = await refreshToken()
       // updateTokenExpire(res)
     } catch (error) {
       clearTokens()
@@ -105,7 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 登录 */
   async function login(username: string, password: string) {
-    const res = await postLogin({
+    const res = await accountLogin({
       username,
       password,
     })
@@ -122,7 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
     email: string
     password: string
   }) {
-    const res = await postRegister(data)
+    const res = await accountRegister(data)
     // 注册成功后 token 会自动设置到 cookie，只需要更新过期时间
     updateTokenExpire(res)
     return res
@@ -131,7 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** 登出 */
   async function logout() {
     try {
-      // await postLogout()
+      // await logout()
     } catch (error) {
       console.error('登出失败', error)
     }
@@ -142,7 +142,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** 获取用户信息 */
   async function getUser() {
     try {
-      const res = await getUserMe()
+      const res = await getCurrentUser()
       user.value = res
       return res
     } catch (error) {

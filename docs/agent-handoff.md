@@ -1,5 +1,529 @@
 ## Current Handoff
 
+- Previous task addendum (2026-06-19, P1.29 platform chain, monitoring, build plan):
+  - Goal: decide commit/push cadence, assess frontend-backend chain, add a
+    minimum performance monitoring platform, document iteration plan, and start
+    the first iteration within the 5-hour cap.
+  - Status: first iteration implemented locally; no deploy was run.
+  - Commit/push decision:
+    - Do not commit/push after every tiny edit.
+    - Commit after coherent verified checkpoints.
+    - Push after checks pass or for backup/handoff only.
+  - Important files touched:
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/architecture/observability-and-analytics.md`
+    - `apps/api/src/core/rum_metrics.py`
+    - `apps/api/src/type/telemetry_type.py`
+    - `apps/api/src/routers/telemetry/*`
+    - `apps/api/src/routers/admin/admin.py`
+    - `apps/web/src/modules/admin/*`
+    - `packages/contracts/openapi.json`
+    - `packages/contracts/src/generated-api-types.ts`
+    - `packages/contracts/src/routes.ts`
+    - `scripts/check-rum-metrics.py`
+    - `scripts/run-api-check.mjs`
+    - `Dockerfile`
+    - `docker-compose.yml`
+  - New monitoring protocol:
+    - Public ingestion: `POST /telemetry/events`
+    - Admin read model: `GET /admin/telemetry`
+    - RUM collector aggregates accepted/rejected events, Web Vitals, event
+      severities, and bounded recent sanitized samples.
+    - Admin metrics page now loads request metrics and RUM metrics together.
+  - Build/runtime adjustment:
+    - Frontend Docker build supports public `VITE_BASE_URL` and
+      `VITE_TELEMETRY_ENDPOINT` build args.
+    - Compose defaults telemetry endpoint to
+      `https://api.sunworld.site/telemetry/events`.
+  - Verification:
+    - `python scripts\check-rum-metrics.py` first failed with missing module,
+      then passed after implementation.
+    - `apps\api\.venv\Scripts\python.exe scripts\export-openapi.py` passed.
+    - `pnpm -F @sun-world/contracts exec openapi-typescript openapi.json -o src/generated-api-types.ts` passed.
+    - `pnpm check:api` passed: API migration check and RUM protocol check.
+    - `pnpm -F @sun-world/contracts test` passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed after fixing optional
+      `events_by_name` handling.
+    - `pnpm -C apps/web build` passed with existing Vite CJS and Element Plus
+      Sass deprecation warnings.
+    - `pnpm check:web:budgets` passed; admin metrics chunk gzip remained below
+      budget.
+    - `pnpm check:compose` passed local static validation because local Docker
+      CLI is unavailable.
+    - Remote read-only compose parse passed by piping current
+      `docker-compose.yml` over stdin to Tencent Cloud Docker Compose; no file
+      was written and no service was started.
+  - Next suggested step:
+    - Do not start backend production cutover yet.
+    - Next safe iteration is Dockerfile cache layout optimization and RUM
+      persistence adapter selection.
+
+- Previous task addendum (2026-06-19, P1.30 Docker build cache guard):
+  - Goal: continue the packaging/build optimization part of the active platform
+    objective without deploying.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - `Dockerfile`
+    - `package.json`
+    - `scripts/check-docker-build-context.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+  - Build optimization:
+    - Frontend Dockerfile now copies root/workspace manifests before source
+      code and runs `pnpm install --frozen-lockfile` before `COPY . .`.
+    - This keeps dependency install cache reusable for source-only changes.
+    - Added `pnpm check:dockerfile` and included it in `pnpm check:compose`.
+  - Verification:
+    - `pnpm check:dockerfile` passed.
+    - `pnpm check:compose` passed local static validation.
+    - Remote read-only compose parse via stdin on Tencent Cloud passed; no
+      file was written and no service was started.
+    - `pnpm check:api` passed.
+    - `pnpm -F @sun-world/contracts test` passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm -C apps/web build` passed with existing Vite CJS and Element Plus
+      Sass deprecation warnings.
+    - `pnpm check:web:budgets` passed.
+  - Next suggested step:
+    - Audit frontend API call sites for direct route strings and migrate the
+      next batch to `@sun-world/contracts` route constants.
+
+- Previous task addendum (2026-06-19, P1.31 contracts route usage and cross-platform checks):
+  - Goal: continue the frontend/backend business-chain and build/run
+    optimization work without deploying.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - `apps/web/src/modules/blog/api.ts`
+    - `apps/web/src/modules/account/api.ts`
+    - `apps/web/src/modules/admin/api.ts`
+    - `scripts/check-contract-route-usage.mjs`
+    - `scripts/check-web.mjs`
+    - `scripts/run-workspace-script.mjs`
+    - `scripts/check-web.sh`
+    - `package.json`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+  - Contract-chain change:
+    - Added `pnpm check:contracts:usage`.
+    - The check initially failed on direct string routes in blog/account/admin
+      module API files, then passed after those files were migrated to
+      `API_ROUTES` from `@sun-world/contracts`.
+  - Build/run optimization:
+    - `pnpm check:web` no longer requires `bash`; it now uses
+      `scripts/check-web.mjs`.
+    - `build:web`, `build:editor`, and `build:icons` no longer use POSIX-only
+      `NODE_OPTIONS='...'` syntax; they run through
+      `scripts/run-workspace-script.mjs`.
+  - Verification:
+    - `pnpm check:contracts:usage` first failed with listed direct route
+      strings, then passed after migration.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm -F @sun-world/contracts test` passed.
+    - `pnpm check:api` passed.
+    - `pnpm check:web` first failed because `bash` was missing, then passed
+      after adding the Node-based checker.
+    - `pnpm build:web` first failed because `NODE_OPTIONS` shell syntax was not
+      portable, then passed after adding the Node workspace wrapper.
+    - `pnpm build:icons` passed.
+    - `pnpm build:editor` passed.
+    - `pnpm build` passed end-to-end.
+  - Next suggested step:
+    - Review remaining non-module legacy request utilities (`apps/web/src/service/request.ts`
+      and `apps/web/src/hooks/auth/auth.ts`) and decide whether to migrate,
+      quarantine, or delete them.
+
+- Previous task addendum (2026-06-19, P1.32 legacy API entrypoint cleanup):
+  - Goal: continue frontend/backend chain cleanup by removing unused legacy
+    API request entrypoints and guarding against regression.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - Deleted `apps/web/src/service/request.ts`
+    - Deleted `apps/web/src/hooks/auth/auth.ts`
+    - `apps/web/src/modules/blog/types.ts`
+    - `scripts/check-legacy-api-entrypoints.mjs`
+    - `scripts/check-web.mjs`
+    - `package.json`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+  - Evidence before deletion:
+    - `rg` found no production imports of `service/request.ts` functions.
+    - `rg` found no production imports of `hooks/auth/auth.ts`.
+    - Remaining account auth flow used `service/auth.req.ts`, which delegated
+      into `modules/account`; this was handled in P1.33.
+  - Guardrail:
+    - Added `pnpm check:web:legacy-api`.
+    - The check initially failed on the two retired files and a historical
+      `@/service/request` comment, then passed after deleting files and
+      updating the comment.
+    - `pnpm check:web` now includes the legacy API entrypoint check.
+  - Verification:
+    - `pnpm check:web:legacy-api` passed.
+    - `pnpm check:web` passed.
+    - `pnpm check:api` passed.
+    - `pnpm check:compose` passed local static validation.
+    - `pnpm check:contracts:usage` passed.
+  - Next suggested step:
+    - Continue checking older compatibility service files and retire them when
+      they no longer own behavior.
+
+- Previous task addendum (2026-06-19, P1.33 account service facade removal):
+  - Goal: finish the account-domain frontend/backend chain cleanup by removing
+    compatibility facades that only forwarded to `modules/account`.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - Deleted `apps/web/src/service/auth.req.ts`
+    - Deleted `apps/web/src/service/user.req.ts`
+    - `apps/web/src/store/auth.ts`
+    - `scripts/check-legacy-api-entrypoints.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+  - Contract-chain change:
+    - `store/auth.ts` now imports `login`, `register`, and `getCurrentUser`
+      directly from `@/modules/account`.
+    - `scripts/check-legacy-api-entrypoints.mjs` now guards
+      `service/auth.req.ts` and `service/user.req.ts` as retired paths.
+  - Verification:
+    - `pnpm check:web:legacy-api` first failed on the facades and store imports,
+      then passed after migration and deletion.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm check:contracts:usage` passed.
+    - `pnpm check:api` passed.
+    - `pnpm check:web` passed.
+  - Next suggested step:
+    - Audit remaining files under `apps/web/src/service` and classify them as
+      active shared infrastructure, module facades, or retirement candidates.
+
+- Latest task addendum (2026-06-19, P1.34 blog management request facade removal):
+  - Goal: continue API-chain cleanup by removing the remaining business facade
+    under `apps/web/src/service`.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - Deleted `apps/web/src/service/manageRequest.ts`
+    - `apps/web/src/modules/blog/ui/manage/SunTable.vue`
+    - `apps/web/src/modules/blog/ui/manage/tableTypes.ts`
+    - `apps/web/src/modules/blog/composables/useBlogManagement.ts`
+    - `apps/web/src/pages/manage/blog/index.vue`
+    - `scripts/check-legacy-api-entrypoints.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+  - Contract-chain change:
+    - `SunTable` no longer imports `@/service/manageRequest` or accepts a raw
+      `url` prop.
+    - Blog management now injects `fetchBlogTablePage`, implemented through
+      module API `fetchBlogPage`.
+    - Legacy API guard now treats `service/manageRequest.ts` as retired.
+  - Verification:
+    - `pnpm check:web:legacy-api` first failed on `manageRequest.ts` and the
+      `SunTable` import, then passed after migration and deletion.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm check:contracts:usage` passed.
+    - `pnpm check:web` passed.
+    - `pnpm check:api` passed.
+    - `pnpm check:compose` passed local static validation.
+  - Next suggested step:
+    - Keep `apps/web/src/service/http.ts` as shared HTTP infrastructure and
+      continue moving business API ownership into modules.
+
+- Latest task addendum (2026-06-19, P1.35 AI module API boundary and Python import trim):
+  - Goal: continue frontend/backend chain cleanup by moving AI chat requests
+    into the module API boundary and reducing browser/backend import bloat.
+  - Status: implemented locally and verified; no deploy was run.
+  - Important files touched:
+    - `apps/web/src/modules/ai/api.ts`
+    - `apps/web/src/modules/ai/types.ts`
+    - `apps/web/src/modules/ai/pages/AigcPage.vue`
+    - Deleted `apps/web/src/aigc/*`
+    - `apps/api/src/routers/ai/ai.py`
+    - `packages/contracts/src/routes.ts`
+    - `packages/contracts/openapi.json`
+    - `packages/contracts/src/generated-api-types.ts`
+    - `scripts/check-legacy-api-entrypoints.mjs`
+    - `scripts/check-contract-route-usage.mjs`
+    - `package.json`
+    - `pnpm-lock.yaml`
+  - Contract-chain change:
+    - AI routes are exposed as `API_ROUTES.ai.*`.
+    - `AigcPage` now sends through `sendAiMessage()` from
+      `apps/web/src/modules/ai/api.ts`.
+    - The old browser-side LangChain/OpenAI client under `apps/web/src/aigc`
+      is deleted and guarded against reintroduction.
+    - `pnpm check:web:legacy-api` now rejects direct business imports of
+      `@/service/http` outside the shared API infrastructure.
+  - Python optimization:
+    - Removed unused eager AI router imports.
+    - `GemmaModel` and `QwenModel` are imported lazily inside the image
+      endpoints that need them.
+    - `/ai/chat` now declares `response_model=ApiResponse[str]`, then OpenAPI
+      and generated TypeScript contracts were refreshed.
+  - Bundle/package change:
+    - Removed unused root JS `@langchain/*`, `langchain`, and `openai`
+      dependencies after deleting the browser client.
+    - Removed the stale `langchain` manual chunk rule from the web Vite config.
+  - Verification:
+    - Red check first failed as expected:
+      - `pnpm -F @sun-world/contracts test` failed because `API_ROUTES.ai`
+        was missing.
+      - `pnpm check:web:legacy-api` failed on direct `@/service/http` import
+        in `apps/web/src/aigc/ai.func.ts`.
+    - `pnpm install --lockfile-only` passed.
+    - `apps\api\.venv\Scripts\python.exe scripts\export-openapi.py` passed.
+    - `pnpm -F @sun-world/contracts exec openapi-typescript openapi.json -o src/generated-api-types.ts` passed.
+    - `pnpm -F @sun-world/contracts test` passed.
+    - `pnpm check:web:legacy-api` passed after narrowing an `aigc` false
+      positive for the admin menu page.
+    - `pnpm check:contracts:usage` passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm check:web` passed; AIGC page chunk is now 6.41 KiB gzip and no
+      `langchain` chunk is emitted. Existing Vite CJS, Element Plus Sass, and
+      empty `vendor-dayjs` warnings remain.
+    - `pnpm check:api` passed: 87 Python files compiled; repository boundary
+      clean; RUM metrics protocol passed.
+    - `pnpm check:compose` passed local static validation; Docker CLI is still
+      unavailable locally and no deployment command was run.
+  - Next suggested step:
+    - Audit remaining large frontend lazy chunks (`vendor`, `echarts`,
+      `vditor`) and decide whether route-level or package-level lazy loading
+      can shrink the initial path further.
+
+- Latest task addendum (2026-06-19, P1.36 route-only vendor chunk split):
+  - Goal: continue build/run/module packaging optimization by separating
+    optional heavy page dependencies from the global vendor chunk.
+  - Status: implemented locally and verified; no deploy was run.
+  - Important files touched:
+    - `apps/web/vite.config.ts`
+    - `apps/web/src/util/function.ts`
+    - `apps/web/src/modules/video/pages/VideoPage.vue`
+    - `apps/web/src/modules/video/ui/VideoPlayer.vue`
+    - `apps/web/performance-budgets.json`
+    - `scripts/check-web-chunks.mjs`
+    - `scripts/check-web.mjs`
+    - `package.json`
+  - Packaging change:
+    - Artplayer/HLS dependencies now build into a named `video-player` chunk.
+    - JSZip now builds into a named `tile-export` chunk.
+    - `saveTilesAsZip()` dynamically imports JSZip only when export runs.
+    - Removed unused video module imports that were not part of runtime logic.
+  - Guardrail:
+    - Added `pnpm check:web:chunks`.
+    - Root `pnpm check:web` now runs the chunk boundary check after build and
+      performance budgets.
+    - The new check first failed on the existing dist because `video-player`
+      and `tile-export` chunks were missing and JSZip was statically imported.
+      It passed after the split and dynamic import.
+  - Budget update:
+    - Added pattern budgets for:
+      - `global-vendor-chunk-gzip` <= 140 KiB
+      - `video-player-chunk-gzip` <= 230 KiB
+      - `tile-export-chunk-gzip` <= 35 KiB
+    - Current verified gzip sizes:
+      - global vendor: 101.5 KiB
+      - video-player: 208.3 KiB
+      - tile-export: 27.7 KiB
+  - Verification:
+    - `node scripts/check-web-chunks.mjs` failed before the implementation and
+      passed after rebuilding.
+    - `pnpm check:web` passed, including contracts, legacy API guard, Vue
+      typecheck, Vite build, performance budgets, and chunk boundary check.
+    - `pnpm check:api` passed: 87 Python files compiled; repository boundary
+      clean; RUM metrics protocol passed.
+    - `pnpm check:compose` passed local static validation; Docker CLI is still
+      unavailable locally and no deployment command was run.
+  - Next suggested step:
+    - Continue shrinking route-specific payloads by auditing whether
+      `echarts`/`zrender` can be loaded only by admin charts and whether
+      Vditor preview/editor imports can be split by read vs edit workflows.
+
+- Latest task addendum (2026-06-19, P1.37 Vditor read/write chunk split):
+  - Goal: continue module packaging optimization by separating article reading
+    preview code from the full article editor runtime.
+  - Status: implemented locally and verified; no deploy was run.
+  - Important files touched:
+    - `apps/web/vite.config.ts`
+    - `apps/web/src/modules/blog/index.ts`
+    - `apps/web/src/modules/blog/ui/CatalogCard.vue`
+    - `apps/web/performance-budgets.json`
+    - `scripts/check-web-chunks.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Packaging change:
+    - `vditor/dist/method.min` now builds into `vditor-preview`.
+    - Full `vditor` editor runtime now builds into `vditor-editor`.
+    - `CatalogCard.vue` no longer imports the full Vditor runtime.
+    - Blog module preload now warms only `BlogDetailPage`; it no longer
+      preloads `ArticleEditorPage` while users read public articles.
+  - Guardrail:
+    - `pnpm check:web:chunks` now requires `vditor-preview` and
+      `vditor-editor`, rejects runtime Vditor imports from `CatalogCard.vue`,
+      and rejects the old blog preload shape that pulled both read and write
+      pages together.
+    - The guard first failed on the old dist/source state, then passed after
+      the split and rebuild.
+  - Budget update:
+    - Added pattern budgets:
+      - `vditor-preview-chunk-gzip` <= 25 KiB
+      - `vditor-editor-chunk-gzip` <= 80 KiB
+    - Current verified gzip sizes:
+      - `vditor-preview`: 13.0 KiB
+      - `vditor-editor`: 67.4 KiB
+  - Verification:
+    - `pnpm check:web` passed, including contracts, legacy API guard, Vue
+      typecheck, Vite build, performance budgets, and chunk boundary check.
+    - `pnpm check:api` passed: 87 Python files compiled; repository boundary
+      clean; RUM metrics protocol passed.
+    - `pnpm check:compose` passed local static validation; Docker CLI is still
+      unavailable locally and no deployment command was run.
+  - Next suggested step:
+    - Audit admin charts next: determine whether `echarts` and `zrender`
+      should be loaded only on `/manage` chart/metrics workflows or whether
+      existing admin module preload already makes that acceptable.
+
+- Latest task addendum (2026-06-19, P1.38 admin charts async chunk split):
+  - Goal: continue module packaging optimization by keeping ECharts/ZRender
+    behind the admin chart tab instead of the manage shell.
+  - Status: implemented locally and verified; no deploy was run.
+  - Important files touched:
+    - `apps/web/src/pages/manage/index.vue`
+    - `apps/web/src/modules/admin/index.ts`
+    - `apps/web/src/modules/admin/ui/chartConfig.ts`
+    - `apps/web/vite.config.ts`
+    - `apps/web/performance-budgets.json`
+    - `scripts/check-web-chunks.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Packaging change:
+    - `AdminChartsPage` is now loaded with `defineAsyncComponent()` when the
+      chart tab is selected.
+    - The admin module no longer declares a broad `preload` hook, avoiding
+      cross-warming manage and metrics routes.
+    - Local admin chart shell/UI/config code is named `admin-charts`.
+    - `chartConfig.ts` now imports ECharts option types with `import type`.
+  - Guardrail:
+    - `pnpm check:web:chunks` now requires `admin-charts`, rejects static
+      `AdminChartsPage` imports from `pages/manage/index.vue`, rejects broad
+      admin module preload, and rejects runtime ECharts imports from
+      `chartConfig.ts`.
+    - The guard failed before implementation on all four conditions and passed
+      after rebuilding.
+  - Budget update:
+    - Added `admin-charts-chunk-gzip` <= 12 KiB.
+    - Current verified gzip size: `admin-charts` 0.8 KiB.
+    - ECharts and ZRender remain separate heavy dependency chunks loaded by the
+      async chart path.
+  - Verification:
+    - `pnpm check:web` passed, including contracts, legacy API guard, Vue
+      typecheck, Vite build, performance budgets, and chunk boundary check.
+    - `pnpm check:api` passed: 87 Python files compiled; repository boundary
+      clean; RUM metrics protocol passed.
+    - `pnpm check:compose` passed local static validation; Docker CLI is still
+      unavailable locally and no deployment command was run.
+  - Next suggested step:
+    - Review the remaining `index` chunk sources and remove the broad
+      `src/pages/**` manual chunk merge if it is still pulling unrelated
+      legacy pages together.
+
+- Latest task addendum (2026-06-19, P1.39 legacy page chunk split):
+  - Goal: remove the broad legacy `src/pages/** -> index` manual chunk merge
+    and keep remaining page shells as explicit route-owned chunks.
+  - Status: implemented locally and verified; no commit, push, or deploy was
+    run.
+  - Important files touched:
+    - `apps/web/vite.config.ts`
+    - `apps/web/src/modules/account/index.ts`
+    - `apps/web/performance-budgets.json`
+    - `scripts/check-web-chunks.mjs`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Packaging change:
+    - Removed the broad `src/pages/**` manual chunk rule that folded legacy
+      pages into `index`.
+    - Added explicit manual chunks for `page-game-tiles`, `page-tools`,
+      `page-keep`, `page-login`, `page-register`, `page-me`,
+      `page-qq-callback`, and `manage-shell`.
+    - Removed account module broad preload of login/register/profile/callback
+      routes.
+  - Guardrail:
+    - `pnpm check:web:chunks` now requires the explicit page chunks and rejects
+      the old account-wide preload and broad legacy page merge patterns.
+    - The guard failed before implementation on missing chunks/preload/merge
+      conditions and passed after rebuilding.
+  - Budget update:
+    - Added gzip budgets for the explicit page chunks:
+      `manage-shell` <= 15 KiB, `page-me` <= 15 KiB, `page-login` <= 6 KiB,
+      `page-register` <= 4 KiB, `page-game-tiles` <= 5 KiB,
+      `page-keep` <= 3 KiB, `page-tools` <= 2 KiB, and
+      `page-qq-callback` <= 2 KiB.
+    - Current verified gzip sizes: `manage-shell` 11.2 KiB, `page-me` 12.0
+      KiB, `page-login` 3.8 KiB, `page-register` 1.4 KiB,
+      `page-game-tiles` 3.0 KiB, `page-keep` 1.3 KiB, `page-tools` 0.4 KiB,
+      and `page-qq-callback` 0.4 KiB.
+  - Verification:
+    - `pnpm -C apps/web build` passed.
+    - `pnpm check:web:chunks` passed.
+    - `pnpm check:web:budgets` passed.
+    - `pnpm check:web` passed, including contracts, legacy API guard, Vue
+      typecheck, Vite build, performance budgets, and chunk boundary check.
+    - `pnpm check:api` passed: 87 Python files compiled; repository boundary
+      clean; RUM metrics protocol passed.
+    - `pnpm check:compose` passed local static validation; Docker CLI is still
+      unavailable locally and no deployment command was run.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+  - Next suggested step:
+    - Decide whether to commit the current coherent checkpoint locally, then
+      continue auditing the remaining large optional chunks (`echarts`,
+      `video-player`, and `element`) by route ownership.
+
+- Latest task addendum (2026-06-19, P1.27 UI component contract package):
+  - Goal: create a package-owned UI component protocol layer with normal,
+    disabled, and labeled forms, theme-color switching, and mobile-specific
+    interactions.
+  - Status: `@sun-world/ui` foundation implemented locally on
+    `monorepo-api-import`.
+  - Important files touched:
+    - `docs/architecture/frontend-ui-component-prd.md`
+    - `docs/superpowers/plans/2026-06-19-ui-component-contracts.md`
+    - `packages/ui/**`
+    - `apps/web/package.json`
+    - `apps/web/tsconfig.json`
+    - `apps/web/vite.config.ts`
+    - `package.json`
+    - `pnpm-lock.yaml`
+    - `docs/architecture/frontend-shared-ui-classification.md`
+  - Components/API added:
+    - `SunButton`, `SunInput`, `SunDatePicker`, `SunList`,
+      `SunPagination`, `SunThemeProvider`
+    - contracts exported from `@sun-world/ui`
+    - `createSunThemeVars()` for theme color CSS-variable mapping
+  - Mobile-specific decisions:
+    - `SunDatePicker` mobile mode renders a trigger and bottom drawer, not an
+      input that can open the software keyboard.
+    - `SunList` mobile mode renders cards.
+    - `SunPagination` mobile mode supports load-more and scroll-end
+      `loadMore` emission through `autoLoadOnReachEnd`.
+  - Verification:
+    - `pnpm -C packages/ui test` passed: 7 files, 22 tests.
+    - `pnpm -C packages/ui build` passed and generated ignored `dist`.
+    - `pnpm test:ui` passed.
+    - `pnpm build:ui` passed after making the new script Windows-compatible.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm -C apps/web build` passed with existing Vite CJS and Element Plus
+      Sass deprecation warnings only.
+  - Next suggested step:
+    - Migrate old `ZBtn` and simple form/list call sites to `@sun-world/ui`
+      in a separate compatibility pass, keeping contract tests as the
+      behavior guard.
+
 - Goal: complete frontend modular platform long-term architecture with safe boundary hardening.
 - Current status: P1.26 completed on `monorepo-api-import`; home route shell and `WeatherCard` ownership are now module-owned under `apps/web/src/modules/home`.
 - Current architecture decision:
@@ -20,6 +544,11 @@
     prompts, handoff notes, reviews, and user-facing summaries must use the
     stable role names (`coding`, `阎王`, `判官`, `牛头`). Start each delegated
     prompt with `你的角色名是 <role>`.
+  - Subagent cleanup status: no project-owned `.agents` registry is used;
+    runtime ids are disposable and should not be preserved in durable docs.
+    If the UI shows extra stale subagents, close them after confirming their
+    final output has already been integrated; do not spawn replacements solely
+    to rename them.
   - Context naming decision: keep `docs/` as the durable project documentation
     root. If agent task context is moved later, introduce lowercase `.task/`
     for task state, plans, protocol relay, and handoff context; do not rename
@@ -324,8 +853,570 @@
       - Passed (existing Vite CJS and Sass deprecation warnings only).
     - `git diff --check`
       - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.27 completed: package-owned interactive UI component protocol layer and app migration.
+  - Added `packages/ui` as `@sun-world/ui` with protocol contracts, Vue implementations,
+    subpath entries, docs, and tests for:
+    - `SunButton`
+    - `SunInput`
+    - `SunDatePicker`
+    - `SunList`
+    - `SunPagination`
+    - `SunTag`
+    - `SunLoadingSkeleton`
+    - `SunThemeProvider`
+  - Added package PRD at `docs/architecture/frontend-ui-component-prd.md`.
+  - Added root commands `pnpm test:ui` and `pnpm build:ui`; root `build` now builds UI first.
+  - Migrated app usages from legacy button/input/tag/loading skeleton/date/pagination wrappers
+    to package subpath imports such as `@sun-world/ui/button`.
+  - Removed legacy component files now covered by package protocols:
+    - `apps/web/src/components/ZBtn/*`
+    - `apps/web/src/components/Tag/index.vue`
+    - `apps/web/src/shared/ui/LoadingSkeleton.vue`
+    - `apps/web/src/baseCom/btn/btn.vue`
+    - `apps/web/src/baseCom/button/button.vue`
+    - `apps/web/src/baseCom/input/input.vue`
+  - Kept layout and richer Element Plus controls in app code where no package protocol exists yet
+    (`ElSelect`, `ElDialog`, `ElInputNumber`, etc.).
+  - Bundle discipline:
+    - Runtime imports use component subpaths.
+    - Component CSS is split into `base.css` plus per-component styles.
+    - UI package library build has `cssCodeSplit: true` and emits per-component CSS assets.
+    - Final dist scan found no unused `SunList` / `SunThemeProvider` signatures.
+  - Verification commands and results:
+    - `pnpm -C packages/ui test`
+      - Passed: 9 files, 28 tests.
+    - `pnpm -C packages/ui build`
+      - Passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
+    - `rg "sun-list|data-sun-list-card|SunList|sun-theme-provider|SunThemeProvider" apps/web/dist -n`
+      - Passed: no matches.
+    - `rg 'ElButton|ElInput\\b|ElDatePicker|ElPagination|@/baseCom/(btn|button|input)|@/components/ZBtn|@/components/Tag|@/shared/ui/LoadingSkeleton|<z-btn|<ZBtn|<SwInput|<SwButton|<SwBtn|<Btn' apps/web/src -n`
+      - Passed: no matches.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.28 in progress/completed locally: backend code is treated as a first-class
+  monorepo app while production backend cutover remains separate.
+  - Added implementation plan:
+    - `docs/superpowers/plans/2026-06-19-api-monorepo-compose-contracts.md`
+  - Formalized deployment state:
+    - Backend source lives in `apps/api`.
+    - Production backend still runs from `/home/lighthouse/blog/blog_end` until
+      a deliberate cutover.
+  - Added Docker Compose candidate:
+    - `docker-compose.yml`
+    - `frontend` is the default service and preserves `my-frontend` / `8081:80`.
+    - `api` is behind the explicit `api` profile and binds
+      `127.0.0.1:8000:8000`.
+  - Added non-deploying verification:
+    - `scripts/verify-compose.mjs`
+    - `scripts/verify-compose.sh`
+    - `scripts/check-api-migration.py`
+    - `scripts/run-api-check.mjs`
+  - Contracts package is now the official frontend/backend TypeScript boundary:
+    - Added route constants, shared response/page types, and tests.
+  - Python migration/optimization notes:
+    - Removed tracked exploratory notebook `apps/api/llm study.ipynb`.
+    - Hardened ignores for API runtime artifacts, local override config, caches,
+      logs, uploads, and notebooks.
+    - Updated `apps/api/Dockerfile` to install from `pyproject.toml` instead of
+      the incomplete `requirements.txt`.
+    - Moved `AsyncPostgresSaver` import into AI manager initialization to reduce
+      import-time coupling.
+  - Verification commands and results:
+    - `pnpm -F @sun-world/contracts test`
+      - Passed: 1 file, 2 tests.
+    - `pnpm check:compose`
+      - Passed locally via static fallback because Docker CLI is not installed.
+    - Remote read-only check:
+      - `ssh lighthouse@81.70.43.189 "docker --version && docker compose version && cd /home/lighthouse/blog/sun-world && pwd && git branch --show-current"`
+      - Passed; server has Docker 29.2.1, Docker Compose v5.1.0, repo path is
+        `/home/lighthouse/blog/sun-world`, branch is `main`.
+    - Remote compose parse via stdin:
+      - `docker compose --project-directory /home/lighthouse/blog/sun-world -f - config --quiet`
+      - Passed; no file was written and no service was started.
+    - `pnpm check:api`
+      - Passed: 83 Python files compiled; repository boundary clean.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS and Element Plus Sass deprecation warnings only).
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.40 completed locally: UI primitive runtime decoupling and entry preload
+  guardrails.
+  - Removed Element Plus runtime dependency from current package UI primitives:
+    - `packages/ui/src/components/SunButton.vue`
+    - `packages/ui/src/components/SunInput.vue`
+    - `packages/ui/src/components/SunDatePicker.vue`
+    - `packages/ui/src/components/SunPagination.vue`
+  - Updated package UI styles and package metadata so `@sun-world/ui` no
+    longer depends on Element Plus for primitive components.
+  - Removed global full Element theme import from `apps/web/src/main.ts`.
+  - Changed HTTP error notifications in `apps/web/src/service/http.ts` to
+    lazy-load Element Message and its CSS only when a notification is shown.
+  - Changed login/register pages to use `useRouter()` instead of importing the
+    global compatibility router instance from route chunks.
+  - Tightened Vite manual chunk rules in `apps/web/vite.config.ts`:
+    - App-owned source rules now require `apps/web/src`.
+    - `contracts` and `shared-api` are explicit shared chunks.
+    - Third-party internals such as `element-plus/.../src/store` no longer get
+      merged into app `stores`.
+  - Extended `scripts/check-web-chunks.mjs` to reject:
+    - Full Element theme import in `main.ts`.
+    - Element runtime imports from `packages/ui/src/components`.
+    - Entry HTML preloads for route-only or optional heavy chunks.
+  - Current build evidence:
+    - Entry HTML no longer preloads `element`, `tile-export`, `vditor-*`,
+      `admin-charts`, `echarts`, `zrender`, `manage-shell`, or legacy page
+      chunks.
+    - `stores` chunk gzip is approximately `1.8 KiB`.
+    - `manage-shell` chunk gzip is approximately `3.8 KiB`.
+    - `entry-index-js` gzip is approximately `9.6 KiB`.
+  - Verification commands and results:
+    - `pnpm -C packages/ui test`
+      - Passed: 9 files, 28 tests.
+    - `pnpm -C apps/web build`
+      - Passed (existing Vite CJS warning only).
+    - `pnpm check:web:chunks`
+      - Passed.
+    - `pnpm check:web:budgets`
+      - Passed.
+    - `pnpm check:web`
+      - Passed: contract route usage, legacy API entrypoint check, contracts
+        tests, frontend type check, build, budgets, and chunk boundaries.
+    - `pnpm check:api`
+      - Passed: 87 Python files compiled; RUM protocol check passed.
+    - `pnpm check:compose`
+      - Passed via Docker build context check and static compose validation
+        because Docker CLI is not installed locally. No deployment command was
+        run.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.41 completed locally: percentile metrics for backend request and RUM Web
+  Vitals.
+  - Added request metrics protocol guard:
+    - `scripts/check-request-metrics.py`
+  - `apps/api/src/core/metrics.py` now keeps bounded request duration samples
+    and exposes global plus per-route:
+    - `p50_duration_ms`
+    - `p95_duration_ms`
+    - `p99_duration_ms`
+  - `apps/api/src/core/rum_metrics.py` now keeps bounded Web Vital value
+    samples and exposes:
+    - `p50_value`
+    - `p95_value`
+    - `p99_value`
+  - Updated Pydantic models:
+    - `apps/api/src/type/admin_type.py`
+    - `apps/api/src/type/telemetry_type.py`
+  - Regenerated contracts:
+    - `packages/contracts/openapi.json`
+    - `packages/contracts/src/generated-api-types.ts`
+  - Admin metrics UI now shows request p95/p99 in route rows, request p95 in
+    overview cards, and Web Vitals p95/p99 in the RUM panel.
+  - `scripts/run-api-check.mjs` now includes both request metrics and RUM
+    protocol checks.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-request-metrics.py`
+      - First failed as expected on missing `p50_duration_ms`, then passed.
+    - `apps\api\.venv\Scripts\python.exe scripts\check-rum-metrics.py`
+      - First failed as expected on missing `p50_value`, then passed.
+    - `apps\api\.venv\Scripts\python.exe scripts\export-openapi.py`
+      - Passed.
+    - `pnpm -F @sun-world/contracts exec openapi-typescript openapi.json -o src/generated-api-types.ts`
+      - Passed.
+    - `pnpm -F @sun-world/contracts test`
+      - Passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit`
+      - Passed.
+    - `pnpm check:api`
+      - Passed: API migration check, request metrics protocol check, and RUM
+        metrics protocol check.
+    - `pnpm check:web`
+      - Passed: contract route usage, legacy API entrypoint check, contracts
+        tests, frontend type check, build, budgets, and chunk boundaries.
+    - `pnpm check:compose`
+      - Passed via Docker build context check and static compose validation
+        because Docker CLI is not installed locally. No deployment command was
+        run.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.42 completed locally: contracts route method/OpenAPI alignment guard.
+  - Added `API_ROUTE_METHODS` in `packages/contracts/src/routes.ts` and
+    exported it from `packages/contracts/src/index.ts`.
+  - Extended `packages/contracts/src/index.spec.ts` so contracts tests verify:
+    - every `API_ROUTES` value has method metadata.
+    - every declared path/method exists in generated
+      `packages/contracts/openapi.json`.
+  - This closes a frontend-backend chain gap: module APIs already consume route
+    constants, and route constants now prove they match backend OpenAPI paths
+    and HTTP methods.
+  - Verification commands and results:
+    - `pnpm -F @sun-world/contracts test`
+      - First failed as expected because `API_ROUTE_METHODS` was missing, then
+        passed: 1 file, 3 tests.
+    - `pnpm check:web`
+      - Passed: contract route usage, legacy API entrypoint check, contracts
+        tests, frontend type check, build, budgets, and chunk boundaries.
+    - `pnpm check:api`
+      - Passed: API migration check, request metrics protocol check, and RUM
+        metrics protocol check.
+    - `pnpm check:compose`
+      - Passed via Docker build context check and static compose validation
+        because Docker CLI is not installed locally. No deployment command was
+        run.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.43 completed locally: metrics snapshot storage boundary.
+  - Added `apps/api/src/core/metrics_store.py` with:
+    - `MetricsSnapshotStore` protocol.
+    - `InMemoryMetricsSnapshotStore` default implementation.
+    - `JsonFileMetricsSnapshotStore` optional single-node snapshot history.
+    - `build_metrics_snapshot_store()` controlled by `BLOG_METRICS_STORE`,
+      `BLOG_METRICS_STORE_PATH`, and `BLOG_METRICS_STORE_HISTORY`.
+  - Request metrics and RUM metrics now call `save_metrics_snapshot()` when
+    admin snapshots are generated. Store failures are logged and do not break
+    endpoint responses.
+  - Added `scripts/check-metrics-store.py` and included it in
+    `scripts/run-api-check.mjs`.
+  - `.gitignore` now ignores default JSON snapshot runtime files at
+    `data/metrics-snapshots.json` and
+    `apps/api/data/metrics-snapshots.json`.
+  - Updated observability/current-state/roadmap docs to distinguish snapshot
+    persistence from future event-level Redis/Postgres analytics.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-metrics-store.py`
+      - First failed as expected because `src.core.metrics_store` was missing.
+      - Then failed on import-time helper ordering.
+      - Passed after moving global store initialization below helper
+        definitions.
+    - `pnpm check:api`
+      - Passed: API migration check, metrics snapshot store protocol check,
+        request metrics protocol check, and RUM metrics protocol check.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.44 completed locally: frontend build artifact manifest.
+  - Added `scripts/generate-web-build-manifest.mjs` to scan
+    `apps/web/dist/assets`, gzip JS/CSS assets, parse `index.html` references,
+    and write generated `apps/web/dist/build-manifest.json`.
+  - Added `scripts/check-web-build-manifest.mjs` and root
+    `check:web:manifest`.
+  - `scripts/check-web.mjs` now runs manifest generation and validation after
+    the Vite build, before budgets and chunk boundary checks.
+  - The manifest records schema version, app, dist dir, generated timestamp,
+    total JS/CSS gzip, initial gzip, lazy JS gzip, and per-asset `isInitial`
+    metadata. It is generated under ignored `dist` output and is not meant to
+    be committed.
+  - Verification commands and results:
+    - `node scripts/check-web-build-manifest.mjs`
+      - First failed as expected because
+        `apps/web/dist/build-manifest.json` was missing.
+    - `node scripts/generate-web-build-manifest.mjs`
+      - Passed and wrote `apps/web/dist/build-manifest.json`.
+    - `node scripts/check-web-build-manifest.mjs`
+      - Passed.
+    - `pnpm check:web:manifest`
+      - Passed against the generated manifest.
+    - `pnpm check:web`
+      - Passed: contract route usage, legacy API entrypoint check, contracts
+        tests, frontend type check, build, manifest generation/check, budgets,
+        and chunk boundaries. Existing Vite CJS deprecation warnings remain.
+    - `git diff --check`
+      - Passed (`LF will be replaced by CRLF` warnings on touched files).
+- P1.45 completed locally: cross-platform root `pnpm check`.
+  - Added `scripts/check-root-check-script.mjs`.
+    - It verifies root `package.json` uses
+      `check: node scripts/check-all.mjs`.
+    - It rejects `check*` scripts that depend on `bash`.
+  - Added `scripts/check-all.mjs`.
+    - Runs root script protocol, `git diff --check`, `pnpm check:web`,
+      `pnpm check:api`, and `pnpm check:compose`.
+    - Does not deploy and does not run public health probes.
+  - Updated root `package.json`:
+    - `check` now runs `node scripts/check-all.mjs`.
+    - `check:root-script` runs the protocol guard.
+  - Verification commands and results:
+    - `node scripts/check-root-check-script.mjs`
+      - First failed as expected because root `check` still used
+        `bash scripts/check-all.sh`.
+      - Passed after switching to the Node entrypoint.
+    - `pnpm check`
+      - Passed all 5 checks: root script protocol, git whitespace,
+        frontend full check, backend API check, and compose static check.
+        Existing Vite CJS deprecation and Windows CRLF conversion warnings
+        remain.
+- P1.46 completed locally: platform goal evidence audit.
+  - Added `scripts/check-platform-goal-audit.mjs`.
+    - Verifies root `check:platform` is configured.
+    - Verifies root `scripts/check-all.mjs` runs the platform audit.
+    - Verifies durable evidence exists for commit/push policy,
+      frontend-backend chain, performance monitoring, UI package protocol,
+      Docker Compose candidate, contracts, backend metrics/RUM storage,
+      frontend telemetry, build manifest, and cross-platform verification.
+  - Added root `check:platform`.
+  - `scripts/check-all.mjs` now runs `pnpm check:platform` before
+    `git diff --check`, `pnpm check:web`, `pnpm check:api`, and
+    `pnpm check:compose`.
+  - Verification commands and results:
+    - `node scripts/check-platform-goal-audit.mjs`
+      - First failed as expected because `check:platform` was missing and root
+        `check-all` did not call it.
+      - Passed after adding the script entry and root check integration.
+    - `pnpm check`
+      - Passed all 6 checks: root script protocol, platform goal audit, git
+        whitespace, frontend full check, backend API check, and compose static
+        check. Existing Vite CJS deprecation and Windows CRLF conversion
+        warnings remain.
+- P1.47 completed locally: local metrics alert threshold evaluator.
+  - Added `apps/api/src/core/metrics_alerts.py`.
+    - Builds alert rules from `BLOG_ALERT_*` environment variables.
+    - Evaluates request error rate, request p95 latency, and Web Vital poor
+      rate from aggregate snapshots.
+    - Returns structured alert dictionaries and does not send notifications.
+  - Added `scripts/check-metrics-alerts.py` and included it in
+    `scripts/run-api-check.mjs`.
+  - Updated platform audit to require `metrics_alerts.py` evidence.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-metrics-alerts.py`
+      - First failed as expected because `src.core.metrics_alerts` was missing.
+      - Passed after adding the evaluator.
+    - `pnpm check:api`
+      - Passed: API migration check, metrics alert protocol check, metrics
+        snapshot store protocol check, request metrics protocol check, and RUM
+        metrics protocol check.
+- P1.48 completed locally: admin alert read model and UI display.
+  - Added `apps/api/src/core/admin_alerts.py`.
+    - Assembles request/RUM threshold results into `AdminAlertsSnapshot`.
+    - Keeps alert rule evaluation separate from admin response assembly so the
+      storage/evaluator implementation can be replaced later.
+  - Updated `apps/api/src/type/admin_type.py` and
+    `apps/api/src/routers/admin/admin.py`.
+    - New authenticated endpoint: `GET /admin/alerts`.
+  - Updated contracts:
+    - `packages/contracts/src/routes.ts` includes `API_ROUTES.admin.alerts`
+      and `API_ROUTE_METHODS['admin.alerts']`.
+    - `packages/contracts/openapi.json` and
+      `packages/contracts/src/generated-api-types.ts` were regenerated.
+  - Updated admin frontend:
+    - `apps/web/src/modules/admin/api.ts`
+    - `apps/web/src/modules/admin/types.ts`
+    - `apps/web/src/modules/admin/composables/useAdminMetrics.ts`
+    - `apps/web/src/modules/admin/pages/AdminMetricsPage.vue`
+    - The page now loads request metrics, RUM metrics, and active alerts
+      together, then displays active critical/warning alert rows.
+  - Added `scripts/check-admin-alerts.py` and included it in
+    `scripts/run-api-check.mjs`.
+  - Updated platform audit to require admin alert evidence and latest P1.48
+    documentation markers.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-admin-alerts.py`
+      - First failed as expected because `src.core.admin_alerts` was missing.
+      - Passed after adding the read model.
+    - `apps\api\.venv\Scripts\python.exe scripts\export-openapi.py`
+      - Passed and regenerated `packages/contracts/openapi.json`.
+    - `pnpm -F @sun-world/contracts exec openapi-typescript openapi.json -o src/generated-api-types.ts`
+      - Passed.
+    - `pnpm -F @sun-world/contracts test`
+      - Passed.
+    - `pnpm check:web`
+      - Passed: route usage, legacy API guard, contracts tests, type check,
+        frontend build, build manifest, budgets, and chunk boundaries.
+    - `pnpm check:api`
+      - Passed: API migration, admin alert, metrics alert, metrics store,
+        request metrics, and RUM metrics protocol checks.
+- P1.49 completed locally: avoid duplicate metrics snapshot writes in admin
+  alert reads.
+  - Updated `apps/api/src/core/metrics.py`.
+    - `RequestMetricsCollector.snapshot()` and `get_request_metrics_snapshot()`
+      now accept `persist=True` by default.
+  - Updated `apps/api/src/core/rum_metrics.py`.
+    - `RumMetricsCollector.snapshot()` and `get_rum_metrics_snapshot()` now
+      accept `persist=True` by default.
+  - Updated `apps/api/src/core/admin_alerts.py`.
+    - `GET /admin/alerts` reads request/RUM snapshots with `persist=False`.
+    - This avoids duplicate snapshot-history writes when the admin page
+      concurrently refreshes metrics, telemetry, and alerts.
+  - Updated `scripts/check-admin-alerts.py`.
+    - Verifies that admin alert read-model assembly uses the non-persisting
+      collector path.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-admin-alerts.py`
+      - First failed as expected because alert reads still used default
+        persisting snapshots.
+      - Passed after adding the `persist` flag and using `persist=False` in
+        admin alert assembly.
+- P1.50 completed locally: bounded admin metrics history read model.
+  - Added `scripts/check-admin-metrics-history.py`.
+    - First failed as expected because `src.core.metrics_history` was missing.
+    - Verifies request/RUM history kind, bounded limit behavior, and defensive
+      copy semantics for returned snapshots.
+  - Added `apps/api/src/core/metrics_history.py`.
+    - Builds a `MetricsHistorySnapshot` from the replaceable metrics snapshot
+      store.
+  - Updated `apps/api/src/core/metrics_store.py`.
+    - Added `load_metrics_snapshot_history()`.
+  - Updated `apps/api/src/type/admin_type.py` and
+    `apps/api/src/routers/admin/admin.py`.
+    - New authenticated endpoint:
+      `GET /admin/metrics/history?kind=request|rum&limit=...`.
+  - Updated contracts:
+    - `packages/contracts/src/routes.ts` includes
+      `API_ROUTES.admin.metricsHistory`.
+    - `packages/contracts/openapi.json` and
+      `packages/contracts/src/generated-api-types.ts` were regenerated.
+  - Updated admin frontend:
+    - `apps/web/src/modules/admin/api.ts`
+    - `apps/web/src/modules/admin/types.ts`
+    - `apps/web/src/modules/admin/composables/useAdminMetrics.ts`
+    - `apps/web/src/modules/admin/pages/AdminMetricsPage.vue`
+    - The admin metrics page now shows request/RUM history sample counts after
+      refreshing current snapshots.
+  - Updated platform audit to require metrics history evidence and P1.50
+    documentation markers.
+  - Verification commands and results:
+    - `apps\api\.venv\Scripts\python.exe scripts\check-admin-metrics-history.py`
+      - Passed after implementing the read model.
+    - `apps\api\.venv\Scripts\python.exe scripts\export-openapi.py`
+      - Passed after rerunning sequentially. A prior concurrent export/type
+        generation attempt hit a transient Windows file-write error, so OpenAPI
+        export and TS type generation should remain sequential.
+    - `pnpm -F @sun-world/contracts exec openapi-typescript openapi.json -o src/generated-api-types.ts`
+      - Passed.
+    - `pnpm -F @sun-world/contracts test`
+      - Passed.
+    - `pnpm check:web`
+      - Passed: route usage, legacy API guard, contracts tests, type check,
+        frontend build, build manifest, budgets, and chunk boundaries.
+      - Admin metrics chunk remains below budget at about 3.7 KiB gzip.
+    - `pnpm check:api`
+      - Passed: API migration, admin alert, admin metrics history, metrics
+        alert, metrics store, request metrics, and RUM metrics checks.
+- P1.51 completed locally: compact frontend build summary artifact.
+  - Added `scripts/check-web-build-summary.mjs`.
+    - First failed as expected because
+      `apps/web/dist/build-summary.json` was missing.
+    - Verifies summary schema, source manifest, totals, top assets, and
+      machine-readable budget result fields.
+  - Added `scripts/generate-web-build-summary.mjs`.
+    - Consumes `apps/web/dist/build-manifest.json` and
+      `apps/web/performance-budgets.json`.
+    - Writes `apps/web/dist/build-summary.json` with total gzip fields, top 10
+      largest assets, and budget results for CI/release trend retention.
+  - Updated root `package.json`.
+    - Added `build:web:summary`.
+    - Added `check:web:summary`.
+  - Updated `scripts/check-web.mjs`.
+    - Runs build summary generation and validation after manifest validation
+      and before performance budgets/chunk boundary checks.
+  - Updated platform audit to require build summary scripts and P1.51
+    documentation markers.
+  - Verification commands and results:
+    - `node scripts/check-web-build-summary.mjs`
+      - First failed as expected because the summary artifact was missing.
+    - `node scripts/generate-web-build-manifest.mjs; node scripts/generate-web-build-summary.mjs; node scripts/check-web-build-summary.mjs`
+      - Passed and wrote `apps/web/dist/build-summary.json`.
+- P1.52 completed locally: cross-platform contracts OpenAPI generation.
+  - Added `scripts/check-contracts-generate-script.mjs`.
+    - First failed as expected because `@sun-world/contracts`
+      `generate:openapi` still used `bash scripts/generate-openapi.sh` and
+      `scripts/generate-openapi.mjs` was missing.
+    - Verifies contracts `generate:*` scripts do not depend on bash and that
+      the Node OpenAPI wrapper exists.
+  - Added `scripts/generate-openapi.mjs`.
+    - Selects Python from `SUN_WORLD_API_PYTHON`, the local API virtualenv,
+      `python`, or `python3`.
+    - Calls `scripts/export-openapi.py` from the repository root.
+  - Updated `packages/contracts/package.json`.
+    - `generate:openapi` now runs `node ../../scripts/generate-openapi.mjs`.
+  - Updated root `package.json` and `scripts/check-web.mjs`.
+    - Added `check:contracts:generate`.
+    - `pnpm check:web` now runs the contracts generate-script guard after
+      contracts tests.
+  - Updated documentation:
+    - `docs/current-state.md`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/architecture/api-contracts.md`
+    - `packages/contracts/README.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+  - Verification commands and results:
+    - `node scripts/check-contracts-generate-script.mjs`
+      - First failed as expected; passed after switching to the Node wrapper.
+    - `pnpm -F @sun-world/contracts run generate:openapi`
+      - Passed and exported `packages/contracts/openapi.json`.
+    - `pnpm -F @sun-world/contracts run generate`
+      - Passed and regenerated OpenAPI plus TypeScript API types without bash.
+- P1.53 completed locally: UI package minimal import and bundle boundary guard.
+  - Added `scripts/check-ui-package-boundary.mjs`.
+    - Verifies app code imports `@sun-world/ui` through documented component
+      subpaths, not the package root or internal source paths.
+    - Verifies each documented UI subpath has a package export and source entry.
+    - Rejects a shared `ui.*` production web chunk so unused UI components are
+      not pulled into the entry path.
+  - Updated root `package.json` and `scripts/check-web.mjs`.
+    - Added `check:web:ui-boundary`.
+    - `pnpm check:web` now runs the UI boundary guard after build summary
+      checks and before budgets/chunk checks.
+  - Updated `apps/web/vite.config.ts`.
+    - Removed manual chunk rules that forced all `packages/ui` source into a
+      single `ui` chunk.
+    - Added a production HTML post-filter that strips route-only optional heavy
+      assets from generated `index.html` preload/stylesheet tags while keeping
+      the route chunks available for dynamic imports.
+  - Updated platform audit and docs:
+    - `scripts/check-platform-goal-audit.mjs`
+    - `docs/current-state.md`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+  - Verification commands and results:
+    - `node scripts/check-ui-package-boundary.mjs`
+      - First failed as expected on the forced UI manual chunk and stale
+        `ui.*` dist assets.
+      - Passed after removing the UI manual chunk and rebuilding.
+    - `node scripts/check-web-chunks.mjs`
+      - Failed once after the UI chunk split because route-only CSS/JS was
+        still referenced from `index.html`.
+      - Passed after adding the production HTML route-only preload filter and
+        rebuilding.
+    - `pnpm -C apps/web build`
+      - Passed after the Vite changes; existing Vite CJS deprecation warnings
+        remain.
+- P1.54 completed locally: root verification now runs UI package test/build.
+  - Updated `scripts/check-platform-goal-audit.mjs`.
+    - The platform audit now requires `scripts/check-all.mjs` to include both
+      `test:ui` and `build:ui`.
+    - The audit now expects P1.54 documentation markers.
+  - Updated `scripts/check-all.mjs`.
+    - Root `pnpm check` now runs `pnpm test:ui` and `pnpm build:ui` before the
+      frontend app check.
+    - This proves UI component protocol tests and package build outputs
+      independently, rather than relying only on the consuming web bundle.
+  - Updated documentation:
+    - `docs/current-state.md`
+    - `docs/architecture/platform-iteration-roadmap.md`
+    - `docs/superpowers/plans/2026-06-19-platform-chain-monitoring-build-iteration.md`
+  - Verification commands and results:
+    - `node scripts/check-platform-goal-audit.mjs`
+      - First failed as expected because `scripts/check-all.mjs` did not yet
+        include `test:ui` or `build:ui`.
+      - Passed after adding both checks to the root chain and updating docs.
+    - `pnpm check`
+      - Passed all 8 checks after the root chain started running UI package
+        test/build: root script protocol, platform audit, whitespace, UI test,
+        UI build, frontend full check, backend API check, and compose static
+        check. Docker CLI remains unavailable locally, so compose validation is
+        static only and no deployment command was run.
 - Next step:
-  - Continue remaining shared primitive decisions (`ZBtn`, `Tag`, `Waterfall`) only after ownership boundaries stay explicit.
+  - Continue monitoring persistence by deciding whether to store event-level
+    RUM/request events in Redis or Postgres, then add notification delivery for
+    alert results if a channel is selected.
+  - Alternatively continue remaining shared primitive decisions (`Waterfall`
+    first) after ownership boundaries stay explicit.
+  - Backend production cutover remains a separate task; do not run
+    `docker compose --profile api up`, restart `blog-api.service`, or change
+    Nginx without explicit cutover approval.
 - Remaining risks:
   - `InputBindingManager.addBinding()` same-id replace semantics remains
     deliberate; if later we need multiple runtime rules per id, we need a new
