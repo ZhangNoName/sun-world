@@ -34,6 +34,10 @@ ghcr.io/zhangnoname/sun-world-frontend:latest
 The server deploy step uses the `<git-sha>` tag instead of `latest` so a
 specific deployment can be audited or rolled back.
 
+The Lighthouse deploy user currently runs Docker through passwordless
+`sudo docker`, so the workflow does not require the SSH user to be in the
+`docker` group.
+
 ## Required GitHub Variables
 
 Configure these under GitHub repository settings:

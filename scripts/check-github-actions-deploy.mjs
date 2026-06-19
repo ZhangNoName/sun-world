@@ -38,8 +38,8 @@ if (workflow) {
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
-    'docker pull "$IMAGE"',
-    'docker rm -f my-frontend',
+    'sudo docker pull "$IMAGE"',
+    'sudo docker rm -f my-frontend',
     'curl -fsSI https://sunworld.site',
     'curl -fsSI https://www.sunworld.site',
   ]
