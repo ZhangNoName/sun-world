@@ -50,16 +50,20 @@ been cut over yet:
 - Backend monorepo source path: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source exposes `/readyz` for dependency readiness; the
   current production backend remains on the legacy path until deliberate cutover.
-- GitHub Actions deploy is defined in `.github/workflows/deploy.yml` and split
-  by changed deploy target:
+- GitHub Actions is consolidated into one pipeline in
+  `.github/workflows/deploy.yml`. Pull requests run only the `quality` job.
+  Non-documentation `main` pushes run `quality` first, then
   `detect-changes` decides whether web, API, both, or neither need deployment.
-  Automatic deploy runs only after the `CI` workflow succeeds on `main`.
   `build-web` and `build-api` run only for their changed target and push
   commit-specific images to Tencent CCR personal edition at
   `ccr.ccs.tencentyun.com`. The final deploy job SSHes to Lighthouse, runs
   `docker pull` for changed images, then switches only the changed target(s).
   If both web and API changed, both images must be pushed before deployment
   starts.
+  Production runs share one fixed concurrency group with
+  `cancel-in-progress: true`, so newer main/manual runs cancel older
+  in-progress production runs. Quality, build, and deploy jobs are capped at
+  15 minutes.
   Workflow-only, deploy-doc, and local verification script changes validate
   the workflow but are not deployment targets, so they exit through the
   `no-deploy` job.
@@ -80,11 +84,10 @@ been cut over yet:
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
   the same API config as the app; `apply` only creates missing tables/columns
   and fails on incompatible existing column types instead of rewriting data.
-- GitHub Actions CI is defined in `.github/workflows/ci.yml`. It runs on pull
-  requests, non-documentation `main` pushes, and manual dispatch; it verifies
-  the Prettier formatting protocol, GitHub Actions protocol guards, frontend
-  checks, API checks, UI package tests, and contracts tests without deploying.
-  Documentation-only push changes are ignored by the workflow trigger.
+- The pipeline `quality` job verifies the Prettier formatting protocol, GitHub
+  Actions protocol guards, frontend checks, API checks, UI package tests, and
+  contracts tests before any build or deploy job can run. Documentation-only
+  push changes are ignored by the workflow trigger.
 - Prettier formatting is configured by `.prettierrc.json` and runs through
   `scripts/format-changed.mjs`, which checks or writes changed supported files
   only. Markdown and Python are intentionally excluded in `.prettierignore` for

@@ -28,11 +28,13 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 if (workflow) {
   const requiredFragments = [
     'name: Deploy Sun World',
-    'workflow_run:',
-    'workflows:',
-    '- CI',
-    'types:',
-    '- completed',
+    'pull_request:',
+    'push:',
+    'branches:',
+    '- main',
+    'paths-ignore:',
+    "- '**/*.md'",
+    "- 'docs/**'",
     'workflow_dispatch:',
     'mode:',
     'build-and-deploy',
@@ -40,16 +42,19 @@ if (workflow) {
     'deploy-existing',
     'target:',
     'image_tag:',
-    "github.event.workflow_run.conclusion == 'success'",
-    "github.event.workflow_run.head_branch == 'main'",
-    'ref: ${{ github.event.workflow_run.head_sha || github.sha }}',
-    'after="${{ github.event.workflow_run.head_sha }}"',
     'concurrency:',
-    'group: deploy-${{ github.ref }}',
+    'deploy-sun-world-production',
     'cancel-in-progress: true',
     'permissions:',
     'contents: read',
+    'quality:',
+    'Format, checks, and unit tests',
+    'timeout-minutes: 15',
+    'pnpm format:check',
+    'pnpm check:github-actions:ci',
+    'pnpm check:github-actions:deploy',
     'detect-changes:',
+    'needs: quality',
     'web_changed:',
     'api_changed:',
     'any_changed:',
@@ -57,7 +62,7 @@ if (workflow) {
     'deploy_needed:',
     'image_tag:',
     'image_tag is required when mode=deploy-existing.',
-    '.github/workflows/deploy.yml|.github/workflows/ci.yml)',
+    '.github/workflows/deploy.yml)',
     'Workflow-only changes should validate the pipeline shape but',
     'should not redeploy production images.',
     'deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)',
@@ -73,8 +78,6 @@ if (workflow) {
     "python-version: '3.11'",
     'Install API dependencies',
     'python -m pip install ./apps/api',
-    "if: github.event_name == 'workflow_dispatch'",
-    "if: github.event_name != 'workflow_dispatch'",
     'pnpm build:web',
     'pnpm build:web:manifest',
     'pnpm build:web:summary',
@@ -90,7 +93,6 @@ if (workflow) {
     'push: true',
     'actions/upload-artifact@v4',
     'retention-days: 30',
-    'timeout-minutes: 45',
     'ssh-keyscan',
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
@@ -143,17 +145,7 @@ if (workflow) {
     )
   }
 
-  if (/^\s*push:\s*$/m.test(workflow)) {
-    violations.push(
-      'deploy workflow must run after CI via workflow_run, not directly on push'
-    )
-  }
-
-  if (
-    /\.github\/workflows\/deploy\.yml\|\.github\/workflows\/ci\.yml\|package\.json/.test(
-      workflow
-    )
-  ) {
+  if (/\.github\/workflows\/deploy\.yml\|package\.json/.test(workflow)) {
     violations.push(
       'workflow-only changes must not be grouped with package/deployable changes'
     )

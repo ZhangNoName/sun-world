@@ -1,11 +1,16 @@
 name: Deploy Sun World
 
 'on':
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       mode:
@@ -32,7 +37,7 @@ name: Deploy Sun World
         type: string
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: ${{ github.event_name == 'pull_request' && format('deploy-sun-world-pr-{0}', github.event.pull_request.number) || 'deploy-sun-world-production' }}
   cancel-in-progress: true
 
 permissions:
@@ -44,11 +49,72 @@ env:
   API_IMAGE_NAME: sun-world-api
 
 jobs:
+  quality:
+    name: Format, checks, and unit tests
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'deploy-existing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install API dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ./apps/api
+
+      - name: Check formatting
+        env:
+          PRETTIER_BASE_REF: ${{ github.event.before }}
+        run: pnpm format:check
+
+      - name: Check GitHub Actions protocols
+        run: |
+          pnpm check:github-actions:ci
+          pnpm check:github-actions:deploy
+
+      - name: Run frontend checks
+        run: pnpm check:web
+
+      - name: Run API checks
+        run: pnpm check:api
+
+      - name: Run UI package tests
+        run: pnpm test:ui
+
+      - name: Run contracts tests
+        run: pnpm test:contracts
+
   detect-changes:
     name: Detect changed deploy targets
+    needs: quality
     if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      always() &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (needs.quality.result == 'success' || needs.quality.result == 'skipped')
     runs-on: ubuntu-latest
     outputs:
       web_changed: ${{ steps.detect.outputs.web_changed }}
@@ -63,7 +129,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Detect changed deploy targets
         id: detect
@@ -122,20 +187,25 @@ jobs:
 
             changed_files=".github/workflows/deploy.yml"
           else
-            after="${{ github.event.workflow_run.head_sha }}"
+            before="${{ github.event.before }}"
+            after="${{ github.sha }}"
             image_tag="$after"
-            if git rev-parse "$after^" >/dev/null 2>&1; then
-              before="$after^"
-              changed_files="$(git diff --name-only "$before" "$after")"
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+              if git rev-parse "$after^" >/dev/null 2>&1; then
+                before="$after^"
+                changed_files="$(git diff --name-only "$before" "$after")"
+              else
+                changed_files="$(git ls-tree -r --name-only "$after")"
+              fi
             else
-              changed_files="$(git ls-tree -r --name-only "$after")"
+              changed_files="$(git diff --name-only "$before" "$after")"
             fi
           fi
 
           while IFS= read -r file; do
             [ -n "$file" ] || continue
             case "$file" in
-              .github/workflows/deploy.yml|.github/workflows/ci.yml)
+              .github/workflows/deploy.yml)
                 # Workflow-only changes should validate the pipeline shape but
                 # should not redeploy production images.
                 ;;
@@ -180,7 +250,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.web_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
     outputs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
@@ -215,12 +285,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ./apps/api
 
-      - name: Run frontend checks
-        if: github.event_name == 'workflow_dispatch'
-        run: pnpm check:web
-
       - name: Build frontend deployment artifacts
-        if: github.event_name != 'workflow_dispatch'
         run: |
           pnpm build:web
           pnpm build:web:manifest
@@ -282,7 +347,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.api_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 15
     outputs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
@@ -316,10 +381,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install ./apps/api
-
-      - name: Run API checks
-        if: github.event_name == 'workflow_dispatch'
-        run: pnpm check:api
 
       - name: Prepare API deploy artifacts
         id: image-meta
@@ -374,7 +435,7 @@ jobs:
       (needs.build-web.result == 'success' || needs.build-web.result == 'skipped') &&
       (needs.build-api.result == 'success' || needs.build-api.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
 
     steps:
       - name: Prepare SSH

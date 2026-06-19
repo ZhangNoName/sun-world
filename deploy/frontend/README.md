@@ -26,12 +26,14 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 ## GitHub Actions Deploy
 
 `.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
-It runs automatically after the `CI` workflow succeeds on the `main` branch and
-can also be run manually with `workflow_dispatch`; choose the `main` branch for
-manual production deploys. Documentation-only pushes are ignored by CI, so they
-do not trigger deployment. Workflow-only, deploy-doc, and local verification
-script changes still validate the deployment workflow shape, but they exit
-through `no-deploy` instead of rebuilding production images.
+It is the single GitHub Actions pipeline for quality checks and deployment.
+Pull requests run the `quality` job only. Non-documentation `main` pushes run
+`quality` first, then continue to changed-target build and deploy jobs. Manual
+production runs use `workflow_dispatch`; choose the `main` branch when running
+them. Documentation-only pushes are ignored, so they do not trigger the
+pipeline. Workflow-only, deploy-doc, and local verification script changes
+still validate the deployment workflow shape, but they exit through `no-deploy`
+instead of rebuilding production images.
 
 Manual runs support three modes:
 
@@ -45,17 +47,18 @@ Manual runs support three modes:
 Manual runs also accept `target` as `all`, `web`, or `api`. The `image_tag`
 input is required only for `deploy-existing`.
 
-The workflow uses `concurrency` with `cancel-in-progress: true`, so if multiple
-`main` changes arrive while a deploy is still running, the older in-progress run
-is canceled and the newest commit wins.
+The workflow uses one production concurrency group with
+`cancel-in-progress: true`, so if multiple `main` or manual production runs
+overlap, the older in-progress run is canceled and the newest run wins. The
+quality, build, and deploy jobs each have a 15-minute timeout.
 
 The pipeline is split by changed deploy target:
 
-1. `detect-changes` checks the pushed file list.
-2. `build-web` runs only when frontend-related files changed.
-3. `build-api` runs only when API-related files changed.
-4. Automatic deploys rely on the completed CI result. Manual deploys also run
-   the frontend/API checks inside their build jobs before publishing images.
+1. `quality` checks formatting, workflow protocol, frontend, API, UI package,
+   and contracts.
+2. `detect-changes` checks the pushed file list after `quality` passes.
+3. `build-web` runs only when frontend-related files changed.
+4. `build-api` runs only when API-related files changed.
 5. Each build job pushes a commit-specific Docker image to Tencent CCR.
 6. `deploy` waits for the required pushed images, SSHes to Lighthouse, and runs
    `docker pull` from Tencent CCR on the server.

@@ -4,14 +4,14 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
-const workflowPath = join(repoRoot, '.github', 'workflows', 'ci.yml')
+const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy.yml')
 const prettierConfigPath = join(repoRoot, '.prettierrc.json')
 const prettierIgnorePath = join(repoRoot, '.prettierignore')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
 
 if (!existsSync(workflowPath)) {
-  violations.push('.github/workflows/ci.yml must exist')
+  violations.push('.github/workflows/deploy.yml must exist')
 }
 
 if (!existsSync(prettierConfigPath)) {
@@ -32,7 +32,7 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
 if (workflow) {
   const requiredFragments = [
-    'name: CI',
+    'name: Deploy Sun World',
     'pull_request:',
     'branches:',
     '- main',
@@ -41,9 +41,13 @@ if (workflow) {
     "- 'docs/**'",
     'workflow_dispatch:',
     'concurrency:',
+    'deploy-sun-world-production',
     'cancel-in-progress: true',
     'permissions:',
     'contents: read',
+    'quality:',
+    'Format, checks, and unit tests',
+    'timeout-minutes: 15',
     'fetch-depth: 0',
     'pnpm/action-setup@v4',
     'actions/setup-node@v4',
@@ -64,18 +68,8 @@ if (workflow) {
 
   for (const fragment of requiredFragments) {
     if (!workflow.includes(fragment)) {
-      violations.push(`CI workflow must contain: ${fragment}`)
+      violations.push(`Deploy pipeline quality job must contain: ${fragment}`)
     }
-  }
-
-  if (
-    /appleboy\/ssh-action|docker\/build-push-action|docker login|sudo docker/.test(
-      workflow
-    )
-  ) {
-    violations.push(
-      'CI workflow must not deploy, push images, or contact the server'
-    )
   }
 }
 

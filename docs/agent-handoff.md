@@ -1,5 +1,36 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.61 single GitHub pipeline timeout):
+  - Goal: collapse CI and deploy into one GitHub Actions workflow and keep
+    stuck deploys from occupying the production pipeline for too long.
+  - Status: implementation in progress locally; not committed yet.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `.github/workflows/ci.yml`
+    - `scripts/check-github-actions-ci.mjs`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `.github/workflows/ci.yml` is removed. `Deploy Sun World` is now the
+      single GitHub Actions pipeline.
+    - Pull requests run only the `quality` job. Main pushes run `quality`,
+      then changed-target build/deploy jobs. Manual `deploy-existing` skips
+      quality and builds so it can redeploy a known-good image tag quickly.
+    - Production runs share one fixed concurrency group,
+      `deploy-sun-world-production`, with `cancel-in-progress: true`.
+    - Quality, build, and deploy jobs are capped at 15 minutes.
+  - Verification:
+    - `pnpm check:github-actions:ci` passed.
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:api:deploy-schema` passed.
+    - `pnpm format:check` passed after running `pnpm format` on the changed
+      workflow/guard files.
+    - Python/PyYAML parsed `.github/workflows/deploy.yml`.
+    - `node --check` passed for the modified GitHub Actions guard scripts.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+
 - Latest task addendum (2026-06-20, P1.60 Tencent CCR deploy path):
   - Goal: replace slow GitHub Actions to Lighthouse image archive uploads with
     Tencent CCR personal edition push/pull, and allow manual rollback to a
