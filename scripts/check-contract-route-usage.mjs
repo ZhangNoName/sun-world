@@ -1,29 +1,28 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..')
+const modulesRoot = resolve(repoRoot, 'apps/web/src/modules')
 
-const rg = spawnSync(
-  'rg',
-  ['--files', 'apps/web/src/modules', '-g', 'api.ts'],
-  {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
+function listApiFiles(dir) {
+  const files = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const abs = resolve(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listApiFiles(abs))
+    } else if (entry.isFile() && entry.name === 'api.ts') {
+      files.push(abs)
+    }
   }
-)
-
-if (rg.status !== 0) {
-  const output = [rg.stdout, rg.stderr].filter(Boolean).join('\n').trim()
-  throw new Error(output || 'Unable to list module API files')
+  return files
 }
 
-const apiFiles = rg.stdout
-  .split(/\r?\n/)
-  .map((line) => line.trim())
-  .filter(Boolean)
+const apiFiles = listApiFiles(modulesRoot)
+
+if (!apiFiles.length) {
+  throw new Error('Unable to list module API files')
+}
 
 const directRoutePattern =
   /\bapi(?:Get|Post|Put|Delete|Patch)\(\s*(['"])(\/(?:admin|ai|auth|base|blogs|healthz|readyz|telemetry|user)[^'"]*)\1/g
@@ -31,12 +30,11 @@ const directRoutePattern =
 const violations = []
 
 for (const file of apiFiles) {
-  const abs = resolve(repoRoot, file)
-  const source = readFileSync(abs, 'utf8')
+  const source = readFileSync(file, 'utf8')
   let match
   while ((match = directRoutePattern.exec(source)) !== null) {
     const line = source.slice(0, match.index).split(/\r?\n/).length
-    violations.push(`${relative(repoRoot, abs)}:${line} uses direct API route ${match[2]}`)
+    violations.push(`${relative(repoRoot, file)}:${line} uses direct API route ${match[2]}`)
   }
 }
 
