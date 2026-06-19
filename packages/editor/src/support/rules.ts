@@ -1,4 +1,4 @@
-import ViewportState from '@/viewport/viewport'
+import ViewportState from "../viewport/viewport"
 import { DEFAULT_CONFIG, getStepByZoom, RuleConfig } from './rule.config'
 
 /**

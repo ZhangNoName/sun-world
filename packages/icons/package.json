@@ -9,6 +9,16 @@
     "dev": "vite",
     "build:preview": "vite build --mode preview"
   },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/icons.es.js",
+      "require": "./dist/icons.umd.js",
+      "default": "./dist/icons.es.js"
+    },
+    "./dist/*": "./dist/*"
+  },
   "dependencies": {
     "vue": "^3.4.21"
   },

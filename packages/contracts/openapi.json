@@ -1,0 +1,4116 @@
+{
+  "components": {
+    "schemas": {
+      "AdminAlertsSnapshot": {
+        "properties": {
+          "alert_count": {
+            "description": "Total active alerts.",
+            "minimum": 0.0,
+            "title": "Alert Count",
+            "type": "integer"
+          },
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/MetricAlert"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "critical_count": {
+            "description": "Active critical alerts.",
+            "minimum": 0.0,
+            "title": "Critical Count",
+            "type": "integer"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "warning_count": {
+            "description": "Active warning alerts.",
+            "minimum": 0.0,
+            "title": "Warning Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "alert_count",
+          "warning_count",
+          "critical_count"
+        ],
+        "title": "AdminAlertsSnapshot",
+        "type": "object"
+      },
+      "ApiResponse_AdminAlertsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdminAlertsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[AdminAlertsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_AuthSession_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthSession"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[AuthSession]",
+        "type": "object"
+      },
+      "ApiResponse_BlogCreateResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogCreateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogCreateResult]",
+        "type": "object"
+      },
+      "ApiResponse_BlogDetail_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogDetail]",
+        "type": "object"
+      },
+      "ApiResponse_BlogPage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogPage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogPage]",
+        "type": "object"
+      },
+      "ApiResponse_BlogStats_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogStats"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[BlogStats]",
+        "type": "object"
+      },
+      "ApiResponse_List_Category__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[List[Category]]",
+        "type": "object"
+      },
+      "ApiResponse_List_TagBase__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TagBase"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[List[TagBase]]",
+        "type": "object"
+      },
+      "ApiResponse_MetricsHistorySnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MetricsHistorySnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[MetricsHistorySnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_NoneType_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "title": "Data",
+            "type": "null"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[NoneType]",
+        "type": "object"
+      },
+      "ApiResponse_RequestMetricsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequestMetricsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[RequestMetricsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_RumMetricsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RumMetricsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[RumMetricsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_TelemetryIngestResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelemetryIngestResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[TelemetryIngestResult]",
+        "type": "object"
+      },
+      "ApiResponse_UserCreateResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserCreateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserCreateResult]",
+        "type": "object"
+      },
+      "ApiResponse_UserPage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserPage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserPage]",
+        "type": "object"
+      },
+      "ApiResponse_UserPublic_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[UserPublic]",
+        "type": "object"
+      },
+      "ApiResponse_bool_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[bool]",
+        "type": "object"
+      },
+      "ApiResponse_str_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ],
+        "title": "ApiResponse[str]",
+        "type": "object"
+      },
+      "AuthSession": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "access_token_expire": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token Expire"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "refresh_token_expire": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token Expire"
+          }
+        },
+        "title": "AuthSession",
+        "type": "object"
+      },
+      "BindResourcesModel": {
+        "properties": {
+          "resource_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Resource Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "resource_ids"
+        ],
+        "title": "BindResourcesModel",
+        "type": "object"
+      },
+      "BlogBase": {
+        "properties": {
+          "abstract": {
+            "description": "文章摘要",
+            "title": "Abstract",
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "zxy",
+            "description": "作者",
+            "title": "Author"
+          },
+          "byte_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Byte Num",
+            "type": "integer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "分类",
+            "title": "Category"
+          },
+          "comment_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Comment Num",
+            "type": "integer"
+          },
+          "id": {
+            "description": "博客的唯一标识符",
+            "title": "Id",
+            "type": "integer"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": [],
+            "description": "标签",
+            "title": "Tag"
+          },
+          "title": {
+            "description": "博客标题",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "view_num": {
+            "default": 0,
+            "description": "浏览次数",
+            "title": "View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "abstract"
+        ],
+        "title": "BlogBase",
+        "type": "object"
+      },
+      "BlogCreate": {
+        "properties": {
+          "abstract": {
+            "description": "文章摘要",
+            "title": "Abstract",
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "zxy",
+            "description": "作者",
+            "title": "Author"
+          },
+          "category": {
+            "description": "分类",
+            "title": "Category",
+            "type": "integer"
+          },
+          "content": {
+            "description": "博客内容",
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "创建时间",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "博客的唯一标识符",
+            "title": "Id"
+          },
+          "tag": {
+            "description": "文章标签（可以是已有标签ID或新增标签）",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "$ref": "#/components/schemas/TagNew"
+                }
+              ]
+            },
+            "title": "Tag",
+            "type": "array"
+          },
+          "title": {
+            "description": "博客标题",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "abstract",
+          "tag",
+          "category"
+        ],
+        "title": "BlogCreate",
+        "type": "object"
+      },
+      "BlogCreateResult": {
+        "properties": {
+          "id": {
+            "description": "新建博客 ID",
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "BlogCreateResult",
+        "type": "object"
+      },
+      "BlogDetail": {
+        "properties": {
+          "abstract": {
+            "description": "文章摘要",
+            "title": "Abstract",
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "zxy",
+            "description": "作者",
+            "title": "Author"
+          },
+          "byte_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Byte Num",
+            "type": "integer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "分类",
+            "title": "Category"
+          },
+          "comment_num": {
+            "default": 0,
+            "description": "评论次数",
+            "title": "Comment Num",
+            "type": "integer"
+          },
+          "content": {
+            "description": "博客内容",
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "创建时间",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "description": "博客的唯一标识符",
+            "title": "Id",
+            "type": "integer"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": [],
+            "description": "标签",
+            "title": "Tag"
+          },
+          "title": {
+            "description": "博客标题",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "view_num": {
+            "default": 0,
+            "description": "浏览次数",
+            "title": "View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "abstract",
+          "content"
+        ],
+        "title": "BlogDetail",
+        "type": "object"
+      },
+      "BlogPage": {
+        "properties": {
+          "list": {
+            "description": "当前页博客列表",
+            "items": {
+              "$ref": "#/components/schemas/BlogBase"
+            },
+            "title": "List",
+            "type": "array"
+          },
+          "page": {
+            "description": "当前页码",
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "每页数量",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "description": "总条数",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "BlogPage",
+        "type": "object"
+      },
+      "BlogStats": {
+        "properties": {
+          "blog_count": {
+            "description": "博客文章的总数量",
+            "example": 100,
+            "title": "Blog Count",
+            "type": "integer"
+          },
+          "category_count": {
+            "description": "博客种类的总数量",
+            "example": 10,
+            "title": "Category Count",
+            "type": "integer"
+          },
+          "tag_count": {
+            "description": "博客标签的总数量",
+            "example": 20,
+            "title": "Tag Count",
+            "type": "integer"
+          },
+          "total_view_num": {
+            "default": 0,
+            "description": "所有博客的总浏览量，默认为0",
+            "example": 5000,
+            "title": "Total View Num",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "blog_count",
+          "category_count",
+          "tag_count"
+        ],
+        "title": "BlogStats",
+        "type": "object"
+      },
+      "Body_upload_image_file_image_upload_post": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_image_file_image_upload_post",
+        "type": "object"
+      },
+      "Body_upload_video_file_video_upload_post": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_video_file_video_upload_post",
+        "type": "object"
+      },
+      "Category": {
+        "properties": {
+          "id": {
+            "description": "分类 ID",
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "description": "分类名称",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Category",
+        "type": "object"
+      },
+      "ChatRequest": {
+        "properties": {
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "session_id": {
+            "default": "1",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "ChatRequest",
+        "type": "object"
+      },
+      "DependencyReadiness": {
+        "properties": {
+          "duration_ms": {
+            "description": "Probe duration in milliseconds.",
+            "minimum": 0.0,
+            "title": "Duration Ms",
+            "type": "number"
+          },
+          "name": {
+            "description": "Dependency name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "description": "Dependency readiness.",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "duration_ms"
+        ],
+        "title": "DependencyReadiness",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthSnapshot": {
+        "properties": {
+          "status": {
+            "const": "ok",
+            "description": "Process liveness status.",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthSnapshot",
+        "type": "object"
+      },
+      "LoginModel": {
+        "properties": {
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginModel",
+        "type": "object"
+      },
+      "MetricAlert": {
+        "properties": {
+          "actual": {
+            "description": "Observed metric value.",
+            "minimum": 0.0,
+            "title": "Actual",
+            "type": "number"
+          },
+          "key": {
+            "description": "Stable alert key for client-side grouping.",
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "description": "Human-readable alert label.",
+            "title": "Label",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Alert severity.",
+            "enum": [
+              "warning",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "threshold": {
+            "description": "Threshold that triggered the alert.",
+            "minimum": 0.0,
+            "title": "Threshold",
+            "type": "number"
+          },
+          "unit": {
+            "description": "Metric unit, for example ratio or ms.",
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "severity",
+          "actual",
+          "threshold",
+          "unit"
+        ],
+        "title": "MetricAlert",
+        "type": "object"
+      },
+      "MetricsHistorySnapshot": {
+        "properties": {
+          "kind": {
+            "description": "Snapshot history kind.",
+            "enum": [
+              "request",
+              "rum"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Requested bounded history size.",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "snapshot_count": {
+            "description": "Returned snapshot count.",
+            "minimum": 0.0,
+            "title": "Snapshot Count",
+            "type": "integer"
+          },
+          "snapshots": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Snapshots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "limit",
+          "snapshot_count"
+        ],
+        "title": "MetricsHistorySnapshot",
+        "type": "object"
+      },
+      "QQModel": {
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "access_token",
+          "expires_in"
+        ],
+        "title": "QQModel",
+        "type": "object"
+      },
+      "ReadinessSnapshot": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/DependencyReadiness"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "status": {
+            "description": "Overall readiness.",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "generated_at"
+        ],
+        "title": "ReadinessSnapshot",
+        "type": "object"
+      },
+      "RegisterModel": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "phone",
+          "password"
+        ],
+        "title": "RegisterModel",
+        "type": "object"
+      },
+      "RequestMetricsSnapshot": {
+        "properties": {
+          "avg_duration_ms": {
+            "description": "Average latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Avg Duration Ms",
+            "type": "number"
+          },
+          "error_requests": {
+            "description": "Total recorded 5xx requests.",
+            "minimum": 0.0,
+            "title": "Error Requests",
+            "type": "integer"
+          },
+          "generated_at": {
+            "description": "Snapshot generation time.",
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "max_duration_ms": {
+            "description": "Maximum latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Max Duration Ms",
+            "type": "number"
+          },
+          "p50_duration_ms": {
+            "description": "p50 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P50 Duration Ms",
+            "type": "number"
+          },
+          "p95_duration_ms": {
+            "description": "p95 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P95 Duration Ms",
+            "type": "number"
+          },
+          "p99_duration_ms": {
+            "description": "p99 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P99 Duration Ms",
+            "type": "number"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/RouteMetric"
+            },
+            "title": "Routes",
+            "type": "array"
+          },
+          "statuses": {
+            "items": {
+              "$ref": "#/components/schemas/StatusMetric"
+            },
+            "title": "Statuses",
+            "type": "array"
+          },
+          "total_requests": {
+            "description": "Total recorded requests.",
+            "minimum": 0.0,
+            "title": "Total Requests",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "total_requests",
+          "error_requests",
+          "avg_duration_ms",
+          "p50_duration_ms",
+          "p95_duration_ms",
+          "p99_duration_ms",
+          "max_duration_ms"
+        ],
+        "title": "RequestMetricsSnapshot",
+        "type": "object"
+      },
+      "ResetPasswordModel": {
+        "properties": {
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "title": "ResetPasswordModel",
+        "type": "object"
+      },
+      "ResetPasswordRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "ResetPasswordRequest",
+        "type": "object"
+      },
+      "ResourceCreateModel": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "",
+            "title": "Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "",
+            "title": "Path"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "type"
+        ],
+        "title": "ResourceCreateModel",
+        "type": "object"
+      },
+      "ResourceUpdateModel": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "type",
+          "path",
+          "description"
+        ],
+        "title": "ResourceUpdateModel",
+        "type": "object"
+      },
+      "RoleCreateModel": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "",
+            "title": "Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ],
+        "title": "RoleCreateModel",
+        "type": "object"
+      },
+      "RoleUpdateModel": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "description"
+        ],
+        "title": "RoleUpdateModel",
+        "type": "object"
+      },
+      "RouteMetric": {
+        "properties": {
+          "avg_duration_ms": {
+            "description": "Average latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Avg Duration Ms",
+            "type": "number"
+          },
+          "count": {
+            "description": "Total requests for this route.",
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "error_count": {
+            "description": "5xx requests for this route.",
+            "minimum": 0.0,
+            "title": "Error Count",
+            "type": "integer"
+          },
+          "max_duration_ms": {
+            "description": "Maximum latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "Max Duration Ms",
+            "type": "number"
+          },
+          "method": {
+            "description": "HTTP method, upper-case.",
+            "title": "Method",
+            "type": "string"
+          },
+          "p50_duration_ms": {
+            "description": "p50 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P50 Duration Ms",
+            "type": "number"
+          },
+          "p95_duration_ms": {
+            "description": "p95 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P95 Duration Ms",
+            "type": "number"
+          },
+          "p99_duration_ms": {
+            "description": "p99 latency in milliseconds.",
+            "minimum": 0.0,
+            "title": "P99 Duration Ms",
+            "type": "number"
+          },
+          "route": {
+            "description": "FastAPI route template or bounded fallback path.",
+            "title": "Route",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "route",
+          "count",
+          "error_count",
+          "avg_duration_ms",
+          "p50_duration_ms",
+          "p95_duration_ms",
+          "p99_duration_ms",
+          "max_duration_ms"
+        ],
+        "title": "RouteMetric",
+        "type": "object"
+      },
+      "RumEventSample": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page": {
+            "title": "Page",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "title": "Properties",
+            "type": "object"
+          },
+          "sessionId": {
+            "title": "Sessionid",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "timestamp": {
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "severity",
+          "timestamp",
+          "page",
+          "path",
+          "sessionId"
+        ],
+        "title": "RumEventSample",
+        "type": "object"
+      },
+      "RumMetricsSnapshot": {
+        "properties": {
+          "accepted_events": {
+            "minimum": 0.0,
+            "title": "Accepted Events",
+            "type": "integer"
+          },
+          "events_by_name": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Events By Name",
+            "type": "object"
+          },
+          "events_by_severity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Events By Severity",
+            "type": "object"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/RumEventSample"
+            },
+            "title": "Recent Events",
+            "type": "array"
+          },
+          "rejected_events": {
+            "minimum": 0.0,
+            "title": "Rejected Events",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "total_events": {
+            "minimum": 0.0,
+            "title": "Total Events",
+            "type": "integer"
+          },
+          "web_vitals": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RumWebVitalMetric"
+            },
+            "title": "Web Vitals",
+            "type": "object"
+          }
+        },
+        "required": [
+          "generated_at",
+          "started_at",
+          "total_events",
+          "accepted_events",
+          "rejected_events"
+        ],
+        "title": "RumMetricsSnapshot",
+        "type": "object"
+      },
+      "RumWebVitalMetric": {
+        "properties": {
+          "avg_value": {
+            "minimum": 0.0,
+            "title": "Avg Value",
+            "type": "number"
+          },
+          "count": {
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "good_count": {
+            "minimum": 0.0,
+            "title": "Good Count",
+            "type": "integer"
+          },
+          "max_value": {
+            "minimum": 0.0,
+            "title": "Max Value",
+            "type": "number"
+          },
+          "needs_improvement_count": {
+            "minimum": 0.0,
+            "title": "Needs Improvement Count",
+            "type": "integer"
+          },
+          "p50_value": {
+            "minimum": 0.0,
+            "title": "P50 Value",
+            "type": "number"
+          },
+          "p95_value": {
+            "minimum": 0.0,
+            "title": "P95 Value",
+            "type": "number"
+          },
+          "p99_value": {
+            "minimum": 0.0,
+            "title": "P99 Value",
+            "type": "number"
+          },
+          "poor_count": {
+            "minimum": 0.0,
+            "title": "Poor Count",
+            "type": "integer"
+          },
+          "total_value": {
+            "minimum": 0.0,
+            "title": "Total Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "total_value",
+          "avg_value",
+          "max_value",
+          "p50_value",
+          "p95_value",
+          "p99_value",
+          "good_count",
+          "needs_improvement_count",
+          "poor_count"
+        ],
+        "title": "RumWebVitalMetric",
+        "type": "object"
+      },
+      "StatusMetric": {
+        "properties": {
+          "count": {
+            "description": "Total requests with this status.",
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "status": {
+            "description": "HTTP status code.",
+            "title": "Status",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "StatusMetric",
+        "type": "object"
+      },
+      "TagBase": {
+        "properties": {
+          "id": {
+            "description": "标签 ID",
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "description": "标签名称",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TagBase",
+        "type": "object"
+      },
+      "TagNew": {
+        "properties": {
+          "name": {
+            "description": "新增标签的名称",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TagNew",
+        "type": "object"
+      },
+      "TelemetryEventPayload": {
+        "properties": {
+          "name": {
+            "description": "Frontend telemetry event name.",
+            "enum": [
+              "web_vital",
+              "route_timing",
+              "global_error",
+              "unhandled_rejection",
+              "api_timing",
+              "api_error",
+              "user_action"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Browser page path.",
+            "title": "Page"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "title": "Properties",
+            "type": "object"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Anonymous session ID.",
+            "title": "Sessionid"
+          },
+          "severity": {
+            "default": "info",
+            "enum": [
+              "debug",
+              "info",
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client event timestamp.",
+            "title": "Timestamp"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TelemetryEventPayload",
+        "type": "object"
+      },
+      "TelemetryIngestResult": {
+        "properties": {
+          "accepted": {
+            "description": "Whether the event was accepted.",
+            "title": "Accepted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accepted"
+        ],
+        "title": "TelemetryIngestResult",
+        "type": "object"
+      },
+      "User": {
+        "properties": {
+          "age": {
+            "description": "年龄",
+            "title": "Age",
+            "type": "integer"
+          },
+          "birth_day": {
+            "description": "出生日期，格式为 YYYY-MM-DD",
+            "format": "date",
+            "title": "Birth Day",
+            "type": "string"
+          },
+          "create_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "创建时间",
+            "title": "Create Time"
+          },
+          "email": {
+            "description": "邮箱",
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "用户的唯一标识符，自增主键",
+            "title": "Id"
+          },
+          "name": {
+            "description": "昵称",
+            "title": "Name",
+            "type": "string"
+          },
+          "password": {
+            "description": "密码",
+            "title": "Password",
+            "type": "string"
+          },
+          "phone": {
+            "description": "手机号",
+            "title": "Phone",
+            "type": "string"
+          },
+          "sex": {
+            "description": "性别",
+            "title": "Sex",
+            "type": "integer"
+          },
+          "status": {
+            "default": true,
+            "description": "用户是否启用，默认启用",
+            "title": "Status",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "sex",
+          "age",
+          "phone",
+          "email",
+          "password",
+          "birth_day"
+        ],
+        "title": "User",
+        "type": "object"
+      },
+      "UserCreateResult": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "新建用户 ID",
+            "title": "Id"
+          }
+        },
+        "title": "UserCreateResult",
+        "type": "object"
+      },
+      "UserPage": {
+        "properties": {
+          "list": {
+            "description": "当前页用户列表",
+            "items": {
+              "$ref": "#/components/schemas/UserPublic"
+            },
+            "title": "List",
+            "type": "array"
+          },
+          "page": {
+            "description": "当前页码",
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "每页数量",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "description": "总条数",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "UserPage",
+        "type": "object"
+      },
+      "UserPublic": {
+        "properties": {
+          "age": {
+            "description": "年龄",
+            "title": "Age",
+            "type": "integer"
+          },
+          "birth_day": {
+            "description": "出生日期，格式为 YYYY-MM-DD",
+            "format": "date",
+            "title": "Birth Day",
+            "type": "string"
+          },
+          "create_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "创建时间",
+            "title": "Create Time"
+          },
+          "email": {
+            "description": "邮箱",
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "用户的唯一标识符，自增主键",
+            "title": "Id"
+          },
+          "name": {
+            "description": "昵称",
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "手机号",
+            "title": "Phone",
+            "type": "string"
+          },
+          "resources": {
+            "description": "用户资源权限",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Resources",
+            "type": "array"
+          },
+          "roles": {
+            "description": "用户角色",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "sex": {
+            "description": "性别",
+            "title": "Sex",
+            "type": "integer"
+          },
+          "status": {
+            "default": true,
+            "description": "用户是否启用，默认启用",
+            "title": "Status",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "sex",
+          "age",
+          "phone",
+          "email",
+          "birth_day"
+        ],
+        "title": "UserPublic",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Sun World API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/admin/alerts": {
+      "get": {
+        "description": "Return active local request/RUM alert thresholds.",
+        "operationId": "get_admin_alerts_admin_alerts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AdminAlertsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Alerts",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/metrics": {
+      "get": {
+        "description": "Return a process-local backend request metrics snapshot.",
+        "operationId": "get_admin_metrics_admin_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequestMetricsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Metrics",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/metrics/history": {
+      "get": {
+        "description": "Return bounded metrics snapshot history for admin trend views.",
+        "operationId": "get_admin_metrics_history_admin_metrics_history_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "request",
+              "enum": [
+                "request",
+                "rum"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MetricsHistorySnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Admin Metrics History",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/telemetry": {
+      "get": {
+        "description": "Return a process-local frontend RUM metrics snapshot.",
+        "operationId": "get_admin_telemetry_admin_telemetry_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RumMetricsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Admin Telemetry",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/ai/chat": {
+      "post": {
+        "operationId": "get_answer_ai_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_str_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Answer",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/chat-chunk-stream": {
+      "post": {
+        "operationId": "chat_chunk_stream_ai_chat_chunk_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Chat Chunk Stream",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/chat_stream": {
+      "post": {
+        "operationId": "get_answer_stream_ai_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Answer Stream",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/generate-image": {
+      "post": {
+        "operationId": "generate_image_ai_generate_image_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Image",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/read-image": {
+      "post": {
+        "operationId": "generate_image_ai_read_image_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "uri",
+            "required": true,
+            "schema": {
+              "title": "Uri",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Image",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "登出：从 cookie 或 header 获取 token 并加入黑名单",
+        "operationId": "logout_auth_logout_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/qq": {
+      "post": {
+        "operationId": "qq_auth_qq_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QQModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Qq",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh_token": {
+      "post": {
+        "description": "刷新 access_token\n优先从 cookie 中读取 refresh_token，如果没有则从 header 读取",
+        "operationId": "refresh_token_auth_refresh_token_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "refresh-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Refresh-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh Token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "register_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset_password": {
+      "post": {
+        "operationId": "reset_password_auth_reset_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset_password/request": {
+      "post": {
+        "operationId": "request_reset_password_auth_reset_password_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Reset Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/base/": {
+      "get": {
+        "description": "获取博客的统计信息，包括文章数、种类数、标签数和总浏览量。",
+        "operationId": "base_info_base__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogStats_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Base Info",
+        "tags": [
+          "基础信息",
+          "基础信息"
+        ]
+      }
+    },
+    "/base/blog/category": {
+      "get": {
+        "description": "获取博客的种类列表",
+        "operationId": "get_blog_category_base_blog_category_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_Category__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "博客种类列表",
+        "tags": [
+          "基础信息",
+          "基础信息"
+        ]
+      }
+    },
+    "/base/blog/tag": {
+      "get": {
+        "description": "获取博客的tag列表",
+        "operationId": "get_tag_list_base_blog_tag_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_TagBase__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "博客tag列表",
+        "tags": [
+          "基础信息",
+          "基础信息"
+        ]
+      }
+    },
+    "/blogs/": {
+      "get": {
+        "description": "分页获取博客列表\n\nArgs:\n    page (int, optional): 页码. Defaults to 1.\n    page_size (int, optional): 每页显示数量. Defaults to 10.\n    blog_manager (BlogManager, optional): 博客管理对象. Defaults to Depends(get_blog_manager).\n\nReturns:\n    dict: 包含分页信息的字典",
+        "operationId": "get_blogs_paginated_blogs__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "title": "Pagesize",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogPage_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Blogs Paginated",
+        "tags": [
+          "blog"
+        ]
+      },
+      "post": {
+        "description": "创建新的博客\n\nArgs:\n    blog (Blog): 新博客的数据模型\n\nReturns:\n    dict: 包含新博客 ID 的字典",
+        "operationId": "create_blog_blogs__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogCreateResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Blog",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/blogs/{blog_id}": {
+      "delete": {
+        "description": "删除指定 ID 的博客\n\nArgs:\n    blog_id (str): 博客的 ID\n\nReturns:\n    dict: 包含删除成功消息的字典",
+        "operationId": "delete_blog_blogs__blog_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blog_id",
+            "required": true,
+            "schema": {
+              "title": "Blog Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Blog",
+        "tags": [
+          "blog"
+        ]
+      },
+      "get": {
+        "description": "获取指定 ID 的博客\n\nArgs:\n    blog_id (str): 博客的 ID\n\nReturns:\n    Blog: 博客对象，如果不存在则抛出 404 错误",
+        "operationId": "get_blog_blogs__blog_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blog_id",
+            "required": true,
+            "schema": {
+              "title": "Blog Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogDetail_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Blog",
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/file/image/upload": {
+      "post": {
+        "operationId": "upload_image_file_image_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_image_file_image_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Image",
+        "tags": [
+          "文件"
+        ]
+      }
+    },
+    "/file/video/upload": {
+      "post": {
+        "operationId": "upload_video_file_video_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_video_file_video_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Video",
+        "tags": [
+          "文件"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthz",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readyz_readyz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessSnapshot"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Readyz",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/resource/": {
+      "get": {
+        "operationId": "list_resources_resource__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Resources",
+        "tags": [
+          "resource"
+        ]
+      },
+      "post": {
+        "operationId": "create_resource_resource__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceCreateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/resource/{resource_id}": {
+      "delete": {
+        "operationId": "delete_resource_resource__resource_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "title": "Resource Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Resource",
+        "tags": [
+          "resource"
+        ]
+      },
+      "get": {
+        "operationId": "get_resource_resource__resource_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "title": "Resource Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Resource",
+        "tags": [
+          "resource"
+        ]
+      },
+      "put": {
+        "operationId": "update_resource_resource__resource_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "title": "Resource Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceUpdateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/role/": {
+      "get": {
+        "operationId": "list_roles_role__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Roles",
+        "tags": [
+          "role"
+        ]
+      },
+      "post": {
+        "operationId": "create_role_role__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleCreateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Role",
+        "tags": [
+          "role"
+        ]
+      }
+    },
+    "/role/{role_id}": {
+      "delete": {
+        "operationId": "delete_role_role__role_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "title": "Role Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Role",
+        "tags": [
+          "role"
+        ]
+      },
+      "get": {
+        "operationId": "get_role_role__role_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "title": "Role Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Role",
+        "tags": [
+          "role"
+        ]
+      },
+      "put": {
+        "operationId": "update_role_role__role_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "title": "Role Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleUpdateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Role",
+        "tags": [
+          "role"
+        ]
+      }
+    },
+    "/role/{role_id}/bind_resources": {
+      "post": {
+        "operationId": "bind_resources_role__role_id__bind_resources_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "title": "Role Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindResourcesModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Bind Resources",
+        "tags": [
+          "role"
+        ]
+      }
+    },
+    "/telemetry/events": {
+      "post": {
+        "description": "Ingest one frontend RUM event into the process-local metrics collector.",
+        "operationId": "ingest_telemetry_event_telemetry_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryEventPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_TelemetryIngestResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest Telemetry Event",
+        "tags": [
+          "telemetry"
+        ]
+      }
+    },
+    "/user/": {
+      "get": {
+        "description": "分页获取用户列表\n\nArgs:\n    page (int, optional): 页码. Defaults to 1.\n    page_size (int, optional): 每页显示数量. Defaults to 10.\n    user_manager (UserManager, optional): 用户管理对象. Defaults to Depends(get_user_manager).\n\nReturns:\n    dict: 包含分页信息的字典",
+        "operationId": "get_users_paginated_user__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPage_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Users Paginated",
+        "tags": [
+          "user"
+        ]
+      },
+      "post": {
+        "description": "创建新的用户\n\nArgs:\n    user (User): 新用户的数据模型\n\nReturns:\n    dict: 包含新用户 ID 的字典",
+        "operationId": "create_user_user__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserCreateResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create User",
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/user/me": {
+      "get": {
+        "description": "获取当前登录用户的信息\n\nArgs:\n    current_user (User): 从 token 中解析出的当前用户\n\nReturns:\n    dict: 包含用户信息的响应",
+        "operationId": "get_current_user_info_user_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPublic_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Current User Info",
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/user/{user_id}": {
+      "delete": {
+        "description": "停用指定 ID 的用户\n\nArgs:\n    user_id (str): 用户的 ID\n\nReturns:\n    dict: 包含停用成功消息的字典",
+        "operationId": "delete_user_user__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_bool_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete User",
+        "tags": [
+          "user"
+        ]
+      },
+      "get": {
+        "description": "获取指定 ID 的用户\n\nArgs:\n    user_id (str): 用户的 ID\n\nReturns:\n    User: 用户对象，如果不存在则抛出 404 错误",
+        "operationId": "get_user_user__user_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserPublic_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get User",
+        "tags": [
+          "user"
+        ]
+      }
+    }
+  }
+}

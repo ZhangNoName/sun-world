@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunworld.site/schemas/web-performance-budgets.schema.json",
+  "title": "Sun World Web Performance Budgets",
+  "type": "object",
+  "required": ["distDir", "budgets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "distDir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "budgets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "maxGzipKiB"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": ["total", "largest", "pattern"]
+          },
+          "extensions": {
+            "type": "array",
+            "items": {
+              "enum": [".js", ".css"]
+            },
+            "minItems": 1
+          },
+          "pattern": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxGzipKiB": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "type": { "const": "pattern" } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": ["pattern"]
+            }
+          },
+          {
+            "if": {
+              "properties": { "type": { "enum": ["total", "largest"] } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": ["extensions"]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

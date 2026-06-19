@@ -1,4 +1,4 @@
-import { IBox, Matrix, Point } from '@/types/common.type'
+import { IBox, Matrix, Point } from "../types/common.type"
 import {
   IDENTITY_MATRIX,
   applyToPoint,

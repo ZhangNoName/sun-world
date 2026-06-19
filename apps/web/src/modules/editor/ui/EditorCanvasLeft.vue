@@ -1,0 +1,37 @@
+<script setup lang="ts" name="canvasLeft">
+import { BaseElement, NodeInfo, SWEditor } from '@sun-world/editor'
+import { ref, watch, shallowRef } from 'vue'
+import EditorCanvasTree from './EditorCanvasTree.vue'
+const props = defineProps<{
+  editor: SWEditor | null
+}>()
+const editor = props.editor
+const root = shallowRef<NodeInfo[]>([])
+watch(
+  () => editor,
+  (newVal) => {
+    if (newVal) {
+      newVal.elementTreeChanged((ele) => {
+        root.value = ele
+
+        // console.log('更新左侧树',root.value)
+      })
+    }
+  },
+  { immediate: true }
+)
+</script>
+<template>
+  <div class="canvas-left-container">
+    <div class="elements-container">
+      <EditorCanvasTree :elements="root" />
+    </div>
+  </div>
+</template>
+<style scoped>
+.canvas-left-container {
+  width: 241px;
+  height: 100%;
+  background: var(--color-surface-card);
+}
+</style>

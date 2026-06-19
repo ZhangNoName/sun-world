@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Disallow: /manage/
+Disallow: /new_article
+Disallow: /login
+Disallow: /register
+Disallow: /mine
+Disallow: /qq
+
+Sitemap: https://sunworld.site/sitemap.xml

@@ -1,0 +1,121 @@
+/* ============================================================
+   Global Reset & Layout / 全局重置与布局
+   设计令牌集中在 src/styles/design-tokens.css 中管理。
+   不要在此文件中定义颜色/字号等令牌值。
+   ============================================================ */
+
+@import './styles/design-tokens.css';
+
+* {
+  box-sizing: border-box;
+  -webkit-user-select: auto;
+  user-select: auto;
+  scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  font-family: Monda, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: var(--text-default);
+  background-color: var(--bg-page);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: left;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--text-default);
+  background:
+    radial-gradient(circle at top left, var(--bg-accent-soft), transparent 30rem),
+    var(--bg-page);
+  overscroll-behavior: none;
+}
+h1 {
+  margin: 0;
+}
+
+html {
+  /* 优先使用系统字体，确保速度和清晰度 */
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', 'Arial', sans-serif;
+  font-size: var(--font-medium);
+  line-height: 1.2;
+}
+
+#app {
+  /* max-width: 1280px; */
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  width: 100dvw;
+  overflow: hidden;
+}
+
+::selection {
+  color: var(--btn-text-color);
+  background: var(--color-brand);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+  box-shadow: var(--shadow-focus);
+}
+
+.scroll {
+  background-color: var(--color-surface-page);
+  /* 🌟 核心 1：必须确保有滚动属性 */
+  overflow: auto !important;
+
+  /* 🌟 核心 2：恢复 Firefox 的滚动条空间 */
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--scrollbar-thumb-bg) transparent;
+
+  /* 针对 WebKit (Chrome/Safari) */
+  &::-webkit-scrollbar {
+    display: block !important; /* 强制显示 */
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-bg);
+    border-radius: 0.3rem;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-bg);
+    border-radius: 0.3rem;
+
+    &:hover {
+      background: var(--scrollbar-thumb-hover);
+    }
+  }
+}
+
+a {
+  text-decoration: none;
+  background-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

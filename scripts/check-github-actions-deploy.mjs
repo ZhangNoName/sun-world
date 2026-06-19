@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy-frontend.yml')
 const deployDocPath = join(repoRoot, 'deploy', 'frontend', 'README.md')
+const checkAllPath = join(repoRoot, 'scripts', 'check-all.mjs')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
 
@@ -15,6 +16,7 @@ if (!existsSync(workflowPath)) {
 
 const workflow = existsSync(workflowPath) ? readFileSync(workflowPath, 'utf8') : ''
 const deployDoc = existsSync(deployDocPath) ? readFileSync(deployDocPath, 'utf8') : ''
+const checkAll = existsSync(checkAllPath) ? readFileSync(checkAllPath, 'utf8') : ''
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
 if (workflow) {
@@ -39,8 +41,12 @@ if (workflow) {
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
-    'sudo docker pull "$IMAGE"',
+    'sudo docker pull "$FRONTEND_IMAGE"',
     'sudo docker rm -f my-frontend',
+    'ghcr.io/zhangnoname/sun-world-api',
+    'Build and push API image',
+    'api-deploy-metadata-${{ github.sha }}',
+    'python -m src.database.mysql.schema_migration --mode apply',
     'curl -fsSI https://sunworld.site',
     'curl -fsSI https://www.sunworld.site',
   ]
@@ -51,8 +57,12 @@ if (workflow) {
     }
   }
 
-  if (/--profile api|sun-world-api|blog-api\.service/.test(workflow)) {
-    violations.push('deploy workflow must not deploy the backend before cutover')
+  if (/docker compose --profile api up|systemctl restart blog-api\.service|-p 8000:8000/.test(workflow)) {
+    violations.push('deploy workflow must not cut over the backend service before approval')
+  }
+
+  if (/cache-to:\s*type=gha/.test(workflow)) {
+    violations.push('deploy workflow must not use blocking Buildx GHA cache export')
   }
 }
 
@@ -63,7 +73,10 @@ if (deployDoc) {
     'LIGHTHOUSE_HOST',
     'LIGHTHOUSE_USER',
     'LIGHTHOUSE_SSH_KEY',
+    'LIGHTHOUSE_PORT',
     'sun-world-frontend',
+    'sun-world-api',
+    'schema_migration',
     'cancel-in-progress',
     'artifact',
   ]
@@ -77,6 +90,10 @@ if (deployDoc) {
 
 if (packageJson.scripts?.['check:github-actions:deploy'] !== 'node scripts/check-github-actions-deploy.mjs') {
   violations.push('root package.json must expose check:github-actions:deploy')
+}
+
+if (!checkAll.includes('check:github-actions:deploy')) {
+  violations.push('root check-all must include check:github-actions:deploy')
 }
 
 if (violations.length) {
