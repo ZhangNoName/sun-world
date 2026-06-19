@@ -1,5 +1,7 @@
 node_modules
 dist
+.worktrees/
+sun_world_deploy_key*
 packages/blog/src/constant.ts
 sunworld.key
 sunworld.pem

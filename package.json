@@ -10,7 +10,8 @@
     "build": "pnpm build:editor && pnpm build:icons && pnpm build:blog",
     "build:editor": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/editor build",
     "build:blog": "NODE_OPTIONS='--max-old-space-size=4096' pnpm -F @sun-world/blog run build",
-    "build:icons": "NODE_OPTIONS='--max-old-space-size=2048' pnpm -F @sun-world/icons run build"
+    "build:icons": "NODE_OPTIONS='--max-old-space-size=2048' pnpm -F @sun-world/icons run build",
+    "check:github-actions:deploy": "node scripts/check-github-actions-deploy.mjs"
   },
   "devDependencies": {
     "@langchain/core": "^0.2.36",
