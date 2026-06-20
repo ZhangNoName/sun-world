@@ -346,7 +346,7 @@ jobs:
             VITE_TELEMETRY_ENDPOINT=${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
 
   build-api:
-    name: Build and push API image
+    name: Build API image on Lighthouse
     needs: detect-changes
     if: needs.detect-changes.outputs.api_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
     runs-on: ubuntu-latest
@@ -355,42 +355,12 @@ jobs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.detect-changes.outputs.image_tag }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install API dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ./apps/api
-
       - name: Prepare API deploy artifacts
         id: image-meta
         shell: bash
         run: |
           set -euo pipefail
-          deploy_image="${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
+          deploy_image="${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
           mkdir -p api-deploy-artifacts
           printf '%s\n' "${{ needs.detect-changes.outputs.image_tag }}" > api-deploy-artifacts/commit.txt
           printf '%s\n' "$deploy_image" > api-deploy-artifacts/image.txt
@@ -403,31 +373,60 @@ jobs:
           path: api-deploy-artifacts
           retention-days: 30
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Prepare SSH
+        env:
+          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
+          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
+          LIGHTHOUSE_SSH_KEY: ${{ secrets.LIGHTHOUSE_SSH_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$LIGHTHOUSE_SSH_KEY" > ~/.ssh/sun_world_deploy_key
+          chmod 600 ~/.ssh/sun_world_deploy_key
+          ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
 
-      - name: Login to Tencent CCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.TENCENT_CCR_REGISTRY }}
-          username: ${{ vars.TENCENT_CCR_USERNAME }}
-          password: ${{ secrets.TENCENT_CCR_PASSWORD }}
+      - name: Build API image on Lighthouse
+        env:
+          API_IMAGE: ${{ steps.image-meta.outputs.deploy_image }}
+          IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
+          LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
+          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+            "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
+            "$IMAGE_TAG" "$API_IMAGE" <<'REMOTE'
+          set -euo pipefail
+          IMAGE_TAG="$1"
+          API_IMAGE="$2"
+          REPO_DIR="/home/lighthouse/blog/sun-world"
 
-      - name: Build and push API image
-        uses: docker/build-push-action@v6
-        with:
-          context: apps/api
-          file: apps/api/Dockerfile
-          push: true
-          tags: ${{ steps.image-meta.outputs.deploy_image }}
-          provenance: false
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.title=sun-world-api
+          cd "$REPO_DIR"
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Server repository has uncommitted changes; refusing to build API image." >&2
+            git status --short >&2
+            exit 1
+          fi
+
+          git fetch --prune origin main
+          git checkout main
+          git pull --ff-only origin main
+
+          current_sha="$(git rev-parse HEAD)"
+          if [ "$current_sha" != "$IMAGE_TAG" ]; then
+            echo "Server main is at $current_sha, expected $IMAGE_TAG." >&2
+            exit 1
+          fi
+
+          sudo docker build -t "$API_IMAGE" -f apps/api/Dockerfile apps/api
+          sudo docker image prune -f
+          REMOTE
 
   deploy:
-    name: Deploy changed CCR images on Lighthouse
+    name: Deploy changed services on Lighthouse
     needs:
       - detect-changes
       - build-web
@@ -460,7 +459,7 @@ jobs:
           WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}
           API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
           FRONTEND_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
-          API_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
+          API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
           LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
           LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
@@ -485,7 +484,7 @@ jobs:
           fi
 
           if [ "$API_CHANGED" = "true" ]; then
-            sudo docker pull "$API_IMAGE"
+            sudo docker image inspect "$API_IMAGE" >/dev/null
             API_MOUNTS=(
               -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
             )

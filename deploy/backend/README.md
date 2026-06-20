@@ -58,21 +58,28 @@ the container. Do not commit or print values from those mounted files.
 
 ## GitHub Actions API Image
 
-The deployment workflow builds the Python API image when API-related files
-change.
+The deployment workflow builds the Python API image on Lighthouse when
+API-related files change. GitHub Actions no longer builds or pushes the API
+image to Tencent CCR because the GitHub-to-CCR API image push path repeatedly
+stalled.
 
 Image tag:
 
 ```text
-ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha>
+sun-world-api:<git-sha>
 ```
 
-The workflow pushes the API image to Tencent CCR and the Lighthouse deploy step
-runs `sudo docker pull` for the changed commit-specific tag. It also keeps an
-`api-deploy-metadata-<git-sha>` artifact with the image tag and commit. It does
-not start the API container and does not replace `blog-api.service`; backend
-traffic remains on the existing production service until a separate cutover is
-approved.
+The API build job SSHes to Lighthouse, syncs
+`/home/lighthouse/blog/sun-world` to `origin/main`, and runs:
+
+```bash
+sudo docker build -t sun-world-api:<git-sha> -f apps/api/Dockerfile apps/api
+```
+
+It also keeps an `api-deploy-metadata-<git-sha>` artifact with the local image
+tag and commit. It does not start the API container and does not replace
+`blog-api.service`; backend traffic remains on the existing production service
+until a separate cutover is approved.
 
 ## MySQL Schema Guard
 
@@ -107,7 +114,7 @@ if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
 fi
 sudo docker run --rm --network host \
   "${API_MOUNTS[@]}" \
-  ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha> \
+  sun-world-api:<git-sha> \
   /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 ```
 

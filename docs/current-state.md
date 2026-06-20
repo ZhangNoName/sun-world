@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.75 disable API registry cache for CCR push test)
+Last updated: 2026-06-20 (main, P1.76 build API image on Lighthouse)
 
 ## Server
 
@@ -54,11 +54,14 @@ been cut over yet:
   `.github/workflows/deploy.yml`. Pull requests run only the `quality` job.
   Non-documentation `main` pushes run `quality` first, then
   `detect-changes` decides whether web, API, both, or neither need deployment.
-  `build-web` and `build-api` run only for their changed target and push
-  commit-specific images to Tencent CCR personal edition at
-  `ccr.ccs.tencentyun.com`. The final deploy job SSHes to Lighthouse, runs
-  `docker pull` for changed images, then switches only the changed target(s).
-  If both web and API changed, both images must be pushed before deployment
+  `build-web` runs only for frontend changes and pushes a commit-specific image
+  to Tencent CCR personal edition at `ccr.ccs.tencentyun.com`. `build-api`
+  runs only for API changes, SSHes to Lighthouse, syncs
+  `/home/lighthouse/blog/sun-world` to `origin/main`, and builds
+  `sun-world-api:<commit>` locally on the server. The final deploy job SSHes to
+  Lighthouse, pulls the frontend image only when web changed, and uses the
+  local API image only when API changed. If both web and API changed, the
+  frontend CCR image and API local image must both be ready before deployment
   starts.
   Production runs share one fixed concurrency group with
   `cancel-in-progress: true`, so newer main/manual runs cancel older
@@ -69,10 +72,14 @@ been cut over yet:
   `no-deploy` job.
 - Manual deployment supports `build-and-deploy`, `build-only`, and
   `deploy-existing` modes. `deploy-existing` skips builds and redeploys a
-  previous CCR image tag, usually a known-good commit SHA.
+  previous image tag, usually a known-good commit SHA. For frontend this is a
+  Tencent CCR tag; for API this is a local `sun-world-api:<commit>` image that
+  already exists on Lighthouse.
 - The deploy workflow intentionally avoids GHCR and GitHub-to-server image
-  archive uploads. Retained metadata artifacts and CCR commit-SHA image tags
-  are the current rollback/audit source for built images.
+  archive uploads. It also avoids GitHub-to-CCR API image pushes because the
+  API push path repeatedly stalled. Retained metadata artifacts, frontend CCR
+  commit-SHA image tags, and local Lighthouse API commit-SHA image tags are the
+  current rollback/audit source for built images.
 - API deployment still only runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image, so missing MySQL application tables/columns can be created
@@ -208,15 +215,15 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   those dependencies before copying `src`, and then copies API source files in
   the final lightweight layer. Source-only API changes should not invalidate
   the full Python dependency installation layer.
-- GitHub Actions Docker builds push application images to Tencent CCR personal
+- GitHub Actions Docker builds push frontend images to Tencent CCR personal
   edition. Frontend still uses Tencent CCR registry cache with `mode=max`.
-  API registry cache import/export is temporarily disabled after Tencent Cloud
-  support identified the slow path as `#19 exporting cache to registry`; the
-  API build now tests the main image push path with only `push: true` and
-  commit-SHA tags. Prefer separate manual runs for web and API when only one
-  target needs deployment. API build timeout is 30 minutes to allow the first
-  Python dependency cache warm-up; quality, frontend build, and deploy jobs
-  remain capped at 15 minutes.
+  API images are built on Lighthouse with
+  `sudo docker build -t sun-world-api:<commit> -f apps/api/Dockerfile apps/api`
+  instead of GitHub Buildx, so API no longer uses Tencent CCR registry cache or
+  image push. Prefer separate manual runs for web and API when only one target
+  needs deployment. API build timeout is 30 minutes to allow the Python
+  dependency layer to build on the server; quality, frontend build, and deploy
+  jobs remain capped at 15 minutes.
 - `pnpm check:platform` runs `scripts/check-platform-goal-audit.mjs`, which
   verifies the repository has durable evidence for the commit policy,
   frontend-backend chain, monitoring platform, packaging/build optimization,

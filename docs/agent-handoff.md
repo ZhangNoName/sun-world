@@ -1,5 +1,45 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.76 build API image on Lighthouse):
+  - Goal: move API Docker image generation off GitHub Buildx and onto
+    Lighthouse after API image pushes kept stalling even with API registry cache
+    disabled.
+  - Evidence:
+    - Manual API-only run `27862993782` used commit `cbcd530e` with API
+      `cache-from`/`cache-to` removed, but `Build and push API image` still ran
+      from 06:35 to 07:04 and ended cancelled around the 30-minute timeout.
+    - This showed the API bottleneck was not only `#19 exporting cache to
+      registry`; the GitHub-to-CCR main API image push path was also too
+      unreliable.
+  - Status: implemented locally; commit/push pending.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Frontend still builds on GitHub and pushes commit-SHA images to Tencent
+      CCR with registry cache enabled.
+    - API `build-api` no longer uses Docker Buildx, Tencent CCR login, or API
+      registry cache. It SSHes to Lighthouse, syncs
+      `/home/lighthouse/blog/sun-world` to `origin/main`, and runs
+      `sudo docker build -t sun-world-api:<commit> -f apps/api/Dockerfile apps/api`.
+    - API deploy uses the local `sun-world-api:<commit>` image and verifies it
+      with `sudo docker image inspect` before running schema migration.
+    - `build-only` for API now builds the local image on Lighthouse without
+      running the deploy job. `deploy-existing` for API expects the local image
+      tag to already exist on Lighthouse.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+  - Next step:
+    - Commit/push, then run manual `build-and-deploy` with `target=api` and
+      verify the API job builds on Lighthouse instead of GitHub Buildx.
+
 - Latest task addendum (2026-06-20, P1.75 disable API registry cache for CCR push test):
   - Goal: follow Tencent Cloud support's suggestion to isolate the slow API
     build path by removing API BuildKit registry cache import/export and

@@ -88,7 +88,7 @@ if (workflow) {
     'secrets.TENCENT_CCR_PASSWORD',
     'vars.TENCENT_CCR_NAMESPACE',
     '${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}',
-    '${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}',
+    'deploy_image="${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"',
     'docker/build-push-action@v6',
     'push: true',
     'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache',
@@ -101,16 +101,17 @@ if (workflow) {
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
-    'Deploy changed CCR images on Lighthouse',
+    'Build API image on Lighthouse',
+    'sudo docker build -t "$API_IMAGE" -f apps/api/Dockerfile apps/api',
+    'Deploy changed services on Lighthouse',
     'Pull images and deploy on Lighthouse',
     'needs.detect-changes.outputs.image_tag',
     'if [ "$WEB_CHANGED" = "true" ]; then',
     'sudo docker pull "$FRONTEND_IMAGE"',
     'sudo docker rm -f my-frontend',
     'if [ "$API_CHANGED" = "true" ]; then',
-    'Build and push API image',
     'api-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}',
-    'sudo docker pull "$API_IMAGE"',
+    'sudo docker image inspect "$API_IMAGE"',
     'python -m src.database.mysql.schema_migration --mode apply',
     'curl -fsSI https://sunworld.site',
     'curl -fsSI https://www.sunworld.site',
@@ -142,6 +143,16 @@ if (workflow) {
   if (/\$\{\{\s*env\.API_IMAGE_NAME\s*\}\}:buildcache/.test(workflow)) {
     violations.push(
       'API build must not use Tencent CCR registry cache while debugging BuildKit cache export hangs'
+    )
+  }
+
+  if (
+    /uses:\s*docker\/build-push-action@v6[\s\S]*context:\s*apps\/api/.test(
+      workflow
+    )
+  ) {
+    violations.push(
+      'API image must be built on Lighthouse, not pushed from GitHub Buildx'
     )
   }
 
