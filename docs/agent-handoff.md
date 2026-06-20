@@ -1,5 +1,45 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.64 API schema migration Docker path fix):
+  - Goal: fix the follow-up deploy failure after the API image built and
+    pushed successfully but schema migration crashed inside the Docker image.
+  - Root cause:
+    - `schema_migration.py` assumed the monorepo source layout and resolved
+      config paths through `Path(__file__).resolve().parents[5]`.
+    - Inside the API Docker image, the application root is `/app`, so
+      `/app/src/database/mysql/schema_migration.py` does not have five parent
+      levels. The deploy job failed with `IndexError: 5`.
+  - Status: committed and pushed to `main` as
+    `b1bff947 ci: refresh api poetry lock`. The next GitHub Actions run
+    proved API image build/push was fixed, then exposed a separate Docker image
+    path issue in schema migration; see P1.64 above.
+  - Important files touched:
+    - `apps/api/src/database/mysql/schema_migration.py`
+    - `scripts/check-api-schema-config-path.py`
+    - `scripts/run-api-check.mjs`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Schema migration now discovers the API root by walking upward until it
+      finds `src/conf` and `pyproject.toml`, which supports both the monorepo
+      `apps/api` layout and the Docker `/app` layout.
+    - `pnpm check:api` now includes a path-resolution regression check that
+      simulates the Docker image layout.
+    - The deploy schema protocol rejects the old hard-coded `parents[5]`
+      path assumption.
+  - Verification:
+    - The failed run `27855322675` proved the API image build/push was fixed
+      and that TCR pull to Lighthouse was fast; deploy then failed in schema
+      migration path resolution.
+    - `pnpm check:api:deploy-schema` passed.
+    - `python apps\api\src\database\mysql\schema_migration.py --mode check`
+      passed.
+    - `pnpm check:api` passed, including
+      `scripts/check-api-schema-config-path.py`.
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:compose` passed through static validation; local Docker CLI
+      is unavailable.
+
 - Latest task addendum (2026-06-20, P1.63 API Docker export lock fix):
   - Goal: fix the failed `build-api` GitHub Actions job after the API
     Dockerfile started exporting locked Poetry requirements during image
@@ -8,7 +48,9 @@
     - `apps/api/poetry.lock` was stale relative to `apps/api/pyproject.toml`.
     - The previous Dockerfile did not run `poetry export`, so the mismatch was
       latent until P1.62 introduced the dependency-cache requirements stage.
-  - Status: fixed locally; ready to commit/push after verification.
+  - Status: committed locally as
+    `ci: support api schema migration in docker`; push and GitHub Actions
+    rerun pending at the time this note was written.
   - Important files touched:
     - `apps/api/poetry.lock`
     - `docs/agent-handoff.md`

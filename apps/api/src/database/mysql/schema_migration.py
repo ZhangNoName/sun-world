@@ -126,8 +126,19 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
+def api_root() -> Path:
+    current_file = Path(__file__).resolve()
+    for parent in current_file.parents:
+        if (parent / "src" / "conf").is_dir() and (parent / "pyproject.toml").is_file():
+            return parent
+    raise FileNotFoundError(f"Unable to locate API root from {current_file}")
+
+
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+    root = api_root()
+    if root.name == "api" and root.parent.name == "apps":
+        return root.parent.parent
+    return root
 
 
 def quote_identifier(identifier: str) -> str:
@@ -281,7 +292,7 @@ def resolve_config_path(raw_path: str) -> Path:
     path = Path(raw_path).expanduser()
     if path.is_absolute():
         return path
-    return (repo_root() / "apps" / "api" / path).resolve()
+    return (api_root() / path).resolve()
 
 
 def load_api_config() -> dict[str, Any]:

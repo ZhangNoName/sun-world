@@ -77,9 +77,11 @@ if (workflow) {
 if (migration) {
   const requiredFragments = [
     'MYSQL_SCHEMA',
+    'def api_root',
     'def build_plan',
     'def apply_plan',
     'def validate_schema',
+    '"src" / "conf"',
     'CREATE TABLE',
     'ALTER TABLE',
     '--mode',
@@ -89,6 +91,12 @@ if (migration) {
     if (!migration.includes(fragment)) {
       violations.push(`schema migration module must contain: ${fragment}`)
     }
+  }
+
+  if (migration.includes('parents[5]')) {
+    violations.push(
+      'schema migration config path resolution must support the Docker /app layout'
+    )
   }
 }
 

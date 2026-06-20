@@ -7,11 +7,21 @@ const repoRoot = resolve(import.meta.dirname, '..')
 const scripts = [
   { script: resolve(repoRoot, 'scripts/check-api-migration.py'), args: [] },
   {
-    script: resolve(repoRoot, 'apps/api/src/database/mysql/schema_migration.py'),
+    script: resolve(
+      repoRoot,
+      'apps/api/src/database/mysql/schema_migration.py'
+    ),
     args: ['--mode', 'check'],
   },
+  {
+    script: resolve(repoRoot, 'scripts/check-api-schema-config-path.py'),
+    args: [],
+  },
   { script: resolve(repoRoot, 'scripts/check-admin-alerts.py'), args: [] },
-  { script: resolve(repoRoot, 'scripts/check-admin-metrics-history.py'), args: [] },
+  {
+    script: resolve(repoRoot, 'scripts/check-admin-metrics-history.py'),
+    args: [],
+  },
   { script: resolve(repoRoot, 'scripts/check-metrics-alerts.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-metrics-store.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-request-metrics.py'), args: [] },
@@ -56,5 +66,7 @@ for (const candidate of candidates) {
   process.exit(0)
 }
 
-console.error(`Unable to find a Python interpreter for API checks. ${lastError}`)
+console.error(
+  `Unable to find a Python interpreter for API checks. ${lastError}`
+)
 process.exit(1)
