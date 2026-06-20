@@ -52,7 +52,7 @@ if (workflow) {
     'sudo docker pull "$API_IMAGE"',
     'API_MOUNTS=(',
     '/home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro',
-    '/home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro',
+    '/home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
     '. /home/lighthouse/.config/blog_end/auth.env',

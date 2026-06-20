@@ -491,9 +491,9 @@ jobs:
             API_MOUNTS=(
               -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
             )
-            if [ -f /home/lighthouse/blog/blog_end/src/conf/local.override.yml ]; then
+            if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
               API_MOUNTS+=(
-                -v /home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro
+                -v /home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro
               )
             fi
             sudo docker run --rm --network host \

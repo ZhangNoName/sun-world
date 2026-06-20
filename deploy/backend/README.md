@@ -77,16 +77,17 @@ has an incompatible type, the command fails instead of rewriting data.
 
 During the GitHub Actions deploy, the server runs the migration from the new API
 image with the production secret env directory mounted read-only. If the legacy
-backend has an untracked `local.override.yml`, the deploy script also mounts it
-into the container at `/app/src/conf/local.override.yml`:
+backend config directory exists, the deploy script also mounts it into the
+container at `/app/src/conf` so the schema apply sees the same config files as
+the current production service:
 
 ```bash
 API_MOUNTS=(
   -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
 )
-if [ -f /home/lighthouse/blog/blog_end/src/conf/local.override.yml ]; then
+if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
   API_MOUNTS+=(
-    -v /home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro
+    -v /home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro
   )
 fi
 sudo docker run --rm --network host \
