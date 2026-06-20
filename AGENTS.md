@@ -40,6 +40,7 @@ This repository is the source of truth for the Sun World site.
   is migrated later, use lowercase `.task/` for task state/plans/protocol relay
   and update all read-order references before moving files.
 - Update the relevant handoff file before switching between Codex, Claude Code, local manual work, or a long pause. For feature branches, prefer docs/handoff/branches/<branch-slug>.md and keep docs/agent-handoff.md to links and the latest stable checkpoint.
+- When archiving handoff notes on any branch other than main, commit the archive update before continuing. On main, keep the archive update reviewable but do not auto-commit unless the user asks.
 - When any protocol or agent rule changes, update repository docs first, then
   broadcast the delta to active subagents and include it in the next Claude Code
   / `claude-ds` prompt.

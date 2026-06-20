@@ -19,5 +19,8 @@ entrypoint at `../agent-handoff.md`.
   `../agent-handoff.md` and move older checkpoints into `archive/`.
 - Before merging a feature branch, either archive its branch handoff or keep a
   short pointer if another agent still needs it.
+- On any branch other than `main`, commit archive updates immediately after
+  verifying them. On `main`, leave archive updates uncommitted unless the user
+  explicitly asks to commit.
 - Do not store secrets, full tokens, passwords, private keys, certificates, or
   full environment values in any handoff file.

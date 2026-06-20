@@ -113,3 +113,7 @@ Update the relevant handoff file when:
 - a branch is pushed but not deployed,
 - verification is incomplete,
 - a blocker or operational caveat appears.
+
+When handoff notes are archived on any branch other than `main`, commit the
+archive update before continuing. On `main`, do not auto-commit archive updates
+unless the user explicitly asks.

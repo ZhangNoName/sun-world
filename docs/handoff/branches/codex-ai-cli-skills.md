@@ -40,6 +40,8 @@ model capabilities through stable contracts.
 - `node --check scripts/check-platform-goal-audit.mjs` passed.
 - `node scripts/check-platform-goal-audit.mjs` passed.
 - `git diff --check` passed with Windows CRLF conversion warnings only.
+- Pending verification for the new archive-auto-commit rule will be recorded in
+  the commit that saves this protocol update.
 
 ## Blockers
 

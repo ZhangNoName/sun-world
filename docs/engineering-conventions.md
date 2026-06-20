@@ -64,6 +64,7 @@ These conventions capture the default coding habits for this repository. Prefer 
   context only; migrate files gradually and update read-order references in the
   same change.
 - Update handoff notes when work is paused, transferred between Codex and Claude Code, blocked, or completed but not yet deployed.
+- Commit handoff archive updates immediately on non-main branches. On main, do not auto-commit archive updates unless the user explicitly asks.
 - Keep handoff entries concise and factual. Include file paths, commands run, verification status, and next step.
 - Do not store secrets, full tokens, passwords, private keys, certificates, or private env values in handoff notes.
 
