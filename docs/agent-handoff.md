@@ -1,5 +1,25 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.68 production service restart):
+  - Goal: restart the current production backend service and Nginx after the
+    user explicitly approved backend/Nginx restart.
+  - Status: completed from Codex via SSH on 2026-06-20.
+  - Commands run on Lighthouse:
+    - `sudo nginx -t`
+    - `sudo systemctl restart blog-api.service`
+    - `sudo systemctl restart nginx`
+  - Verification:
+    - `blog-api.service` is active.
+    - `nginx` is active.
+    - `https://api.sunworld.site/healthz` returned HTTP 200 with
+      `{"status":"ok"}`.
+    - `https://sunworld.site` returned HTTP 200.
+    - `https://www.sunworld.site` returned HTTP 200.
+  - Notes:
+    - This restarted the existing production backend service. It did not
+      convert backend runtime to Docker Compose and did not change Nginx
+      routing.
+
 - Latest task addendum (2026-06-20, P1.67 legacy schema type exceptions):
   - Goal: let API schema apply tolerate known existing production schema
     differences without rewriting those columns.
