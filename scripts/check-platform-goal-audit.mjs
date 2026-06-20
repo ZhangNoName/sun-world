@@ -157,13 +157,13 @@ requireText(
 requireText(
   'current state',
   currentState,
-  /P1\.70/,
+  /P1\.80/,
   'the latest verified checkpoint marker'
 )
 requireText(
   'handoff',
   handoff,
-  /P1\.70 compose frontend\/API staging/,
+  /P1\.80 lazy AI manager startup/,
   'the latest handoff checkpoint'
 )
 if (violations.length) {

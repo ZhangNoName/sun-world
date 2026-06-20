@@ -30,7 +30,7 @@ claude-ds
 - Never expose Claude Code itself over a public web domain.
 - Use the website domains only for viewing application results, not for controlling the agent.
 - Follow the Git, naming, and file-size conventions in docs/engineering-conventions.md.
-- Update docs/agent-handoff.md before handing work back to Codex or ending a task that is not fully deployed and verified.
+- Update the relevant handoff file before handing work back to Codex or ending a task that is not fully deployed and verified. For feature branches, prefer `docs/handoff/branches/<branch-slug>.md`; keep `docs/agent-handoff.md` short.
 - If a prompt mentions a protocol update, treat repository docs as the source of
   truth and follow the updated agent-pipeline rules before editing.
 
@@ -40,6 +40,6 @@ claude-ds
 2. Make scoped edits.
 3. Run the narrowest useful verification.
 4. Summarize changes and any risks.
-5. Update docs/agent-handoff.md when another agent may continue the work.
+5. Update the relevant handoff file when another agent may continue the work.
 6. Commit to main only when the user asks or when the workflow clearly requires it.
 7. Let the daily auto deploy pick up main, or manually run the deploy service for urgent updates.

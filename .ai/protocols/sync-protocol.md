@@ -39,7 +39,7 @@ handoff/sync rule changes:
 3. Include the same delta in any Claude Code / `claude-ds` prompt for that task.
 4. If the change affects server workflow, keep server-side work read-only until
    the server branch has pulled the protocol update.
-5. Record unresolved coordination risk in `../../docs/agent-handoff.md`.
+5. Record unresolved coordination risk in the relevant handoff file.
 
 Do not rely on chat-only instructions for protocol changes.
 
@@ -97,14 +97,16 @@ Do not rely on chat-only instructions for protocol changes.
 
 ## Handoff Rules
 
-- Active task state lives in `../../docs/agent-handoff.md`.
+- Active task state starts at `../../docs/agent-handoff.md`. Branch-specific
+  details live in `../../docs/handoff/branches/`; older checkpoints live in
+  `../../docs/handoff/archive/`.
 - Stable runtime state lives in `../../docs/current-state.md`.
 - Architecture decisions live in `../../docs/architecture/`.
 - This `.ai` folder is the entrypoint and coordination layer.
 - Agent communication and task relay rules live in
   `./agent-pipeline.md`.
 
-Update `../../docs/agent-handoff.md` when:
+Update the relevant handoff file when:
 
 - work pauses,
 - work transfers between Codex and Claude Code,

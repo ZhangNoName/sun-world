@@ -10,6 +10,14 @@ Last updated: 2026-06-20 (main, P1.80 lazy AI manager startup)
 - Project path: /home/lighthouse/blog/sun-world
 - Primary branch: main
 
+## Handoff Layout
+
+- `docs/agent-handoff.md` is the short active handoff entrypoint.
+- Branch-specific active task notes live under `docs/handoff/branches/`.
+- Completed or stale historical checkpoints live under `docs/handoff/archive/`.
+- Keep secrets, tokens, passwords, private keys, certificates, and full env
+  values out of all handoff files.
+
 ## Repository Layout
 
 `main` is still the production branch. The migration branch `monorepo-api-import`

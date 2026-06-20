@@ -18,7 +18,8 @@ without relying on chat history.
 6. `./protocols/server-resource-policy.md` - what should and should not run on
    the 2-core / 2GB server.
 7. `../docs/current-state.md` - current runtime and deployment state.
-8. `../docs/agent-handoff.md` - latest task handoff and verification notes.
+8. `../docs/agent-handoff.md` - short handoff entrypoint with links to branch
+   notes and archives.
 
 ## Folder Map
 
@@ -36,8 +37,9 @@ without relying on chat history.
 ## Canonical Sources
 
 - Stable architecture docs stay in `../docs/architecture/`.
-- Active task handoff stays in `../docs/agent-handoff.md` because existing
-  Codex/Claude skills already read that path.
+- Active task handoff starts in `../docs/agent-handoff.md`, but branch-specific
+  details live under `../docs/handoff/branches/` and historical checkpoints live
+  under `../docs/handoff/archive/`.
 - `.ai/` is the lightweight control plane: read it first, then follow links to
   the deeper project documents.
 - Do not rename `../docs/` to `.task`; `docs/` remains the durable project

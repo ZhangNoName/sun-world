@@ -35,16 +35,16 @@ This repository is the source of truth for the Sun World site.
 - Use `.ai/protocols/agent-pipeline.md` for subagent, Codex, and Claude Code
   communication and handoff rules.
 - Use docs/current-state.md for stable environment, domain, service, and deploy state.
-- Use docs/agent-handoff.md for active or recently completed work that another agent may need to continue.
+- Use docs/agent-handoff.md as the short active handoff entrypoint. Put branch-specific task state in docs/handoff/branches/ and older completed checkpoints in docs/handoff/archive/.
 - Keep `docs/` as the durable project documentation root. If agent task context
   is migrated later, use lowercase `.task/` for task state/plans/protocol relay
   and update all read-order references before moving files.
-- Update docs/agent-handoff.md before switching between Codex, Claude Code, local manual work, or a long pause.
+- Update the relevant handoff file before switching between Codex, Claude Code, local manual work, or a long pause. For feature branches, prefer docs/handoff/branches/<branch-slug>.md and keep docs/agent-handoff.md to links and the latest stable checkpoint.
 - When any protocol or agent rule changes, update repository docs first, then
   broadcast the delta to active subagents and include it in the next Claude Code
   / `claude-ds` prompt.
 - A handoff update should include: current goal, status, important files touched, commands run, verification result, blockers, and next suggested step.
-- Never put secrets, tokens, passwords, private keys, or full env values in docs/agent-handoff.md.
+- Never put secrets, tokens, passwords, private keys, or full env values in any handoff file.
 
 ## Build And Deploy
 
