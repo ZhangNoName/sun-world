@@ -18,7 +18,7 @@ const requiredFragments = [
   'COPY --from=requirements /app/requirements.txt ./requirements.txt',
   'https://mirrors.cloud.tencent.com/debian',
   'https://mirrors.cloud.tencent.com/debian-security',
-  'apt-get install -y --no-install-recommends libpq5',
+  'apt-get install -y --no-install-recommends bash libpq5',
   'RUN pip config set global.index-url',
   'pip install --no-cache-dir -r requirements.txt',
   'COPY src ./src',

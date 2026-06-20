@@ -128,8 +128,8 @@ Buildx or pushed to CCR. When only one side changed, prefer manual runs with
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer. The
-API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors and uses
-Tencent's PyPI mirror to keep Lighthouse builds inside faster regional
+API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors, installs
+the `bash` runtime required by `apps/api/start.sh`, and uses Tencent's PyPI mirror to keep Lighthouse builds inside faster regional
 networks.
 
 ## Required GitHub Variables

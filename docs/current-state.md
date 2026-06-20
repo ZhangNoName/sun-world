@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.78 persistent API container cutover)
+Last updated: 2026-06-20 (main, P1.79 persistent API startup hardening)
 
 ## Server
 
@@ -234,11 +234,15 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   first Lighthouse build previously disconnected with `client_loop: send
   disconnect: Broken pipe` during a quiet `apt-get` download period. The API
   Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors before
-  installing `libpq5`, while pip already uses Tencent's PyPI mirror. Prefer
-  separate manual runs for web and API when only one target needs deployment.
-  API build timeout is 30 minutes to allow the Python dependency layer to build
-  on the server; quality, frontend build, and deploy jobs remain capped at 15
-  minutes.
+  installing `bash` and `libpq5`, while pip already uses Tencent's PyPI mirror.
+  `bash` is required by `apps/api/start.sh`, which is the API image default
+  command. Prefer separate manual runs for web and API when only one target
+  needs deployment. API build timeout is 30 minutes to allow the Python
+  dependency layer to build on the server; quality, frontend build, and deploy
+  jobs remain capped at 15 minutes. The deploy workflow keeps
+  `sun-world-api-candidate` long enough to print `docker inspect` and
+  `docker logs --tail 120` if candidate health checks fail, then removes the
+  failed container before exiting.
 - `pnpm check:platform` runs `scripts/check-platform-goal-audit.mjs`, which
   verifies the repository has durable evidence for the commit policy,
   frontend-backend chain, monitoring platform, packaging/build optimization,

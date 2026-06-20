@@ -504,7 +504,7 @@ jobs:
             )
 
             sudo docker rm -f sun-world-api-candidate || true
-            sudo docker run -d --rm --name sun-world-api-candidate --network host \
+            sudo docker run -d --name sun-world-api-candidate --network host \
               "${API_ENV[@]}" \
               -e BLOG_PORT=18000 \
               "${API_MOUNTS[@]}" \
@@ -514,6 +514,9 @@ jobs:
                 break
               fi
               if [ "$attempt" -eq 20 ]; then
+                sudo docker ps -a --filter name=sun-world-api-candidate >&2 || true
+                sudo docker inspect --format 'candidate status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' sun-world-api-candidate >&2 || true
+                sudo docker logs --tail 120 sun-world-api-candidate >&2 || true
                 sudo docker rm -f sun-world-api-candidate || true
                 echo "Candidate API container failed health check." >&2
                 exit 1
@@ -540,6 +543,9 @@ jobs:
               sleep 2
             done
             if [ "$API_READY" != "true" ]; then
+              sudo docker ps -a --filter name=sun-world-api >&2 || true
+              sudo docker inspect --format 'api status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' sun-world-api >&2 || true
+              sudo docker logs --tail 120 sun-world-api >&2 || true
               sudo docker rm -f sun-world-api || true
               sudo systemctl enable blog-api.service || true
               sudo systemctl start blog-api.service || true

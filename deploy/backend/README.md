@@ -89,7 +89,7 @@ after schema migration and candidate health checks pass.
 
 The GitHub Actions SSH session uses keepalive options for the server-side build.
 The API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors before
-installing `libpq5`, and pip uses Tencent's PyPI mirror, so Lighthouse builds
+installing `bash` and `libpq5`, and pip uses Tencent's PyPI mirror, so Lighthouse builds
 avoid the slow GitHub-to-CCR upload path and reduce cross-region package
 downloads.
 
@@ -133,12 +133,13 @@ API_ENV=(
   -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
 )
 
-sudo docker run -d --rm --name sun-world-api-candidate --network host \
+sudo docker run -d --name sun-world-api-candidate --network host \
   "${API_ENV[@]}" \
   -e BLOG_PORT=18000 \
   "${API_MOUNTS[@]}" \
   sun-world-api:<git-sha>
 curl -fsS http://127.0.0.1:18000/healthz
+sudo docker logs --tail 120 sun-world-api-candidate
 sudo docker rm -f sun-world-api-candidate
 
 sudo systemctl stop blog-api.service || true

@@ -116,14 +116,18 @@ if (workflow) {
     'sudo docker image inspect "$API_IMAGE"',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sun-world-api-candidate',
+    'sudo docker run -d --name sun-world-api-candidate --network host',
     '-e BLOG_PORT=18000',
     'curl -fsS http://127.0.0.1:18000/healthz',
+    'sudo docker inspect --format',
+    'sudo docker logs --tail 120 sun-world-api-candidate',
     'sudo systemctl stop blog-api.service',
     'sudo systemctl disable blog-api.service',
     'sudo docker run -d --restart unless-stopped --name sun-world-api --network host',
     '-e BLOG_PORT=8000',
     'API_READY=false',
     'curl -fsS http://127.0.0.1:8000/healthz',
+    'sudo docker logs --tail 120 sun-world-api',
     'sudo systemctl enable blog-api.service',
     'sudo systemctl start blog-api.service',
     'https://api.sunworld.site/healthz',
@@ -167,6 +171,12 @@ if (workflow) {
   ) {
     violations.push(
       'API image must be built on Lighthouse, not pushed from GitHub Buildx'
+    )
+  }
+
+  if (/docker run -d --rm --name sun-world-api-candidate/.test(workflow)) {
+    violations.push(
+      'candidate API container must not use --rm so failed health checks can print logs before cleanup'
     )
   }
 

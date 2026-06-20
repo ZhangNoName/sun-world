@@ -1,5 +1,40 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.79 persistent API startup hardening):
+  - Goal: finish making the backend API a persistent Docker container after
+    the first cutover run failed during candidate health checks.
+  - Evidence:
+    - GitHub Actions run `27865084054` built `sun-world-api:<commit>` on
+      Lighthouse quickly, ran schema migration successfully, then failed while
+      checking `http://127.0.0.1:18000/healthz`.
+    - The candidate container disappeared before logs were captured because it
+      was started with `--rm`.
+    - `apps/api/start.sh` uses `#!/usr/bin/env bash`, but the API runtime image
+      only installed `libpq5`; a `python:3.12-slim` runtime cannot be assumed
+      to include bash.
+  - Status: implemented locally; commit/push and API-only redeploy pending.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `apps/api/Dockerfile`
+    - `scripts/check-api-dockerfile-cache.mjs`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `deploy/backend/README.md`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - API runtime image now installs `bash` alongside `libpq5`.
+    - `sun-world-api-candidate` no longer uses `--rm`; on health-check failure
+      the workflow prints container status, inspect output, and the last 120
+      log lines before cleanup.
+    - Production `sun-world-api` health-check failure also prints inspect/log
+      output before removing the container and attempting rollback to
+      `blog-api.service`.
+  - Next step:
+    - Run deploy/workflow and API Dockerfile protocol checks, commit/push, then
+      manually run `build-and-deploy` with `target=api`.
+
 - Latest task addendum (2026-06-20, P1.78 persistent API container cutover):
   - Goal: make the backend API run as a persistent Docker container instead of
     only using the API image for schema migration.
