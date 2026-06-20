@@ -1,10 +1,41 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.63 API Docker export lock fix):
+  - Goal: fix the failed `build-api` GitHub Actions job after the API
+    Dockerfile started exporting locked Poetry requirements during image
+    build.
+  - Root cause:
+    - `apps/api/poetry.lock` was stale relative to `apps/api/pyproject.toml`.
+    - The previous Dockerfile did not run `poetry export`, so the mismatch was
+      latent until P1.62 introduced the dependency-cache requirements stage.
+  - Status: fixed locally; ready to commit/push after verification.
+  - Important files touched:
+    - `apps/api/poetry.lock`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `poetry export --only main --format requirements.txt --without-hashes`
+      now succeeds from `apps/api`, matching the Dockerfile build step.
+  - Verification:
+    - `python -m poetry export --only main --format requirements.txt --without-hashes --output "$env:TEMP\sun-world-api-requirements.txt"`
+      first reproduced the CI failure with the stale-lock message.
+    - `python -m poetry lock` refreshed the lock file.
+    - The same `poetry export` command passed after refreshing the lock.
+    - `pnpm check:api-dockerfile` passed.
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:compose` passed through static validation; local Docker CLI
+      is unavailable.
+    - `pnpm check:api` passed.
+    - `pnpm format:check` passed.
+    - `git diff --check` passed.
+
 - Latest task addendum (2026-06-20, P1.62 API Dockerfile cache optimization):
   - Goal: reduce repeated API image build time by separating Python dependency
     installation from API source-copy layers and enabling registry-backed
     Docker build cache.
-  - Status: implemented locally; not committed yet.
+  - Status: committed and pushed to `main` as
+    `bf0e977a ci: cache api docker dependencies`. The first GitHub Actions
+    run failed in `build-api` because the API Poetry lock file was stale; see
+    P1.63 above for the follow-up fix.
   - Important files touched:
     - `apps/api/Dockerfile`
     - `.github/workflows/deploy.yml`
