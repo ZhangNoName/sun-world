@@ -87,7 +87,9 @@ been cut over yet:
   `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
   the same API config as the app; `apply` only creates missing tables/columns
-  and fails on incompatible existing column types instead of rewriting data.
+  and fails on incompatible existing column types instead of rewriting data,
+  except for explicit legacy-compatible production differences declared in
+  `LEGACY_COMPATIBLE_COLUMN_TYPES`.
 - The pipeline `quality` job verifies the Prettier formatting protocol, GitHub
   Actions protocol guards, frontend checks, API checks, UI package tests, and
   contracts tests before any build or deploy job can run. Documentation-only

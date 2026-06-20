@@ -1,5 +1,29 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.67 legacy schema type exceptions):
+  - Goal: let API schema apply tolerate known existing production schema
+    differences without rewriting those columns.
+  - Root cause:
+    - After config mounting and integer normalization were fixed, production
+      schema validation reached two real legacy differences:
+      `resources.type` is `tinyint` while the monorepo contract expects
+      `varchar`, and `blog.category` is `varchar(255)` while the contract
+      expects `int`.
+    - The migration is conservative and should not rewrite existing columns;
+      these known differences should be skipped explicitly rather than blocking
+      unrelated missing-table/missing-column creation.
+  - Status: fixed locally; commit/push pending at the time this note was
+    written.
+  - Important files touched:
+    - `apps/api/src/database/mysql/schema_migration.py`
+    - `scripts/check-api-schema-types.py`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `LEGACY_COMPATIBLE_COLUMN_TYPES` declares the allowed legacy differences.
+    - The migration still fails on other incompatible existing column types.
+    - `pnpm check:api` verifies the allowed cases and a negative case.
+
 - Latest task addendum (2026-06-20, P1.66 schema type compatibility):
   - Goal: allow the conservative schema migration guard to validate the
     existing production MySQL schema.

@@ -36,6 +36,17 @@ def main() -> int:
         if schema_migration.column_type_matches(actual, expected):
             raise AssertionError(f"{actual!r} should not match {expected!r}")
 
+    legacy_cases = [
+        ("resources", "type", "tinyint"),
+        ("blog", "category", "varchar(255)"),
+    ]
+    for table_name, column_name, actual in legacy_cases:
+        if not schema_migration.legacy_column_type_matches(table_name, column_name, actual):
+            raise AssertionError(f"{table_name}.{column_name} should allow legacy {actual!r}")
+
+    if schema_migration.legacy_column_type_matches("users", "id", "varchar(255)"):
+        raise AssertionError("unexpected legacy schema type exception")
+
     print("API schema type compatibility check passed")
     return 0
 

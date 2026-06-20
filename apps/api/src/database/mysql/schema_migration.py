@@ -124,6 +124,10 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
 }
 
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+LEGACY_COMPATIBLE_COLUMN_TYPES = {
+    ("resources", "type"): {"tinyint"},
+    ("blog", "category"): {"varchar"},
+}
 
 
 def api_root() -> Path:
@@ -201,6 +205,11 @@ def column_type_matches(actual_type: str, expected_type: str) -> bool:
     return normalized in aliases.get(expected_type, {expected_type})
 
 
+def legacy_column_type_matches(table_name: str, column_name: str, actual_type: str) -> bool:
+    normalized = normalize_column_type(actual_type)
+    return normalized in LEGACY_COMPATIBLE_COLUMN_TYPES.get((table_name, column_name), set())
+
+
 def build_create_table_sql(table_name: str, table_schema: dict[str, Any]) -> str:
     lines = [
         f"{quote_identifier(column['name'])} {column['definition']}"
@@ -267,6 +276,8 @@ def build_plan(connection: Any, database: str) -> tuple[list[str], list[str]]:
             existing_column = existing_columns.get(column["name"])
             if existing_column is None:
                 actions.append(build_add_column_sql(table_name, column))
+                continue
+            if legacy_column_type_matches(table_name, column["name"], existing_column["COLUMN_TYPE"]):
                 continue
             if not column_type_matches(existing_column["COLUMN_TYPE"], column["type"]):
                 errors.append(
