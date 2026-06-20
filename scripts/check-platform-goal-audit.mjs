@@ -39,6 +39,12 @@ function requireText(label, source, pattern, reason) {
 requireScript('check:platform', 'node scripts/check-platform-goal-audit.mjs')
 requireScript('check:web', 'node scripts/check-web.mjs')
 requireScript('check:api', 'node scripts/run-api-check.mjs')
+requireScript('sun-ai', 'node tools/sun-ai-cli/src/cli.mjs')
+requireScript(
+  'check:sun-ai:contracts',
+  'node scripts/check-sun-ai-contract-sync.mjs'
+)
+requireScript('check:sun-ai:cli', 'node scripts/check-sun-ai-cli.mjs')
 requireScript(
   'check:contracts:generate',
   'node scripts/check-contracts-generate-script.mjs'
@@ -110,6 +116,25 @@ const requiredFiles = [
   ['scripts/check-web.mjs', 'cross-platform frontend verification'],
   ['scripts/run-api-check.mjs', 'cross-platform backend verification'],
   ['scripts/check-all.mjs', 'cross-platform root verification'],
+  ['tools/sun-ai-cli/src/cli.mjs', 'Sun AI CLI entrypoint'],
+  [
+    'tools/sun-ai-cli/src/capabilities.mjs',
+    'curated Sun AI capability metadata',
+  ],
+  ['tools/sun-ai-cli/src/http-client.mjs', 'Sun AI CLI HTTP adapter'],
+  [
+    'scripts/check-sun-ai-contract-sync.mjs',
+    'Sun AI OpenAPI contract sync check',
+  ],
+  ['scripts/check-sun-ai-cli.mjs', 'Sun AI CLI behavior check'],
+  [
+    '.agents/skills/sun-world-ai/SKILL.md',
+    'repository-scoped Sun World AI skill',
+  ],
+  [
+    '.agents/skills/sun-world-ai/references/cli.md',
+    'Sun AI CLI skill reference',
+  ],
   ['scripts/generate-web-build-manifest.mjs', 'bundle manifest generation'],
   ['scripts/check-web-build-manifest.mjs', 'bundle manifest protocol check'],
   ['scripts/generate-web-build-summary.mjs', 'bundle summary generation'],

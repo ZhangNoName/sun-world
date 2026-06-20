@@ -4,6 +4,10 @@ import { resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..')
+const nodeScripts = [
+  resolve(repoRoot, 'scripts/check-sun-ai-contract-sync.mjs'),
+  resolve(repoRoot, 'scripts/check-sun-ai-cli.mjs'),
+]
 const scripts = [
   { script: resolve(repoRoot, 'scripts/check-api-migration.py'), args: [] },
   {
@@ -41,6 +45,22 @@ const candidates = [
 ].filter(Boolean)
 
 let lastError = ''
+
+for (const script of nodeScripts) {
+  const result = spawnSync(process.execPath, [script], {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  })
+
+  if (result.error) {
+    console.error(result.error.message)
+    process.exit(1)
+  }
+
+  if ((result.status ?? 1) !== 0) {
+    process.exit(result.status ?? 1)
+  }
+}
 
 for (const candidate of candidates) {
   const isPath = candidate.includes('/') || candidate.includes('\\')

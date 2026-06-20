@@ -14,7 +14,8 @@ model capabilities through stable contracts.
 - Research completed: MCP is the likely second-phase standard tool layer;
   first phase should be CLI + Skill.md, with MCP added later as a separate
   adapter.
-- No CLI or skill implementation files have been created yet.
+- First-phase CLI + Skill.md implementation is complete locally and ready for
+  review on this branch.
 
 ## Important Files Touched
 
@@ -25,6 +26,17 @@ model capabilities through stable contracts.
   handoff entries.
 - docs/handoff/branches/codex-ai-cli-skills.md stores this branch's active
   state.
+- docs/superpowers/specs/2026-06-20-sun-ai-cli-skill-design.md records the
+  approved design.
+- docs/superpowers/plans/2026-06-20-sun-ai-cli-skill.md records the
+  implementation plan.
+- tools/sun-ai-cli/src/ contains the Sun AI CLI.
+- scripts/check-sun-ai-contract-sync.mjs checks OpenAPI route drift.
+- scripts/check-sun-ai-cli.mjs checks CLI behavior against a fake local API.
+- .agents/skills/sun-world-ai/ contains the repository-scoped skill.
+- package.json, scripts/run-api-check.mjs, and
+  scripts/check-platform-goal-audit.mjs wire the checks into project
+  verification.
 
 ## Commands Run
 
@@ -42,6 +54,11 @@ model capabilities through stable contracts.
 - `git diff --check` passed with Windows CRLF conversion warnings only.
 - Pending verification for the new archive-auto-commit rule will be recorded in
   the commit that saves this protocol update.
+- `pnpm sun-ai inspect` passed.
+- `pnpm check:sun-ai:contracts` passed.
+- `pnpm check:sun-ai:cli` passed.
+- `pnpm check:api` passed and now runs the Sun AI CLI checks before Python API
+  checks.
 
 ## Blockers
 
@@ -49,5 +66,5 @@ model capabilities through stable contracts.
 
 ## Next Suggested Step
 
-Create and review the CLI + Skill.md design spec before implementing files under
-tools/ and .agents/skills/.
+Review the CLI + Skill.md implementation, then decide whether to add MCP as a
+second-phase adapter after this CLI boundary has been used in practice.
