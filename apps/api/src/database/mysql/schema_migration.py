@@ -183,7 +183,10 @@ def validate_contract(schema: dict[str, dict[str, Any]] = MYSQL_SCHEMA) -> list[
 
 
 def normalize_column_type(column_type: str) -> str:
-    return column_type.lower().split("(", 1)[0].strip()
+    normalized = column_type.lower().split("(", 1)[0].strip()
+    for qualifier in (" unsigned", " zerofill"):
+        normalized = normalized.replace(qualifier, "")
+    return normalized.strip()
 
 
 def column_type_matches(actual_type: str, expected_type: str) -> bool:

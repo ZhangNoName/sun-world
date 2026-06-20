@@ -17,6 +17,7 @@ const scripts = [
     script: resolve(repoRoot, 'scripts/check-api-schema-config-path.py'),
     args: [],
   },
+  { script: resolve(repoRoot, 'scripts/check-api-schema-types.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-admin-alerts.py'), args: [] },
   {
     script: resolve(repoRoot, 'scripts/check-admin-metrics-history.py'),

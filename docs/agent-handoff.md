@@ -1,5 +1,27 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.66 schema type compatibility):
+  - Goal: allow the conservative schema migration guard to validate the
+    existing production MySQL schema.
+  - Root cause:
+    - After production config mounts started working, schema migration reached
+      MySQL and failed on existing primary key columns such as
+      `bigint unsigned` while the target contract expected `int`.
+    - This is a compatible integer widening for the current guard's purpose;
+      it should not block adding missing tables/columns.
+  - Status: fixed locally; commit/push pending at the time this note was
+    written.
+  - Important files touched:
+    - `apps/api/src/database/mysql/schema_migration.py`
+    - `scripts/check-api-schema-types.py`
+    - `scripts/run-api-check.mjs`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - MySQL type normalization now strips `unsigned` and `zerofill`
+      qualifiers before comparing base types.
+    - `pnpm check:api` now verifies representative compatible and
+      incompatible schema type cases.
+
 - Latest task addendum (2026-06-20, P1.65 API schema deploy config mount):
   - Goal: fix the deploy failure after API build/push and Docker path
     detection succeeded, but schema migration connected to MySQL with the
