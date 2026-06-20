@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.74 split web/api deploy with API min cache)
+Last updated: 2026-06-20 (main, P1.75 disable API registry cache for CCR push test)
 
 ## Server
 
@@ -208,11 +208,12 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   those dependencies before copying `src`, and then copies API source files in
   the final lightweight layer. Source-only API changes should not invalidate
   the full Python dependency installation layer.
-- GitHub Actions Docker builds use Tencent CCR registry cache tags for both
-  frontend and API images. Frontend exports registry cache with `mode=max`.
-  API imports the registry cache and exports only a smaller `mode=min` cache;
-  avoid `mode=max` for API because Python dependency layers made BuildKit cache
-  export too slow. Prefer separate manual runs for web and API when only one
+- GitHub Actions Docker builds push application images to Tencent CCR personal
+  edition. Frontend still uses Tencent CCR registry cache with `mode=max`.
+  API registry cache import/export is temporarily disabled after Tencent Cloud
+  support identified the slow path as `#19 exporting cache to registry`; the
+  API build now tests the main image push path with only `push: true` and
+  commit-SHA tags. Prefer separate manual runs for web and API when only one
   target needs deployment. API build timeout is 30 minutes to allow the first
   Python dependency cache warm-up; quality, frontend build, and deploy jobs
   remain capped at 15 minutes.

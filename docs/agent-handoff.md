@@ -1,5 +1,34 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.75 disable API registry cache for CCR push test):
+  - Goal: follow Tencent Cloud support's suggestion to isolate the slow API
+    build path by removing API BuildKit registry cache import/export and
+    rerunning with only main image push enabled.
+  - Status: implemented locally; commit/push pending.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Frontend keeps Tencent CCR registry cache export with `mode=max`.
+    - API no longer uses `cache-from` or `cache-to`; the API build keeps
+      `push: true` and commit-SHA tags only.
+    - The deploy protocol guard now rejects any API `:buildcache` reference
+      while this CCR cache-export hang is being debugged.
+    - The active registry is Tencent CCR personal edition at
+      `ccr.ccs.tencentyun.com`, not TCR enterprise edition.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+  - Next step:
+    - Commit and push, then rerun a manual API-only `build-and-deploy` workflow
+      and report whether the job still stalls after removing `#19 exporting
+      cache to registry`.
+
 - Latest task addendum (2026-06-20, P1.74 split web/API deploy with API min cache):
   - Goal: restore API `cache-to` while avoiding full `mode=max` cache export,
     and run web/API deployments separately so one slow image does not block the

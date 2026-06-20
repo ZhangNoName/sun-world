@@ -106,18 +106,19 @@ the registry with Docker, so deployment only needs to run `sudo docker pull`
 for the changed commit-specific image tags. This avoids long cross-border image
 archive uploads from GitHub Actions to the server.
 
-Frontend and API image builds also use Tencent CCR registry cache tags:
+Frontend image builds also use a Tencent CCR registry cache tag:
 
 ```text
 ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:buildcache
-ccr.ccs.tencentyun.com/<namespace>/sun-world-api:buildcache
 ```
 
-The frontend build exports a fuller `mode=max` cache. The API build exports a
-smaller `mode=min` cache because Python dependency layers made
-`Build and push API image` spend too long with the full `mode=max` cache export.
-When only one side changed, prefer manual runs with `target=web` or
-`target=api` instead of `target=all`.
+The frontend build exports a fuller `mode=max` cache. API registry cache
+import/export is temporarily disabled while validating Tencent Cloud support's
+diagnosis that the slow path is `#19 exporting cache to registry`. The API
+build currently keeps only `push: true` and commit-specific tags so we can
+separate main image push behavior from BuildKit cache export behavior. When
+only one side changed, prefer manual runs with `target=web` or `target=api`
+instead of `target=all`.
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer.

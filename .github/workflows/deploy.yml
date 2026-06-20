@@ -420,8 +420,6 @@ jobs:
           file: apps/api/Dockerfile
           push: true
           tags: ${{ steps.image-meta.outputs.deploy_image }}
-          cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache,mode=min
           provenance: false
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
