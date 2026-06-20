@@ -35,6 +35,7 @@ deploy/
 - Backend code lives in `apps/api`.
 - Production backend traffic still uses the existing `blog-api.service` runtime
   until a deliberate cutover is approved.
-- Docker Compose configuration is safe to validate with `docker compose config`;
-  do not use it to start the API profile in production during documentation or
-  build verification tasks.
+- Docker Compose covers the frontend and API services. Frontend keeps the
+  existing `my-frontend` container and `8081:80` mapping. API stays behind the
+  explicit `api` profile and uses `127.0.0.1:18000` by default, so it can be
+  rehearsed without changing Nginx or replacing `blog-api.service`.

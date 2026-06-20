@@ -44,8 +44,18 @@ fi
 
 rendered="$(docker compose -f "$COMPOSE_FILE" config)"
 
-if ! printf '%s\n' "$rendered" | grep -q '127.0.0.1:8000:8000'; then
-  echo "ERROR: api service must bind to 127.0.0.1:8000:8000"
+if ! printf '%s\n' "$rendered" | grep -Eq '127\.0\.0\.1:(\$\{BLOG_API_HOST_PORT:-18000\}|18000):8000'; then
+  echo "ERROR: api service must bind to 127.0.0.1:${BLOG_API_HOST_PORT:-18000}:8000"
+  exit 1
+fi
+
+if ! printf '%s\n' "$rendered" | grep -q 'target: /home/lighthouse/.config/blog_end'; then
+  echo "ERROR: api service must mount the production secret directory read-only"
+  exit 1
+fi
+
+if ! printf '%s\n' "$rendered" | grep -q 'target: /app/src/conf'; then
+  echo "ERROR: api service must mount the legacy production config directory read-only"
   exit 1
 fi
 

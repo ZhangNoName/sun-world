@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-19 (monorepo-api-import branch, P1.54 local)
+Last updated: 2026-06-20 (main, P1.70 compose frontend/API staging)
 
 ## Server
 
@@ -177,9 +177,12 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
 - The production build currently prints TypeScript errors from `packages/editor`, but Vite still exits successfully. Treat this as technical debt; do not assume type-checking is clean.
 - Use `docker build --no-cache -t blog-front:latest .` when you need to be certain static assets have been regenerated.
 - Sensitive-pattern filename scans report existing frontend and backend files that may contain token/password/API-key related text. Do not print their contents in agent logs. Review and rotate/move any real secrets before merging or cutting over runtime.
-- `docker-compose.yml`, when present, is a build/orchestration entrypoint. Do
-  not use it to start the API profile in production until the backend cutover
-  checklist has been completed.
+- `docker-compose.yml` covers both frontend and API orchestration. Frontend
+  keeps the existing `my-frontend` container and `8081:80` mapping. API stays
+  behind the explicit `api` profile and binds to
+  `127.0.0.1:${BLOG_API_HOST_PORT:-18000}:8000` by default, so it can run as a
+  staging container without taking over the current production
+  `blog-api.service` on port `8000`.
 - The compose frontend build can set public build-time values through
   `VITE_BASE_URL` and `VITE_TELEMETRY_ENDPOINT`. Do not put secrets in Vite
   build arguments.

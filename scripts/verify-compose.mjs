@@ -15,7 +15,10 @@ function run(args, options = {}) {
   })
 
   if (result.status !== 0) {
-    const output = [result.stdout, result.stderr].filter(Boolean).join('\n').trim()
+    const output = [result.stdout, result.stderr]
+      .filter(Boolean)
+      .join('\n')
+      .trim()
     throw new Error(output || `docker ${args.join(' ')} failed`)
   }
 
@@ -32,7 +35,9 @@ function assertComposeShape(rendered) {
     'api:',
     'profiles:',
     '- api',
-    '127.0.0.1:8000:8000',
+    'target: /home/lighthouse/.config/blog_end',
+    'target: /app/src/conf',
+    'read_only: true',
     '8081:80',
   ]
 
@@ -40,6 +45,36 @@ function assertComposeShape(rendered) {
     if (!rendered.includes(snippet)) {
       throw new Error(`compose file is missing required snippet: ${snippet}`)
     }
+  }
+
+  const apiPortSnippets = [
+    '127.0.0.1:${BLOG_API_HOST_PORT:-18000}:8000',
+    '127.0.0.1:18000:8000',
+  ]
+  if (!apiPortSnippets.some((snippet) => rendered.includes(snippet))) {
+    throw new Error(
+      `compose file is missing required API staging port binding: ${apiPortSnippets.join(' or ')}`
+    )
+  }
+
+  const secretSourceSnippets = [
+    'source: ${BLOG_API_SECRET_DIR:-/home/lighthouse/.config/blog_end}',
+    'source: /home/lighthouse/.config/blog_end',
+  ]
+  if (!secretSourceSnippets.some((snippet) => rendered.includes(snippet))) {
+    throw new Error(
+      `compose file is missing required API secret directory source: ${secretSourceSnippets.join(' or ')}`
+    )
+  }
+
+  const configSourceSnippets = [
+    'source: ${BLOG_API_CONFIG_DIR:-/home/lighthouse/blog/blog_end/src/conf}',
+    'source: /home/lighthouse/blog/blog_end/src/conf',
+  ]
+  if (!configSourceSnippets.some((snippet) => rendered.includes(snippet))) {
+    throw new Error(
+      `compose file is missing required API config directory source: ${configSourceSnippets.join(' or ')}`
+    )
   }
 }
 
@@ -49,8 +84,12 @@ try {
 } catch (error) {
   const rawCompose = readFileSync(composeFile, 'utf8')
   assertComposeShape(rawCompose)
-  console.log('==> Docker CLI is not available; static compose validation passed.')
-  console.log('No deployment command was run. Install Docker to enable docker compose config validation.')
+  console.log(
+    '==> Docker CLI is not available; static compose validation passed.'
+  )
+  console.log(
+    'No deployment command was run. Install Docker to enable docker compose config validation.'
+  )
   process.exit(0)
 }
 
@@ -77,4 +116,6 @@ if (!profiles.includes('api')) {
 assertComposeShape(rendered)
 
 console.log('==> Compose config is valid.')
-console.log('No deployment command was run. This script does not call up, run, restart, rm, or systemctl.')
+console.log(
+  'No deployment command was run. This script does not call up, run, restart, rm, or systemctl.'
+)

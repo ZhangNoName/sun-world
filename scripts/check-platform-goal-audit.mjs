@@ -4,7 +4,9 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
-const packageJson = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'))
+const packageJson = JSON.parse(
+  readFileSync(join(repoRoot, 'package.json'), 'utf8')
+)
 const checkAllSource = readText('scripts/check-all.mjs')
 const roadmap = readText('docs/architecture/platform-iteration-roadmap.md')
 const currentState = readText('docs/current-state.md')
@@ -37,11 +39,17 @@ function requireText(label, source, pattern, reason) {
 requireScript('check:platform', 'node scripts/check-platform-goal-audit.mjs')
 requireScript('check:web', 'node scripts/check-web.mjs')
 requireScript('check:api', 'node scripts/run-api-check.mjs')
-requireScript('check:contracts:generate', 'node scripts/check-contracts-generate-script.mjs')
-requireScript('check:web:ui-boundary', 'node scripts/check-ui-package-boundary.mjs')
+requireScript(
+  'check:contracts:generate',
+  'node scripts/check-contracts-generate-script.mjs'
+)
+requireScript(
+  'check:web:ui-boundary',
+  'node scripts/check-ui-package-boundary.mjs'
+)
 requireScript(
   'check:compose',
-  'node scripts/check-docker-build-context.mjs && node scripts/verify-compose.mjs'
+  'node scripts/check-docker-build-context.mjs && node scripts/check-api-dockerfile-cache.mjs && node scripts/verify-compose.mjs'
 )
 requireText(
   'scripts/check-all.mjs',
@@ -63,23 +71,41 @@ requireText(
 )
 
 const requiredFiles = [
-  ['docs/architecture/platform-iteration-roadmap.md', 'iteration plan and commit policy'],
-  ['docs/architecture/observability-and-analytics.md', 'monitoring platform design'],
-  ['docs/architecture/frontend-ui-component-prd.md', 'UI component protocol PRD'],
+  [
+    'docs/architecture/platform-iteration-roadmap.md',
+    'iteration plan and commit policy',
+  ],
+  [
+    'docs/architecture/observability-and-analytics.md',
+    'monitoring platform design',
+  ],
+  [
+    'docs/architecture/frontend-ui-component-prd.md',
+    'UI component protocol PRD',
+  ],
   ['docker-compose.yml', 'one-command build/deploy composition candidate'],
   ['packages/ui/package.json', 'independently packaged UI library'],
   ['packages/contracts/src/routes.ts', 'shared route constants'],
   ['packages/contracts/src/index.spec.ts', 'contract drift tests'],
   ['scripts/generate-openapi.mjs', 'cross-platform OpenAPI export wrapper'],
-  ['scripts/check-contracts-generate-script.mjs', 'cross-platform contract generation guard'],
+  [
+    'scripts/check-contracts-generate-script.mjs',
+    'cross-platform contract generation guard',
+  ],
   ['apps/api/src/core/metrics.py', 'backend request metrics'],
   ['apps/api/src/core/admin_alerts.py', 'admin alert read model assembly'],
   ['apps/api/src/core/metrics_history.py', 'admin metrics history read model'],
   ['apps/api/src/core/metrics_alerts.py', 'backend metrics alert thresholds'],
   ['apps/api/src/core/rum_metrics.py', 'RUM metrics collector'],
-  ['apps/api/src/core/metrics_store.py', 'replaceable metrics persistence boundary'],
+  [
+    'apps/api/src/core/metrics_store.py',
+    'replaceable metrics persistence boundary',
+  ],
   ['scripts/check-admin-alerts.py', 'admin alert protocol check'],
-  ['scripts/check-admin-metrics-history.py', 'admin metrics history protocol check'],
+  [
+    'scripts/check-admin-metrics-history.py',
+    'admin metrics history protocol check',
+  ],
   ['apps/web/src/shared/telemetry/index.ts', 'frontend telemetry client'],
   ['scripts/check-web.mjs', 'cross-platform frontend verification'],
   ['scripts/run-api-check.mjs', 'cross-platform backend verification'],
@@ -88,7 +114,10 @@ const requiredFiles = [
   ['scripts/check-web-build-manifest.mjs', 'bundle manifest protocol check'],
   ['scripts/generate-web-build-summary.mjs', 'bundle summary generation'],
   ['scripts/check-web-build-summary.mjs', 'bundle summary protocol check'],
-  ['scripts/check-ui-package-boundary.mjs', 'UI package subpath and bundle boundary check'],
+  [
+    'scripts/check-ui-package-boundary.mjs',
+    'UI package subpath and bundle boundary check',
+  ],
 ]
 
 for (const [path, reason] of requiredFiles) {
@@ -128,13 +157,13 @@ requireText(
 requireText(
   'current state',
   currentState,
-  /P1\.54/,
+  /P1\.70/,
   'the latest verified checkpoint marker'
 )
 requireText(
   'handoff',
   handoff,
-  /P1\.54 completed locally/,
+  /P1\.70 compose frontend\/API staging/,
   'the latest handoff checkpoint'
 )
 if (violations.length) {

@@ -26,20 +26,35 @@ See `docs/architecture/deployment-cutover.md` for details.
 
 ## Compose Candidate
 
-`docker-compose.yml` may include an `api` service behind an explicit `api`
-profile. This is for build and cutover rehearsal only. Do not start it against
-production ports unless the backend cutover task explicitly authorizes that
-change.
+`docker-compose.yml` includes the API service behind an explicit `api` profile.
+It is safe to build and run as a staging container because it binds to
+`127.0.0.1:${BLOG_API_HOST_PORT:-18000}` by default, not the production
+`127.0.0.1:8000` backend port used by `blog-api.service`.
 
 Safe validation commands:
 
 ```bash
 docker compose config
 docker compose --profile api build api
+docker compose --profile api up -d api
+curl -fsS http://127.0.0.1:18000/healthz
 ```
 
-Starting the API profile is a deployment/cutover action and is intentionally not
-part of routine verification.
+Starting the API profile does not change Nginx routing by itself. Production
+traffic continues to use `blog-api.service` until Nginx is deliberately updated
+to proxy `api.sunworld.site` to the Compose API port, or the Compose API is
+bound to `127.0.0.1:8000` during a planned cutover.
+
+The Compose API service mounts the same production-only paths read-only for
+secrets and config:
+
+```text
+/home/lighthouse/.config/blog_end -> /home/lighthouse/.config/blog_end
+/home/lighthouse/blog/blog_end/src/conf -> /app/src/conf
+```
+
+It also mounts `/data/blog` read/write so existing file paths remain usable in
+the container. Do not commit or print values from those mounted files.
 
 ## GitHub Actions API Image
 

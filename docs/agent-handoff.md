@@ -1,5 +1,41 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.70 compose frontend/API staging):
+  - Goal: bring both production services into `docker-compose.yml` without
+    disrupting current Nginx, HTTPS renewal, frontend container, or
+    `blog-api.service` behavior.
+  - Status: completed locally; no Compose service has been started and no
+    production service has been restarted for this change.
+  - Important files touched:
+    - `docker-compose.yml`
+    - `scripts/verify-compose.mjs`
+    - `scripts/verify-compose.sh`
+    - `scripts/check-platform-goal-audit.mjs`
+    - `deploy/README.md`
+    - `deploy/backend/README.md`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `start.md`
+  - Behavior:
+    - Frontend stays as `my-frontend` on host port `8081`.
+    - API is included behind the explicit `api` profile and binds to
+      `127.0.0.1:${BLOG_API_HOST_PORT:-18000}:8000` by default.
+    - API mounts `/home/lighthouse/.config/blog_end` and the legacy backend
+      `src/conf` directory read-only, plus `/data/blog` read/write.
+    - Nginx and Certbot remain host-managed; `api.sunworld.site` still points
+      to the current production `blog-api.service` on `127.0.0.1:8000` until a
+      separate cutover is approved.
+  - Verification:
+    - `pnpm format:check` passed.
+    - `pnpm check:compose` passed through static validation; local Docker CLI
+      remains unavailable.
+    - `pnpm check:platform` passed.
+    - `node --check scripts/verify-compose.mjs` passed.
+    - `node --check scripts/check-platform-goal-audit.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+    - Remote Lighthouse Compose syntax validation passed with
+      `docker compose --project-directory /home/lighthouse/blog/sun-world -f - config --quiet`.
+
 - Latest task addendum (2026-06-20, P1.69 HTTPS certificate renewal hardening):
   - Goal: verify HTTPS certificate renewal safety and avoid impacting existing
     site/API behavior.

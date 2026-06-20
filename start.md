@@ -59,6 +59,25 @@ client   web only
 web      web only
 ```
 
+## Docker Compose
+
+Compose is available for production-like container rehearsal:
+
+```bash
+docker compose build frontend
+docker compose up -d frontend
+docker compose --profile api build api
+docker compose --profile api up -d api
+```
+
+The frontend service keeps `my-frontend` on host port `8081`. The API service
+uses the explicit `api` profile and binds to `127.0.0.1:18000` by default, so it
+does not replace the current production backend on `127.0.0.1:8000`.
+
+If the server already has a manually started `my-frontend` container, switching
+that container to Compose ownership needs a planned replace step because the
+container name is intentionally the same.
+
 ## What Runs
 
 The web client runs:

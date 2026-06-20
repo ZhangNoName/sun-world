@@ -195,7 +195,8 @@ Build flow:
 
 ## Compose
 
-The frontend can also be built and run through Docker Compose:
+The frontend is part of `docker-compose.yml` and can be built and run through
+Docker Compose:
 
 ```bash
 docker compose build frontend
@@ -207,3 +208,13 @@ This keeps the same production container name and port mapping:
 - Container: `my-frontend`
 - Host port: `8081`
 - Container port: `80`
+
+When converting the existing manually started `my-frontend` container to
+Compose ownership, plan the switch because Docker will not allow two containers
+with the same name. The current change only documents and validates the Compose
+path; it does not replace the running frontend by itself.
+
+The API is also in Compose, but behind the explicit `api` profile and mapped to
+`127.0.0.1:18000` by default. That staging port keeps current Nginx routing and
+the production `blog-api.service` on `127.0.0.1:8000` untouched until a planned
+cutover.
