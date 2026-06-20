@@ -1,5 +1,27 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.72 API build cache export trim):
+  - Goal: reduce repeated `Build and push API image` time caused by BuildKit
+    exporting large API cache sets to Tencent CCR.
+  - Status: implemented locally; commit/push pending. The prior run
+    `27859903102` was canceled because the API BuildKit `mode=max` registry
+    cache export was still in progress after about 20 minutes.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Frontend cache export stays `mode=max`.
+    - API cache import stays enabled, but API cache export changes to
+      `mode=min` to reduce registry cache upload work at the end of the build.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+
 - Latest task addendum (2026-06-20, P1.71 secret scanning response):
   - Goal: respond to GitHub secret scanning alert #1 for a LangSmith personal
     access token and remove client-side LLM secrets from the current branch.

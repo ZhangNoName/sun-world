@@ -94,7 +94,7 @@ if (workflow) {
     'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache',
     'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max',
     'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache',
-    'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache,mode=max',
+    'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache,mode=min',
     'provenance: false',
     'timeout-minutes: 30',
     'actions/upload-artifact@v4',
