@@ -113,10 +113,11 @@ ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:buildcache
 ccr.ccs.tencentyun.com/<namespace>/sun-world-api:buildcache
 ```
 
-The frontend build exports a fuller `mode=max` cache. The API build imports the
-existing registry cache but does not export cache back to CCR because Python
-dependency layers made `Build and push API image` spend too long in
-`exporting cache to registry`.
+The frontend build exports a fuller `mode=max` cache. The API build exports a
+smaller `mode=min` cache because Python dependency layers made
+`Build and push API image` spend too long with the full `mode=max` cache export.
+When only one side changed, prefer manual runs with `target=web` or
+`target=api` instead of `target=all`.
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer.

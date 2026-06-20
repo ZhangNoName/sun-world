@@ -1,5 +1,31 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.74 split web/API deploy with API min cache):
+  - Goal: restore API `cache-to` while avoiding full `mode=max` cache export,
+    and run web/API deployments separately so one slow image does not block the
+    other target.
+  - Status: implemented locally; commit/push pending. Manual run
+    `27861156735` was canceled because the all-target run was still waiting on
+    API final image push.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Frontend cache export remains `mode=max`.
+    - API cache export is restored as `mode=min`.
+    - Deploy guidance now favors separate manual runs with `target=web` and
+      `target=api` instead of `target=all` when only one side is urgent.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+    - GitHub run `27861156735` was confirmed canceled before pushing the
+      restored API `mode=min` cache strategy.
+
 - Latest task addendum (2026-06-20, P1.73 disable API cache export):
   - Goal: remove API `cache-to` entirely after `mode=max` and the attempted
     `mode=min` strategy still left API builds spending too long in BuildKit
