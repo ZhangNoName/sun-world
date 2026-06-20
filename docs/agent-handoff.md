@@ -11,7 +11,7 @@
     - The stack trace showed startup imported `AiManager`, then `TestAgent`,
       then `src.llm.tools`, then `src.llm.model.gemma`, which initialized an
       OpenAI-compatible model at import time.
-  - Status: implemented locally; commit/push and API-only redeploy pending.
+  - Status: committed, pushed, deployed, and verified.
   - Important files touched:
     - `apps/api/src/controller/ai_manager.py`
     - `scripts/check-ai-manager-lazy.py`
@@ -31,9 +31,23 @@
     - `pnpm check:api` passed with the new lazy-import guard.
     - `python -m py_compile apps/api/src/controller/ai_manager.py scripts/check-ai-manager-lazy.py`
       passed.
+    - Local deploy protocol checks passed before commit:
+      `pnpm check:api-dockerfile`, `pnpm check:github-actions:deploy`,
+      `pnpm check:api:deploy-schema`, `pnpm format:check`, and
+      `git diff --check`.
+    - GitHub Actions run `27865528022` on commit `f1d30925` succeeded.
+      `Build API image on Lighthouse` completed in about 22 seconds and
+      `Deploy changed services on Lighthouse` completed in about 19 seconds.
+    - Public API GET health check returned `{"status":"ok"}`.
+    - Public frontend checks for `https://sunworld.site` and
+      `https://www.sunworld.site` returned HTTP 200.
+    - Server verification showed `sun-world-api` running from image
+      `sun-world-api:f1d3092504b37c59930e0ebde6cea11fa48e9b6d`, `my-frontend`
+      still running, and `blog-api.service` `inactive` / `disabled`.
   - Next step:
-    - Run formatting and deploy protocol checks, commit/push, then let the
-      automatic `main` push deploy retry the API candidate cutover.
+    - Keep monitoring the persistent container. AI endpoints still need a real
+      OpenRouter/OpenAI-compatible provider key before they can answer AI
+      requests; missing keys no longer block API startup or health checks.
 
 - Latest task addendum (2026-06-20, P1.79 persistent API startup hardening):
   - Goal: finish making the backend API a persistent Docker container after
