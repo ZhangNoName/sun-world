@@ -28,7 +28,7 @@ def check_container_layout() -> None:
         app_root = Path(temp_dir) / "app"
         (app_root / "src" / "conf").mkdir(parents=True)
         (app_root / "src" / "database" / "mysql").mkdir(parents=True)
-        (app_root / "pyproject.toml").write_text("[tool.poetry]\nname = 'blog-end'\n", encoding="utf-8")
+        (app_root / "main.py").write_text("print('sun world api')\n", encoding="utf-8")
         try:
             schema_migration.__file__ = str(
                 app_root / "src" / "database" / "mysql" / "schema_migration.py"

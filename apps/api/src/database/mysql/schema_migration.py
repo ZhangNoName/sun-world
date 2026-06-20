@@ -129,7 +129,7 @@ IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 def api_root() -> Path:
     current_file = Path(__file__).resolve()
     for parent in current_file.parents:
-        if (parent / "src" / "conf").is_dir() and (parent / "pyproject.toml").is_file():
+        if (parent / "src" / "conf").is_dir() and (parent / "main.py").is_file():
             return parent
     raise FileNotFoundError(f"Unable to locate API root from {current_file}")
 

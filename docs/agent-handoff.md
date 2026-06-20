@@ -21,8 +21,10 @@
     - `docs/agent-handoff.md`
   - Behavior:
     - Schema migration now discovers the API root by walking upward until it
-      finds `src/conf` and `pyproject.toml`, which supports both the monorepo
-      `apps/api` layout and the Docker `/app` layout.
+      finds `src/conf` and `main.py`, which supports both the monorepo
+      `apps/api` layout and the Docker `/app` layout. The final API image does
+      not copy `pyproject.toml`, so the root sentinel must use files present in
+      the runtime image.
     - `pnpm check:api` now includes a path-resolution regression check that
       simulates the Docker image layout.
     - The deploy schema protocol rejects the old hard-coded `parents[5]`
