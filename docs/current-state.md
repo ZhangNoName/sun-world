@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.79 persistent API startup hardening)
+Last updated: 2026-06-20 (main, P1.80 lazy AI manager startup)
 
 ## Server
 
@@ -279,6 +279,10 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   LangChain/OpenAI clients.
 - Backend AI image model imports are lazy inside image endpoints; `/ai/chat`
   is documented in OpenAPI as `ApiResponse[str]`.
+- Backend `AiManager` lazy-loads LLM agents and image models on first AI
+  endpoint use. API startup, `/healthz`, and non-AI routes must not require
+  `OPENROUTER_API_KEY` or `OPENAI_API_KEY`; missing provider keys should fail
+  the AI endpoint path rather than the whole API process.
 - Frontend route-only heavy dependencies are separated from global vendor:
   Artplayer/HLS build into `video-player`, and JSZip builds into
   `tile-export` through a dynamic import in `saveTilesAsZip()`.

@@ -1,5 +1,40 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.80 lazy AI manager startup):
+  - Goal: keep the persistent backend container alive even when AI provider
+    keys are missing or incomplete.
+  - Evidence:
+    - GitHub Actions run `27865319566` built the API image successfully and
+      reached the candidate health check.
+    - New candidate diagnostics showed the container exited with
+      `openai.OpenAIError: The api_key client option must be set...`.
+    - The stack trace showed startup imported `AiManager`, then `TestAgent`,
+      then `src.llm.tools`, then `src.llm.model.gemma`, which initialized an
+      OpenAI-compatible model at import time.
+  - Status: implemented locally; commit/push and API-only redeploy pending.
+  - Important files touched:
+    - `apps/api/src/controller/ai_manager.py`
+    - `scripts/check-ai-manager-lazy.py`
+    - `scripts/run-api-check.mjs`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `AiManager` no longer imports `src.llm.agent` or `src.llm.model.*` at
+      module import time.
+    - Startup creates an `AiManager` shell with the existing checkpointer, but
+      instantiates the chat agent or image model only when an AI endpoint is
+      called.
+    - `pnpm check:api` now runs `scripts/check-ai-manager-lazy.py` so the
+      startup path cannot regress to eager provider-key initialization.
+  - Verification:
+    - `python scripts/check-ai-manager-lazy.py` passed.
+    - `pnpm check:api` passed with the new lazy-import guard.
+    - `python -m py_compile apps/api/src/controller/ai_manager.py scripts/check-ai-manager-lazy.py`
+      passed.
+  - Next step:
+    - Run formatting and deploy protocol checks, commit/push, then let the
+      automatic `main` push deploy retry the API candidate cutover.
+
 - Latest task addendum (2026-06-20, P1.79 persistent API startup hardening):
   - Goal: finish making the backend API a persistent Docker container after
     the first cutover run failed during candidate health checks.

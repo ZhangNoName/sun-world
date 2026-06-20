@@ -18,6 +18,7 @@ const scripts = [
     args: [],
   },
   { script: resolve(repoRoot, 'scripts/check-llm-config-env.py'), args: [] },
+  { script: resolve(repoRoot, 'scripts/check-ai-manager-lazy.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-api-schema-types.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-admin-alerts.py'), args: [] },
   {

@@ -1,15 +1,7 @@
-import asyncio
-import json
-import os
 from typing import Optional
+
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from loguru import logger
-from langchain.chat_models import init_chat_model
-from langchain_core.messages import BaseMessage
-
-from src.llm.agent import TestAgent
-from src.llm.llm import LLM
-from src.llm.model.gemma import GemmaModel
 
 
 class AiManager:
@@ -17,68 +9,35 @@ class AiManager:
         self,
         checkpointer: Optional[AsyncPostgresSaver] = None,
     ):
-        """
-        初始化 AI Manager
-
-        Args:
-            base_url: AI API 的基础 URL，默认从环境变量 AI_URL 读取
-            api_key: API 密钥，默认从环境变量 OPENROUTER_API_KEY 读取
-            model: 模型名称，默认 "mistralai/devstral-2512:free"
-            model_provider: 模型提供商，默认 "mistralai"
-        """
-
         self.checkpointer = checkpointer
-        self.agent = TestAgent(checkpointer)
-        self.image_agent = GemmaModel
-        logger.info("AI Manager 初始化成功")
+        self.agent = None
+        self.image_agent = None
+        logger.info("AI Manager initialized")
+
+    def _get_agent(self):
+        if self.agent is None:
+            from src.llm.agent import TestAgent
+
+            self.agent = TestAgent(self.checkpointer)
+        return self.agent
+
+    def _get_image_agent(self):
+        if self.image_agent is None:
+            from src.llm.model.gemma import GemmaModel
+
+            self.image_agent = GemmaModel
+        return self.image_agent
 
     async def invoke(self, message: str, config: dict):
-        """
-        调用 AI 模型，一次性返回完整结果
-
-        Args:
-            message: 用户消息
-            config: 配置
-
-        Returns:
-            AI 响应字典
-        """
-        if self.agent is None:
-            raise RuntimeError("AI 模型未初始化，请检查配置")
-
-        return await self.agent.invoke(message, config=config)
+        return await self._get_agent().invoke(message, config=config)
 
     async def invoke_stream(self, message: str, config: dict):
-        """
-        调用 AI 模型，按 token 流式返回
-
-        Args:
-            message: 用户消息
-            config: 配置
-
-        Yields:
-            文本内容字符串（按 token）
-        """
-        if self.agent is None:
-            raise RuntimeError("AI 模型未初始化，请检查配置")
-
-        # ✅ 正确写法：迭代底层生成器并逐个向上层 yield
-        async for chunk in self.agent.invoke_stream(message, config=config):
+        async for chunk in self._get_agent().invoke_stream(message, config=config):
             yield chunk
 
     async def generate_image(self, message: str, config: dict):
-        """
-        调用 AI 模型，生成图片
-
-        Args:
-            message: 用户消息
-            config: 配置
-
-        Yields:
-            SSE 格式的数据块（data: {...}\n\n）
-        """
-        if self.agent is None:
-            raise RuntimeError("AI 模型未初始化，请检查配置")
         logger.info(f"generate_image: {message}, config: {config}")
-        response = await self.image_agent.ainvoke({"messages": [{"role": "user", "content": message}]})
+        response = await self._get_image_agent().ainvoke(
+            {"messages": [{"role": "user", "content": message}]}
+        )
         return response.content
