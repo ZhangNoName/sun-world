@@ -28,6 +28,7 @@
     "check:contracts:generate": "node scripts/check-contracts-generate-script.mjs",
     "check:contracts:usage": "node scripts/check-contract-route-usage.mjs",
     "check:web:legacy-api": "node scripts/check-legacy-api-entrypoints.mjs",
+    "check:ai-interface": "node scripts/check-ai-interface.mjs",
     "build:web:manifest": "node scripts/generate-web-build-manifest.mjs",
     "check:web:manifest": "node scripts/check-web-build-manifest.mjs",
     "build:web:summary": "node scripts/generate-web-build-summary.mjs",

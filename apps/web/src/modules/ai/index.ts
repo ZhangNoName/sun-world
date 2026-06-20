@@ -15,9 +15,7 @@ export const aiModule: AppModule = {
       meta: { module: 'ai', title: 'AI 对话 - Sun World' },
     },
   ],
-  nav: [
-    { label: 'nav.ai', path: '/aigc', icon: 'ai' },
-  ],
+  nav: [{ label: 'nav.ai', path: '/aigc', icon: 'ai' }],
   seo: {
     title: 'AI 对话 - Sun World',
     description: '使用 AI 辅助创作与问答。',

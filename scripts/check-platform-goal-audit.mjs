@@ -45,6 +45,7 @@ requireScript(
   'node scripts/check-sun-ai-contract-sync.mjs'
 )
 requireScript('check:sun-ai:cli', 'node scripts/check-sun-ai-cli.mjs')
+requireScript('check:ai-interface', 'node scripts/check-ai-interface.mjs')
 requireScript(
   'check:contracts:generate',
   'node scripts/check-contracts-generate-script.mjs'
@@ -127,6 +128,11 @@ const requiredFiles = [
     'Sun AI OpenAPI contract sync check',
   ],
   ['scripts/check-sun-ai-cli.mjs', 'Sun AI CLI behavior check'],
+  ['scripts/check-ai-interface.mjs', 'AI interface protocol check'],
+  [
+    'docs/superpowers/specs/2026-06-20-ai-chat-interface-provider-design.md',
+    'AI chat interface and provider design',
+  ],
   [
     '.agents/skills/sun-world-ai/SKILL.md',
     'repository-scoped Sun World AI skill',

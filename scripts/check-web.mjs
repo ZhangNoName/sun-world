@@ -44,6 +44,8 @@ run('Frontend client secret check', 'node', [
   'scripts/check-web-client-secrets.mjs',
 ])
 
+run('AI interface check', 'node', ['scripts/check-ai-interface.mjs'])
+
 run('Contracts tests', 'pnpm', ['test:contracts'])
 
 run('Contracts generate script check', 'pnpm', ['check:contracts:generate'])
