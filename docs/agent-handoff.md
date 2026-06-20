@@ -1,5 +1,49 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.71 secret scanning response):
+  - Goal: respond to GitHub secret scanning alert #1 for a LangSmith personal
+    access token and remove client-side LLM secrets from the current branch.
+  - Status: implemented locally; commit/push pending.
+  - Findings:
+    - GitHub alert #1 reports `langchain_api_personal_key` in historical
+      `apps/web/src/constant.ts`.
+    - Current `main` also still contained client-side LangSmith and
+      OpenAI-style private keys before this fix.
+  - Important files touched:
+    - `apps/web/src/constant.ts`
+    - `apps/web/src/env.d.ts`
+    - `apps/web/.env.example`
+    - `apps/api/src/llm/config.py`
+    - `packages/blog/.env`
+    - `packages/blog/.env.development`
+    - `packages/blog/.env.production`
+    - `scripts/check-web-client-secrets.mjs`
+    - `scripts/check-web.mjs`
+    - `scripts/check-llm-config-env.py`
+    - `scripts/run-api-check.mjs`
+    - `docs/architecture/secrets-and-env.md`
+    - `docs/current-state.md`
+  - Behavior:
+    - Removed client-side LangSmith/OpenAI private keys from frontend source.
+    - Removed tracked legacy `packages/blog/.env*` files from the Git index;
+      root `.gitignore` already ignores local env files.
+    - Removed `VITE_LANGCHAIN_API_KEY` typing/example guidance.
+    - Added a frontend client secret guard to `pnpm check:web`.
+    - Backend `LANGSMITH_API_KEY` now falls back to `LANGCHAIN_API_KEY` for
+      compatibility with the secret name the user added.
+  - Required manual security action:
+    - Revoke/rotate the leaked LangSmith token in the provider console before
+      resolving the GitHub alert. Adding a new secret does not invalidate a
+      token already committed to Git history.
+  - Verification:
+    - `node scripts/check-web-client-secrets.mjs` first failed on the old
+      frontend source, then passed after removal.
+    - `python scripts/check-llm-config-env.py` first failed on the old backend
+      config, then passed after fallback support.
+    - `pnpm check:api` passed.
+    - `pnpm format:check` passed after formatting.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+
 - Latest task addendum (2026-06-20, P1.70 compose frontend/API staging):
   - Goal: bring both production services into `docker-compose.yml` without
     disrupting current Nginx, HTTPS renewal, frontend container, or

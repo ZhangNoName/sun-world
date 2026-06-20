@@ -50,6 +50,11 @@ Subdirectories also have corresponding `.gitignore` rules.
 > **注意:** `VITE_LANGCHAIN_API_KEY` 在前端代码中是内置的，因此如果前端已编译并提交了密钥，即使移除 `.env` 文件也无法完全清除。构建产物（`dist/`）中可能仍包含这些值。如已泄露，应在 LangSmith 端轮换密钥。
 > **Note:** `VITE_LANGCHAIN_API_KEY` is bundled into the frontend build. Removing `.env` files does not retroactively remove keys from committed history or build artifacts (`dist/`). If exposed, rotate the key on the LangSmith side.
 
+Current rule: do not put LangSmith, LangChain, OpenAI, or other private API
+keys in `VITE_*` variables. Vite bundles those values into browser JavaScript.
+If a key has ever been committed or bundled, rotate or revoke it on the
+provider side.
+
 ## 后端 / Backend (`apps/api`)
 
 ### 当前状态 / Current State
@@ -60,6 +65,9 @@ Subdirectories also have corresponding `.gitignore` rules.
 - Backend `.env` files are not tracked in the repo.
 - Production secrets live at `/home/lighthouse/.config/blog_end/auth.env`.
 - The secret file path is specified in `blog-api.service` via `EnvironmentFile`.
+- LangSmith tracing keys are server-side only. The API reads
+  `LANGSMITH_API_KEY`, with `LANGCHAIN_API_KEY` as a compatibility fallback.
+  Do not expose either value through `VITE_*`.
 
 ### 切换后 / After Cutover
 
@@ -73,6 +81,12 @@ Run filename-level scans for sensitive patterns (report file paths only, never c
 
 ```bash
 git grep -IlE 'sk-[A-Za-z0-9]|password:|password=|token:|token=|secret:|secret=|api[_-]?key|BEGIN .*KEY' -- . ':!pnpm-lock.yaml' ':!poetry.lock' ':!**/dist/**' || true
+```
+
+Frontend client bundle guard:
+
+```bash
+node scripts/check-web-client-secrets.mjs
 ```
 
 ## 已知注意事项 / Known Notes

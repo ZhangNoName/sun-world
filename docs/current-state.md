@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.70 compose frontend/API staging)
+Last updated: 2026-06-20 (main, P1.71 secret scanning response)
 
 ## Server
 
@@ -186,6 +186,12 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
 - The compose frontend build can set public build-time values through
   `VITE_BASE_URL` and `VITE_TELEMETRY_ENDPOINT`. Do not put secrets in Vite
   build arguments.
+- Root `pnpm check:web` runs `scripts/check-web-client-secrets.mjs`, which
+  rejects LangSmith personal access token patterns, OpenAI-style private key
+  patterns, and client-side LangChain API key variables from `apps/web/src`.
+  LangSmith/OpenAI keys must stay server-side only. The backend accepts
+  `LANGSMITH_API_KEY` and also falls back to `LANGCHAIN_API_KEY` for
+  compatibility with existing secret names.
 - The frontend Dockerfile copies workspace manifests before source code and
   runs `pnpm install --frozen-lockfile` before `COPY . .`; `pnpm
   check:dockerfile` guards this cache layout.

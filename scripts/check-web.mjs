@@ -40,6 +40,10 @@ run('Frontend API base and dev proxy check', 'node', [
   'scripts/check-web-api-config.mjs',
 ])
 
+run('Frontend client secret check', 'node', [
+  'scripts/check-web-client-secrets.mjs',
+])
+
 run('Contracts tests', 'pnpm', ['test:contracts'])
 
 run('Contracts generate script check', 'pnpm', ['check:contracts:generate'])
@@ -82,6 +86,4 @@ run('Frontend performance budget check', 'node', [
   'scripts/check-web-budgets.mjs',
 ])
 
-run('Frontend chunk boundary check', 'node', [
-  'scripts/check-web-chunks.mjs',
-])
+run('Frontend chunk boundary check', 'node', ['scripts/check-web-chunks.mjs'])

@@ -6,10 +6,6 @@ export {}
 
 declare global {
   interface ImportMetaEnv {
-    readonly VITE_LANGCHAIN_TRACING_V2: string
-    readonly VITE_LANGCHAIN_ENDPOINT: string
-    readonly VITE_LANGCHAIN_API_KEY: string
-    readonly VITE_LANGCHAIN_PROJECT: string
     readonly VITE_BASE_URL: string
     /** Local Vite proxy target for backend API development. */
     readonly VITE_DEV_API_TARGET?: string
@@ -23,10 +19,7 @@ declare global {
 
   const QC: {
     Login: {
-      showPopup(options: {
-        appId: string
-        redirectURI: string
-      }): void
+      showPopup(options: { appId: string; redirectURI: string }): void
     }
   }
 }
