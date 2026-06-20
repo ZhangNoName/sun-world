@@ -1,5 +1,29 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.69 HTTPS certificate renewal hardening):
+  - Goal: verify HTTPS certificate renewal safety and avoid impacting existing
+    site/API behavior.
+  - Status: completed from Codex via SSH on 2026-06-20.
+  - Server findings:
+    - Certbot is installed at `/usr/bin/certbot`.
+    - `certbot.timer` is enabled and active.
+    - `sunworld.site` certificate covers `sunworld.site`,
+      `www.sunworld.site`, and `api.sunworld.site`; expires on 2026-08-29.
+    - `shop.sunworld.site` certificate expires on 2026-08-28.
+  - Server change:
+    - Added `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`.
+    - The hook runs `nginx -t` and then `systemctl reload nginx` after a
+      successful renewal.
+  - Verification:
+    - `sudo certbot renew --dry-run --no-random-sleep-on-renew` succeeded for
+      both certificate lineages.
+    - `nginx` is active.
+    - `blog-api.service` is active.
+    - `certbot.timer` is active.
+    - `https://api.sunworld.site/healthz`, `https://sunworld.site`,
+      `https://www.sunworld.site`, and `https://shop.sunworld.site` all
+      returned HTTP 200.
+
 - Latest task addendum (2026-06-20, P1.68 production service restart):
   - Goal: restart the current production backend service and Nginx after the
     user explicitly approved backend/Nginx restart.

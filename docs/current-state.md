@@ -124,6 +124,17 @@ been cut over yet:
   `BLOG_METRICS_STORE=json`, `BLOG_METRICS_STORE_PATH`, and
   `BLOG_METRICS_STORE_HISTORY`.
 - Nginx handles HTTPS and proxying.
+- HTTPS certificates are managed by Certbot with the nginx plugin.
+  `certbot.timer` is enabled and active, running renewal checks twice daily.
+  Current certificates:
+  - `sunworld.site`: covers `sunworld.site`, `www.sunworld.site`, and
+    `api.sunworld.site`; expires on 2026-08-29.
+  - `shop.sunworld.site`: covers `shop.sunworld.site`; expires on 2026-08-28.
+  The deploy hook
+  `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` validates Nginx
+  config with `nginx -t` and then reloads Nginx after successful renewal.
+  Renewal dry-run was verified on 2026-06-20 with
+  `certbot renew --dry-run --no-random-sleep-on-renew`.
 
 ## Domains
 
