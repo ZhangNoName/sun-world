@@ -59,7 +59,7 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
     if not blog:
         return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
 
-    blog_dict = {item[0]: item[1] for item in blog}
+    blog_dict = blog.model_dump()
 
     return ok(data=blog_dict, msg="获取成功")
 

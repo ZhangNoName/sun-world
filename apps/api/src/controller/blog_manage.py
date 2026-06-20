@@ -7,7 +7,7 @@ from loguru import logger
 from pymongo.cursor import Cursor
 from src.database.mongo.mongodb_manage import MongoDBManager
 from src.database.mysql.mysql_manage import MySQLManager
-from src.type.blog_type import Blog, BlogBase, BlogCreate, TagNew
+from src.type.blog_type import Blog, BlogBase, BlogCreate, BlogDetail, TagNew
 
 
 
@@ -96,7 +96,7 @@ class BlogManager:
         result = self.db.execute(sql, (blog_id,))
         return result > 0
 
-    def get_blog(self, blog_id:int) -> Blog:
+    def get_blog(self, blog_id:int) -> BlogDetail:
         """
         获取指定ID的博客。
 
@@ -106,10 +106,28 @@ class BlogManager:
         Returns:
             Blog: 博客对象，如果不存在则返回 None
         """
+        metadata = self.db.fetch_one(
+            """
+            SELECT id, title, author, abstract, category, created_at,
+                   updated_at, view_num, comment_num, byte_num
+            FROM blog
+            WHERE id = %s AND COALESCE(is_deleted, 0) = 0
+            """,
+            (blog_id,),
+        )
+        if not metadata:
+            return None
+
         blog_data = self.contentDB.find_one("blogs", {"blogId": blog_id})
         logger.info(f'查询到的结果{blog_id}{blog_data}')
         if blog_data:
-            return Blog(**blog_data)
+            tag_rows = self.db.fetch_all(
+                "SELECT tag_id FROM blog_tag WHERE blog_id = %s",
+                (blog_id,),
+            )
+            metadata["tag"] = [row["tag_id"] for row in tag_rows]
+            metadata["content"] = blog_data.get("content", "")
+            return BlogDetail(**metadata)
         return None
 
 
