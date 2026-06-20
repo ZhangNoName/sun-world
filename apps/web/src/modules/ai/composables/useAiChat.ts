@@ -92,24 +92,69 @@ export function useAiChat() {
     try {
       await sendAiStreamMessage(text, conversationId, {
         onMessage: (token) => {
-          assistantMessage.content += token
+          updateAssistantMessage(conversationId, assistantMessage.id, {
+            content:
+              getAssistantMessage(conversationId, assistantMessage.id).content +
+              token,
+          })
         },
         onComplete: () => {
-          assistantMessage.status = 'done'
+          updateAssistantMessage(conversationId, assistantMessage.id, {
+            status: 'done',
+          })
         },
         onError: (error) => {
-          assistantMessage.status = 'error'
-          assistantMessage.content =
-            assistantMessage.content || 'The assistant could not respond.'
+          const current = getAssistantMessage(
+            conversationId,
+            assistantMessage.id
+          )
+          updateAssistantMessage(conversationId, assistantMessage.id, {
+            status: 'error',
+            content: current.content || 'The assistant could not respond.',
+          })
           errorMessage.value = error.message
         },
       })
     } finally {
       isSending.value = false
-      if (assistantMessage.status === 'streaming') {
-        assistantMessage.status = 'done'
+      if (
+        getAssistantMessage(conversationId, assistantMessage.id).status ===
+        'streaming'
+      ) {
+        updateAssistantMessage(conversationId, assistantMessage.id, {
+          status: 'done',
+        })
       }
       touchConversation(conversationId)
+    }
+  }
+
+  function getAssistantMessage(conversationId: string, messageId: string) {
+    return (
+      messages.value[conversationId]?.find(
+        (message) => message.id === messageId
+      ) ?? assistantFallback(messageId)
+    )
+  }
+
+  function updateAssistantMessage(
+    conversationId: string,
+    messageId: string,
+    patch: Partial<AiMessage>
+  ) {
+    messages.value[conversationId] = (messages.value[conversationId] ?? []).map(
+      (message) =>
+        message.id === messageId ? { ...message, ...patch } : message
+    )
+  }
+
+  function assistantFallback(messageId: string): AiMessage {
+    return {
+      id: messageId,
+      role: 'assistant',
+      content: '',
+      createdAt: now(),
+      status: 'streaming',
     }
   }
 

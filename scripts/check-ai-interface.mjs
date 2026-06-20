@@ -74,6 +74,11 @@ requirePattern(
   'AI chat state must use streaming API path'
 )
 requirePattern(
+  chat,
+  /updateAssistantMessage/,
+  'AI chat state must update streamed messages through reactive state'
+)
+requirePattern(
   uiSources,
   /Shift\+Enter/,
   'AI page must document newline behavior in UI'
@@ -87,6 +92,12 @@ requirePattern(api, /readAiEventStream/, 'AI API must keep streaming helper')
 
 if (/(token|api[_-]?key|password)/i.test(uiSources)) {
   violations.push('AI page must not expose token/api key/password inputs')
+}
+
+if (/assistantMessage\.(content|status)\s*[+]?=/.test(chat)) {
+  violations.push(
+    'AI streaming callbacks must not mutate the raw assistant message object'
+  )
 }
 
 if (violations.length) {

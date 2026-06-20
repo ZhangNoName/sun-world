@@ -25,6 +25,10 @@ server-side DeepSeek-compatible defaults.
 - The backend LLM config now prefers server-side DeepSeek-compatible
   environment variables, with OpenRouter/OpenAI-compatible fallbacks. No real
   provider token is stored in the repository.
+- AI stream rendering was fixed after local testing showed the backend and
+  Vite proxy returned SSE tokens but the UI updated a raw assistant message
+  object that Vue did not reliably track. Stream token/status updates now
+  replace the assistant message through the reactive conversation state.
 
 ## Important Files Touched
 
@@ -64,6 +68,8 @@ server-side DeepSeek-compatible defaults.
   had no runtime references.
 - scripts/check-ai-interface.mjs guards the AI page structure and keeps client
   source free of secret-like tokens.
+- scripts/check-ai-interface.mjs also guards against raw assistant message
+  mutation in streaming callbacks, so token rendering cannot regress silently.
 
 ## Commands Run
 
@@ -95,6 +101,15 @@ server-side DeepSeek-compatible defaults.
 - Local Vite smoke used
   `pnpm -C apps/web exec vite --host 127.0.0.1 --port 5174 --strictPort`;
   `http://127.0.0.1:5174/aigc` returned HTTP 200.
+- Frontend stream rendering fix verification:
+  - `pnpm check:ai-interface` failed before the fix on raw assistant message
+    mutation, then passed after the fix.
+  - `pnpm format:check` passed.
+  - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+  - `pnpm check:web` passed.
+  - Local API `/ai/chat_stream` returned HTTP 200 with SSE `token` chunks.
+  - Stale local Vite servers on ports 5173 and 5174 were stopped; keep using
+    the primary dev URL `http://127.0.0.1:3000/aigc`.
 
 ## Blockers
 
