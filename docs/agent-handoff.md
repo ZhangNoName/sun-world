@@ -10,7 +10,7 @@
       Broken pipe` while Docker was in the `apt-get update` / `libpq5` install
       layer. This was a server build/SSH/package-source problem, not the old
       CCR push hang.
-  - Status: implemented locally; commit/push pending.
+  - Status: committed, pushed, and verified by GitHub Actions.
   - Important files touched:
     - `.github/workflows/deploy.yml`
     - `apps/api/Dockerfile`
@@ -37,8 +37,14 @@
     - `node --check scripts/check-api-dockerfile-cache.mjs` passed.
     - `node --check scripts/check-github-actions-deploy.mjs` passed.
     - `git diff --check` passed with Windows CRLF conversion warnings only.
+    - Manual API-only run `27864306470` on commit `3d8c7585` succeeded:
+      `Build API image on Lighthouse` ran from 07:32:11 to 07:33:29, and
+      `Deploy changed services on Lighthouse` completed successfully at
+      07:33:43.
   - Next step:
-    - Commit/push, then rerun manual `build-and-deploy` with `target=api`.
+    - Continue using manual `build-and-deploy` with `target=api` for API-only
+      deploys. If API Dockerfile dependencies change heavily, expect the first
+      server build to be slower but still avoid GitHub-to-CCR image upload.
 
 - Latest task addendum (2026-06-20, P1.76 build API image on Lighthouse):
   - Goal: move API Docker image generation off GitHub Buildx and onto
