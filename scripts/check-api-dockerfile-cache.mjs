@@ -16,6 +16,7 @@ const requiredFragments = [
   'COPY pyproject.toml poetry.lock ./',
   'poetry export --only main --format requirements.txt --without-hashes --output requirements.txt',
   'COPY --from=requirements /app/requirements.txt ./requirements.txt',
+  'apt-get install -y --no-install-recommends libpq5',
   'RUN pip config set global.index-url',
   'pip install --no-cache-dir -r requirements.txt',
   'COPY src ./src',

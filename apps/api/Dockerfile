@@ -18,7 +18,10 @@ WORKDIR /app
 
 COPY --from=requirements /app/requirements.txt ./requirements.txt
 
-RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpq5 \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple \
     && pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
