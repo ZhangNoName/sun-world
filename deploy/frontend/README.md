@@ -69,11 +69,12 @@ The pipeline is split by changed deploy target:
 6. `deploy` SSHes to Lighthouse and pulls the frontend image from Tencent CCR
    when the frontend changed.
 7. If only frontend changed, deploy pulls and recreates `my-frontend` only.
-8. If only API changed, deploy uses the local API image and runs only the MySQL
-   schema migration command.
+8. If only API changed, deploy uses the local API image, runs the MySQL schema
+   migration command, verifies a candidate container on port `18000`, then
+   switches the persistent `sun-world-api` container onto port `8000`.
 9. If both changed, the frontend image is pushed and the API local image is
-   built before the deploy job performs the frontend switch and API schema
-   apply in one server session.
+   built before the deploy job performs the frontend switch and persistent API
+   container switch in one server session.
 10. If no deployable files changed, the workflow exits through the `no-deploy`
    job. This includes changes limited to GitHub Actions workflow files,
    deployment docs, or local verification scripts.
@@ -93,11 +94,13 @@ The API image is built and tagged locally on Lighthouse:
 sun-world-api:<git-sha>
 ```
 
-The API image is not started by this workflow. It is used to run
-`python -m src.database.mysql.schema_migration --mode apply` on the server, so
-new backend builds can add missing MySQL tables or columns before a later API
-cutover. Existing incompatible columns make the workflow fail rather than
-rewriting data.
+The API image is started by this workflow after
+`python -m src.database.mysql.schema_migration --mode apply` succeeds. The
+deploy job first starts `sun-world-api-candidate` on port `18000` and checks
+`/healthz`; after that passes, it stops/disables `blog-api.service`, starts the
+persistent `sun-world-api` container on host-network port `8000`, and verifies
+both local and public health. Existing incompatible MySQL columns make the
+workflow fail rather than rewriting data.
 
 The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the
@@ -229,5 +232,4 @@ path; it does not replace the running frontend by itself.
 
 The API is also in Compose, but behind the explicit `api` profile and mapped to
 `127.0.0.1:18000` by default. That staging port keeps current Nginx routing and
-the production `blog-api.service` on `127.0.0.1:8000` untouched until a planned
-cutover.
+the production `sun-world-api` container on `127.0.0.1:8000` untouched.

@@ -498,6 +498,64 @@ jobs:
             sudo docker run --rm --network host \
               "${API_MOUNTS[@]}" \
               "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+
+            API_ENV=(
+              -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
+            )
+
+            sudo docker rm -f sun-world-api-candidate || true
+            sudo docker run -d --rm --name sun-world-api-candidate --network host \
+              "${API_ENV[@]}" \
+              -e BLOG_PORT=18000 \
+              "${API_MOUNTS[@]}" \
+              "$API_IMAGE"
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:18000/healthz >/dev/null; then
+                break
+              fi
+              if [ "$attempt" -eq 20 ]; then
+                sudo docker rm -f sun-world-api-candidate || true
+                echo "Candidate API container failed health check." >&2
+                exit 1
+              fi
+              sleep 2
+            done
+            sudo docker rm -f sun-world-api-candidate
+
+            sudo systemctl stop blog-api.service || true
+            sudo systemctl disable blog-api.service || true
+            sudo docker rm -f sun-world-api || true
+            sudo docker run -d --restart unless-stopped --name sun-world-api --network host \
+              "${API_ENV[@]}" \
+              -e BLOG_PORT=8000 \
+              "${API_MOUNTS[@]}" \
+              "$API_IMAGE"
+
+            API_READY=false
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:8000/healthz >/dev/null; then
+                API_READY=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$API_READY" != "true" ]; then
+              sudo docker rm -f sun-world-api || true
+              sudo systemctl enable blog-api.service || true
+              sudo systemctl start blog-api.service || true
+              echo "Docker API container failed production health check; rolled back to blog-api.service." >&2
+              exit 1
+            fi
+            for attempt in $(seq 1 10); do
+              if curl -fsS https://api.sunworld.site/healthz >/dev/null; then
+                break
+              fi
+              if [ "$attempt" -eq 10 ]; then
+                echo "Public API health check failed after Docker API cutover." >&2
+                exit 1
+              fi
+              sleep 2
+            done
           else
             echo "No API schema apply needed."
           fi

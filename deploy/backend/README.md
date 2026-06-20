@@ -1,28 +1,36 @@
 # Backend Deploy
 
-后端通过 systemd 服务 `blog-api.service` 运行，监听端口 `8000`。
-The backend runs via systemd service `blog-api.service` on port `8000`.
+后端通过 Docker 常驻容器 `sun-world-api` 运行，监听端口 `8000`。
+The backend runs as the persistent Docker container `sun-world-api` on port
+`8000`.
 
 ## 当前生产配置 / Current Production
 
-- **工作目录 / Working Directory:** `/home/lighthouse/blog/blog_end`
-- **服务名 / Service:** `blog-api.service`
-- **命令 / Command:** `uvicorn main:app --host 127.0.0.1 --port 8000`
+- **镜像 / Image:** `sun-world-api:<git-sha>`
+- **容器 / Container:** `sun-world-api`
+- **网络 / Network:** Docker host network
+- **命令 / Command:** `./start.sh` -> `uvicorn main:app --host 0.0.0.0 --port 8000`
 - **密钥文件 / Secrets:** `/home/lighthouse/.config/blog_end/auth.env`
+- **兼容配置 / Legacy config mount:** `/home/lighthouse/blog/blog_end/src/conf -> /app/src/conf`
 
-## 未来切换 / Future Cutover
+The legacy `blog-api.service` systemd unit is stopped and disabled by the
+deploy workflow after the Docker candidate passes health checks. It remains a
+rollback path if the production Docker container fails to start.
 
-切换至 monorepo 路径时，需要更新：
-Backend code now lives in `apps/api`, but production traffic is not cut over by
-that fact alone. When cutting over to the monorepo path, update:
+## Production Container Cutover
 
-1. `blog-api.service` 的 `WorkingDirectory` 改为 `/home/lighthouse/blog/sun-world/apps/api`
-2. 在 `apps/api` 下重建 `.venv` 或配置运行时虚拟环境
-3. 保持密钥文件路径不变以减少变更范围
-4. 重启服务并验证
+The GitHub Actions deploy job uses a guarded cutover:
 
-详见 `docs/architecture/deployment-cutover.md`。
-See `docs/architecture/deployment-cutover.md` for details.
+1. Build `sun-world-api:<git-sha>` on Lighthouse.
+2. Run `schema_migration --mode apply` from that image.
+3. Start `sun-world-api-candidate` on host-network port `18000`.
+4. Verify `http://127.0.0.1:18000/healthz`.
+5. Stop and disable `blog-api.service`.
+6. Start persistent `sun-world-api` on host-network port `8000`.
+7. Verify `http://127.0.0.1:8000/healthz` and
+   `https://api.sunworld.site/healthz`.
+8. If the production container health check fails, remove the container and
+   attempt to re-enable/start `blog-api.service`.
 
 ## Compose Candidate
 
@@ -41,9 +49,8 @@ curl -fsS http://127.0.0.1:18000/healthz
 ```
 
 Starting the API profile does not change Nginx routing by itself. Production
-traffic continues to use `blog-api.service` until Nginx is deliberately updated
-to proxy `api.sunworld.site` to the Compose API port, or the Compose API is
-bound to `127.0.0.1:8000` during a planned cutover.
+traffic continues to use the production `sun-world-api` container unless Nginx
+is deliberately updated to proxy `api.sunworld.site` to the Compose API port.
 
 The Compose API service mounts the same production-only paths read-only for
 secrets and config:
@@ -77,9 +84,8 @@ sudo docker build --progress=plain -t sun-world-api:<git-sha> -f apps/api/Docker
 ```
 
 It also keeps an `api-deploy-metadata-<git-sha>` artifact with the local image
-tag and commit. It does not start the API container and does not replace
-`blog-api.service`; backend traffic remains on the existing production service
-until a separate cutover is approved.
+tag and commit. The deploy job starts the persistent `sun-world-api` container
+after schema migration and candidate health checks pass.
 
 The GitHub Actions SSH session uses keepalive options for the server-side build.
 The API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors before
@@ -106,8 +112,8 @@ has an incompatible type, the command fails instead of rewriting data.
 During the GitHub Actions deploy, the server runs the migration from the new API
 image with the production secret env directory mounted read-only. If the legacy
 backend config directory exists, the deploy script also mounts it into the
-container at `/app/src/conf` so the schema apply sees the same config files as
-the current production service:
+container at `/app/src/conf` so the schema apply and runtime see the same
+config files as the current production service:
 
 ```bash
 API_MOUNTS=(
@@ -122,6 +128,29 @@ sudo docker run --rm --network host \
   "${API_MOUNTS[@]}" \
   sun-world-api:<git-sha> \
   /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+
+API_ENV=(
+  -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
+)
+
+sudo docker run -d --rm --name sun-world-api-candidate --network host \
+  "${API_ENV[@]}" \
+  -e BLOG_PORT=18000 \
+  "${API_MOUNTS[@]}" \
+  sun-world-api:<git-sha>
+curl -fsS http://127.0.0.1:18000/healthz
+sudo docker rm -f sun-world-api-candidate
+
+sudo systemctl stop blog-api.service || true
+sudo systemctl disable blog-api.service || true
+sudo docker rm -f sun-world-api || true
+sudo docker run -d --restart unless-stopped --name sun-world-api --network host \
+  "${API_ENV[@]}" \
+  -e BLOG_PORT=8000 \
+  "${API_MOUNTS[@]}" \
+  sun-world-api:<git-sha>
+curl -fsS http://127.0.0.1:8000/healthz
+curl -fsS https://api.sunworld.site/healthz
 ```
 
 Do not print the secret file contents. The `--network host` flag preserves

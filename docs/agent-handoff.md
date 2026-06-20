@@ -1,5 +1,44 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.78 persistent API container cutover):
+  - Goal: make the backend API run as a persistent Docker container instead of
+    only using the API image for schema migration.
+  - Status: implemented locally; commit/push pending.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `deploy/frontend/README.md`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - API deploy still runs `schema_migration --mode apply` first.
+    - Then it starts `sun-world-api-candidate` on host-network `BLOG_PORT=18000`
+      and verifies `http://127.0.0.1:18000/healthz`.
+    - After the candidate passes, it stops/disables `blog-api.service`, removes
+      any old `sun-world-api` container, and starts persistent
+      `sun-world-api` with `--restart unless-stopped`, host networking, and
+      `BLOG_PORT=8000`.
+    - It verifies `http://127.0.0.1:8000/healthz` and
+      `https://api.sunworld.site/healthz`.
+    - If the production container health check fails, it removes the container
+      and attempts to re-enable/start `blog-api.service` as rollback.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm check:api:deploy-schema` passed.
+    - `pnpm check:api` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `node --check scripts/check-api-deploy-schema.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+    - `bash -n apps/api/start.sh` could not run locally because bash is not
+      installed in this Windows shell.
+  - Next step:
+    - Commit/push, run manual `build-and-deploy` with `target=api`, then
+      verify `sudo docker ps` shows persistent `sun-world-api` and
+      `blog-api.service` is stopped/disabled.
+
 - Latest task addendum (2026-06-20, P1.77 harden Lighthouse API build):
   - Goal: fix the first server-side API build attempt after moving API image
     generation onto Lighthouse.

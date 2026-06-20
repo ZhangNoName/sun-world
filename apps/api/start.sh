@@ -9,6 +9,10 @@ if [ -f "$SECRET_ENV_FILE" ]; then
   set +a
 fi
 
+if [ -n "${BLOG_PORT:-}" ]; then
+  export PORT="$BLOG_PORT"
+fi
+
 export ENV="${ENV:-local}"
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 

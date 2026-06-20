@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.77 harden Lighthouse API build)
+Last updated: 2026-06-20 (main, P1.78 persistent API container cutover)
 
 ## Server
 
@@ -32,24 +32,29 @@ sun-world/
   docs/            # project and architecture documentation
 ```
 
-Backend code is now part of this monorepo, but the production runtime has not
-been cut over yet:
+Backend code is now part of this monorepo. Production API traffic is cut over
+to the monorepo Docker image by the deploy workflow:
 
 - Frontend production is still built from `/home/lighthouse/blog/sun-world`.
 - Backend source lives in `apps/api` for monorepo development and contract generation.
-- Backend production is still running from `/home/lighthouse/blog/blog_end`.
-- Cutting production backend traffic to `apps/api` remains a separate deploy/cutover task.
+- Backend production runs from the `sun-world-api:<commit>` Docker image built
+  from `/home/lighthouse/blog/sun-world/apps/api`.
+- The legacy `/home/lighthouse/blog/blog_end` path remains mounted read-only for
+  production config compatibility.
 
 ## Services
 
 - Frontend container: my-frontend
 - Frontend image: blog-front:latest
 - Frontend host port: 8081
-- Backend service: uvicorn on port 8000
-- Backend production source path today: `/home/lighthouse/blog/blog_end`
+- Backend container: sun-world-api
+- Backend image: sun-world-api:<commit>
+- Backend service: uvicorn in Docker host network on port 8000
+- Backend production source path today: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source path: `/home/lighthouse/blog/sun-world/apps/api`
 - Backend monorepo source exposes `/readyz` for dependency readiness; the
-  current production backend remains on the legacy path until deliberate cutover.
+  deploy workflow verifies `/healthz` locally and through
+  `https://api.sunworld.site/healthz`.
 - GitHub Actions is consolidated into one pipeline in
   `.github/workflows/deploy.yml`. Pull requests run only the `quality` job.
   Non-documentation `main` pushes run `quality` first, then
@@ -80,16 +85,21 @@ been cut over yet:
   API push path repeatedly stalled. Retained metadata artifacts, frontend CCR
   commit-SHA image tags, and local Lighthouse API commit-SHA image tags are the
   current rollback/audit source for built images.
-- API deployment still only runs
+- API deployment runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
-  image, so missing MySQL application tables/columns can be created
-  conservatively. The workflow does not start the API container, change Nginx,
-  or restart `blog-api.service`; API traffic still stays on the existing
-  production service until explicit cutover approval. During the schema apply,
-  the deploy job mounts `/home/lighthouse/.config/blog_end` read-only and, when
-  it exists, the legacy backend `src/conf` directory read-only into
-  `/app/src/conf` so the transient API container can read the same production
-  config without printing secrets.
+  image first, so missing MySQL application tables/columns can be created
+  conservatively. It then starts a short-lived `sun-world-api-candidate`
+  container with `BLOG_PORT=18000` on the host network and verifies `/healthz`.
+  After the candidate passes, the workflow stops and disables
+  `blog-api.service`, starts the persistent `sun-world-api` container with
+  `BLOG_PORT=8000` on the host network, and verifies both
+  `http://127.0.0.1:8000/healthz` and
+  `https://api.sunworld.site/healthz`. If the production container health check
+  fails, the workflow removes the container and attempts to re-enable/start
+  `blog-api.service` as rollback. During schema apply and runtime, the deploy
+  job mounts `/home/lighthouse/.config/blog_end` read-only and, when it exists,
+  the legacy backend `src/conf` directory read-only into `/app/src/conf` so the
+  container can read the same production config without printing secrets.
 - The API MySQL schema guard is declared in
   `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
@@ -147,7 +157,7 @@ been cut over yet:
 
 - https://sunworld.site -> frontend container on 127.0.0.1:8081
 - https://www.sunworld.site -> frontend container on 127.0.0.1:8081
-- https://api.sunworld.site -> backend on 127.0.0.1:8000
+- https://api.sunworld.site -> backend Docker container on 127.0.0.1:8000
 - https://shop.sunworld.site -> frontend container on 127.0.0.1:8081
 
 ## Automation

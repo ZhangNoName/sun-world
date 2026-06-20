@@ -42,19 +42,30 @@ if (workflow) {
     'API_IMAGE_NAME: sun-world-api',
     'api_changed:',
     'build-api:',
-    'Build and push API image',
-    'docker/login-action@v3',
-    'push: true',
+    'Build API image on Lighthouse',
+    'deploy_image="${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"',
     'api-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}',
     'API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}',
-    'API_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}',
+    'API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}',
     'if [ "$API_CHANGED" = "true" ]; then',
-    'sudo docker pull "$API_IMAGE"',
+    'sudo docker image inspect "$API_IMAGE"',
     'API_MOUNTS=(',
     '/home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro',
     '/home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
+    'sun-world-api-candidate',
+    '-e BLOG_PORT=18000',
+    'curl -fsS http://127.0.0.1:18000/healthz',
+    'sudo systemctl stop blog-api.service',
+    'sudo systemctl disable blog-api.service',
+    'sudo docker run -d --restart unless-stopped --name sun-world-api --network host',
+    '-e BLOG_PORT=8000',
+    'API_READY=false',
+    'curl -fsS http://127.0.0.1:8000/healthz',
+    'sudo systemctl enable blog-api.service',
+    'sudo systemctl start blog-api.service',
+    'https://api.sunworld.site/healthz',
     '. /home/lighthouse/.config/blog_end/auth.env',
   ]
 
@@ -72,7 +83,7 @@ if (workflow) {
     )
   ) {
     violations.push(
-      'deploy workflow must not cut over the production API service implicitly'
+      'deploy workflow must use the guarded host-network API container cutover path'
     )
   }
 }
