@@ -94,7 +94,6 @@ if (workflow) {
     'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache',
     'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max',
     'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache',
-    'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:buildcache,mode=min',
     'provenance: false',
     'timeout-minutes: 30',
     'actions/upload-artifact@v4',
@@ -138,6 +137,12 @@ if (workflow) {
   if (/cache-to:\s*type=gha/.test(workflow)) {
     violations.push(
       'deploy workflow must not use blocking Buildx GHA cache export'
+    )
+  }
+
+  if (/\$\{\{\s*env\.API_IMAGE_NAME\s*\}\}:buildcache,mode=/.test(workflow)) {
+    violations.push(
+      'API build must not export registry cache; keep cache-from only to avoid long BuildKit cache upload tails'
     )
   }
 

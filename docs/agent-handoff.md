@@ -1,5 +1,32 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.73 disable API cache export):
+  - Goal: remove API `cache-to` entirely after `mode=max` and the attempted
+    `mode=min` strategy still left API builds spending too long in BuildKit
+    registry cache export.
+  - Status: implemented locally; commit/push pending. Manual deploy run
+    `27860415430` was canceled before pushing this strategy to avoid waiting
+    on the old API cache export behavior.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `deploy/frontend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Frontend cache export remains `mode=max`.
+    - API keeps `cache-from` but no longer exports registry cache through
+      `cache-to`.
+    - The GitHub Actions deploy protocol guard now rejects API registry cache
+      export if it is reintroduced.
+  - Verification:
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed after formatting.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+    - GitHub run `27860415430` was confirmed canceled before pushing the new
+      cache strategy.
+
 - Latest task addendum (2026-06-20, P1.72 API build cache export trim):
   - Goal: reduce repeated `Build and push API image` time caused by BuildKit
     exporting large API cache sets to Tencent CCR.

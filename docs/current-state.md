@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.72 API build cache export trim)
+Last updated: 2026-06-20 (main, P1.73 disable API cache export)
 
 ## Server
 
@@ -210,11 +210,11 @@ The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
   the full Python dependency installation layer.
 - GitHub Actions Docker builds use Tencent CCR registry cache tags for both
   frontend and API images. Frontend exports registry cache with `mode=max`.
-  API imports the registry cache but exports with `mode=min` to reduce the
-  repeated `Build and push API image` tail time spent in BuildKit registry
-  cache export. API build timeout is 30 minutes to allow the first Python
-  dependency cache warm-up; quality, frontend build, and deploy jobs remain
-  capped at 15 minutes.
+  API imports the existing registry cache but does not export API cache back to
+  the registry, avoiding the repeated `Build and push API image` tail time
+  spent in BuildKit registry cache export. API build timeout is 30 minutes to
+  allow the first Python dependency cache warm-up; quality, frontend build, and
+  deploy jobs remain capped at 15 minutes.
 - `pnpm check:platform` runs `scripts/check-platform-goal-audit.mjs`, which
   verifies the repository has durable evidence for the commit policy,
   frontend-backend chain, monitoring platform, packaging/build optimization,
