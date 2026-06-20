@@ -76,13 +76,23 @@ application tables and adds missing application columns. If an existing column
 has an incompatible type, the command fails instead of rewriting data.
 
 During the GitHub Actions deploy, the server runs the migration from the new API
-image with the production secret env file mounted read-only:
+image with the production secret env directory mounted read-only. If the legacy
+backend has an untracked `local.override.yml`, the deploy script also mounts it
+into the container at `/app/src/conf/local.override.yml`:
 
 ```bash
+API_MOUNTS=(
+  -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
+)
+if [ -f /home/lighthouse/blog/blog_end/src/conf/local.override.yml ]; then
+  API_MOUNTS+=(
+    -v /home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro
+  )
+fi
 sudo docker run --rm --network host \
-  -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
+  "${API_MOUNTS[@]}" \
   ccr.ccs.tencentyun.com/<namespace>/sun-world-api:<git-sha> \
-  /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+  /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 ```
 
 Do not print the secret file contents. The `--network host` flag preserves

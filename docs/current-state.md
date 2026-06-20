@@ -78,7 +78,11 @@ been cut over yet:
   image, so missing MySQL application tables/columns can be created
   conservatively. The workflow does not start the API container, change Nginx,
   or restart `blog-api.service`; API traffic still stays on the existing
-  production service until explicit cutover approval.
+  production service until explicit cutover approval. During the schema apply,
+  the deploy job mounts `/home/lighthouse/.config/blog_end` read-only and, when
+  it exists, the legacy backend `src/conf/local.override.yml` read-only into
+  `/app/src/conf/local.override.yml` so the transient API container can read the
+  same production config without printing secrets.
 - The API MySQL schema guard is declared in
   `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use

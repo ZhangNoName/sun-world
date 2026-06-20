@@ -1,5 +1,33 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.65 API schema deploy config mount):
+  - Goal: fix the deploy failure after API build/push and Docker path
+    detection succeeded, but schema migration connected to MySQL with the
+    default checked-in local config.
+  - Root cause:
+    - The transient API container only mounted the single `auth.env` file at a
+      synthetic `/run/blog_end/auth.env` path.
+    - Production runtime config may also depend on paths under
+      `/home/lighthouse/.config/blog_end` or an untracked legacy
+      `/home/lighthouse/blog/blog_end/src/conf/local.override.yml`.
+    - Without those read-only mounts, schema migration fell back to checked-in
+      `local.yml` defaults and MySQL rejected the connection.
+  - Status: fixed locally; commit/push pending at the time this note was
+    written.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `scripts/check-api-deploy-schema.mjs`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - API schema apply now mounts `/home/lighthouse/.config/blog_end` read-only
+      at the same absolute path inside the container and sources
+      `/home/lighthouse/.config/blog_end/auth.env`.
+    - If the legacy backend `local.override.yml` exists, it is mounted
+      read-only into `/app/src/conf/local.override.yml`.
+    - No secret values are printed or committed.
+
 - Latest task addendum (2026-06-20, P1.64 API schema migration Docker path fix):
   - Goal: fix the follow-up deploy failure after the API image built and
     pushed successfully but schema migration crashed inside the Docker image.

@@ -50,9 +50,12 @@ if (workflow) {
     'API_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}',
     'if [ "$API_CHANGED" = "true" ]; then',
     'sudo docker pull "$API_IMAGE"',
+    'API_MOUNTS=(',
+    '/home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro',
+    '/home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro',
     'python -m src.database.mysql.schema_migration --mode apply',
     'sudo docker run --rm --network host',
-    '/home/lighthouse/.config/blog_end/auth.env',
+    '. /home/lighthouse/.config/blog_end/auth.env',
   ]
 
   for (const fragment of requiredFragments) {

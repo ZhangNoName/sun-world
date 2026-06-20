@@ -488,9 +488,17 @@ jobs:
 
           if [ "$API_CHANGED" = "true" ]; then
             sudo docker pull "$API_IMAGE"
+            API_MOUNTS=(
+              -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
+            )
+            if [ -f /home/lighthouse/blog/blog_end/src/conf/local.override.yml ]; then
+              API_MOUNTS+=(
+                -v /home/lighthouse/blog/blog_end/src/conf/local.override.yml:/app/src/conf/local.override.yml:ro
+              )
+            fi
             sudo docker run --rm --network host \
-              -v /home/lighthouse/.config/blog_end/auth.env:/run/blog_end/auth.env:ro \
-              "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /run/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+              "${API_MOUNTS[@]}" \
+              "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
           else
             echo "No API schema apply needed."
           fi
