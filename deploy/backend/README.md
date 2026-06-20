@@ -73,13 +73,19 @@ The API build job SSHes to Lighthouse, syncs
 `/home/lighthouse/blog/sun-world` to `origin/main`, and runs:
 
 ```bash
-sudo docker build -t sun-world-api:<git-sha> -f apps/api/Dockerfile apps/api
+sudo docker build --progress=plain -t sun-world-api:<git-sha> -f apps/api/Dockerfile apps/api
 ```
 
 It also keeps an `api-deploy-metadata-<git-sha>` artifact with the local image
 tag and commit. It does not start the API container and does not replace
 `blog-api.service`; backend traffic remains on the existing production service
 until a separate cutover is approved.
+
+The GitHub Actions SSH session uses keepalive options for the server-side build.
+The API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors before
+installing `libpq5`, and pip uses Tencent's PyPI mirror, so Lighthouse builds
+avoid the slow GitHub-to-CCR upload path and reduce cross-region package
+downloads.
 
 ## MySQL Schema Guard
 

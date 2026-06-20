@@ -396,7 +396,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
             "$IMAGE_TAG" "$API_IMAGE" <<'REMOTE'
           set -euo pipefail
@@ -421,7 +422,7 @@ jobs:
             exit 1
           fi
 
-          sudo docker build -t "$API_IMAGE" -f apps/api/Dockerfile apps/api
+          sudo docker build --progress=plain -t "$API_IMAGE" -f apps/api/Dockerfile apps/api
           sudo docker image prune -f
           REMOTE
 
@@ -466,7 +467,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
             "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" <<'REMOTE'
           set -euo pipefail

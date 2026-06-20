@@ -64,7 +64,7 @@ The pipeline is split by changed deploy target:
    commit-specific Docker image to Tencent CCR.
 4. `build-api` runs only when API-related files changed, SSHes to Lighthouse,
    syncs `/home/lighthouse/blog/sun-world` to `origin/main`, and builds
-   `sun-world-api:<git-sha>` locally on the server.
+   `sun-world-api:<git-sha>` locally on the server with SSH keepalive enabled.
 5. `deploy` waits for the required web push and/or API server build.
 6. `deploy` SSHes to Lighthouse and pulls the frontend image from Tencent CCR
    when the frontend changed.
@@ -124,7 +124,10 @@ Buildx or pushed to CCR. When only one side changed, prefer manual runs with
 `target=web` or `target=api` instead of `target=all`.
 
 The first API build after a Dockerfile or dependency change may still be slow,
-but later API source-only builds should reuse the Python dependency layer.
+but later API source-only builds should reuse the Python dependency layer. The
+API Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors and uses
+Tencent's PyPI mirror to keep Lighthouse builds inside faster regional
+networks.
 
 ## Required GitHub Variables
 

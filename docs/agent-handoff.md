@@ -1,5 +1,45 @@
 ## Current Handoff
 
+- Latest task addendum (2026-06-20, P1.77 harden Lighthouse API build):
+  - Goal: fix the first server-side API build attempt after moving API image
+    generation onto Lighthouse.
+  - Evidence:
+    - Manual API-only run `27863997059` used commit `7f9b5858` and correctly
+      entered `Build API image on Lighthouse` instead of GitHub Docker Buildx.
+    - The job failed after about 5 minutes with `client_loop: send disconnect:
+      Broken pipe` while Docker was in the `apt-get update` / `libpq5` install
+      layer. This was a server build/SSH/package-source problem, not the old
+      CCR push hang.
+  - Status: implemented locally; commit/push pending.
+  - Important files touched:
+    - `.github/workflows/deploy.yml`
+    - `apps/api/Dockerfile`
+    - `scripts/check-github-actions-deploy.mjs`
+    - `scripts/check-api-dockerfile-cache.mjs`
+    - `deploy/frontend/README.md`
+    - `deploy/backend/README.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - API build and deploy SSH calls now use `ServerAliveInterval=30` and
+      `ServerAliveCountMax=10`.
+    - API server build uses `docker build --progress=plain` for more continuous
+      build output.
+    - `apps/api/Dockerfile` rewrites Debian apt sources to Tencent Cloud
+      mirrors before installing `libpq5`; pip already uses Tencent's PyPI
+      mirror.
+    - Local protocol checks now guard the SSH keepalive, plain Docker progress,
+      and API Dockerfile Tencent apt mirror rules.
+  - Verification:
+    - `pnpm check:api-dockerfile` passed.
+    - `pnpm check:github-actions:deploy` passed.
+    - `pnpm format:check` passed.
+    - `node --check scripts/check-api-dockerfile-cache.mjs` passed.
+    - `node --check scripts/check-github-actions-deploy.mjs` passed.
+    - `git diff --check` passed with Windows CRLF conversion warnings only.
+  - Next step:
+    - Commit/push, then rerun manual `build-and-deploy` with `target=api`.
+
 - Latest task addendum (2026-06-20, P1.76 build API image on Lighthouse):
   - Goal: move API Docker image generation off GitHub Buildx and onto
     Lighthouse after API image pushes kept stalling even with API registry cache
