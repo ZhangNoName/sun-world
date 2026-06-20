@@ -12,8 +12,10 @@
     - The migration is conservative and should not rewrite existing columns;
       these known differences should be skipped explicitly rather than blocking
       unrelated missing-table/missing-column creation.
-  - Status: fixed locally; commit/push pending at the time this note was
-    written.
+  - Status: committed and pushed to `main` as
+    `7c5d3a1f ci: tolerate known legacy mysql schema types`. GitHub Actions
+    run `27856345448` completed successfully, including API image build/push
+    and schema apply on Lighthouse.
   - Important files touched:
     - `apps/api/src/database/mysql/schema_migration.py`
     - `scripts/check-api-schema-types.py`
@@ -33,8 +35,9 @@
       `bigint unsigned` while the target contract expected `int`.
     - This is a compatible integer widening for the current guard's purpose;
       it should not block adding missing tables/columns.
-  - Status: fixed locally; commit/push pending at the time this note was
-    written.
+  - Status: committed and pushed to `main` as
+    `3ece5a19 ci: allow compatible mysql integer types`. This exposed the
+    known legacy schema type differences documented in P1.67.
   - Important files touched:
     - `apps/api/src/database/mysql/schema_migration.py`
     - `scripts/check-api-schema-types.py`
@@ -58,8 +61,9 @@
       `/home/lighthouse/blog/blog_end/src/conf` directory.
     - Without those read-only mounts, schema migration fell back to checked-in
       `local.yml` defaults and MySQL rejected the connection.
-  - Status: fixed locally; commit/push pending at the time this note was
-    written.
+  - Status: committed and pushed to `main` as
+    `263a78b5 ci: mount api legacy config directory`. This fixed production
+    config loading for the transient schema-apply container.
   - Important files touched:
     - `.github/workflows/deploy.yml`
     - `scripts/check-api-deploy-schema.mjs`
@@ -124,9 +128,9 @@
     - `apps/api/poetry.lock` was stale relative to `apps/api/pyproject.toml`.
     - The previous Dockerfile did not run `poetry export`, so the mismatch was
       latent until P1.62 introduced the dependency-cache requirements stage.
-  - Status: committed locally as
-    `ci: support api schema migration in docker`; push and GitHub Actions
-    rerun pending at the time this note was written.
+  - Status: committed and pushed to `main` as
+    `4f1985d7 ci: support api schema migration in docker`, followed by
+    `4471bfd7 ci: use runtime files for api root detection`.
   - Important files touched:
     - `apps/api/poetry.lock`
     - `docs/agent-handoff.md`
