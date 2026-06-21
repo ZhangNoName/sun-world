@@ -580,8 +580,10 @@ jobs:
               "${API_MOUNTS[@]}" \
               "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 
+            API_CORS_ORIGINS="https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping"
             API_ENV=(
               -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
+              -e BLOG_CORS_ORIGINS="$API_CORS_ORIGINS"
             )
 
             sudo docker rm -f sun-world-api-candidate || true

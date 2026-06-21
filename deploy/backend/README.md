@@ -131,6 +131,7 @@ sudo docker run --rm --network host \
 
 API_ENV=(
   -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
+  -e BLOG_CORS_ORIGINS=https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping
 )
 
 sudo docker run -d --name sun-world-api-candidate --network host \
