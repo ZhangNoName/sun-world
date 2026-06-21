@@ -43,6 +43,15 @@ export type BlogListResponse =
     ? components['schemas']['BlogPage']
     : NonNullable<ApiSuccessData<'/blogs/', 'get'>>
 
+export type BlogSortBy = 'updated_at' | 'created_at' | 'view_num'
+export type BlogSortOrder = 'asc' | 'desc'
+
+export interface BlogListQuery {
+  keyword?: string
+  sortBy?: BlogSortBy
+  sortOrder?: BlogSortOrder
+}
+
 // ---- Base blog data ----
 
 export type BlogStats =
@@ -117,8 +126,16 @@ export interface BlogListViewModel {
   hasMore: Ref<boolean>
   /** Total number of items across all pages. */
   total: Ref<number>
+  /** Current search keyword sent to the blog list API. */
+  keyword: Ref<string>
+  /** Current API sort field. */
+  sortBy: Ref<BlogSortBy>
+  /** Current API sort order. */
+  sortOrder: Ref<BlogSortOrder>
   /** Load the first page (replaces current items). */
   loadFirstPage: () => Promise<void>
   /** Append the next page (infinite scroll / load-more). */
   loadMore: () => Promise<void>
+  /** Update search/sort controls and reload from the first page. */
+  updateQuery: (query: BlogListQuery) => Promise<void>
 }

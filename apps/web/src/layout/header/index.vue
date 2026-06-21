@@ -1,11 +1,5 @@
 <script setup lang="ts" name="ZHeader">
-import {
-  Search,
-  QQOutlined,
-  GithubOutlined,
-  PaperSvg,
-  AIGCSvg,
-} from '@sun-world/icons'
+import { QQOutlined, GithubOutlined, PaperSvg } from '@sun-world/icons'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
@@ -38,14 +32,6 @@ const updateTime = () => {
 const editArticle = () => {
   router.push({ path: '/new_article' })
 }
-/**
- * 路由跳转到AIGC界面
- */
-const openAI = () => {
-  const routeData = router.resolve({ path: '/aigc' })
-  window.open(routeData.href, '_blank')
-}
-
 const goHome = () => {
   router.push({ path: '/' })
 }
@@ -85,13 +71,11 @@ onBeforeUnmount(() => {
       </div>
       <div class="right-menu">
         <div class="link-icon">
-          <SvgIcon name="ai" @click="openAI" />
           <SvgIcon name="canvas" @click="canvasHandle" />
           <PaperSvg @click="editArticle" />
           <GithubOutlined @click="openGithub" />
           <QQOutlined @click="openQQ" />
           <div id="qqlogin"></div>
-          <SvgIcon name="search" @click="openAI" />
           <LanguageSwitch />
           <ThemeSwitch />
           <Avator />

@@ -2,70 +2,52 @@
   <div
     ref="containerRef"
     class="waterfall-container"
-    :style="{ gap: props.gap + 'px' }"
+    :style="{ gap: `${props.gap}px` }"
   >
     <div
       v-for="(col, colIndex) in columns"
       :key="colIndex"
       class="waterfall-column"
-      :style="{ width: columnWidth + 'px', gap: props.gap + 'px' }"
+      :style="{ width: `${columnWidth}px`, gap: `${props.gap}px` }"
     >
-      <div
-        v-for="(item, index) in col"
-        :key="item.id || index"
+      <article
+        v-for="item in col"
+        :key="item.id"
         class="waterfall-item"
+        tabindex="0"
+        role="link"
+        @click="showBlog(item)"
+        @keydown.enter="showBlog(item)"
+        @keydown.space.prevent="showBlog(item)"
       >
-        <img
-          v-lazy="item.cover_url"
-          :alt="item.title"
-          :style="{ width: '100%' }"
-        />
-
-        <div class="waterfall-info">
-          <p class="waterfall-title">{{ item.title }}</p>
-
-          <div class="waterfall-meta">
-            <span class="waterfall-author">{{ item.author }}</span>
-            <span class="waterfall-likes">
-              <svg
-                class="like-icon"
-                viewBox="0 0 1024 1024"
-                width="1em"
-                height="1em"
-              >
-                <path
-                  d="M512 878.08c-52.8-51.2-125.44-118.72-192-184.32-66.56-65.6-130.56-128-175.36-180.48-64-75.52-96.64-162.56-96.64-250.88C48 136.32 165.76 48 312.32 48c89.6 0 174.08 43.52 250.24 121.6 76.16-78.08 160.64-121.6 250.24-121.6 146.56 0 264.32 88.32 264.32 194.56 0 88.32-32.64 175.36-96.64 250.88-44.8 52.48-108.8 114.88-175.36 180.48-66.56 65.6-139.2 133.12-192 184.32zM512 809.6c43.52-42.88 111.36-107.52 176.64-171.2 65.28-63.68 126.72-124.8 171.84-177.6 57.6-67.2 86.4-148.8 86.4-233.6 0-104.96-78.72-177.6-191.04-177.6-67.84 0-131.2 32-177.92 84.8-46.72-52.8-110.08-84.8-177.92-84.8-112.32 0-191.04 72.64-191.04 177.6 0 84.8 28.8 166.4 86.4 233.6 45.12 52.8 106.56 113.92 171.84 177.6 65.28 63.68 133.12 128.32 176.64 171.2z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-              {{
-                item.likes >= 10000
-                  ? (item.likes / 10000).toFixed(1) + 'w'
-                  : item.likes
-              }}
-            </span>
-          </div>
+        <div class="waterfall-tags">
+          <span v-if="item.category" class="waterfall-category">
+            {{ item.category }}
+          </span>
+          <span v-for="tag in item.tags" :key="tag" class="waterfall-tag">
+            {{ tag }}
+          </span>
         </div>
-      </div>
+
+        <h2 class="waterfall-title">{{ item.title }}</h2>
+        <p class="waterfall-abstract">{{ item.abstract }}</p>
+
+        <div class="waterfall-meta">
+          <span>{{ item.publishTime }}</span>
+          <span>{{ formatCount(item.viewNum) }} 浏览</span>
+        </div>
+      </article>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
-interface WaterfallItem {
-  id?: string | number
-  title: string
-  author: string
-  likes: number
-  cover_url: string
-  aspect_ratio: number
-}
-
-// ... Props 定义保持不变
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import type { BlogListItem } from '@/modules/blog/types'
 
 interface Props {
-  list?: WaterfallItem[]
+  list?: BlogListItem[]
   columnCount?: number
   gap?: number
 }
@@ -76,55 +58,52 @@ const props = withDefaults(defineProps<Props>(), {
   list: () => [],
 })
 
+const router = useRouter()
 const containerRef = ref<HTMLElement>()
-const columns = reactive<WaterfallItem[][]>([])
+const columns = reactive<BlogListItem[][]>([])
 const columnWidth = ref(0)
 
-// 计算布局
+function formatCount(value: BlogListItem['viewNum']) {
+  const count = Number(value ?? 0)
+  if (!Number.isFinite(count)) return '0'
+  return count >= 10000 ? `${(count / 10000).toFixed(1)}w` : String(count)
+}
+
+function estimateCardHeight(item: BlogListItem) {
+  const titleRows = Math.ceil(item.title.length / 18)
+  const abstractRows = Math.min(Math.ceil(item.abstract.length / 24), 5)
+  const tagRows = item.tags.length > 2 ? 2 : 1
+  return 96 + titleRows * 24 + abstractRows * 22 + tagRows * 30
+}
+
 function renderWaterfall() {
   if (!containerRef.value) return
 
+  const columnCount = Math.max(props.columnCount, 1)
   const containerWidth = containerRef.value.clientWidth
-  // 计算每列的宽度 (总宽 - 总间隙) / 列数
   columnWidth.value =
-    (containerWidth - props.gap * (props.columnCount - 1)) / props.columnCount
+    (containerWidth - props.gap * (columnCount - 1)) / columnCount
 
-  // 1. 初始化每列高度和数据
-  const heights = Array(props.columnCount).fill(0)
+  const heights = Array(columnCount).fill(0)
   columns.splice(
     0,
     columns.length,
-    ...Array(props.columnCount)
-      .fill(null) // 确保用 null 或 undefined 填充，避免 Array.fill 引用同一个数组
+    ...Array(columnCount)
+      .fill(null)
       .map(() => [])
   )
 
-  // 2. 遍历列表，将每个 item 放入当前最短的那一列
   props.list.forEach((item) => {
-    // 找到高度最短的列的索引
     const minIndex = heights.indexOf(Math.min(...heights))
-
-    // ⭐ 关键优化：根据宽高比和当前列宽，计算 item 的【实际渲染高度】
-    // 渲染高度 = 列宽 / 宽高比 (W/H)
-    // 如果 item.aspect_ratio 不存在或为 0，给一个安全默认值 (例如 1:1)
-    const ratio =
-      item.aspect_ratio && item.aspect_ratio > 0 ? item.aspect_ratio : 1
-    const renderedImageHeight = columnWidth.value / ratio
-
-    // 假设卡片信息区有一个固定的高度（例如 50px）
-    const infoHeight = 50
-
-    // 计算整个卡片的高度 (图片高度 + 信息区高度 + 上下边距/padding)
-    const cardHeight = renderedImageHeight + infoHeight + 10
-
-    // 3. 将 item 放入最短列，并更新该列的高度
     columns[minIndex].push(item)
-    // 新高度 = 原高度 + 卡片高度 + 列内的 gap
-    heights[minIndex] += cardHeight + props.gap
+    heights[minIndex] += estimateCardHeight(item) + props.gap
   })
 }
 
-// 监听窗口变化
+function showBlog(item: BlogListItem) {
+  router.push({ path: '/blog', query: { id: item.id } })
+}
+
 onMounted(() => {
   renderWaterfall()
   window.addEventListener('resize', renderWaterfall)
@@ -132,17 +111,16 @@ onMounted(() => {
 
 onBeforeUnmount(() => window.removeEventListener('resize', renderWaterfall))
 
-// 监听列表变化 (不需要 deep: true，因为我们只关心 list 引用是否变化)
 watch(
-  () => props.list,
-  () => renderWaterfall()
+  () => [props.list, props.columnCount, props.gap],
+  () => renderWaterfall(),
+  { deep: true }
 )
 </script>
 
 <style scoped>
 .waterfall-container {
   display: flex;
-  /* 间距通过 props.gap 设置，在 template 中动态绑定 */
   align-items: flex-start;
   width: 100%;
 }
@@ -150,72 +128,99 @@ watch(
 .waterfall-column {
   display: flex;
   flex-direction: column;
-  /* 列内的 item 间距通过 props.gap 设置，在 template 中动态绑定 */
 }
 
 .waterfall-item {
-  /* 小红书卡片样式 */
-  background-color: var(--color-surface-card);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  border: 1px solid var(--card-border-color);
+  background-color: var(--card-bg);
+  color: var(--text-default);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--card-padding);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    background-color var(--motion-duration) var(--motion-ease-standard),
+    border-color var(--motion-duration) var(--motion-ease-standard),
+    box-shadow var(--motion-duration) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-emphasized);
 }
 
-.waterfall-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.waterfall-item:hover,
+.waterfall-item:focus-visible {
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 
-.waterfall-item img {
-  display: block;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+.waterfall-item:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
 }
 
-.waterfall-info {
-  padding: var(--space-2);
+.waterfall-tags {
+  min-height: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.waterfall-category,
+.waterfall-tag {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-full);
+  padding: 0 var(--space-2);
+  font-size: var(--font-small);
+}
+
+.waterfall-category {
+  background: var(--bg-active);
+  color: var(--btn-text-color);
+  border-color: var(--bg-active);
+}
+
+.waterfall-tag {
+  background: var(--bg-component);
+  color: var(--text-secondary);
 }
 
 .waterfall-title {
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  /* 限制两行文字，超出显示省略号 */
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+}
+
+.waterfall-abstract {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
-  line-height: 1.4;
-  margin-bottom: 6px;
+  overflow: hidden;
 }
 
 .waterfall-meta {
+  margin-top: auto;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-lighter);
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-small);
 }
 
-.waterfall-author {
-  max-width: 60%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.waterfall-likes {
-  display: flex;
-  align-items: center;
-}
-
-.like-icon {
-  width: 1em;
-  height: 1em;
-  margin-right: 4px;
-  color: var(--color-border-default);
+@media (prefers-reduced-motion: reduce) {
+  .waterfall-item {
+    transform: none !important;
+  }
 }
 </style>

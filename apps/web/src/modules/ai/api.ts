@@ -1,7 +1,27 @@
 import { API_ROUTES } from '@sun-world/contracts'
 import { API_BASE_URL } from '@/shared/config'
 import { apiPost } from '@/shared/api'
-import type { AiChatPayload, AiStreamMessage, AiStreamOptions } from './types'
+import type {
+  AiChatPayload,
+  AiProviderOption,
+  AiStreamMessage,
+  AiStreamOptions,
+} from './types'
+
+export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    model: 'deepseek-chat',
+    description: 'Server-side OpenAI-compatible provider.',
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    model: 'openai-compatible',
+    description: 'Fallback provider configured on the API server.',
+  },
+]
 
 export async function sendAiMessage(
   message: string,
@@ -159,9 +179,7 @@ function handleStreamLine(line: string, options: AiStreamOptions): boolean {
 }
 
 function buildAiUrl(path: string): string {
-  const baseUrl = (
-    import.meta.env.VITE_AI_URL || API_BASE_URL
-  ).trim()
+  const baseUrl = (import.meta.env.VITE_AI_URL || API_BASE_URL).trim()
 
   if (!baseUrl) {
     return path

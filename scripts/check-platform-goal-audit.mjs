@@ -39,6 +39,13 @@ function requireText(label, source, pattern, reason) {
 requireScript('check:platform', 'node scripts/check-platform-goal-audit.mjs')
 requireScript('check:web', 'node scripts/check-web.mjs')
 requireScript('check:api', 'node scripts/run-api-check.mjs')
+requireScript('sun-ai', 'node tools/sun-ai-cli/src/cli.mjs')
+requireScript(
+  'check:sun-ai:contracts',
+  'node scripts/check-sun-ai-contract-sync.mjs'
+)
+requireScript('check:sun-ai:cli', 'node scripts/check-sun-ai-cli.mjs')
+requireScript('check:ai-interface', 'node scripts/check-ai-interface.mjs')
 requireScript(
   'check:contracts:generate',
   'node scripts/check-contracts-generate-script.mjs'
@@ -110,6 +117,30 @@ const requiredFiles = [
   ['scripts/check-web.mjs', 'cross-platform frontend verification'],
   ['scripts/run-api-check.mjs', 'cross-platform backend verification'],
   ['scripts/check-all.mjs', 'cross-platform root verification'],
+  ['tools/sun-ai-cli/src/cli.mjs', 'Sun AI CLI entrypoint'],
+  [
+    'tools/sun-ai-cli/src/capabilities.mjs',
+    'curated Sun AI capability metadata',
+  ],
+  ['tools/sun-ai-cli/src/http-client.mjs', 'Sun AI CLI HTTP adapter'],
+  [
+    'scripts/check-sun-ai-contract-sync.mjs',
+    'Sun AI OpenAPI contract sync check',
+  ],
+  ['scripts/check-sun-ai-cli.mjs', 'Sun AI CLI behavior check'],
+  ['scripts/check-ai-interface.mjs', 'AI interface protocol check'],
+  [
+    'docs/superpowers/specs/2026-06-20-ai-chat-interface-provider-design.md',
+    'AI chat interface and provider design',
+  ],
+  [
+    '.agents/skills/sun-world-ai/SKILL.md',
+    'repository-scoped Sun World AI skill',
+  ],
+  [
+    '.agents/skills/sun-world-ai/references/cli.md',
+    'Sun AI CLI skill reference',
+  ],
   ['scripts/generate-web-build-manifest.mjs', 'bundle manifest generation'],
   ['scripts/check-web-build-manifest.mjs', 'bundle manifest protocol check'],
   ['scripts/generate-web-build-summary.mjs', 'bundle summary generation'],
@@ -157,13 +188,13 @@ requireText(
 requireText(
   'current state',
   currentState,
-  /P1\.70/,
+  /P1\.80/,
   'the latest verified checkpoint marker'
 )
 requireText(
   'handoff',
   handoff,
-  /P1\.70 compose frontend\/API staging/,
+  /P1\.80 lazy AI manager startup/,
   'the latest handoff checkpoint'
 )
 if (violations.length) {

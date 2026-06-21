@@ -10,6 +10,14 @@ Last updated: 2026-06-20 (main, P1.80 lazy AI manager startup)
 - Project path: /home/lighthouse/blog/sun-world
 - Primary branch: main
 
+## Handoff Layout
+
+- `docs/agent-handoff.md` is the short active handoff entrypoint.
+- Branch-specific active task notes live under `docs/handoff/branches/`.
+- Completed or stale historical checkpoints live under `docs/handoff/archive/`.
+- Keep secrets, tokens, passwords, private keys, certificates, and full env
+  values out of all handoff files.
+
 ## Repository Layout
 
 `main` is still the production branch. The migration branch `monorepo-api-import`
@@ -186,8 +194,10 @@ It must link to:
 https://beian.miit.gov.cn/
 ```
 
-The desktop footer is rendered in `apps/web/src/layout/deskLayout.vue` via `ZFooter`.
-The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
+The filing is rendered only on the homepage by
+`apps/web/src/modules/home/ui/IcpFilingCard.vue`. Desktop placement is after
+the left-side weather card; mobile placement is inside
+`apps/web/src/modules/home/pages/HomePage.vue`.
 
 ## Known Issues
 

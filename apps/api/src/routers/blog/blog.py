@@ -68,6 +68,9 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
 async def get_blogs_paginated(
     page: int = 1,
     pageSize: int = 10,
+    keyword: str | None = None,
+    sortBy: str = "updated_at",
+    sortOrder: str = "desc",
     blog_manager: BlogManager = Depends(get_blog_manager)
 ):
     """
@@ -82,7 +85,13 @@ async def get_blogs_paginated(
         dict: 包含分页信息的字典
     """
     logger.info(f'分页参数：{page}--{pageSize}')
-    blogs = blog_manager.get_blog_by_page(page, pageSize)
+    blogs = blog_manager.get_blog_by_page(
+        page,
+        pageSize,
+        keyword=keyword,
+        sort_by=sortBy,
+        sort_order=sortOrder,
+    )
     return ok(data=blogs, msg="获取成功")
 
 

@@ -2,9 +2,12 @@ import { ref, reactive, type Ref } from 'vue'
 import { formatDate } from '@/util/function'
 import { fetchBlogPage } from '../api'
 import type {
+  BlogListQuery,
   BlogListItem,
   BlogListViewModel,
   BlogRawItem,
+  BlogSortBy,
+  BlogSortOrder,
   CategoryResponse,
   TagResponse,
 } from '../types'
@@ -30,12 +33,24 @@ export function useBlogList(
   const loading = ref(false)
   const total = ref(0)
   const hasMore = ref(true)
+  const keyword = ref('')
+  const sortBy = ref<BlogSortBy>('updated_at')
+  const sortOrder = ref<BlogSortOrder>('desc')
 
   const page = reactive({ page: 1, pageSize })
 
   /** Resolve a reactive or plain array to a plain array. */
   const resolve = <T>(source: T[] | Ref<T[]>): T[] =>
     Array.isArray(source) ? source : source.value
+
+  const normalizeTagLabel = (name: string): string => {
+    if (/^frontend-basic-\d{2}$/.test(name)) return '前端基础'
+    if (/^algorithm-basic-\d{2}$/.test(name)) return '算法基础'
+    return name
+  }
+
+  const uniqueLabels = (labels: string[]): string[] =>
+    Array.from(new Set(labels.filter(Boolean)))
 
   /** Map a raw API item to the BlogListItem view model. */
   const mapItem = (o: BlogRawItem): BlogListItem => {
@@ -49,13 +64,18 @@ export function useBlogList(
       id: String(o.id ?? ''),
       commentNum: o.comment_num,
       byteNum: o.byte_num,
-      tags: (o.tag ?? [])
-        .map((tagId: number | string) =>
-          resolvedTags.find((t) => String(t.id) === String(tagId))?.name
-        )
-        .filter(Boolean) as string[],
-      category: resolvedCategories.find((c) => String(c.id) === String(o.category))
-        ?.name || '未分类',
+      tags: uniqueLabels(
+        (o.tag ?? [])
+          .map(
+            (tagId: number | string) =>
+              resolvedTags.find((t) => String(t.id) === String(tagId))?.name
+          )
+          .filter(Boolean)
+          .map((name) => normalizeTagLabel(String(name)))
+      ),
+      category:
+        resolvedCategories.find((c) => String(c.id) === String(o.category))
+          ?.name || '未分类',
       viewNum: o.view_num,
       publishTime: o.created_at ? formatDate(o.created_at) : '-',
     }
@@ -65,7 +85,11 @@ export function useBlogList(
     loading.value = true
     page.page = 1
     try {
-      const res = await fetchBlogPage(page.page, page.pageSize)
+      const res = await fetchBlogPage(page.page, page.pageSize, {
+        keyword: keyword.value,
+        sortBy: sortBy.value,
+        sortOrder: sortOrder.value,
+      })
       const mapped = (res.list ?? []).map(mapItem)
       items.value = mapped
       total.value = res.total
@@ -80,7 +104,11 @@ export function useBlogList(
     loading.value = true
     page.page++
     try {
-      const res = await fetchBlogPage(page.page, page.pageSize)
+      const res = await fetchBlogPage(page.page, page.pageSize, {
+        keyword: keyword.value,
+        sortBy: sortBy.value,
+        sortOrder: sortOrder.value,
+      })
       const mapped = (res.list ?? []).map(mapItem)
       items.value = [...items.value, ...mapped]
       total.value = res.total
@@ -90,12 +118,23 @@ export function useBlogList(
     }
   }
 
+  const updateQuery = async (query: BlogListQuery) => {
+    if (query.keyword !== undefined) keyword.value = query.keyword
+    if (query.sortBy !== undefined) sortBy.value = query.sortBy
+    if (query.sortOrder !== undefined) sortOrder.value = query.sortOrder
+    await loadFirstPage()
+  }
+
   return {
     items,
     loading,
     hasMore,
     total,
+    keyword,
+    sortBy,
+    sortOrder,
     loadFirstPage,
     loadMore,
+    updateQuery,
   }
 }

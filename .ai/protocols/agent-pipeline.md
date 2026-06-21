@@ -6,7 +6,8 @@ manual work pass context between each other.
 ## Stable Channels
 
 - Durable project context: repository files.
-- Current task state: `../../docs/agent-handoff.md`.
+- Current task state: `../../docs/agent-handoff.md`, with branch-specific
+  detail under `../../docs/handoff/branches/`.
 - Platform plan: `../plans/platform-roadmap.md`.
 - Sync and branch rules: `./sync-protocol.md`.
 - Server resource limits: `./server-resource-policy.md`.
@@ -128,5 +129,8 @@ When passing work between agents, record:
 - blockers,
 - next suggested step.
 
-Use `../../docs/agent-handoff.md` for project work. Use the server-side
-`/home/lighthouse/agent-context` only for cross-project or server-level work.
+Use `../../docs/agent-handoff.md` as the project handoff entrypoint. For
+feature branches, write detailed task state to
+`../../docs/handoff/branches/<branch-slug>.md` and keep the entrypoint short.
+Use the server-side `/home/lighthouse/agent-context` only for cross-project or
+server-level work.
