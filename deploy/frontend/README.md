@@ -27,23 +27,24 @@ sudo tail -100 /var/log/sun-world-auto-deploy.log
 
 `.github/workflows/deploy.yml` defines the GitHub Actions deployment pipeline.
 It is the single GitHub Actions pipeline for quality checks and deployment.
-Pull requests run the `quality` job only. Non-documentation `main` pushes run
-`quality` first, then continue to changed-target build and deploy jobs. Manual
-production runs use `workflow_dispatch`; choose the `main` branch when running
-them. Documentation-only pushes are ignored, so they do not trigger the
-pipeline. Workflow-only, deploy-doc, and local verification script changes
-still validate the deployment workflow shape, but they exit through `no-deploy`
+Pull requests and non-documentation `main` pushes run `detect-changes` first,
+then run only the relevant quality jobs before changed-target build and deploy
+jobs. Manual production runs use
+`workflow_dispatch`; choose the `main` branch when running them.
+Documentation-only pushes are ignored, so they do not trigger the pipeline.
+Workflow-only, deploy-doc, and local verification script changes still validate
+formatting and deployment workflow shape, but they exit through `no-deploy`
 instead of rebuilding production images.
 
 Manual runs support three modes:
 
 - `build-and-deploy`: build the selected target, then deploy it. Frontend
-  images are pushed to Tencent CCR. API images are built locally on Lighthouse.
-- `build-only`: build the selected target without touching production. For API,
-  this leaves `sun-world-api:<git-sha>` on Lighthouse.
+  and API images are built locally on Lighthouse.
+- `build-only`: build the selected target without touching production. This
+  leaves `sun-world-frontend:<git-sha>` and/or `sun-world-api:<git-sha>` on
+  Lighthouse.
 - `deploy-existing`: skip builds and deploy an existing image tag. For
-  frontend this means an existing Tencent CCR tag. For API this means an
-  existing local Lighthouse image tag.
+  frontend and API this means an existing local Lighthouse image tag.
 
 Manual runs also accept `target` as `all`, `web`, or `api`. The `image_tag`
 input is required only for `deploy-existing`.
@@ -51,42 +52,50 @@ input is required only for `deploy-existing`.
 The workflow uses one production concurrency group with
 `cancel-in-progress: true`, so if multiple `main` or manual production runs
 overlap, the older in-progress run is canceled and the newest run wins. The
-quality, frontend build, and deploy jobs each have a 15-minute timeout. The API
-image build job has a 30-minute timeout because it builds the Python image on
+quality and deploy jobs each have a 15-minute timeout. The frontend and API
+image build jobs have 30-minute timeouts because they build Docker images on
 Lighthouse.
 
 The pipeline is split by changed deploy target:
 
-1. `quality` checks formatting, workflow protocol, frontend, API, UI package,
-   and contracts.
-2. `detect-changes` checks the pushed file list after `quality` passes.
-3. `build-web` runs only when frontend-related files changed and pushes a
-   commit-specific Docker image to Tencent CCR.
-4. `build-api` runs only when API-related files changed, SSHes to Lighthouse,
+Build frontend image on Lighthouse and Build API image on Lighthouse are the
+two production image build jobs.
+
+1. `detect-changes` checks the pushed or pull-request file list.
+2. `quality-common` checks formatting and GitHub Actions workflow protocols.
+3. `quality-web` runs frontend, UI package, and contracts checks only when
+   frontend-related files changed.
+4. `quality-api` runs API checks only when API-related files changed.
+5. `build-web` runs only when frontend-related files changed, SSHes to
+   Lighthouse, syncs `/home/lighthouse/blog/sun-world` to `origin/main`, and
+   builds `sun-world-frontend:<git-sha>` locally on the server.
+6. `build-api` runs only when API-related files changed, SSHes to Lighthouse,
    syncs `/home/lighthouse/blog/sun-world` to `origin/main`, and builds
    `sun-world-api:<git-sha>` locally on the server with SSH keepalive enabled.
-5. `deploy` waits for the required web push and/or API server build.
-6. `deploy` SSHes to Lighthouse and pulls the frontend image from Tencent CCR
-   when the frontend changed.
-7. If only frontend changed, deploy pulls and recreates `my-frontend` only.
-8. If only API changed, deploy uses the local API image, runs the MySQL schema
+7. `build-web` and `build-api` use the same server-side lock while syncing the
+   repo and building images, so simultaneous frontend/API changes do not race
+   on the same checkout.
+8. `deploy` waits for the required server-side image build(s).
+9. If only frontend changed, deploy verifies the local frontend image and
+   recreates `my-frontend` only.
+10. If only API changed, deploy uses the local API image, runs the MySQL schema
    migration command, verifies a candidate container on port `18000`, then
    switches the persistent `sun-world-api` container onto port `8000`.
-9. If both changed, the frontend image is pushed and the API local image is
-   built before the deploy job performs the frontend switch and persistent API
+11. If both changed, both local images are built before the deploy job performs
+   the frontend switch and persistent API
    container switch in one server session.
-10. If no deployable files changed, the workflow exits through the `no-deploy`
+12. If no deployable files changed, the workflow exits through the `no-deploy`
    job. This includes changes limited to GitHub Actions workflow files,
    deployment docs, or local verification scripts.
 
-Frontend images are tagged in Tencent CCR with the commit SHA:
+Frontend images are built and tagged locally on Lighthouse:
 
 ```text
-ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:<git-sha>
+sun-world-frontend:<git-sha>
 ```
 
 The server deploy step uses the `<git-sha>` tag so a specific deployment can be
-audited or rolled back from the registry.
+audited or rolled back from an already-built local image.
 
 The API image is built and tagged locally on Lighthouse:
 
@@ -106,25 +115,18 @@ The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the
 `docker` group.
 
-## Image Registry
+## Server-Side Image Builds
 
-GitHub Actions pushes frontend images to Tencent Cloud Container Registry
-personal edition at `ccr.ccs.tencentyun.com`. Lighthouse is already logged in to
-the registry with Docker, so frontend deployment only needs to run
-`sudo docker pull` for the changed commit-specific image tag. API images are
-built on Lighthouse instead of being pushed from GitHub to Tencent CCR, avoiding
-the slow GitHub-to-CCR API image upload path.
+GitHub Actions does not push production images through a remote registry. The
+workflow SSHes to Lighthouse and runs Docker builds in
+`/home/lighthouse/blog/sun-world` for both frontend and API changes. This avoids
+the GitHub-to-registry export path that repeatedly timed out during frontend
+BuildKit cache export.
 
-Frontend image builds also use a Tencent CCR registry cache tag:
-
-```text
-ccr.ccs.tencentyun.com/<namespace>/sun-world-frontend:buildcache
-```
-
-The frontend build exports a fuller `mode=max` cache. API registry cache
-import/export is disabled because API images are no longer built by GitHub
-Buildx or pushed to CCR. When only one side changed, prefer manual runs with
-`target=web` or `target=api` instead of `target=all`.
+The frontend and API build jobs share a server-side lock file at
+`/tmp/sun-world-docker-build.lock` while syncing the repo and building Docker
+images. When only one side changed, prefer manual runs with `target=web` or
+`target=api` instead of `target=all`.
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer. The
@@ -140,13 +142,9 @@ Configure these under GitHub repository settings as Variables:
 LIGHTHOUSE_HOST
 LIGHTHOUSE_USER
 LIGHTHOUSE_PORT
-TENCENT_CCR_REGISTRY
-TENCENT_CCR_NAMESPACE
-TENCENT_CCR_USERNAME
 ```
 
 `LIGHTHOUSE_PORT` can be set to `22` for the default SSH port.
-`TENCENT_CCR_REGISTRY` can be `ccr.ccs.tencentyun.com`.
 
 Optional GitHub Actions variables:
 
@@ -168,7 +166,6 @@ Configure this under GitHub repository settings as a Secret:
 
 ```text
 LIGHTHOUSE_SSH_KEY
-TENCENT_CCR_PASSWORD
 ```
 
 Do not commit SSH keys, `.env` values, or server secrets to the
@@ -176,9 +173,7 @@ repository.
 
 Artifacts are retained for 30 days:
 
-- `frontend-dist-<git-sha>` keeps the generated `apps/web/dist` output.
-- `frontend-deploy-metadata-<git-sha>` keeps the image tag, commit, build
-  manifest, and build summary.
+- `frontend-deploy-metadata-<git-sha>` keeps the frontend image tag and commit.
 - `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
 
 Each retained artifact is tied to the commit-specific image tag written by the

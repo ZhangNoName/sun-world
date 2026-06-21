@@ -47,14 +47,18 @@ if (workflow) {
     'cancel-in-progress: true',
     'permissions:',
     'contents: read',
-    'quality:',
-    'Format, checks, and unit tests',
+    'detect-changes:',
+    'Detect changed deploy targets',
+    'quality-common:',
+    'Format and workflow checks',
+    'quality-web:',
+    'Frontend checks',
+    'quality-api:',
+    'API checks',
     'timeout-minutes: 15',
     'pnpm format:check',
     'pnpm check:github-actions:ci',
     'pnpm check:github-actions:deploy',
-    'detect-changes:',
-    'needs: quality',
     'web_changed:',
     'api_changed:',
     'any_changed:',
@@ -62,6 +66,10 @@ if (workflow) {
     'deploy_needed:',
     'image_tag:',
     'image_tag is required when mode=deploy-existing.',
+    'github.event_name }}" = "pull_request"',
+    'github.event.pull_request.base.sha',
+    'build_needed=false',
+    'deploy_needed=false',
     '.github/workflows/deploy.yml)',
     'Workflow-only changes should validate the pipeline shape but',
     'should not redeploy production images.',
@@ -71,29 +79,21 @@ if (workflow) {
     'build-web:',
     'build-api:',
     'deploy:',
-    "TENCENT_CCR_REGISTRY: ${{ vars.TENCENT_CCR_REGISTRY || 'ccr.ccs.tencentyun.com' }}",
     'FRONTEND_IMAGE_NAME: sun-world-frontend',
     'API_IMAGE_NAME: sun-world-api',
     'actions/setup-python@v5',
     "python-version: '3.11'",
     'Install API dependencies',
     'python -m pip install ./apps/api',
-    'pnpm build:web',
-    'pnpm build:web:manifest',
-    'pnpm build:web:summary',
     'pnpm check:web',
     'pnpm check:api',
-    'docker/login-action@v3',
-    'vars.TENCENT_CCR_USERNAME',
-    'secrets.TENCENT_CCR_PASSWORD',
-    'vars.TENCENT_CCR_NAMESPACE',
-    '${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}',
+    "needs.detect-changes.outputs.web_changed == 'true'",
+    "needs.detect-changes.outputs.api_changed == 'true'",
+    "needs.quality-web.result == 'success'",
+    "needs.quality-api.result == 'success'",
+    'Build frontend image on Lighthouse',
+    'deploy_image="${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"',
     'deploy_image="${API_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"',
-    'docker/build-push-action@v6',
-    'push: true',
-    'cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache',
-    'cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max',
-    'provenance: false',
     'timeout-minutes: 30',
     'actions/upload-artifact@v4',
     'retention-days: 30',
@@ -101,15 +101,22 @@ if (workflow) {
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
+    'LOCK_FILE="/tmp/sun-world-docker-build.lock"',
+    'flock 9',
+    'sudo docker build --progress=plain',
+    '-t "$FRONTEND_IMAGE"',
+    '--build-arg VITE_BASE_URL="$VITE_BASE_URL"',
+    '--build-arg VITE_TELEMETRY_ENDPOINT="$VITE_TELEMETRY_ENDPOINT"',
+    '-f Dockerfile .',
     'Build API image on Lighthouse',
     'ServerAliveInterval=30',
     'ServerAliveCountMax=10',
     'sudo docker build --progress=plain -t "$API_IMAGE" -f apps/api/Dockerfile apps/api',
     'Deploy changed services on Lighthouse',
-    'Pull images and deploy on Lighthouse',
+    'Deploy local images on Lighthouse',
     'needs.detect-changes.outputs.image_tag',
     'if [ "$WEB_CHANGED" = "true" ]; then',
-    'sudo docker pull "$FRONTEND_IMAGE"',
+    'sudo docker image inspect "$FRONTEND_IMAGE"',
     'sudo docker rm -f my-frontend',
     'if [ "$API_CHANGED" = "true" ]; then',
     'api-deploy-metadata-${{ needs.detect-changes.outputs.image_tag }}',
@@ -152,25 +159,29 @@ if (workflow) {
     )
   }
 
-  if (/cache-to:\s*type=gha/.test(workflow)) {
+  if (/^\s+quality:\s*$/m.test(workflow) || /needs:\s*quality/.test(workflow)) {
     violations.push(
-      'deploy workflow must not use blocking Buildx GHA cache export'
+      'deploy workflow must detect changes before running split quality jobs'
     )
   }
 
-  if (/\$\{\{\s*env\.API_IMAGE_NAME\s*\}\}:buildcache/.test(workflow)) {
+  if (/cache-to:\s*type=/.test(workflow)) {
+    violations.push('deploy workflow must not use blocking Buildx cache export')
+  }
+
+  if (/buildcache/.test(workflow)) {
     violations.push(
-      'API build must not use Tencent CCR registry cache while debugging BuildKit cache export hangs'
+      'deploy workflow must not export registry cache while BuildKit cache export hangs are unresolved'
     )
   }
 
   if (
-    /uses:\s*docker\/build-push-action@v6[\s\S]*context:\s*apps\/api/.test(
+    /uses:\s*docker\/build-push-action@v6|docker\/login-action@v3|docker\/setup-buildx-action@v3/.test(
       workflow
     )
   ) {
     violations.push(
-      'API image must be built on Lighthouse, not pushed from GitHub Buildx'
+      'frontend and API images must be built on Lighthouse, not pushed from GitHub Buildx'
     )
   }
 
@@ -181,12 +192,12 @@ if (workflow) {
   }
 
   if (
-    /ghcr\.io|docker save|docker load|frontend-image\.tar\.gz|api-image\.tar\.gz|actions\/download-artifact@v4|scp -i ~\/\.ssh\/sun_world_deploy_key|appleboy\/ssh-action|packages:\s*write/.test(
+    /ghcr\.io|ccr\.ccs\.tencentyun\.com|TENCENT_CCR|docker pull|docker save|docker load|frontend-image\.tar\.gz|api-image\.tar\.gz|actions\/download-artifact@v4|scp -i ~\/\.ssh\/sun_world_deploy_key|appleboy\/ssh-action|packages:\s*write/.test(
       workflow
     )
   ) {
     violations.push(
-      'deploy workflow must use Tencent CCR push/pull, not GHCR or scp/docker-load image archives'
+      'deploy workflow must use Lighthouse-local Docker images, not registry push/pull or archive transfer'
     )
   }
 
@@ -214,14 +225,11 @@ if (deployDoc) {
     'LIGHTHOUSE_USER',
     'LIGHTHOUSE_SSH_KEY',
     'LIGHTHOUSE_PORT',
-    'TENCENT_CCR_REGISTRY',
-    'TENCENT_CCR_NAMESPACE',
-    'TENCENT_CCR_USERNAME',
-    'TENCENT_CCR_PASSWORD',
-    'ccr.ccs.tencentyun.com',
     'sun-world-frontend',
     'sun-world-api',
-    'docker pull',
+    'Build frontend image on Lighthouse',
+    'Build API image on Lighthouse',
+    'docker build',
     'schema_migration',
     'cancel-in-progress',
     'artifact',
@@ -233,9 +241,13 @@ if (deployDoc) {
     }
   }
 
-  if (/GHCR|ghcr\.io|docker login ghcr\.io|docker load|scp/.test(deployDoc)) {
+  if (
+    /GHCR|ghcr\.io|ccr\.ccs\.tencentyun\.com|Tencent CCR|docker login ghcr\.io|docker pull|docker load|scp/.test(
+      deployDoc
+    )
+  ) {
     violations.push(
-      'frontend deploy doc must describe the Tencent CCR push/pull deploy path, not GHCR or scp/docker-load image archives'
+      'frontend deploy doc must describe the Lighthouse-local image deploy path, not registry push/pull or archive transfer'
     )
   }
 }
