@@ -168,6 +168,11 @@ to the monorepo Docker image by the deploy workflow:
 - https://www.sunworld.site -> frontend container on 127.0.0.1:8081
 - https://api.sunworld.site -> backend Docker container on 127.0.0.1:8000
 - https://shop.sunworld.site -> frontend container on 127.0.0.1:8081
+- API CORS allows the production frontend origins `https://sunworld.site`,
+  `https://www.sunworld.site`, `https://zsf.shopping`, and
+  `https://www.zsf.shopping`. The deploy workflow passes the same list through
+  `BLOG_CORS_ORIGINS` so server-side secret env overrides do not accidentally
+  drop these public origins.
 
 ## Automation
 

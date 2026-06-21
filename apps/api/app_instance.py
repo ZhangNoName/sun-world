@@ -78,6 +78,8 @@ class Application(FastAPI):
         return [
             "https://sunworld.site",
             "https://www.sunworld.site",
+            "https://zsf.shopping",
+            "https://www.zsf.shopping",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
         ]
