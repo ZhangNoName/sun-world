@@ -124,15 +124,6 @@ const formattedStartDate = computed(() => {
           <span>&nbsp;，{{ $t('footer.views') }}：</span>
           <strong>{{ views }}</strong>
         </div>
-
-        <a
-          class="beian-link text-small"
-          href="https://beian.miit.gov.cn/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          豫ICP备2024081960号
-        </a>
       </div>
       <div class="right">
         <div class="logo"></div>
@@ -178,14 +169,6 @@ const formattedStartDate = computed(() => {
       }
       .copyright {
         width: 80%;
-      }
-      .beian-link {
-        color: inherit;
-        text-align: left;
-        text-decoration: none;
-      }
-      .beian-link:hover {
-        text-decoration: underline;
       }
     }
     .right {

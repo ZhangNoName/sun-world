@@ -80,7 +80,6 @@ curl -I https://sunworld.site
 curl -I https://www.sunworld.site
 ```
 
-For ICP filing compliance, the homepage footer must show `豫ICP备2024081960号` and link to `https://beian.miit.gov.cn/`.
+For ICP filing compliance, the homepage must show `豫ICP备2024081960号` and link to `https://beian.miit.gov.cn/`.
 
-The desktop footer is rendered in `apps/web/src/layout/deskLayout.vue` via `ZFooter`.
-The mobile filing link is rendered in `apps/web/src/layout/mobLayout.vue`.
+The filing is rendered only on the homepage by `apps/web/src/modules/home/ui/IcpFilingCard.vue`, with desktop placement after the left-side weather card and mobile placement inside `apps/web/src/modules/home/pages/HomePage.vue`.

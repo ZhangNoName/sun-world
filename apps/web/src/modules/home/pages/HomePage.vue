@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import SelfInfoCard from '@/modules/blog/ui/SelfInfoCard.vue'
 import WeatherCard from '@/modules/home/ui/WeatherCard.vue'
+import IcpFilingCard from '@/modules/home/ui/IcpFilingCard.vue'
 import BlogHomeFeed from '@/modules/blog/ui/BlogHomeFeed.vue'
 import {
   buildWebsiteJsonLd,
@@ -55,10 +56,12 @@ onUnmounted(() => {
     <aside class="left" ref="leftRef" aria-label="个人信息与天气">
       <SelfInfoCard />
       <WeatherCard />
+      <IcpFilingCard class="desktop-icp-card" />
       <div ref="bottomRef" class="sidebar-sentinel"></div>
     </aside>
 
     <BlogHomeFeed />
+    <IcpFilingCard class="mobile-icp-card" />
   </div>
 </template>
 
@@ -92,6 +95,10 @@ onUnmounted(() => {
   height: 2px;
 }
 
+.mobile-icp-card {
+  display: none;
+}
+
 @media screen and (max-width: 1024px) {
   .home-page {
     grid-template-columns: 1fr;
@@ -100,6 +107,10 @@ onUnmounted(() => {
 
   .left {
     display: none;
+  }
+
+  .mobile-icp-card {
+    display: flex;
   }
 }
 

@@ -5,6 +5,7 @@ import type {
   BlogCreateContract,
   BlogDetail,
   BlogListResponse,
+  BlogListQuery,
   BlogStats,
   BlogTagList,
   CreateBlogPayload,
@@ -19,14 +20,22 @@ import type {
  */
 export async function fetchBlogPage(
   page: number,
-  pageSize: number
+  pageSize: number,
+  options: BlogListQuery = {}
 ): Promise<BlogListResponse> {
-  return apiGet(API_ROUTES.blog.list, { query: { page, pageSize } })
+  const keyword = options.keyword?.trim()
+  const query = {
+    page,
+    pageSize,
+    ...(keyword ? { keyword } : {}),
+    ...(options.sortBy ? { sortBy: options.sortBy } : {}),
+    ...(options.sortOrder ? { sortOrder: options.sortOrder } : {}),
+  }
+
+  return apiGet(API_ROUTES.blog.list, { query })
 }
 
-export async function fetchBlogById(
-  id: string
-): Promise<BlogDetail> {
+export async function fetchBlogById(id: string): Promise<BlogDetail> {
   return apiGet(API_ROUTES.blog.detail, { path: { blog_id: Number(id) } })
 }
 

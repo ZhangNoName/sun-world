@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 import uuid
 from datetime import datetime
 
@@ -8,6 +8,72 @@ from pymongo.cursor import Cursor
 from src.database.mongo.mongodb_manage import MongoDBManager
 from src.database.mysql.mysql_manage import MySQLManager
 from src.type.blog_type import Blog, BlogBase, BlogCreate, BlogDetail, TagNew
+
+
+BLOG_LIST_SORT_COLUMNS = {
+    "created_at": "created_at",
+    "updated_at": "updated_at",
+    "view_num": "view_num",
+}
+
+
+def _normalize_sort_by(sort_by: Optional[str]) -> str:
+    return BLOG_LIST_SORT_COLUMNS.get(sort_by or "", "updated_at")
+
+
+def _normalize_sort_order(sort_order: Optional[str]) -> str:
+    return "ASC" if (sort_order or "").lower() == "asc" else "DESC"
+
+
+def _normalize_keyword(keyword: Optional[str]) -> str:
+    return (keyword or "").strip()
+
+
+def build_blog_list_query(
+    page: int,
+    page_size: int,
+    keyword: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = None,
+) -> tuple[str, list[Any]]:
+    safe_page = max(page, 1)
+    safe_page_size = max(min(page_size, 100), 1)
+    skip = (safe_page - 1) * safe_page_size
+    params: list[Any] = []
+    where_clauses = ["COALESCE(is_deleted, 0) = 0"]
+
+    normalized_keyword = _normalize_keyword(keyword)
+    if normalized_keyword:
+        where_clauses.append("(title LIKE %s OR abstract LIKE %s)")
+        like_keyword = f"%{normalized_keyword}%"
+        params.extend([like_keyword, like_keyword])
+
+    order_column = _normalize_sort_by(sort_by)
+    order_direction = _normalize_sort_order(sort_order)
+    where_sql = " AND ".join(where_clauses)
+    sql = f"""
+        SELECT *
+        FROM blog
+        WHERE {where_sql}
+        ORDER BY {order_column} {order_direction}, id {order_direction}
+        LIMIT %s OFFSET %s
+    """
+    params.extend([safe_page_size, skip])
+    return sql, params
+
+
+def build_blog_list_count_query(keyword: Optional[str] = None) -> tuple[str, list[Any]]:
+    params: list[Any] = []
+    where_clauses = ["COALESCE(is_deleted, 0) = 0"]
+
+    normalized_keyword = _normalize_keyword(keyword)
+    if normalized_keyword:
+        where_clauses.append("(title LIKE %s OR abstract LIKE %s)")
+        like_keyword = f"%{normalized_keyword}%"
+        params.extend([like_keyword, like_keyword])
+
+    where_sql = " AND ".join(where_clauses)
+    return f"SELECT COUNT(*) AS count FROM blog WHERE {where_sql}", params
 
 
 
@@ -89,9 +155,9 @@ class BlogManager:
             bool: 删除成功返回 True，否则返回 False
         """
         sql = """
-        UPDATE blogs
+        UPDATE blog
         SET is_deleted = TRUE
-        WHERE id = %s AND is_deleted = FALSE
+        WHERE id = %s AND COALESCE(is_deleted, 0) = 0
         """
         result = self.db.execute(sql, (blog_id,))
         return result > 0
@@ -131,7 +197,14 @@ class BlogManager:
         return None
 
 
-    def get_blog_by_page(self, page: int, page_size: int) -> Dict[str, Any]:
+    def get_blog_by_page(
+        self,
+        page: int,
+        page_size: int,
+        keyword: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         分页获取博客列表，并附加标签信息。
 
@@ -143,10 +216,16 @@ class BlogManager:
             Dict[str, Any]: 包含博客列表、总数、分页信息的字典
         """
 
-        skip = (page - 1) * page_size
         # 1. 查询博客数据
         logger.debug(f'分页获取数据 {page}{page_size}')
-        blogs_data = self.db.find_page_query("blog", filter={}, skip=skip, page_size=page_size)
+        query, query_params = build_blog_list_query(
+            page=page,
+            page_size=page_size,
+            keyword=keyword,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+        blogs_data = self.db.fetch_all(query, tuple(query_params))
 
         # 获取所有博客的 ID
         blog_ids = [blog["id"] for blog in blogs_data]
@@ -195,7 +274,9 @@ class BlogManager:
             blog_id = blog["id"]
             blog["tag"] = [tag_id for tag_id in blog_tag_map.get(blog_id, [])]  # 关联 tag
 
-        total_count = self.db.count("blog")  # 统计总数
+        count_query, count_params = build_blog_list_count_query(keyword=keyword)
+        count_result = self.db.execute(count_query, tuple(count_params))
+        total_count = count_result[0].get("count", 0) if count_result else 0
         # total_count = 10
         # logger.info(f'查询到的结果{blogs_data}')
         return {

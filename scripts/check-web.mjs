@@ -46,6 +46,16 @@ run('Frontend client secret check', 'node', [
 
 run('AI interface check', 'node', ['scripts/check-ai-interface.mjs'])
 
+run('Blog waterfall real-data check', 'node', [
+  'scripts/check-blog-waterfall-real-data.mjs',
+])
+
+run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
+
+run('AI public entry hidden check', 'node', [
+  'scripts/check-ai-public-entry-hidden.mjs',
+])
+
 run('Contracts tests', 'pnpm', ['test:contracts'])
 
 run('Contracts generate script check', 'pnpm', ['check:contracts:generate'])

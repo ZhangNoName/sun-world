@@ -6,10 +6,20 @@
         <img src="/logo.svg" alt="Sun World" width="40" height="40" />
       </div>
       <div class="right">
-        <SunButton variant="icon" size="icon" aria-label="搜索" @click="toggleDrawer">
+        <SunButton
+          variant="icon"
+          size="icon"
+          aria-label="搜索"
+          @click="toggleDrawer"
+        >
           <SvgIcon name="search" />
         </SunButton>
-        <SunButton variant="icon" size="icon" aria-label="菜单" @click="toggleDrawer">
+        <SunButton
+          variant="icon"
+          size="icon"
+          aria-label="菜单"
+          @click="toggleDrawer"
+        >
           <SvgIcon name="menu" />
         </SunButton>
       </div>
@@ -24,17 +34,6 @@
       </RouterView>
     </div>
 
-    <!-- ICP filing -->
-    <a
-      v-if="showFooter"
-      class="mob-beian-link"
-      href="https://beian.miit.gov.cn/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      豫ICP备2024081960号
-    </a>
-
     <!-- Bottom navigation (conditionally shown) -->
     <nav v-if="showFooter" class="mob-footer">
       <div
@@ -44,12 +43,6 @@
         <router-link to="/home">
           <SvgIcon name="home" alt="home" />
           <span class="text">首页</span>
-        </router-link>
-      </div>
-      <div class="bot-channel" :class="{ active: activePath === '/aigc' }">
-        <router-link to="/aigc">
-          <SvgIcon name="ai" alt="ai" />
-          <span class="text">AI</span>
         </router-link>
       </div>
       <div class="bot-channel" :class="{ active: activePath === '/canvas' }">
@@ -98,53 +91,22 @@
         </div>
 
         <nav class="drawer-nav">
-          <router-link
-            to="/home"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/home" class="drawer-link" @click="closeDrawer">
             首页
           </router-link>
-          <router-link
-            to="/blog"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/blog" class="drawer-link" @click="closeDrawer">
             博客
           </router-link>
-          <router-link
-            to="/aigc"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
-            AI
-          </router-link>
-          <router-link
-            to="/canvas"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/canvas" class="drawer-link" @click="closeDrawer">
             画布
           </router-link>
-          <router-link
-            to="/tools"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/tools" class="drawer-link" @click="closeDrawer">
             工具
           </router-link>
-          <router-link
-            to="/video"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/video" class="drawer-link" @click="closeDrawer">
             视频
           </router-link>
-          <router-link
-            to="/me"
-            class="drawer-link"
-            @click="closeDrawer"
-          >
+          <router-link to="/me" class="drawer-link" @click="closeDrawer">
             个人中心
           </router-link>
         </nav>
@@ -249,17 +211,6 @@ onUnmounted(() => {
   flex: auto;
   overflow: auto;
   scroll-behavior: smooth;
-}
-
-/* ---- ICP link ---- */
-.mob-beian-link {
-  flex-shrink: 0;
-  color: var(--text-secondary, var(--text-default));
-  font-size: var(--font-size-sm);
-  line-height: 30px;
-  text-align: center;
-  text-decoration: none;
-  background: var(--mobile-nav-bg);
 }
 
 /* ---- Bottom navigation ---- */
@@ -433,7 +384,8 @@ onUnmounted(() => {
 
 .drawer-slide-enter-active,
 .drawer-slide-leave-active {
-  transition: transform var(--motion-duration-slow) var(--motion-ease-emphasized);
+  transition: transform var(--motion-duration-slow)
+    var(--motion-ease-emphasized);
 }
 
 .drawer-slide-enter-from,
