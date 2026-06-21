@@ -8,6 +8,8 @@ older completed checkpoints to docs/handoff/archive/.
 
 - codex/ai-cli-skills: see
   docs/handoff/branches/codex-ai-cli-skills.md.
+- codex/server-side-web-build: see
+  docs/handoff/branches/codex-server-side-web-build.md.
 
 ## Latest Stable Checkpoint
 

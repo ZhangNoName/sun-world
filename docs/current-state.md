@@ -64,35 +64,36 @@ to the monorepo Docker image by the deploy workflow:
   deploy workflow verifies `/healthz` locally and through
   `https://api.sunworld.site/healthz`.
 - GitHub Actions is consolidated into one pipeline in
-  `.github/workflows/deploy.yml`. Pull requests run only the `quality` job.
-  Non-documentation `main` pushes run `quality` first, then
-  `detect-changes` decides whether web, API, both, or neither need deployment.
-  `build-web` runs only for frontend changes and pushes a commit-specific image
-  to Tencent CCR personal edition at `ccr.ccs.tencentyun.com`. `build-api`
-  runs only for API changes, SSHes to Lighthouse, syncs
-  `/home/lighthouse/blog/sun-world` to `origin/main`, and builds
-  `sun-world-api:<commit>` locally on the server. The final deploy job SSHes to
-  Lighthouse, pulls the frontend image only when web changed, and uses the
-  local API image only when API changed. If both web and API changed, the
-  frontend CCR image and API local image must both be ready before deployment
-  starts.
+  `.github/workflows/deploy.yml`. Pull requests and non-documentation `main`
+  pushes run `detect-changes` first, then split quality jobs by changed target.
+  `quality-common` always validates formatting and workflow protocols,
+  `quality-web` runs only for frontend/shared web changes, and `quality-api`
+  runs only for API/shared contract changes.
+  `build-web` and `build-api` run only for their changed targets, SSH to
+  Lighthouse, sync `/home/lighthouse/blog/sun-world` to `origin/main`, and
+  build `sun-world-frontend:<commit>` / `sun-world-api:<commit>` locally on the
+  server. Both server-side build jobs share
+  `/tmp/sun-world-docker-build.lock` while syncing and building so simultaneous
+  frontend/API changes do not race on the same checkout. The final deploy job
+  SSHes to Lighthouse and uses the local images for changed services.
   Production runs share one fixed concurrency group with
   `cancel-in-progress: true`, so newer main/manual runs cancel older
-  in-progress production runs. Quality, build, and deploy jobs are capped at
-  15 minutes.
+  in-progress production runs. Common/web/API quality jobs are capped at
+  10/15/15 minutes, server-side build jobs at 30 minutes, and deploy at 15
+  minutes.
   Workflow-only, deploy-doc, and local verification script changes validate
   the workflow but are not deployment targets, so they exit through the
   `no-deploy` job.
 - Manual deployment supports `build-and-deploy`, `build-only`, and
   `deploy-existing` modes. `deploy-existing` skips builds and redeploys a
-  previous image tag, usually a known-good commit SHA. For frontend this is a
-  Tencent CCR tag; for API this is a local `sun-world-api:<commit>` image that
-  already exists on Lighthouse.
-- The deploy workflow intentionally avoids GHCR and GitHub-to-server image
-  archive uploads. It also avoids GitHub-to-CCR API image pushes because the
-  API push path repeatedly stalled. Retained metadata artifacts, frontend CCR
-  commit-SHA image tags, and local Lighthouse API commit-SHA image tags are the
-  current rollback/audit source for built images.
+  previous image tag, usually a known-good commit SHA. For frontend and API,
+  this is a local `sun-world-frontend:<commit>` or `sun-world-api:<commit>`
+  image that already exists on Lighthouse.
+- The deploy workflow intentionally avoids GHCR, GitHub-to-server image archive
+  uploads, and GitHub-to-registry image pushes because registry cache export and
+  image push paths repeatedly stalled. Retained metadata artifacts and local
+  Lighthouse commit-SHA image tags are the current rollback/audit source for
+  built images.
 - API deployment runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image first, so missing MySQL application tables/columns can be created
@@ -235,21 +236,22 @@ the left-side weather card; mobile placement is inside
   those dependencies before copying `src`, and then copies API source files in
   the final lightweight layer. Source-only API changes should not invalidate
   the full Python dependency installation layer.
-- GitHub Actions Docker builds push frontend images to Tencent CCR personal
-  edition. Frontend still uses Tencent CCR registry cache with `mode=max`.
-  API images are built on Lighthouse with
+- GitHub Actions Docker builds run on Lighthouse for both frontend and API.
+  Frontend images use
+  `sudo docker build --progress=plain -t sun-world-frontend:<commit> -f Dockerfile .`.
+  API images use
   `sudo docker build --progress=plain -t sun-world-api:<commit> -f apps/api/Dockerfile apps/api`
-  instead of GitHub Buildx, so API no longer uses Tencent CCR registry cache or
-  image push. The API build SSH session uses keepalive options because the
-  first Lighthouse build previously disconnected with `client_loop: send
-  disconnect: Broken pipe` during a quiet `apt-get` download period. The API
-  Dockerfile rewrites Debian apt sources to Tencent Cloud mirrors before
-  installing `bash` and `libpq5`, while pip already uses Tencent's PyPI mirror.
+  instead of GitHub Buildx, so production images no longer use remote registry
+  cache export or image push. The SSH build sessions use keepalive options
+  because earlier Lighthouse builds disconnected with `client_loop: send
+  disconnect: Broken pipe` during quiet download periods. The API Dockerfile
+  rewrites Debian apt sources to Tencent Cloud mirrors before installing `bash`
+  and `libpq5`, while pip already uses Tencent's PyPI mirror.
   `bash` is required by `apps/api/start.sh`, which is the API image default
   command. Prefer separate manual runs for web and API when only one target
-  needs deployment. API build timeout is 30 minutes to allow the Python
-  dependency layer to build on the server; quality, frontend build, and deploy
-  jobs remain capped at 15 minutes. The deploy workflow keeps
+  needs deployment. Frontend and API build timeouts are 30 minutes to allow
+  server-side Docker builds; quality and deploy jobs remain capped at 15
+  minutes. The deploy workflow keeps
   `sun-world-api-candidate` long enough to print `docker inspect` and
   `docker logs --tail 120` if candidate health checks fail, then removes the
   failed container before exiting.

@@ -32,7 +32,7 @@ name: Deploy Sun World
           - web
           - api
       image_tag:
-        description: Existing CCR image tag for deploy-existing, usually a commit SHA
+        description: Existing local image tag for deploy-existing, usually a commit SHA
         required: false
         type: string
 
@@ -44,77 +44,12 @@ permissions:
   contents: read
 
 env:
-  TENCENT_CCR_REGISTRY: ${{ vars.TENCENT_CCR_REGISTRY || 'ccr.ccs.tencentyun.com' }}
   FRONTEND_IMAGE_NAME: sun-world-frontend
   API_IMAGE_NAME: sun-world-api
 
 jobs:
-  quality:
-    name: Format, checks, and unit tests
-    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'deploy-existing'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install API dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ./apps/api
-
-      - name: Check formatting
-        env:
-          PRETTIER_BASE_REF: ${{ github.event.before }}
-        run: pnpm format:check
-
-      - name: Check GitHub Actions protocols
-        run: |
-          pnpm check:github-actions:ci
-          pnpm check:github-actions:deploy
-
-      - name: Run frontend checks
-        run: pnpm check:web
-
-      - name: Run API checks
-        run: pnpm check:api
-
-      - name: Run UI package tests
-        run: pnpm test:ui
-
-      - name: Run contracts tests
-        run: pnpm test:contracts
-
   detect-changes:
     name: Detect changed deploy targets
-    needs: quality
-    if: |
-      always() &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
-      (needs.quality.result == 'success' || needs.quality.result == 'skipped')
     runs-on: ubuntu-latest
     outputs:
       web_changed: ${{ steps.detect.outputs.web_changed }}
@@ -186,6 +121,13 @@ jobs:
             esac
 
             changed_files=".github/workflows/deploy.yml"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            before="${{ github.event.pull_request.base.sha }}"
+            after="${{ github.event.pull_request.head.sha }}"
+            image_tag="$after"
+            build_needed=false
+            deploy_needed=false
+            changed_files="$(git diff --name-only "$before" "$after")"
           else
             before="${{ github.event.before }}"
             after="${{ github.sha }}"
@@ -213,7 +155,11 @@ jobs:
                 web_changed=true
                 api_changed=true
                 ;;
-              Dockerfile|apps/web/*|apps/web/**|packages/contracts/*|packages/contracts/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
+              packages/contracts/*|packages/contracts/**)
+                web_changed=true
+                api_changed=true
+                ;;
+              Dockerfile|apps/web/*|apps/web/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
                 web_changed=true
                 ;;
               deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)
@@ -245,20 +191,95 @@ jobs:
           printf 'web_changed=%s api_changed=%s any_changed=%s build_needed=%s deploy_needed=%s image_tag=%s\n' \
             "$web_changed" "$api_changed" "$any_changed" "$build_needed" "$deploy_needed" "$image_tag"
 
-  build-web:
-    name: Build and push frontend image
+  quality-common:
+    name: Format and workflow checks
     needs: detect-changes
-    if: needs.detect-changes.outputs.web_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'deploy-existing'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.detect-changes.outputs.image_tag }}
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        env:
+          PRETTIER_BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: pnpm format:check
+
+      - name: Check GitHub Actions protocols
+        run: |
+          pnpm check:github-actions:ci
+          pnpm check:github-actions:deploy
+
+  quality-web:
+    name: Frontend checks
+    needs: detect-changes
+    if: |
+      (github.event_name != 'workflow_dispatch' || inputs.mode != 'deploy-existing') &&
+      needs.detect-changes.outputs.web_changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend checks
+        run: pnpm check:web
+
+      - name: Run UI package tests
+        run: pnpm test:ui
+
+      - name: Run contracts tests
+        run: pnpm test:contracts
+
+  quality-api:
+    name: API checks
+    needs: detect-changes
+    if: |
+      (github.event_name != 'workflow_dispatch' || inputs.mode != 'deploy-existing') &&
+      needs.detect-changes.outputs.api_changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -285,31 +306,39 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ./apps/api
 
-      - name: Build frontend deployment artifacts
-        run: |
-          pnpm build:web
-          pnpm build:web:manifest
-          pnpm build:web:summary
+      - name: Run API checks
+        run: pnpm check:api
 
-      - name: Prepare build artifacts
+  build-web:
+    name: Build frontend image on Lighthouse
+    needs:
+      - detect-changes
+      - quality-common
+      - quality-web
+      - quality-api
+    if: |
+      always() &&
+      needs.detect-changes.outputs.web_changed == 'true' &&
+      needs.detect-changes.outputs.build_needed == 'true' &&
+      (needs.quality-common.result == 'success' || needs.quality-common.result == 'skipped') &&
+      needs.quality-web.result == 'success' &&
+      (needs.quality-api.result == 'success' || needs.quality-api.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
+
+    steps:
+      - name: Prepare frontend deploy metadata
         id: image-meta
         shell: bash
         run: |
           set -euo pipefail
-          deploy_image="${TENCENT_CCR_REGISTRY}/${{ vars.TENCENT_CCR_NAMESPACE }}/${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
+          deploy_image="${FRONTEND_IMAGE_NAME}:${{ needs.detect-changes.outputs.image_tag }}"
           mkdir -p deploy-artifacts
           printf '%s\n' "${{ needs.detect-changes.outputs.image_tag }}" > deploy-artifacts/commit.txt
           printf '%s\n' "$deploy_image" > deploy-artifacts/image.txt
-          cp apps/web/dist/build-manifest.json deploy-artifacts/build-manifest.json
-          cp apps/web/dist/build-summary.json deploy-artifacts/build-summary.json
           echo "deploy_image=$deploy_image" >> "$GITHUB_OUTPUT"
-
-      - name: Upload frontend dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist-${{ needs.detect-changes.outputs.image_tag }}
-          path: apps/web/dist
-          retention-days: 30
 
       - name: Upload frontend deployment metadata artifact
         uses: actions/upload-artifact@v4
@@ -318,37 +347,85 @@ jobs:
           path: deploy-artifacts
           retention-days: 30
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Prepare SSH
+        env:
+          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
+          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
+          LIGHTHOUSE_SSH_KEY: ${{ secrets.LIGHTHOUSE_SSH_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$LIGHTHOUSE_SSH_KEY" > ~/.ssh/sun_world_deploy_key
+          chmod 600 ~/.ssh/sun_world_deploy_key
+          ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
 
-      - name: Login to Tencent CCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.TENCENT_CCR_REGISTRY }}
-          username: ${{ vars.TENCENT_CCR_USERNAME }}
-          password: ${{ secrets.TENCENT_CCR_PASSWORD }}
+      - name: Build frontend image on Lighthouse
+        env:
+          FRONTEND_IMAGE: ${{ steps.image-meta.outputs.deploy_image }}
+          IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
+          LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
+          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
+          VITE_TELEMETRY_ENDPOINT: ${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+            "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
+            "$IMAGE_TAG" "$FRONTEND_IMAGE" "$VITE_BASE_URL" "$VITE_TELEMETRY_ENDPOINT" <<'REMOTE'
+          set -euo pipefail
+          IMAGE_TAG="$1"
+          FRONTEND_IMAGE="$2"
+          VITE_BASE_URL="$3"
+          VITE_TELEMETRY_ENDPOINT="$4"
+          REPO_DIR="/home/lighthouse/blog/sun-world"
+          LOCK_FILE="/tmp/sun-world-docker-build.lock"
 
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ steps.image-meta.outputs.deploy_image }}
-          cache-from: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
-          provenance: false
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          build-args: |
-            VITE_BASE_URL=${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
-            VITE_TELEMETRY_ENDPOINT=${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
+          exec 9>"$LOCK_FILE"
+          flock 9
+
+          cd "$REPO_DIR"
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Server repository has uncommitted changes; refusing to build frontend image." >&2
+            git status --short >&2
+            exit 1
+          fi
+
+          git fetch --prune origin main
+          git checkout main
+          git pull --ff-only origin main
+
+          current_sha="$(git rev-parse HEAD)"
+          if [ "$current_sha" != "$IMAGE_TAG" ]; then
+            echo "Server main is at $current_sha, expected $IMAGE_TAG." >&2
+            exit 1
+          fi
+
+          sudo docker build --progress=plain \
+            -t "$FRONTEND_IMAGE" \
+            --build-arg VITE_BASE_URL="$VITE_BASE_URL" \
+            --build-arg VITE_TELEMETRY_ENDPOINT="$VITE_TELEMETRY_ENDPOINT" \
+            -f Dockerfile .
+          sudo docker image prune -f
+          REMOTE
 
   build-api:
     name: Build API image on Lighthouse
-    needs: detect-changes
-    if: needs.detect-changes.outputs.api_changed == 'true' && needs.detect-changes.outputs.build_needed == 'true'
+    needs:
+      - detect-changes
+      - quality-common
+      - quality-web
+      - quality-api
+    if: |
+      always() &&
+      needs.detect-changes.outputs.api_changed == 'true' &&
+      needs.detect-changes.outputs.build_needed == 'true' &&
+      (needs.quality-common.result == 'success' || needs.quality-common.result == 'skipped') &&
+      (needs.quality-web.result == 'success' || needs.quality-web.result == 'skipped') &&
+      needs.quality-api.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -404,6 +481,10 @@ jobs:
           IMAGE_TAG="$1"
           API_IMAGE="$2"
           REPO_DIR="/home/lighthouse/blog/sun-world"
+          LOCK_FILE="/tmp/sun-world-docker-build.lock"
+
+          exec 9>"$LOCK_FILE"
+          flock 9
 
           cd "$REPO_DIR"
           if ! git diff --quiet || ! git diff --cached --quiet; then
@@ -455,11 +536,11 @@ jobs:
           chmod 600 ~/.ssh/sun_world_deploy_key
           ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
 
-      - name: Pull images and deploy on Lighthouse
+      - name: Deploy local images on Lighthouse
         env:
           WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}
           API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
-          FRONTEND_IMAGE: ${{ env.TENCENT_CCR_REGISTRY }}/${{ vars.TENCENT_CCR_NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
           API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
           LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
@@ -478,7 +559,7 @@ jobs:
           API_IMAGE="$4"
 
           if [ "$WEB_CHANGED" = "true" ]; then
-            sudo docker pull "$FRONTEND_IMAGE"
+            sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
             sudo docker rm -f my-frontend || true
             sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
           else
