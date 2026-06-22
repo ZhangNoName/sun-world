@@ -12,7 +12,13 @@ export const aiModule: AppModule = {
     {
       path: '/aigc',
       component: AigcPage,
-      meta: { module: 'ai', title: 'AI 对话 - Sun World' },
+      meta: {
+        module: 'ai',
+        title: 'AI 对话 - Sun World',
+        hideFooter: true,
+        hideHeader: true,
+        className: 'ai-chat-page-wrapper',
+      },
     },
   ],
   nav: [],

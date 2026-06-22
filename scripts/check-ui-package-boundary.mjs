@@ -1,10 +1,5 @@
 #!/usr/bin/env node
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-} from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -18,6 +13,8 @@ const violations = []
 
 const allowedSubpaths = [
   'button',
+  'chat-composer',
+  'chat-shell',
   'date-picker',
   'input',
   'list',
@@ -53,10 +50,9 @@ function formatPath(path) {
   return normalize(relative(repoRoot, path))
 }
 
-const appFiles = walkFiles(appSrcDir, (path) =>
-  /\.(?:ts|tsx|vue)$/.test(path)
-)
-const uiImportPattern = /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/ui(?:\/[^'"]*)?)['"]/g
+const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx|vue)$/.test(path))
+const uiImportPattern =
+  /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/ui(?:\/[^'"]*)?)['"]/g
 
 for (const file of appFiles) {
   const source = readFileSync(file, 'utf8')

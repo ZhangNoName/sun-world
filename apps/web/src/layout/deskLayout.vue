@@ -42,6 +42,10 @@ const contentClass = computed(() => {
   }
   .content {
     flex: 1;
+    min-height: 0;
+  }
+  .content.ai-chat-page-wrapper {
+    overflow: hidden;
   }
   .footer {
     flex: none;

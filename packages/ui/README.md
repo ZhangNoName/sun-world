@@ -11,6 +11,7 @@ that are actually used:
 ```ts
 import { SunButton } from '@sun-world/ui/button'
 import { SunInput } from '@sun-world/ui/input'
+import { SunChatComposer } from '@sun-world/ui/chat-composer'
 import { SunTag } from '@sun-world/ui/tag'
 ```
 
@@ -76,6 +77,28 @@ Events: `click`.
 | `clearable` | `boolean` | `false` |
 
 Events: `update:modelValue`, `change`, `clear`.
+
+## SunChatComposer
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `modelValue` | `string` | `''` |
+| `placeholder` | `string` | `''` |
+| `loading` | `boolean` | `false` |
+| `clearOnSubmit` | `boolean` | `true` |
+| `submitLabel` | `string` | `'Send'` |
+
+Events: `update:modelValue`, `submit`.
+
+## SunChatShell
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `sidebarWidth` | `number` | `280` |
+| `sidebarCollapsed` | `boolean` | `false` |
+| `ariaLabel` | `string` | `'Chat workspace'` |
+
+Slots: `rail`, `sidebar`, default main content, and `floating`.
 
 ## SunDatePicker
 

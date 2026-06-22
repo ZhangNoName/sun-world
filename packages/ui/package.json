@@ -30,6 +30,16 @@
       "import": "./dist/input.es.js",
       "default": "./dist/input.es.js"
     },
+    "./chat-composer": {
+      "types": "./dist/types/chat-composer.d.ts",
+      "import": "./dist/chat-composer.es.js",
+      "default": "./dist/chat-composer.es.js"
+    },
+    "./chat-shell": {
+      "types": "./dist/types/chat-shell.d.ts",
+      "import": "./dist/chat-shell.es.js",
+      "default": "./dist/chat-shell.es.js"
+    },
     "./date-picker": {
       "types": "./dist/types/date-picker.d.ts",
       "import": "./dist/date-picker.es.js",

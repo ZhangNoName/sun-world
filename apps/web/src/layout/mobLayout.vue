@@ -26,7 +26,7 @@
     </div>
 
     <!-- Main content -->
-    <div class="main-container" id="mf">
+    <div class="main-container" :class="contentClass" id="mf">
       <RouterView v-slot="{ Component, route }">
         <keep-alive>
           <component :is="Component" :key="route.fullPath" />
@@ -136,6 +136,7 @@ const route = useRoute()
 
 // Current active path
 const activePath = computed(() => route.path)
+const contentClass = computed(() => route.meta.className)
 
 const drawerOpen = ref(false)
 
@@ -211,6 +212,11 @@ onUnmounted(() => {
   flex: auto;
   overflow: auto;
   scroll-behavior: smooth;
+}
+
+.main-container.ai-chat-page-wrapper {
+  padding: 0;
+  overflow: hidden;
 }
 
 /* ---- Bottom navigation ---- */

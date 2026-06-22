@@ -26,12 +26,20 @@ export default defineConfig(({ mode }) => {
               ui: path.resolve(__dirname, 'src/index.ts'),
               button: path.resolve(__dirname, 'src/button.ts'),
               input: path.resolve(__dirname, 'src/input.ts'),
+              'chat-composer': path.resolve(__dirname, 'src/chat-composer.ts'),
+              'chat-shell': path.resolve(__dirname, 'src/chat-shell.ts'),
               'date-picker': path.resolve(__dirname, 'src/date-picker.ts'),
               list: path.resolve(__dirname, 'src/list.ts'),
               pagination: path.resolve(__dirname, 'src/pagination.ts'),
               tag: path.resolve(__dirname, 'src/tag.ts'),
-              'loading-skeleton': path.resolve(__dirname, 'src/loading-skeleton.ts'),
-              'theme-provider': path.resolve(__dirname, 'src/theme-provider.ts'),
+              'loading-skeleton': path.resolve(
+                __dirname,
+                'src/loading-skeleton.ts'
+              ),
+              'theme-provider': path.resolve(
+                __dirname,
+                'src/theme-provider.ts'
+              ),
             },
             name: 'SunWorldUi',
             fileName: (format, entryName) => `${entryName}.${format}.js`,

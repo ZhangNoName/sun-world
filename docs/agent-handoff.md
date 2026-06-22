@@ -6,6 +6,8 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Active Branches
 
+- feat/aigc-ui-polish: see
+  docs/handoff/branches/feat-aigc-ui-polish.md.
 - codex/ai-cli-skills: see
   docs/handoff/branches/codex-ai-cli-skills.md.
 - codex/server-side-web-build: see
