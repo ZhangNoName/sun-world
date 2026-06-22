@@ -156,6 +156,8 @@ to the monorepo Docker image by the deploy workflow:
   - `sunworld.site`: covers `sunworld.site`, `www.sunworld.site`, and
     `api.sunworld.site`; expires on 2026-08-29.
   - `shop.sunworld.site`: covers `shop.sunworld.site`; expires on 2026-08-28.
+  - `zsf.shopping`: uploaded manually to `/etc/nginx/ssl`; covers
+    `zsf.shopping` and `www.zsf.shopping`; expires on 2026-09-19.
   The deploy hook
   `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` validates Nginx
   config with `nginx -t` and then reloads Nginx after successful renewal.
@@ -168,6 +170,9 @@ to the monorepo Docker image by the deploy workflow:
 - https://www.sunworld.site -> frontend container on 127.0.0.1:8081
 - https://api.sunworld.site -> backend Docker container on 127.0.0.1:8000
 - https://shop.sunworld.site -> frontend container on 127.0.0.1:8081
+- https://zsf.shopping -> frontend container on 127.0.0.1:8081
+- https://www.zsf.shopping -> frontend container on 127.0.0.1:8081
+  with HTTP redirected to HTTPS by `/etc/nginx/conf.d/zsf.shopping.conf`.
 - API CORS allows the production frontend origins `https://sunworld.site`,
   `https://www.sunworld.site`, `https://zsf.shopping`, and
   `https://www.zsf.shopping`. The deploy workflow passes the same list through
