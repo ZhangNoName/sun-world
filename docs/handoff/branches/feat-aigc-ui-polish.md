@@ -29,11 +29,19 @@ usage, legacy `SvgIcon`, raw UI SVG imports, and non-whitelisted root
 `@sun-world/icons` UI imports. Brand icons and editor tool icons remain
 whitelisted because they are not normal UI operation icons.
 
-2026-06-22 addendum: fixed the homepage desktop footer placement. The desktop
-layout now uses a natural `min-height` page shell and non-shrinking content so
-the global `z-footer` stays after long homepage content instead of appearing
-mid-page beside the sticky home sidebar. Added `scripts/check-home-footer-layout.mjs`
-and wired it into `pnpm check:web`.
+2026-06-22 addendum: retired the desktop global `z-footer`. The desktop layout
+no longer imports or renders `ZFooter`; homepage filing information stays in
+the homepage-only `IcpFilingCard`, and mobile bottom navigation still follows
+`route.meta.hideFooter`. Added `scripts/check-home-footer-layout.mjs` and wired
+it into `pnpm check:web` so the desktop shell cannot reintroduce the retired
+footer.
+
+2026-06-22 addendum: improved homepage blog infinite scroll responsiveness.
+`BlogHomeFeed` now loads 12 posts per page, prefetches when the loader is within
+1600px of the app scroll container, waits until the first page has loaded before
+starting infinite scroll, and lazily resolves `.app-container` after mount
+instead of using the removed `#mf` root. Added
+`scripts/check-blog-infinite-scroll.mjs` and wired it into `pnpm check:web`.
 
 ## Important Files Touched
 
@@ -68,6 +76,9 @@ and wired it into `pnpm check:web`.
 - `apps/web/src/pages/me/me.vue`
 - `apps/web/vite.config.ts`
 - `apps/web/src/layout/deskLayout.vue`
+- `apps/web/src/hooks/InfiniteScroll.ts`
+- `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
+- `scripts/check-blog-infinite-scroll.mjs`
 - `scripts/check-home-footer-layout.mjs`
 - `scripts/check-web.mjs`
 
@@ -132,6 +143,7 @@ Full app icon migration addendum commands:
 Homepage footer layout addendum commands:
 
 - `node scripts/check-home-footer-layout.mjs`
+- `node scripts/check-blog-infinite-scroll.mjs`
 - `node scripts/check-icp-home-card.mjs`
 - `node scripts/check-ai-interface.mjs`
 - `pnpm format:check`
@@ -171,10 +183,14 @@ Homepage footer layout addendum commands:
   --check`, and web production build passed after migration. Brand icons and
   editor tool icons still import from the legacy root as explicit check-script
   exceptions.
-- Homepage footer layout verification passed. `z-footer` placement is guarded
-  by a source check that rejects fixed-height desktop shells and shrinkable
+- Homepage footer layout verification passed. The source check now rejects
+  desktop `ZFooter` rendering, fixed-height desktop shells, and shrinkable
   content, while preserving the AI standalone wrapper's `min-height: 0`
   scrolling contract.
+- Blog infinite scroll verification passed. The source check rejects the stale
+  `#mf` root, requires lazy app-container root resolution, requires a 1600px
+  prefetch margin, requires 12 posts per page, and requires the first-load
+  readiness gate.
 
 ## Blockers
 

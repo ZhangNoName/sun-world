@@ -16,10 +16,11 @@ type ListModeType = 'list' | 'waterfall'
 type SortOption = `${BlogSortBy}:${BlogSortOrder}`
 
 const { tagList, categoryList, loadBlogBaseData } = useBlogBaseData()
-const blogList = useBlogList(tagList, categoryList)
+const blogList = useBlogList(tagList, categoryList, 12)
 const listMode = ref<ListModeType>('list')
 const searchKeyword = ref('')
 const sortOption = ref<SortOption>('updated_at:desc')
+const infiniteScrollReady = ref(false)
 const { screen } = useBreakpoint()
 
 const isInitialLoading = computed(
@@ -64,6 +65,7 @@ const applyBlogQuery = async () => {
     BlogSortBy,
     BlogSortOrder,
   ]
+  infiniteScrollReady.value = false
   try {
     await blogList.updateQuery({
       keyword: searchKeyword.value,
@@ -73,6 +75,8 @@ const applyBlogQuery = async () => {
   } catch (error) {
     ElMessage.error('获取博客列表数据失败')
     console.error('获取博客列表数据失败', error)
+  } finally {
+    infiniteScrollReady.value = true
   }
 }
 
@@ -82,8 +86,9 @@ const clearSearch = async () => {
 }
 
 const { loaderRef } = useInfiniteScroll(loadMore, {
-  rootMargin: '500px',
-  root: document.getElementById('mf'),
+  enabled: infiniteScrollReady,
+  rootMargin: '1600px 0px',
+  root: () => document.querySelector<HTMLElement>('.app-container'),
 })
 
 watch(canUseWaterfall, (enabled) => {
@@ -102,6 +107,8 @@ onMounted(async () => {
   } catch (error) {
     ElMessage.error('获取博客列表数据失败')
     console.error('获取博客列表数据失败', error)
+  } finally {
+    infiniteScrollReady.value = true
   }
 })
 </script>

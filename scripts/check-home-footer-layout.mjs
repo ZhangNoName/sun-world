@@ -8,6 +8,10 @@ const layoutPath = join(repoRoot, 'apps/web/src/layout/deskLayout.vue')
 const source = readFileSync(layoutPath, 'utf8')
 const violations = []
 
+if (/ZFooter|\.\/footer\/index\.vue|<ZFooter\b/.test(source)) {
+  violations.push('Desktop layout must not render the retired global z-footer.')
+}
+
 if (/^\s*height:\s*100vh\s*;/m.test(source)) {
   violations.push(
     'Desktop layout must use min-height instead of height so the footer stays after long homepage content.'

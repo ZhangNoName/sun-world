@@ -50,6 +50,10 @@ run('Blog waterfall real-data check', 'node', [
   'scripts/check-blog-waterfall-real-data.mjs',
 ])
 
+run('Blog infinite scroll check', 'node', [
+  'scripts/check-blog-infinite-scroll.mjs',
+])
+
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
 
 run('Homepage footer layout check', 'node', [
