@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 const dockerfilePath = resolve(repoRoot, 'Dockerfile')
@@ -59,3 +60,19 @@ if (installIndex > copySourceIndex) {
 }
 
 console.log('Docker build context check passed.')
+
+const spaFallbackCheck = spawnSync(
+  process.execPath,
+  [resolve(repoRoot, 'scripts/check-web-spa-fallback.mjs')],
+  {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  }
+)
+
+if (spaFallbackCheck.error) {
+  console.error(spaFallbackCheck.error.message)
+  process.exit(1)
+}
+
+process.exit(spaFallbackCheck.status ?? 1)
