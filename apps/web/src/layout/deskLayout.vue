@@ -34,17 +34,17 @@ const contentClass = computed(() => {
 
 <style scoped>
 .desk-layout {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   .header {
     flex: none;
   }
   .content {
-    flex: 1;
-    min-height: 0;
+    flex: 1 0 auto;
   }
   .content.ai-chat-page-wrapper {
+    min-height: 0;
     overflow: hidden;
   }
   .footer {

@@ -29,6 +29,12 @@ usage, legacy `SvgIcon`, raw UI SVG imports, and non-whitelisted root
 `@sun-world/icons` UI imports. Brand icons and editor tool icons remain
 whitelisted because they are not normal UI operation icons.
 
+2026-06-22 addendum: fixed the homepage desktop footer placement. The desktop
+layout now uses a natural `min-height` page shell and non-shrinking content so
+the global `z-footer` stays after long homepage content instead of appearing
+mid-page beside the sticky home sidebar. Added `scripts/check-home-footer-layout.mjs`
+and wired it into `pnpm check:web`.
+
 ## Important Files Touched
 
 - `apps/web/src/modules/ai/pages/AigcPage.vue`
@@ -61,6 +67,9 @@ whitelisted because they are not normal UI operation icons.
 - `apps/web/src/modules/editor/ui/EditorCanvasTreeNode.vue`
 - `apps/web/src/pages/me/me.vue`
 - `apps/web/vite.config.ts`
+- `apps/web/src/layout/deskLayout.vue`
+- `scripts/check-home-footer-layout.mjs`
+- `scripts/check-web.mjs`
 
 ## Behavior Notes
 
@@ -120,6 +129,15 @@ Full app icon migration addendum commands:
 - `git diff --check`
 - `rg -n 'SvgIcon|<svg\b|createSvgIconsPlugin|vite-plugin-svg-icons|virtual:svg-icons|assets/svgs' apps/web/src apps/web/vite.config.ts package.json pnpm-lock.yaml -g '*.vue' -g '*.ts' -g '*.json' -g '*.yaml'`
 
+Homepage footer layout addendum commands:
+
+- `node scripts/check-home-footer-layout.mjs`
+- `node scripts/check-icp-home-card.mjs`
+- `node scripts/check-ai-interface.mjs`
+- `pnpm format:check`
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+
 ## Verification Result
 
 - UI package tests passed: 11 files, 33 tests.
@@ -153,6 +171,10 @@ Full app icon migration addendum commands:
   --check`, and web production build passed after migration. Brand icons and
   editor tool icons still import from the legacy root as explicit check-script
   exceptions.
+- Homepage footer layout verification passed. `z-footer` placement is guarded
+  by a source check that rejects fixed-height desktop shells and shrinkable
+  content, while preserving the AI standalone wrapper's `min-height: 0`
+  scrolling contract.
 
 ## Blockers
 

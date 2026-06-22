@@ -52,6 +52,10 @@ run('Blog waterfall real-data check', 'node', [
 
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
 
+run('Homepage footer layout check', 'node', [
+  'scripts/check-home-footer-layout.mjs',
+])
+
 run('AI public entry hidden check', 'node', [
   'scripts/check-ai-public-entry-hidden.mjs',
 ])
