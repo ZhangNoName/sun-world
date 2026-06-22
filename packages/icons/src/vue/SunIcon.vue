@@ -4,11 +4,11 @@ import { computed } from 'vue'
 import { getUiIcon, type UiIconName } from '../data'
 
 const iconSizes = {
-  xs: 14,
-  sm: 16,
-  md: 18,
-  lg: 20,
-  xl: 24,
+  xs: 16,
+  sm: 18,
+  md: 20,
+  lg: 24,
+  xl: 28,
 } as const
 
 type IconSize = keyof typeof iconSizes
