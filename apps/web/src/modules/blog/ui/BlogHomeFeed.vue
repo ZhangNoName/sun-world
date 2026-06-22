@@ -3,9 +3,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogCard from './BlogCard.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunButton } from '@sun-world/ui/button'
 import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 import { useBreakpoint } from '@/hooks/breakpoint/breakpoint'
@@ -165,7 +165,7 @@ onMounted(async () => {
           :aria-pressed="listMode === 'list'"
           @click="changeMode('list')"
         >
-          <SvgIcon name="list" alt="列表模式" />
+          <SunIcon name="list" size="lg" />
         </button>
 
         <button
@@ -176,7 +176,7 @@ onMounted(async () => {
           :aria-pressed="listMode === 'waterfall'"
           @click="changeMode('waterfall')"
         >
-          <SvgIcon name="waterfall" alt="瀑布流模式" />
+          <SunIcon name="columns" size="lg" />
         </button>
       </div>
     </section>

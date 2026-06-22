@@ -40,6 +40,21 @@ const checks = [
     args: ['diff', '--check'],
   },
   {
+    label: 'Icon package boundary',
+    command: 'pnpm',
+    args: ['check:icons'],
+  },
+  {
+    label: 'Icon package test',
+    command: 'pnpm',
+    args: ['test:icons'],
+  },
+  {
+    label: 'Icon package build',
+    command: 'pnpm',
+    args: ['build:icons'],
+  },
+  {
     label: 'UI package test',
     command: 'pnpm',
     args: ['test:ui'],

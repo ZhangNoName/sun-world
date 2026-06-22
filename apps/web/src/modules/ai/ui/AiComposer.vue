@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunChatComposer } from '@sun-world/ui/chat-composer'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 
 const props = defineProps<{
   loading?: boolean
@@ -29,16 +29,16 @@ function submit(message: string) {
   >
     <template #leading>
       <button class="composer-tool" type="button" aria-label="添加内容">
-        <SvgIcon name="plus" size="18" />
+        <SunIcon name="plus" size="md" />
       </button>
     </template>
     <template #trailing>
       <button class="composer-tool" type="button" aria-label="语音输入">
-        <SvgIcon name="ai-voice" size="19" />
+        <SunIcon name="mic" :size="19" />
       </button>
     </template>
     <template #submit="{ loading: isLoading }">
-      <SvgIcon v-if="!isLoading" name="ai-send" size="18" />
+      <SunIcon v-if="!isLoading" name="send" size="md" />
       <span v-else class="composer-loading">...</span>
     </template>
   </SunChatComposer>

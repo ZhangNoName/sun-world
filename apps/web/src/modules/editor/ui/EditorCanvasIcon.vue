@@ -1,26 +1,26 @@
 <script setup lang="ts" name="EleIcon">
 import { ElementType } from '@sun-world/editor'
-import RectSvg from '@/assets/svgs/element/rect.svg'
-import { computed, ref } from 'vue'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
+import { SunIcon } from '@sun-world/icons/vue'
+import type { UiIconName } from '@sun-world/icons/core'
+import { computed } from 'vue'
 const props = defineProps<{
   type: ElementType
 }>()
 const type = props.type
-const svg = computed(() => {
+const iconName = computed<UiIconName>(() => {
   switch (type) {
     case ElementType.Rect:
-      return 'rect'
+      return 'square'
     case ElementType.Text:
-      return 'text'
+      return 'type'
     case ElementType.Line:
-      return 'line'
+      return 'minus'
     case ElementType.Arrow:
       return 'arrow'
     case ElementType.Ellipse:
-      return 'ellipse'
+      return 'circle'
     case ElementType.Polygon:
-      return 'polygon'
+      return 'pentagon'
     case ElementType.Star:
       return 'star'
     case ElementType.Diamond:
@@ -28,7 +28,7 @@ const svg = computed(() => {
     case ElementType.Triangle:
       return 'triangle'
     case ElementType.Rectangle:
-      return 'rectangle'
+      return 'square'
     case ElementType.Circle:
       return 'circle'
 
@@ -38,9 +38,13 @@ const svg = computed(() => {
 })
 </script>
 <template>
-  <SvgIcon :name="`editor-${svg}`" color="red" size="12px" />
+  <SunIcon class="editor-element-icon" :name="iconName" size="12px" />
 </template>
 <style scoped>
+.editor-element-icon {
+  color: red;
+}
+
 .canvas-icon-container {
   width: 100%;
   height: 100%;

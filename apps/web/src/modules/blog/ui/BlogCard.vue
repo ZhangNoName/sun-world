@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunTag } from '@sun-world/ui/tag'
 import type { BlogCardProps } from '@/modules/blog/types'
 import { useRouter } from 'vue-router'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 
 const props = defineProps<BlogCardProps>()
 
@@ -35,15 +35,15 @@ const showBlog = () => {
   >
     <div class="meta-list">
       <span class="meta-item">
-        <SvgIcon name="calender" size="small" />
+        <SunIcon name="calendar" size="16" />
         <span>{{ publishTime }}</span>
       </span>
       <span class="meta-item">
-        <SvgIcon name="comment" size="small" />
+        <SunIcon name="message-circle" size="16" />
         <span>{{ commentNum.toLocaleString() }}</span>
       </span>
       <span class="meta-item">
-        <SvgIcon name="font-num" size="small" />
+        <SunIcon name="file-text" size="16" />
         <span>{{ byteNum.toLocaleString() }}</span>
       </span>
     </div>
@@ -53,7 +53,7 @@ const showBlog = () => {
     <p class="card-body">{{ abstract }}</p>
     <div class="card-footer">
       <div class="blog-tags" @click.stop.prevent>
-        <SvgIcon name="tag" size="small" />
+        <SunIcon name="tag" size="16" />
         <SunTag v-for="tag in tags" :key="tag" :label="tag" />
       </div>
       <hr class="card-divider" />
@@ -62,7 +62,7 @@ const showBlog = () => {
           {{ $t('readMore') }}...
         </button>
         <div class="last-update">
-          <SvgIcon name="calender" size="small" />
+          <SunIcon name="calendar" size="16" />
           <span>{{ lastUpdateTime }}</span>
         </div>
       </div>

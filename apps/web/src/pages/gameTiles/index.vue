@@ -10,7 +10,6 @@ import {
   ElCheckboxGroup,
   ElCheckbox,
 } from 'element-plus'
-import { AddSvg } from '@sun-world/icons'
 import { SunButton } from '@sun-world/ui/button'
 import type { UploadProps } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
@@ -279,7 +278,9 @@ onMounted(() => {
                 :value="item"
               />
             </ElSelect>
-            <SunButton variant="danger" @click="clearAllTiles">清空画布</SunButton>
+            <SunButton variant="danger" @click="clearAllTiles">
+              清空画布
+            </SunButton>
           </div>
         </div>
 
@@ -393,8 +394,12 @@ onMounted(() => {
                   </ElUpload>
                 </div>
                 <div class="item-footer">
-                  <SunButton variant="primary" @click="resetTile">替换</SunButton>
-                  <SunButton variant="primary" @click="resetTile">重置</SunButton>
+                  <SunButton variant="primary" @click="resetTile">
+                    替换
+                  </SunButton>
+                  <SunButton variant="primary" @click="resetTile">
+                    重置
+                  </SunButton>
                 </div>
               </div>
             </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts" name="me">
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
+import { SunIcon } from '@sun-world/icons/vue'
+import type { UiIconName } from '@sun-world/icons/core'
 import { ref } from 'vue'
 
 // 模拟用户信息
@@ -15,11 +16,11 @@ const user = ref({
 })
 
 // 功能菜单
-const menus = [
+const menus: Array<{ name: string; icon: UiIconName }> = [
   { name: '发布', icon: 'upload' },
   { name: '收藏', icon: 'star' },
   { name: '草稿箱', icon: 'draft' },
-  { name: '设置', icon: 'setting' },
+  { name: '设置', icon: 'settings' },
 ]
 </script>
 
@@ -54,7 +55,7 @@ const menus = [
     <!-- 菜单区 -->
     <div class="menu-list">
       <div v-for="item in menus" :key="item.name" class="menu-item">
-        <SvgIcon :name="item.icon" size="20" />
+        <SunIcon :name="item.icon" size="lg" />
         <span>{{ item.name }}</span>
       </div>
     </div>
@@ -74,8 +75,9 @@ const menus = [
   flex-direction: column;
   align-items: center;
   color: var(--color-text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
+    sans-serif;
 }
 
 /* 顶部背景 */

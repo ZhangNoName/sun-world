@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunButton } from '@sun-world/ui/button'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { AI_PROVIDER_OPTIONS } from '@/modules/ai/api'
 import { useAiChat } from '@/modules/ai/composables/useAiChat'
 import AiComposer from '@/modules/ai/ui/AiComposer.vue'
@@ -102,7 +102,7 @@ onUnmounted(() => {
           @click="openSidebar"
         >
           <img src="/logo.svg" alt="" class="rail-logo" />
-          <SvgIcon class="rail-expand-icon" name="sidebar" size="18" />
+          <SunIcon class="rail-expand-icon" name="panel-left-open" size="md" />
         </button>
         <SunButton
           variant="icon"
@@ -111,7 +111,7 @@ onUnmounted(() => {
           aria-label="新聊天"
           @click="createConversationFromRail"
         >
-          <SvgIcon name="plus" size="18" />
+          <SunIcon name="plus" size="md" />
         </SunButton>
         <SunButton
           variant="icon"
@@ -120,7 +120,7 @@ onUnmounted(() => {
           aria-label="搜索聊天"
           @click="openSidebar"
         >
-          <SvgIcon name="search" size="18" />
+          <SunIcon name="search" size="md" />
         </SunButton>
         <span class="rail-avatar">SW</span>
       </div>

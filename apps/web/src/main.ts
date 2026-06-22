@@ -14,7 +14,6 @@ import {
 } from '@/util'
 import lazy from '@/directives/lazy'
 import { createPinia } from 'pinia'
-import 'virtual:svg-icons-register'
 
 import {
   initWebVitals,

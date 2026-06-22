@@ -7,12 +7,8 @@ import CatalogCard from '../ui/CatalogCard.vue'
 import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
 import { useBlogReader } from '../composables/useBlogReader'
-import {
-  buildBlogPostingJsonLd,
-  useJsonLd,
-  usePageMeta,
-} from '@/shared/seo'
-import { Calendar, WordCount, Comment } from '@sun-world/icons'
+import { buildBlogPostingJsonLd, useJsonLd, usePageMeta } from '@/shared/seo'
+import { SunIcon } from '@sun-world/icons/vue'
 
 const route = useRoute()
 const id = computed(() => String(route.query.id || ''))
@@ -29,11 +25,6 @@ const {
   wordCount,
   loadBlog,
 } = useBlogReader(id)
-
-const iconConfig = {
-  height: '1.6rem',
-  width: '1.6rem',
-}
 
 usePageMeta(() => ({
   title: blogInfo.value.title
@@ -87,15 +78,15 @@ onMounted(() => {
       <template v-else>
         <div class="data-info" aria-label="文章信息">
           <div class="meta-item">
-            <Calendar v-bind="iconConfig" />
+            <SunIcon name="calendar" size="16" />
             <span>{{ publishedAt }}</span>
           </div>
           <div class="meta-item">
-            <Comment v-bind="iconConfig" />
+            <SunIcon name="message-circle" size="16" />
             <span>{{ commentCount.toLocaleString() }}</span>
           </div>
           <div class="meta-item">
-            <WordCount v-bind="iconConfig" />
+            <SunIcon name="file-text" size="16" />
             <span>{{ wordCount.toLocaleString() }}</span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 <script lang="ts" setup name="CatalogListItem">
 import type { CatalogItemType } from '@/modules/blog/types'
 import { computed, ref } from 'vue'
-import { FoldSvg } from '@sun-world/icons'
+import { SunIcon } from '@sun-world/icons/vue'
 
 const prop = withDefaults(defineProps<CatalogItemType>(), {
   level: 1,
@@ -24,12 +24,12 @@ const changeOpen = () => {
 
 <template>
   <div :class="itemClass">
-    <FoldSvg
+    <SunIcon
       v-if="children && children.length"
       @click="changeOpen"
       class="fold-icon"
-      width="1.5rem"
-      height="1.5rem"
+      name="chevron-right"
+      size="16"
     />
     <slot name="icon"></slot>
     <span>{{ name }}</span>

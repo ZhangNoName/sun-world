@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunButton } from '@sun-world/ui/button'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import type { AiConversation } from '../types'
 
 const props = defineProps<{
@@ -41,7 +41,7 @@ const filteredConversations = computed(() => {
         aria-label="隐藏侧边栏"
         @click="emit('toggleSidebar')"
       >
-        <SvgIcon name="sidebar" size="18" />
+        <SunIcon name="panel-left" size="md" />
       </SunButton>
     </div>
 
@@ -54,11 +54,11 @@ const filteredConversations = computed(() => {
         aria-label="新聊天"
         @click="emit('newChat')"
       >
-        <SvgIcon name="plus" size="15" />
+        <SunIcon name="plus" :size="15" />
         <span>新聊天</span>
       </SunButton>
       <label class="conversation-search">
-        <SvgIcon name="search" size="15" />
+        <SunIcon name="search" :size="15" />
         <input v-model="query" placeholder="搜索聊天" />
       </label>
     </div>

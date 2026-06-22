@@ -12,7 +12,7 @@
           aria-label="搜索"
           @click="toggleDrawer"
         >
-          <SvgIcon name="search" />
+          <SunIcon name="search" size="lg" />
         </SunButton>
         <SunButton
           variant="icon"
@@ -20,7 +20,7 @@
           aria-label="菜单"
           @click="toggleDrawer"
         >
-          <SvgIcon name="menu" />
+          <SunIcon name="menu" size="lg" />
         </SunButton>
       </div>
     </div>
@@ -41,19 +41,19 @@
         :class="{ active: activePath === '/' || activePath === '/home' }"
       >
         <router-link to="/home">
-          <SvgIcon name="home" alt="home" />
+          <SunIcon name="home" size="lg" />
           <span class="text">首页</span>
         </router-link>
       </div>
       <div class="bot-channel" :class="{ active: activePath === '/canvas' }">
         <router-link to="/canvas">
-          <SvgIcon name="canvas" alt="canvas" />
+          <SunIcon name="canvas" size="lg" />
           <span class="text">画布</span>
         </router-link>
       </div>
       <div class="bot-channel" :class="{ active: activePath === '/me' }">
         <router-link to="/me">
-          <SvgIcon name="me" alt="me" />
+          <SunIcon name="user" size="lg" />
           <span class="text">我</span>
         </router-link>
       </div>
@@ -125,8 +125,8 @@
 </template>
 
 <script setup lang="ts">
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunButton } from '@sun-world/ui/button'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
@@ -265,7 +265,7 @@ onUnmounted(() => {
   }
 }
 
-.bot-channel.active .svg-icon {
+.bot-channel.active .sun-icon {
   color: var(--icon-active-color);
 }
 

@@ -1,11 +1,11 @@
 <script setup lang="ts" name="ZHeader">
-import { QQOutlined, GithubOutlined, PaperSvg } from '@sun-world/icons'
+import { QQOutlined, GithubOutlined } from '@sun-world/icons'
+import { SunIcon } from '@sun-world/icons/vue'
 import LanguageSwitch from '@/components/LanguageSwitch/index.vue'
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
 import { openGithub } from '@/util'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import Avator from '@/components/Avator/avator.vue'
 const time = ref('')
 const timerRef = ref()
@@ -71,8 +71,8 @@ onBeforeUnmount(() => {
       </div>
       <div class="right-menu">
         <div class="link-icon">
-          <SvgIcon name="canvas" @click="canvasHandle" />
-          <PaperSvg @click="editArticle" />
+          <SunIcon name="canvas" size="xl" @click="canvasHandle" />
+          <SunIcon name="edit" size="xl" @click="editArticle" />
           <GithubOutlined @click="openGithub" />
           <QQOutlined @click="openQQ" />
           <div id="qqlogin"></div>

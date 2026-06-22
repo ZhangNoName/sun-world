@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Adding Sun World Icons'
+  short_description: 'Add icons through the Sun World icon data package.'
+  default_prompt: 'Add or update a Sun World UI icon while preserving the shared icon style.'
