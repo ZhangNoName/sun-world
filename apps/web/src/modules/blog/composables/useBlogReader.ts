@@ -96,10 +96,11 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     try {
       const detail = await fetchBlogById(id.value)
       blogInfo.value = detail
-      await renderPreview(detail.content)
     } finally {
       loading.value = false
     }
+
+    await renderPreview(blogInfo.value.content)
   }
 
   return {

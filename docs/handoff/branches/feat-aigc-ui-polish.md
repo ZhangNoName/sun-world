@@ -43,6 +43,11 @@ starting infinite scroll, and lazily resolves `.app-container` after mount
 instead of using the removed `#mf` root. Added
 `scripts/check-blog-infinite-scroll.mjs` and wired it into `pnpm check:web`.
 
+2026-06-23 addendum: fixed blog detail markdown rendering. `useBlogReader`
+now resets `loading` before calling `renderPreview`, allowing the
+`preview-container` ref to remount before Vditor renders into it. Added
+`scripts/check-blog-detail-render.mjs` and wired it into `pnpm check:web`.
+
 ## Important Files Touched
 
 - `apps/web/src/modules/ai/pages/AigcPage.vue`
@@ -77,7 +82,9 @@ instead of using the removed `#mf` root. Added
 - `apps/web/vite.config.ts`
 - `apps/web/src/layout/deskLayout.vue`
 - `apps/web/src/hooks/InfiniteScroll.ts`
+- `apps/web/src/modules/blog/composables/useBlogReader.ts`
 - `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
+- `scripts/check-blog-detail-render.mjs`
 - `scripts/check-blog-infinite-scroll.mjs`
 - `scripts/check-home-footer-layout.mjs`
 - `scripts/check-web.mjs`
@@ -144,6 +151,7 @@ Homepage footer layout addendum commands:
 
 - `node scripts/check-home-footer-layout.mjs`
 - `node scripts/check-blog-infinite-scroll.mjs`
+- `node scripts/check-blog-detail-render.mjs`
 - `node scripts/check-icp-home-card.mjs`
 - `node scripts/check-ai-interface.mjs`
 - `pnpm format:check`
@@ -191,6 +199,9 @@ Homepage footer layout addendum commands:
   `#mf` root, requires lazy app-container root resolution, requires a 1600px
   prefetch margin, requires 12 posts per page, and requires the first-load
   readiness gate.
+- Blog detail render verification passed. The source check rejects rendering
+  the Vditor preview while `loading=true`, which keeps the preview container
+  unmounted.
 
 ## Blockers
 

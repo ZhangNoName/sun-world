@@ -54,6 +54,10 @@ run('Blog infinite scroll check', 'node', [
   'scripts/check-blog-infinite-scroll.mjs',
 ])
 
+run('Blog detail render check', 'node', [
+  'scripts/check-blog-detail-render.mjs',
+])
+
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
 
 run('Homepage footer layout check', 'node', [
