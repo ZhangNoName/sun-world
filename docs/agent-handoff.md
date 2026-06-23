@@ -12,8 +12,6 @@ older completed checkpoints to docs/handoff/archive/.
   docs/handoff/branches/codex-ai-cli-skills.md.
 - codex/server-side-web-build: see
   docs/handoff/branches/codex-server-side-web-build.md.
-- codex/icon-gallery: see
-  docs/handoff/branches/codex-icon-gallery.md.
 
 ## Latest Stable Checkpoint
 
@@ -65,6 +63,24 @@ older completed checkpoints to docs/handoff/archive/.
     - Keep monitoring the persistent container. AI endpoints still need a real
       OpenRouter/OpenAI-compatible provider key before they can answer AI
       requests; missing keys no longer block API startup or health checks.
+
+- Latest local feature checkpoint (2026-06-23, icon gallery cleanup):
+  - Goal: remove pre-refactor ordinary UI icon Vue components and add a
+    Lucide-style local preview for `@sun-world/icons`.
+  - Status: merged locally to `main` at commit `84985a96`.
+  - Important files touched:
+    - `packages/icons/src/App.vue`
+    - `packages/icons/src/App.spec.ts`
+    - `packages/icons/src/index.spec.ts`
+    - `packages/icons/src/icons/index.ts`
+    - `docs/handoff/branches/codex-icon-gallery.md`
+  - Verification:
+    - `pnpm check:icons` passed.
+    - `pnpm test:icons` passed.
+    - `pnpm build:icons` passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm format:check` passed.
+    - `git diff --check` passed.
 
 ## Archives
 
