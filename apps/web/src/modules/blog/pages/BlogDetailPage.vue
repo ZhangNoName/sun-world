@@ -2,17 +2,12 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import SelfInfoCard from '../ui/SelfInfoCard.vue'
 import CatalogCard from '../ui/CatalogCard.vue'
 import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
 import { useBlogReader } from '../composables/useBlogReader'
-import {
-  buildBlogPostingJsonLd,
-  useJsonLd,
-  usePageMeta,
-} from '@/shared/seo'
-import { Calendar, WordCount, Comment } from '@sun-world/icons'
+import { buildBlogPostingJsonLd, useJsonLd, usePageMeta } from '@/shared/seo'
+import { SunIcon } from '@sun-world/icons/vue'
 
 const route = useRoute()
 const id = computed(() => String(route.query.id || ''))
@@ -20,6 +15,7 @@ const id = computed(() => String(route.query.id || ''))
 const {
   blogPreview,
   catalog,
+  activeHeadingId,
   loading,
   blogInfo,
   articleCanonical,
@@ -27,13 +23,9 @@ const {
   publishedAt,
   commentCount,
   wordCount,
+  scrollToHeading,
   loadBlog,
 } = useBlogReader(id)
-
-const iconConfig = {
-  height: '1.6rem',
-  width: '1.6rem',
-}
 
 usePageMeta(() => ({
   title: blogInfo.value.title
@@ -75,8 +67,11 @@ onMounted(() => {
 <template>
   <div class="blog-page">
     <aside class="left" aria-label="文章侧边栏">
-      <SelfInfoCard />
-      <CatalogCard :catalog="catalog" />
+      <CatalogCard
+        :catalog="catalog"
+        :active-id="activeHeadingId"
+        @select="scrollToHeading"
+      />
     </aside>
 
     <main class="right">
@@ -87,15 +82,15 @@ onMounted(() => {
       <template v-else>
         <div class="data-info" aria-label="文章信息">
           <div class="meta-item">
-            <Calendar v-bind="iconConfig" />
+            <SunIcon name="calendar" size="16" />
             <span>{{ publishedAt }}</span>
           </div>
           <div class="meta-item">
-            <Comment v-bind="iconConfig" />
+            <SunIcon name="message-circle" size="16" />
             <span>{{ commentCount.toLocaleString() }}</span>
           </div>
           <div class="meta-item">
-            <WordCount v-bind="iconConfig" />
+            <SunIcon name="file-text" size="16" />
             <span>{{ wordCount.toLocaleString() }}</span>
           </div>
         </div>
@@ -121,18 +116,18 @@ onMounted(() => {
   padding: var(--space-8) var(--container-inline-padding) var(--space-12);
   background-color: var(--bg-page);
   display: grid;
-  grid-template-columns: minmax(240px, 32rem) minmax(0, 1fr);
-  gap: var(--space-8);
+  grid-template-columns: minmax(220px, 28rem) minmax(0, 1fr);
+  gap: var(--space-6);
 }
 
 .left {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
   position: sticky;
-  top: 80px;
+  top: 88px;
   height: fit-content;
+  max-height: calc(100vh - 112px);
 }
 
 .right {

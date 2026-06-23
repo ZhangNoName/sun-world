@@ -1,18 +1,19 @@
-import { ref, onMounted, onUnmounted, Ref, watch } from 'vue'
+import { ref, onMounted, onUnmounted, unref, watch, type Ref } from 'vue'
+
+type MaybeReactive<T> = T | Ref<T>
+type ScrollRoot = HTMLElement | null | (() => HTMLElement | null)
 
 interface Options {
-  /** 是否启用滚动加载 */
-  enabled?: boolean
-  /** 提前触发的距离 (px)，默认 100px */
+  /** Enable or pause infinite loading. */
+  enabled?: MaybeReactive<boolean>
+  /** Distance before the loader that should trigger loading. */
   rootMargin?: string
-  /** 容器，默认使用 window */
-  root?: HTMLElement | null
+  /** Scroll container; defaults to the viewport. */
+  root?: ScrollRoot
 }
 
 /**
- * Vue 3 无限滚动 Hook
- * @param loadMore 加载更多回调
- * @param options 配置项
+ * Vue 3 infinite scroll hook.
  */
 export function useInfiniteScroll(
   loadMore: () => Promise<void> | void,
@@ -21,17 +22,33 @@ export function useInfiniteScroll(
   const { enabled = true, root = null, rootMargin = '100px' } = options
 
   const loaderRef: Ref<HTMLElement | null> = ref(null)
-  let loading = ref(false)
-  const hasMore = ref(true) // 外部可控
+  const loading = ref(false)
+  const hasMore = ref(true)
 
   let observer: IntersectionObserver | null = null
 
+  const isEnabled = () => unref(enabled)
+  const resolveRoot = () => (typeof root === 'function' ? root() : root)
+
+  const stopObserve = () => {
+    if (observer && loaderRef.value) {
+      observer.unobserve(loaderRef.value)
+      observer.disconnect()
+    }
+    observer = null
+  }
+
   const startObserve = () => {
-    if (!enabled || !loaderRef.value) return
+    if (!isEnabled() || !loaderRef.value || observer) return
 
     observer = new IntersectionObserver(
       async (entries) => {
-        if (entries[0].isIntersecting && !loading.value && hasMore.value) {
+        if (
+          entries[0].isIntersecting &&
+          isEnabled() &&
+          !loading.value &&
+          hasMore.value
+        ) {
           loading.value = true
 
           try {
@@ -42,7 +59,7 @@ export function useInfiniteScroll(
         }
       },
       {
-        root,
+        root: resolveRoot(),
         rootMargin,
       }
     )
@@ -54,16 +71,24 @@ export function useInfiniteScroll(
     startObserve()
   })
 
-  onUnmounted(() => {
-    if (observer && loaderRef.value) {
-      observer.unobserve(loaderRef.value)
-      observer.disconnect()
+  watch(
+    () => isEnabled(),
+    (nextEnabled) => {
+      if (nextEnabled) {
+        startObserve()
+      } else {
+        stopObserve()
+      }
     }
+  )
+
+  onUnmounted(() => {
+    stopObserve()
   })
 
   return {
-    loaderRef, // 放在列表末尾的占位元素
+    loaderRef,
     loading,
-    hasMore, // 可以在外部修改
+    hasMore,
   }
 }

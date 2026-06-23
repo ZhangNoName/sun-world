@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { NodeInfo } from '@sun-world/editor'
+import { SunIcon } from '@sun-world/icons/vue'
 import { computed } from 'vue'
 import EditorCanvasIcon from './EditorCanvasIcon.vue'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 const props = defineProps<{
   element: NodeInfo
   level: number
@@ -13,7 +13,9 @@ const emit = defineEmits<{
   toggleExpand: [id: string]
 }>()
 
-const hasChildren = computed(() => props.element.children && props.element.children.length > 0)
+const hasChildren = computed(
+  () => props.element.children && props.element.children.length > 0
+)
 // const isExpanded = computed(() => props.expandedItems.has(props.element.id))
 const isExpanded = true
 
@@ -36,7 +38,7 @@ const toggleExpand = () => {
         class="tree-expand-icon"
         @click.stop="toggleExpand"
       >
-        <SvgIcon name="editor-expand" size="10px" />
+        <SunIcon name="chevron-right" size="10px" />
       </span>
       <span v-else class="tree-expand-placeholder"></span>
       <div class="icon">
@@ -46,7 +48,7 @@ const toggleExpand = () => {
         {{ element.name || element.type }}
       </span>
     </div>
-    <div  class="tree-children">
+    <div class="tree-children">
       <EditorCanvasTreeNode
         v-for="child in element.children"
         :key="child.id"

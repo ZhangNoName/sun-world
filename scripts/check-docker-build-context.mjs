@@ -5,12 +5,26 @@ import { spawnSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 const dockerfilePath = resolve(repoRoot, 'Dockerfile')
+const NODE_VERSION = '24.17.0'
+const PNPM_VERSION = '10.15.1'
 
 if (!existsSync(dockerfilePath)) {
   throw new Error(`Dockerfile not found at ${dockerfilePath}`)
 }
 
 const dockerfile = readFileSync(dockerfilePath, 'utf8').replace(/\r\n/g, '\n')
+
+if (!dockerfile.includes(`FROM node:${NODE_VERSION} AS build`)) {
+  throw new Error(
+    `Dockerfile must build the frontend with Node ${NODE_VERSION}`
+  )
+}
+
+if (!dockerfile.includes(`RUN npm install -g pnpm@${PNPM_VERSION}`)) {
+  throw new Error(
+    `Dockerfile must install pnpm ${PNPM_VERSION} in the frontend build image`
+  )
+}
 
 function findWorkspaceManifests(rootDir) {
   const manifests = []

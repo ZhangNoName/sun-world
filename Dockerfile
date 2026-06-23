@@ -1,12 +1,12 @@
 # 使用官方的 Node.js 镜像
-FROM node:22 AS build
+FROM node:24.17.0 AS build
 
 # 设置工作目录
 WORKDIR /app
 
 # 复制项目文件
 RUN npm config set registry https://registry.npmmirror.com/
-RUN npm install -g pnpm@9.0.2
+RUN npm install -g pnpm@10.15.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json

@@ -2,7 +2,6 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
-import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 // import tsconfigPaths from 'vite-tsconfig-paths'
 import fs from 'fs'
 
@@ -92,23 +91,6 @@ export default defineConfig(({ mode }) => {
       vue(),
       // tsconfigPaths(),
 
-      // SVG 图标插件
-      createSvgIconsPlugin({
-        iconDirs: [resolve(process.cwd(), 'src/assets/svgs')],
-        // symbolId: '[name]',
-        symbolId: 'icon-[dir]-[name]',
-        inject: 'body-last',
-        // customDomId: 'global-svg-icons',
-        customDomId: '__svg__icons__dom__',
-
-        // 去掉 fill/stroke 固定颜色，使 SVG 可全局变色
-        svgoOptions: {
-          plugins: [
-            { name: 'removeAttrs', params: { attrs: '(fill|stroke)' } },
-          ],
-        },
-      }),
-
       visualizerPlugin,
       isProd ? stripRouteOnlyPreloadsPlugin() : null,
     ],
@@ -169,11 +151,6 @@ export default defineConfig(({ mode }) => {
             if (normalizedId.includes('/packages/editor/src/')) return 'editor'
             if (
               isWebAppSource &&
-              normalizedId.includes('/src/baseCom/SvgIcon/')
-            )
-              return 'legacy-icons'
-            if (
-              isWebAppSource &&
               (normalizedId.includes('/src/app/router/') ||
                 normalizedId.includes('/src/router/index.ts'))
             )
@@ -191,7 +168,10 @@ export default defineConfig(({ mode }) => {
               return 'stores'
             if (isWebAppSource && normalizedId.includes('/src/service/http.ts'))
               return 'http-client'
-            if (isWebAppSource && normalizedId.includes('/src/shared/telemetry/'))
+            if (
+              isWebAppSource &&
+              normalizedId.includes('/src/shared/telemetry/')
+            )
               return 'telemetry'
             if (isWebAppSource && normalizedId.includes('/src/shared/config/'))
               return 'shared-config'
@@ -234,10 +214,7 @@ export default defineConfig(({ mode }) => {
               normalizedId.includes('/src/pages/login/qqCb.vue')
             )
               return 'page-qq-callback'
-            if (
-              isWebAppSource &&
-              normalizedId.includes('/src/pages/me/me.vue')
-            )
+            if (isWebAppSource && normalizedId.includes('/src/pages/me/me.vue'))
               return 'page-me'
             if (isWebAppSource && normalizedId.includes('/src/pages/manage/'))
               return 'manage-shell'
@@ -246,8 +223,7 @@ export default defineConfig(({ mode }) => {
               if (id.includes('artplayer') || id.includes('hls.js'))
                 return 'video-player'
               if (id.includes('jszip')) return 'tile-export'
-              if (id.includes('vditor/dist/method.min'))
-                return 'vditor-preview'
+              if (id.includes('vditor/dist/method.min')) return 'vditor-preview'
               if (id.includes('vditor')) return 'vditor-editor'
               if (id.includes('echarts')) return 'echarts'
               if (id.includes('element-plus')) return 'element'

@@ -50,7 +50,23 @@ run('Blog waterfall real-data check', 'node', [
   'scripts/check-blog-waterfall-real-data.mjs',
 ])
 
+run('Blog infinite scroll check', 'node', [
+  'scripts/check-blog-infinite-scroll.mjs',
+])
+
+run('Blog detail render check', 'node', [
+  'scripts/check-blog-detail-render.mjs',
+])
+
+run('Blog detail catalog check', 'node', [
+  'scripts/check-blog-detail-catalog.mjs',
+])
+
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
+
+run('Homepage footer layout check', 'node', [
+  'scripts/check-home-footer-layout.mjs',
+])
 
 run('AI public entry hidden check', 'node', [
   'scripts/check-ai-public-entry-hidden.mjs',

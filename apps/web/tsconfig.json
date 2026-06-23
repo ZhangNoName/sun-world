@@ -16,6 +16,7 @@
       "@/*": ["./src/*"],
       "@sun-world/editor": ["../../packages/editor/src/index.ts"],
       "@sun-world/icons": ["../../packages/icons/src"],
+      "@sun-world/icons/*": ["../../packages/icons/src/*"],
       "@sun-world/ui": ["../../packages/ui/src/index.ts"],
       "@sun-world/ui/*": ["../../packages/ui/src/*"]
     }

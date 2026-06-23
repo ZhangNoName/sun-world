@@ -7,8 +7,11 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy.yml')
 const prettierConfigPath = join(repoRoot, '.prettierrc.json')
 const prettierIgnorePath = join(repoRoot, '.prettierignore')
+const nvmrcPath = join(repoRoot, '.nvmrc')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
+const NODE_VERSION = '24.17.0'
+const PNPM_VERSION = '10.15.1'
 
 if (!existsSync(workflowPath)) {
   violations.push('.github/workflows/deploy.yml must exist')
@@ -22,11 +25,18 @@ if (!existsSync(prettierIgnorePath)) {
   violations.push('.prettierignore must exist')
 }
 
+if (!existsSync(nvmrcPath)) {
+  violations.push('.nvmrc must exist')
+}
+
 const workflow = existsSync(workflowPath)
   ? readFileSync(workflowPath, 'utf8')
   : ''
 const prettierIgnore = existsSync(prettierIgnorePath)
   ? readFileSync(prettierIgnorePath, 'utf8')
+  : ''
+const nvmrc = existsSync(nvmrcPath)
+  ? readFileSync(nvmrcPath, 'utf8').trim()
   : ''
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
@@ -61,7 +71,8 @@ if (workflow) {
     'fetch-depth: 0',
     'pnpm/action-setup@v4',
     'actions/setup-node@v4',
-    'node-version: 22',
+    `node-version: ${NODE_VERSION}`,
+    `version: ${PNPM_VERSION}`,
     'actions/setup-python@v5',
     "python-version: '3.11'",
     'pnpm install --frozen-lockfile',
@@ -87,6 +98,28 @@ if (packageJson.scripts?.format !== 'node scripts/format-changed.mjs --write') {
   violations.push(
     'root package.json must expose format through scripts/format-changed.mjs'
   )
+}
+
+if (nvmrc !== NODE_VERSION) {
+  violations.push(`.nvmrc must pin the project to Node ${NODE_VERSION}`)
+}
+
+if (packageJson.engines?.node !== NODE_VERSION) {
+  violations.push(`root package.json engines.node must be ${NODE_VERSION}`)
+}
+
+if (packageJson.engines?.pnpm !== PNPM_VERSION) {
+  violations.push(`root package.json engines.pnpm must be ${PNPM_VERSION}`)
+}
+
+if (packageJson.packageManager !== `pnpm@${PNPM_VERSION}`) {
+  violations.push(
+    `root package.json packageManager must be pnpm@${PNPM_VERSION}`
+  )
+}
+
+if (packageJson.devDependencies?.['@types/node'] !== '^24.9.2') {
+  violations.push('root package.json must use @types/node ^24.9.2')
 }
 
 if (

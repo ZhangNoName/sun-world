@@ -1,13 +1,12 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { DeleteSvg } from '@sun-world/icons'
+import { SunIcon } from '@sun-world/icons/vue'
 interface ChannelCardProps {
   title: string
   id: string | number
   createTime: string
   dialogNum: string | number
 }
-const prop = withDefaults(defineProps<ChannelCardProps>(), {
+withDefaults(defineProps<ChannelCardProps>(), {
   title: '对话1',
   id: 1,
   createTime: '2024/8/4 9:11:36',
@@ -29,7 +28,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
       <div>{{ createTime }}</div>
     </div>
     <div class="del">
-      <DeleteSvg color="var(--text-secondary)" width="1.6rem" height="1.6rem" />
+      <SunIcon name="trash" size="16" />
     </div>
   </div>
 </template>
@@ -84,6 +83,7 @@ const prop = withDefaults(defineProps<ChannelCardProps>(), {
     right: 0.5rem;
     transition: all 0.3s ease;
     opacity: 0;
+    color: var(--text-secondary);
 
     cursor: pointer;
   }

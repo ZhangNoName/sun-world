@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { SunIcon } from '@sun-world/icons/vue'
+import { SunChatComposer } from '@sun-world/ui/chat-composer'
 
 const props = defineProps<{
   loading?: boolean
@@ -10,87 +12,63 @@ const emit = defineEmits<{
 }>()
 
 const text = ref('')
-const textareaRef = ref<HTMLTextAreaElement | null>(null)
-const canSend = computed(() => text.value.trim().length > 0 && !props.loading)
 
-function resize() {
-  const target = textareaRef.value
-  if (!target) return
-  target.style.height = 'auto'
-  target.style.height = `${Math.min(target.scrollHeight, 180)}px`
-}
-
-function submit() {
-  if (!canSend.value) return
-  emit('send', text.value)
-  text.value = ''
-  requestAnimationFrame(resize)
+function submit(message: string) {
+  emit('send', message)
 }
 </script>
 
 <template>
-  <form class="composer" @submit.prevent="submit">
-    <textarea
-      ref="textareaRef"
-      v-model="text"
-      class="composer-textarea"
-      rows="1"
-      placeholder="Message Sun World AI"
-      @input="resize"
-      @keydown.enter.exact.prevent="submit"
-    ></textarea>
-    <button class="composer-send" type="submit" :disabled="!canSend">
-      {{ loading ? '...' : 'Send' }}
-    </button>
-    <p class="composer-hint">Enter to send. Shift+Enter for a new line.</p>
-  </form>
+  <SunChatComposer
+    v-model="text"
+    class="ai-composer"
+    :loading="props.loading"
+    placeholder="有问题，尽管问"
+    submit-label="发送"
+    @submit="submit"
+  >
+    <template #leading>
+      <button class="composer-tool" type="button" aria-label="添加内容">
+        <SunIcon name="plus" size="md" />
+      </button>
+    </template>
+    <template #trailing>
+      <button class="composer-tool" type="button" aria-label="语音输入">
+        <SunIcon name="mic" :size="19" />
+      </button>
+    </template>
+    <template #submit="{ loading: isLoading }">
+      <SunIcon v-if="!isLoading" name="send" size="md" />
+      <span v-else class="composer-loading">...</span>
+    </template>
+  </SunChatComposer>
 </template>
 
 <style scoped>
-.composer {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  width: min(100%, 860px);
-  padding: 12px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 18px;
-  background: var(--color-surface-card);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+.ai-composer {
+  --bg-component: var(--color-surface-card);
+  --border-lighter: rgba(15, 23, 42, 0.1);
+  max-width: min(100%, 820px);
 }
 
-.composer-textarea {
-  min-height: 28px;
-  max-height: 180px;
-  resize: none;
+.composer-tool {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
   border: 0;
-  outline: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--color-text-primary);
-  font: inherit;
-  line-height: 1.5;
-}
-
-.composer-send {
-  align-self: end;
-  min-width: 68px;
-  height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--color-primary);
-  color: var(--btn-text-color);
   cursor: pointer;
 }
 
-.composer-send:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
+.composer-tool:hover,
+.composer-tool:focus-visible {
+  background: var(--color-surface-muted);
 }
 
-.composer-hint {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
+.composer-loading {
+  font-size: var(--font-size-sm);
 }
 </style>

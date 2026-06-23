@@ -3,9 +3,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogCard from './BlogCard.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
+import { SunIcon } from '@sun-world/icons/vue'
 import { SunButton } from '@sun-world/ui/button'
 import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-import SvgIcon from '@/baseCom/SvgIcon/svgIcon.vue'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useInfiniteScroll } from '@/hooks/InfiniteScroll'
 import { useBreakpoint } from '@/hooks/breakpoint/breakpoint'
@@ -16,10 +16,11 @@ type ListModeType = 'list' | 'waterfall'
 type SortOption = `${BlogSortBy}:${BlogSortOrder}`
 
 const { tagList, categoryList, loadBlogBaseData } = useBlogBaseData()
-const blogList = useBlogList(tagList, categoryList)
+const blogList = useBlogList(tagList, categoryList, 12)
 const listMode = ref<ListModeType>('list')
 const searchKeyword = ref('')
 const sortOption = ref<SortOption>('updated_at:desc')
+const infiniteScrollReady = ref(false)
 const { screen } = useBreakpoint()
 
 const isInitialLoading = computed(
@@ -64,6 +65,7 @@ const applyBlogQuery = async () => {
     BlogSortBy,
     BlogSortOrder,
   ]
+  infiniteScrollReady.value = false
   try {
     await blogList.updateQuery({
       keyword: searchKeyword.value,
@@ -73,6 +75,8 @@ const applyBlogQuery = async () => {
   } catch (error) {
     ElMessage.error('获取博客列表数据失败')
     console.error('获取博客列表数据失败', error)
+  } finally {
+    infiniteScrollReady.value = true
   }
 }
 
@@ -82,8 +86,9 @@ const clearSearch = async () => {
 }
 
 const { loaderRef } = useInfiniteScroll(loadMore, {
-  rootMargin: '500px',
-  root: document.getElementById('mf'),
+  enabled: infiniteScrollReady,
+  rootMargin: '1600px 0px',
+  root: () => document.querySelector<HTMLElement>('.app-container'),
 })
 
 watch(canUseWaterfall, (enabled) => {
@@ -102,6 +107,8 @@ onMounted(async () => {
   } catch (error) {
     ElMessage.error('获取博客列表数据失败')
     console.error('获取博客列表数据失败', error)
+  } finally {
+    infiniteScrollReady.value = true
   }
 })
 </script>
@@ -165,7 +172,7 @@ onMounted(async () => {
           :aria-pressed="listMode === 'list'"
           @click="changeMode('list')"
         >
-          <SvgIcon name="list" alt="列表模式" />
+          <SunIcon name="list" size="lg" />
         </button>
 
         <button
@@ -176,7 +183,7 @@ onMounted(async () => {
           :aria-pressed="listMode === 'waterfall'"
           @click="changeMode('waterfall')"
         >
-          <SvgIcon name="waterfall" alt="瀑布流模式" />
+          <SunIcon name="columns" size="lg" />
         </button>
       </div>
     </section>

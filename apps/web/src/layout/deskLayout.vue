@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ZHeader from './header/index.vue'
-import ZFooter from './footer/index.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 const route = useRoute() // 2. 获取当前路由对象
@@ -8,12 +7,6 @@ const route = useRoute() // 2. 获取当前路由对象
 const showHeader = computed(() => {
   // 检查当前路由的 meta.hideHeader 字段是否为 true
   return route.meta.hideHeader !== true
-})
-
-// 4. 计算属性：判断 Footer 是否应该隐藏
-const showFooter = computed(() => {
-  // 检查当前路由的 meta.hideFooter 字段是否为 true
-  return route.meta.hideFooter !== true
 })
 
 const contentClass = computed(() => {
@@ -27,24 +20,23 @@ const contentClass = computed(() => {
     <div class="content" :class="contentClass">
       <RouterView />
     </div>
-
-    <ZFooter v-if="showFooter" />
   </div>
 </template>
 
 <style scoped>
 .desk-layout {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   .header {
     flex: none;
   }
   .content {
-    flex: 1;
+    flex: 1 0 auto;
   }
-  .footer {
-    flex: none;
+  .content.ai-chat-page-wrapper {
+    min-height: 0;
+    overflow: hidden;
   }
 }
 </style>

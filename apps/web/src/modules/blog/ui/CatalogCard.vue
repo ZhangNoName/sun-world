@@ -1,13 +1,15 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import type {
-  CatalogItemType,
-  VditorTreeItemType,
-} from '@/modules/blog/types'
+import { computed } from 'vue'
+import type { CatalogItemType, VditorTreeItemType } from '@/modules/blog/types'
 import CatalogItem from './CatalogItem.vue'
 
 const prop = defineProps<{
   catalog: VditorTreeItemType[]
+  activeId?: string
+}>()
+
+const emit = defineEmits<{
+  select: [headingId: string]
 }>()
 
 // 解析目录数据并构建树形结构
@@ -49,7 +51,7 @@ const TreeDate = computed<CatalogItemType[]>(() => {
 </script>
 
 <template>
-  <div class="catalog-card-container">
+  <nav class="catalog-card-container" aria-label="文章目录">
     <CatalogItem
       v-for="item in TreeDate"
       :key="item.id"
@@ -57,8 +59,10 @@ const TreeDate = computed<CatalogItemType[]>(() => {
       :name="item.name"
       :children="item.children"
       :level="item.level"
+      :active-id="activeId"
+      @select="emit('select', $event)"
     />
-  </div>
+  </nav>
 </template>
 
 <style scoped>
@@ -67,7 +71,11 @@ const TreeDate = computed<CatalogItemType[]>(() => {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  gap: 0.5rem;
-  /* background-color: #f8f9fa; */
+  gap: var(--space-1);
+  max-height: inherit;
+  overflow-y: auto;
+  padding-block: var(--space-1);
+  border-left: 1px solid var(--border-lighter);
+  scrollbar-width: thin;
 }
 </style>

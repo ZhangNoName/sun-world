@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       dts({
         outDir: 'dist/types',
         insertTypesEntry: true,
-        include: ['src/index.ts', 'src/icons/**'],
+        include: ['src/**/*.ts', 'src/vue/**/*.vue'],
       }),
     ],
 
@@ -23,9 +23,13 @@ export default defineConfig(({ mode }) => {
     build: isLib
       ? {
           lib: {
-            entry: path.resolve(__dirname, 'src/index.ts'),
-            name: 'Icons',
-            fileName: (format) => `icons.${format}.js`,
+            entry: {
+              icons: path.resolve(__dirname, 'src/index.ts'),
+              core: path.resolve(__dirname, 'src/core.ts'),
+              vue: path.resolve(__dirname, 'src/vue/index.ts'),
+            },
+            name: 'SunWorldIcons',
+            fileName: (format, entryName) => `${entryName}.${format}.js`,
           },
           rollupOptions: {
             external: ['vue'],
