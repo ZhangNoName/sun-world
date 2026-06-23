@@ -1,4 +1,11 @@
-import { computed, nextTick, ref, type ComputedRef, type Ref } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  type ComputedRef,
+  type Ref,
+} from 'vue'
 import { fetchBlogById } from '../api'
 import type { BlogDetail, VditorTreeItemType } from '../types'
 import { formatDate } from '@/util/function'
@@ -9,6 +16,7 @@ import VditorPreview from 'vditor/dist/method.min'
 export interface BlogReaderViewModel {
   blogPreview: Ref<HTMLElement | null>
   catalog: Ref<VditorTreeItemType[]>
+  activeHeadingId: Ref<string>
   loading: Ref<boolean>
   blogInfo: Ref<BlogDetail>
   canonicalPath: ComputedRef<string>
@@ -19,6 +27,7 @@ export interface BlogReaderViewModel {
   wordCount: ComputedRef<number>
   getCatalog: () => VditorTreeItemType[]
   renderPreview: (content: string) => Promise<void>
+  scrollToHeading: (headingId: string) => void
   loadBlog: () => Promise<void>
 }
 
@@ -40,8 +49,10 @@ const defaultBlogInfo: BlogDetail = {
 export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
   const blogPreview = ref<HTMLElement | null>(null)
   const catalog = ref<VditorTreeItemType[]>([])
+  const activeHeadingId = ref('')
   const loading = ref(false)
   const blogInfo = ref<BlogDetail>({ ...defaultBlogInfo })
+  let cleanupHeadingTracker: (() => void) | null = null
 
   const canonicalPath = computed(() =>
     id.value ? `/blog?id=${encodeURIComponent(id.value)}` : '/blog'
@@ -61,6 +72,10 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     Number(blogInfo.value.byte_num ?? blogInfo.value.content.length)
   )
 
+  onBeforeUnmount(() => {
+    cleanupHeadingTracker?.()
+  })
+
   function getCatalog(): VditorTreeItemType[] {
     if (!blogPreview.value) return []
 
@@ -70,6 +85,101 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
       level: Number(header.tagName.charAt(1)),
       id: header.id,
     }))
+  }
+
+  function getScrollRoot(): HTMLElement | Window {
+    if (typeof document === 'undefined') return window
+
+    return document.querySelector<HTMLElement>('.app-container') ?? window
+  }
+
+  function getScrollRootRect(scrollRoot: HTMLElement | Window) {
+    if (scrollRoot instanceof HTMLElement) {
+      return scrollRoot.getBoundingClientRect()
+    }
+
+    return { top: 0 }
+  }
+
+  function updateActiveHeading() {
+    if (!blogPreview.value) return
+
+    const headings = Array.from(
+      blogPreview.value.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')
+    ).filter((heading) => heading.id)
+
+    if (!headings.length) {
+      activeHeadingId.value = ''
+      return
+    }
+
+    const scrollRoot = getScrollRoot()
+    const rootRect = getScrollRootRect(scrollRoot)
+    const activationTop = rootRect.top + 96
+    const activeHeading =
+      headings
+        .filter(
+          (heading) => heading.getBoundingClientRect().top <= activationTop
+        )
+        .at(-1) ?? headings[0]
+
+    activeHeadingId.value = activeHeading.id
+  }
+
+  function setupHeadingTracker() {
+    cleanupHeadingTracker?.()
+    cleanupHeadingTracker = null
+
+    if (!blogPreview.value) return
+
+    const scrollRoot = getScrollRoot()
+    let frame = 0
+    const handleScroll = () => {
+      if (frame) return
+
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        updateActiveHeading()
+      })
+    }
+
+    scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
+    updateActiveHeading()
+
+    cleanupHeadingTracker = () => {
+      if (frame) cancelAnimationFrame(frame)
+      scrollRoot.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
+  }
+
+  function scrollToHeading(headingId: string) {
+    if (!blogPreview.value || !headingId) return
+
+    const target = blogPreview.value.querySelector<HTMLElement>(
+      `#${CSS.escape(headingId)}`
+    )
+    if (!target) return
+
+    const scrollRoot = getScrollRoot()
+    const targetTop = target.getBoundingClientRect().top
+    const offset = 88
+
+    if (scrollRoot instanceof HTMLElement) {
+      const rootTop = scrollRoot.getBoundingClientRect().top
+      scrollRoot.scrollTo({
+        top: scrollRoot.scrollTop + targetTop - rootTop - offset,
+        behavior: 'smooth',
+      })
+    } else {
+      window.scrollTo({
+        top: window.scrollY + targetTop - offset,
+        behavior: 'smooth',
+      })
+    }
+
+    activeHeadingId.value = headingId
   }
 
   async function renderPreview(content: string) {
@@ -85,6 +195,8 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
       },
     })
     catalog.value = getCatalog()
+    await nextTick()
+    setupHeadingTracker()
   }
 
   async function loadBlog() {
@@ -106,6 +218,7 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
   return {
     blogPreview,
     catalog,
+    activeHeadingId,
     loading,
     blogInfo,
     canonicalPath,
@@ -116,6 +229,7 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     wordCount,
     getCatalog,
     renderPreview,
+    scrollToHeading,
     loadBlog,
   }
 }

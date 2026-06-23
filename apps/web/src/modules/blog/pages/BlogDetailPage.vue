@@ -2,7 +2,6 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import SelfInfoCard from '../ui/SelfInfoCard.vue'
 import CatalogCard from '../ui/CatalogCard.vue'
 import { SunLoadingSkeleton as LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { getBlogErrorMessage } from '@/modules/blog/errors'
@@ -16,6 +15,7 @@ const id = computed(() => String(route.query.id || ''))
 const {
   blogPreview,
   catalog,
+  activeHeadingId,
   loading,
   blogInfo,
   articleCanonical,
@@ -23,6 +23,7 @@ const {
   publishedAt,
   commentCount,
   wordCount,
+  scrollToHeading,
   loadBlog,
 } = useBlogReader(id)
 
@@ -66,8 +67,11 @@ onMounted(() => {
 <template>
   <div class="blog-page">
     <aside class="left" aria-label="文章侧边栏">
-      <SelfInfoCard />
-      <CatalogCard :catalog="catalog" />
+      <CatalogCard
+        :catalog="catalog"
+        :active-id="activeHeadingId"
+        @select="scrollToHeading"
+      />
     </aside>
 
     <main class="right">
@@ -112,18 +116,18 @@ onMounted(() => {
   padding: var(--space-8) var(--container-inline-padding) var(--space-12);
   background-color: var(--bg-page);
   display: grid;
-  grid-template-columns: minmax(240px, 32rem) minmax(0, 1fr);
-  gap: var(--space-8);
+  grid-template-columns: minmax(220px, 28rem) minmax(0, 1fr);
+  gap: var(--space-6);
 }
 
 .left {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
   position: sticky;
-  top: 80px;
+  top: 88px;
   height: fit-content;
+  max-height: calc(100vh - 112px);
 }
 
 .right {

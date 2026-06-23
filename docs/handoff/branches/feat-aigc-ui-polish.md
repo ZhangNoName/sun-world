@@ -48,6 +48,13 @@ now resets `loading` before calling `renderPreview`, allowing the
 `preview-container` ref to remount before Vditor renders into it. Added
 `scripts/check-blog-detail-render.mjs` and wired it into `pnpm check:web`.
 
+2026-06-23 addendum: optimized the blog detail reading layout. The left rail no
+longer renders `SelfInfoCard`; it now contains only a compact sticky catalog.
+`useBlogReader` tracks the active markdown heading inside `.app-container`,
+catalog items highlight with scroll position, and catalog selection smoothly
+scrolls the article content. Added `scripts/check-blog-detail-catalog.mjs` and
+wired it into `pnpm check:web`.
+
 ## Important Files Touched
 
 - `apps/web/src/modules/ai/pages/AigcPage.vue`
@@ -83,8 +90,10 @@ now resets `loading` before calling `renderPreview`, allowing the
 - `apps/web/src/layout/deskLayout.vue`
 - `apps/web/src/hooks/InfiniteScroll.ts`
 - `apps/web/src/modules/blog/composables/useBlogReader.ts`
+- `apps/web/src/modules/blog/ui/CatalogCard.vue`
 - `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
 - `scripts/check-blog-detail-render.mjs`
+- `scripts/check-blog-detail-catalog.mjs`
 - `scripts/check-blog-infinite-scroll.mjs`
 - `scripts/check-home-footer-layout.mjs`
 - `scripts/check-web.mjs`
@@ -158,6 +167,17 @@ Homepage footer layout addendum commands:
 - `pnpm -C apps/web exec vue-tsc --noEmit`
 - `pnpm -C apps/web build`
 
+Blog detail catalog addendum commands:
+
+- `node scripts/check-blog-detail-catalog.mjs` (failed before implementation,
+  then passed after implementation)
+- `node scripts/check-blog-detail-render.mjs`
+- `node scripts/check-blog-infinite-scroll.mjs`
+- `pnpm format`
+- `pnpm format:check`
+- `pnpm -C apps/web exec vue-tsc --noEmit`
+- `pnpm -C apps/web build`
+
 ## Verification Result
 
 - UI package tests passed: 11 files, 33 tests.
@@ -202,6 +222,10 @@ Homepage footer layout addendum commands:
 - Blog detail render verification passed. The source check rejects rendering
   the Vditor preview while `loading=true`, which keeps the preview container
   unmounted.
+- Blog detail catalog verification passed. The source check rejects
+  reintroducing `SelfInfoCard` on the detail page, requires active catalog
+  wiring, requires `.app-container` heading tracking, and requires catalog
+  item selection/highlight support.
 
 ## Blockers
 
