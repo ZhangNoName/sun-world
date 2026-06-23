@@ -55,11 +55,12 @@ catalog items highlight with scroll position, and catalog selection smoothly
 scrolls the article content. Added `scripts/check-blog-detail-catalog.mjs` and
 wired it into `pnpm check:web`.
 
-2026-06-23 addendum: upgraded the frontend Node toolchain target to Node 24
-LTS. Added `.nvmrc`, set root `engines.node` to `>=24 <25`, upgraded
-`@types/node` to `^24.9.2`, switched the frontend Docker build image and
-GitHub Actions setup-node jobs to Node 24, and added check-script guards for
-the Node 24 toolchain contract.
+2026-06-23 addendum: upgraded the frontend Node toolchain target to the exact
+Node 24 LTS patch used for local verification and deploy. `.nvmrc`,
+`package.json` engines, GitHub Actions setup-node, and the frontend Docker build
+image now all pin Node `24.17.0`; `packageManager`, engines, GitHub Actions, and
+Docker now all pin pnpm `10.15.1`. Check-script guards enforce the same
+toolchain versions across local, CI, and deployment surfaces.
 
 ## Important Files Touched
 
@@ -200,6 +201,15 @@ Node 24 toolchain addendum commands:
 - `D:\NVM\nvm\v24.17.0\node.exe C:\Program Files\nodejs\node_modules\pnpm\bin\pnpm.cjs -C apps/web exec vue-tsc --noEmit`
 - `D:\NVM\nvm\v24.17.0\node.exe C:\Program Files\nodejs\node_modules\pnpm\bin\pnpm.cjs -C apps/web build`
 
+Exact deployment toolchain addendum commands:
+
+- `D:\NVM\nvm\v24.17.0\node.exe C:\Program Files\nodejs\node_modules\pnpm\bin\pnpm.cjs install --lockfile-only`
+- `node scripts/check-github-actions-ci.mjs` (failed before implementation,
+  then passed after implementation)
+- `node scripts/check-docker-build-context.mjs` (failed before implementation,
+  then passed after implementation)
+- `node scripts/check-github-actions-deploy.mjs`
+
 ## Verification Result
 
 - UI package tests passed: 11 files, 33 tests.
@@ -249,9 +259,10 @@ Node 24 toolchain addendum commands:
   wiring, requires `.app-container` heading tracking, and requires catalog
   item selection/highlight support.
 - Node 24 toolchain verification passed. The CI protocol check now requires
-  `.nvmrc`, root `engines.node`, `@types/node`, and setup-node to use Node 24;
-  the Docker build context check now requires `FROM node:24 AS build`. Frontend
-  type checking and production build passed when invoked directly through
+  `.nvmrc`, root `engines.node`, `engines.pnpm`, `packageManager`, setup-node,
+  and pnpm/action-setup to use exact versions. The Docker build context check
+  now requires `FROM node:24.17.0 AS build` and `pnpm@10.15.1`. Frontend type
+  checking and production build passed when invoked directly through
   `D:\NVM\nvm\v24.17.0\node.exe`.
 
 ## Blockers

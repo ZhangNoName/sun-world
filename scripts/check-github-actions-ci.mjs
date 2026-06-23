@@ -10,6 +10,8 @@ const prettierIgnorePath = join(repoRoot, '.prettierignore')
 const nvmrcPath = join(repoRoot, '.nvmrc')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
+const NODE_VERSION = '24.17.0'
+const PNPM_VERSION = '10.15.1'
 
 if (!existsSync(workflowPath)) {
   violations.push('.github/workflows/deploy.yml must exist')
@@ -69,7 +71,8 @@ if (workflow) {
     'fetch-depth: 0',
     'pnpm/action-setup@v4',
     'actions/setup-node@v4',
-    'node-version: 24',
+    `node-version: ${NODE_VERSION}`,
+    `version: ${PNPM_VERSION}`,
     'actions/setup-python@v5',
     "python-version: '3.11'",
     'pnpm install --frozen-lockfile',
@@ -97,12 +100,22 @@ if (packageJson.scripts?.format !== 'node scripts/format-changed.mjs --write') {
   )
 }
 
-if (nvmrc !== '24') {
-  violations.push('.nvmrc must pin the project to Node 24')
+if (nvmrc !== NODE_VERSION) {
+  violations.push(`.nvmrc must pin the project to Node ${NODE_VERSION}`)
 }
 
-if (packageJson.engines?.node !== '>=24 <25') {
-  violations.push('root package.json engines.node must be >=24 <25')
+if (packageJson.engines?.node !== NODE_VERSION) {
+  violations.push(`root package.json engines.node must be ${NODE_VERSION}`)
+}
+
+if (packageJson.engines?.pnpm !== PNPM_VERSION) {
+  violations.push(`root package.json engines.pnpm must be ${PNPM_VERSION}`)
+}
+
+if (packageJson.packageManager !== `pnpm@${PNPM_VERSION}`) {
+  violations.push(
+    `root package.json packageManager must be pnpm@${PNPM_VERSION}`
+  )
 }
 
 if (packageJson.devDependencies?.['@types/node'] !== '^24.9.2') {

@@ -2,9 +2,10 @@
   "name": "sun-world",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.15.1",
   "engines": {
-    "node": ">=24 <25",
-    "pnpm": ">=9"
+    "node": "24.17.0",
+    "pnpm": "10.15.1"
   },
   "scripts": {
     "dev": "run-p dev:icons dev:editor dev:web",
