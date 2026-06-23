@@ -2,6 +2,10 @@
   "name": "sun-world",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=9"
+  },
   "scripts": {
     "dev": "run-p dev:icons dev:editor dev:web",
     "dev:web": "pnpm -F @sun-world/blog dev",
@@ -54,7 +58,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
-    "@types/node": "^20.17.11",
+    "@types/node": "^24.9.2",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-vue": "^5.2.1",

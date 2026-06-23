@@ -12,6 +12,10 @@ if (!existsSync(dockerfilePath)) {
 
 const dockerfile = readFileSync(dockerfilePath, 'utf8').replace(/\r\n/g, '\n')
 
+if (!dockerfile.includes('FROM node:24 AS build')) {
+  throw new Error('Dockerfile must build the frontend with Node 24')
+}
+
 function findWorkspaceManifests(rootDir) {
   const manifests = []
   const base = resolve(repoRoot, rootDir)

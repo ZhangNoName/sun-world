@@ -55,8 +55,17 @@ catalog items highlight with scroll position, and catalog selection smoothly
 scrolls the article content. Added `scripts/check-blog-detail-catalog.mjs` and
 wired it into `pnpm check:web`.
 
+2026-06-23 addendum: upgraded the frontend Node toolchain target to Node 24
+LTS. Added `.nvmrc`, set root `engines.node` to `>=24 <25`, upgraded
+`@types/node` to `^24.9.2`, switched the frontend Docker build image and
+GitHub Actions setup-node jobs to Node 24, and added check-script guards for
+the Node 24 toolchain contract.
+
 ## Important Files Touched
 
+- `.github/workflows/deploy.yml`
+- `.nvmrc`
+- `Dockerfile`
 - `apps/web/src/modules/ai/pages/AigcPage.vue`
 - `apps/web/src/modules/ai/ui/AiConversationSidebar.vue`
 - `apps/web/src/modules/ai/ui/AiComposer.vue`
@@ -95,6 +104,8 @@ wired it into `pnpm check:web`.
 - `scripts/check-blog-detail-render.mjs`
 - `scripts/check-blog-detail-catalog.mjs`
 - `scripts/check-blog-infinite-scroll.mjs`
+- `scripts/check-docker-build-context.mjs`
+- `scripts/check-github-actions-ci.mjs`
 - `scripts/check-home-footer-layout.mjs`
 - `scripts/check-web.mjs`
 
@@ -178,6 +189,17 @@ Blog detail catalog addendum commands:
 - `pnpm -C apps/web exec vue-tsc --noEmit`
 - `pnpm -C apps/web build`
 
+Node 24 toolchain addendum commands:
+
+- `pnpm install --lockfile-only`
+- `node scripts/check-github-actions-ci.mjs`
+- `node scripts/check-docker-build-context.mjs`
+- `node scripts/check-github-actions-deploy.mjs`
+- `pnpm format`
+- `pnpm format:check`
+- `D:\NVM\nvm\v24.17.0\node.exe C:\Program Files\nodejs\node_modules\pnpm\bin\pnpm.cjs -C apps/web exec vue-tsc --noEmit`
+- `D:\NVM\nvm\v24.17.0\node.exe C:\Program Files\nodejs\node_modules\pnpm\bin\pnpm.cjs -C apps/web build`
+
 ## Verification Result
 
 - UI package tests passed: 11 files, 33 tests.
@@ -226,12 +248,18 @@ Blog detail catalog addendum commands:
   reintroducing `SelfInfoCard` on the detail page, requires active catalog
   wiring, requires `.app-container` heading tracking, and requires catalog
   item selection/highlight support.
+- Node 24 toolchain verification passed. The CI protocol check now requires
+  `.nvmrc`, root `engines.node`, `@types/node`, and setup-node to use Node 24;
+  the Docker build context check now requires `FROM node:24 AS build`. Frontend
+  type checking and production build passed when invoked directly through
+  `D:\NVM\nvm\v24.17.0\node.exe`.
 
 ## Blockers
 
-None. The in-app browser screenshot capture timed out twice, so visual QA used
-DOM, computed layout dimensions, and browser interactions instead of attached
-screenshots.
+None for repository changes. On this Windows machine, `nvm use 24.17.0`
+returned `Access is denied`, so the global `node` symlink stayed on
+`v22.19.0`; Node 24.17.0 is installed and was used directly by absolute path
+for verification.
 
 ## Next Suggested Step
 

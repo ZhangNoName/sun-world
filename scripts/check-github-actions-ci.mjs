@@ -7,6 +7,7 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy.yml')
 const prettierConfigPath = join(repoRoot, '.prettierrc.json')
 const prettierIgnorePath = join(repoRoot, '.prettierignore')
+const nvmrcPath = join(repoRoot, '.nvmrc')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
 
@@ -22,11 +23,18 @@ if (!existsSync(prettierIgnorePath)) {
   violations.push('.prettierignore must exist')
 }
 
+if (!existsSync(nvmrcPath)) {
+  violations.push('.nvmrc must exist')
+}
+
 const workflow = existsSync(workflowPath)
   ? readFileSync(workflowPath, 'utf8')
   : ''
 const prettierIgnore = existsSync(prettierIgnorePath)
   ? readFileSync(prettierIgnorePath, 'utf8')
+  : ''
+const nvmrc = existsSync(nvmrcPath)
+  ? readFileSync(nvmrcPath, 'utf8').trim()
   : ''
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
@@ -61,7 +69,7 @@ if (workflow) {
     'fetch-depth: 0',
     'pnpm/action-setup@v4',
     'actions/setup-node@v4',
-    'node-version: 22',
+    'node-version: 24',
     'actions/setup-python@v5',
     "python-version: '3.11'",
     'pnpm install --frozen-lockfile',
@@ -87,6 +95,18 @@ if (packageJson.scripts?.format !== 'node scripts/format-changed.mjs --write') {
   violations.push(
     'root package.json must expose format through scripts/format-changed.mjs'
   )
+}
+
+if (nvmrc !== '24') {
+  violations.push('.nvmrc must pin the project to Node 24')
+}
+
+if (packageJson.engines?.node !== '>=24 <25') {
+  violations.push('root package.json engines.node must be >=24 <25')
+}
+
+if (packageJson.devDependencies?.['@types/node'] !== '^24.9.2') {
+  violations.push('root package.json must use @types/node ^24.9.2')
 }
 
 if (

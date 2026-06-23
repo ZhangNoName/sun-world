@@ -1,5 +1,5 @@
 # 使用官方的 Node.js 镜像
-FROM node:22 AS build
+FROM node:24 AS build
 
 # 设置工作目录
 WORKDIR /app
