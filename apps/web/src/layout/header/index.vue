@@ -79,7 +79,6 @@ onBeforeUnmount(() => {
           <LanguageSwitch />
           <ThemeSwitch />
           <Avator />
-          <!-- <AddOutlined></AddOutlined> -->
         </div>
       </div>
       <div class="time">

@@ -12,6 +12,8 @@ older completed checkpoints to docs/handoff/archive/.
   docs/handoff/branches/codex-ai-cli-skills.md.
 - codex/server-side-web-build: see
   docs/handoff/branches/codex-server-side-web-build.md.
+- codex/icon-gallery: see
+  docs/handoff/branches/codex-icon-gallery.md.
 
 ## Latest Stable Checkpoint
 
