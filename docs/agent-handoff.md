@@ -119,8 +119,14 @@ older completed checkpoints to docs/handoff/archive/.
     - Manual dist spot check confirmed article canonical tags,
       BlogPosting JSON-LD, static article HTML, and sitemap article URLs.
   - Next step:
-    - Review and commit the local changes, then let the existing main deploy
-      workflow build the frontend image when pushed.
+    - Commit `bc871052` was pushed to `main` and built successfully on
+      Lighthouse, but the first deploy run `28065899403` failed during the
+      immediate public frontend `curl` probe with a transient HTTP 502 after
+      recreating `my-frontend`.
+    - Follow-up local fix changes SSG output from directory `index.html` files
+      to extensionless `.html` files, updates frontend Nginx to resolve
+      `$uri.html`, and retries public frontend probes in the deploy workflow.
+      Commit and push this fix before considering the publish fully green.
 
 ## Archives
 

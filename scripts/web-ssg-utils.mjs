@@ -6,6 +6,12 @@ export function buildArticleCanonicalPath(id) {
   return `/blog/${encodeURIComponent(String(id))}`
 }
 
+export function routeToSsgOutputPath(routePath) {
+  const normalized = String(routePath || '/').replace(/^\/+/, '')
+  if (!normalized) return 'index.html'
+  return `${normalized.replace(/\/+$/, '')}.html`
+}
+
 export function extractApiData(payload) {
   if (
     payload &&

@@ -650,8 +650,19 @@ jobs:
           fi
 
           sudo docker image prune -f
-          curl -fsSI https://sunworld.site
-          curl -fsSI https://www.sunworld.site
+          FRONTEND_READY=false
+          for attempt in $(seq 1 10); do
+            if curl -fsSI https://sunworld.site >/dev/null && curl -fsSI https://www.sunworld.site >/dev/null; then
+              FRONTEND_READY=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$FRONTEND_READY" != "true" ]; then
+            curl -fsSI https://sunworld.site
+            curl -fsSI https://www.sunworld.site
+            exit 1
+          fi
           REMOTE
 
   no-deploy:

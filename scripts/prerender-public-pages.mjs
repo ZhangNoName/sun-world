@@ -7,6 +7,7 @@ import {
   renderArticlePageHtml,
   renderHomePageHtml,
   renderSitemapXml,
+  routeToSsgOutputPath,
   safeArticleId,
   toSitemapEntries,
 } from './web-ssg-utils.mjs'
@@ -40,7 +41,7 @@ async function main() {
 async function writeHomepage(indexHtml) {
   const homeHtml = renderHomePageHtml(indexHtml)
   await writeFile(distIndexPath, homeHtml)
-  await writeNestedFile(join(distDir, 'home', 'index.html'), homeHtml)
+  await writeNestedFile(join(distDir, routeToSsgOutputPath('/home')), homeHtml)
 }
 
 async function writeArticlePages(indexHtml, articles) {
@@ -49,7 +50,10 @@ async function writeArticlePages(indexHtml, articles) {
     if (!id) continue
 
     const html = renderArticlePageHtml(indexHtml, article)
-    await writeNestedFile(join(distDir, 'blog', id, 'index.html'), html)
+    await writeNestedFile(
+      join(distDir, routeToSsgOutputPath(`/blog/${id}`)),
+      html
+    )
   }
 }
 

@@ -5,6 +5,7 @@ import {
   extractApiData,
   renderArticlePageHtml,
   renderSitemapXml,
+  routeToSsgOutputPath,
 } from './web-ssg-utils.mjs'
 
 const baseIndexHtml = `<!DOCTYPE html>
@@ -39,6 +40,8 @@ const article = {
 
 assert.equal(buildArticleCanonicalPath(42), '/blog/42')
 assert.equal(buildArticleCanonicalPath('abc'), '/blog/abc')
+assert.equal(routeToSsgOutputPath('/home'), 'home.html')
+assert.equal(routeToSsgOutputPath('/blog/42'), 'blog/42.html')
 
 assert.deepEqual(extractApiData({ code: 1, data: { ok: true }, msg: 'ok' }), {
   ok: true,

@@ -351,14 +351,20 @@ the left-side weather card; mobile placement is inside
 - The frontend production build now runs a post-build public SSG prerender
   step through `scripts/prerender-public-pages.mjs`. After Vite writes
   `apps/web/dist`, the script rewrites the root homepage HTML, writes
-  `/home/index.html`, fetches public blog list/detail data from
+  `/home.html`, fetches public blog list/detail data from
   `SUN_WORLD_SSG_API_BASE_URL`, `VITE_BASE_URL`, or
-  `https://api.sunworld.site`, writes `/blog/<id>/index.html` pages, and
+  `https://api.sunworld.site`, writes `/blog/<id>.html` pages, and
   regenerates `sitemap.xml` with article URLs. API fetch failures are
   non-blocking warnings so local and PR builds do not depend on production API
   availability; static homepage and base sitemap output are still generated.
 - Public blog article URLs now support canonical `/blog/<id>` paths while the
   legacy `/blog?id=<id>` reader path remains accepted by the same page.
+- The frontend Nginx config resolves extensionless SSG pages with
+  `try_files $uri $uri.html $uri/ /index.html`, so `/blog/<id>` can serve the
+  generated `blog/<id>.html` file without a directory slash redirect.
+- The deploy workflow retries public frontend `curl -fsSI` checks after
+  recreating `my-frontend`, avoiding false failures while the new Nginx
+  container becomes ready.
 - `scripts/check-web-ssg.mjs` validates the public SSG helper contract:
   canonical article paths, escaped static article HTML, BlogPosting JSON-LD,
   sitemap entries, and API envelope unwrapping.

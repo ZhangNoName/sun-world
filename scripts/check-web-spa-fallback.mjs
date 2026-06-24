@@ -38,7 +38,7 @@ if (nginxConfig) {
     'listen 80',
     'root /usr/share/nginx/html',
     'index index.html',
-    'try_files $uri $uri/ /index.html',
+    'try_files $uri $uri.html $uri/ /index.html',
   ]
 
   for (const fragment of requiredFragments) {
