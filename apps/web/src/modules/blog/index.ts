@@ -13,12 +13,22 @@ export const blogModule: AppModule = {
   name: '博客',
   routes: [
     {
+      path: '/blog/:id',
+      component: BlogDetailPage,
+      meta: {
+        module: 'blog',
+        title: '博客详情 - Sun World',
+        description: '浏览 Sun World 的技术博客文章。',
+      },
+    },
+    {
       path: '/blog',
       component: BlogDetailPage,
       meta: {
         module: 'blog',
         title: '博客详情 - Sun World',
-        description: '浏览 Sun World 的技术博客文章，覆盖前端、后端、AI、图形编辑器和工程实践。',
+        description:
+          '浏览 Sun World 的技术博客文章，覆盖前端、后端、AI、图形编辑器和工程实践。',
       },
     },
     {
@@ -31,9 +41,7 @@ export const blogModule: AppModule = {
       },
     },
   ],
-  nav: [
-    { label: 'nav.blog', path: '/blog', icon: 'blog' },
-  ],
+  nav: [{ label: 'nav.blog', path: '/blog', icon: 'blog' }],
   seo: {
     title: '博客 - Sun World',
     description: '浏览技术博客文章，涵盖前端、后端、AIGC 等主题。',

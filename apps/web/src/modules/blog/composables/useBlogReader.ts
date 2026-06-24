@@ -55,7 +55,7 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
   let cleanupHeadingTracker: (() => void) | null = null
 
   const canonicalPath = computed(() =>
-    id.value ? `/blog?id=${encodeURIComponent(id.value)}` : '/blog'
+    id.value ? `/blog/${encodeURIComponent(id.value)}` : '/blog'
   )
   const articleCanonical = computed(() => canonicalUrl(canonicalPath.value))
   const articleDescription = computed(

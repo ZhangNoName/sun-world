@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20 (main, P1.80 lazy AI manager startup)
+Last updated: 2026-06-24 (main, public SSG prerender baseline)
 
 ## Server
 
@@ -348,6 +348,20 @@ the left-side weather card; mobile placement is inside
 - The frontend production build strips route-only optional heavy assets from
   the generated `index.html` preload/style tags. Those chunks still exist and
   load through route-level dynamic imports when their routes are visited.
+- The frontend production build now runs a post-build public SSG prerender
+  step through `scripts/prerender-public-pages.mjs`. After Vite writes
+  `apps/web/dist`, the script rewrites the root homepage HTML, writes
+  `/home/index.html`, fetches public blog list/detail data from
+  `SUN_WORLD_SSG_API_BASE_URL`, `VITE_BASE_URL`, or
+  `https://api.sunworld.site`, writes `/blog/<id>/index.html` pages, and
+  regenerates `sitemap.xml` with article URLs. API fetch failures are
+  non-blocking warnings so local and PR builds do not depend on production API
+  availability; static homepage and base sitemap output are still generated.
+- Public blog article URLs now support canonical `/blog/<id>` paths while the
+  legacy `/blog?id=<id>` reader path remains accepted by the same page.
+- `scripts/check-web-ssg.mjs` validates the public SSG helper contract:
+  canonical article paths, escaped static article HTML, BlogPosting JSON-LD,
+  sitemap entries, and API envelope unwrapping.
 - `pnpm check:api` runs backend migration, metrics snapshot store, request
   metrics, RUM metrics, metrics alert protocol checks, and the static MySQL
   schema contract check. Request metrics expose `p50_duration_ms`,

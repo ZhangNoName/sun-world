@@ -82,6 +82,46 @@ older completed checkpoints to docs/handoff/archive/.
     - `pnpm format:check` passed.
     - `git diff --check` passed.
 
+- Latest local feature checkpoint (2026-06-24, public SSG prerender):
+  - Goal: improve public loading and SEO by generating static homepage,
+    article, and sitemap output during the frontend build without changing the
+    Nginx static deployment model.
+  - Status: implemented locally and verified.
+  - Important files touched:
+    - `apps/web/package.json`
+    - `apps/web/src/modules/blog/index.ts`
+    - `apps/web/src/modules/blog/pages/BlogDetailPage.vue`
+    - `apps/web/src/modules/blog/composables/useBlogReader.ts`
+    - `apps/web/src/modules/blog/ui/BlogCard.vue`
+    - `scripts/web-ssg-utils.mjs`
+    - `scripts/prerender-public-pages.mjs`
+    - `scripts/check-web-ssg.mjs`
+    - `scripts/check-web.mjs`
+    - `docs/superpowers/specs/2026-06-23-public-ssg-design.md`
+    - `docs/superpowers/plans/2026-06-23-public-ssg.md`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `pnpm -C apps/web build` runs `vite build` and then the public SSG
+      prerender script.
+    - Public article routes use canonical `/blog/<id>` URLs; legacy
+      `/blog?id=<id>` remains supported.
+    - Build-time article API failures warn but do not fail the frontend build.
+  - Verification:
+    - `node scripts/check-web-ssg.mjs` passed.
+    - `pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `pnpm -C apps/web build` passed and generated 30 article pages from the
+      public API.
+    - `pnpm check:web` passed after formatting and regenerated the SSG article
+      pages, build manifest, and build summary.
+    - `pnpm format:check` passed.
+    - `git diff --check` passed.
+    - Manual dist spot check confirmed article canonical tags,
+      BlogPosting JSON-LD, static article HTML, and sitemap article URLs.
+  - Next step:
+    - Review and commit the local changes, then let the existing main deploy
+      workflow build the frontend image when pushed.
+
 ## Archives
 
 - docs/handoff/archive/2026-06-20-platform-checkpoints.md contains the prior

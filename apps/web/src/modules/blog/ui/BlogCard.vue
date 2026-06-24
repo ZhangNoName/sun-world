@@ -21,7 +21,7 @@ const {
 
 const router = useRouter()
 const showBlog = () => {
-  router.push({ path: '/blog', query: { id: id } })
+  router.push({ path: `/blog/${encodeURIComponent(id)}` })
 }
 </script>
 <template>

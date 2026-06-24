@@ -10,7 +10,11 @@ import { buildBlogPostingJsonLd, useJsonLd, usePageMeta } from '@/shared/seo'
 import { SunIcon } from '@sun-world/icons/vue'
 
 const route = useRoute()
-const id = computed(() => String(route.query.id || ''))
+const id = computed(() => {
+  const paramId = route.params.id
+  if (Array.isArray(paramId)) return String(paramId[0] || '')
+  return String(paramId || route.query.id || '')
+})
 
 const {
   blogPreview,
