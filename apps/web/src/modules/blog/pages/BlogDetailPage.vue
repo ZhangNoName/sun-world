@@ -175,6 +175,43 @@ onMounted(() => {
   padding: var(--space-6);
 }
 
+.preview-container :deep(pre) {
+  position: relative;
+}
+
+.preview-container :deep(.vditor-copy) {
+  position: relative;
+  display: none;
+  z-index: 1;
+}
+
+.preview-container :deep(pre:hover .vditor-copy) {
+  display: block;
+}
+
+.preview-container :deep(.vditor-copy textarea) {
+  position: absolute;
+  left: -100000px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.preview-container :deep(.vditor-copy span) {
+  cursor: pointer;
+  position: absolute;
+  right: var(--space-3);
+  top: var(--space-2);
+  color: var(--text-secondary);
+}
+
+.preview-container :deep(.vditor-copy svg) {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
 @media screen and (max-width: 1024px) {
   .blog-page {
     grid-template-columns: 1fr;

@@ -50,6 +50,18 @@ These conventions capture the default coding habits for this repository. Prefer 
   Python formatting should be introduced separately through a Python-native
   formatter such as Ruff.
 
+## Toolchain
+
+- Use the repository-declared toolchain for project commands. For pnpm, this
+  means the version in `packageManager` and `engines.pnpm`, resolved through
+  Corepack when available.
+- Prefer `corepack pnpm ...` in local and agent-run commands.
+- If a script shells out to bare `pnpm`, ensure the system Node/Corepack path is
+  ahead of Codex runtime paths in `PATH` so nested package-manager calls do not
+  accidentally use Codex bundled pnpm.
+- Treat Codex bundled pnpm as an application/runtime dependency for Codex
+  itself, not as the package manager for this repository.
+
 ## Context And Agent Handoff
 
 - Use AGENTS.md and CLAUDE.md for stable agent rules.

@@ -27,6 +27,18 @@ This repository is the source of truth for the Sun World site.
 - Do not commit secrets, API keys, .env values, certificates, private keys, or passwords.
 - Before deployment, check git status and verify the build or the narrowest useful command.
 
+## Project Toolchain
+
+- Project commands must use the package manager and runtime declared by this
+  repository, not Codex bundled tooling.
+- Prefer `corepack pnpm ...` for manual pnpm commands so `packageManager` and
+  `engines.pnpm` are respected.
+- When a project script invokes bare `pnpm` internally, make sure the project
+  Node/Corepack path has priority over Codex runtime paths in `PATH` before
+  running it.
+- Codex bundled pnpm is for Codex runtime/plugin support only. It must not
+  override this repository's `packageManager` or `engines` requirements.
+
 ## Context Handoff
 
 - Chat context is not the source of truth. Persist context in repository docs.

@@ -7,8 +7,23 @@ const readerPath = resolve(
   repoRoot,
   'apps/web/src/modules/blog/composables/useBlogReader.ts'
 )
+const detailPagePath = resolve(
+  repoRoot,
+  'apps/web/src/modules/blog/pages/BlogDetailPage.vue'
+)
 const source = readFileSync(readerPath, 'utf8')
+const detailPageSource = readFileSync(detailPagePath, 'utf8')
 const violations = []
+
+if (
+  !detailPageSource.includes('.vditor-copy') ||
+  !detailPageSource.includes('left: -100000px') ||
+  !detailPageSource.includes('width: 14px')
+) {
+  violations.push(
+    'BlogDetailPage must include local Vditor preview copy-control styles so code blocks do not expose raw textarea/svg controls.'
+  )
+}
 
 const loadBlogIndex = source.indexOf('async function loadBlog()')
 if (loadBlogIndex === -1) {
