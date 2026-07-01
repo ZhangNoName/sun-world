@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-24 (main, public SSG prerender baseline)
+Last updated: 2026-07-01 (main, md-editor-v3 migration and AI entry deploy)
 
 ## Server
 

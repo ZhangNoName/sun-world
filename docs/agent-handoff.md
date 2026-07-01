@@ -17,9 +17,31 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Latest Stable Checkpoint
 
-- Current task addendum (2026-07-01, blog feed back-to-top):
+- Current task addendum (2026-07-01, md-editor-v3 / AI entry / back-to-top deploy):
+  - Goal: deploy the markdown editor migration, public AI entry, and blog feed
+    back-to-top control from `main`.
+  - Status: committed, pushed, deployed, and verified.
+  - Commits:
+    - `8a9cb602` `feat(web): migrate markdown editing to md-editor-v3`
+    - `1ac572fc` `feat(web): expose ai entry and add feed back to top`
+  - Deployment:
+    - Pushed `main` to `origin/main` at `1ac572fc`.
+    - GitHub Actions run `28527558861` completed successfully.
+    - `Build frontend image on Lighthouse`, `Build API image on Lighthouse`,
+      and `Deploy changed services on Lighthouse` all succeeded.
+  - Verification:
+    - Local pre-push `corepack pnpm check:web` passed.
+    - Local pre-push `corepack pnpm format:check` passed.
+    - Local pre-push `git diff --check` passed with only LF/CRLF warnings.
+    - Public `curl -fsSI https://sunworld.site` returned HTTP 200.
+    - Public `curl -fsSI https://www.sunworld.site` returned HTTP 200.
+    - Public `curl -fsSI https://sunworld.site/aigc` returned HTTP 200.
+    - Public `curl -fsS https://api.sunworld.site/healthz` returned
+      `{"status":"ok"}`.
+
+- Completed task addendum (2026-07-01, blog feed back-to-top):
   - Goal: add a one-click back-to-top control while scrolling the blog list.
-  - Status: implemented locally on branch `codex/md-editor-v3-migration`.
+  - Status: deployed on `main` at `1ac572fc`.
   - Important files touched:
     - `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
     - `scripts/check-blog-infinite-scroll.mjs`
@@ -39,10 +61,10 @@ older completed checkpoints to docs/handoff/archive/.
     - `git diff --check` passed with only LF/CRLF warnings.
     - `corepack pnpm check:web` passed.
 
-- Current task addendum (2026-07-01, AI public entry):
+- Completed task addendum (2026-07-01, AI public entry):
   - Goal: expose the AI chat interface entry while keeping `/aigc` as the
     existing full-screen AI workspace.
-  - Status: implemented locally on branch `codex/md-editor-v3-migration`.
+  - Status: deployed on `main` at `1ac572fc`.
   - Important files touched:
     - `apps/web/src/layout/header/index.vue`
     - `apps/web/src/layout/mobLayout.vue`
@@ -52,16 +74,17 @@ older completed checkpoints to docs/handoff/archive/.
     - `docs/current-state.md`
     - `docs/agent-handoff.md`
   - Behavior:
-    - Desktop header shows a `bot` icon that navigates to `/aigc`.
+    - Desktop header shows a `message-circle` icon that navigates to `/aigc`.
     - Mobile bottom navigation and drawer expose `/aigc`.
-    - AI module nav registration exposes `{ label: 'AI', path: '/aigc', icon: 'bot' }`.
+    - AI module nav registration exposes
+      `{ label: 'AI', path: '/aigc', icon: 'message-circle' }`.
     - The old hidden-entry guard was replaced with
       `scripts/check-ai-public-entry-visible.mjs`.
 
-- Current task checkpoint (2026-07-01, md-editor-v3 migration):
+- Completed task checkpoint (2026-07-01, md-editor-v3 migration):
   - Goal: replace Vditor runtime editor/preview usage in blog authoring and
     public article detail with md-editor-v3.
-  - Status: in-progress on branch `codex/md-editor-v3-migration`.
+  - Status: deployed on `main` at `1ac572fc`.
   - Important files touched:
     - `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
     - `apps/web/src/modules/blog/composables/useBlogAuthoring.ts`
