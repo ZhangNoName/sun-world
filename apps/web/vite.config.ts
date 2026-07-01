@@ -14,7 +14,7 @@ const packagesDir = resolve(root, '../..') // blog is now under apps/web/
 type ManualChunksFn = (id: string) => string | undefined
 
 const routeOnlyPreloadPattern =
-  /\/assets\/(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|vditor-(?:preview|editor)|echarts|zrender|element)\./
+  /\/assets\/(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|md-editor-(?:preview|editor)|echarts|zrender|element)\./
 
 function stripRouteOnlyPreloadsPlugin() {
   return {
@@ -104,7 +104,7 @@ export default defineConfig(({ mode }) => {
         resolveDependencies: (_filename, deps) =>
           deps.filter(
             (dep) =>
-              !/(?:^|\/)(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|vditor-(?:preview|editor)|echarts|zrender|element)\./.test(
+              !/(?:^|\/)(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|md-editor-(?:preview|editor)|echarts|zrender|element)\./.test(
                 dep
               )
           ),
@@ -218,13 +218,52 @@ export default defineConfig(({ mode }) => {
               return 'page-me'
             if (isWebAppSource && normalizedId.includes('/src/pages/manage/'))
               return 'manage-shell'
+            if (
+              isWebAppSource &&
+              normalizedId.includes(
+                '/src/shared/markdown/SunMarkdownEditor.vue'
+              )
+            )
+              return 'md-editor-editor'
+            if (
+              isWebAppSource &&
+              normalizedId.includes(
+                '/src/shared/markdown/SunMarkdownPreview.vue'
+              )
+            )
+              return 'md-editor-preview'
             // 只处理 node_modules
             if (id.includes('node_modules')) {
+              if (
+                id.includes('@codemirror') ||
+                id.includes('/codemirror/') ||
+                id.includes('@lezer')
+              )
+                return 'md-editor-editor'
+              if (
+                id.includes('md-editor-v3') &&
+                (normalizedId.includes('/lib/es/MdEditor.mjs') ||
+                  normalizedId.includes('/lib/es/chunks/index.mjs') ||
+                  normalizedId.includes('/lib/es/chunks/index2.mjs') ||
+                  normalizedId.includes('/lib/es/chunks/index3.mjs') ||
+                  normalizedId.includes('/lib/es/DropdownToolbar.mjs') ||
+                  normalizedId.includes('/lib/es/ModalToolbar.mjs') ||
+                  normalizedId.includes('/lib/es/NormalToolbar.mjs'))
+              )
+                return 'md-editor-editor'
+              if (
+                id.includes('md-editor-v3') ||
+                id.includes('markdown-it') ||
+                id.includes('medium-zoom') ||
+                id.includes('xss') ||
+                id.includes('@vavt/copy2clipboard') ||
+                id.includes('@vavt/markdown-theme') ||
+                id.includes('@vavt/util')
+              )
+                return 'md-editor-preview'
               if (id.includes('artplayer') || id.includes('hls.js'))
                 return 'video-player'
               if (id.includes('jszip')) return 'tile-export'
-              if (id.includes('vditor/dist/method.min')) return 'vditor-preview'
-              if (id.includes('vditor')) return 'vditor-editor'
               if (id.includes('echarts')) return 'echarts'
               if (id.includes('element-plus')) return 'element'
               if (id.includes('axios')) return 'vendor-axios'

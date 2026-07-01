@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import type { DefineComponent } from 'vue'
+import type { SunMarkdownHeading } from '@/shared/markdown'
 import type {
   ApiRequestBody,
   ApiSuccessData,
@@ -29,11 +30,7 @@ export interface CatalogItemType {
   icon?: DefineComponent | SVGAElement | Element
 }
 
-export interface VditorTreeItemType {
-  text: string
-  level: number
-  id: string
-}
+export type MarkdownHeadingItem = SunMarkdownHeading
 
 export type BlogCreateContract = ApiRequestBody<'/blogs/', 'post'>
 

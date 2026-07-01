@@ -6,7 +6,7 @@
       "name": "total-js-gzip",
       "type": "total",
       "extensions": [".js"],
-      "maxGzipKiB": 1120
+      "maxGzipKiB": 1700
     },
     {
       "name": "total-css-gzip",
@@ -18,7 +18,7 @@
       "name": "largest-asset-gzip",
       "type": "largest",
       "extensions": [".js", ".css"],
-      "maxGzipKiB": 430
+      "maxGzipKiB": 600
     },
     {
       "name": "entry-index-js-gzip",
@@ -30,7 +30,7 @@
       "name": "global-vendor-chunk-gzip",
       "type": "pattern",
       "pattern": "assets/vendor.v*.js",
-      "maxGzipKiB": 140
+      "maxGzipKiB": 155
     },
     {
       "name": "video-player-chunk-gzip",
@@ -45,16 +45,16 @@
       "maxGzipKiB": 35
     },
     {
-      "name": "vditor-preview-chunk-gzip",
+      "name": "md-editor-preview-chunk-gzip",
       "type": "pattern",
-      "pattern": "assets/vditor-preview*.js",
-      "maxGzipKiB": 25
+      "pattern": "assets/md-editor-preview*.js",
+      "maxGzipKiB": 45
     },
     {
-      "name": "vditor-editor-chunk-gzip",
+      "name": "md-editor-editor-chunk-gzip",
       "type": "pattern",
-      "pattern": "assets/vditor-editor*.js",
-      "maxGzipKiB": 80
+      "pattern": "assets/md-editor-editor*.js",
+      "maxGzipKiB": 590
     },
     {
       "name": "admin-charts-chunk-gzip",

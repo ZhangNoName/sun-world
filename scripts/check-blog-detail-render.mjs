@@ -16,12 +16,26 @@ const detailPageSource = readFileSync(detailPagePath, 'utf8')
 const violations = []
 
 if (
-  !detailPageSource.includes('.vditor-copy') ||
-  !detailPageSource.includes('left: -100000px') ||
-  !detailPageSource.includes('width: 14px')
+  !detailPageSource.includes('SunMarkdownPreview') ||
+  !detailPageSource.includes(':content="blogInfo.content"')
 ) {
   violations.push(
-    'BlogDetailPage must include local Vditor preview copy-control styles so code blocks do not expose raw textarea/svg controls.'
+    'BlogDetailPage should use SunMarkdownPreview with the article content prop.'
+  )
+}
+
+if (
+  !detailPageSource.includes('@catalog="handlePreviewCatalog"') ||
+  !detailPageSource.includes('@rendered="handlePreviewRendered"')
+) {
+  violations.push(
+    'BlogDetailPage should consume SunMarkdownPreview catalog/rendered events instead of duplicating markdown DOM parsing.'
+  )
+}
+
+if (!detailPageSource.includes('ref=\"blogPreview\"')) {
+  violations.push(
+    'BlogDetailPage must keep a preview container ref for catalog extraction.'
   )
 }
 

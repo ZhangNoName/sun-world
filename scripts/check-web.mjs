@@ -74,11 +74,21 @@ run('AI public entry hidden check', 'node', [
   'scripts/check-ai-public-entry-hidden.mjs',
 ])
 
-run('Contracts tests', 'pnpm', ['test:contracts'])
+run('Contracts tests', 'corepack', [
+  'pnpm',
+  '-F',
+  '@sun-world/contracts',
+  'run',
+  'test',
+])
 
-run('Contracts generate script check', 'pnpm', ['check:contracts:generate'])
+run('Contracts generate script check', 'corepack', [
+  'pnpm',
+  'check:contracts:generate',
+])
 
-run('Frontend type check', 'pnpm', [
+run('Frontend type check', 'corepack', [
+  'pnpm',
   '-C',
   'apps/web',
   'exec',
@@ -86,7 +96,7 @@ run('Frontend type check', 'pnpm', [
   '--noEmit',
 ])
 
-run('Frontend build check', 'pnpm', ['-C', 'apps/web', 'build'], {
+run('Frontend build check', 'corepack', ['pnpm', '-C', 'apps/web', 'build'], {
   env: {
     NODE_OPTIONS: '--max-old-space-size=4096',
   },
@@ -110,6 +120,10 @@ run('Frontend build summary check', 'node', [
 
 run('UI package boundary check', 'node', [
   'scripts/check-ui-package-boundary.mjs',
+])
+
+run('md-editor-v3 migration check', 'node', [
+  'scripts/check-md-editor-v3-migration.mjs',
 ])
 
 run('Frontend performance budget check', 'node', [

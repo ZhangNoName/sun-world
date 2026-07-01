@@ -8,6 +8,7 @@ import { getBlogErrorMessage } from '@/modules/blog/errors'
 import { useBlogReader } from '../composables/useBlogReader'
 import { buildBlogPostingJsonLd, useJsonLd, usePageMeta } from '@/shared/seo'
 import { SunIcon } from '@sun-world/icons/vue'
+import { SunMarkdownPreview } from '@/shared/markdown'
 
 const route = useRoute()
 const id = computed(() => {
@@ -27,6 +28,8 @@ const {
   publishedAt,
   commentCount,
   wordCount,
+  handlePreviewCatalog,
+  handlePreviewRendered,
   scrollToHeading,
   loadBlog,
 } = useBlogReader(id)
@@ -100,11 +103,13 @@ onMounted(() => {
         </div>
 
         <h1 class="blog-title">{{ blogInfo.title }}</h1>
-        <div
-          class="preview-container"
-          ref="blogPreview"
-          id="blog-preview"
-        ></div>
+        <div class="preview-container" ref="blogPreview" id="blog-preview">
+          <SunMarkdownPreview
+            :content="blogInfo.content"
+            @catalog="handlePreviewCatalog"
+            @rendered="handlePreviewRendered"
+          />
+        </div>
       </template>
     </main>
   </div>
@@ -177,39 +182,6 @@ onMounted(() => {
 
 .preview-container :deep(pre) {
   position: relative;
-}
-
-.preview-container :deep(.vditor-copy) {
-  position: relative;
-  display: none;
-  z-index: 1;
-}
-
-.preview-container :deep(pre:hover .vditor-copy) {
-  display: block;
-}
-
-.preview-container :deep(.vditor-copy textarea) {
-  position: absolute;
-  left: -100000px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.preview-container :deep(.vditor-copy span) {
-  cursor: pointer;
-  position: absolute;
-  right: var(--space-3);
-  top: var(--space-2);
-  color: var(--text-secondary);
-}
-
-.preview-container :deep(.vditor-copy svg) {
-  display: block;
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
 }
 
 @media screen and (max-width: 1024px) {

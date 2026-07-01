@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import type { CatalogItemType, VditorTreeItemType } from '@/modules/blog/types'
+import type { CatalogItemType, MarkdownHeadingItem } from '@/modules/blog/types'
 import CatalogItem from './CatalogItem.vue'
 
 const prop = defineProps<{
-  catalog: VditorTreeItemType[]
+  catalog: MarkdownHeadingItem[]
   activeId?: string
 }>()
 
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 }>()
 
 // 解析目录数据并构建树形结构
-const parseCatalog = (titleList: VditorTreeItemType[]): CatalogItemType[] => {
+const parseCatalog = (titleList: MarkdownHeadingItem[]): CatalogItemType[] => {
   const catalog: CatalogItemType[] = []
   const stack: CatalogItemType[] = [] // 用于构建树形结构
 

@@ -1,8 +1,11 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
 import { ElSelect, ElOption } from 'element-plus'
+import 'element-plus/es/components/select/style/css'
+import 'element-plus/es/components/option/style/css'
 import { SunButton } from '@sun-world/ui/button'
 import { SunInput } from '@sun-world/ui/input'
+import { SunMarkdownEditor } from '@/shared/markdown'
 import { useBlogAuthoring } from '@/modules/blog/composables/useBlogAuthoring'
 
 defineProps({
@@ -10,8 +13,8 @@ defineProps({
 })
 
 const {
-  editorEle,
   blogWordCount,
+  blogContent,
   blogCategory,
   blogTag,
   title,
@@ -30,7 +33,7 @@ onMounted(() => {
 <template>
   <div class="article-page">
     <div class="func-bar">
-      <div class="stastic">{{ '统计信息：字数  ' + blogWordCount }}</div>
+      <div class="stastic">{{ '统计信息：字数 ' + blogWordCount }}</div>
       <div class="btn-container">
         <SunButton :disabled="saving" @click="saveBlog">
           {{ saving ? '保存中...' : $t('save') }}
@@ -72,17 +75,16 @@ onMounted(() => {
       </ElSelect>
     </div>
 
-    <div ref="editorEle" class="editor-container"></div>
+    <SunMarkdownEditor v-model="blogContent" class="editor-container" />
   </div>
 </template>
 
 <style scoped>
 .article-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
+  width: 100%;
+  min-height: calc(100dvh - 4.5rem);
+  display: grid;
+  grid-template-rows: auto auto minmax(36rem, 1fr);
   gap: var(--space-3);
   padding: var(--space-4);
 }
@@ -115,14 +117,26 @@ onMounted(() => {
   gap: var(--space-3);
 }
 
+.title-input,
+.title-container :deep(.sun-input-wrap),
+.title-container :deep(.sun-input),
+.title-container :deep(.el-select) {
+  width: 100%;
+  min-width: 0;
+}
+
 .editor-container {
-  flex: 1;
-  min-height: 360px;
+  width: 100%;
+  height: 100%;
+  min-height: 36rem;
+  overflow: hidden;
 }
 
 @media screen and (max-width: 768px) {
   .article-page {
     padding: var(--space-3) 0 var(--space-6);
+    min-height: calc(100dvh - 4rem);
+    grid-template-rows: auto auto minmax(28rem, 1fr);
   }
 
   .func-bar,
@@ -144,7 +158,7 @@ onMounted(() => {
   }
 
   .editor-container {
-    min-height: 420px;
+    min-height: 28rem;
   }
 }
 </style>

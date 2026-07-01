@@ -12,8 +12,50 @@ older completed checkpoints to docs/handoff/archive/.
   docs/handoff/branches/codex-ai-cli-skills.md.
 - codex/server-side-web-build: see
   docs/handoff/branches/codex-server-side-web-build.md.
+- codex/md-editor-v3-migration: see
+  docs/handoff/branches/codex-md-editor-v3-migration.md.
 
 ## Latest Stable Checkpoint
+
+- Current task checkpoint (2026-07-01, md-editor-v3 migration):
+  - Goal: replace Vditor runtime editor/preview usage in blog authoring and
+    public article detail with md-editor-v3.
+  - Status: in-progress on branch `codex/md-editor-v3-migration`.
+  - Important files touched:
+    - `apps/web/src/modules/blog/pages/ArticleEditorPage.vue`
+    - `apps/web/src/modules/blog/composables/useBlogAuthoring.ts`
+    - `apps/web/src/modules/blog/composables/useBlogReader.ts`
+    - `apps/web/src/modules/blog/pages/BlogDetailPage.vue`
+    - `apps/web/vite.config.ts`
+    - `scripts/check-web.mjs`
+    - `scripts/check-web-chunks.mjs`
+    - `scripts/check-md-editor-v3-migration.mjs`
+    - `scripts/check-blog-detail-render.mjs`
+    - `apps/web/performance-budgets.json`
+    - `apps/web/package.json`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - `ArticleEditorPage` uses shared component `<SunMarkdownEditor v-model="blogContent" />`.
+    - The authoring page imports the Element Plus select/option component CSS it
+      uses directly and sizes md-editor-v3 through the shared editor component,
+      fixing the oversized select-caret / bottom-pinned editor visual regression.
+    - `BlogDetailPage` uses shared component `<SunMarkdownPreview :content="blogInfo.content" />`.
+    - `SunMarkdownPreview` emits catalog/rendered events; `useBlogReader`
+      consumes those events for catalog state and active-heading scroll setup.
+    - md-editor-v3 read/write chunks are now anchored to shared markdown components and
+      validated as `md-editor-preview`/`md-editor-editor`.
+    - The blog module no longer idle-preloads `BlogDetailPage`, so the public
+      shell does not warm `md-editor-preview` before an article route needs it.
+  - Verification:
+    - `corepack pnpm exec node scripts/check-md-editor-v3-migration.mjs` passed.
+    - `corepack pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `corepack pnpm format:check` passed.
+    - `git diff --check` passed with only LF/CRLF warnings.
+    - `corepack pnpm check:web` passed, including frontend build, chunk checks,
+      migration checks, and performance budgets.
+    - Browser visual check on local `/new_article` confirmed normal select
+      caret sizing and editor placement.
 
 - Latest task addendum (2026-06-20, P1.80 lazy AI manager startup):
   - Goal: keep the persistent backend container alive even when AI provider

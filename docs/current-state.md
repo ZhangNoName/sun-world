@@ -271,9 +271,10 @@ the left-side weather card; mobile placement is inside
   SSR decision, and current handoff checkpoint.
 - Root `pnpm check:web` also runs `pnpm check:web:chunks` after build and
   performance budgets. The chunk guard requires route-only `video-player` and
-  `tile-export` chunks, requires Vditor read/write split chunks, prevents
-  top-level JSZip imports in shared utility code, and prevents article catalog
-  rendering from importing the full Vditor editor. It also prevents the manage
+  `tile-export` chunks, requires md-editor-v3 shared read/write split chunks,
+  prevents top-level JSZip imports in shared utility code, and prevents article
+  catalog rendering from importing the full markdown editor runtime. It also
+  prevents the manage
   shell from statically importing admin charts and prevents broad admin module
   preloading. It also requires explicit legacy page chunks and rejects the old
   broad `src/pages/**` manual merge into the entry chunk.
@@ -308,9 +309,13 @@ the left-side weather card; mobile placement is inside
 - Frontend route-only heavy dependencies are separated from global vendor:
   Artplayer/HLS build into `video-player`, and JSZip builds into
   `tile-export` through a dynamic import in `saveTilesAsZip()`.
-- Vditor is split by workflow: article reading uses `vditor-preview`, article
-  writing uses `vditor-editor`, and the blog module preload hook no longer
-  warms `ArticleEditorPage` while serving public blog detail pages.
+- Markdown rendering/editing is split by workflow with md-editor-v3: article
+  reading uses the `md-editor-preview` chunk via shared
+  `SunMarkdownPreview`, article writing uses the `md-editor-editor` chunk via
+  shared `SunMarkdownEditor`. `SunMarkdownPreview` emits catalog/rendered
+  events for consumers such as the blog reader and future AI surfaces. The blog
+  module no longer idle-preloads `BlogDetailPage` or warms `ArticleEditorPage`
+  from the public shell.
 - Admin charts are split from the manage shell: `AdminChartsPage` is async,
   local chart shell code builds into `admin-charts`, and admin module routes no
   longer use a broad preload hook.
@@ -327,7 +332,7 @@ the left-side weather card; mobile placement is inside
   for route-only or optional heavy chunks.
 - HTTP error notifications lazy-load Element Message and its CSS only when a
   message is shown. The entry HTML should not preload `element`,
-  `tile-export`, `vditor-*`, `admin-charts`, `echarts`, `zrender`,
+  `tile-export`, `md-editor-*`, `admin-charts`, `echarts`, `zrender`,
   `manage-shell`, or legacy page chunks.
 - Root `pnpm check:web` generates and validates
   `apps/web/dist/build-manifest.json` after the frontend build. The manifest is

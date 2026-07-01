@@ -96,7 +96,9 @@ function booleanMeta(meta: RouteMeta, key: string): boolean | undefined {
  *
  * The promise is memoized so repeated route visits do not re-trigger work.
  */
-export function preloadModuleById(moduleId: string): Promise<unknown> | undefined {
+export function preloadModuleById(
+  moduleId: string
+): Promise<unknown> | undefined {
   const module = appModulesById.get(moduleId)
   if (!module?.preload) return undefined
 
@@ -143,9 +145,9 @@ function scheduleIdlePreload(callback: () => void) {
 /**
  * Install route-aware module preloading.
  *
- * Preloading starts navigation-adjacent but does not block navigation. The
- * homepage/blog module is also warmed during idle time because it is the most
- * likely next interaction from the public shell.
+ * Preloading starts navigation-adjacent but does not block navigation. Only
+ * modules listed in `idleModules` and exposing a preload hook are warmed during
+ * idle time.
  */
 export function installModulePreloading(
   router: Router,

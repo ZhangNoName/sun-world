@@ -1,13 +1,12 @@
-import { ref, shallowRef, type Ref } from 'vue'
+import { ref, type Ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { BlogEditorClass } from '@/blogEditor'
 import { createBlog } from '../api'
 import { useBlogBaseData } from './useBlogBaseData'
 import { getBlogErrorMessage } from '../errors'
 import type { CategoryResponse, CreateBlogPayload, TagResponse } from '../types'
 
 export interface BlogAuthoringViewModel {
-  editorEle: Ref<HTMLElement | null>
+  blogContent: Ref<string>
   blogWordCount: Ref<number>
   blogCategory: Ref<string | number>
   blogTag: Ref<Array<string | number>>
@@ -22,9 +21,8 @@ export interface BlogAuthoringViewModel {
 export function useBlogAuthoring(): BlogAuthoringViewModel {
   const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
 
-  const editorEle = ref<HTMLElement | null>(null)
+  const blogContent = ref('')
   const blogWordCount = ref(0)
-  const blogEditor = shallowRef<BlogEditorClass>(new BlogEditorClass())
   const blogCategory = ref<string | number>('')
   const blogTag = ref<Array<string | number>>([])
   const title = ref('')
@@ -32,21 +30,17 @@ export function useBlogAuthoring(): BlogAuthoringViewModel {
 
   const initializeAuthoring = () => {
     loadBlogBaseData().catch((error) => {
-      console.error('获取博客基础数据失败:', error)
-    })
-
-    if (!editorEle.value) return
-
-    blogEditor.value.init(editorEle.value)
-    ;(window as unknown as { blogEditor?: BlogEditorClass }).blogEditor =
-      blogEditor.value
-
-    blogEditor.value.setConfig({
-      input: (value) => {
-        blogWordCount.value = value.length
-      },
+      console.error('获取文章基础数据失败:', error)
     })
   }
+
+  watch(
+    blogContent,
+    () => {
+      blogWordCount.value = blogContent.value.length
+    },
+    { immediate: true }
+  )
 
   const saveBlog = async () => {
     if (saving.value) return
@@ -55,7 +49,7 @@ export function useBlogAuthoring(): BlogAuthoringViewModel {
       return
     }
 
-    const content = blogEditor.value.getContent() || ''
+    const content = blogContent.value || ''
     const tags = blogTag.value.map((tagId) => {
       const item = tagList.find((i) => String(i.id) === String(tagId))
       return item ? tagId : { name: tagId.toString() }
@@ -82,7 +76,7 @@ export function useBlogAuthoring(): BlogAuthoringViewModel {
   }
 
   return {
-    editorEle,
+    blogContent,
     blogWordCount,
     blogCategory,
     blogTag,

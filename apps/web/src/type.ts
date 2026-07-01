@@ -1,4 +1,8 @@
-export type { BlogCardProps, CatalogItemType, VditorTreeItemType } from '@/modules/blog/types'
+export type {
+  BlogCardProps,
+  CatalogItemType,
+  MarkdownHeadingItem,
+} from '@/modules/blog/types'
 
 export interface CurrentAdress {
   addressComponent: {

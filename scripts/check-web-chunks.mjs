@@ -7,12 +7,21 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const distAssetsDir = join(repoRoot, 'apps/web/dist/assets')
 const distIndexPath = join(repoRoot, 'apps/web/dist/index.html')
 const utilFunctionPath = join(repoRoot, 'apps/web/src/util/function.ts')
-const catalogCardPath = join(repoRoot, 'apps/web/src/modules/blog/ui/CatalogCard.vue')
+const catalogCardPath = join(
+  repoRoot,
+  'apps/web/src/modules/blog/ui/CatalogCard.vue'
+)
 const blogModulePath = join(repoRoot, 'apps/web/src/modules/blog/index.ts')
 const managePagePath = join(repoRoot, 'apps/web/src/pages/manage/index.vue')
 const adminModulePath = join(repoRoot, 'apps/web/src/modules/admin/index.ts')
-const adminChartConfigPath = join(repoRoot, 'apps/web/src/modules/admin/ui/chartConfig.ts')
-const accountModulePath = join(repoRoot, 'apps/web/src/modules/account/index.ts')
+const adminChartConfigPath = join(
+  repoRoot,
+  'apps/web/src/modules/admin/ui/chartConfig.ts'
+)
+const accountModulePath = join(
+  repoRoot,
+  'apps/web/src/modules/account/index.ts'
+)
 const viteConfigPath = join(repoRoot, 'apps/web/vite.config.ts')
 const appMainPath = join(repoRoot, 'apps/web/src/main.ts')
 const uiComponentsDir = join(repoRoot, 'packages/ui/src/components')
@@ -20,34 +29,39 @@ const uiComponentsDir = join(repoRoot, 'packages/ui/src/components')
 const violations = []
 
 if (!existsSync(distAssetsDir)) {
-  violations.push('apps/web/dist/assets is missing; run the frontend build first')
+  violations.push(
+    'apps/web/dist/assets is missing; run the frontend build first'
+  )
 } else {
   const assetNames = readdirSync(distAssetsDir)
   const requiredChunkPatterns = [
     {
       name: 'video-player',
       pattern: /^video-player\..*\.js$/,
-      reason: 'video route playback dependencies should not be folded into global vendor',
+      reason:
+        'video route playback dependencies should not be folded into global vendor',
     },
     {
       name: 'tile-export',
       pattern: /^tile-export\..*\.js$/,
-      reason: 'JSZip export code should stay out of the initial route/vendor payload',
+      reason:
+        'JSZip export code should stay out of the initial route/vendor payload',
     },
     {
-      name: 'vditor-preview',
-      pattern: /^vditor-preview\..*\.js$/,
+      name: 'md-editor-preview',
+      pattern: /^md-editor-preview\..*\.js$/,
       reason: 'article reading should not share the full editor chunk',
     },
     {
-      name: 'vditor-editor',
-      pattern: /^vditor-editor\..*\.js$/,
+      name: 'md-editor-editor',
+      pattern: /^md-editor-editor\..*\.js$/,
       reason: 'article editing should keep the full editor isolated',
     },
     {
       name: 'admin-charts',
       pattern: /^admin-charts\..*\.js$/,
-      reason: 'admin chart views should stay out of the manage shell until selected',
+      reason:
+        'admin chart views should stay out of the manage shell until selected',
     },
     {
       name: 'page-game-tiles',
@@ -87,7 +101,8 @@ if (!existsSync(distAssetsDir)) {
     {
       name: 'manage-shell',
       pattern: /^manage-shell\..*\.js$/,
-      reason: 'manage legacy shell should be named instead of folded into index',
+      reason:
+        'manage legacy shell should be named instead of folded into index',
     },
   ]
 
@@ -105,11 +120,13 @@ if (!existsSync(distAssetsDir)) {
       /assets\/admin-charts\./,
       /assets\/video-player\./,
       /assets\/tile-export\./,
-      /assets\/vditor-(?:preview|editor)\./,
+      /assets\/md-editor-(?:preview|editor)\./,
       /assets\/echarts\./,
       /assets\/zrender\./,
     ]
-    if (initialRouteChunkPatterns.some((pattern) => pattern.test(distIndexSource))) {
+    if (
+      initialRouteChunkPatterns.some((pattern) => pattern.test(distIndexSource))
+    ) {
       violations.push(
         'apps/web/dist/index.html must not preload route-only or optional heavy chunks'
       )
@@ -127,19 +144,27 @@ if (/^import\s+.*['"]jszip['"]/m.test(utilSource)) {
 const catalogCardSource = readFileSync(catalogCardPath, 'utf8')
 if (/^import\s+(?!type\b).*['"]vditor['"]/m.test(catalogCardSource)) {
   violations.push(
-    'CatalogCard.vue must not import the full Vditor runtime for catalog rendering'
+    'CatalogCard.vue must not import a markdown editor runtime for catalog rendering'
   )
 }
 
 const blogModuleSource = readFileSync(blogModulePath, 'utf8')
-if (/preload:\s*\(\)\s*=>\s*Promise\.all\(\[BlogDetailPage\(\),\s*ArticleEditorPage\(\)\]\)/.test(blogModuleSource)) {
+if (
+  /preload:\s*\(\)\s*=>\s*Promise\.all\(\[BlogDetailPage\(\),\s*ArticleEditorPage\(\)\]\)/.test(
+    blogModuleSource
+  )
+) {
   violations.push(
     'blog module preload must not warm the article editor while reading public articles'
   )
 }
 
 const managePageSource = readFileSync(managePagePath, 'utf8')
-if (/^import\s+AdminChartsPage\s+from\s+['"]@\/modules\/admin\/pages\/AdminChartsPage\.vue['"]/m.test(managePageSource)) {
+if (
+  /^import\s+AdminChartsPage\s+from\s+['"]@\/modules\/admin\/pages\/AdminChartsPage\.vue['"]/m.test(
+    managePageSource
+  )
+) {
   violations.push(
     'manage page must load AdminChartsPage asynchronously when the charts tab is selected'
   )
@@ -153,21 +178,30 @@ if (/preload:\s*/.test(adminModuleSource)) {
 }
 
 const chartConfigSource = readFileSync(adminChartConfigPath, 'utf8')
-if (/^import\s*\{[\s\S]*?\}\s*from\s+['"]echarts['"]/m.test(chartConfigSource)) {
+if (
+  /^import\s*\{[\s\S]*?\}\s*from\s+['"]echarts['"]/m.test(chartConfigSource)
+) {
   violations.push(
     'admin chartConfig.ts must use import type for ECharts option types'
   )
 }
 
 const accountModuleSource = readFileSync(accountModulePath, 'utf8')
-if (/preload:\s*\(\)\s*=>\s*Promise\.all\(\[LoginPage\(\),\s*RegisterPage\(\),\s*MePage\(\),\s*QqCallbackPage\(\)\]\)/.test(accountModuleSource)) {
+if (
+  /preload:\s*\(\)\s*=>\s*Promise\.all\(\[LoginPage\(\),\s*RegisterPage\(\),\s*MePage\(\),\s*QqCallbackPage\(\)\]\)/.test(
+    accountModuleSource
+  )
+) {
   violations.push(
     'account module should not preload all account routes together'
   )
 }
 
 const viteConfigSource = readFileSync(viteConfigPath, 'utf8')
-if (/src\\?\/pages\\?\/\.\+\\?\.vue/.test(viteConfigSource) || /pages\s+涓嬬殑 vue/.test(viteConfigSource)) {
+if (
+  /src\\?\/pages\\?\/\.\+\\?\.vue/.test(viteConfigSource) ||
+  /pages\s+涓嬬殑 vue/.test(viteConfigSource)
+) {
   violations.push(
     'vite manualChunks must not merge all legacy src/pages Vue files into index'
   )

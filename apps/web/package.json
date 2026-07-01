@@ -15,6 +15,7 @@
     "@vue/shared": "3.5.22",
     "echarts": "^5.6.0",
     "element-plus": "^2.9.4",
+    "md-editor-v3": "6.5.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vue": "^3.4.21",
     "vue-i18n": "^11.1.1",

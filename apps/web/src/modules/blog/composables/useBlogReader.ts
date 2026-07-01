@@ -7,15 +7,13 @@ import {
   type Ref,
 } from 'vue'
 import { fetchBlogById } from '../api'
-import type { BlogDetail, VditorTreeItemType } from '../types'
+import type { BlogDetail, MarkdownHeadingItem } from '../types'
 import { formatDate } from '@/util/function'
 import { canonicalUrl } from '@/shared/seo'
-// @ts-ignore
-import VditorPreview from 'vditor/dist/method.min'
 
 export interface BlogReaderViewModel {
   blogPreview: Ref<HTMLElement | null>
-  catalog: Ref<VditorTreeItemType[]>
+  catalog: Ref<MarkdownHeadingItem[]>
   activeHeadingId: Ref<string>
   loading: Ref<boolean>
   blogInfo: Ref<BlogDetail>
@@ -25,7 +23,9 @@ export interface BlogReaderViewModel {
   publishedAt: ComputedRef<string>
   commentCount: ComputedRef<number>
   wordCount: ComputedRef<number>
-  getCatalog: () => VditorTreeItemType[]
+  getCatalog: () => MarkdownHeadingItem[]
+  handlePreviewCatalog: (headings: MarkdownHeadingItem[]) => void
+  handlePreviewRendered: () => Promise<void>
   renderPreview: (content: string) => Promise<void>
   scrollToHeading: (headingId: string) => void
   loadBlog: () => Promise<void>
@@ -48,7 +48,7 @@ const defaultBlogInfo: BlogDetail = {
 
 export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
   const blogPreview = ref<HTMLElement | null>(null)
-  const catalog = ref<VditorTreeItemType[]>([])
+  const catalog = ref<MarkdownHeadingItem[]>([])
   const activeHeadingId = ref('')
   const loading = ref(false)
   const blogInfo = ref<BlogDetail>({ ...defaultBlogInfo })
@@ -76,20 +76,24 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     cleanupHeadingTracker?.()
   })
 
-  function getCatalog(): VditorTreeItemType[] {
+  function getCatalog(): MarkdownHeadingItem[] {
     if (!blogPreview.value) return []
 
-    const headers = blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
-    return Array.from(headers).map((header) => ({
-      text: header.textContent || '',
-      level: Number(header.tagName.charAt(1)),
-      id: header.id,
-    }))
+    const headers = Array.from(
+      blogPreview.value.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    )
+
+    return headers
+      .filter((header) => header.id)
+      .map((header) => ({
+        text: header.textContent || '',
+        level: Number(header.tagName.charAt(1)),
+        id: header.id,
+      }))
   }
 
   function getScrollRoot(): HTMLElement | Window {
     if (typeof document === 'undefined') return window
-
     return document.querySelector<HTMLElement>('.app-container') ?? window
   }
 
@@ -182,21 +186,24 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     activeHeadingId.value = headingId
   }
 
-  async function renderPreview(content: string) {
+  function handlePreviewCatalog(headings: MarkdownHeadingItem[]) {
+    catalog.value = headings
+  }
+
+  async function handlePreviewRendered() {
     await nextTick()
     if (!blogPreview.value) return
 
-    await VditorPreview.preview(blogPreview.value, content, {
-      theme: {
-        current: 'light',
-      },
-      hljs: {
-        style: 'github',
-      },
-    })
-    catalog.value = getCatalog()
+    if (!catalog.value.length) {
+      catalog.value = getCatalog()
+    }
+
     await nextTick()
     setupHeadingTracker()
+  }
+
+  async function renderPreview(_content: string) {
+    await handlePreviewRendered()
   }
 
   async function loadBlog() {
@@ -228,6 +235,8 @@ export function useBlogReader(id: Ref<string>): BlogReaderViewModel {
     commentCount,
     wordCount,
     getCatalog,
+    handlePreviewCatalog,
+    handlePreviewRendered,
     renderPreview,
     scrollToHeading,
     loadBlog,
