@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogCard from './BlogCard.vue'
 import Waterfall from '@/components/Waterfall/waterfall.vue'
@@ -14,6 +14,7 @@ import type { BlogSortBy, BlogSortOrder } from '../types'
 
 type ListModeType = 'list' | 'waterfall'
 type SortOption = `${BlogSortBy}:${BlogSortOrder}`
+const BACK_TO_TOP_VISIBLE_OFFSET = 360
 
 const { tagList, categoryList, loadBlogBaseData } = useBlogBaseData()
 const blogList = useBlogList(tagList, categoryList, 12)
@@ -21,6 +22,7 @@ const listMode = ref<ListModeType>('list')
 const searchKeyword = ref('')
 const sortOption = ref<SortOption>('updated_at:desc')
 const infiniteScrollReady = ref(false)
+const showBackToTop = ref(false)
 const { screen } = useBreakpoint()
 
 const isInitialLoading = computed(
@@ -85,11 +87,28 @@ const clearSearch = async () => {
   await applyBlogQuery()
 }
 
+const getAppScrollRoot = () =>
+  document.querySelector<HTMLElement>('.app-container')
+
 const { loaderRef } = useInfiniteScroll(loadMore, {
   enabled: infiniteScrollReady,
   rootMargin: '1600px 0px',
-  root: () => document.querySelector<HTMLElement>('.app-container'),
+  root: getAppScrollRoot,
 })
+
+const updateBackToTopVisibility = () => {
+  const root = getAppScrollRoot()
+  showBackToTop.value = Boolean(
+    root && root.scrollTop > BACK_TO_TOP_VISIBLE_OFFSET
+  )
+}
+
+const scrollBlogListToTop = () => {
+  getAppScrollRoot()?.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
 
 watch(canUseWaterfall, (enabled) => {
   if (!enabled && listMode.value === 'waterfall') {
@@ -98,6 +117,11 @@ watch(canUseWaterfall, (enabled) => {
 })
 
 onMounted(async () => {
+  getAppScrollRoot()?.addEventListener('scroll', updateBackToTopVisibility, {
+    passive: true,
+  })
+  updateBackToTopVisibility()
+
   await loadBlogBaseData().catch((error) => {
     console.error('获取博客基础数据失败:', error)
   })
@@ -110,6 +134,10 @@ onMounted(async () => {
   } finally {
     infiniteScrollReady.value = true
   }
+})
+
+onBeforeUnmount(() => {
+  getAppScrollRoot()?.removeEventListener('scroll', updateBackToTopVisibility)
 })
 </script>
 
@@ -225,6 +253,16 @@ onMounted(async () => {
         }}
       </SunButton>
     </div>
+
+    <button
+      v-show="showBackToTop"
+      class="back-to-top"
+      type="button"
+      aria-label="回到顶部"
+      @click="scrollBlogListToTop"
+    >
+      <SunIcon name="chevron-right" size="20" class="back-to-top-icon" />
+    </button>
   </main>
 </template>
 
@@ -407,6 +445,44 @@ onMounted(async () => {
   min-width: 8rem;
 }
 
+.back-to-top {
+  position: fixed;
+  right: max(var(--space-5), env(safe-area-inset-right, 0px));
+  bottom: max(var(--space-5), env(safe-area-inset-bottom, 0px));
+  z-index: 12;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-full);
+  background: var(--bg-component);
+  color: var(--text-default);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0.92;
+  transition:
+    background-color var(--motion-duration) var(--motion-ease-standard),
+    color var(--motion-duration) var(--motion-ease-standard),
+    border-color var(--motion-duration) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-emphasized),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  background: var(--bg-active);
+  border-color: var(--bg-active);
+  color: var(--btn-text-color);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.back-to-top-icon {
+  transform: rotate(-90deg);
+}
+
 @keyframes home-content-in {
   from {
     opacity: 0;
@@ -443,11 +519,20 @@ onMounted(async () => {
   .search-submit {
     width: 100%;
   }
+
+  .back-to-top {
+    right: var(--space-4);
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .right {
     animation: none;
+  }
+
+  .back-to-top {
+    transition: none;
   }
 }
 </style>

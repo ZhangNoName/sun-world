@@ -44,6 +44,9 @@ const registerHandle = () => {
 const canvasHandle = () => {
   router.push({ path: '/canvas' })
 }
+const openAI = () => {
+  router.push({ path: '/aigc' })
+}
 const openQQ = () => {
   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
@@ -72,6 +75,7 @@ onBeforeUnmount(() => {
       <div class="right-menu">
         <div class="link-icon">
           <SunIcon name="canvas" size="xl" @click="canvasHandle" />
+          <SunIcon name="message-circle" size="xl" @click="openAI" />
           <SunIcon name="edit" size="xl" @click="editArticle" />
           <GithubOutlined @click="openGithub" />
           <QQOutlined @click="openQQ" />

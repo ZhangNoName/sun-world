@@ -70,8 +70,8 @@ run('Homepage footer layout check', 'node', [
   'scripts/check-home-footer-layout.mjs',
 ])
 
-run('AI public entry hidden check', 'node', [
-  'scripts/check-ai-public-entry-hidden.mjs',
+run('AI public entry visible check', 'node', [
+  'scripts/check-ai-public-entry-visible.mjs',
 ])
 
 run('Contracts tests', 'corepack', [

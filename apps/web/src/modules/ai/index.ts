@@ -21,7 +21,7 @@ export const aiModule: AppModule = {
       },
     },
   ],
-  nav: [],
+  nav: [{ label: 'AI', path: '/aigc', icon: 'message-circle' }],
   seo: {
     title: 'AI 对话 - Sun World',
     description: '使用 AI 辅助创作与问答。',

@@ -51,6 +51,12 @@
           <span class="text">画布</span>
         </router-link>
       </div>
+      <div class="bot-channel" :class="{ active: activePath === '/aigc' }">
+        <router-link to="/aigc">
+          <SunIcon name="message-circle" size="lg" />
+          <span class="text">AI</span>
+        </router-link>
+      </div>
       <div class="bot-channel" :class="{ active: activePath === '/me' }">
         <router-link to="/me">
           <SunIcon name="user" size="lg" />
@@ -99,6 +105,9 @@
           </router-link>
           <router-link to="/canvas" class="drawer-link" @click="closeDrawer">
             画布
+          </router-link>
+          <router-link to="/aigc" class="drawer-link" @click="closeDrawer">
+            AI
           </router-link>
           <router-link to="/tools" class="drawer-link" @click="closeDrawer">
             工具

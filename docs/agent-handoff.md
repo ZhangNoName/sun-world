@@ -17,6 +17,47 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Latest Stable Checkpoint
 
+- Current task addendum (2026-07-01, blog feed back-to-top):
+  - Goal: add a one-click back-to-top control while scrolling the blog list.
+  - Status: implemented locally on branch `codex/md-editor-v3-migration`.
+  - Important files touched:
+    - `apps/web/src/modules/blog/ui/BlogHomeFeed.vue`
+    - `scripts/check-blog-infinite-scroll.mjs`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Blog home feed listens to `.app-container` scroll position.
+    - A fixed circular back-to-top button appears after 360px of vertical
+      scrolling and smooth-scrolls the app container to top.
+    - The button is offset above mobile bottom navigation.
+    - `scripts/check-blog-infinite-scroll.mjs` guards the scroll root,
+      threshold, accessible label, and smooth scroll behavior.
+  - Verification:
+    - `corepack pnpm exec node scripts/check-blog-infinite-scroll.mjs` passed.
+    - `corepack pnpm -C apps/web exec vue-tsc --noEmit` passed.
+    - `corepack pnpm format:check` passed.
+    - `git diff --check` passed with only LF/CRLF warnings.
+    - `corepack pnpm check:web` passed.
+
+- Current task addendum (2026-07-01, AI public entry):
+  - Goal: expose the AI chat interface entry while keeping `/aigc` as the
+    existing full-screen AI workspace.
+  - Status: implemented locally on branch `codex/md-editor-v3-migration`.
+  - Important files touched:
+    - `apps/web/src/layout/header/index.vue`
+    - `apps/web/src/layout/mobLayout.vue`
+    - `apps/web/src/modules/ai/index.ts`
+    - `scripts/check-ai-public-entry-visible.mjs`
+    - `scripts/check-web.mjs`
+    - `docs/current-state.md`
+    - `docs/agent-handoff.md`
+  - Behavior:
+    - Desktop header shows a `bot` icon that navigates to `/aigc`.
+    - Mobile bottom navigation and drawer expose `/aigc`.
+    - AI module nav registration exposes `{ label: 'AI', path: '/aigc', icon: 'bot' }`.
+    - The old hidden-entry guard was replaced with
+      `scripts/check-ai-public-entry-visible.mjs`.
+
 - Current task checkpoint (2026-07-01, md-editor-v3 migration):
   - Goal: replace Vditor runtime editor/preview usage in blog authoring and
     public article detail with md-editor-v3.

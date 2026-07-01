@@ -46,9 +46,33 @@ if (
   )
 }
 
-if (!/root:\s*\(\)\s*=>/.test(feed)) {
+if (!/root:\s*(?:\(\)\s*=>|getAppScrollRoot)/.test(feed)) {
   violations.push(
     'BlogHomeFeed should lazily resolve the scroll root on mount.'
+  )
+}
+
+if (!/BACK_TO_TOP_VISIBLE_OFFSET\s*=\s*360/.test(feed)) {
+  violations.push('BlogHomeFeed should reveal back-to-top after 360px.')
+}
+
+if (!/showBackToTop\s*=\s*ref\(false\)/.test(feed)) {
+  violations.push('BlogHomeFeed should track back-to-top visibility.')
+}
+
+if (!/scrollBlogListToTop/.test(feed)) {
+  violations.push('BlogHomeFeed should expose a scroll-to-top handler.')
+}
+
+if (!/scrollTo\(\{\s*top:\s*0,\s*behavior:\s*['"]smooth['"]/.test(feed)) {
+  violations.push(
+    'BlogHomeFeed should smoothly scroll the app container to top.'
+  )
+}
+
+if (!/aria-label=["']回到顶部["']/.test(feed)) {
+  violations.push(
+    'BlogHomeFeed should render an accessible back-to-top button.'
   )
 }
 

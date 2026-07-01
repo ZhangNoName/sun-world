@@ -300,6 +300,8 @@ the left-side weather card; mobile placement is inside
 - AI chat is now owned by `apps/web/src/modules/ai/api.ts`, uses
   `API_ROUTES.ai.*`, and calls the backend instead of bundling browser-side
   LangChain/OpenAI clients.
+- The `/aigc` route is exposed as a public AI entry from desktop header,
+  mobile bottom navigation, mobile drawer, and the AI module nav registration.
 - Backend AI image model imports are lazy inside image endpoints; `/ai/chat`
   is documented in OpenAPI as `ApiResponse[str]`.
 - Backend `AiManager` lazy-loads LLM agents and image models on first AI
@@ -316,6 +318,8 @@ the left-side weather card; mobile placement is inside
   events for consumers such as the blog reader and future AI surfaces. The blog
   module no longer idle-preloads `BlogDetailPage` or warms `ArticleEditorPage`
   from the public shell.
+- Blog home feed observes the `.app-container` scroll root for infinite loading
+  and shows a floating "back to top" control after 360px of scrolling.
 - Admin charts are split from the manage shell: `AdminChartsPage` is async,
   local chart shell code builds into `admin-charts`, and admin module routes no
   longer use a broad preload hook.
