@@ -2,6 +2,29 @@
 
 Last updated: 2026-07-01 (main, md-editor-v3 migration and AI entry deploy)
 
+## Admin Audit Logs (2026-07-17, feature branch)
+
+- The API has a bounded, file-backed audit log read model at `GET /admin/logs`.
+  It requires the existing authenticated admin dependency and accepts bounded
+  `limit`, optional `severity`, and optional `event_type` filters.
+- `apps/api/src/core/audit_log.py` is the storage boundary. Its default JSONL
+  retention is one 1 MiB active file plus two rotated files (3 MiB maximum).
+  Non-secret `BLOG_AUDIT_LOG_DIR`, `BLOG_AUDIT_LOG_MAX_FILE_BYTES`, and
+  `BLOG_AUDIT_LOG_MAX_FILES` settings can adjust storage within hard bounds.
+- The centralized observability middleware records successful write requests
+  and 5xx failures without changing business controllers. The FastAPI lifespan
+  records service start/stop and records `service_restarted_uncleanly` when the
+  previous run left its runtime marker behind.
+- Audit records intentionally exclude bodies, query strings, cookies,
+  authorization headers, IP addresses, user agents, exception text, and user
+  data. Storage failures are sent to stderr and never fail application traffic.
+- The web admin module exposes `/manage/logs` with typed API access, filters,
+  refresh, loading, error, empty, and retention states.
+- Compose and the GitHub Actions candidate/production deploy paths mount the
+  durable `/data/blog` host directory and set
+  `BLOG_AUDIT_LOG_DIR=/data/blog/audit-logs`, so a container replacement keeps
+  the audit trail and the unclean-restart marker.
+
 ## Server
 
 - Host: Tencent Cloud Lighthouse

@@ -7,6 +7,7 @@ const repoRoot = resolve(import.meta.dirname, '..')
 const nodeScripts = [
   resolve(repoRoot, 'scripts/check-sun-ai-contract-sync.mjs'),
   resolve(repoRoot, 'scripts/check-sun-ai-cli.mjs'),
+  resolve(repoRoot, 'scripts/check-audit-log-deploy.mjs'),
 ]
 const scripts = [
   { script: resolve(repoRoot, 'scripts/check-api-migration.py'), args: [] },
@@ -27,12 +28,18 @@ const scripts = [
   { script: resolve(repoRoot, 'scripts/check-blog-list-query.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-api-schema-types.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-admin-alerts.py'), args: [] },
+  { script: resolve(repoRoot, 'scripts/check-admin-logs.py'), args: [] },
   {
     script: resolve(repoRoot, 'scripts/check-admin-metrics-history.py'),
     args: [],
   },
   { script: resolve(repoRoot, 'scripts/check-metrics-alerts.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-metrics-store.py'), args: [] },
+  { script: resolve(repoRoot, 'scripts/check-audit-log.py'), args: [] },
+  {
+    script: resolve(repoRoot, 'scripts/check-audit-log-integration.py'),
+    args: [],
+  },
   { script: resolve(repoRoot, 'scripts/check-request-metrics.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-rum-metrics.py'), args: [] },
 ]

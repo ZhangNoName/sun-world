@@ -5,6 +5,7 @@ import yaml
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
+from src.core.audit_log import audit_log
 from src.core.logging import configure_logging
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.observability import ObservabilityMiddleware
@@ -249,10 +250,16 @@ class Application(FastAPI):
 @asynccontextmanager
 async def lifespan(app: Application):
     env = os.getenv('ENV', 'local')
-    await app.init(env)
-    logger.debug('start up event')
-    yield
-    await app.shut_down()
-    logger.debug('stop event')
+    audit_log.start()
+    try:
+        await app.init(env)
+        logger.debug('start up event')
+        yield
+    finally:
+        try:
+            await app.shut_down()
+            logger.debug('stop event')
+        finally:
+            audit_log.stop()
 
 app = Application(lifespan=lifespan)

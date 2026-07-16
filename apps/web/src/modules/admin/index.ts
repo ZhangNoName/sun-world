@@ -2,6 +2,7 @@ import type { AppModule } from '../types'
 
 const ManagePage = () => import('@/pages/manage/index.vue')
 const AdminMetricsPage = () => import('./pages/AdminMetricsPage.vue')
+const AdminLogsPage = () => import('./pages/AdminLogsPage.vue')
 
 /**
  * Admin module - analytics, logs, settings dashboard.
@@ -27,6 +28,11 @@ export const adminModule: AppModule = {
         title: '后台指标 - Sun World',
         description: '查看 Sun World 请求量、错误率、路由延迟和状态码分布。',
       },
+    },
+    {
+      path: '/manage/logs',
+      component: AdminLogsPage,
+      meta: { module: 'admin', title: 'Audit logs - Sun World', noIndex: true },
     },
   ],
   nav: [

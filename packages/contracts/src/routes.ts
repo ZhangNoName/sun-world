@@ -29,6 +29,7 @@ export const API_ROUTES = {
     metricsHistory: '/admin/metrics/history',
     telemetry: '/admin/telemetry',
     alerts: '/admin/alerts',
+    logs: '/admin/logs',
   },
   ai: {
     chat: '/ai/chat',
@@ -64,6 +65,7 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.admin.metricsHistory,
     API_ROUTES.admin.telemetry,
     API_ROUTES.admin.alerts,
+    API_ROUTES.admin.logs,
   ],
 } as const
 
@@ -142,6 +144,10 @@ export const API_ROUTE_METHODS = {
   },
   'admin.alerts': {
     path: API_ROUTES.admin.alerts,
+    method: 'GET',
+  },
+  'admin.logs': {
+    path: API_ROUTES.admin.logs,
     method: 'GET',
   },
   'ai.chat': {

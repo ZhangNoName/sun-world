@@ -14,6 +14,8 @@ older completed checkpoints to docs/handoff/archive/.
   docs/handoff/branches/codex-server-side-web-build.md.
 - codex/md-editor-v3-migration: see
   docs/handoff/branches/codex-md-editor-v3-migration.md.
+- feat/admin-log-module: see
+  docs/handoff/branches/feat-admin-log-module.md.
 
 ## Latest Stable Checkpoint
 

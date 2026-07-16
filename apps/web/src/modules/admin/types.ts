@@ -20,7 +20,13 @@ export type AdminMetricsHistorySnapshot =
     ? components['schemas']['MetricsHistorySnapshot']
     : NonNullable<ApiSuccessData<'/admin/metrics/history', 'get'>>
 
+export type AdminLogsSnapshot =
+  ApiSuccessData<'/admin/logs', 'get'> extends never
+    ? components['schemas']['AdminLogSnapshot']
+    : NonNullable<ApiSuccessData<'/admin/logs', 'get'>>
+
 export type AdminRouteMetric = components['schemas']['RouteMetric']
 export type AdminStatusMetric = components['schemas']['StatusMetric']
 export type AdminRumEventSample = components['schemas']['RumEventSample']
 export type AdminMetricAlert = components['schemas']['MetricAlert']
+export type AdminLogEvent = components['schemas']['AdminLogEvent']

@@ -56,3 +56,23 @@ class MetricsHistorySnapshot(BaseModel):
     limit: int = Field(ge=1, le=120, description="Requested bounded history size.")
     snapshot_count: int = Field(ge=0, description="Returned snapshot count.")
     snapshots: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class AdminLogEvent(BaseModel):
+    id: str = Field(description="Stable log event identifier.")
+    timestamp: datetime = Field(description="UTC event timestamp.")
+    event_type: str = Field(description="Stable sanitized event category.")
+    severity: Literal["debug", "info", "warning", "error", "critical"]
+    request_id: str | None = Field(default=None, description="Safe request correlation ID.")
+    method: str | None = Field(default=None, description="HTTP method when applicable.")
+    route: str | None = Field(default=None, description="Path without query string.")
+    status_code: int | None = Field(default=None, ge=100, le=599)
+    duration_ms: float | None = Field(default=None, ge=0)
+    run_id: str | None = Field(default=None, description="Application lifecycle run ID.")
+
+
+class AdminLogSnapshot(BaseModel):
+    events: list[AdminLogEvent] = Field(default_factory=list)
+    event_count: int = Field(ge=0, le=100)
+    max_file_bytes: int = Field(ge=128)
+    retained_file_count: int = Field(ge=1, le=10)

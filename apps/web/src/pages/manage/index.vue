@@ -11,8 +11,11 @@ const AdminChartsPage = defineAsyncComponent(
 const AdminMetricsPage = defineAsyncComponent(
   () => import('@/modules/admin/pages/AdminMetricsPage.vue')
 )
+const AdminLogsPage = defineAsyncComponent(
+  () => import('@/modules/admin/pages/AdminLogsPage.vue')
+)
 
-type MenuIndex = 'total' | 'blog' | 'aigc' | 'metrics'
+type MenuIndex = 'total' | 'blog' | 'aigc' | 'metrics' | 'logs'
 const activeMenu = ref<MenuIndex>('blog')
 
 const handleMenuSelect = (index: string) => {
@@ -40,6 +43,9 @@ const handleMenuSelect = (index: string) => {
       <ElMenuItem index="metrics">
         <span>请求指标</span>
       </ElMenuItem>
+      <ElMenuItem index="logs">
+        <span>Audit logs</span>
+      </ElMenuItem>
     </ElMenu>
     <!-- </div> -->
     <div class="right">
@@ -47,6 +53,7 @@ const handleMenuSelect = (index: string) => {
       <ManageBlog v-else-if="activeMenu === 'blog'"></ManageBlog>
       <ManageAigc v-else-if="activeMenu === 'aigc'"></ManageAigc>
       <AdminMetricsPage v-else-if="activeMenu === 'metrics'" />
+      <AdminLogsPage v-else-if="activeMenu === 'logs'" />
     </div>
   </div>
 </template>

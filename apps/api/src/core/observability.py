@@ -17,6 +17,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+from .audit_log import audit_log
 from .metrics import record_request_metric
 from .request_context import (
     generate_request_id,
@@ -77,11 +78,13 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
             response.headers["X-Request-ID"] = request_id
             self._log(request, response.status_code, duration_ms)
             self._record_metrics(request, response.status_code, duration_ms)
+            self._record_audit_event(request, response.status_code, duration_ms)
             return response
         except Exception:
             duration_ms = (time.monotonic() - start) * 1000
             self._log(request, 500, duration_ms)
             self._record_metrics(request, 500, duration_ms)
+            self._record_audit_event(request, 500, duration_ms)
             raise
         finally:
             reset_request_id(context_token)
@@ -146,6 +149,40 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
             status_code=status_code,
             duration_ms=duration_ms,
         )
+
+    def _record_audit_event(
+        self,
+        request: Request,
+        status_code: int,
+        duration_ms: float,
+    ) -> None:
+        if status_code >= 500:
+            event_type = "request_failed"
+            severity = "error"
+        elif request.method in {"POST", "PUT", "PATCH", "DELETE"} and 200 <= status_code < 300:
+            event_type = "request_mutated"
+            severity = "info"
+        else:
+            return
+
+        try:
+            audit_log.record(
+                event_type,
+                severity=severity,
+                request_id=get_request_id(),
+                method=request.method,
+                route=_safe_route_template(request),
+                status_code=status_code,
+                duration_ms=duration_ms,
+            )
+        except Exception as exc:
+            logger.warning("audit event emission failed: {}", exc)
+
+
+def _safe_route_template(request: Request) -> str:
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", "") if route is not None else ""
+    return route_path or "unmatched"
 
 
 def resolve_request_id(request: Request) -> str:

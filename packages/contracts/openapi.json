@@ -44,6 +44,138 @@
         "title": "AdminAlertsSnapshot",
         "type": "object"
       },
+      "AdminLogEvent": {
+        "properties": {
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "event_type": {
+            "description": "Stable sanitized event category.",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "id": {
+            "description": "Stable log event identifier.",
+            "title": "Id",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "HTTP method when applicable.",
+            "title": "Method"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Safe request correlation ID.",
+            "title": "Request Id"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Path without query string.",
+            "title": "Route"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Application lifecycle run ID.",
+            "title": "Run Id"
+          },
+          "severity": {
+            "enum": ["debug", "info", "warning", "error", "critical"],
+            "title": "Severity",
+            "type": "string"
+          },
+          "status_code": {
+            "anyOf": [
+              {
+                "maximum": 599.0,
+                "minimum": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Code"
+          },
+          "timestamp": {
+            "description": "UTC event timestamp.",
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": ["id", "timestamp", "event_type", "severity"],
+        "title": "AdminLogEvent",
+        "type": "object"
+      },
+      "AdminLogSnapshot": {
+        "properties": {
+          "event_count": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Event Count",
+            "type": "integer"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AdminLogEvent"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "max_file_bytes": {
+            "minimum": 128.0,
+            "title": "Max File Bytes",
+            "type": "integer"
+          },
+          "retained_file_count": {
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Retained File Count",
+            "type": "integer"
+          }
+        },
+        "required": ["event_count", "max_file_bytes", "retained_file_count"],
+        "title": "AdminLogSnapshot",
+        "type": "object"
+      },
       "ApiResponse_AdminAlertsSnapshot_": {
         "properties": {
           "code": {
@@ -72,11 +204,40 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[AdminAlertsSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_AdminLogSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdminLogSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AdminLogSnapshot]",
         "type": "object"
       },
       "ApiResponse_AuthSession_": {
@@ -107,10 +268,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[AuthSession]",
         "type": "object"
       },
@@ -142,10 +300,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[BlogCreateResult]",
         "type": "object"
       },
@@ -177,10 +332,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[BlogDetail]",
         "type": "object"
       },
@@ -212,10 +364,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[BlogPage]",
         "type": "object"
       },
@@ -247,10 +396,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[BlogStats]",
         "type": "object"
       },
@@ -286,10 +432,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[List[Category]]",
         "type": "object"
       },
@@ -325,10 +468,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[List[TagBase]]",
         "type": "object"
       },
@@ -360,10 +500,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[MetricsHistorySnapshot]",
         "type": "object"
       },
@@ -389,10 +526,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[NoneType]",
         "type": "object"
       },
@@ -424,10 +558,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[RequestMetricsSnapshot]",
         "type": "object"
       },
@@ -459,10 +590,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[RumMetricsSnapshot]",
         "type": "object"
       },
@@ -494,10 +622,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[TelemetryIngestResult]",
         "type": "object"
       },
@@ -529,10 +654,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[UserCreateResult]",
         "type": "object"
       },
@@ -564,10 +686,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[UserPage]",
         "type": "object"
       },
@@ -599,10 +718,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[UserPublic]",
         "type": "object"
       },
@@ -635,10 +751,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[bool]",
         "type": "object"
       },
@@ -671,10 +784,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "msg"
-        ],
+        "required": ["code", "msg"],
         "title": "ApiResponse[str]",
         "type": "object"
       },
@@ -751,9 +861,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "resource_ids"
-        ],
+        "required": ["resource_ids"],
         "title": "BindResourcesModel",
         "type": "object"
       },
@@ -840,10 +948,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "title",
-          "abstract"
-        ],
+        "required": ["title", "abstract"],
         "title": "BlogBase",
         "type": "object"
       },
@@ -922,13 +1027,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "title",
-          "content",
-          "abstract",
-          "tag",
-          "category"
-        ],
+        "required": ["title", "content", "abstract", "tag", "category"],
         "title": "BlogCreate",
         "type": "object"
       },
@@ -940,9 +1039,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "title": "BlogCreateResult",
         "type": "object"
       },
@@ -1040,11 +1137,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "title",
-          "abstract",
-          "content"
-        ],
+        "required": ["title", "abstract", "content"],
         "title": "BlogDetail",
         "type": "object"
       },
@@ -1074,11 +1167,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "page",
-          "page_size",
-          "total"
-        ],
+        "required": ["page", "page_size", "total"],
         "title": "BlogPage",
         "type": "object"
       },
@@ -1110,11 +1199,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "blog_count",
-          "category_count",
-          "tag_count"
-        ],
+        "required": ["blog_count", "category_count", "tag_count"],
         "title": "BlogStats",
         "type": "object"
       },
@@ -1126,9 +1211,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "file"
-        ],
+        "required": ["file"],
         "title": "Body_upload_image_file_image_upload_post",
         "type": "object"
       },
@@ -1140,9 +1223,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "file"
-        ],
+        "required": ["file"],
         "title": "Body_upload_video_file_video_upload_post",
         "type": "object"
       },
@@ -1159,10 +1240,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name"
-        ],
+        "required": ["id", "name"],
         "title": "Category",
         "type": "object"
       },
@@ -1189,9 +1267,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "question"
-        ],
+        "required": ["question"],
         "title": "ChatRequest",
         "type": "object"
       },
@@ -1210,19 +1286,12 @@
           },
           "status": {
             "description": "Dependency readiness.",
-            "enum": [
-              "ready",
-              "not_ready"
-            ],
+            "enum": ["ready", "not_ready"],
             "title": "Status",
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "status",
-          "duration_ms"
-        ],
+        "required": ["name", "status", "duration_ms"],
         "title": "DependencyReadiness",
         "type": "object"
       },
@@ -1248,9 +1317,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "title": "HealthSnapshot",
         "type": "object"
       },
@@ -1272,10 +1339,7 @@
             "title": "Username"
           }
         },
-        "required": [
-          "username",
-          "password"
-        ],
+        "required": ["username", "password"],
         "title": "LoginModel",
         "type": "object"
       },
@@ -1299,10 +1363,7 @@
           },
           "severity": {
             "description": "Alert severity.",
-            "enum": [
-              "warning",
-              "critical"
-            ],
+            "enum": ["warning", "critical"],
             "title": "Severity",
             "type": "string"
           },
@@ -1318,14 +1379,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "label",
-          "severity",
-          "actual",
-          "threshold",
-          "unit"
-        ],
+        "required": ["key", "label", "severity", "actual", "threshold", "unit"],
         "title": "MetricAlert",
         "type": "object"
       },
@@ -1333,10 +1387,7 @@
         "properties": {
           "kind": {
             "description": "Snapshot history kind.",
-            "enum": [
-              "request",
-              "rum"
-            ],
+            "enum": ["request", "rum"],
             "title": "Kind",
             "type": "string"
           },
@@ -1362,11 +1413,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "kind",
-          "limit",
-          "snapshot_count"
-        ],
+        "required": ["kind", "limit", "snapshot_count"],
         "title": "MetricsHistorySnapshot",
         "type": "object"
       },
@@ -1381,10 +1428,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "access_token",
-          "expires_in"
-        ],
+        "required": ["access_token", "expires_in"],
         "title": "QQModel",
         "type": "object"
       },
@@ -1405,18 +1449,12 @@
           },
           "status": {
             "description": "Overall readiness.",
-            "enum": [
-              "ready",
-              "not_ready"
-            ],
+            "enum": ["ready", "not_ready"],
             "title": "Status",
             "type": "string"
           }
         },
-        "required": [
-          "status",
-          "generated_at"
-        ],
+        "required": ["status", "generated_at"],
         "title": "ReadinessSnapshot",
         "type": "object"
       },
@@ -1447,12 +1485,7 @@
             "title": "Phone"
           }
         },
-        "required": [
-          "name",
-          "email",
-          "phone",
-          "password"
-        ],
+        "required": ["name", "email", "phone", "password"],
         "title": "RegisterModel",
         "type": "object"
       },
@@ -1545,10 +1578,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "token",
-          "new_password"
-        ],
+        "required": ["token", "new_password"],
         "title": "ResetPasswordModel",
         "type": "object"
       },
@@ -1560,9 +1590,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "ResetPasswordRequest",
         "type": "object"
       },
@@ -1605,11 +1633,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "code",
-          "type"
-        ],
+        "required": ["name", "code", "type"],
         "title": "ResourceCreateModel",
         "type": "object"
       },
@@ -1671,13 +1695,7 @@
             "title": "Type"
           }
         },
-        "required": [
-          "name",
-          "code",
-          "type",
-          "path",
-          "description"
-        ],
+        "required": ["name", "code", "type", "path", "description"],
         "title": "ResourceUpdateModel",
         "type": "object"
       },
@@ -1704,10 +1722,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "code"
-        ],
+        "required": ["name", "code"],
         "title": "RoleCreateModel",
         "type": "object"
       },
@@ -1747,11 +1762,7 @@
             "title": "Name"
           }
         },
-        "required": [
-          "name",
-          "code",
-          "description"
-        ],
+        "required": ["name", "code", "description"],
         "title": "RoleUpdateModel",
         "type": "object"
       },
@@ -2015,10 +2026,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "status",
-          "count"
-        ],
+        "required": ["status", "count"],
         "title": "StatusMetric",
         "type": "object"
       },
@@ -2035,10 +2043,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name"
-        ],
+        "required": ["id", "name"],
         "title": "TagBase",
         "type": "object"
       },
@@ -2050,9 +2055,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "title": "TagNew",
         "type": "object"
       },
@@ -2103,12 +2106,7 @@
           },
           "severity": {
             "default": "info",
-            "enum": [
-              "debug",
-              "info",
-              "warning",
-              "error"
-            ],
+            "enum": ["debug", "info", "warning", "error"],
             "title": "Severity",
             "type": "string"
           },
@@ -2125,9 +2123,7 @@
             "title": "Timestamp"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "title": "TelemetryEventPayload",
         "type": "object"
       },
@@ -2139,9 +2135,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "accepted"
-        ],
+        "required": ["accepted"],
         "title": "TelemetryIngestResult",
         "type": "object"
       },
@@ -2271,11 +2265,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "page",
-          "page_size",
-          "total"
-        ],
+        "required": ["page", "page_size", "total"],
         "title": "UserPage",
         "type": "object"
       },
@@ -2362,14 +2352,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "name",
-          "sex",
-          "age",
-          "phone",
-          "email",
-          "birth_day"
-        ],
+        "required": ["name", "sex", "age", "phone", "email", "birth_day"],
         "title": "UserPublic",
         "type": "object"
       },
@@ -2398,11 +2381,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError",
         "type": "object"
       }
@@ -2431,9 +2410,86 @@
           }
         },
         "summary": "Get Admin Alerts",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
+      }
+    },
+    "/admin/logs": {
+      "get": {
+        "description": "Return bounded, sanitized lifecycle and request audit events.",
+        "operationId": "get_admin_logs_admin_logs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": ["debug", "info", "warning", "error", "critical"],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "in": "query",
+            "name": "event_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AdminLogSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Admin Logs",
+        "tags": ["admin"]
       }
     },
     "/admin/metrics": {
@@ -2453,9 +2509,7 @@
           }
         },
         "summary": "Get Admin Metrics",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/admin/metrics/history": {
@@ -2469,10 +2523,7 @@
             "required": false,
             "schema": {
               "default": "request",
-              "enum": [
-                "request",
-                "rum"
-              ],
+              "enum": ["request", "rum"],
               "title": "Kind",
               "type": "string"
             }
@@ -2513,9 +2564,7 @@
           }
         },
         "summary": "Get Admin Metrics History",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/admin/telemetry": {
@@ -2535,9 +2584,7 @@
           }
         },
         "summary": "Get Admin Telemetry",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/ai/chat": {
@@ -2576,9 +2623,7 @@
           }
         },
         "summary": "Get Answer",
-        "tags": [
-          "ai"
-        ]
+        "tags": ["ai"]
       }
     },
     "/ai/chat-chunk-stream": {
@@ -2615,9 +2660,7 @@
           }
         },
         "summary": "Chat Chunk Stream",
-        "tags": [
-          "ai"
-        ]
+        "tags": ["ai"]
       }
     },
     "/ai/chat_stream": {
@@ -2654,9 +2697,7 @@
           }
         },
         "summary": "Get Answer Stream",
-        "tags": [
-          "ai"
-        ]
+        "tags": ["ai"]
       }
     },
     "/ai/generate-image": {
@@ -2693,9 +2734,7 @@
           }
         },
         "summary": "Generate Image",
-        "tags": [
-          "ai"
-        ]
+        "tags": ["ai"]
       }
     },
     "/ai/read-image": {
@@ -2733,9 +2772,7 @@
           }
         },
         "summary": "Generate Image",
-        "tags": [
-          "ai"
-        ]
+        "tags": ["ai"]
       }
     },
     "/auth/login": {
@@ -2774,9 +2811,7 @@
           }
         },
         "summary": "Login",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/logout": {
@@ -2796,9 +2831,7 @@
           }
         },
         "summary": "Logout",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/qq": {
@@ -2837,9 +2870,7 @@
           }
         },
         "summary": "Qq",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/refresh_token": {
@@ -2887,9 +2918,7 @@
           }
         },
         "summary": "Refresh Token",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/register": {
@@ -2928,9 +2957,7 @@
           }
         },
         "summary": "Register",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/reset_password": {
@@ -2969,9 +2996,7 @@
           }
         },
         "summary": "Reset Password",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/reset_password/request": {
@@ -3010,9 +3035,7 @@
           }
         },
         "summary": "Request Reset Password",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/base/": {
@@ -3032,10 +3055,7 @@
           }
         },
         "summary": "Base Info",
-        "tags": [
-          "基础信息",
-          "基础信息"
-        ]
+        "tags": ["基础信息", "基础信息"]
       }
     },
     "/base/blog/category": {
@@ -3055,10 +3075,7 @@
           }
         },
         "summary": "博客种类列表",
-        "tags": [
-          "基础信息",
-          "基础信息"
-        ]
+        "tags": ["基础信息", "基础信息"]
       }
     },
     "/base/blog/tag": {
@@ -3078,10 +3095,7 @@
           }
         },
         "summary": "博客tag列表",
-        "tags": [
-          "基础信息",
-          "基础信息"
-        ]
+        "tags": ["基础信息", "基础信息"]
       }
     },
     "/blogs/": {
@@ -3108,6 +3122,42 @@
               "title": "Pagesize",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "required": false,
+            "schema": {
+              "default": "updated_at",
+              "title": "Sortby",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "title": "Sortorder",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3133,9 +3183,7 @@
           }
         },
         "summary": "Get Blogs Paginated",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       },
       "post": {
         "description": "创建新的博客\n\nArgs:\n    blog (Blog): 新博客的数据模型\n\nReturns:\n    dict: 包含新博客 ID 的字典",
@@ -3173,9 +3221,7 @@
           }
         },
         "summary": "Create Blog",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       }
     },
     "/blogs/{blog_id}": {
@@ -3216,9 +3262,7 @@
           }
         },
         "summary": "Delete Blog",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       },
       "get": {
         "description": "获取指定 ID 的博客\n\nArgs:\n    blog_id (str): 博客的 ID\n\nReturns:\n    Blog: 博客对象，如果不存在则抛出 404 错误",
@@ -3257,9 +3301,7 @@
           }
         },
         "summary": "Get Blog",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       }
     },
     "/file/image/upload": {
@@ -3296,9 +3338,7 @@
           }
         },
         "summary": "Upload Image",
-        "tags": [
-          "文件"
-        ]
+        "tags": ["文件"]
       }
     },
     "/file/video/upload": {
@@ -3335,9 +3375,7 @@
           }
         },
         "summary": "Upload Video",
-        "tags": [
-          "文件"
-        ]
+        "tags": ["文件"]
       }
     },
     "/healthz": {
@@ -3356,9 +3394,7 @@
           }
         },
         "summary": "Healthz",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     },
     "/readyz": {
@@ -3387,9 +3423,7 @@
           }
         },
         "summary": "Readyz",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     },
     "/resource/": {
@@ -3438,9 +3472,7 @@
           }
         },
         "summary": "List Resources",
-        "tags": [
-          "resource"
-        ]
+        "tags": ["resource"]
       },
       "post": {
         "operationId": "create_resource_resource__post",
@@ -3475,9 +3507,7 @@
           }
         },
         "summary": "Create Resource",
-        "tags": [
-          "resource"
-        ]
+        "tags": ["resource"]
       }
     },
     "/resource/{resource_id}": {
@@ -3515,9 +3545,7 @@
           }
         },
         "summary": "Delete Resource",
-        "tags": [
-          "resource"
-        ]
+        "tags": ["resource"]
       },
       "get": {
         "operationId": "get_resource_resource__resource_id__get",
@@ -3553,9 +3581,7 @@
           }
         },
         "summary": "Get Resource",
-        "tags": [
-          "resource"
-        ]
+        "tags": ["resource"]
       },
       "put": {
         "operationId": "update_resource_resource__resource_id__put",
@@ -3601,9 +3627,7 @@
           }
         },
         "summary": "Update Resource",
-        "tags": [
-          "resource"
-        ]
+        "tags": ["resource"]
       }
     },
     "/role/": {
@@ -3652,9 +3676,7 @@
           }
         },
         "summary": "List Roles",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       },
       "post": {
         "operationId": "create_role_role__post",
@@ -3689,9 +3711,7 @@
           }
         },
         "summary": "Create Role",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       }
     },
     "/role/{role_id}": {
@@ -3729,9 +3749,7 @@
           }
         },
         "summary": "Delete Role",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       },
       "get": {
         "operationId": "get_role_role__role_id__get",
@@ -3767,9 +3785,7 @@
           }
         },
         "summary": "Get Role",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       },
       "put": {
         "operationId": "update_role_role__role_id__put",
@@ -3815,9 +3831,7 @@
           }
         },
         "summary": "Update Role",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       }
     },
     "/role/{role_id}/bind_resources": {
@@ -3865,9 +3879,7 @@
           }
         },
         "summary": "Bind Resources",
-        "tags": [
-          "role"
-        ]
+        "tags": ["role"]
       }
     },
     "/telemetry/events": {
@@ -3907,9 +3919,7 @@
           }
         },
         "summary": "Ingest Telemetry Event",
-        "tags": [
-          "telemetry"
-        ]
+        "tags": ["telemetry"]
       }
     },
     "/user/": {
@@ -3961,9 +3971,7 @@
           }
         },
         "summary": "Get Users Paginated",
-        "tags": [
-          "user"
-        ]
+        "tags": ["user"]
       },
       "post": {
         "description": "创建新的用户\n\nArgs:\n    user (User): 新用户的数据模型\n\nReturns:\n    dict: 包含新用户 ID 的字典",
@@ -4001,9 +4009,7 @@
           }
         },
         "summary": "Create User",
-        "tags": [
-          "user"
-        ]
+        "tags": ["user"]
       }
     },
     "/user/me": {
@@ -4023,9 +4029,7 @@
           }
         },
         "summary": "Get Current User Info",
-        "tags": [
-          "user"
-        ]
+        "tags": ["user"]
       }
     },
     "/user/{user_id}": {
@@ -4066,9 +4070,7 @@
           }
         },
         "summary": "Delete User",
-        "tags": [
-          "user"
-        ]
+        "tags": ["user"]
       },
       "get": {
         "description": "获取指定 ID 的用户\n\nArgs:\n    user_id (str): 用户的 ID\n\nReturns:\n    User: 用户对象，如果不存在则抛出 404 错误",
@@ -4107,9 +4109,7 @@
           }
         },
         "summary": "Get User",
-        "tags": [
-          "user"
-        ]
+        "tags": ["user"]
       }
     }
   }

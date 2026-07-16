@@ -3,12 +3,14 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 
 from src.core.admin_alerts import get_admin_alerts_snapshot
+from src.core.audit_log import get_audit_log_snapshot
 from src.core.metrics import get_request_metrics_snapshot
 from src.core.metrics_history import get_metrics_history_snapshot
 from src.core.response import ApiResponse, ok
 from src.core.rum_metrics import get_rum_metrics_snapshot
 from src.routers.auth.auth import get_current_user
 from src.type.admin_type import (
+    AdminLogSnapshot,
     AdminAlertsSnapshot,
     MetricsHistorySnapshot,
     RequestMetricsSnapshot,
@@ -62,6 +64,28 @@ async def get_admin_metrics_history(
     return ok(
         data=MetricsHistorySnapshot.model_validate(
             get_metrics_history_snapshot(kind=kind, limit=limit)
+        ),
+        msg="ok",
+    )
+
+
+@router.get("/logs", response_model=ApiResponse[AdminLogSnapshot])
+async def get_admin_logs(
+    limit: int = Query(default=50, ge=1, le=100),
+    severity: Literal["debug", "info", "warning", "error", "critical"] | None = Query(
+        default=None
+    ),
+    event_type: str | None = Query(default=None, min_length=1, max_length=64),
+    _current_user: User = Depends(get_current_user),
+):
+    """Return bounded, sanitized lifecycle and request audit events."""
+    return ok(
+        data=AdminLogSnapshot.model_validate(
+            get_audit_log_snapshot(
+                limit=limit,
+                severity=severity,
+                event_type=event_type,
+            )
         ),
         msg="ok",
     )

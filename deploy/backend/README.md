@@ -118,6 +118,7 @@ config files as the current production service:
 ```bash
 API_MOUNTS=(
   -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
+  -v /data/blog:/data/blog
 )
 if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
   API_MOUNTS+=(
@@ -132,6 +133,7 @@ sudo docker run --rm --network host \
 API_ENV=(
   -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
   -e BLOG_CORS_ORIGINS=https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping
+  -e BLOG_AUDIT_LOG_DIR=/data/blog/audit-logs
 )
 
 sudo docker run -d --name sun-world-api-candidate --network host \
