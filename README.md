@@ -9,7 +9,7 @@ Sun World is a full-stack monorepo containing the blog frontend, backend API, an
 ```
 sun-world/
 ├── apps/
-│   ├── web/          # 博客前端 / Blog frontend (Vue 3 + Vite)
+│   ├── web/          # 博客前端 / Blog frontend (React 19 + Vite)
 │   └── api/          # 后端 API / Backend API (FastAPI + Python)
 ├── packages/
 │   ├── editor/       # 富文本编辑器组件 / Rich text editor library (@sun-world/editor)
@@ -25,8 +25,8 @@ sun-world/
 
 ### apps/web — 博客前端 / Blog Frontend
 
-- 框架 / Framework: Vue 3 + Vite + TypeScript
-- UI 库 / UI Library: Element Plus
+- 框架 / Framework: React 19 + React Router + Vite + TypeScript
+- UI 库 / UI Library: `@sun-world/ui`（基于 shadcn/Radix 封装）
 - 包名 / Package: `@sun-world/blog`
 - 生产域名 / Production: https://sunworld.site
 
@@ -67,10 +67,10 @@ pnpm build:icons           # 构建 / Build
 pnpm dev:icons             # 开发模式 / Dev mode
 ```
 
-### contracts（规划中 / Planned）
+### @sun-world/contracts — API 契约 / API Contracts
 
-前端和后端的共享类型与 API 契约。当前尚未生成。
-Shared types and API contracts between frontend and backend. Not yet generated.
+前端和后端共享的类型、路由常量和 OpenAPI 契约。
+Shared types, route constants, and OpenAPI contracts between frontend and backend.
 
 ### db（规划中 / Planned）
 

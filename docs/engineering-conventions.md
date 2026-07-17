@@ -29,8 +29,8 @@ These conventions capture the default coding habits for this repository. Prefer 
 ## Naming
 
 - Follow existing names in the same folder first.
-- Vue components: use PascalCase for component names and component files when the surrounding folder does.
-- Composables: use `useXxx` naming.
+- React components: use PascalCase for component names and `.tsx` files.
+- Hooks: use `useXxx` naming and keep side-effect cleanup next to the effect that owns it.
 - Utilities and docs: prefer kebab-case file names.
 - Variables and functions: use camelCase.
 - Constants: use UPPER_SNAKE_CASE only for true constants that are shared or configuration-like.
@@ -38,12 +38,13 @@ These conventions capture the default coding habits for this repository. Prefer 
 
 ## Code Style
 
-- Prefer the existing Vue 3 and Vite patterns already used in the project.
-- Keep components scan-friendly: template, script, and style should each have a clear job.
+- Prefer the existing React 19, React Router, and Vite patterns used in `apps/web`.
+- Keep components scan-friendly: use function components, explicit props, small hooks, and route-level lazy imports.
+- Build reusable controls in `@sun-world/ui` from shadcn/Radix primitives; application pages should consume documented package subpaths instead of third-party primitives directly.
 - Avoid introducing new dependencies unless they clearly reduce complexity.
 - Use structured APIs/parsers for structured data instead of fragile string manipulation.
 - Add comments only for non-obvious behavior, browser quirks, production gotchas, or complex logic.
-- JavaScript, TypeScript, Vue, JSON, YAML, CSS, and SCSS formatting is defined
+- JavaScript, TypeScript, TSX, JSON, YAML, CSS, and SCSS formatting is defined
   by `.prettierrc.json`. Run `pnpm format` to format changed supported files,
   or `pnpm format:check` to verify changed supported files without editing.
 - The first Prettier baseline intentionally excludes Markdown and Python.

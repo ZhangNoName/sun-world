@@ -1,6 +1,31 @@
 # Current State
 
-Last updated: 2026-07-01 (main, md-editor-v3 migration and AI entry deploy)
+Last updated: 2026-07-17 (`refactor/react-shadcn`, React rebuild complete locally)
+
+## React Frontend Rebuild (2026-07-17, merge-ready branch)
+
+- `apps/web` now runs React 19, React Router, TypeScript, and Vite. The production
+  entry is `apps/web/src/main.tsx`; no `.vue` source or Vue runtime dependency
+  remains in the web, UI, or icon packages.
+- `@sun-world/ui` is the shared shadcn-style component layer built on Radix
+  primitives. `@sun-world/icons/react` is the React icon surface.
+- All existing routes and workflows were migrated: home/blog/SSG, authoring,
+  authentication, AI streaming chat, admin metrics/logs/blog management, canvas,
+  video, game-tile export, tools, TCX generation, QQ callback, and 404 handling.
+- Route modules own lazy imports. Rollup places shared dependencies automatically;
+  the chunk guard rejects any initial static import or preload of route-only code.
+  This avoids the initialization cycles produced by cross-cutting manual chunks.
+- Fresh local evidence: `corepack pnpm check` (15/15), `corepack pnpm check:web`,
+  and `corepack pnpm build` pass;
+  React tests report 23 files / 29 tests; UI and icon package builds pass; SSG
+  generates the homepage, `/home`, 30 article pages, and `sitemap.xml`.
+- Production browser smoke covered desktop `/`, `/login`, `/register`, `/aigc`,
+  `/canvas`, `/video`, `/game_tiles`, `/tools`, `/keep`, `/manage`, `/blog/1`,
+  and a missing route. A 390x844 pass covered `/`, `/manage`, `/game_tiles`, and
+  `/aigc`. React mounted on every page with no console errors or horizontal overflow.
+- This branch has not been pushed, merged, deployed, or checked against production.
+- The latest previously verified production checkpoint remains P1.80; this React
+  branch supersedes the frontend locally but does not change that deploy marker.
 
 ## Admin Audit Logs (2026-07-17, feature branch)
 
@@ -49,7 +74,7 @@ contains the monorepo candidate:
 ```text
 sun-world/
   apps/
-    web/           # blog frontend (Vue 3 + Vite)
+    web/           # blog frontend (React 19 + React Router + Vite)
     api/           # FastAPI backend (imported from blog_end)
   packages/
     editor/        # rich text editor library
@@ -229,13 +254,15 @@ https://beian.miit.gov.cn/
 ```
 
 The filing is rendered only on the homepage by
-`apps/web/src/modules/home/ui/IcpFilingCard.vue`. Desktop placement is after
+`apps/web/src/modules/home/ui/IcpFilingCard.tsx`. Desktop placement is after
 the left-side weather card; mobile placement is inside
-`apps/web/src/modules/home/pages/HomePage.vue`.
+`apps/web/src/modules/home/pages/HomePage.tsx`.
 
 ## Known Issues
 
-- The production build currently prints TypeScript errors from `packages/editor`, but Vite still exits successfully. Treat this as technical debt; do not assume type-checking is clean.
+- The editor declaration build warns that API Extractor bundles TypeScript 5.4
+  while the workspace uses TypeScript 5.9; declarations and the root build still
+  complete successfully. Upgrade API Extractor/vite-plugin-dts when convenient.
 - Use `docker build --no-cache -t blog-front:latest .` when you need to be certain static assets have been regenerated.
 - Sensitive-pattern filename scans report existing frontend and backend files that may contain token/password/API-key related text. Do not print their contents in agent logs. Review and rotate/move any real secrets before merging or cutting over runtime.
 - `docker-compose.yml` covers both frontend and API orchestration. Frontend
@@ -292,15 +319,10 @@ the left-side weather card; mobile placement is inside
   verifies the repository has durable evidence for the commit policy,
   frontend-backend chain, monitoring platform, packaging/build optimization,
   SSR decision, and current handoff checkpoint.
-- Root `pnpm check:web` also runs `pnpm check:web:chunks` after build and
-  performance budgets. The chunk guard requires route-only `video-player` and
-  `tile-export` chunks, requires md-editor-v3 shared read/write split chunks,
-  prevents top-level JSZip imports in shared utility code, and prevents article
-  catalog rendering from importing the full markdown editor runtime. It also
-  prevents the manage
-  shell from statically importing admin charts and prevents broad admin module
-  preloading. It also requires explicit legacy page chunks and rejects the old
-  broad `src/pages/**` manual merge into the entry chunk.
+- Root `pnpm check:web` runs `pnpm check:web:chunks` after the React build and
+  performance budgets. The chunk guard verifies required route/action chunks,
+  prevents top-level JSZip and ECharts imports, and traverses the production
+  entry's static import graph to reject route-only code in the initial bundle.
 - `pnpm check:contracts:usage` guards module API files so core backend routes
   are consumed through `@sun-world/contracts` route constants.
 - `@sun-world/contracts` exports `API_ROUTE_METHODS`, and contracts tests
@@ -331,36 +353,24 @@ the left-side weather card; mobile placement is inside
   endpoint use. API startup, `/healthz`, and non-AI routes must not require
   `OPENROUTER_API_KEY` or `OPENAI_API_KEY`; missing provider keys should fail
   the AI endpoint path rather than the whole API process.
-- Frontend route-only heavy dependencies are separated from global vendor:
-  Artplayer/HLS build into `video-player`, and JSZip builds into
-  `tile-export` through a dynamic import in `saveTilesAsZip()`.
-- Markdown rendering/editing is split by workflow with md-editor-v3: article
-  reading uses the `md-editor-preview` chunk via shared
-  `SunMarkdownPreview`, article writing uses the `md-editor-editor` chunk via
-  shared `SunMarkdownEditor`. `SunMarkdownPreview` emits catalog/rendered
-  events for consumers such as the blog reader and future AI surfaces. The blog
-  module no longer idle-preloads `BlogDetailPage` or warms `ArticleEditorPage`
-  from the public shell.
+- Frontend route-only heavy dependencies stay behind dynamic imports:
+  Artplayer/HLS load with `VideoPage`, JSZip loads only during tile export,
+  ECharts loads only inside chart cards, and the Markdown editor loads only in
+  authoring. Rollup automatically places their shared dependencies.
+- Markdown reading uses lazy `SunMarkdownPreview`; writing uses lazy
+  `SunMarkdownEditor` backed by `@uiw/react-md-editor`. The preview reports
+  headings/render completion for the blog catalog without loading authoring code.
 - Blog home feed observes the `.app-container` scroll root for infinite loading
   and shows a floating "back to top" control after 360px of scrolling.
-- Admin charts are split from the manage shell: `AdminChartsPage` is async,
-  local chart shell code builds into `admin-charts`, and admin module routes no
-  longer use a broad preload hook.
-- Remaining legacy route shells are no longer folded into the entry chunk:
-  `gameTiles`, `tools`, `keep`, `login`, `register`, `me`, `qqCb`, and
-  `manage` now emit explicit page chunks with gzip budgets.
-- UI package primitives are independent from Element Plus runtime imports.
-  `SunButton`, `SunInput`, `SunDatePicker`, and `SunPagination` are native
-  package implementations covered by package tests; richer app-only Element
-  controls remain route-owned until they receive explicit package protocols.
-- Root `pnpm check:web:chunks` rejects full Element theme CSS in
-  `apps/web/src/main.ts`, Element runtime imports from `packages/ui`
-  components, broad third-party/app chunk collisions, and entry HTML preloads
-  for route-only or optional heavy chunks.
-- HTTP error notifications lazy-load Element Message and its CSS only when a
-  message is shown. The entry HTML should not preload `element`,
-  `tile-export`, `md-editor-*`, `admin-charts`, `echarts`, `zrender`,
-  `manage-shell`, or legacy page chunks.
+- Admin charts, metrics, and logs are lazy React routes. Chart instances load
+  ECharts on demand and dispose on unmount.
+- Tool, account, callback, management, AI, editor, video, and blog detail pages
+  are route chunks with measured gzip budgets for stable named entries.
+- `@sun-world/ui` contains the shared shadcn/Radix React primitives, including
+  buttons, inputs, selection, dialogs, dates, pagination, chat shells, themes,
+  tooltips, and toast handling. Package tests and subpath exports are required.
+- The production HTML must not preload route-only or optional heavy chunks.
+  HTTP errors render through the Sun toast layer; no Element runtime remains.
 - Root `pnpm check:web` generates and validates
   `apps/web/dist/build-manifest.json` after the frontend build. The manifest is
   a generated build artifact with total JS/CSS gzip, initial gzip, lazy JS

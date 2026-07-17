@@ -21,112 +21,81 @@
       "maxGzipKiB": 450
     },
     {
-      "name": "entry-index-js-gzip",
-      "type": "pattern",
-      "pattern": "assets/index*.js",
-      "maxGzipKiB": 5
+      "name": "entry-module-gzip",
+      "type": "entry",
+      "maxGzipKiB": 160
     },
     {
-      "name": "react-vendor-chunk-gzip",
+      "name": "video-page-gzip",
       "type": "pattern",
-      "pattern": "assets/vendor-react*.js",
-      "maxGzipKiB": 450
-    },
-    {
-      "name": "video-player-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/video-player*.js",
+      "pattern": "assets/VideoPage*.js",
       "maxGzipKiB": 220
     },
     {
-      "name": "tile-export-chunk-gzip",
+      "name": "tile-export-gzip",
       "type": "pattern",
-      "pattern": "assets/tile-export*.js",
+      "pattern": "assets/jszip.min*.js",
       "maxGzipKiB": 30
     },
     {
-      "name": "md-editor-preview-chunk-gzip",
+      "name": "article-editor-page-gzip",
       "type": "pattern",
-      "pattern": "assets/md-editor-preview*.js",
-      "maxGzipKiB": 55
+      "pattern": "assets/ArticleEditorPage*.js",
+      "maxGzipKiB": 2
     },
     {
-      "name": "md-editor-editor-chunk-gzip",
+      "name": "admin-charts-page-gzip",
       "type": "pattern",
-      "pattern": "assets/md-editor-editor*.js",
-      "maxGzipKiB": 22
+      "pattern": "assets/AdminChartsPage*.js",
+      "maxGzipKiB": 2
     },
     {
-      "name": "admin-charts-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/admin-charts*.js",
-      "maxGzipKiB": 9
-    },
-    {
-      "name": "admin-metrics-chunk-gzip",
+      "name": "admin-metrics-page-gzip",
       "type": "pattern",
       "pattern": "assets/AdminMetricsPage*.js",
       "maxGzipKiB": 2
     },
     {
-      "name": "manage-shell-chunk-gzip",
+      "name": "admin-logs-page-gzip",
       "type": "pattern",
-      "pattern": "assets/manage-shell*.js",
-      "maxGzipKiB": 5
-    },
-    {
-      "name": "page-me-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/page-me*.js",
-      "maxGzipKiB": 1
-    },
-    {
-      "name": "page-login-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/page-login*.js",
+      "pattern": "assets/AdminLogsPage*.js",
       "maxGzipKiB": 2
     },
     {
-      "name": "page-register-chunk-gzip",
+      "name": "login-page-gzip",
       "type": "pattern",
-      "pattern": "assets/page-register*.js",
+      "pattern": "assets/login*.js",
       "maxGzipKiB": 2
     },
     {
-      "name": "page-game-tiles-chunk-gzip",
+      "name": "register-page-gzip",
       "type": "pattern",
-      "pattern": "assets/page-game-tiles*.js",
-      "maxGzipKiB": 4
-    },
-    {
-      "name": "page-keep-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/page-keep*.js",
+      "pattern": "assets/register*.js",
       "maxGzipKiB": 2
     },
     {
-      "name": "page-tools-chunk-gzip",
+      "name": "account-page-gzip",
       "type": "pattern",
-      "pattern": "assets/page-tools*.js",
+      "pattern": "assets/me*.js",
       "maxGzipKiB": 1
     },
     {
-      "name": "page-qq-callback-chunk-gzip",
+      "name": "keep-page-gzip",
       "type": "pattern",
-      "pattern": "assets/page-qq-callback*.js",
+      "pattern": "assets/keep*.js",
+      "maxGzipKiB": 2
+    },
+    {
+      "name": "tools-page-gzip",
+      "type": "pattern",
+      "pattern": "assets/tools.page*.js",
       "maxGzipKiB": 1
     },
     {
-      "name": "echarts-chunk-gzip",
+      "name": "qq-callback-page-gzip",
       "type": "pattern",
-      "pattern": "assets/echarts*.js",
-      "maxGzipKiB": 265
-    },
-    {
-      "name": "zrender-chunk-gzip",
-      "type": "pattern",
-      "pattern": "assets/zrender*.js",
-      "maxGzipKiB": 70
+      "pattern": "assets/qqCb*.js",
+      "maxGzipKiB": 1
     }
   ]
 }

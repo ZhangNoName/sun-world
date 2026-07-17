@@ -15,7 +15,8 @@ grade, extensible content and creation platform.
 ## Architecture Direction
 
 - Monorepo candidate lives on `monorepo-api-import`.
-- Frontend stays Vue 3 + Vite.
+- Frontend uses React 19 + React Router + Vite. Shared controls are wrapped in
+  `@sun-world/ui` on shadcn/Radix primitives.
 - Backend stays FastAPI + Pydantic.
 - Shared API contracts live in `packages/contracts`.
 - Prisma remains inactive unless a real Node/TypeScript data service is added.
@@ -46,13 +47,14 @@ grade, extensible content and creation platform.
 
 ## Next Candidate Phases
 
-- Move more legacy blog pages/components fully into `modules/blog`.
-- Close the editor app-integration boundary by moving legacy canvas route files
-  into `modules/editor` before deeper editor package work.
+- Continue strengthening module-owned React APIs and tests now that all public,
+  account, admin, AI, editor, video, and tool routes are migrated.
+- Evolve the editor package behind the React canvas adapter without leaking its
+  mutable model into page components.
 - Add a typed frontend health/readiness admin surface if it becomes useful.
 - Add backend persistent telemetry/log read models after the runtime cutover.
-- Split or defer heavy frontend chunks: editor, charting, AI/LangChain, and
-  Element Plus usage.
+- Keep editor, charting, Markdown, video, and export dependencies behind route
+  or action-level dynamic imports and enforce the production chunk boundary.
 - Generate dynamic article sitemap entries from backend data or a build-time
   snapshot.
 - Plan and execute backend runtime cutover from `/home/lighthouse/blog/blog_end`
