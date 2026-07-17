@@ -6,6 +6,13 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-17: all six P2 findings from the React guidelines review are fixed on
+  `fix/react-p2-remediation`. Browser access is render-safe, blog/admin/article
+  requests are last-request-wins, mobile navigation uses the shared accessible
+  dialog, blog search is labeled, and AI resizing uses pointer capture.
+  Verification passed 29 React test files / 40 tests, 10 UI tests,
+  `corepack pnpm check:web`, and `corepack pnpm check` (15/15). The branch is
+  not pushed or deployed; the three P3 review items remain follow-up debt.
 - 2026-07-17: the React development standard and repository code review are
   complete on local `main`. The standard is
   `docs/react-development-guidelines.md`; the findings-first review is

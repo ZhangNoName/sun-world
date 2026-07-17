@@ -10,6 +10,29 @@ The review retains six P2 findings and three P3 migration/tooling findings.
 They are documented for remediation; this documentation change intentionally
 does not alter application behavior.
 
+## Remediation status - 2026-07-17
+
+All six P2 findings below are resolved on `fix/react-p2-remediation` with
+regression coverage:
+
+- Browser state now uses an SSR-safe viewport subscription and guarded storage
+  access (`viewport.test.tsx`, `tg.ssr.test.ts`, and `theme.test.tsx`).
+- Blog management separates metadata from its single query-owned page request
+  and rejects stale responses (`useBlogManagement.test.tsx`).
+- Admin logs and article reads apply last-request-wins guards
+  (`useAdminLogs.test.tsx` and `useBlogReader.test.tsx`).
+- Mobile navigation uses the controlled Radix-backed `SunDialog`, including
+  focus restoration (`react-contracts.react.spec.tsx` and `layout.test.tsx`).
+- Blog search has an explicit accessible label (`BlogHomeFeed.test.tsx`).
+- AI resizing uses pointer capture without window-level drag listeners and
+  tolerates rejected storage (`AigcPage.test.tsx`).
+
+The three P3 findings remain bounded migration/tooling debt. Verification after
+remediation passed 29 React test files / 40 tests, 10 UI tests,
+`corepack pnpm check:web`, and the full `corepack pnpm check` gate (15/15).
+The entry module remains within budget at 159.7 KiB gzip / 160.0 KiB; future
+entry-level dependencies should preserve or improve that margin.
+
 ## Findings
 
 ### [P2] Browser globals are read during module evaluation or render
