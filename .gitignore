@@ -63,6 +63,7 @@ apps/api/src/conf/local.override.yml
 apps/api/src/conf/local.override.yaml
 apps/api/uploads/
 apps/api/runtime/
+apps/api/data/audit-logs/
 
 # Local-only app config and certificates
 apps/web/src/constant.ts
