@@ -128,7 +128,7 @@ run('UI package boundary check', 'node', [
 ])
 
 run('md-editor-v3 migration check', 'node', [
-  'scripts/check-md-editor-v3-migration.mjs',
+  'scripts/check-react-markdown-migration.mjs',
 ])
 
 run('Frontend performance budget check', 'node', [

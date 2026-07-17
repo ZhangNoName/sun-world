@@ -1,59 +1,34 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-
-const repoRoot = resolve(import.meta.dirname, '..')
-
-function read(relativePath) {
-  return readFileSync(resolve(repoRoot, relativePath), 'utf8')
-}
-
-function assert(condition, message) {
-  if (!condition) {
-    console.error(`Blog detail catalog check failed: ${message}`)
-    process.exit(1)
-  }
-}
-
-const detailPage = read('apps/web/src/modules/blog/pages/BlogDetailPage.vue')
-const reader = read('apps/web/src/modules/blog/composables/useBlogReader.ts')
-const catalogCard = read('apps/web/src/modules/blog/ui/CatalogCard.vue')
-const catalogItem = read('apps/web/src/modules/blog/ui/CatalogItem.vue')
-
-assert(
-  !detailPage.includes('SelfInfoCard'),
-  'Blog detail should not render the profile self-card in the left rail.'
+const root = resolve(import.meta.dirname, '..')
+const page = readFileSync(
+  resolve(root, 'apps/web/src/modules/blog/pages/BlogDetailPage.tsx'),
+  'utf8'
 )
-
-assert(
-  detailPage.includes('activeHeadingId') &&
-    detailPage.includes('scrollToHeading') &&
-    detailPage.includes(':active-id="activeHeadingId"') &&
-    detailPage.includes('@select="scrollToHeading"'),
-  'Blog detail should wire catalog active state and select scrolling.'
+const reader = readFileSync(
+  resolve(root, 'apps/web/src/modules/blog/composables/useBlogReader.ts'),
+  'utf8'
 )
-
-assert(
-  reader.includes('activeHeadingId') &&
-    reader.includes('scrollToHeading') &&
-    reader.includes('requestAnimationFrame') &&
-    reader.includes('.app-container'),
-  'useBlogReader should track active headings inside the app scroll container.'
+const catalog = readFileSync(
+  resolve(root, 'apps/web/src/modules/blog/ui/CatalogCard.tsx'),
+  'utf8'
 )
-
-assert(
-  catalogCard.includes('activeId') &&
-    catalogCard.includes('defineEmits') &&
-    catalogCard.includes('@select='),
-  'CatalogCard should pass active state and relay heading selection.'
-)
-
-assert(
-  catalogItem.includes('activeId') &&
-    catalogItem.includes('isActive') &&
-    catalogItem.includes('catalog-item-active') &&
-    catalogItem.includes('emit('),
-  'CatalogItem should expose active styling and emit heading selection.'
-)
-
+for (const snippet of [
+  'activeId={reader.activeHeadingId}',
+  'onSelect={reader.scrollToHeading}',
+])
+  if (!page.includes(snippet))
+    throw new Error(`Catalog page wiring missing: ${snippet}`)
+for (const snippet of [
+  'activeHeadingId',
+  'scrollToHeading',
+  '.app-container',
+  "removeEventListener('scroll'",
+])
+  if (!reader.includes(snippet))
+    throw new Error(`Reader tracking missing: ${snippet}`)
+for (const snippet of ['aria-current', 'onSelect(item.id)', 'item.children'])
+  if (!catalog.includes(snippet))
+    throw new Error(`Catalog component missing: ${snippet}`)
 console.log('Blog detail catalog check passed.')

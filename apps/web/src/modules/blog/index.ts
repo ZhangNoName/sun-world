@@ -1,8 +1,13 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
 
-const BlogDetailPage = createPendingRouteComponent('博客详情')
-const ArticleEditorPage = createPendingRouteComponent('撰写文章')
+const detail = () =>
+  import('./pages/BlogDetailPage').then((module) => ({
+    Component: module.BlogDetailPage,
+  }))
+const editor = () =>
+  import('./pages/ArticleEditorPage').then((module) => ({
+    Component: module.ArticleEditorPage,
+  }))
 
 export const blogModule: AppModule = {
   id: 'blog',
@@ -10,17 +15,17 @@ export const blogModule: AppModule = {
   routes: [
     {
       path: '/blog/:id',
-      Component: BlogDetailPage,
+      lazy: detail,
       meta: { module: 'blog', title: '博客详情 - Sun World' },
     },
     {
       path: '/blog',
-      Component: BlogDetailPage,
+      lazy: detail,
       meta: { module: 'blog', title: '博客详情 - Sun World' },
     },
     {
       path: '/new_article',
-      Component: ArticleEditorPage,
+      lazy: editor,
       meta: { module: 'blog', title: '撰写文章 - Sun World' },
     },
   ],
