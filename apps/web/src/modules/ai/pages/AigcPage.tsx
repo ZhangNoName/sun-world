@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
 import { SunIcon } from '@sun-world/icons/react'
+import { useViewportWidth } from '@/shared/browser/viewport'
 import { AI_PROVIDER_OPTIONS } from '../api'
 import { useAiChat } from '../composables/useAiChat'
 import { AiComposer } from '../ui/AiComposer'
@@ -8,33 +9,56 @@ import { AiConversationSidebar } from '../ui/AiConversationSidebar'
 import { AiMessageStream } from '../ui/AiMessageStream'
 import './ai.css'
 
+const DEFAULT_SIDEBAR_WIDTH = 288
+
+function readSidebarWidth() {
+  try {
+    if (typeof localStorage === 'undefined') return DEFAULT_SIDEBAR_WIDTH
+    return (
+      Number(localStorage.getItem('sun-world-ai-sidebar-width')) ||
+      DEFAULT_SIDEBAR_WIDTH
+    )
+  } catch {
+    return DEFAULT_SIDEBAR_WIDTH
+  }
+}
+
+function persistSidebarWidth(width: number) {
+  try {
+    if (typeof localStorage !== 'undefined')
+      localStorage.setItem('sun-world-ai-sidebar-width', String(width))
+  } catch {
+    // Storage can be unavailable in privacy-restricted browser contexts.
+  }
+}
+
 export function AigcPage() {
   const chat = useAiChat()
-  const [collapsed, setCollapsed] = useState(window.innerWidth <= 720)
-  const [width, setWidth] = useState(
-    Number(localStorage.getItem('sun-world-ai-sidebar-width')) || 288
-  )
+  const viewportWidth = useViewportWidth()
+  const [collapsed, setCollapsed] = useState(viewportWidth <= 720)
+  const [width, setWidth] = useState(readSidebarWidth)
+  const drag = useRef<{ pointerId: number; width: number } | null>(null)
+
   useEffect(() => {
-    const resize = () => {
-      if (window.innerWidth <= 720) setCollapsed(true)
-    }
-    window.addEventListener('resize', resize)
-    return () => window.removeEventListener('resize', resize)
-  }, [])
+    if (viewportWidth <= 720) setCollapsed(true)
+  }, [viewportWidth])
+
   const startResize = (event: React.PointerEvent) => {
     event.preventDefault()
-    let nextWidth = width
-    const move = (next: PointerEvent) => {
-      nextWidth = Math.min(380, Math.max(232, next.clientX))
-      setWidth(nextWidth)
-    }
-    const stop = () => {
-      localStorage.setItem('sun-world-ai-sidebar-width', String(nextWidth))
-      window.removeEventListener('pointermove', move)
-      window.removeEventListener('pointerup', stop)
-    }
-    window.addEventListener('pointermove', move)
-    window.addEventListener('pointerup', stop)
+    drag.current = { pointerId: event.pointerId, width }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const resize = (event: React.PointerEvent) => {
+    if (drag.current?.pointerId !== event.pointerId) return
+    const nextWidth = Math.min(380, Math.max(232, event.clientX))
+    drag.current.width = nextWidth
+    setWidth(nextWidth)
+  }
+  const stopResize = (event: React.PointerEvent) => {
+    if (drag.current?.pointerId !== event.pointerId) return
+    persistSidebarWidth(drag.current.width)
+    event.currentTarget.releasePointerCapture(event.pointerId)
+    drag.current = null
   }
   return (
     <SunChatShell
@@ -63,6 +87,9 @@ export function AigcPage() {
           <button
             className="resize-handle"
             onPointerDown={startResize}
+            onPointerMove={resize}
+            onPointerUp={stopResize}
+            onPointerCancel={stopResize}
             aria-label="调整侧边栏宽度"
           />
         </>
