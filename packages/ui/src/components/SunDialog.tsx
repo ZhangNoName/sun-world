@@ -1,11 +1,17 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type { ReactNode } from 'react'
 
+import { cn } from '../lib/cn'
+
 export interface SunDialogProps {
   trigger: ReactNode
   title: string
   description?: string
   children?: ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  overlayClassName?: string
+  contentClassName?: string
 }
 
 export function SunDialog({
@@ -13,9 +19,13 @@ export function SunDialog({
   title,
   description,
   children,
+  open,
+  onOpenChange,
+  overlayClassName,
+  contentClassName,
 }: SunDialogProps) {
   return (
-    <DialogPrimitive.Root>
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Trigger asChild>
         {typeof trigger === 'string' ? (
           <button type="button">{trigger}</button>
@@ -24,8 +34,12 @@ export function SunDialog({
         )}
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="sun-dialog__overlay" />
-        <DialogPrimitive.Content className="sun-dialog__content">
+        <DialogPrimitive.Overlay
+          className={cn('sun-dialog__overlay', overlayClassName)}
+        />
+        <DialogPrimitive.Content
+          className={cn('sun-dialog__content', contentClassName)}
+        >
           <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
           {description ? (
             <DialogPrimitive.Description>

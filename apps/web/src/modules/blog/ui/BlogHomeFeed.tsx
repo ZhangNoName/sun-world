@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 import { SunButton } from '@sun-world/ui/button'
+import { SunInput } from '@sun-world/ui/input'
 import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 
 import { toast } from '@sun-world/ui/toast'
@@ -72,9 +73,10 @@ export function BlogHomeFeed() {
         ))}
       </section>
       <section className="query-panel" aria-label="博客筛选">
-        <input
+        <SunInput
+          label="搜索博客"
           value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
+          onValueChange={setKeyword}
           onKeyDown={(event) => {
             if (event.key === 'Enter') apply()
           }}

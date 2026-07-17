@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { SunButton } from './SunButton'
@@ -83,6 +84,34 @@ describe('@sun-world/ui React contracts', () => {
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
+  })
+
+  it('supports controlled state and custom surface classes', async () => {
+    function ControlledDialog() {
+      const [open, setOpen] = useState(false)
+      return (
+        <SunDialog
+          trigger={<button type="button">Open navigation</button>}
+          title="Navigation"
+          open={open}
+          onOpenChange={setOpen}
+          overlayClassName="drawer-overlay"
+          contentClassName="mob-drawer"
+        >
+          Navigation content
+        </SunDialog>
+      )
+    }
+    render(<ControlledDialog />)
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Open navigation' })
+    )
+    expect(screen.getByRole('dialog', { name: 'Navigation' })).toHaveClass(
+      'mob-drawer'
+    )
+    expect(document.querySelector('.drawer-overlay')).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('selects an option using the keyboard', async () => {

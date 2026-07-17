@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useMatches } from 'react-router'
 import { SunIcon } from '@sun-world/icons/react'
 import { SunButton } from '@sun-world/ui/button'
+import { SunDialog } from '@sun-world/ui/dialog'
 
 import LanguageSwitch from '@/components/LanguageSwitch'
 import ThemeSwitch from '@/components/ThemeSwitch'
@@ -27,13 +28,6 @@ export function AppLayout() {
   useEffect(() => {
     setDrawer(false)
   }, [location.pathname])
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setDrawer(false)
-    }
-    window.addEventListener('keydown', close)
-    return () => window.removeEventListener('keydown', close)
-  }, [])
 
   if (!mobile) {
     return (
@@ -57,14 +51,36 @@ export function AppLayout() {
             <Link to="/">
               <img src="/logo.svg" alt="Sun World" />
             </Link>
-            <SunButton
-              variant="icon"
-              size="icon"
-              aria-label="菜单"
-              onClick={() => setDrawer(true)}
+            <SunDialog
+              title="导航菜单"
+              open={drawer}
+              onOpenChange={setDrawer}
+              overlayClassName="drawer-overlay"
+              contentClassName="mob-drawer"
+              trigger={
+                <SunButton variant="icon" size="icon" aria-label="菜单">
+                  <SunIcon name="menu" />
+                </SunButton>
+              }
             >
-              <SunIcon name="menu" />
-            </SunButton>
+              <nav>
+                {[
+                  '/home',
+                  '/blog',
+                  '/canvas',
+                  '/aigc',
+                  '/tools',
+                  '/video',
+                  '/me',
+                ].map((path) => (
+                  <Link key={path} to={path}>
+                    {path.slice(1) || 'home'}
+                  </Link>
+                ))}
+              </nav>
+              <ThemeSwitch />
+              <LanguageSwitch />
+            </SunDialog>
           </header>
         )}
         <div className={`main-container ${meta.className ?? ''}`}>
@@ -84,39 +100,6 @@ export function AppLayout() {
             ))}
           </nav>
         )}
-        {drawer ? (
-          <>
-            <button
-              className="drawer-overlay"
-              aria-label="关闭菜单"
-              onClick={() => setDrawer(false)}
-            />
-            <aside
-              className="mob-drawer"
-              role="dialog"
-              aria-modal="true"
-              aria-label="导航菜单"
-            >
-              <nav>
-                {[
-                  '/home',
-                  '/blog',
-                  '/canvas',
-                  '/aigc',
-                  '/tools',
-                  '/video',
-                  '/me',
-                ].map((path) => (
-                  <Link key={path} to={path}>
-                    {path.slice(1) || 'home'}
-                  </Link>
-                ))}
-              </nav>
-              <ThemeSwitch />
-              <LanguageSwitch />
-            </aside>
-          </>
-        ) : null}
       </div>
     </div>
   )
