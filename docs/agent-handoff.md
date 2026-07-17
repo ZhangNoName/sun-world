@@ -4,6 +4,17 @@ This file is the short active handoff entrypoint. Keep it concise so branch
 merges stay easy. Put branch-specific work in docs/handoff/branches/ and move
 older completed checkpoints to docs/handoff/archive/.
 
+## Current Local Work
+
+- 2026-07-17: login and registration layout polish on local `main`; not
+  committed, pushed, or deployed.
+  - Added `AuthPageShell.vue` for a responsive, isolated authentication layout.
+  - `/login` and `/register` now hide global shell chrome and use a full-viewport
+    route wrapper; login failures render inside the form rather than as a global
+    error toast.
+  - Verification passed: `corepack pnpm exec node scripts/check-auth-page-layout.mjs`,
+    `corepack pnpm -C apps/web exec vue-tsc --noEmit`, and `corepack pnpm check:web`.
+
 ## Active Branches
 
 - feat/aigc-ui-polish: see

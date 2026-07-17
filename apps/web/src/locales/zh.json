@@ -48,8 +48,8 @@
   },
   "login": {
     "title": "登录",
-    "account": "手机号或邮箱",
-    "accountPlaceholder": "请输入手机号或邮箱",
+    "account": "邮箱",
+    "accountPlaceholder": "请输入邮箱",
     "password": "密码",
     "passwordPlaceholder": "请输入密码",
     "loginBtn": "登录",
@@ -57,8 +57,8 @@
     "forgotPassword": "忘记密码？",
     "loginSuccess": "登录成功",
     "loginFailed": "登录失败，请检查账号密码",
-    "accountRequired": "请输入账号和密码",
-    "accountRequiredMessage": "请输入手机号或邮箱",
+    "accountRequired": "请输入邮箱和密码",
+    "accountRequiredMessage": "请输入邮箱",
     "passwordRequiredMessage": "请输入密码"
   },
   "register": {

@@ -228,6 +228,11 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+.main-container.auth-page-wrapper {
+  padding: 0;
+  overflow: auto;
+}
+
 /* ---- Bottom navigation ---- */
 .mob-footer {
   flex-shrink: 0;

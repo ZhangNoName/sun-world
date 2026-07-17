@@ -5,12 +5,6 @@ const RegisterPage = () => import('@/pages/login/register.vue')
 const MePage = () => import('@/pages/me/me.vue')
 const QqCallbackPage = () => import('@/pages/login/qqCb.vue')
 
-/**
- * Account module - authentication, profile, and user settings.
- *
- * Phase 1 references existing login/register/me pages.
- * Future phases will add profile management and OAuth flows.
- */
 export const accountModule: AppModule = {
   id: 'account',
   name: '账户',
@@ -18,12 +12,24 @@ export const accountModule: AppModule = {
     {
       path: '/login',
       component: LoginPage,
-      meta: { module: 'account', title: '登录 - Sun World' },
+      meta: {
+        module: 'account',
+        title: '登录 - Sun World',
+        hideHeader: true,
+        hideFooter: true,
+        className: 'auth-page-wrapper',
+      },
     },
     {
       path: '/register',
       component: RegisterPage,
-      meta: { module: 'account', title: '注册 - Sun World' },
+      meta: {
+        module: 'account',
+        title: '注册 - Sun World',
+        hideHeader: true,
+        hideFooter: true,
+        className: 'auth-page-wrapper',
+      },
     },
     {
       path: '/me',
@@ -36,9 +42,7 @@ export const accountModule: AppModule = {
       meta: { module: 'account', title: 'QQ 登录 - Sun World' },
     },
   ],
-  nav: [
-    { label: 'nav.account', path: '/me', icon: 'me' },
-  ],
+  nav: [{ label: 'nav.account', path: '/me', icon: 'me' }],
   seo: {
     title: '账户 - Sun World',
     description: '管理 Sun World 登录、个人资料和第三方授权。',

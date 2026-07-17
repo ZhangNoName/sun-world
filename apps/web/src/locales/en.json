@@ -48,8 +48,8 @@
   },
   "login": {
     "title": "Login",
-    "account": "Phone or Email",
-    "accountPlaceholder": "Please enter phone or email",
+    "account": "Email",
+    "accountPlaceholder": "Please enter your email",
     "password": "Password",
     "passwordPlaceholder": "Please enter password",
     "loginBtn": "Login",
@@ -57,8 +57,8 @@
     "forgotPassword": "Forgot password?",
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed, please check your account and password",
-    "accountRequired": "Please enter account and password",
-    "accountRequiredMessage": "Please enter phone or email",
+    "accountRequired": "Please enter your email and password",
+    "accountRequiredMessage": "Please enter your email",
     "passwordRequiredMessage": "Please enter password"
   },
   "register": {

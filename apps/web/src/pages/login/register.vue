@@ -1,36 +1,29 @@
 <script setup lang="ts" name="register">
-import { reactive, ref, computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { SunInput } from '@sun-world/ui/input'
 import { SunButton } from '@sun-world/ui/button'
-import { ElMessage, ElForm, ElFormItem } from 'element-plus'
+import { ElForm, ElFormItem, ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
+import AuthPageShell from './AuthPageShell.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 
 const form = reactive({
-  password: '123456',
-  confirmPassword: '123456',
-  name: '11111',
-  email: '111@111.com',
-  phone: '17683242528',
+  password: '',
+  confirmPassword: '',
+  name: '',
+  email: '',
+  phone: '',
 })
 
 const loading = ref(false)
 const { register } = useAuthStore()
 
 const rules = computed<FormRules>(() => ({
-  username: [
-    {
-      required: true,
-      message: t('register.usernameRequired'),
-      trigger: 'blur',
-    },
-    { min: 3, max: 20, message: t('register.usernameLength'), trigger: 'blur' },
-  ],
   password: [
     {
       required: true,
@@ -46,12 +39,16 @@ const rules = computed<FormRules>(() => ({
       trigger: 'blur',
     },
     {
-      validator: (rule: any, value: string, callback: any) => {
-        if (value !== form.password) {
-          callback(new Error(t('register.passwordMismatch')))
-        } else {
-          callback()
-        }
+      validator: (
+        _rule: unknown,
+        value: string,
+        callback: (error?: Error) => void
+      ) => {
+        callback(
+          value === form.password
+            ? undefined
+            : new Error(t('register.passwordMismatch'))
+        )
       },
       trigger: 'blur',
     },
@@ -103,12 +100,13 @@ async function handleRegister() {
       })
       if (res) {
         ElMessage.success(t('register.registerSuccess'))
-        // 注册成功后直接跳转到首页（因为已经登录了）
         router.push({ path: '/' })
       }
-    } catch (error: any) {
-      ElMessage.error(error?.message || t('register.registerFailed'))
-      console.error('注册失败', error)
+    } catch (error: unknown) {
+      ElMessage.error(
+        error instanceof Error ? error.message : t('register.registerFailed')
+      )
+      console.error('Registration failed', error)
     } finally {
       loading.value = false
     }
@@ -121,170 +119,142 @@ function goToLogin() {
 </script>
 
 <template>
-  <div class="register-container">
-    <div class="register-box">
-      <div class="register-header">
-        <h2 class="title">{{ $t('register.title') }}</h2>
-      </div>
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        class="register-form"
-        label-position="top"
+  <AuthPageShell
+    eyebrow="Sun World"
+    headline="加入 Sun World"
+    description="创建账号，开始记录、分享和探索。"
+    :form-title="$t('register.title')"
+    form-description="填写基础信息，即可创建新的账号。"
+  >
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      class="register-form"
+      label-position="top"
+      @submit.prevent="handleRegister"
+    >
+      <el-form-item :label="$t('register.nickname')" prop="name">
+        <SunInput
+          v-model="form.name"
+          autocomplete="nickname"
+          :placeholder="$t('register.nicknamePlaceholder')"
+          size="lg"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item :label="$t('register.phone')" prop="phone">
+        <SunInput
+          v-model="form.phone"
+          autocomplete="tel"
+          :placeholder="$t('register.phonePlaceholder')"
+          size="lg"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item :label="$t('register.email')" prop="email">
+        <SunInput
+          v-model="form.email"
+          type="email"
+          autocomplete="email"
+          :placeholder="$t('register.emailPlaceholder')"
+          size="lg"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item :label="$t('register.password')" prop="password">
+        <SunInput
+          v-model="form.password"
+          type="password"
+          autocomplete="new-password"
+          :placeholder="$t('register.passwordPlaceholder')"
+          size="lg"
+          show-password
+          clearable
+        />
+      </el-form-item>
+      <el-form-item
+        :label="$t('register.confirmPassword')"
+        prop="confirmPassword"
       >
-        <el-form-item :label="$t('register.nickname')" prop="name">
-          <SunInput
-            v-model="form.name"
-            :placeholder="$t('register.nicknamePlaceholder')"
-            size="lg"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item :label="$t('register.phone')" prop="phone">
-          <SunInput
-            v-model="form.phone"
-            :placeholder="$t('register.phonePlaceholder')"
-            size="lg"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item :label="$t('register.email')" prop="email">
-          <SunInput
-            v-model="form.email"
-            type="email"
-            :placeholder="$t('register.emailPlaceholder')"
-            size="lg"
-            clearable
-          />
-        </el-form-item>
-
-        <el-form-item :label="$t('register.password')" prop="password">
-          <SunInput
-            v-model="form.password"
-            type="password"
-            :placeholder="$t('register.passwordPlaceholder')"
-            size="lg"
-            show-password
-            clearable
-          />
-        </el-form-item>
-        <el-form-item
-          :label="$t('register.confirmPassword')"
-          prop="confirmPassword"
+        <SunInput
+          v-model="form.confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          :placeholder="$t('register.confirmPasswordPlaceholder')"
+          size="lg"
+          show-password
+          clearable
+          @keyup.enter="handleRegister"
+        />
+      </el-form-item>
+      <el-form-item>
+        <SunButton
+          variant="primary"
+          size="lg"
+          :loading="loading"
+          class="register-btn"
+          @click="handleRegister"
         >
-          <SunInput
-            v-model="form.confirmPassword"
-            type="password"
-            :placeholder="$t('register.confirmPasswordPlaceholder')"
-            size="lg"
-            show-password
-            clearable
-          />
-        </el-form-item>
-
-        <el-form-item>
-          <SunButton
-            variant="primary"
-            size="lg"
-            :loading="loading"
-            class="register-btn"
-            @click="handleRegister"
-          >
-            {{ $t('register.registerBtn') }}
-          </SunButton>
-        </el-form-item>
-      </el-form>
-      <div class="register-footer">
-        <span>{{ $t('register.hasAccount') }}</span>
-        <a href="#" @click.prevent="goToLogin">
-          {{ $t('register.goToLogin') }}
-        </a>
-      </div>
+          {{ $t('register.registerBtn') }}
+        </SunButton>
+      </el-form-item>
+    </el-form>
+    <div class="register-footer">
+      <span>{{ $t('register.hasAccount') }}</span>
+      <a href="/login" @click.prevent="goToLogin">
+        {{ $t('register.goToLogin') }}
+      </a>
     </div>
-  </div>
+  </AuthPageShell>
 </template>
 
 <style scoped>
-.register-container {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.register-box {
-  background: var(--color-surface-card);
-  padding: var(--space-10) var(--space-8);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.register-header {
-  text-align: center;
-  margin-bottom: var(--space-8);
-  width: 100%;
-}
-
-.logo {
-  width: 64px;
-  height: 64px;
-  margin-bottom: var(--space-4);
-}
-
-.title {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
 .register-form {
   width: 100%;
 }
 
 .register-form :deep(.el-form-item) {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .register-form :deep(.el-form-item__label) {
-  font-weight: 500;
-  color: var(--color-text-regular);
+  padding-bottom: var(--space-1);
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 .register-form :deep(.el-input) {
   width: 100%;
 }
 
-.register-btn {
+.register-form :deep(.sun-ui-field),
+.register-form :deep(.sun-input-wrap),
+.register-form :deep(.sun-input) {
+  display: block;
   width: 100%;
-  margin-top: var(--space-2);
+}
+
+:deep(.register-btn) {
+  width: 100%;
+  margin-top: var(--space-1);
 }
 
 .register-footer {
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: var(--font-size-md);
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
   color: var(--color-text-secondary);
-  margin-top: var(--space-4);
-}
-
-.register-footer span {
-  margin-right: var(--space-2);
+  font-size: var(--font-size-md);
 }
 
 .register-footer a {
   color: var(--color-brand);
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .register-footer a:hover {
