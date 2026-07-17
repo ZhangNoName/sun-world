@@ -28,6 +28,11 @@ function run(label, command, args, options = {}) {
   console.log(`==> ${label} passed.`)
 }
 
+run('React migration transition toolchain check', 'node', [
+  'scripts/check-react-migration-toolchain.mjs',
+  '--transition',
+])
+
 run('Frontend API contract route usage check', 'node', [
   'scripts/check-contract-route-usage.mjs',
 ])
