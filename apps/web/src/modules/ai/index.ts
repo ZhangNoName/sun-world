@@ -1,5 +1,8 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
+
+const importPage = () => import('./pages/AigcPage')
+const page = () =>
+  importPage().then((module) => ({ Component: module.AigcPage }))
 
 export const aiModule: AppModule = {
   id: 'ai',
@@ -7,7 +10,7 @@ export const aiModule: AppModule = {
   routes: [
     {
       path: '/aigc',
-      Component: createPendingRouteComponent('AI 对话'),
+      lazy: page,
       meta: {
         module: 'ai',
         title: 'AI 对话 - Sun World',
@@ -22,4 +25,5 @@ export const aiModule: AppModule = {
     title: 'AI 对话 - Sun World',
     description: '使用 AI 辅助创作与问答。',
   },
+  preload: importPage,
 }

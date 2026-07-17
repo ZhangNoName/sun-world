@@ -14,6 +14,7 @@ export interface AiStreamOptions {
   onMessage: (content: string) => void
   onComplete: () => void
   onError: (error: Error) => void
+  signal?: AbortSignal
 }
 
 export type AiRole = 'user' | 'assistant' | 'system'
