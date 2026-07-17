@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import '@sun-world/ui/styles.css'
+import '@sun-world/ui/styles/index.css'
 import './style.css'
 import './text.css'
 

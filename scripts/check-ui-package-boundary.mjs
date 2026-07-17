@@ -60,7 +60,7 @@ function formatPath(path) {
   return normalize(relative(repoRoot, path))
 }
 
-const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx|vue)$/.test(path))
+const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx)$/.test(path))
 const uiImportPattern =
   /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/ui(?:\/[^'"]*)?)['"]/g
 

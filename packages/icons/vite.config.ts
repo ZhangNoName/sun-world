@@ -13,13 +13,7 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist/types',
         insertTypesEntry: true,
         include: ['src/**/*.ts', 'src/**/*.tsx'],
-        exclude: [
-          'src/**/*.spec.*',
-          'src/test/**',
-          'src/vue/**',
-          'src/icons/**',
-          'src/main.ts',
-        ],
+        exclude: ['src/**/*.spec.*', 'src/test/**', 'src/main.tsx'],
       }),
     ],
 
@@ -47,7 +41,7 @@ export default defineConfig(({ mode }) => {
         },
 
     optimizeDeps: {
-      entries: isLib ? ['src/index.ts'] : ['main.ts'],
+      entries: isLib ? ['src/index.ts'] : ['src/main.tsx'],
     },
 
     server: { port: 2333 },

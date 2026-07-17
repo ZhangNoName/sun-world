@@ -1,9 +1,16 @@
+import { useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { CurrentLocationArea, HeFengWeatherData } from '@/util'
+import {
+  CurrentLocationArea,
+  HeFengWeatherData,
+  getWeatherVersion,
+  subscribeWeather,
+} from '@/util'
 
 export function WeatherCard() {
   const { t } = useTranslation()
+  useSyncExternalStore(subscribeWeather, getWeatherVersion, getWeatherVersion)
   const weather = HeFengWeatherData.now
   return (
     <section className="weather-card" aria-label="当前天气">

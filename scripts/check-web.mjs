@@ -28,9 +28,9 @@ function run(label, command, args, options = {}) {
   console.log(`==> ${label} passed.`)
 }
 
-run('React migration transition toolchain check', 'node', [
+run('React migration cutover toolchain check', 'node', [
   'scripts/check-react-migration-toolchain.mjs',
-  '--transition',
+  '--cutover',
 ])
 
 run('Frontend API contract route usage check', 'node', [
@@ -92,13 +92,14 @@ run('Contracts generate script check', 'corepack', [
   'check:contracts:generate',
 ])
 
-run('Frontend type check', 'corepack', [
+run('Frontend type check', 'corepack', ['pnpm', '-C', 'apps/web', 'run', 'typecheck'])
+
+run('Frontend React tests', 'corepack', [
   'pnpm',
   '-C',
   'apps/web',
-  'exec',
-  'vue-tsc',
-  '--noEmit',
+  'run',
+  'test:react',
 ])
 
 run('Frontend build check', 'corepack', ['pnpm', '-C', 'apps/web', 'build'], {
