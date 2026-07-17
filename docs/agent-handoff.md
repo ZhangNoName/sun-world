@@ -6,10 +6,15 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
-- 2026-07-17: full React 19 + shadcn/Radix frontend rebuild is complete on
-  `refactor/react-shadcn`; not pushed, merged, or deployed. See
-  `docs/handoff/branches/refactor-react-shadcn.md` for commits, verification,
-  browser evidence, and the next merge/deploy step.
+- 2026-07-17: the React development standard and repository code review are
+  complete on local `main`. The standard is
+  `docs/react-development-guidelines.md`; the findings-first review is
+  `docs/reviews/2026-07-17-react-guidelines-review.md` (no P1, six P2, three
+  P3). `corepack pnpm check` passed 15/15. This documentation checkpoint has
+  not been pushed or deployed.
+- 2026-07-17: the full React 19 + shadcn/Radix frontend rebuild has been merged
+  into `main`. Historical implementation evidence remains in
+  `docs/handoff/branches/refactor-react-shadcn.md`.
 
 ## Active Branches
 

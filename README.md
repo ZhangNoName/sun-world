@@ -94,6 +94,8 @@ bash scripts/check-all.sh   # 完整检查 / Full verification
 
 - [当前状态 / Current State](docs/current-state.md)
 - [工程规范 / Engineering Conventions](docs/engineering-conventions.md)
+- [React 开发规范 / React Development Guidelines](docs/react-development-guidelines.md)
+- [贡献指南 / Contributing Guide](CONTRIBUTING.md)
 - [项目架构 / Project Architecture](docs/architecture/project-architecture.md)
 - [前端平台基础 / Frontend Platform Foundation](docs/architecture/frontend-platform-foundation.md)
 - [前端主题系统 / Frontend Theme System](docs/architecture/frontend-theme-system.md)

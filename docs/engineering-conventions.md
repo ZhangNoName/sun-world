@@ -51,6 +51,18 @@ These conventions capture the default coding habits for this repository. Prefer 
   Python formatting should be introduced separately through a Python-native
   formatter such as Ruff.
 
+## React And TypeScript
+
+- `docs/react-development-guidelines.md` is the canonical standard for React,
+  Hooks, TypeScript, component structure, accessibility, frontend testing, and
+  changed-code migration.
+- New or modified frontend code must follow that standard. Historical naming
+  and structure should be improved when touched without unrelated bulk rewrites.
+- This repository-wide document remains authoritative for Git, toolchain,
+  deployment, secrets, data handling, verification, and agent handoff.
+- A React rule described as a tooling follow-up is not an automated CI gate
+  until the corresponding repository configuration enables it.
+
 ## Toolchain
 
 - Use the repository-declared toolchain for project commands. For pnpm, this
