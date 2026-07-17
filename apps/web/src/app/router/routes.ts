@@ -1,26 +1,26 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
+import { lazy } from 'react'
 import type { AppRouteObject } from '@/modules/types'
 
+const GameTilesPage = lazy(() => import('@/pages/gameTiles'))
+const ToolsPage = lazy(() => import('@/pages/tools/tools.page'))
+const KeepPage = lazy(() => import('@/pages/keep/keep'))
+const NotFound = lazy(() => import('@/router/NotFound'))
 export const routes: AppRouteObject[] = [
   {
     path: '/game_tiles',
-    Component: createPendingRouteComponent('游戏切片'),
-    meta: { title: '游戏 - Sun World' },
+    Component: GameTilesPage,
+    meta: { title: '游戏瓦片 - Sun World' },
   },
-  {
-    path: '/tools',
-    Component: createPendingRouteComponent('工具'),
-    meta: { title: '工具 - Sun World' },
-  },
+  { path: '/tools', Component: ToolsPage, meta: { title: '工具 - Sun World' } },
   {
     path: '/keep',
-    Component: createPendingRouteComponent('收藏'),
-    meta: { title: '收藏 - Sun World' },
+    Component: KeepPage,
+    meta: { title: 'TCX 生成器 - Sun World', noIndex: true },
   },
   {
     path: '*',
     id: 'not-found',
-    Component: createPendingRouteComponent('页面未找到'),
+    Component: NotFound,
     meta: { title: '页面未找到 - Sun World', noIndex: true },
   },
 ]

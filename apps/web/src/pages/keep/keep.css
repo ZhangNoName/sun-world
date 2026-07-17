@@ -1,0 +1,24 @@
+.keep-page {
+  display: grid;
+  place-items: start center;
+  min-height: 70vh;
+  padding: var(--space-6);
+}
+.keep-page section {
+  width: min(100%, 620px);
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-component);
+}
+.keep-page h1 {
+  margin-top: 0;
+}
+.keep-page p {
+  color: var(--text-secondary);
+}
+.keep-form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}

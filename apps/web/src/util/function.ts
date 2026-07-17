@@ -1,145 +1,116 @@
-import moment from 'moment'
-/**
- * 格式化日期字符串
- *
- * @param {string} s - 需要格式化的日期字符串
- * @param {string} format - 目标日期格式，默认为 yyyy-MM-dd
- * @returns {string} 格式化后的日期字符串
- *
- * @example
- * FormatDate('2023-11-25T12:00:00Z', 'YYYY年MM月DD日') // 返回 '2023年11月25日'
- */
-export const formatDate = (s: string, format: string = 'yyyy-MM-DD HH:mm') => {
-  return moment(s).format(format)
+export function formatDate(value: string, format = 'yyyy-MM-DD HH:mm') {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  const values: Record<string, string> = {
+    yyyy: String(date.getFullYear()),
+    YYYY: String(date.getFullYear()),
+    MM: String(date.getMonth() + 1).padStart(2, '0'),
+    DD: String(date.getDate()).padStart(2, '0'),
+    HH: String(date.getHours()).padStart(2, '0'),
+    mm: String(date.getMinutes()).padStart(2, '0'),
+    ss: String(date.getSeconds()).padStart(2, '0'),
+  }
+  return format.replace(
+    /yyyy|YYYY|MM|DD|HH|mm|ss/g,
+    (token) => values[token] ?? token
+  )
 }
-// 下载图像并压缩成 ZIP 文件
-export const saveTilesAsZip = async (
-  tiles: {
-    left: number
-    top: number
-    image: string
-  }[][],
-  zipFileName: string = 'tiles.zip'
-) => {
+
+export interface ExportTile {
+  left: number
+  top: number
+  image: string
+}
+
+export async function saveTilesAsZip(
+  tiles: ExportTile[][],
+  zipFileName = 'tiles.zip',
+  tileSize?: { width: number; height: number }
+) {
   const { default: JSZip } = await import('jszip')
-  const zip = new JSZip() // 创建新的 ZIP 文件
-  // 遍历瓦片数据，并获取行和列的索引
-  for (let rowIndex = 0; rowIndex < tiles.length; rowIndex++) {
-    const row = tiles[rowIndex]
-
-    // 遍历每一行的瓦片
-    for (let colIndex = 0; colIndex < row.length; colIndex++) {
-      const tile = row[colIndex]
-
-      if (tile.image) {
-        const fileName = `${rowIndex + 1}_${colIndex + 1}.png` // 使用瓦片的坐标作为文件名
-
-        try {
-          // 将 Base64 编码的图片转换为 Blob
-          const blob = dataURItoBlob(tile.image)
-          // 将 Blob 数据添加到 ZIP 文件
-          zip.file(fileName, blob)
-        } catch (error) {
-          console.error('Error converting data URI to Blob:', error)
-        }
-      }
+  const zip = new JSZip()
+  for (let row = 0; row < tiles.length; row += 1) {
+    for (let column = 0; column < tiles[row].length; column += 1) {
+      const tile = tiles[row][column]
+      if (!tile.image) continue
+      const blob = tileSize
+        ? await cropImage(
+            tile.image,
+            tile.left,
+            tile.top,
+            tileSize.width,
+            tileSize.height
+          )
+        : dataUriToBlob(tile.image)
+      zip.file(`${row + 1}_${column + 1}.png`, blob)
     }
   }
-
-  // 生成 ZIP 文件并下载
-  const zipBlob = await zip.generateAsync({ type: 'blob' })
-
-  // 创建一个临时的下载链接并触发下载
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(zipBlob)
-  link.href = url
-  link.download = zipFileName // 设置下载文件名
-  link.click() // 触发点击事件下载文件
-
-  // 清理 URL 对象
-  URL.revokeObjectURL(url)
+  const blob = await zip.generateAsync({ type: 'blob' })
+  downloadBlob(blob, zipFileName)
 }
 
-export const saveTileImages = (
-  tiles: {
-    left: number
-    top: number
-    image: string
-  }[][],
-  batchSize: number = 5 // 每批次最多下载多少个文件
-) => {
-  let index = 0
-
-  const downloadBatch = () => {
-    const currentBatch: any[] = []
-    for (let i = 0; i < batchSize && index < tiles.length; i++) {
-      const row = tiles[index]
-      row.forEach((tile, colIndex) => {
-        if (tile.image) {
-          currentBatch.push({
-            fileName: `${index + 1}_${colIndex + 1}.png`,
-            image: tile.image,
-          })
-        }
-      })
-      index++
-    }
-
-    // 执行下载操作
-    currentBatch.forEach(({ fileName, image }) => {
-      downloadImage(image, fileName)
-    })
-
-    // 如果还有更多批次，则延迟下载下一批
-    if (index < tiles.length) {
-      setTimeout(downloadBatch, 1500) // 延迟500ms再继续下一批次
-    }
-  }
-
-  // 启动第一次下载
-  downloadBatch()
+export function saveTileImages(tiles: ExportTile[][]) {
+  tiles.flat().forEach((tile, index) => {
+    if (tile.image) downloadBlob(dataUriToBlob(tile.image), `${index + 1}.png`)
+  })
 }
 
-// 下载图像到本地（模拟下载）
-const downloadImage = (imageData: string, fileName: string) => {
-  // 创建一个 Blob 对象
-  const blob = dataURItoBlob(imageData)
-
-  // 创建一个链接元素
+export function downloadUrl(url: string, fileName: string) {
   const link = document.createElement('a')
-
-  // 使用 URL.createObjectURL 创建一个可以下载的 URL
-  const url = URL.createObjectURL(blob)
   link.href = url
-  link.download = fileName // 设置下载文件名
-
-  // 触发点击事件，下载文件
+  link.download = fileName
   link.click()
+}
 
-  // 清理 URL 对象
+export function saveTilesJson(value: unknown, fileName = 'tiles.json') {
+  downloadBlob(
+    new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }),
+    fileName
+  )
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  downloadUrl(url, fileName)
   URL.revokeObjectURL(url)
 }
 
-const dataURItoBlob = (dataURI: string) => {
-  // 确保 dataURI 是有效的，并且包含 Base64 编码的数据
-  const base64Pattern = /^data:([A-Za-z-+/]+)(?:;base64)?,(.+)$/
-  const match = dataURI.match(base64Pattern)
+async function cropImage(
+  url: string,
+  left: number,
+  top: number,
+  width: number,
+  height: number
+) {
+  const image = await loadImage(url)
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('Canvas 2D context is unavailable')
+  context.drawImage(image, left, top, width, height, 0, 0, width, height)
+  return new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error('Tile image export failed')),
+      'image/png'
+    )
+  )
+}
 
-  if (!match) {
-    throw new Error('Invalid data URI format')
-  }
+function loadImage(url: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Image could not be loaded'))
+    image.src = url
+  })
+}
 
-  const mimeString = match[1] // MIME 类型
-  const byteString = atob(match[2]) // Base64 编码的图像数据
-
-  const arrayBuffer = new ArrayBuffer(byteString.length)
-  const uintArray = new Uint8Array(arrayBuffer)
-
-  // 将 Base64 数据转换为二进制
-  for (let i = 0; i < byteString.length; i++) {
-    uintArray[i] = byteString.charCodeAt(i)
-  }
-
-  // 返回一个 Blob 对象
-  return new Blob([arrayBuffer], { type: mimeString })
+function dataUriToBlob(dataUri: string) {
+  const match = dataUri.match(/^data:([^;,]+)(;base64)?,(.*)$/)
+  if (!match) throw new Error('Invalid data URI format')
+  const raw = match[2] ? atob(match[3]) : decodeURIComponent(match[3])
+  const bytes = Uint8Array.from(raw, (character) => character.charCodeAt(0))
+  return new Blob([bytes], { type: match[1] })
 }
