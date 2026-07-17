@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchBlogCategories, fetchBlogPage, fetchBlogTags } from '../api'
 import type {
   BlogCategory,
@@ -10,12 +10,25 @@ import type {
 
 const PAGE_SIZE = 10
 
+interface BlogQueryState {
+  keyword: string
+  sortBy: BlogSortBy
+  sortOrder: BlogSortOrder
+  page: number
+  revision: number
+}
+
+const initialQuery: BlogQueryState = {
+  keyword: '',
+  sortBy: 'updated_at',
+  sortOrder: 'desc',
+  page: 1,
+  revision: 0,
+}
+
 export function useBlogManagement() {
   const [keyword, setKeyword] = useState('')
-  const [activeKeyword, setActiveKeyword] = useState('')
-  const [sortBy, setSortBy] = useState<BlogSortBy>('updated_at')
-  const [sortOrder, setSortOrder] = useState<BlogSortOrder>('desc')
-  const [page, setPage] = useState(1)
+  const [query, setQuery] = useState(initialQuery)
   const [total, setTotal] = useState(0)
   const [items, setItems] = useState<BlogRawItem[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
@@ -23,68 +36,91 @@ export function useBlogManagement() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
-
-  const loadPage = useCallback(
-    async (nextPage: number, query = activeKeyword) => {
-      setLoading(true)
-      setErrorMessage('')
-      try {
-        const response = await fetchBlogPage(nextPage, PAGE_SIZE, {
-          keyword: query || undefined,
-          sortBy,
-          sortOrder,
-        })
-        setItems(response.list ?? [])
-        setPage(response.page ?? nextPage)
-        setTotal(response.total ?? 0)
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : '博客列表加载失败'
-        )
-      } finally {
-        setLoading(false)
-      }
-    },
-    [activeKeyword, sortBy, sortOrder]
-  )
+  const requestId = useRef(0)
 
   useEffect(() => {
+    let active = true
     void Promise.all([fetchBlogCategories(), fetchBlogTags()])
       .then(([nextCategories, nextTags]) => {
+        if (!active) return
         setCategories(nextCategories)
         setTags(nextTags)
       })
       .catch(() => undefined)
-    void loadPage(1)
-  }, [loadPage])
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const currentId = ++requestId.current
+    setLoading(true)
+    setErrorMessage('')
+    void fetchBlogPage(query.page, PAGE_SIZE, {
+      keyword: query.keyword || undefined,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+    })
+      .then((response) => {
+        if (currentId !== requestId.current) return
+        setItems(response.list ?? [])
+        setTotal(response.total ?? 0)
+      })
+      .catch((error: unknown) => {
+        if (currentId !== requestId.current) return
+        setErrorMessage(
+          error instanceof Error ? error.message : '博客列表加载失败'
+        )
+      })
+      .finally(() => {
+        if (currentId === requestId.current) setLoading(false)
+      })
+    return () => {
+      requestId.current += 1
+    }
+  }, [query])
 
   const submit = useCallback(async () => {
-    const query = keyword.trim()
-    if (query.length > 30) {
+    const nextKeyword = keyword.trim()
+    if (nextKeyword.length > 30) {
       setValidationMessage('关键词不能超过 30 个字符')
       return
     }
     setValidationMessage('')
-    setActiveKeyword(query)
-    await loadPage(1, query)
-  }, [keyword, loadPage])
+    setQuery((current) => ({
+      ...current,
+      keyword: nextKeyword,
+      page: 1,
+      revision: current.revision + 1,
+    }))
+  }, [keyword])
+
   const reset = useCallback(async () => {
     setKeyword('')
-    setActiveKeyword('')
     setValidationMessage('')
-    await loadPage(1, '')
-  }, [loadPage])
-  const changePage = useCallback((next: number) => loadPage(next), [loadPage])
+    setQuery((current) => ({
+      ...current,
+      keyword: '',
+      page: 1,
+      revision: current.revision + 1,
+    }))
+  }, [])
+
+  const changePage = useCallback(async (page: number) => {
+    setQuery((current) => ({ ...current, page }))
+  }, [])
 
   return {
     keyword,
     setKeyword,
-    activeKeyword,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    page,
+    activeKeyword: query.keyword,
+    sortBy: query.sortBy,
+    setSortBy: (sortBy: BlogSortBy) =>
+      setQuery((current) => ({ ...current, sortBy, page: 1 })),
+    sortOrder: query.sortOrder,
+    setSortOrder: (sortOrder: BlogSortOrder) =>
+      setQuery((current) => ({ ...current, sortOrder, page: 1 })),
+    page: query.page,
     pageSize: PAGE_SIZE,
     total,
     items,
@@ -96,6 +132,10 @@ export function useBlogManagement() {
     submit,
     reset,
     changePage,
-    refresh: () => loadPage(page),
+    refresh: async () =>
+      setQuery((current) => ({
+        ...current,
+        revision: current.revision + 1,
+      })),
   }
 }
