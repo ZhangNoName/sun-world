@@ -4,6 +4,7 @@ import { SunButton } from '@sun-world/ui/button'
 import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 
 import { toast } from '@sun-world/ui/toast'
+import { useViewportWidth } from '@/shared/browser/viewport'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useBlogList } from '../composables/useBlogList'
 import type { BlogSortBy, BlogSortOrder } from '../types'
@@ -17,7 +18,7 @@ export function BlogHomeFeed() {
   const [sort, setSort] = useState('updated_at:desc')
   const [showTop, setShowTop] = useState(false)
   const [mode, setMode] = useState<'list' | 'waterfall'>('list')
-  const [width, setWidth] = useState(window.innerWidth)
+  const width = useViewportWidth()
   const loaderRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,12 +34,6 @@ export function BlogHomeFeed() {
     const onScroll = () => setShowTop(Boolean(root && root.scrollTop > 360))
     root?.addEventListener('scroll', onScroll, { passive: true })
     return () => root?.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const resize = () => setWidth(window.innerWidth)
-    window.addEventListener('resize', resize)
-    return () => window.removeEventListener('resize', resize)
   }, [])
 
   useEffect(() => {

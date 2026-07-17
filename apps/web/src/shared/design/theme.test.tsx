@@ -14,4 +14,14 @@ describe('ThemeProvider', () => {
     expect(localStorage.getItem('theme')).toBe('sun-light')
     expect(document.documentElement).toHaveClass('sun-light')
   })
+
+  it('falls back to the light theme when storage access is rejected', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError')
+    })
+
+    expect(() =>
+      renderHook(() => useTheme(), { wrapper: ThemeProvider })
+    ).not.toThrow()
+  })
 })

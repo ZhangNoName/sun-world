@@ -1,5 +1,10 @@
 import { create } from 'zustand'
 
+import {
+  getServerViewportWidth,
+  getViewportWidth,
+} from '@/shared/browser/viewport'
+
 export const DEVICE_TYPE = {
   MOBILE: 'mobile',
   WEB: 'web',
@@ -24,12 +29,15 @@ interface DeviceState {
 }
 
 function isTelegramMiniApp() {
-  return Boolean(window.Telegram?.WebApp)
+  return typeof window !== 'undefined' && Boolean(window.Telegram?.WebApp)
 }
 
 function calculateDevice(userAgent: string, screenWidth: number) {
   const tma = isTelegramMiniApp()
-  const touchMac = /Macintosh/i.test(userAgent) && 'ontouchend' in document
+  const touchMac =
+    /Macintosh/i.test(userAgent) &&
+    typeof document !== 'undefined' &&
+    'ontouchend' in document
   const ipad = !tma && (/iPad/i.test(userAgent) || touchMac)
   const mobile =
     !ipad &&
@@ -58,21 +66,25 @@ function calculateDevice(userAgent: string, screenWidth: number) {
   }
 }
 
-const initialUserAgent = navigator.userAgent
-const initialScreenWidth = window.innerWidth
+const initialUserAgent =
+  typeof navigator === 'undefined' ? '' : navigator.userAgent
+const initialScreenWidth =
+  typeof window === 'undefined' ? getServerViewportWidth() : getViewportWidth()
 
 export const useDeviceStore = create<DeviceState>((set) => ({
   userAgent: initialUserAgent,
   screenWidth: initialScreenWidth,
   ...calculateDevice(initialUserAgent, initialScreenWidth),
   handleResize() {
-    const userAgent = navigator.userAgent
-    const screenWidth = window.innerWidth
+    const userAgent =
+      typeof navigator === 'undefined' ? '' : navigator.userAgent
+    const screenWidth = getViewportWidth()
     set({ userAgent, screenWidth, ...calculateDevice(userAgent, screenWidth) })
   },
 }))
 
 export function installDeviceListener() {
+  if (typeof window === 'undefined') return () => undefined
   const handleResize = () => useDeviceStore.getState().handleResize()
   handleResize()
   window.addEventListener('resize', handleResize)
