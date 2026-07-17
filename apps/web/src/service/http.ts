@@ -18,6 +18,7 @@ import {
 } from '@/shared/observability/request-id'
 import type { RequestTracingMeta } from '@/shared/observability/request-id'
 import { trackApiError, trackApiTiming } from '@/shared/telemetry'
+import { toast } from '@sun-world/ui/toast'
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -42,34 +43,8 @@ type AxiosErrorLike = {
 
 type MessageKind = 'warning' | 'error' | 'success'
 
-let elementMessagePromise:
-  | Promise<typeof import('element-plus')['ElMessage']>
-  | undefined
-
-function loadElementMessage() {
-  if (!elementMessagePromise) {
-    elementMessagePromise = Promise.all([
-      import('element-plus/es/components/message/style/css'),
-      import('element-plus'),
-    ]).then(([, elementPlus]) => elementPlus.ElMessage)
-  }
-
-  return elementMessagePromise
-}
-
 function showMessage(kind: MessageKind, message: string) {
-  void loadElementMessage()
-    .then((ElMessage) => {
-      ElMessage[kind](message)
-    })
-    .catch(() => {
-      if (kind === 'error') {
-        console.error(message)
-        return
-      }
-
-      console.warn(message)
-    })
+  toast[kind](message)
 }
 
 //创建axios实例
@@ -129,7 +104,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   function (response) {
     // token 在 cookie 中，不需要手动处理
-    const authStore = useAuthStore()
+    const authStore = useAuthStore.getState()
     authStore.syncExpireFromCookie?.()
 
     const body = response.data
@@ -294,8 +269,7 @@ function getAxiosErrorRequestId(error: unknown): string | undefined {
   return (
     readRequestIdFromHeaders(
       axiosError.response?.headers as Record<string, unknown> | undefined
-    ) ??
-    axiosError.config?.metadata?.requestId
+    ) ?? axiosError.config?.metadata?.requestId
   )
 }
 

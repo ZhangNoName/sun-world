@@ -1,47 +1,29 @@
+import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
 
-const ManagePage = () => import('@/pages/manage/index.vue')
-const AdminMetricsPage = () => import('./pages/AdminMetricsPage.vue')
-const AdminLogsPage = () => import('./pages/AdminLogsPage.vue')
-
-/**
- * Admin module - analytics, logs, settings dashboard.
- *
- * Registers the existing manage page and typed admin API entrypoints.
- * Dashboard views can consume the module API without reaching into
- * legacy service folders.
- */
 export const adminModule: AppModule = {
   id: 'admin',
   name: '管理',
   routes: [
     {
       path: '/manage',
-      component: ManagePage,
+      Component: createPendingRouteComponent('管理'),
       meta: { module: 'admin', title: '管理 - Sun World' },
     },
     {
       path: '/manage/metrics',
-      component: AdminMetricsPage,
-      meta: {
-        module: 'admin',
-        title: '后台指标 - Sun World',
-        description: '查看 Sun World 请求量、错误率、路由延迟和状态码分布。',
-      },
+      Component: createPendingRouteComponent('后台指标'),
+      meta: { module: 'admin', title: '后台指标 - Sun World' },
     },
     {
       path: '/manage/logs',
-      component: AdminLogsPage,
-      meta: { module: 'admin', title: 'Audit logs - Sun World', noIndex: true },
+      Component: createPendingRouteComponent('审计日志'),
+      meta: { module: 'admin', title: '审计日志 - Sun World', noIndex: true },
     },
   ],
   nav: [
     { label: 'nav.admin', path: '/manage', icon: 'admin' },
     { label: 'nav.adminMetrics', path: '/manage/metrics', icon: 'metrics' },
   ],
-  seo: {
-    title: '管理 - Sun World',
-    description: '查看 Sun World 后台数据、日志、指标和站点设置。',
-    noIndex: true,
-  },
+  seo: { title: '管理 - Sun World', noIndex: true },
 }

@@ -1,24 +1,11 @@
-/**
- * SEO / head management helpers.
- *
- * These utilities work with `@unhead/vue` to set page-level meta tags
- * from route metadata, component lifecycle hooks, or module defaults.
- *
- * Usage (in a page component):
- *   import { usePageMeta } from '@/shared/seo'
- *   usePageMeta({ title: 'My Page', description: '...' })
- */
+import { useEffect } from 'react'
 
-import { useHead } from '@unhead/vue'
-import { toValue } from 'vue'
-import type { MaybeRefOrGetter } from 'vue'
 import { API_BASE_URL, SITE_URL } from '@/shared/config'
 
-/** Default site-wide SEO values. */
 const DEFAULTS = {
   title: 'Sun World',
   description:
-    '尝试全栈开发, 精通vue ,react, 擅长React Native, Python, 熟练AIGC实践及代码编辑器深度解析的个人技术博客。',
+    '个人技术博客，记录前端、后端、React Native、Python、AIGC 与编辑器工程实践。',
   siteName: 'Sun World',
   locale: 'zh_CN',
 }
@@ -41,58 +28,11 @@ interface NormalizedPageMeta {
   noIndex: boolean
 }
 
-type PageMetaInputSource = MaybeRefOrGetter<PageMetaInput | undefined>
 type JsonLdObject = Record<string, unknown>
-type JsonLdInputSource = MaybeRefOrGetter<JsonLdObject | null | undefined>
 
-/**
- * Set page-level head metadata.
- *
- * Call from any component or composable. Values not provided fall back
- * to site-wide defaults.
- */
-export function usePageMeta(input: PageMetaInputSource = {}) {
-  useHead(() => {
-    const source = toValue(input) ?? {}
-    const title = source.title || DEFAULTS.title
-    const description = source.description || DEFAULTS.description
-    const canonical = source.canonical ?? SITE_URL
-    const ogType = source.ogType ?? 'website'
-
-    return {
-      title,
-      meta: [
-        { name: 'description', content: description },
-        // Open Graph
-        { property: 'og:title', content: title },
-        { property: 'og:description', content: description },
-        { property: 'og:type', content: ogType },
-        { property: 'og:url', content: canonical },
-        { property: 'og:site_name', content: DEFAULTS.siteName },
-        { property: 'og:locale', content: DEFAULTS.locale },
-        ...(source.ogImage
-          ? [{ property: 'og:image', content: source.ogImage }]
-          : []),
-        // Twitter Card
-        { name: 'twitter:card', content: 'summary' },
-        { name: 'twitter:title', content: title },
-        { name: 'twitter:description', content: description },
-        // Robots
-        ...(source.noIndex ? [{ name: 'robots', content: 'noindex' }] : []),
-      ],
-      link: [{ rel: 'canonical', href: canonical }],
-    }
-  })
-}
-
-/**
- * Build a canonical URL for a given path.
- */
 export function canonicalUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path
-
-  const normalized = path.startsWith('/') ? path : `/${path}`
-  return `${SITE_URL}${normalized}`
+  return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
 export function buildPageMetaFromRouteMeta(
@@ -100,157 +40,117 @@ export function buildPageMetaFromRouteMeta(
   path = '/'
 ): NormalizedPageMeta {
   return {
-    title: (meta.title as string) || DEFAULTS.title,
-    description: (meta.description as string) || DEFAULTS.description,
-    canonical: (meta.canonical as string) || canonicalUrl(path),
-    ogImage: meta.ogImage as string | undefined,
-    ogType: (meta.ogType as string) || 'website',
+    title: typeof meta.title === 'string' ? meta.title : DEFAULTS.title,
+    description:
+      typeof meta.description === 'string'
+        ? meta.description
+        : DEFAULTS.description,
+    canonical:
+      typeof meta.canonical === 'string' ? meta.canonical : canonicalUrl(path),
+    ogImage: typeof meta.ogImage === 'string' ? meta.ogImage : undefined,
+    ogType: typeof meta.ogType === 'string' ? meta.ogType : 'website',
     noIndex: Boolean(meta.noIndex),
   }
 }
 
-function upsertMeta(selector: string, attributes: Record<string, string>) {
-  const current = document.head.querySelector<HTMLMetaElement>(selector)
-  const element = current ?? document.createElement('meta')
-
-  for (const [name, value] of Object.entries(attributes)) {
+function upsertElement<K extends 'meta' | 'link'>(
+  tag: K,
+  selector: string,
+  attributes: Record<string, string>
+) {
+  const current = document.head.querySelector<HTMLElement>(selector)
+  const element = current ?? document.createElement(tag)
+  Object.entries(attributes).forEach(([name, value]) =>
     element.setAttribute(name, value)
-  }
-
+  )
   if (!current) document.head.appendChild(element)
 }
 
-function upsertCanonical(href: string) {
-  upsertLink('link[rel="canonical"]', {
-    rel: 'canonical',
-    href,
-  })
-}
-
-function upsertLink(selector: string, attributes: Record<string, string>) {
-  const current = document.head.querySelector<HTMLLinkElement>(selector)
-  const element = current ?? document.createElement('link')
-
-  for (const [name, value] of Object.entries(attributes)) {
-    element.setAttribute(name, value)
-  }
-
-  if (!current) document.head.appendChild(element)
-}
-
-function upsertResourceHint(rel: 'preconnect' | 'dns-prefetch', href: string) {
-  const current = Array.from(
-    document.head.querySelectorAll<HTMLLinkElement>(`link[rel="${rel}"]`)
-  ).find((element) => element.href === href)
-  const element = current ?? document.createElement('link')
-
-  element.setAttribute('rel', rel)
-  element.setAttribute('href', href)
-  if (rel === 'preconnect') {
-    element.setAttribute('crossorigin', '')
-  }
-
-  if (!current) document.head.appendChild(element)
-}
-
-function removeMeta(selector: string) {
-  document.head.querySelector<HTMLMetaElement>(selector)?.remove()
-}
-
-/**
- * Synchronise document head from Vue Router metadata.
- *
- * This is safe to call from router guards. Component code should still prefer
- * `usePageMeta`, which integrates with Unhead's reactive lifecycle.
- */
 export function syncDocumentHeadFromRouteMeta(
   meta: Record<string, unknown>,
   path = window.location.pathname
 ) {
-  const pageMeta = buildPageMetaFromRouteMeta(meta, path)
+  const page = buildPageMetaFromRouteMeta(meta, path)
+  document.title = page.title
 
-  document.title = pageMeta.title
-
-  upsertMeta('meta[name="description"]', {
-    name: 'description',
-    content: pageMeta.description,
-  })
-  upsertMeta('meta[property="og:title"]', {
-    property: 'og:title',
-    content: pageMeta.title,
-  })
-  upsertMeta('meta[property="og:description"]', {
-    property: 'og:description',
-    content: pageMeta.description,
-  })
-  upsertMeta('meta[property="og:type"]', {
-    property: 'og:type',
-    content: pageMeta.ogType,
-  })
-  upsertMeta('meta[property="og:url"]', {
-    property: 'og:url',
-    content: pageMeta.canonical,
-  })
-  upsertMeta('meta[property="og:site_name"]', {
-    property: 'og:site_name',
-    content: DEFAULTS.siteName,
-  })
-  upsertMeta('meta[property="og:locale"]', {
-    property: 'og:locale',
-    content: DEFAULTS.locale,
-  })
-  upsertMeta('meta[name="twitter:card"]', {
-    name: 'twitter:card',
-    content: 'summary',
-  })
-  upsertMeta('meta[name="twitter:title"]', {
-    name: 'twitter:title',
-    content: pageMeta.title,
-  })
-  upsertMeta('meta[name="twitter:description"]', {
-    name: 'twitter:description',
-    content: pageMeta.description,
-  })
-  upsertCanonical(pageMeta.canonical)
-
-  if (pageMeta.ogImage) {
-    upsertMeta('meta[property="og:image"]', {
-      property: 'og:image',
-      content: pageMeta.ogImage,
+  const metaEntries: Array<[string, string, string]> = [
+    ['name', 'description', page.description],
+    ['property', 'og:title', page.title],
+    ['property', 'og:description', page.description],
+    ['property', 'og:type', page.ogType],
+    ['property', 'og:url', page.canonical],
+    ['property', 'og:site_name', DEFAULTS.siteName],
+    ['property', 'og:locale', DEFAULTS.locale],
+    ['name', 'twitter:card', 'summary'],
+    ['name', 'twitter:title', page.title],
+    ['name', 'twitter:description', page.description],
+  ]
+  for (const [attribute, name, content] of metaEntries) {
+    upsertElement('meta', `meta[${attribute}="${name}"]`, {
+      [attribute]: name,
+      content,
     })
-    upsertMeta('meta[name="twitter:image"]', {
-      name: 'twitter:image',
-      content: pageMeta.ogImage,
-    })
-  } else {
-    removeMeta('meta[property="og:image"]')
-    removeMeta('meta[name="twitter:image"]')
   }
 
-  const robots = document.head.querySelector<HTMLMetaElement>(
-    'meta[name="robots"]'
-  )
+  upsertElement('link', 'link[rel="canonical"]', {
+    rel: 'canonical',
+    href: page.canonical,
+  })
 
-  if (pageMeta.noIndex) {
-    upsertMeta('meta[name="robots"]', {
+  if (page.ogImage) {
+    upsertElement('meta', 'meta[property="og:image"]', {
+      property: 'og:image',
+      content: page.ogImage,
+    })
+  } else {
+    document.head.querySelector('meta[property="og:image"]')?.remove()
+  }
+
+  if (page.noIndex) {
+    upsertElement('meta', 'meta[name="robots"]', {
       name: 'robots',
       content: 'noindex',
     })
-  } else if (robots) {
-    robots.remove()
+  } else {
+    document.head.querySelector('meta[name="robots"]')?.remove()
   }
 }
 
-export function syncHeadFromRouteMeta(
-  meta: Record<string, unknown>,
-  path = window.location.pathname
-) {
-  syncDocumentHeadFromRouteMeta(meta, path)
+export const syncHeadFromRouteMeta = syncDocumentHeadFromRouteMeta
+
+export function usePageMeta(input: PageMetaInput | (() => PageMetaInput) = {}) {
+  const value = typeof input === 'function' ? input() : input
+  const signature = JSON.stringify(value)
+  useEffect(() => {
+    syncDocumentHeadFromRouteMeta({ ...value }, window.location.pathname)
+  }, [signature])
 }
 
-function toOrigin(url: string): string | null {
-  if (!url) return null
+export function useJsonLd(
+  input:
+    | JsonLdObject
+    | null
+    | undefined
+    | (() => JsonLdObject | null | undefined),
+  key = 'structured-data'
+) {
+  const value = typeof input === 'function' ? input() : input
+  const signature = JSON.stringify(value)
+  useEffect(() => {
+    const selector = `script[data-json-ld="${CSS.escape(key)}"]`
+    document.head.querySelector(selector)?.remove()
+    if (!value) return
 
+    const script = document.createElement('script')
+    script.type = 'application/ld+json'
+    script.dataset.jsonLd = key
+    script.textContent = JSON.stringify(value)
+    document.head.appendChild(script)
+    return () => script.remove()
+  }, [key, signature])
+}
+
+function toOrigin(url: string) {
   try {
     return new URL(url, SITE_URL).origin
   } catch {
@@ -258,24 +158,20 @@ function toOrigin(url: string): string | null {
   }
 }
 
-/**
- * Install stable site-wide resource hints.
- *
- * These hints are intentionally conservative and derived from public runtime
- * config only. They do not expose secrets and do not force-load heavy assets.
- */
 export function installSeoResourceHints() {
-  const origins = new Set([toOrigin(SITE_URL), toOrigin(API_BASE_URL)])
-
-  for (const origin of origins) {
+  for (const origin of new Set([toOrigin(SITE_URL), toOrigin(API_BASE_URL)])) {
     if (!origin || origin === window.location.origin) continue
-
-    upsertResourceHint('preconnect', origin)
-    upsertResourceHint('dns-prefetch', origin)
+    upsertElement('link', `link[rel="preconnect"][href="${origin}"]`, {
+      rel: 'preconnect',
+      href: origin,
+      crossorigin: '',
+    })
+    upsertElement('link', `link[rel="dns-prefetch"][href="${origin}"]`, {
+      rel: 'dns-prefetch',
+      href: origin,
+    })
   }
 }
-
-// ---- Structured data ----
 
 export interface WebsiteJsonLdInput {
   name?: string
@@ -295,24 +191,6 @@ export interface BlogPostingJsonLdInput {
   wordCount?: number | null
 }
 
-export function useJsonLd(input: JsonLdInputSource, key = 'structured-data') {
-  useHead(() => {
-    const json = toValue(input)
-
-    return {
-      script: json
-        ? [
-            {
-              key,
-              type: 'application/ld+json',
-              textContent: JSON.stringify(json),
-            },
-          ]
-        : [],
-    }
-  })
-}
-
 export function buildWebsiteJsonLd(
   input: WebsiteJsonLdInput = {}
 ): JsonLdObject {
@@ -329,33 +207,23 @@ export function buildWebsiteJsonLd(
 export function buildBlogPostingJsonLd(
   input: BlogPostingJsonLdInput
 ): JsonLdObject {
-  const json: JsonLdObject = {
+  return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: input.title,
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': input.canonicalUrl,
-    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': input.canonicalUrl },
     publisher: {
       '@type': 'Organization',
       name: DEFAULTS.siteName,
       url: SITE_URL,
     },
+    ...(input.description ? { description: input.description } : {}),
+    ...(input.author
+      ? { author: { '@type': 'Person', name: input.author } }
+      : {}),
+    ...(input.datePublished ? { datePublished: input.datePublished } : {}),
+    ...(input.dateModified ? { dateModified: input.dateModified } : {}),
+    ...(input.image ? { image: input.image } : {}),
+    ...(input.wordCount ? { wordCount: input.wordCount } : {}),
   }
-
-  if (input.description) json.description = input.description
-  if (input.datePublished) json.datePublished = input.datePublished
-  if (input.dateModified) json.dateModified = input.dateModified
-  if (input.image) json.image = input.image
-  if (input.wordCount) json.wordCount = input.wordCount
-
-  if (input.author) {
-    json.author = {
-      '@type': 'Person',
-      name: input.author,
-    }
-  }
-
-  return json
 }

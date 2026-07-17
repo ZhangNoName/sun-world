@@ -1,9 +1,11 @@
+import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
 
-const LoginPage = () => import('@/pages/login/login.vue')
-const RegisterPage = () => import('@/pages/login/register.vue')
-const MePage = () => import('@/pages/me/me.vue')
-const QqCallbackPage = () => import('@/pages/login/qqCb.vue')
+const authMeta = {
+  hideHeader: true,
+  hideFooter: true,
+  className: 'auth-page-wrapper',
+}
 
 export const accountModule: AppModule = {
   id: 'account',
@@ -11,41 +13,25 @@ export const accountModule: AppModule = {
   routes: [
     {
       path: '/login',
-      component: LoginPage,
-      meta: {
-        module: 'account',
-        title: '登录 - Sun World',
-        hideHeader: true,
-        hideFooter: true,
-        className: 'auth-page-wrapper',
-      },
+      Component: createPendingRouteComponent('登录'),
+      meta: { module: 'account', title: '登录 - Sun World', ...authMeta },
     },
     {
       path: '/register',
-      component: RegisterPage,
-      meta: {
-        module: 'account',
-        title: '注册 - Sun World',
-        hideHeader: true,
-        hideFooter: true,
-        className: 'auth-page-wrapper',
-      },
+      Component: createPendingRouteComponent('注册'),
+      meta: { module: 'account', title: '注册 - Sun World', ...authMeta },
     },
     {
       path: '/me',
-      component: MePage,
+      Component: createPendingRouteComponent('个人中心'),
       meta: { module: 'account', title: '个人中心 - Sun World' },
     },
     {
       path: '/qq',
-      component: QqCallbackPage,
+      Component: createPendingRouteComponent('QQ 登录'),
       meta: { module: 'account', title: 'QQ 登录 - Sun World' },
     },
   ],
   nav: [{ label: 'nav.account', path: '/me', icon: 'me' }],
-  seo: {
-    title: '账户 - Sun World',
-    description: '管理 Sun World 登录、个人资料和第三方授权。',
-    noIndex: true,
-  },
+  seo: { title: '账户 - Sun World', noIndex: true },
 }

@@ -1,29 +1,14 @@
-import type { AppModule } from './types'
-import type {
-  RouteMeta,
-  RouteLocationNormalizedLoaded,
-  RouteRecordRaw,
-  Router,
-} from 'vue-router'
-import { blogModule } from './blog'
-import { homeModule } from './home'
-import { aiModule } from './ai'
-import { editorModule } from './editor'
+import { matchRoutes } from 'react-router'
+
 import { accountModule } from './account'
 import { adminModule } from './admin'
+import { aiModule } from './ai'
+import { blogModule } from './blog'
+import { editorModule } from './editor'
+import { homeModule } from './home'
+import type { AppModule, AppRouteObject, RouteMeta } from './types'
 import { videoModule } from './video'
 
-/**
- * Central module registry.
- *
- * Every feature module is registered here. The app bootstrap reads
- * this list to assemble routes, navigation, and SEO defaults.
- *
- * To add a new module:
- * 1. Create a folder under `modules/<id>/`
- * 2. Export an `AppModule` manifest
- * 3. Import and add it to the array below
- */
 export const appModules: AppModule[] = [
   homeModule,
   blogModule,
@@ -34,134 +19,75 @@ export const appModules: AppModule[] = [
   videoModule,
 ]
 
-const appModulesById = new Map(appModules.map((module) => [module.id, module]))
+const moduleById = new Map(appModules.map((module) => [module.id, module]))
 const preloadPromises = new Map<string, Promise<unknown>>()
 
-/**
- * Collect all route definitions from registered modules.
- *
- * Module SEO defaults are applied here so route-level metadata has a single
- * authoritative shape before it reaches the router and head manager.
- */
-export function collectModuleRoutes(): RouteRecordRaw[] {
-  return appModules.flatMap((module) =>
-    module.routes.map((route) => applyModuleRouteDefaults(route, module))
-  )
-}
-
-function applyModuleRouteDefaults(
-  route: RouteRecordRaw,
+function applyDefaults(
+  route: AppRouteObject,
   module: AppModule
-): RouteRecordRaw {
-  const currentMeta = route.meta ?? {}
-  const seo = module.seo ?? {}
-  const moduleId =
-    typeof currentMeta.module === 'string' ? currentMeta.module : module.id
-
-  const meta = {
-    ...currentMeta,
-    module: moduleId,
-    title: stringMeta(currentMeta, 'title') ?? seo.title,
-    description: stringMeta(currentMeta, 'description') ?? seo.description,
-    ogType: stringMeta(currentMeta, 'ogType') ?? seo.ogType,
-    noIndex: booleanMeta(currentMeta, 'noIndex') ?? seo.noIndex,
+): AppRouteObject {
+  const current = route.meta ?? {}
+  const meta: RouteMeta = {
+    ...current,
+    module: typeof current.module === 'string' ? current.module : module.id,
+    title: current.title ?? module.seo?.title,
+    description: current.description ?? module.seo?.description,
+    ogType: current.ogType ?? module.seo?.ogType,
+    noIndex: current.noIndex ?? module.seo?.noIndex,
   }
-
-  const normalizedRoute = {
+  return {
     ...route,
     meta,
-  }
-
-  if (route.children) {
-    normalizedRoute.children = route.children.map((child) =>
-      applyModuleRouteDefaults(child, module)
-    )
-  }
-
-  return normalizedRoute as RouteRecordRaw
+    handle: { ...(route.handle ?? {}), meta },
+    children: route.children?.map((child) => applyDefaults(child, module)),
+  } as AppRouteObject
 }
 
-function stringMeta(meta: RouteMeta, key: string): string | undefined {
-  const value = meta[key]
-  return typeof value === 'string' ? value : undefined
+export function collectModuleRoutes(): AppRouteObject[] {
+  return appModules.flatMap((module) =>
+    module.routes.map((route) => applyDefaults(route, module))
+  )
 }
 
-function booleanMeta(meta: RouteMeta, key: string): boolean | undefined {
-  const value = meta[key]
-  return typeof value === 'boolean' ? value : undefined
-}
-
-/**
- * Preload a module's declared async resources.
- *
- * The promise is memoized so repeated route visits do not re-trigger work.
- */
-export function preloadModuleById(
-  moduleId: string
-): Promise<unknown> | undefined {
-  const module = appModulesById.get(moduleId)
+export function preloadModuleById(moduleId: string) {
+  const module = moduleById.get(moduleId)
   if (!module?.preload) return undefined
-
   const existing = preloadPromises.get(moduleId)
   if (existing) return existing
-
-  const preloadPromise = Promise.resolve()
-    .then(() => module.preload?.())
-    .catch((error) => {
+  const promise = Promise.resolve()
+    .then(module.preload)
+    .catch(() => {
       preloadPromises.delete(moduleId)
-      if (import.meta.env.DEV) {
-        console.warn(`[modules] failed to preload module: ${moduleId}`, error)
-      }
       return undefined
     })
-
-  preloadPromises.set(moduleId, preloadPromise)
-  return preloadPromise
+  preloadPromises.set(moduleId, promise)
+  return promise
 }
 
-function preloadMatchedRouteModules(route: RouteLocationNormalizedLoaded) {
-  const moduleIds = new Set(
-    route.matched
-      .map((record) => record.meta.module)
-      .filter((value): value is string => typeof value === 'string')
-  )
-
-  for (const moduleId of moduleIds) {
-    preloadModuleById(moduleId)
-  }
+interface SubscribableRouter {
+  state: { location: { pathname: string } }
+  subscribe: (listener: () => void) => () => void
 }
 
-function scheduleIdlePreload(callback: () => void) {
-  const requestIdle = window.requestIdleCallback
-
-  if (requestIdle) {
-    requestIdle(callback, { timeout: 2500 })
-    return
-  }
-
-  setTimeout(callback, 1200)
-}
-
-/**
- * Install route-aware module preloading.
- *
- * Preloading starts navigation-adjacent but does not block navigation. Only
- * modules listed in `idleModules` and exposing a preload hook are warmed during
- * idle time.
- */
 export function installModulePreloading(
-  router: Router,
+  router: SubscribableRouter,
   options: { idleModules?: string[] } = {}
 ) {
-  const idleModules = options.idleModules ?? ['blog']
-
-  router.beforeResolve((to) => {
-    preloadMatchedRouteModules(to)
-  })
-
-  scheduleIdlePreload(() => {
-    for (const moduleId of idleModules) {
-      preloadModuleById(moduleId)
-    }
-  })
+  const preloadLocation = () => {
+    const matches = matchRoutes(collectModuleRoutes(), router.state.location)
+    const ids = new Set(
+      matches
+        ?.map((match) => match.route.meta?.module)
+        .filter((id): id is string => typeof id === 'string') ?? []
+    )
+    ids.forEach(preloadModuleById)
+  }
+  const unsubscribe = router.subscribe(preloadLocation)
+  const timer = window.setTimeout(() => {
+    ;(options.idleModules ?? ['blog']).forEach(preloadModuleById)
+  }, 1200)
+  return () => {
+    unsubscribe()
+    window.clearTimeout(timer)
+  }
 }

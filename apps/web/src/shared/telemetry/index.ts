@@ -8,7 +8,6 @@
  */
 
 import type { Metric } from 'web-vitals'
-import type { RouteLocationNormalized, Router } from 'vue-router'
 import { IS_DEVELOPMENT, TELEMETRY_ENDPOINT } from '@/shared/config'
 
 export type TelemetryEventName =
@@ -31,9 +30,7 @@ export interface TelemetryEvent {
   properties?: Record<string, unknown>
 }
 
-export type TelemetryReporter = (
-  event: TelemetryEvent
-) => void | Promise<void>
+export type TelemetryReporter = (event: TelemetryEvent) => void | Promise<void>
 
 export interface ApiTelemetryContext {
   method: string
@@ -111,9 +108,7 @@ export function trackApiError(error: unknown, context: ApiTelemetryContext) {
 
 export async function initWebVitals() {
   try {
-    const { onLCP, onCLS, onFCP, onTTFB, onINP } = await import(
-      'web-vitals'
-    )
+    const { onLCP, onCLS, onFCP, onTTFB, onINP } = await import('web-vitals')
     onLCP(reportVital)
     onCLS(reportVital)
     onFCP(reportVital)
@@ -124,31 +119,34 @@ export async function initWebVitals() {
   }
 }
 
-export function installRouteTiming(router: Router) {
-  let routeStartedAt = 0
-  let fromRoute: RouteLocationNormalized | null = null
+interface RouteState {
+  location: { pathname: string; search: string }
+  navigation: { state: string }
+}
 
-  router.beforeEach((to, from) => {
-    routeStartedAt = now()
-    fromRoute = from
-    return true
-  })
+interface SubscribableRouter {
+  state: RouteState
+  subscribe: (listener: (state: RouteState) => void) => () => void
+}
 
-  router.afterEach((to) => {
-    if (!routeStartedAt) return
+export function installRouteTiming(router: SubscribableRouter) {
+  let startedAt = 0
+  let from = `${router.state.location.pathname}${router.state.location.search}`
 
+  return router.subscribe((state) => {
+    if (state.navigation.state !== 'idle') {
+      if (!startedAt) startedAt = now()
+      return
+    }
+    const to = `${state.location.pathname}${state.location.search}`
+    if (!startedAt || to === from) return
     trackEvent(
       'route_timing',
-      {
-        to: to.fullPath,
-        from: fromRoute?.fullPath,
-        duration: Math.round(now() - routeStartedAt),
-      },
+      { to, from, duration: Math.round(now() - startedAt) },
       'debug'
     )
-
-    routeStartedAt = 0
-    fromRoute = null
+    startedAt = 0
+    from = to
   })
 }
 

@@ -6,6 +6,7 @@
     "build": "vite build && node ../../scripts/prerender-public-pages.mjs",
     "build:visualizer": "vite build --mode visualizer",
     "test:react": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "typecheck:react": "tsc -p tsconfig.app.json --noEmit"
   },
   "dependencies": {
