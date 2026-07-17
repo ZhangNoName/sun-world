@@ -1,238 +1,110 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, resolve } from 'node:path'
 
-const repoRoot = fileURLToPath(new URL('..', import.meta.url))
-const distAssetsDir = join(repoRoot, 'apps/web/dist/assets')
-const distIndexPath = join(repoRoot, 'apps/web/dist/index.html')
-const utilFunctionPath = join(repoRoot, 'apps/web/src/util/function.ts')
-const catalogCardPath = join(
-  repoRoot,
-  'apps/web/src/modules/blog/ui/CatalogCard.vue'
-)
-const blogModulePath = join(repoRoot, 'apps/web/src/modules/blog/index.ts')
-const managePagePath = join(repoRoot, 'apps/web/src/pages/manage/index.vue')
-const adminModulePath = join(repoRoot, 'apps/web/src/modules/admin/index.ts')
-const adminChartConfigPath = join(
-  repoRoot,
-  'apps/web/src/modules/admin/ui/chartConfig.ts'
-)
-const accountModulePath = join(
-  repoRoot,
-  'apps/web/src/modules/account/index.ts'
-)
-const viteConfigPath = join(repoRoot, 'apps/web/vite.config.ts')
-const appMainPath = join(repoRoot, 'apps/web/src/main.ts')
-const uiComponentsDir = join(repoRoot, 'packages/ui/src/components')
-
-const violations = []
-
-if (!existsSync(distAssetsDir)) {
-  violations.push(
-    'apps/web/dist/assets is missing; run the frontend build first'
+const root = resolve(import.meta.dirname, '..')
+const assetsDir = join(root, 'apps/web/dist/assets')
+const failures = []
+const routeOnlyChunk =
+  /^(?:page-(?:game-tiles|tools|keep|login|register|me|qq-callback)|manage-shell|admin-charts|video-player|tile-export|md-editor-(?:preview|editor)|echarts|zrender|VideoPage|jszip\.min|ArticleEditorPage|AdminChartsPage|AigcPage|AdminMetricsPage|AdminLogsPage|BlogDetailPage|EditorCanvasPage|tools\.page|keep|login|register|me|qqCb)\./
+if (!existsSync(assetsDir))
+  failures.push('apps/web/dist/assets is missing; build first')
+else {
+  const assets = readdirSync(assetsDir)
+  const jsAssets = assets.filter((asset) => asset.endsWith('.js'))
+  const importGraph = new Map(
+    jsAssets.map((asset) => {
+      const source = readFileSync(join(assetsDir, asset), 'utf8')
+      const imports = [
+        ...source.matchAll(/(?:from\s*|import\s*)["']\.\/([^"']+)["']/g),
+      ]
+        .map((match) => match[1])
+        .filter((dependency) => jsAssets.includes(dependency))
+      return [asset, imports]
+    })
   )
-} else {
-  const assetNames = readdirSync(distAssetsDir)
-  const requiredChunkPatterns = [
-    {
-      name: 'video-player',
-      pattern: /^video-player\..*\.js$/,
-      reason:
-        'video route playback dependencies should not be folded into global vendor',
-    },
-    {
-      name: 'tile-export',
-      pattern: /^tile-export\..*\.js$/,
-      reason:
-        'JSZip export code should stay out of the initial route/vendor payload',
-    },
-    {
-      name: 'md-editor-preview',
-      pattern: /^md-editor-preview\..*\.js$/,
-      reason: 'article reading should not share the full editor chunk',
-    },
-    {
-      name: 'md-editor-editor',
-      pattern: /^md-editor-editor\..*\.js$/,
-      reason: 'article editing should keep the full editor isolated',
-    },
-    {
-      name: 'admin-charts',
-      pattern: /^admin-charts\..*\.js$/,
-      reason:
-        'admin chart views should stay out of the manage shell until selected',
-    },
-    {
-      name: 'page-game-tiles',
-      pattern: /^page-game-tiles\..*\.js$/,
-      reason: 'game tiles should remain a route-owned page chunk',
-    },
-    {
-      name: 'page-tools',
-      pattern: /^page-tools\..*\.js$/,
-      reason: 'tools should remain a route-owned page chunk',
-    },
-    {
-      name: 'page-keep',
-      pattern: /^page-keep\..*\.js$/,
-      reason: 'keep page should remain a route-owned page chunk',
-    },
-    {
-      name: 'page-login',
-      pattern: /^page-login\..*\.js$/,
-      reason: 'login page should not share a broad legacy pages chunk',
-    },
-    {
-      name: 'page-register',
-      pattern: /^page-register\..*\.js$/,
-      reason: 'register page should not share a broad legacy pages chunk',
-    },
-    {
-      name: 'page-me',
-      pattern: /^page-me\..*\.js$/,
-      reason: 'profile page should not share a broad legacy pages chunk',
-    },
-    {
-      name: 'page-qq-callback',
-      pattern: /^page-qq-callback\..*\.js$/,
-      reason: 'QQ callback page should not share a broad legacy pages chunk',
-    },
-    {
-      name: 'manage-shell',
-      pattern: /^manage-shell\..*\.js$/,
-      reason:
-        'manage legacy shell should be named instead of folded into index',
-    },
-  ]
-
-  for (const chunk of requiredChunkPatterns) {
-    if (!assetNames.some((name) => chunk.pattern.test(name))) {
-      violations.push(`missing ${chunk.name} chunk: ${chunk.reason}`)
-    }
+  const html = readFileSync(join(root, 'apps/web/dist/index.html'), 'utf8')
+  const entry = html.match(
+    /<script[^>]+type="module"[^>]+src="\/assets\/([^"]+\.js)"/
+  )?.[1]
+  const initialAssets = new Set()
+  function visitInitial(asset) {
+    if (!asset || initialAssets.has(asset)) return
+    initialAssets.add(asset)
+    for (const dependency of importGraph.get(asset) ?? [])
+      visitInitial(dependency)
   }
-
-  if (existsSync(distIndexPath)) {
-    const distIndexSource = readFileSync(distIndexPath, 'utf8')
-    const initialRouteChunkPatterns = [
-      /assets\/page-(?:game-tiles|tools|keep|login|register|me|qq-callback)\./,
-      /assets\/manage-shell\./,
-      /assets\/admin-charts\./,
-      /assets\/video-player\./,
-      /assets\/tile-export\./,
-      /assets\/md-editor-(?:preview|editor)\./,
-      /assets\/echarts\./,
-      /assets\/zrender\./,
-    ]
-    if (
-      initialRouteChunkPatterns.some((pattern) => pattern.test(distIndexSource))
-    ) {
-      violations.push(
-        'apps/web/dist/index.html must not preload route-only or optional heavy chunks'
-      )
-    }
-  }
-}
-
-const utilSource = readFileSync(utilFunctionPath, 'utf8')
-if (/^import\s+.*['"]jszip['"]/m.test(utilSource)) {
-  violations.push(
-    'apps/web/src/util/function.ts must load jszip dynamically inside export actions'
+  visitInitial(entry)
+  const eagerRouteChunk = [...initialAssets].find((asset) =>
+    routeOnlyChunk.test(asset)
   )
-}
-
-const catalogCardSource = readFileSync(catalogCardPath, 'utf8')
-if (/^import\s+(?!type\b).*['"]vditor['"]/m.test(catalogCardSource)) {
-  violations.push(
-    'CatalogCard.vue must not import a markdown editor runtime for catalog rendering'
-  )
-}
-
-const blogModuleSource = readFileSync(blogModulePath, 'utf8')
-if (
-  /preload:\s*\(\)\s*=>\s*Promise\.all\(\[BlogDetailPage\(\),\s*ArticleEditorPage\(\)\]\)/.test(
-    blogModuleSource
-  )
-) {
-  violations.push(
-    'blog module preload must not warm the article editor while reading public articles'
-  )
-}
-
-const managePageSource = readFileSync(managePagePath, 'utf8')
-if (
-  /^import\s+AdminChartsPage\s+from\s+['"]@\/modules\/admin\/pages\/AdminChartsPage\.vue['"]/m.test(
-    managePageSource
-  )
-) {
-  violations.push(
-    'manage page must load AdminChartsPage asynchronously when the charts tab is selected'
-  )
-}
-
-const adminModuleSource = readFileSync(adminModulePath, 'utf8')
-if (/preload:\s*/.test(adminModuleSource)) {
-  violations.push(
-    'admin module should rely on route-level lazy loading instead of broad module preload'
-  )
-}
-
-const chartConfigSource = readFileSync(adminChartConfigPath, 'utf8')
-if (
-  /^import\s*\{[\s\S]*?\}\s*from\s+['"]echarts['"]/m.test(chartConfigSource)
-) {
-  violations.push(
-    'admin chartConfig.ts must use import type for ECharts option types'
-  )
-}
-
-const accountModuleSource = readFileSync(accountModulePath, 'utf8')
-if (
-  /preload:\s*\(\)\s*=>\s*Promise\.all\(\[LoginPage\(\),\s*RegisterPage\(\),\s*MePage\(\),\s*QqCallbackPage\(\)\]\)/.test(
-    accountModuleSource
-  )
-) {
-  violations.push(
-    'account module should not preload all account routes together'
-  )
-}
-
-const viteConfigSource = readFileSync(viteConfigPath, 'utf8')
-if (
-  /src\\?\/pages\\?\/\.\+\\?\.vue/.test(viteConfigSource) ||
-  /pages\s+涓嬬殑 vue/.test(viteConfigSource)
-) {
-  violations.push(
-    'vite manualChunks must not merge all legacy src/pages Vue files into index'
-  )
-}
-
-const appMainSource = readFileSync(appMainPath, 'utf8')
-if (/element-plus\/theme-chalk\/src\/index\.scss/.test(appMainSource)) {
-  violations.push(
-    'apps/web/src/main.ts must not import the full Element Plus stylesheet globally'
-  )
-}
-
-const uiComponentNames = readdirSync(uiComponentsDir).filter((name) =>
-  name.endsWith('.vue')
-)
-for (const componentName of uiComponentNames) {
-  const componentPath = join(uiComponentsDir, componentName)
-  const componentSource = readFileSync(componentPath, 'utf8')
-  if (/^import\s+(?!type\b).*['"]element-plus['"]/m.test(componentSource)) {
-    violations.push(
-      `packages/ui component ${componentName} must not depend on Element Plus runtime components`
+  if (eagerRouteChunk)
+    failures.push(
+      `initial bundle statically imports route-only chunk ${eagerRouteChunk}`
     )
+  for (const names of [
+    ['VideoPage', 'video-player'],
+    ['jszip.min', 'tile-export'],
+    ['ArticleEditorPage', 'md-editor-editor'],
+    ['AdminChartsPage', 'admin-charts'],
+    ['tools.page', 'page-tools'],
+    ['keep', 'page-keep'],
+    ['login', 'page-login'],
+    ['register', 'page-register'],
+    ['me', 'page-me'],
+    ['qqCb', 'page-qq-callback'],
+  ]) {
+    if (
+      !assets.some((asset) =>
+        names.some((name) => new RegExp(`^${name}\\..*\\.js$`).test(asset))
+      )
+    )
+      failures.push(`missing lazy chunk ${names[0]}`)
   }
+  if (
+    [...html.matchAll(/modulepreload[^>]+\/assets\/([^"']+)/g)].some((match) =>
+      routeOnlyChunk.test(match[1])
+    )
+  )
+    failures.push(
+      'production HTML preloads a route-only or optional heavy chunk'
+    )
 }
 
-if (violations.length) {
+const util = readFileSync(join(root, 'apps/web/src/util/function.ts'), 'utf8')
+if (
+  !util.includes("await import('jszip')") ||
+  /^import\s+.*['"]jszip['"]/m.test(util)
+)
+  failures.push('JSZip must remain dynamically imported inside export actions')
+const manage = readFileSync(
+  join(root, 'apps/web/src/pages/manage/index.tsx'),
+  'utf8'
+)
+if (
+  !/lazy\(\s*\(\)\s*=>\s*import\(['"]@\/modules\/admin\/pages\/AdminChartsPage['"]\)\s*\)/.test(
+    manage
+  )
+)
+  failures.push('AdminChartsPage must be lazy-loaded by the management view')
+const chart = readFileSync(
+  join(root, 'apps/web/src/modules/admin/ui/ChartsCard.tsx'),
+  'utf8'
+)
+if (
+  !chart.includes("import('echarts/core')") ||
+  !chart.includes('chart?.dispose()')
+)
+  failures.push(
+    'ChartsCard must lazy-load ECharts core and dispose the instance'
+  )
+const main = readFileSync(join(root, 'apps/web/src/main.tsx'), 'utf8')
+if (/element-plus|\.vue/.test(main))
+  failures.push('React entry must not reference Vue or Element Plus')
+
+if (failures.length) {
   console.error('Frontend chunk boundary check failed:')
-  for (const violation of violations) {
-    console.error(`- ${violation}`)
-  }
+  failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
-
 console.log('Frontend chunk boundary check passed.')

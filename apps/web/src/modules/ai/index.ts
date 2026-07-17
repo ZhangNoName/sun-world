@@ -1,17 +1,16 @@
 import type { AppModule } from '../types'
 
-const AigcPage = () => import('./pages/AigcPage.vue')
+const importPage = () => import('./pages/AigcPage')
+const page = () =>
+  importPage().then((module) => ({ Component: module.AigcPage }))
 
-/**
- * AI module - AI chat and generation workflows.
- */
 export const aiModule: AppModule = {
   id: 'ai',
   name: 'AI',
   routes: [
     {
       path: '/aigc',
-      component: AigcPage,
+      lazy: page,
       meta: {
         module: 'ai',
         title: 'AI 对话 - Sun World',
@@ -26,5 +25,5 @@ export const aiModule: AppModule = {
     title: 'AI 对话 - Sun World',
     description: '使用 AI 辅助创作与问答。',
   },
-  preload: AigcPage,
+  preload: importPage,
 }

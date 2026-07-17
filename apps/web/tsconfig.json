@@ -6,12 +6,13 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
     "noEmit": true, //  让 TypeScript 不生成 .js/.d.ts 输出
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "types": ["element-plus/global"],
+    "types": ["vite/client", "vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
       "@sun-world/editor": ["../../packages/editor/src/index.ts"],
@@ -21,5 +22,5 @@
       "@sun-world/ui/*": ["../../packages/ui/src/*"]
     }
   },
-  "include": ["src", "node_modules/element-plus/global.d.ts"]
+  "include": ["src"]
 }

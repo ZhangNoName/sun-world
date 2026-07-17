@@ -1,189 +1,126 @@
-import { computed, nextTick, ref } from 'vue'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { sendAiStreamMessage } from '../api'
 import type { AiConversation, AiMessage } from '../types'
 
-const DEFAULT_CONVERSATION_ID = 'local-default'
-
-function now() {
-  return new Date().toISOString()
-}
-
-function createId(prefix: string) {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`
-}
+const initialId = 'local-default'
+const now = () => new Date().toISOString()
+const id = (prefix: string) =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
 export function useAiChat() {
-  const conversations = ref<AiConversation[]>([
-    {
-      id: DEFAULT_CONVERSATION_ID,
-      title: 'New chat',
-      createdAt: now(),
-      updatedAt: now(),
-    },
+  const [conversations, setConversations] = useState<AiConversation[]>([
+    { id: initialId, title: 'New chat', createdAt: now(), updatedAt: now() },
   ])
-  const activeConversationId = ref(DEFAULT_CONVERSATION_ID)
-  const messages = ref<Record<string, AiMessage[]>>({
-    [DEFAULT_CONVERSATION_ID]: [],
+  const [activeConversationId, setActiveConversationId] = useState(initialId)
+  const [messages, setMessages] = useState<Record<string, AiMessage[]>>({
+    [initialId]: [],
   })
-  const isSending = ref(false)
-  const errorMessage = ref('')
-
-  const activeConversation = computed(() =>
-    conversations.value.find((item) => item.id === activeConversationId.value)
+  const [isSending, setIsSending] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const controller = useRef<AbortController | null>(null)
+  useEffect(() => () => controller.current?.abort(), [])
+  const update = useCallback(
+    (conversationId: string, messageId: string, patch: Partial<AiMessage>) =>
+      setMessages((current) => ({
+        ...current,
+        [conversationId]: (current[conversationId] ?? []).map((message) =>
+          message.id === messageId ? { ...message, ...patch } : message
+        ),
+      })),
+    []
   )
-
-  const activeMessages = computed(
-    () => messages.value[activeConversationId.value] ?? []
-  )
-
-  function startConversation() {
-    const id = createId('chat')
-    const timestamp = now()
-    conversations.value.unshift({
-      id,
-      title: 'New chat',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    })
-    messages.value[id] = []
-    activeConversationId.value = id
-  }
-
-  function selectConversation(id: string) {
-    if (messages.value[id]) {
-      activeConversationId.value = id
-      errorMessage.value = ''
-    }
-  }
-
-  async function sendMessage(content: string) {
-    const text = content.trim()
-    if (!text || isSending.value) return
-
-    const conversationId = activeConversationId.value
-    const timestamp = now()
-    const userMessage: AiMessage = {
-      id: createId('user'),
-      role: 'user',
-      content: text,
-      createdAt: timestamp,
-      status: 'done',
-    }
-    const assistantMessage: AiMessage = {
-      id: createId('assistant'),
-      role: 'assistant',
-      content: '',
-      createdAt: now(),
-      status: 'streaming',
-    }
-
-    messages.value[conversationId] = [
-      ...(messages.value[conversationId] ?? []),
-      userMessage,
-      assistantMessage,
-    ]
-    renameConversation(conversationId, text)
-    isSending.value = true
-    errorMessage.value = ''
-    await nextTick()
-
-    try {
-      await sendAiStreamMessage(text, conversationId, {
-        onMessage: (token) => {
-          updateAssistantMessage(conversationId, assistantMessage.id, {
-            content:
-              getAssistantMessage(conversationId, assistantMessage.id).content +
-              token,
-          })
-        },
-        onComplete: () => {
-          updateAssistantMessage(conversationId, assistantMessage.id, {
+  const startConversation = useCallback(() => {
+    const next = id('chat')
+    const stamp = now()
+    setConversations((items) => [
+      { id: next, title: 'New chat', createdAt: stamp, updatedAt: stamp },
+      ...items,
+    ])
+    setMessages((items) => ({ ...items, [next]: [] }))
+    setActiveConversationId(next)
+  }, [])
+  const selectConversation = useCallback((value: string) => {
+    setActiveConversationId(value)
+    setErrorMessage('')
+  }, [])
+  const abort = useCallback(() => controller.current?.abort(), [])
+  const sendMessage = useCallback(
+    async (raw: string) => {
+      const text = raw.trim()
+      if (!text || isSending) return
+      const conversationId = activeConversationId
+      const assistantId = id('assistant')
+      setMessages((current) => ({
+        ...current,
+        [conversationId]: [
+          ...(current[conversationId] ?? []),
+          {
+            id: id('user'),
+            role: 'user',
+            content: text,
+            createdAt: now(),
             status: 'done',
-          })
-        },
-        onError: (error) => {
-          const current = getAssistantMessage(
-            conversationId,
-            assistantMessage.id
-          )
-          updateAssistantMessage(conversationId, assistantMessage.id, {
-            status: 'error',
-            content: current.content || 'The assistant could not respond.',
-          })
-          errorMessage.value = error.message
-        },
-      })
-    } finally {
-      isSending.value = false
-      if (
-        getAssistantMessage(conversationId, assistantMessage.id).status ===
-        'streaming'
-      ) {
-        updateAssistantMessage(conversationId, assistantMessage.id, {
-          status: 'done',
+          },
+          {
+            id: assistantId,
+            role: 'assistant',
+            content: '',
+            createdAt: now(),
+            status: 'streaming',
+          },
+        ],
+      }))
+      setConversations((items) =>
+        items.map((item) =>
+          item.id === conversationId && item.title === 'New chat'
+            ? { ...item, title: text.slice(0, 42) }
+            : item
+        )
+      )
+      setIsSending(true)
+      setErrorMessage('')
+      controller.current = new AbortController()
+      try {
+        await sendAiStreamMessage(text, conversationId, {
+          signal: controller.current.signal,
+          onMessage: (token) =>
+            setMessages((current) => ({
+              ...current,
+              [conversationId]: (current[conversationId] ?? []).map(
+                (message) =>
+                  message.id === assistantId
+                    ? { ...message, content: message.content + token }
+                    : message
+              ),
+            })),
+          onComplete: () =>
+            update(conversationId, assistantId, { status: 'done' }),
+          onError: (error) => {
+            if (error.name !== 'AbortError') {
+              setErrorMessage(error.message)
+              update(conversationId, assistantId, { status: 'error' })
+            }
+          },
         })
+      } finally {
+        setIsSending(false)
+        controller.current = null
       }
-      touchConversation(conversationId)
-    }
-  }
-
-  function getAssistantMessage(conversationId: string, messageId: string) {
-    return (
-      messages.value[conversationId]?.find(
-        (message) => message.id === messageId
-      ) ?? assistantFallback(messageId)
-    )
-  }
-
-  function updateAssistantMessage(
-    conversationId: string,
-    messageId: string,
-    patch: Partial<AiMessage>
-  ) {
-    messages.value[conversationId] = (messages.value[conversationId] ?? []).map(
-      (message) =>
-        message.id === messageId ? { ...message, ...patch } : message
-    )
-  }
-
-  function assistantFallback(messageId: string): AiMessage {
-    return {
-      id: messageId,
-      role: 'assistant',
-      content: '',
-      createdAt: now(),
-      status: 'streaming',
-    }
-  }
-
-  function renameConversation(id: string, text: string) {
-    const item = conversations.value.find(
-      (conversation) => conversation.id === id
-    )
-    if (!item || item.title !== 'New chat') return
-    item.title = text.length > 42 ? `${text.slice(0, 42)}...` : text
-  }
-
-  function touchConversation(id: string) {
-    const item = conversations.value.find(
-      (conversation) => conversation.id === id
-    )
-    if (item) {
-      item.updatedAt = now()
-    }
-  }
-
+    },
+    [activeConversationId, isSending, update]
+  )
   return {
-    activeConversation,
-    activeConversationId,
-    activeMessages,
     conversations,
-    errorMessage,
+    activeConversationId,
+    activeConversation: conversations.find(
+      (item) => item.id === activeConversationId
+    ),
+    activeMessages: messages[activeConversationId] ?? [],
     isSending,
+    errorMessage,
+    startConversation,
     selectConversation,
     sendMessage,
-    startConversation,
+    abort,
   }
 }

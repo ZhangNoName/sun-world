@@ -1,9 +1,10 @@
-import { ref, reactive, type Ref } from 'vue'
+import { useCallback, useRef, useState } from 'react'
+
 import { formatDate } from '@/util/function'
 import { fetchBlogPage } from '../api'
 import type {
-  BlogListQuery,
   BlogListItem,
+  BlogListQuery,
   BlogListViewModel,
   BlogRawItem,
   BlogSortBy,
@@ -12,124 +13,120 @@ import type {
   TagResponse,
 } from '../types'
 
-/**
- * Typed blog list composable.
- *
- * Replaces the inline `any[]` blog-list logic in `modules/home/pages/HomePage.vue`
- * with a reusable, testable data boundary. Consumes the existing
- * `getBlogByPage` endpoint and maps raw items to the `BlogListItem`
- * view model using injected tag / category lookups.
- *
- * Usage:
- *   const blogList = useBlogList(tagList, categoryList)
- *   onMounted(() => blogList.loadFirstPage())
- */
 export function useBlogList(
-  tagList: TagResponse[] | Ref<TagResponse[]>,
-  categoryList: CategoryResponse[] | Ref<CategoryResponse[]>,
+  tagList: TagResponse[],
+  categoryList: CategoryResponse[],
   pageSize = 5
 ): BlogListViewModel {
-  const items = ref<BlogListItem[]>([])
-  const loading = ref(false)
-  const total = ref(0)
-  const hasMore = ref(true)
-  const keyword = ref('')
-  const sortBy = ref<BlogSortBy>('updated_at')
-  const sortOrder = ref<BlogSortOrder>('desc')
+  const [items, setItems] = useState<BlogListItem[]>([])
+  const [loading, setLoading] = useState(false)
+  const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [keyword, setKeyword] = useState('')
+  const [sortBy, setSortBy] = useState<BlogSortBy>('updated_at')
+  const [sortOrder, setSortOrder] = useState<BlogSortOrder>('desc')
+  const state = useRef({ page: 1, loading: false, hasMore: true })
 
-  const page = reactive({ page: 1, pageSize })
+  const mapItem = useCallback(
+    (item: BlogRawItem): BlogListItem => {
+      const labels = (item.tag ?? [])
+        .map((id) => tagList.find((tag) => String(tag.id) === String(id))?.name)
+        .filter((name): name is string => Boolean(name))
+        .map((name) =>
+          /^frontend-basic-\d{2}$/.test(name)
+            ? '前端基础'
+            : /^algorithm-basic-\d{2}$/.test(name)
+              ? '算法基础'
+              : name
+        )
+      return {
+        id: String(item.id ?? ''),
+        title: item.title,
+        abstract: item.abstract,
+        publishTime: item.created_at ? formatDate(item.created_at) : '-',
+        lastUpdateTime: item.updated_at ? formatDate(item.updated_at) : '-',
+        tags: Array.from(new Set(labels)),
+        category:
+          categoryList.find(
+            (category) => String(category.id) === String(item.category)
+          )?.name ?? '未分类',
+        byteNum: item.byte_num,
+        commentNum: item.comment_num,
+        viewNum: item.view_num,
+      }
+    },
+    [categoryList, tagList]
+  )
 
-  /** Resolve a reactive or plain array to a plain array. */
-  const resolve = <T>(source: T[] | Ref<T[]>): T[] =>
-    Array.isArray(source) ? source : source.value
+  const requestPage = useCallback(
+    async (
+      page: number,
+      nextQuery: {
+        keyword: string
+        sortBy: BlogSortBy
+        sortOrder: BlogSortOrder
+      },
+      append: boolean
+    ) => {
+      if (state.current.loading) return
+      state.current.loading = true
+      setLoading(true)
+      try {
+        const response = await fetchBlogPage(page, pageSize, nextQuery)
+        const mapped = (response.list ?? []).map(mapItem)
+        setItems((current) => {
+          const next = append ? [...current, ...mapped] : mapped
+          const more = next.length < response.total
+          state.current.hasMore = more
+          setHasMore(more)
+          return next
+        })
+        state.current.page = page
+        setTotal(response.total)
+      } finally {
+        state.current.loading = false
+        setLoading(false)
+      }
+    },
+    [mapItem, pageSize]
+  )
 
-  const normalizeTagLabel = (name: string): string => {
-    if (/^frontend-basic-\d{2}$/.test(name)) return '前端基础'
-    if (/^algorithm-basic-\d{2}$/.test(name)) return '算法基础'
-    return name
-  }
+  const loadFirstPage = useCallback(
+    () => requestPage(1, { keyword, sortBy, sortOrder }, false),
+    [keyword, requestPage, sortBy, sortOrder]
+  )
 
-  const uniqueLabels = (labels: string[]): string[] =>
-    Array.from(new Set(labels.filter(Boolean)))
+  const loadMore = useCallback(() => {
+    if (!state.current.hasMore || state.current.loading)
+      return Promise.resolve()
+    return requestPage(
+      state.current.page + 1,
+      { keyword, sortBy, sortOrder },
+      true
+    )
+  }, [keyword, requestPage, sortBy, sortOrder])
 
-  /** Map a raw API item to the BlogListItem view model. */
-  const mapItem = (o: BlogRawItem): BlogListItem => {
-    const resolvedTags: TagResponse[] = resolve(tagList)
-    const resolvedCategories: CategoryResponse[] = resolve(categoryList)
-
-    return {
-      title: o.title,
-      abstract: o.abstract,
-      lastUpdateTime: o.updated_at ? formatDate(o.updated_at) : '-',
-      id: String(o.id ?? ''),
-      commentNum: o.comment_num,
-      byteNum: o.byte_num,
-      tags: uniqueLabels(
-        (o.tag ?? [])
-          .map(
-            (tagId: number | string) =>
-              resolvedTags.find((t) => String(t.id) === String(tagId))?.name
-          )
-          .filter(Boolean)
-          .map((name) => normalizeTagLabel(String(name)))
-      ),
-      category:
-        resolvedCategories.find((c) => String(c.id) === String(o.category))
-          ?.name || '未分类',
-      viewNum: o.view_num,
-      publishTime: o.created_at ? formatDate(o.created_at) : '-',
-    }
-  }
-
-  const loadFirstPage = async () => {
-    loading.value = true
-    page.page = 1
-    try {
-      const res = await fetchBlogPage(page.page, page.pageSize, {
-        keyword: keyword.value,
-        sortBy: sortBy.value,
-        sortOrder: sortOrder.value,
-      })
-      const mapped = (res.list ?? []).map(mapItem)
-      items.value = mapped
-      total.value = res.total
-      hasMore.value = items.value.length < res.total
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const loadMore = async () => {
-    if (loading.value || !hasMore.value) return
-    loading.value = true
-    page.page++
-    try {
-      const res = await fetchBlogPage(page.page, page.pageSize, {
-        keyword: keyword.value,
-        sortBy: sortBy.value,
-        sortOrder: sortOrder.value,
-      })
-      const mapped = (res.list ?? []).map(mapItem)
-      items.value = [...items.value, ...mapped]
-      total.value = res.total
-      hasMore.value = items.value.length < res.total
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const updateQuery = async (query: BlogListQuery) => {
-    if (query.keyword !== undefined) keyword.value = query.keyword
-    if (query.sortBy !== undefined) sortBy.value = query.sortBy
-    if (query.sortOrder !== undefined) sortOrder.value = query.sortOrder
-    await loadFirstPage()
-  }
+  const updateQuery = useCallback(
+    (query: BlogListQuery) => {
+      const next = {
+        keyword: query.keyword ?? keyword,
+        sortBy: query.sortBy ?? sortBy,
+        sortOrder: query.sortOrder ?? sortOrder,
+      }
+      setKeyword(next.keyword)
+      setSortBy(next.sortBy)
+      setSortOrder(next.sortOrder)
+      state.current.hasMore = true
+      return requestPage(1, next, false)
+    },
+    [keyword, requestPage, sortBy, sortOrder]
+  )
 
   return {
     items,
     loading,
-    hasMore,
     total,
+    hasMore,
     keyword,
     sortBy,
     sortOrder,

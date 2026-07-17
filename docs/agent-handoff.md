@@ -6,17 +6,15 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
-- 2026-07-17: login and registration layout polish on local `main`; not
-  committed, pushed, or deployed.
-  - Added `AuthPageShell.vue` for a responsive, isolated authentication layout.
-  - `/login` and `/register` now hide global shell chrome and use a full-viewport
-    route wrapper; login failures render inside the form rather than as a global
-    error toast.
-  - Verification passed: `corepack pnpm exec node scripts/check-auth-page-layout.mjs`,
-    `corepack pnpm -C apps/web exec vue-tsc --noEmit`, and `corepack pnpm check:web`.
+- 2026-07-17: full React 19 + shadcn/Radix frontend rebuild is complete on
+  `refactor/react-shadcn`; not pushed, merged, or deployed. See
+  `docs/handoff/branches/refactor-react-shadcn.md` for commits, verification,
+  browser evidence, and the next merge/deploy step.
 
 ## Active Branches
 
+- refactor/react-shadcn: see
+  docs/handoff/branches/refactor-react-shadcn.md.
 - feat/aigc-ui-polish: see
   docs/handoff/branches/feat-aigc-ui-polish.md.
 - codex/ai-cli-skills: see

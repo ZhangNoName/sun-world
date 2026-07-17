@@ -11,5 +11,5 @@
 
 export { BREAKPOINTS } from '@/hooks/breakpoint/breakpoint.data'
 export type { BreakpointKey } from '@/hooks/breakpoint/breakpoint.data'
-export { useTheme } from './theme'
+export { ThemeProvider, useTheme } from './theme'
 export type { ThemeName } from './theme'

@@ -1,90 +1,64 @@
-import { ref, type Ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from '@sun-world/ui/toast'
+
 import { createBlog } from '../api'
-import { useBlogBaseData } from './useBlogBaseData'
 import { getBlogErrorMessage } from '../errors'
-import type { CategoryResponse, CreateBlogPayload, TagResponse } from '../types'
+import { useBlogBaseData } from './useBlogBaseData'
 
-export interface BlogAuthoringViewModel {
-  blogContent: Ref<string>
-  blogWordCount: Ref<number>
-  blogCategory: Ref<string | number>
-  blogTag: Ref<Array<string | number>>
-  title: Ref<string>
-  saving: Ref<boolean>
-  categoryList: CategoryResponse[]
-  tagList: TagResponse[]
-  initializeAuthoring: () => void
-  saveBlog: () => Promise<void>
-}
-
-export function useBlogAuthoring(): BlogAuthoringViewModel {
+export function useBlogAuthoring() {
   const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
+  const [blogContent, setBlogContent] = useState('')
+  const [blogCategory, setBlogCategory] = useState<string | number>('')
+  const [blogTag, setBlogTag] = useState<Array<string | number>>([])
+  const [title, setTitle] = useState('')
+  const [saving, setSaving] = useState(false)
+  useEffect(() => {
+    void loadBlogBaseData().catch(() => toast.error('获取文章基础数据失败'))
+  }, [loadBlogBaseData])
 
-  const blogContent = ref('')
-  const blogWordCount = ref(0)
-  const blogCategory = ref<string | number>('')
-  const blogTag = ref<Array<string | number>>([])
-  const title = ref('')
-  const saving = ref(false)
-
-  const initializeAuthoring = () => {
-    loadBlogBaseData().catch((error) => {
-      console.error('获取文章基础数据失败:', error)
-    })
-  }
-
-  watch(
-    blogContent,
-    () => {
-      blogWordCount.value = blogContent.value.length
-    },
-    { immediate: true }
-  )
-
-  const saveBlog = async () => {
-    if (saving.value) return
-    if (title.value.trim() === '') {
-      ElMessage.error('标题不能为空')
-      return
+  const saveBlog = useCallback(async () => {
+    if (saving) return false
+    if (!title.trim()) {
+      toast.error('标题不能为空')
+      return false
     }
-
-    const content = blogContent.value || ''
-    const tags = blogTag.value.map((tagId) => {
-      const item = tagList.find((i) => String(i.id) === String(tagId))
-      return item ? tagId : { name: tagId.toString() }
-    })
-
-    const params: CreateBlogPayload = {
-      title: title.value.trim(),
-      content,
-      abstract: content.substring(0, 100),
-      author: 'test',
-      category: blogCategory.value,
-      tag: tags,
-    }
-
-    saving.value = true
+    setSaving(true)
     try {
-      await createBlog(params)
-      ElMessage.success('保存成功')
+      await createBlog({
+        title: title.trim(),
+        content: blogContent,
+        abstract: blogContent.slice(0, 100),
+        author: 'test',
+        category: blogCategory,
+        tag: blogTag.map((id) =>
+          tagList.some((tag) => String(tag.id) === String(id))
+            ? id
+            : { name: String(id) }
+        ),
+      })
+      toast.success('保存成功')
+      return true
     } catch (error) {
-      ElMessage.error(getBlogErrorMessage(error))
+      toast.error(getBlogErrorMessage(error))
+      return false
     } finally {
-      saving.value = false
+      setSaving(false)
     }
-  }
+  }, [blogCategory, blogContent, blogTag, saving, tagList, title])
 
   return {
     blogContent,
-    blogWordCount,
+    setBlogContent,
+    blogWordCount: blogContent.length,
     blogCategory,
+    setBlogCategory,
     blogTag,
+    setBlogTag,
     title,
+    setTitle,
     saving,
     categoryList,
     tagList,
-    initializeAuthoring,
     saveBlog,
   }
 }

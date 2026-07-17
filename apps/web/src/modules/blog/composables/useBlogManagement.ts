@@ -1,178 +1,101 @@
-import { computed, type ComputedRef, ref, type Ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { FormItem } from '@/modules/blog/ui/manage/formTypes'
+import { useCallback, useEffect, useState } from 'react'
+import { fetchBlogCategories, fetchBlogPage, fetchBlogTags } from '../api'
 import type {
-  SunTableColumn,
-  SunTableFetchPage,
-} from '@/modules/blog/ui/manage/tableTypes'
-import { useBlogBaseData } from './useBlogBaseData'
-import { fetchBlogPage } from '../api'
+  BlogCategory,
+  BlogRawItem,
+  BlogSortBy,
+  BlogSortOrder,
+  BlogTag,
+} from '../types'
 
-const BlogSearchFormData: FormItem[] = [
-  {
-    label: '标题',
-    type: 'input',
-    key: 'title',
-    config: {
-      placeholder: '请输入博客标题',
-      clearable: true,
-    },
-  },
-  {
-    label: '分类',
-    type: 'select',
-    key: 'category',
-    options: [
-      { label: '技术', value: 'tech' },
-      { label: '生活', value: 'life' },
-      { label: '金融', value: 'finance' },
-      { label: '区块链', value: 'blockchain' },
-    ],
-    config: {
-      placeholder: '请选择种类',
-      clearable: true,
-    },
-  },
-  {
-    label: '发布时间',
-    type: 'date',
-    key: 'publish_date',
-    config: {
-      placeholder: '选择日期',
-      type: 'daterange', // 支持日期范围选择
-      clearable: true,
-    },
-  },
-]
+const PAGE_SIZE = 10
 
-const BlogTableColumns: SunTableColumn[] = [
-  { label: 'ID', prop: 'id' },
-  { label: '标题', prop: 'title' },
-  {
-    label: '种类',
-    prop: 'category',
-  },
-  {
-    label: '标签',
-    prop: 'tag',
-  },
-  { label: '字符数', prop: 'byte_num' },
-  { label: '评论数', prop: 'comment_num' },
-  { label: '浏览量', prop: 'view_num' },
-  { label: '创建时间', prop: 'updated_at', sortable: true },
-]
+export function useBlogManagement() {
+  const [keyword, setKeyword] = useState('')
+  const [activeKeyword, setActiveKeyword] = useState('')
+  const [sortBy, setSortBy] = useState<BlogSortBy>('updated_at')
+  const [sortOrder, setSortOrder] = useState<BlogSortOrder>('desc')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [items, setItems] = useState<BlogRawItem[]>([])
+  const [categories, setCategories] = useState<BlogCategory[]>([])
+  const [tags, setTags] = useState<BlogTag[]>([])
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [validationMessage, setValidationMessage] = useState('')
 
-interface BlogSearchForm {
-  title: string
-  category?: string | undefined
-  publish_date?: string | string[] | undefined
-}
-
-interface SunFormExpose {
-  formRef?: {
-    validate?: (cb: (valid: boolean) => void) => void
-    resetFields?: () => void
-  }
-}
-
-export interface BlogManagementViewModel {
-  blogSearchFormData: FormItem[]
-  form: Ref<BlogSearchForm>
-  rules: Record<string, Array<{ max: number; message: string; trigger: string }>>
-  formRef: Ref<SunFormExpose | undefined>
-  onSubmit: () => void
-  onReset: () => void
-  blogTableColumns: ComputedRef<SunTableColumn[]>
-  fetchBlogTablePage: SunTableFetchPage
-  initializeBlogManagement: () => void
-}
-
-export function useBlogManagement(): BlogManagementViewModel {
-  const { categoryList, tagList, loadBlogBaseData } = useBlogBaseData()
-
-  const form = ref<BlogSearchForm>({
-    title: '',
-    category: undefined,
-    publish_date: undefined,
-  })
-
-  const rules = {
-    title: [{ max: 30, message: '关键字不能超过30字符', trigger: 'blur' }],
-  }
-
-  const formRef = ref<SunFormExpose>()
-
-  const onSubmit = () => {
-    const validate = formRef.value?.formRef?.validate
-    validate?.((valid: boolean) => {
-      if (valid) {
-        ElMessage.success('查询成功!')
-        console.log('提交的表单数据:', form.value)
-      } else {
-        ElMessage.error('请检查输入内容')
+  const loadPage = useCallback(
+    async (nextPage: number, query = activeKeyword) => {
+      setLoading(true)
+      setErrorMessage('')
+      try {
+        const response = await fetchBlogPage(nextPage, PAGE_SIZE, {
+          keyword: query || undefined,
+          sortBy,
+          sortOrder,
+        })
+        setItems(response.list ?? [])
+        setPage(response.page ?? nextPage)
+        setTotal(response.total ?? 0)
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : '博客列表加载失败'
+        )
+      } finally {
+        setLoading(false)
       }
-    })
-  }
+    },
+    [activeKeyword, sortBy, sortOrder]
+  )
 
-  const onReset = () => {
-    const resetFields = formRef.value?.formRef?.resetFields
-    resetFields?.()
-  }
+  useEffect(() => {
+    void Promise.all([fetchBlogCategories(), fetchBlogTags()])
+      .then(([nextCategories, nextTags]) => {
+        setCategories(nextCategories)
+        setTags(nextTags)
+      })
+      .catch(() => undefined)
+    void loadPage(1)
+  }, [loadPage])
 
-  const blogTableColumns = computed(() => {
-    const categoryNameMap = new Map(
-      categoryList.map((item) => [String(item.id), item.name])
-    )
-    const tagNameMap = new Map(tagList.map((item) => [String(item.id), item.name]))
-
-    return BlogTableColumns.map((column, index) => {
-      if (index === 2) {
-        return {
-          ...column,
-          formatter: (row: unknown, column: unknown, v: unknown) =>
-            categoryNameMap.get(String(v)) || '',
-        }
-      }
-
-      if (index === 3) {
-        return {
-          ...column,
-          formatter: (row: unknown, column: unknown, v: unknown) => {
-            if (!Array.isArray(v)) return ''
-            return v.map((id) => tagNameMap.get(String(id)) || '').join(',') || ''
-          },
-        }
-      }
-
-      return column
-    })
-  })
-
-  const fetchBlogTablePage: SunTableFetchPage = async ({ page, pageSize }) => {
-    const res = await fetchBlogPage(page, pageSize)
-    return {
-      list: (res.list ?? []) as Record<string, any>[],
-      page: res.page,
-      pageSize: res.page_size,
-      total: res.total,
+  const submit = useCallback(async () => {
+    const query = keyword.trim()
+    if (query.length > 30) {
+      setValidationMessage('关键词不能超过 30 个字符')
+      return
     }
-  }
-
-  const initializeBlogManagement = () => {
-    loadBlogBaseData().catch((error) => {
-      console.error('获取博客基础数据失败:', error)
-    })
-  }
+    setValidationMessage('')
+    setActiveKeyword(query)
+    await loadPage(1, query)
+  }, [keyword, loadPage])
+  const reset = useCallback(async () => {
+    setKeyword('')
+    setActiveKeyword('')
+    setValidationMessage('')
+    await loadPage(1, '')
+  }, [loadPage])
+  const changePage = useCallback((next: number) => loadPage(next), [loadPage])
 
   return {
-    blogSearchFormData: BlogSearchFormData,
-    form,
-    rules,
-    formRef,
-    onSubmit,
-    onReset,
-    blogTableColumns,
-    fetchBlogTablePage,
-    initializeBlogManagement,
+    keyword,
+    setKeyword,
+    activeKeyword,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    page,
+    pageSize: PAGE_SIZE,
+    total,
+    items,
+    categories,
+    tags,
+    loading,
+    errorMessage,
+    validationMessage,
+    submit,
+    reset,
+    changePage,
+    refresh: () => loadPage(page),
   }
 }

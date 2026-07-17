@@ -1,60 +1,59 @@
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
-import path from 'path'
 
-export default defineConfig(({ mode }) => {
-  const isLib = mode === 'lib'
+const entries = [
+  'button',
+  'card',
+  'chat-composer',
+  'chat-shell',
+  'checkbox',
+  'date-picker',
+  'dialog',
+  'dropdown-menu',
+  'input',
+  'label',
+  'list',
+  'loading-skeleton',
+  'pagination',
+  'select',
+  'tabs',
+  'tag',
+  'textarea',
+  'theme-provider',
+  'toast',
+  'tooltip',
+] as const
 
-  return {
-    plugins: [
-      vue(),
-      dts({
-        outDir: 'dist/types',
-        insertTypesEntry: true,
-        include: ['src/**/*.ts', 'src/components/**/*.vue'],
-      }),
-    ],
-    resolve: {
-      alias: { '@': path.resolve(__dirname, 'src') },
+export default defineConfig({
+  plugins: [
+    react(),
+    dts({
+      outDir: 'dist/types',
+      insertTypesEntry: true,
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['src/**/*.spec.*', 'src/test/**'],
+    }),
+  ],
+  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  build: {
+    cssCodeSplit: false,
+    lib: {
+      entry: {
+        ui: path.resolve(__dirname, 'src/index.ts'),
+        ...Object.fromEntries(
+          entries.map((entry) => [
+            entry,
+            path.resolve(__dirname, `src/${entry}.ts`),
+          ])
+        ),
+      },
+      name: 'SunWorldUi',
+      fileName: (format, entryName) => `${entryName}.${format}.js`,
     },
-    build: isLib
-      ? {
-          cssCodeSplit: true,
-          lib: {
-            entry: {
-              ui: path.resolve(__dirname, 'src/index.ts'),
-              button: path.resolve(__dirname, 'src/button.ts'),
-              input: path.resolve(__dirname, 'src/input.ts'),
-              'chat-composer': path.resolve(__dirname, 'src/chat-composer.ts'),
-              'chat-shell': path.resolve(__dirname, 'src/chat-shell.ts'),
-              'date-picker': path.resolve(__dirname, 'src/date-picker.ts'),
-              list: path.resolve(__dirname, 'src/list.ts'),
-              pagination: path.resolve(__dirname, 'src/pagination.ts'),
-              tag: path.resolve(__dirname, 'src/tag.ts'),
-              'loading-skeleton': path.resolve(
-                __dirname,
-                'src/loading-skeleton.ts'
-              ),
-              'theme-provider': path.resolve(
-                __dirname,
-                'src/theme-provider.ts'
-              ),
-            },
-            name: 'SunWorldUi',
-            fileName: (format, entryName) => `${entryName}.${format}.js`,
-          },
-          rollupOptions: {
-            external: ['vue'],
-            output: {
-              globals: {
-                vue: 'Vue',
-              },
-            },
-          },
-        }
-      : {
-          outDir: 'dist-preview',
-        },
-  }
+    rollupOptions: {
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
+  },
 })

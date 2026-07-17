@@ -1,0 +1,33 @@
+import { useEffect, type PropsWithChildren } from 'react'
+import { I18nextProvider } from 'react-i18next'
+import { SunToastProvider } from '@sun-world/ui/toast'
+
+import i18n, { setLocale, type AppLocale } from '@/i18n'
+import { ThemeProvider } from '@/shared/design/theme'
+import { installDeviceListener } from '@/store/tg'
+import { AppErrorBoundary } from '../errors/AppErrorBoundary'
+
+export function AppProviders({ children }: PropsWithChildren) {
+  useEffect(() => installDeviceListener(), [])
+
+  useEffect(() => {
+    const syncLocale = (event: StorageEvent) => {
+      if (event.key === 'locale') {
+        void setLocale(event.newValue === 'en' ? 'en' : ('zh' as AppLocale))
+      }
+    }
+    window.addEventListener('storage', syncLocale)
+    return () => window.removeEventListener('storage', syncLocale)
+  }, [])
+
+  return (
+    <AppErrorBoundary>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider>
+          {children}
+          <SunToastProvider />
+        </ThemeProvider>
+      </I18nextProvider>
+    </AppErrorBoundary>
+  )
+}

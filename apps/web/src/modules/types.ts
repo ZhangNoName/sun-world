@@ -1,47 +1,42 @@
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteObject } from 'react-router'
 
-/**
- * SEO defaults a module can contribute for all its routes.
- */
-export interface ModuleSeoDefaults {
-  /** Fallback title suffix, e.g. " - Sun World" */
+export interface RouteMeta extends Record<string, unknown> {
+  module?: string
   title?: string
-  /** Fallback description for module pages */
   description?: string
-  /** Fallback Open Graph type */
+  canonical?: string
+  ogImage?: string
   ogType?: string
-  /** Whether module pages should be excluded from indexing by default */
+  noIndex?: boolean
+  hideHeader?: boolean
+  hideFooter?: boolean
+  className?: string
+}
+
+export type AppRouteObject = RouteObject & {
+  meta?: RouteMeta
+  children?: AppRouteObject[]
+}
+
+export interface ModuleSeoDefaults {
+  title?: string
+  description?: string
+  ogType?: string
   noIndex?: boolean
 }
 
-/**
- * A single navigation item contributed by a module.
- */
 export interface ModuleNavItem {
-  /** Display label (localized key or literal) */
   label: string
-  /** Route path */
   path: string
-  /** Optional icon identifier */
   icon?: string
-  /** Nested nav items */
   children?: ModuleNavItem[]
 }
 
-/**
- * Contract every feature module must fulfil.
- */
 export interface AppModule {
-  /** Unique module identifier */
   id: string
-  /** Human-readable name */
   name: string
-  /** Vue Router route definitions */
-  routes: RouteRecordRaw[]
-  /** Optional navigation items for the app shell */
+  routes: AppRouteObject[]
   nav?: ModuleNavItem[]
-  /** Optional SEO defaults */
   seo?: ModuleSeoDefaults
-  /** Optional preload hook (called lazily before first route enter) */
   preload?: () => Promise<unknown>
 }

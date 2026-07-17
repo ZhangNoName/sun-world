@@ -1,0 +1,44 @@
+.tools-page {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+.tools-page header {
+  text-align: center;
+}
+.tools-page h1,
+.tools-page p {
+  margin: 0;
+}
+.tools-page header p,
+.tool-card p {
+  color: var(--text-secondary);
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.tool-card {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 190px;
+  padding: var(--space-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-default);
+  background: var(--bg-component);
+  text-decoration: none;
+  transition:
+    transform var(--motion-duration-fast),
+    border-color var(--motion-duration-fast);
+}
+.tool-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+.tool-card h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: var(--font-size-xl);
+}

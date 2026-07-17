@@ -10,15 +10,6 @@ const uiDataPath = join(repoRoot, 'packages/icons/src/data/ui.ts')
 const noticePath = join(repoRoot, 'packages/icons/NOTICE.md')
 const viteConfigPath = join(repoRoot, 'apps/web/vite.config.ts')
 const violations = []
-const allowedRootIconImports = new Set([
-  'QQOutlined',
-  'GithubOutlined',
-  'WeChatOutLined',
-  'CommentSvg',
-  'HandSvg',
-  'RectSvg',
-  'SelectSvg',
-])
 
 function normalize(path) {
   return path.split(sep).join('/')
@@ -49,14 +40,14 @@ function readJson(path) {
 }
 
 const appRuntimeFiles = walkFiles(appSrcDir, (path) =>
-  /\.(?:ts|tsx|vue)$/.test(path)
+  /\.(?:ts|tsx)$/.test(path)
 )
 
 for (const file of appRuntimeFiles) {
   const source = readFileSync(file, 'utf8')
   if (source.includes('lucide-vue-next')) {
     violations.push(
-      `${formatPath(file)} imports lucide-vue-next directly; use @sun-world/icons instead`
+      `${formatPath(file)} imports lucide-vue-next directly; use @sun-world/icons/react instead`
     )
   }
   if (/<svg\b/.test(source)) {
@@ -75,7 +66,7 @@ for (const file of appRuntimeFiles) {
   const source = readFileSync(file, 'utf8')
   if (source.includes('@/baseCom/SvgIcon') || /<SvgIcon\b/.test(source)) {
     violations.push(
-      `${formatPath(file)} uses legacy SvgIcon; UI icons must come from @sun-world/icons/vue`
+      `${formatPath(file)} uses legacy SvgIcon; UI icons must come from @sun-world/icons/react`
     )
   }
   const rootIconImportPattern =
@@ -90,12 +81,10 @@ for (const file of appRuntimeFiles) {
           ?.trim()
       )
       .filter(Boolean)
-    const forbidden = imports.filter(
-      (importName) => !allowedRootIconImports.has(importName)
-    )
+    const forbidden = imports
     if (forbidden.length > 0) {
       violations.push(
-        `${formatPath(file)} imports UI icons from the legacy @sun-world/icons root (${forbidden.join(', ')}); use @sun-world/icons/vue`
+        `${formatPath(file)} imports icons from the package root (${forbidden.join(', ')}); use @sun-world/icons/react or /core`
       )
     }
   }
@@ -104,13 +93,13 @@ for (const file of appRuntimeFiles) {
     source.split(/\r?\n/).some((line) => /^import\b.*\.svg['"]/.test(line))
   ) {
     violations.push(
-      `${formatPath(file)} imports raw SVG assets; UI icons must come from @sun-world/icons/vue unless they are logo, brand, loading, or editor shape assets`
+      `${formatPath(file)} imports raw SVG assets; UI icons must come from @sun-world/icons/react unless they are content assets`
     )
   }
 }
 
 const iconsPackage = readJson(iconsPackagePath)
-for (const exportKey of ['./core', './vue']) {
+for (const exportKey of ['./core', './react']) {
   if (!iconsPackage.exports?.[exportKey]) {
     violations.push(`packages/icons/package.json must export "${exportKey}"`)
   }

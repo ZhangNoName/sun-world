@@ -154,7 +154,7 @@ function assertSeen(method, url, body) {
 }
 
 function validateSkill() {
-  const source = readFileSync(skillPath, 'utf8')
+  const source = readFileSync(skillPath, 'utf8').replaceAll('\r\n', '\n')
   if (!/^---\nname: sun-world-ai\n/m.test(source)) {
     violations.push('skill frontmatter must name sun-world-ai')
   }

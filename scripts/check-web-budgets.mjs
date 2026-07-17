@@ -69,7 +69,9 @@ function filterByExtensions(assets, extensions = ['.js', '.css']) {
 
 function checkTotalBudget(budget, assets) {
   const matched = filterByExtensions(assets, budget.extensions)
-  const gzipKiB = toKiB(matched.reduce((sum, asset) => sum + asset.gzipBytes, 0))
+  const gzipKiB = toKiB(
+    matched.reduce((sum, asset) => sum + asset.gzipBytes, 0)
+  )
 
   return {
     name: budget.name,
@@ -125,10 +127,24 @@ function checkPatternBudget(budget, assets) {
   }
 }
 
-function checkBudget(budget, assets) {
+function checkEntryBudget(budget, assets, entryRelativePath) {
+  const entry = assets.find((asset) => asset.relativePath === entryRelativePath)
+  const gzipKiB = toKiB(entry?.gzipBytes ?? 0)
+  return {
+    name: budget.name,
+    actual: gzipKiB,
+    limit: budget.maxGzipKiB,
+    ok: Boolean(entry) && gzipKiB <= budget.maxGzipKiB,
+    detail: entry?.relativePath ?? 'entry module missing from index.html',
+  }
+}
+
+function checkBudget(budget, assets, entryRelativePath) {
   if (budget.type === 'total') return checkTotalBudget(budget, assets)
   if (budget.type === 'largest') return checkLargestBudget(budget, assets)
   if (budget.type === 'pattern') return checkPatternBudget(budget, assets)
+  if (budget.type === 'entry')
+    return checkEntryBudget(budget, assets, entryRelativePath)
 
   return {
     name: budget.name,
@@ -162,7 +178,13 @@ function main() {
   }
 
   const assets = collectAssets(distDir)
-  const results = config.budgets.map((budget) => checkBudget(budget, assets))
+  const html = readFileSync(join(distDir, 'index.html'), 'utf8')
+  const entryRelativePath = html.match(
+    /<script[^>]+type="module"[^>]+src="\/([^"]+\.js)"/
+  )?.[1]
+  const results = config.budgets.map((budget) =>
+    checkBudget(budget, assets, entryRelativePath)
+  )
   const failures = results.filter((result) => !result.ok)
 
   printAssetSummary(assets)

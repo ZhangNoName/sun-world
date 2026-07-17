@@ -1,3 +1,11 @@
-import { config } from '@vue/test-utils'
+import '@testing-library/jest-dom/vitest'
+import { cleanup } from '@testing-library/react'
+import { afterEach } from 'vitest'
 
-config.global.renderStubDefaultSlot = true
+afterEach(() => cleanup())
+HTMLElement.prototype.scrollIntoView ??= () => undefined
+globalThis.ResizeObserver ??= class implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}

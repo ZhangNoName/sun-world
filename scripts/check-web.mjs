@@ -28,6 +28,11 @@ function run(label, command, args, options = {}) {
   console.log(`==> ${label} passed.`)
 }
 
+run('React migration cutover toolchain check', 'node', [
+  'scripts/check-react-migration-toolchain.mjs',
+  '--cutover',
+])
+
 run('Frontend API contract route usage check', 'node', [
   'scripts/check-contract-route-usage.mjs',
 ])
@@ -87,13 +92,14 @@ run('Contracts generate script check', 'corepack', [
   'check:contracts:generate',
 ])
 
-run('Frontend type check', 'corepack', [
+run('Frontend type check', 'corepack', ['pnpm', '-C', 'apps/web', 'run', 'typecheck'])
+
+run('Frontend React tests', 'corepack', [
   'pnpm',
   '-C',
   'apps/web',
-  'exec',
-  'vue-tsc',
-  '--noEmit',
+  'run',
+  'test:react',
 ])
 
 run('Frontend build check', 'corepack', ['pnpm', '-C', 'apps/web', 'build'], {
@@ -123,7 +129,7 @@ run('UI package boundary check', 'node', [
 ])
 
 run('md-editor-v3 migration check', 'node', [
-  'scripts/check-md-editor-v3-migration.mjs',
+  'scripts/check-react-markdown-migration.mjs',
 ])
 
 run('Frontend performance budget check', 'node', [

@@ -78,19 +78,18 @@ export class SWEditor {
       viewport: this.viewportState,
       elements: this.elementManager,
       cursor: this.cursorManager,
-      render: debounce((isDragging?: boolean) => this.renderer.render(isDragging), 0),
+      render: debounce(
+        (isDragging?: boolean) => this.renderer.render(isDragging),
+        0
+      ),
     })
     // 默认激活选择工具
     this.toolManager.activateTool('drag')
     this.viewportState.on(() => this.renderer.render())
 
-
-
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
     this.inputEvents = new InputManager(this)
-
-
   }
   // id，只读
   get id() {
@@ -167,7 +166,7 @@ export class SWEditor {
     return this.viewportState.scale
   }
   public onZoomChange(cb: (zoom: number) => void) {
-    this.viewportState.on(() => {
+    return this.viewportState.on(() => {
       cb(this.viewportState.scale)
     })
   }
@@ -182,7 +181,7 @@ export class SWEditor {
     return this.renderer.canvasElement
   }
   public toolChanged(cb: () => void) {
-    this.toolManager.on(() => {
+    return this.toolManager.on(() => {
       cb()
     })
   }
@@ -190,19 +189,36 @@ export class SWEditor {
     return this.toolManager.getActiveToolName()
   }
   public elementManagerChanged(cb: (elements: BaseElement[]) => void) {
-    this.elementManager.onElementsChange(cb)
+    return this.elementManager.onElementsChange(cb)
   }
   public elementTreeChanged(cb: (root: NodeInfo[]) => void) {
-    this.elementManager.onHierarchyChange(cb)
+    return this.elementManager.onHierarchyChange(cb)
+  }
+  public selectElement(id: string) {
+    this.elementManager.clearSelectedElement()
+    this.elementManager.setSelectedElement(id)
+    this.elementManager.calcSelectBox()
+    this.renderer.render()
+  }
+  public getElementPanelAttrs(id: string) {
+    const element = this.elementManager.getById(id)
+    return element ? { ...element.getPanelAttrs(), name: element.name } : null
+  }
+  public updateElement(
+    id: string,
+    patch: Parameters<BaseElement['updateAttrs']>[0]
+  ) {
+    const element = this.elementManager.getById(id)
+    if (!element) return
+    element.updateAttrs(patch)
+    this.elementManager.update()
+    this.renderer.render()
   }
   public deleteElement(id: string) {
     this.elementManager.remove(id)
   }
-  public deleteSelectedElement() {
-
-  }
+  public deleteSelectedElement() {}
   public save() {
     this.elementManager.saveLocal()
-
   }
 }

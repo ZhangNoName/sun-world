@@ -1,78 +1,74 @@
-/**
- * Theme controller composable.
- *
- * Encapsulates theme storage, DOM application, and cross-tab synchronisation.
- * Components and layouts consume the theme ref through provide/inject
- * (key: 'theme') as before, but the logic lives here instead of App.vue.
- *
- * Usage:
- *   const { theme, toggleTheme } = useTheme()
- *   provide('theme', theme)
- */
-
-import { ref, watch, onMounted, onUnmounted, type Ref } from 'vue'
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react'
 
 export type ThemeName = 'sun-light' | 'sun-dark'
 
-const STORAGE_KEY = 'theme'
-const DEFAULT: ThemeName = 'sun-light'
+interface ThemeContextValue {
+  theme: ThemeName
+  setTheme: (theme: ThemeName) => void
+  toggleTheme: () => void
+}
+
+const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function isThemeName(value: unknown): value is ThemeName {
   return value === 'sun-light' || value === 'sun-dark'
 }
 
-function getStoredTheme(): ThemeName | null {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return isThemeName(stored) ? stored : null
+function initialTheme(): ThemeName {
+  const stored = localStorage.getItem('theme')
+  return isThemeName(stored) ? stored : 'sun-light'
 }
 
-/**
- * Core theme composable.
- *
- * Returns a reactive theme ref and helpers. Reads the initial value from
- * localStorage and keeps it in sync with the `<html>` class list.
- * Listens for cross-tab changes via the `storage` event.
- */
-export function useTheme(initial?: ThemeName): {
-  theme: Ref<ThemeName>
-  toggleTheme: () => void
-} {
-  const theme = ref<ThemeName>(getStoredTheme() || initial || DEFAULT)
+function applyTheme(theme: ThemeName) {
+  document.documentElement.classList.remove('sun-light', 'sun-dark')
+  document.documentElement.classList.add(theme)
+  document.documentElement.style.colorScheme =
+    theme === 'sun-dark' ? 'dark' : 'light'
+}
 
-  /** Apply the current theme to the document root. */
-  const apply = () => {
-    const html = document.documentElement
-    html.classList.remove('sun-light', 'sun-dark')
-    html.classList.add(theme.value)
-    html.style.colorScheme = theme.value === 'sun-dark' ? 'dark' : 'light'
-  }
+export function ThemeProvider({ children }: PropsWithChildren) {
+  const [theme, setTheme] = useState<ThemeName>(initialTheme)
 
-  /** Toggle between sun-light and sun-dark. */
-  const toggleTheme = () => {
-    theme.value = theme.value === 'sun-light' ? 'sun-dark' : 'sun-light'
-  }
+  useEffect(() => {
+    applyTheme(theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
-  // Persist to localStorage and sync DOM whenever theme changes
-  watch(theme, (newTheme) => {
-    apply()
-    localStorage.setItem(STORAGE_KEY, newTheme)
-  }, { immediate: true })
-
-  /** Cross-tab synchronisation */
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === STORAGE_KEY) {
-      const next = e.newValue
-      if (isThemeName(next)) theme.value = next
+  useEffect(() => {
+    const syncTheme = (event: StorageEvent) => {
+      if (event.key === 'theme' && isThemeName(event.newValue)) {
+        setTheme(event.newValue)
+      }
     }
-  }
+    window.addEventListener('storage', syncTheme)
+    return () => window.removeEventListener('storage', syncTheme)
+  }, [])
 
-  onMounted(() => {
-    window.addEventListener('storage', onStorage)
-  })
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      toggleTheme: () =>
+        setTheme((current) =>
+          current === 'sun-light' ? 'sun-dark' : 'sun-light'
+        ),
+    }),
+    [theme]
+  )
 
-  onUnmounted(() => {
-    window.removeEventListener('storage', onStorage)
-  })
+  return createElement(ThemeContext.Provider, { value }, children)
+}
 
-  return { theme, toggleTheme }
+export function useTheme() {
+  const context = useContext(ThemeContext)
+  if (!context) throw new Error('useTheme must be used within ThemeProvider')
+  return context
 }

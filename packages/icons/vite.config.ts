@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
 import path from 'path'
 
@@ -8,11 +8,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      vue(),
+      react(),
       dts({
         outDir: 'dist/types',
         insertTypesEntry: true,
-        include: ['src/**/*.ts', 'src/vue/**/*.vue'],
+        include: ['src/**/*.ts', 'src/**/*.tsx'],
+        exclude: ['src/**/*.spec.*', 'src/test/**', 'src/main.tsx'],
       }),
     ],
 
@@ -26,14 +27,13 @@ export default defineConfig(({ mode }) => {
             entry: {
               icons: path.resolve(__dirname, 'src/index.ts'),
               core: path.resolve(__dirname, 'src/core.ts'),
-              vue: path.resolve(__dirname, 'src/vue/index.ts'),
+              react: path.resolve(__dirname, 'src/react/index.ts'),
             },
             name: 'SunWorldIcons',
             fileName: (format, entryName) => `${entryName}.${format}.js`,
           },
           rollupOptions: {
-            external: ['vue'],
-            output: { globals: { vue: 'Vue' } },
+            external: ['react', 'react-dom', 'react/jsx-runtime'],
           },
         }
       : {
@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
         },
 
     optimizeDeps: {
-      entries: isLib ? ['src/index.ts'] : ['main.ts'],
+      entries: isLib ? ['src/index.ts'] : ['src/main.tsx'],
     },
 
     server: { port: 2333 },

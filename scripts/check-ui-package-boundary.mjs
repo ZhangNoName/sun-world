@@ -13,15 +13,25 @@ const violations = []
 
 const allowedSubpaths = [
   'button',
+  'card',
   'chat-composer',
   'chat-shell',
+  'checkbox',
   'date-picker',
+  'dialog',
+  'dropdown-menu',
   'input',
+  'label',
   'list',
   'loading-skeleton',
   'pagination',
+  'select',
+  'tabs',
   'tag',
+  'textarea',
   'theme-provider',
+  'toast',
+  'tooltip',
 ]
 
 function normalize(path) {
@@ -50,7 +60,7 @@ function formatPath(path) {
   return normalize(relative(repoRoot, path))
 }
 
-const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx|vue)$/.test(path))
+const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx)$/.test(path))
 const uiImportPattern =
   /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/ui(?:\/[^'"]*)?)['"]/g
 

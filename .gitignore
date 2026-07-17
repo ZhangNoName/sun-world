@@ -74,3 +74,6 @@ sunworld.site_bundle.crt
 sunworld.site_bundle.pem
 sunworld.site.csr
 sunworld.site.key
+
+# Local component package previews
+packages/icons/dist-preview/

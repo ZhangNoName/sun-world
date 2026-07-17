@@ -1,36 +1,26 @@
-import type { RouteRecordRaw } from 'vue-router'
+import { lazy } from 'react'
+import type { AppRouteObject } from '@/modules/types'
 
-// ---- Core lazy page imports (existing legacy pages) ----
-// Feature-owned routes such as home, blog, AI, account, admin, editor, and video are
-// registered by module manifests under src/modules.
-
-const GameTiles = () => import('@/pages/gameTiles/index.vue')
-const Keep = () => import('@/pages/keep/keep.vue')
-const ToolsPage = () => import('@/pages/tools/tools.page.vue')
-const NotFound = () => import('@/router/NotFound.vue')
-
-// ---- Route definitions ----
-
-export const routes: RouteRecordRaw[] = [
+const GameTilesPage = lazy(() => import('@/pages/gameTiles'))
+const ToolsPage = lazy(() => import('@/pages/tools/tools.page'))
+const KeepPage = lazy(() => import('@/pages/keep/keep'))
+const NotFound = lazy(() => import('@/router/NotFound'))
+export const routes: AppRouteObject[] = [
   {
     path: '/game_tiles',
-    component: GameTiles,
-    meta: { title: '游戏 - Sun World' },
+    Component: GameTilesPage,
+    meta: { title: '游戏瓦片 - Sun World' },
   },
-  {
-    path: '/tools',
-    component: ToolsPage,
-    meta: { title: '工具 - Sun World' },
-  },
+  { path: '/tools', Component: ToolsPage, meta: { title: '工具 - Sun World' } },
   {
     path: '/keep',
-    component: Keep,
-    meta: { title: '收藏 - Sun World' },
+    Component: KeepPage,
+    meta: { title: 'TCX 生成器 - Sun World', noIndex: true },
   },
   {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: NotFound,
-    meta: { title: '页面未找到 - Sun World' },
+    path: '*',
+    id: 'not-found',
+    Component: NotFound,
+    meta: { title: '页面未找到 - Sun World', noIndex: true },
   },
 ]
