@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   fetchAdminAlerts,
   fetchAdminMetrics,
@@ -11,9 +11,6 @@ import type {
   AdminMetricsHistorySnapshot,
   AdminMetricAlert,
   AdminMetricsSnapshot,
-  AdminRumEventSample,
-  AdminRouteMetric,
-  AdminStatusMetric,
   AdminTelemetrySnapshot,
 } from '../types'
 
@@ -26,197 +23,151 @@ export interface AdminMetricCard {
 }
 
 export function useAdminMetrics() {
-  const snapshot = ref<AdminMetricsSnapshot | null>(null)
-  const telemetrySnapshot = ref<AdminTelemetrySnapshot | null>(null)
-  const alertsSnapshot = ref<AdminAlertsSnapshot | null>(null)
-  const requestHistory = ref<AdminMetricsHistorySnapshot | null>(null)
-  const rumHistory = ref<AdminMetricsHistorySnapshot | null>(null)
-  const loading = ref(false)
-  const errorMessage = ref('')
-  const lastLoadedAt = ref<Date | null>(null)
+  const [snapshot, setSnapshot] = useState<AdminMetricsSnapshot | null>(null)
+  const [telemetrySnapshot, setTelemetrySnapshot] =
+    useState<AdminTelemetrySnapshot | null>(null)
+  const [alertsSnapshot, setAlertsSnapshot] =
+    useState<AdminAlertsSnapshot | null>(null)
+  const [requestHistory, setRequestHistory] =
+    useState<AdminMetricsHistorySnapshot | null>(null)
+  const [rumHistory, setRumHistory] =
+    useState<AdminMetricsHistorySnapshot | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null)
+  const refreshId = useRef(0)
 
-  const routes = computed<AdminRouteMetric[]>(() =>
-    [...(snapshot.value?.routes ?? [])].sort((a, b) => {
-      if (b.error_count !== a.error_count) return b.error_count - a.error_count
-      return b.avg_duration_ms - a.avg_duration_ms
-    })
-  )
-
-  const statuses = computed<AdminStatusMetric[]>(() =>
-    [...(snapshot.value?.statuses ?? [])].sort((a, b) => b.status - a.status)
-  )
-
-  const webVitals = computed(() =>
-    Object.entries(telemetrySnapshot.value?.web_vitals ?? {})
-      .map(([metric, values]) => ({ metric, ...values }))
-      .sort((a, b) => b.poor_count - a.poor_count || b.avg_value - a.avg_value)
-  )
-
-  const recentRumEvents = computed<AdminRumEventSample[]>(() =>
-    telemetrySnapshot.value?.recent_events ?? []
-  )
-
-  const activeAlerts = computed<AdminMetricAlert[]>(() =>
-    [...(alertsSnapshot.value?.alerts ?? [])].sort((a, b) => {
-      const severityOrder = { critical: 2, warning: 1 }
-      return severityOrder[b.severity] - severityOrder[a.severity]
-    })
-  )
-
-  const metricCards = computed<AdminMetricCard[]>(() => {
-    const current = snapshot.value
-    const totalRequests = current?.total_requests ?? 0
-    const errorRequests = current?.error_requests ?? 0
-    const errorRate = totalRequests > 0 ? errorRequests / totalRequests : 0
-
-    return [
-      {
-        key: 'total',
-        label: '总请求',
-        value: formatNumber(totalRequests),
-        tone: 'default',
-        caption: '当前进程累计请求数',
-      },
-      {
-        key: 'errors',
-        label: '错误请求',
-        value: formatNumber(errorRequests),
-        tone: errorRequests > 0 ? 'danger' : 'success',
-        caption: `${formatPercent(errorRate)} 错误率`,
-      },
-      {
-        key: 'avg',
-        label: '平均耗时',
-        value: `${formatNumber(current?.avg_duration_ms ?? 0)}ms`,
-        tone: getLatencyTone(current?.avg_duration_ms ?? 0),
-        caption: '所有请求平均响应耗时',
-      },
-      {
-        key: 'p95',
-        label: 'P95 耗时',
-        value: `${formatNumber(current?.p95_duration_ms ?? 0)}ms`,
-        tone: getLatencyTone(current?.p95_duration_ms ?? 0),
-        caption: '当前窗口内的 p95 请求耗时',
-      },
-      {
-        key: 'max',
-        label: '峰值耗时',
-        value: `${formatNumber(current?.max_duration_ms ?? 0)}ms`,
-        tone: getLatencyTone(current?.max_duration_ms ?? 0),
-        caption: '当前窗口内最高响应耗时',
-      },
-    ]
-  })
-
-  const telemetryCards = computed<AdminMetricCard[]>(() => {
-    const current = telemetrySnapshot.value
-    const totalEvents = current?.total_events ?? 0
-    const rejectedEvents = current?.rejected_events ?? 0
-    const rejectedRate = totalEvents > 0 ? rejectedEvents / totalEvents : 0
-
-    const eventsByName = current?.events_by_name ?? {}
-    const browserErrors =
-      (eventsByName.global_error ?? 0) +
-      (eventsByName.unhandled_rejection ?? 0) +
-      (eventsByName.api_error ?? 0)
-
-    return [
-      {
-        key: 'rum-total',
-        label: 'RUM events',
-        value: formatNumber(totalEvents),
-        tone: 'default',
-        caption: 'Frontend telemetry events in this API process',
-      },
-      {
-        key: 'rum-rejected',
-        label: 'Rejected',
-        value: formatNumber(rejectedEvents),
-        tone: rejectedEvents > 0 ? 'warning' : 'success',
-        caption: `${formatPercent(rejectedRate)} rejected by contract`,
-      },
-      {
-        key: 'rum-vitals',
-        label: 'Web Vitals',
-        value: formatNumber(webVitals.value.length),
-        tone: 'default',
-        caption: 'Distinct browser performance metrics',
-      },
-      {
-        key: 'rum-errors',
-        label: 'Browser errors',
-        value: formatNumber(browserErrors),
-        tone: browserErrors > 0 ? 'danger' : 'success',
-        caption: 'Global, promise, and API error events',
-      },
-    ]
-  })
-
-  const alertCards = computed<AdminMetricCard[]>(() => {
-    const current = alertsSnapshot.value
-    const criticalCount = current?.critical_count ?? 0
-    const warningCount = current?.warning_count ?? 0
-    const alertCount = current?.alert_count ?? 0
-
-    return [
-      {
-        key: 'alerts-total',
-        label: 'Active alerts',
-        value: formatNumber(alertCount),
-        tone: alertCount > 0 ? 'danger' : 'success',
-        caption: `${formatNumber(criticalCount)} critical / ${formatNumber(warningCount)} warning`,
-      },
-    ]
-  })
-
-  const historyCards = computed<AdminMetricCard[]>(() => [
-    {
-      key: 'history-request',
-      label: 'Request history',
-      value: formatNumber(requestHistory.value?.snapshot_count ?? 0),
-      tone: (requestHistory.value?.snapshot_count ?? 0) > 0 ? 'success' : 'default',
-      caption: `Last ${formatNumber(requestHistory.value?.limit ?? 20)} request snapshots`,
-    },
-    {
-      key: 'history-rum',
-      label: 'RUM history',
-      value: formatNumber(rumHistory.value?.snapshot_count ?? 0),
-      tone: (rumHistory.value?.snapshot_count ?? 0) > 0 ? 'success' : 'default',
-      caption: `Last ${formatNumber(rumHistory.value?.limit ?? 20)} RUM snapshots`,
-    },
-  ])
-
-  async function refresh() {
-    loading.value = true
-    errorMessage.value = ''
-
+  const refresh = useCallback(async () => {
+    const currentId = ++refreshId.current
+    setLoading(true)
+    setErrorMessage('')
     try {
-      const [requestMetrics, rumMetrics, alertMetrics] = await Promise.all([
+      const [metrics, telemetry, alerts, requests, rum] = await Promise.all([
         fetchAdminMetrics(),
         fetchAdminTelemetry(),
         fetchAdminAlerts(),
-      ])
-      snapshot.value = requestMetrics
-      telemetrySnapshot.value = rumMetrics
-      alertsSnapshot.value = alertMetrics
-
-      const [requestHistorySnapshot, rumHistorySnapshot] = await Promise.all([
         fetchAdminMetricsHistory('request'),
         fetchAdminMetricsHistory('rum'),
       ])
-      requestHistory.value = requestHistorySnapshot
-      rumHistory.value = rumHistorySnapshot
-      lastLoadedAt.value = new Date()
+      if (currentId !== refreshId.current) return
+      setSnapshot(metrics)
+      setTelemetrySnapshot(telemetry)
+      setAlertsSnapshot(alerts)
+      setRequestHistory(requests)
+      setRumHistory(rum)
+      setLastLoadedAt(new Date())
     } catch (error) {
-      errorMessage.value = getAdminErrorMessage(error)
+      if (currentId === refreshId.current)
+        setErrorMessage(getAdminErrorMessage(error))
     } finally {
-      loading.value = false
+      if (currentId === refreshId.current) setLoading(false)
     }
-  }
+  }, [])
 
-  onMounted(() => {
-    refresh()
-  })
+  useEffect(() => {
+    void refresh()
+    return () => {
+      refreshId.current += 1
+    }
+  }, [refresh])
+
+  const routes = useMemo(
+    () =>
+      [...(snapshot?.routes ?? [])].sort(
+        (a, b) =>
+          b.error_count - a.error_count || b.avg_duration_ms - a.avg_duration_ms
+      ),
+    [snapshot]
+  )
+  const statuses = useMemo(
+    () => [...(snapshot?.statuses ?? [])].sort((a, b) => b.status - a.status),
+    [snapshot]
+  )
+  const webVitals = useMemo(
+    () =>
+      Object.entries(telemetrySnapshot?.web_vitals ?? {})
+        .map(([metric, values]) => ({ metric, ...values }))
+        .sort(
+          (a, b) => b.poor_count - a.poor_count || b.avg_value - a.avg_value
+        ),
+    [telemetrySnapshot]
+  )
+  const recentRumEvents = telemetrySnapshot?.recent_events ?? []
+  const activeAlerts = useMemo<AdminMetricAlert[]>(
+    () =>
+      [...(alertsSnapshot?.alerts ?? [])].sort((a, b) => {
+        const order = { critical: 2, warning: 1 }
+        return order[b.severity] - order[a.severity]
+      }),
+    [alertsSnapshot]
+  )
+  const metricCards = useMemo<AdminMetricCard[]>(() => {
+    const total = snapshot?.total_requests ?? 0
+    const errors = snapshot?.error_requests ?? 0
+    return [
+      card('total', '总请求', total, '当前进程累计请求数'),
+      card(
+        'errors',
+        '错误请求',
+        errors,
+        `${formatPercent(total ? errors / total : 0)} 错误率`,
+        errors ? 'danger' : 'success'
+      ),
+      latencyCard('avg', '平均耗时', snapshot?.avg_duration_ms ?? 0),
+      latencyCard('p95', 'P95 耗时', snapshot?.p95_duration_ms ?? 0),
+      latencyCard('max', '峰值耗时', snapshot?.max_duration_ms ?? 0),
+    ]
+  }, [snapshot])
+  const telemetryCards = useMemo<AdminMetricCard[]>(() => {
+    const total = telemetrySnapshot?.total_events ?? 0
+    const rejected = telemetrySnapshot?.rejected_events ?? 0
+    const names = telemetrySnapshot?.events_by_name ?? {}
+    const errors =
+      (names.global_error ?? 0) +
+      (names.unhandled_rejection ?? 0) +
+      (names.api_error ?? 0)
+    return [
+      card('rum-total', 'RUM 事件', total, '浏览器遥测事件'),
+      card(
+        'rum-rejected',
+        '拒绝事件',
+        rejected,
+        `${formatPercent(total ? rejected / total : 0)} 被契约拒绝`,
+        rejected ? 'warning' : 'success'
+      ),
+      card('rum-vitals', 'Web Vitals', webVitals.length, '浏览器性能指标种类'),
+      card(
+        'rum-errors',
+        '浏览器错误',
+        errors,
+        '全局、Promise 与 API 错误',
+        errors ? 'danger' : 'success'
+      ),
+    ]
+  }, [telemetrySnapshot, webVitals.length])
+  const alertCards = [
+    card(
+      'alerts-total',
+      '活动告警',
+      alertsSnapshot?.alert_count ?? 0,
+      `${alertsSnapshot?.critical_count ?? 0} 严重 / ${alertsSnapshot?.warning_count ?? 0} 警告`,
+      alertsSnapshot?.alert_count ? 'danger' : 'success'
+    ),
+  ]
+  const historyCards = [
+    card(
+      'history-request',
+      '请求历史',
+      requestHistory?.snapshot_count ?? 0,
+      `最近 ${requestHistory?.limit ?? 20} 个快照`
+    ),
+    card(
+      'history-rum',
+      'RUM 历史',
+      rumHistory?.snapshot_count ?? 0,
+      `最近 ${rumHistory?.limit ?? 20} 个快照`
+    ),
+  ]
 
   return {
     snapshot,
@@ -242,35 +193,51 @@ export function useAdminMetrics() {
   }
 }
 
+function card(
+  key: string,
+  label: string,
+  value: number,
+  caption: string,
+  tone: AdminMetricCard['tone'] = 'default'
+): AdminMetricCard {
+  return { key, label, value: formatNumber(value), tone, caption }
+}
+function latencyCard(
+  key: string,
+  label: string,
+  value: number
+): AdminMetricCard {
+  return {
+    ...card(key, label, value, '当前窗口响应耗时', latencyTone(value)),
+    value: `${formatNumber(value)}ms`,
+  }
+}
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('zh-CN', {
     maximumFractionDigits: value >= 100 ? 0 : 2,
   }).format(value)
 }
-
-export function formatDateTime(value: string | Date | null | undefined): string {
+export function formatDateTime(
+  value: string | Date | null | undefined
+): string {
   if (!value) return '-'
   const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(date)
+  return Number.isNaN(date.getTime())
+    ? '-'
+    : new Intl.DateTimeFormat('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }).format(date)
 }
-
 function formatPercent(value: number): string {
   return new Intl.NumberFormat('zh-CN', {
     style: 'percent',
     maximumFractionDigits: 2,
   }).format(value)
 }
-
-function getLatencyTone(value: number): AdminMetricCard['tone'] {
-  if (value >= 1200) return 'danger'
-  if (value >= 500) return 'warning'
-  return 'success'
+function latencyTone(value: number): AdminMetricCard['tone'] {
+  return value >= 1200 ? 'danger' : value >= 500 ? 'warning' : 'success'
 }

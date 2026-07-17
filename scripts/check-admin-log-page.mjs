@@ -14,27 +14,27 @@ const required = {
     "'/admin/logs'",
     'AdminLogSnapshot',
   ],
-  composable: [
+  hook: [
     'apps/web/src/modules/admin/composables/useAdminLogs.ts',
     'useAdminLogs',
     'fetchAdminLogs',
     'severity',
     'eventType',
+    'retentionCopy',
   ],
   page: [
-    'apps/web/src/modules/admin/pages/AdminLogsPage.vue',
+    'apps/web/src/modules/admin/pages/AdminLogsPage.tsx',
     'useAdminLogs',
-    'Audit logs',
-    'No audit events',
+    '审计日志',
+    '暂无审计事件',
   ],
   module: [
     'apps/web/src/modules/admin/index.ts',
     "'/manage/logs'",
     'AdminLogsPage',
   ],
-  manage: ['apps/web/src/pages/manage/index.vue', "'logs'", 'AdminLogsPage'],
+  manage: ['apps/web/src/pages/manage/index.tsx', "'logs'", 'AdminLogsPage'],
 }
-
 const failures = []
 for (const [name, [file, ...tokens]] of Object.entries(required)) {
   const path = resolve(root, file)
@@ -43,17 +43,13 @@ for (const [name, [file, ...tokens]] of Object.entries(required)) {
     continue
   }
   const source = readFileSync(path, 'utf8')
-  for (const token of tokens) {
-    if (!source.includes(token)) {
+  for (const token of tokens)
+    if (!source.includes(token))
       failures.push(`${name}: ${file} must contain ${JSON.stringify(token)}`)
-    }
-  }
 }
-
 if (failures.length) {
   console.error('Admin log page check failed:')
-  for (const failure of failures) console.error(`- ${failure}`)
+  failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
-
 console.log('Admin log page check passed')

@@ -1,5 +1,9 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
+import { lazy } from 'react'
 import type { AppModule } from '../types'
+
+const ManagePage = lazy(() => import('@/pages/manage'))
+const AdminMetricsPage = lazy(() => import('./pages/AdminMetricsPage'))
+const AdminLogsPage = lazy(() => import('./pages/AdminLogsPage'))
 
 export const adminModule: AppModule = {
   id: 'admin',
@@ -7,17 +11,17 @@ export const adminModule: AppModule = {
   routes: [
     {
       path: '/manage',
-      Component: createPendingRouteComponent('管理'),
-      meta: { module: 'admin', title: '管理 - Sun World' },
+      Component: ManagePage,
+      meta: { module: 'admin', title: '管理 - Sun World', noIndex: true },
     },
     {
       path: '/manage/metrics',
-      Component: createPendingRouteComponent('后台指标'),
-      meta: { module: 'admin', title: '后台指标 - Sun World' },
+      Component: AdminMetricsPage,
+      meta: { module: 'admin', title: '后台指标 - Sun World', noIndex: true },
     },
     {
       path: '/manage/logs',
-      Component: createPendingRouteComponent('审计日志'),
+      Component: AdminLogsPage,
       meta: { module: 'admin', title: '审计日志 - Sun World', noIndex: true },
     },
   ],
