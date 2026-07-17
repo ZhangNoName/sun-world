@@ -22,6 +22,7 @@ const emptyBlog = {
 
 export function useBlogReader(id: string) {
   const blogPreview = useRef<HTMLDivElement>(null)
+  const requestId = useRef(0)
   const [catalog, setCatalog] = useState<MarkdownHeadingItem[]>([])
   const [activeHeadingId, setActiveHeadingId] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,13 +35,24 @@ export function useBlogReader(id: string) {
 
   const loadBlog = useCallback(async () => {
     if (!id) throw new Error('UNSPECIFIED_BLOG_ID')
+    const currentId = ++requestId.current
     setLoading(true)
     try {
-      setBlogInfo(await fetchBlogById(id))
+      const next = await fetchBlogById(id)
+      if (currentId === requestId.current) setBlogInfo(next)
+    } catch (error) {
+      if (currentId === requestId.current) throw error
     } finally {
-      setLoading(false)
+      if (currentId === requestId.current) setLoading(false)
     }
   }, [id])
+
+  useEffect(
+    () => () => {
+      requestId.current += 1
+    },
+    []
+  )
 
   const scrollToHeading = useCallback((headingId: string) => {
     const target = blogPreview.current?.querySelector<HTMLElement>(

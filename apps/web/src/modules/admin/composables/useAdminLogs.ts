@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchAdminLogs } from '../api'
 import { getAdminErrorMessage } from '../errors'
 import type { AdminLogEvent, AdminLogsSnapshot } from '../types'
@@ -20,8 +20,10 @@ export function useAdminLogs(initial: AdminLogsFilters = {}) {
   )
   const [eventType, setEventType] = useState(initial.eventType ?? '')
   const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null)
+  const requestId = useRef(0)
 
   const refresh = useCallback(async () => {
+    const currentId = ++requestId.current
     setLoading(true)
     setErrorMessage('')
     try {
@@ -30,17 +32,22 @@ export function useAdminLogs(initial: AdminLogsFilters = {}) {
         severity: severity || undefined,
         eventType: eventType.trim(),
       })
+      if (currentId !== requestId.current) return
       setSnapshot(next)
       setLastLoadedAt(new Date())
     } catch (error) {
-      setErrorMessage(getAdminErrorMessage(error))
+      if (currentId === requestId.current)
+        setErrorMessage(getAdminErrorMessage(error))
     } finally {
-      setLoading(false)
+      if (currentId === requestId.current) setLoading(false)
     }
   }, [eventType, limit, severity])
 
   useEffect(() => {
     void refresh()
+    return () => {
+      requestId.current += 1
+    }
   }, [refresh])
 
   return {
