@@ -1,5 +1,19 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
+
+const login = () =>
+  import('@/pages/login/login').then((module) => ({
+    Component: module.LoginPage,
+  }))
+const register = () =>
+  import('@/pages/login/register').then((module) => ({
+    Component: module.RegisterPage,
+  }))
+const me = () =>
+  import('@/pages/me/me').then((module) => ({ Component: module.MePage }))
+const qq = () =>
+  import('@/pages/login/qqCb').then((module) => ({
+    Component: module.QqCallbackPage,
+  }))
 
 const authMeta = {
   hideHeader: true,
@@ -13,22 +27,22 @@ export const accountModule: AppModule = {
   routes: [
     {
       path: '/login',
-      Component: createPendingRouteComponent('登录'),
+      lazy: login,
       meta: { module: 'account', title: '登录 - Sun World', ...authMeta },
     },
     {
       path: '/register',
-      Component: createPendingRouteComponent('注册'),
+      lazy: register,
       meta: { module: 'account', title: '注册 - Sun World', ...authMeta },
     },
     {
       path: '/me',
-      Component: createPendingRouteComponent('个人中心'),
+      lazy: me,
       meta: { module: 'account', title: '个人中心 - Sun World' },
     },
     {
       path: '/qq',
-      Component: createPendingRouteComponent('QQ 登录'),
+      lazy: qq,
       meta: { module: 'account', title: 'QQ 登录 - Sun World' },
     },
   ],

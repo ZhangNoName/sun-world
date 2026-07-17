@@ -1,81 +1,38 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const repoRoot = fileURLToPath(new URL('..', import.meta.url))
-const source = (path) => readFileSync(join(repoRoot, path), 'utf8')
-const accountRoutes = source('apps/web/src/modules/account/index.ts')
-const loginPage = source('apps/web/src/pages/login/login.vue')
-const registerPage = source('apps/web/src/pages/login/register.vue')
-const desktopLayout = source('apps/web/src/layout/deskLayout.vue')
-const mobileLayout = source('apps/web/src/layout/mobLayout.vue')
-const violations = []
-
+import { resolve } from 'node:path'
+const root = resolve(import.meta.dirname, '..')
+const read = (path) => readFileSync(resolve(root, path), 'utf8')
+const routes = read('apps/web/src/modules/account/index.ts')
+const login = read('apps/web/src/pages/login/login.tsx')
+const register = read('apps/web/src/pages/login/register.tsx')
+const shell = read('apps/web/src/pages/login/AuthPageShell.tsx')
+const css = read('apps/web/src/pages/login/auth.css')
+if (!/const authMeta\s*=\s*\{[\s\S]*hideHeader:\s*true[\s\S]*hideFooter:\s*true[\s\S]*className:\s*'auth-page-wrapper'/.test(routes)) throw new Error('Shared auth route metadata is incomplete.')
 for (const path of ['/login', '/register']) {
-  const route = new RegExp(`path: '${path}',[\\s\\S]*?meta: \\{([^}]*)\\}`)
-  const match = accountRoutes.match(route)
+  const block = routes.slice(
+    routes.indexOf(`path: '${path}'`),
+    routes.indexOf(`path: '${path}'`) + 400
+  )
+  if (!block.includes('...authMeta')) throw new Error(`${path} must apply authMeta`)
+}
+for (const [name, page] of [
+  ['login', login],
+  ['register', register],
+]) {
   if (
-    !match ||
-    !/hideHeader: true/.test(match[1]) ||
-    !/hideFooter: true/.test(match[1])
-  ) {
-    violations.push(`${path} must hide the global header and footer.`)
-  }
-  if (!match || !/className: 'auth-page-wrapper'/.test(match[1])) {
-    violations.push(`${path} must opt into the full-viewport auth layout.`)
-  }
-}
-
-for (const [name, page] of [
-  ['login', loginPage],
-  ['register', registerPage],
-]) {
-  if (!/AuthPageShell/.test(page)) {
-    violations.push(`${name} page must use the shared AuthPageShell.`)
-  }
-}
-
-if (!/loginError/.test(loginPage) || /ElMessage\.error/.test(loginPage)) {
-  violations.push(
-    'Login failure must stay visible inside the form instead of using a global error toast.'
+    !page.includes('AuthPageShell') ||
+    !page.includes('role="alert"') ||
+    /ElForm|ElMessage|element-plus/.test(page)
   )
+    throw new Error(
+      `${name} must use the React shell and inline errors without Element.`
+    )
 }
-
-for (const [name, page] of [
-  ['login', loginPage],
-  ['register', registerPage],
-]) {
-  if (!/:deep\(\.sun-ui-field\)[\s\S]*?width:\s*100%/.test(page)) {
-    violations.push(`${name} form controls must fill the available form width.`)
-  }
-  if (!/:deep\(\.sun-input\)[\s\S]*?width:\s*100%/.test(page)) {
-    violations.push(`${name} text inputs must fill the available form width.`)
-  }
-}
-
-if (!/:deep\(\.login-btn\)[\s\S]*?width:\s*100%/.test(loginPage)) {
-  violations.push('Login primary action must fill the available form width.')
-}
-
-if (!/:deep\(\.register-btn\)[\s\S]*?width:\s*100%/.test(registerPage)) {
-  violations.push('Register primary action must fill the available form width.')
-}
-
-if (!/\.content\.auth-page-wrapper/.test(desktopLayout)) {
-  violations.push(
-    'Desktop layout must give auth routes a full-width viewport wrapper.'
-  )
-}
-
-if (!/\.main-container\.auth-page-wrapper/.test(mobileLayout)) {
-  violations.push('Mobile layout must remove shell padding for auth routes.')
-}
-
-if (violations.length) {
-  console.error('Auth page layout check failed:')
-  for (const violation of violations) console.error(`- ${violation}`)
-  process.exit(1)
-}
-
+if (
+  !shell.includes('auth-page') ||
+  !/\.auth-form[^}]*display:\s*grid/s.test(css) ||
+  !css.includes('width: 100%')
+)
+  throw new Error('Full-width auth layout contract is missing.')
 console.log('Auth page layout check passed.')
