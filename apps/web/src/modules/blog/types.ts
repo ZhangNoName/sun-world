@@ -1,5 +1,4 @@
-import type { Ref } from 'vue'
-import type { DefineComponent } from 'vue'
+import type { ReactNode } from 'react'
 import type { SunMarkdownHeading } from '@/shared/markdown'
 import type {
   ApiRequestBody,
@@ -27,7 +26,7 @@ export interface CatalogItemType {
   level: number | string
   children?: CatalogItemType[]
   isopen?: boolean
-  icon?: DefineComponent | SVGAElement | Element
+  icon?: ReactNode
 }
 
 export type MarkdownHeadingItem = SunMarkdownHeading
@@ -116,19 +115,19 @@ export type BlogListItem = BlogCardProps
 /** Result shape returned by useBlogList. */
 export interface BlogListViewModel {
   /** Mapped items for rendering. */
-  items: Ref<BlogListItem[]>
+  items: BlogListItem[]
   /** Whether data is being loaded. */
-  loading: Ref<boolean>
+  loading: boolean
   /** Whether more pages can be loaded. */
-  hasMore: Ref<boolean>
+  hasMore: boolean
   /** Total number of items across all pages. */
-  total: Ref<number>
+  total: number
   /** Current search keyword sent to the blog list API. */
-  keyword: Ref<string>
+  keyword: string
   /** Current API sort field. */
-  sortBy: Ref<BlogSortBy>
+  sortBy: BlogSortBy
   /** Current API sort order. */
-  sortOrder: Ref<BlogSortOrder>
+  sortOrder: BlogSortOrder
   /** Load the first page (replaces current items). */
   loadFirstPage: () => Promise<void>
   /** Append the next page (infinite scroll / load-more). */

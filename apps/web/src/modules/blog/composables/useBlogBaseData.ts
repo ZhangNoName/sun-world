@@ -1,58 +1,60 @@
-import { reactive, ref } from 'vue'
-import { fetchBlogCategories, fetchBlogStats, fetchBlogTags } from '../api'
-import type {
-  CategoryResponse,
-  StatsResponse,
-  TagResponse,
-} from '../types'
+import { useCallback, useState } from 'react'
 
-const tagList = reactive<TagResponse[]>([])
-const categoryList = reactive<CategoryResponse[]>([])
-const stats = reactive<StatsResponse>({
+import { fetchBlogCategories, fetchBlogStats, fetchBlogTags } from '../api'
+import type { CategoryResponse, StatsResponse, TagResponse } from '../types'
+
+const emptyStats: StatsResponse = {
   blog_count: 0,
   category_count: 0,
   tag_count: 0,
   total_view_num: 0,
-})
+}
 
-const loading = ref(false)
-const loaded = ref(false)
-let loadingPromise: Promise<void> | null = null
+let cache:
+  | {
+      categories: CategoryResponse[]
+      tags: TagResponse[]
+      stats: StatsResponse
+    }
+  | undefined
+let pending: Promise<NonNullable<typeof cache>> | undefined
 
 export function useBlogBaseData() {
-  const loadBlogBaseData = async (): Promise<void> => {
-    if (loaded.value) return
-    if (loadingPromise) return loadingPromise
+  const [categoryList, setCategoryList] = useState(cache?.categories ?? [])
+  const [tagList, setTagList] = useState(cache?.tags ?? [])
+  const [stats, setStats] = useState(cache?.stats ?? emptyStats)
+  const [loading, setLoading] = useState(false)
 
-    loading.value = true
-    loadingPromise = (async () => {
-      const [categories, tags, nextStats] = await Promise.all([
+  const loadBlogBaseData = useCallback(async () => {
+    setLoading(true)
+    try {
+      pending ??= Promise.all([
         fetchBlogCategories(),
         fetchBlogTags(),
         fetchBlogStats(),
-      ])
-
-      categoryList.splice(0, categoryList.length, ...categories)
-      tagList.splice(0, tagList.length, ...tags)
-      Object.assign(stats, nextStats)
-      loaded.value = true
-    })()
-      .finally(() => {
-        if (!loaded.value) {
-          loadingPromise = null
-        }
-        loading.value = false
-      })
-
-    return loadingPromise
-  }
+      ]).then(([categories, tags, nextStats]) => ({
+        categories,
+        tags,
+        stats: nextStats,
+      }))
+      cache = await pending
+      setCategoryList(cache.categories)
+      setTagList(cache.tags)
+      setStats(cache.stats)
+    } catch (error) {
+      pending = undefined
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   return {
     tagList,
     categoryList,
     stats,
     loading,
-    loaded,
+    loaded: Boolean(cache),
     loadBlogBaseData,
   }
 }

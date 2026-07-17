@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 
 import type { AppRouteObject } from '@/modules/types'
 import { routes as coreRoutes } from './routes'
+import { AppLayout } from '@/layout/layout'
 
 function isCatchAllRoute(route: AppRouteObject) {
   return route.path === '*' || route.path?.includes(':pathMatch(.*)')
@@ -36,5 +37,7 @@ export function createAppRouter(extraRoutes: AppRouteObject[] = []) {
     ...route,
     handle: { ...(route.handle ?? {}), meta: route.meta ?? {} },
   }))
-  return createBrowserRouter(routes)
+  return createBrowserRouter([
+    { path: '/', Component: AppLayout, children: routes },
+  ])
 }

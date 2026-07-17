@@ -1,7 +1,8 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
 import type { AppModule } from '../types'
 
-const HomePage = createPendingRouteComponent('Sun World')
+const importHomePage = () => import('./pages/HomePage')
+const loadHomePage = () =>
+  importHomePage().then((module) => ({ Component: module.HomePage }))
 
 export const homeModule: AppModule = {
   id: 'home',
@@ -9,7 +10,7 @@ export const homeModule: AppModule = {
   routes: [
     {
       path: '/',
-      Component: HomePage,
+      lazy: loadHomePage,
       meta: {
         module: 'home',
         title: 'Sun World',
@@ -18,9 +19,10 @@ export const homeModule: AppModule = {
     },
     {
       path: '/home',
-      Component: HomePage,
+      lazy: loadHomePage,
       meta: { module: 'home', title: '首页 - Sun World' },
     },
   ],
   seo: { title: 'Sun World' },
+  preload: importHomePage,
 }

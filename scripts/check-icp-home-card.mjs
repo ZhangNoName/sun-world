@@ -1,55 +1,27 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const repoRoot = resolve(import.meta.dirname, '..')
-const icpText = '豫ICP备2024081960号'
-const icpUrl = 'https://beian.miit.gov.cn/'
-
-function read(relativePath) {
-  return readFileSync(resolve(repoRoot, relativePath), 'utf8')
-}
-
-function assert(condition, message) {
-  if (!condition) {
-    console.error(message)
-    process.exit(1)
-  }
-}
-
-const homePage = read('apps/web/src/modules/home/pages/HomePage.vue')
-const cardPath = 'apps/web/src/modules/home/ui/IcpFilingCard.vue'
-
-assert(
-  existsSync(resolve(repoRoot, cardPath)),
-  'Expected homepage ICP card component to exist.'
+const root = resolve(import.meta.dirname, '..')
+const read = (path) => readFileSync(resolve(root, path), 'utf8')
+const home = read('apps/web/src/modules/home/pages/HomePage.tsx')
+const card = read('apps/web/src/modules/home/ui/IcpFilingCard.tsx')
+if (
+  !card.includes('豫ICP备2024081960号') ||
+  !card.includes('https://beian.miit.gov.cn/')
 )
-
-const icpCard = read(cardPath)
-assert(
-  icpCard.includes(icpText) && icpCard.includes(icpUrl),
-  'Expected homepage ICP card to render the filing text and official URL.'
+  throw new Error('ICP card must contain the official filing text and URL.')
+if (
+  (home.match(/<IcpFilingCard/g) ?? []).length !== 2 ||
+  !home.includes('desktop-icp-card') ||
+  !home.includes('mobile-icp-card')
 )
-
-assert(
-  homePage.includes('IcpFilingCard') &&
-    homePage.includes('<IcpFilingCard class="desktop-icp-card" />') &&
-    homePage.includes('<IcpFilingCard class="mobile-icp-card" />'),
-  'Expected HomePage to render ICP card on desktop and mobile homepage layouts.'
-)
-
-const globalFiles = [
-  'apps/web/src/layout/deskLayout.vue',
-  'apps/web/src/layout/mobLayout.vue',
-  'apps/web/src/layout/footer/index.vue',
-]
-
-for (const file of globalFiles) {
-  const source = read(file)
-  assert(
-    !source.includes(icpUrl) && !source.includes('mob-beian-link'),
-    `Expected ${file} to avoid rendering the ICP filing globally.`
-  )
-}
-
+  throw new Error('HomePage must render desktop and mobile filing placements.')
+for (const path of [
+  'apps/web/src/layout/layout.tsx',
+  'apps/web/src/layout/footer/index.tsx',
+  'apps/web/src/layout/header/index.tsx',
+])
+  if (read(path).includes('beian.miit.gov.cn'))
+    throw new Error(`ICP filing must remain homepage-only: ${path}`)
 console.log('Homepage ICP card check passed.')
