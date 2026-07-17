@@ -1,3 +1,2 @@
-export * from './icons'
 export * from './core'
-export * from './vue'
+export * from './react'

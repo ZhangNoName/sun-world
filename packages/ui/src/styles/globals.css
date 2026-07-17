@@ -1,0 +1,86 @@
+@import './base.css';
+
+:root {
+  --background: var(--bg-page, #ffffff);
+  --foreground: var(--text-default, #111827);
+  --card: var(--bg-surface, #ffffff);
+  --card-foreground: var(--text-default, #111827);
+  --primary: var(--color-brand, #14b8a6);
+  --destructive: var(--color-danger, #e11d48);
+  --border: var(--border-default, #e5e7eb);
+  --radius: var(--sun-ui-radius, var(--radius-md, 0.625rem));
+}
+
+.sun-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+.sun-dialog__content,
+.sun-dropdown-menu,
+.sun-select__content,
+.sun-tooltip {
+  z-index: 1000;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 18%);
+}
+
+.sun-dialog__content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  min-width: min(28rem, calc(100vw - 2rem));
+  padding: 1rem;
+  transform: translate(-50%, -50%);
+}
+
+.sun-dropdown-menu,
+.sun-select__content,
+.sun-tooltip {
+  padding: 0.375rem;
+}
+
+.sun-dropdown-menu [role='menuitem'],
+.sun-select__item,
+.sun-tabs__trigger {
+  cursor: pointer;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.5rem 0.75rem;
+  outline: none;
+}
+
+.sun-dropdown-menu [role='menuitem'][data-highlighted],
+.sun-select__item[data-highlighted],
+.sun-tabs__trigger[data-state='active'] {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.sun-checkbox {
+  display: inline-grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+}
+
+.sun-checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sun-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.sun-card__header,
+.sun-card__content,
+.sun-card__footer {
+  padding: 1rem;
+}

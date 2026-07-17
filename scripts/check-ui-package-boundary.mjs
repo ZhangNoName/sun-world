@@ -13,15 +13,25 @@ const violations = []
 
 const allowedSubpaths = [
   'button',
+  'card',
   'chat-composer',
   'chat-shell',
+  'checkbox',
   'date-picker',
+  'dialog',
+  'dropdown-menu',
   'input',
+  'label',
   'list',
   'loading-skeleton',
   'pagination',
+  'select',
+  'tabs',
   'tag',
+  'textarea',
   'theme-provider',
+  'toast',
+  'tooltip',
 ]
 
 function normalize(path) {

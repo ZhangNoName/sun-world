@@ -110,7 +110,7 @@ for (const file of appRuntimeFiles) {
 }
 
 const iconsPackage = readJson(iconsPackagePath)
-for (const exportKey of ['./core', './vue']) {
+for (const exportKey of ['./core', './react']) {
   if (!iconsPackage.exports?.[exportKey]) {
     violations.push(`packages/icons/package.json must export "${exportKey}"`)
   }
