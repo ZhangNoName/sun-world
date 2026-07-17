@@ -1,18 +1,20 @@
-import { createPendingRouteComponent } from '@/app/router/route-pending'
+import { lazy } from 'react'
 import type { AppModule } from '../types'
 
+const EditorCanvasPage = lazy(() => import('./pages/EditorCanvasPage'))
 export const editorModule: AppModule = {
   id: 'editor',
   name: '编辑器',
   routes: [
     {
       path: '/canvas',
-      Component: createPendingRouteComponent('画布编辑器'),
+      Component: EditorCanvasPage,
       meta: {
         module: 'editor',
         title: '画布 - Sun World',
         hideFooter: true,
         hideHeader: true,
+        noIndex: true,
         className: 'canvas-page-wrapper',
       },
     },

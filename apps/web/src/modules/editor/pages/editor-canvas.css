@@ -1,0 +1,131 @@
+.canvas-page {
+  --sidebar-width: 241px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(
+      --sidebar-width
+    );
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--text-default);
+  background: var(--bg-page);
+}
+.canvas-host {
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.editor-sidebar {
+  min-width: 0;
+  padding: var(--space-3);
+  border-color: var(--border-default);
+  background: var(--bg-component);
+  overflow: auto;
+}
+.editor-sidebar--left {
+  border-right: 1px solid var(--border-default);
+}
+.editor-sidebar--right {
+  border-left: 1px solid var(--border-default);
+}
+.editor-sidebar h2 {
+  margin: 0 0 var(--space-3);
+  color: var(--text-strong);
+  font-size: var(--font-size-lg);
+}
+.editor-tree {
+  display: grid;
+  gap: 2px;
+}
+.tree-item {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  border-radius: var(--radius-sm);
+}
+.tree-item:hover,
+.tree-item.is-selected {
+  background: var(--bg-brand-light);
+}
+.tree-toggle,
+.tree-name {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.tree-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+.tree-toggle:disabled {
+  opacity: 0.45;
+}
+.tree-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.property-form {
+  display: grid;
+  gap: var(--space-3);
+}
+.zoom-label,
+.editor-empty {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+.canvas-toolbar {
+  position: absolute;
+  z-index: 10;
+  bottom: 12px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 13px;
+  background: var(--bg-component);
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-lg);
+}
+.canvas-toolbar > button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-default);
+  background: transparent;
+  cursor: pointer;
+}
+.canvas-toolbar > button.is-active {
+  color: var(--btn-text-color);
+  background: var(--color-brand);
+}
+@media (max-width: 840px) {
+  .canvas-page {
+    --sidebar-width: 180px;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  }
+  .editor-sidebar--right {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .canvas-page {
+    grid-template-columns: 1fr;
+  }
+  .editor-sidebar {
+    display: none;
+  }
+}
