@@ -12,4 +12,9 @@
 export { BREAKPOINTS } from '@/hooks/breakpoint/breakpoint.data'
 export type { BreakpointKey } from '@/hooks/breakpoint/breakpoint.data'
 export { ThemeProvider, useTheme } from './theme'
-export type { ThemeName } from './theme'
+export type {
+  ColorMode,
+  DesignFamily,
+  ResolvedColorMode,
+  ThemePreference,
+} from './theme'

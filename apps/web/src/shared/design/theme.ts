@@ -1,6 +1,7 @@
 import {
   createContext,
   createElement,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -8,76 +9,148 @@ import {
   type PropsWithChildren,
 } from 'react'
 
-export type ThemeName = 'sun-light' | 'sun-dark'
-
-interface ThemeContextValue {
-  theme: ThemeName
-  setTheme: (theme: ThemeName) => void
-  toggleTheme: () => void
+export type DesignFamily = 'sun-world' | 'apple'
+export type ColorMode = 'light' | 'dark' | 'system'
+export type ResolvedColorMode = Exclude<ColorMode, 'system'>
+export interface ThemePreference {
+  family: DesignFamily
+  mode: ColorMode
 }
 
+interface ThemeContextValue extends ThemePreference {
+  resolvedMode: ResolvedColorMode
+  setFamily: (family: DesignFamily) => void
+  setMode: (mode: ColorMode) => void
+  toggleFamily: () => void
+}
+
+const STORAGE_KEY = 'sun-world-theme'
+const LEGACY_STORAGE_KEY = 'theme'
+const DEFAULT_PREFERENCE: ThemePreference = {
+  family: 'sun-world',
+  mode: 'system',
+}
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function isThemeName(value: unknown): value is ThemeName {
-  return value === 'sun-light' || value === 'sun-dark'
+function isFamily(value: unknown): value is DesignFamily {
+  return value === 'sun-world' || value === 'apple'
 }
 
-function initialTheme(): ThemeName {
+function isMode(value: unknown): value is ColorMode {
+  return value === 'light' || value === 'dark' || value === 'system'
+}
+
+function parsePreference(value: string | null): ThemePreference | null {
+  if (!value) return null
   try {
-    const stored =
-      typeof localStorage === 'undefined' ? null : localStorage.getItem('theme')
-    return isThemeName(stored) ? stored : 'sun-light'
+    const parsed = JSON.parse(value) as Partial<ThemePreference>
+    return isFamily(parsed.family) && isMode(parsed.mode)
+      ? { family: parsed.family, mode: parsed.mode }
+      : null
   } catch {
-    return 'sun-light'
+    return null
   }
 }
 
-function applyTheme(theme: ThemeName) {
-  if (typeof document === 'undefined') return
-  document.documentElement.classList.remove('sun-light', 'sun-dark')
-  document.documentElement.classList.add(theme)
-  document.documentElement.style.colorScheme =
-    theme === 'sun-dark' ? 'dark' : 'light'
+function initialPreference(): ThemePreference {
+  try {
+    if (typeof localStorage === 'undefined') return DEFAULT_PREFERENCE
+    const stored = parsePreference(localStorage.getItem(STORAGE_KEY))
+    if (stored) return stored
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY)
+    if (legacy === 'sun-light' || legacy === 'sun-dark') {
+      return { family: 'sun-world', mode: legacy === 'sun-dark' ? 'dark' : 'light' }
+    }
+  } catch {
+    return DEFAULT_PREFERENCE
+  }
+  return DEFAULT_PREFERENCE
 }
 
-function persistTheme(theme: ThemeName) {
+function systemMode(): ResolvedColorMode {
+  return typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
+function applyTheme(family: DesignFamily, mode: ResolvedColorMode) {
+  if (typeof document === 'undefined') return
+  const root = document.documentElement
+  root.dataset.design = family
+  root.dataset.colorMode = mode
+  root.classList.toggle('sun-light', mode === 'light')
+  root.classList.toggle('sun-dark', mode === 'dark')
+  root.style.colorScheme = mode
+}
+
+function persistTheme(preference: ThemePreference) {
   try {
-    if (typeof localStorage !== 'undefined')
-      localStorage.setItem('theme', theme)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preference))
+    localStorage.removeItem(LEGACY_STORAGE_KEY)
   } catch {
     // Storage can be unavailable in privacy-restricted browser contexts.
   }
 }
 
 export function ThemeProvider({ children }: PropsWithChildren) {
-  const [theme, setTheme] = useState<ThemeName>(initialTheme)
+  const [preference, setPreference] = useState(initialPreference)
+  const [systemPreference, setSystemPreference] = useState(systemMode)
+  const resolvedMode =
+    preference.mode === 'system' ? systemPreference : preference.mode
 
   useEffect(() => {
-    applyTheme(theme)
-    persistTheme(theme)
-  }, [theme])
+    applyTheme(preference.family, resolvedMode)
+    persistTheme(preference)
+  }, [preference, resolvedMode])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    const query = window.matchMedia('(prefers-color-scheme: dark)')
+    const syncSystem = (event: MediaQueryListEvent) =>
+      setSystemPreference(event.matches ? 'dark' : 'light')
+    query.addEventListener('change', syncSystem)
+    return () => query.removeEventListener('change', syncSystem)
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const syncTheme = (event: StorageEvent) => {
-      if (event.key === 'theme' && isThemeName(event.newValue)) {
-        setTheme(event.newValue)
-      }
+      if (event.key !== STORAGE_KEY) return
+      const next = parsePreference(event.newValue)
+      if (next) setPreference(next)
     }
     window.addEventListener('storage', syncTheme)
     return () => window.removeEventListener('storage', syncTheme)
   }, [])
 
+  const setFamily = useCallback(
+    (family: DesignFamily) => setPreference((current) => ({ ...current, family })),
+    []
+  )
+  const setMode = useCallback(
+    (mode: ColorMode) => setPreference((current) => ({ ...current, mode })),
+    []
+  )
+  const toggleFamily = useCallback(
+    () =>
+      setPreference((current) => ({
+        ...current,
+        family: current.family === 'sun-world' ? 'apple' : 'sun-world',
+      })),
+    []
+  )
+
   const value = useMemo(
     () => ({
-      theme,
-      setTheme,
-      toggleTheme: () =>
-        setTheme((current) =>
-          current === 'sun-light' ? 'sun-dark' : 'sun-light'
-        ),
+      ...preference,
+      resolvedMode,
+      setFamily,
+      setMode,
+      toggleFamily,
     }),
-    [theme]
+    [preference, resolvedMode, setFamily, setMode, toggleFamily]
   )
 
   return createElement(ThemeContext.Provider, { value }, children)
