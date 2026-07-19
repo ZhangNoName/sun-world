@@ -63,7 +63,8 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-default);
   transform-origin: top right;
-  animation: theme-panel-in var(--motion-duration-fast) var(--motion-ease-standard);
+  animation: theme-panel-in var(--motion-duration-fast)
+    var(--motion-ease-standard);
 }
 
 .theme-switch__panel fieldset {
@@ -118,7 +119,7 @@
 }
 
 :root {
-  font-family: Monda, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: var(--font-ui);
   line-height: 1.5;
   font-weight: 400;
 
@@ -140,18 +141,50 @@ body {
   min-height: 100vh;
   color: var(--text-default);
   background:
-    radial-gradient(circle at top left, var(--bg-accent-soft), transparent 30rem),
+    radial-gradient(
+      circle at top left,
+      var(--bg-accent-soft),
+      transparent 30rem
+    ),
     var(--bg-page);
   overscroll-behavior: none;
 }
 h1 {
   margin: 0;
+  line-height: 1.08;
+  letter-spacing: var(--tracking-display);
+  font-optical-sizing: auto;
+}
+
+h2,
+h3 {
+  letter-spacing: calc(var(--tracking-display) * 0.65);
+  font-optical-sizing: auto;
+}
+
+.theme-chrome {
+  background: var(--material-chrome, var(--header-bg));
+  border-color: var(--material-border, var(--border-default));
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  [data-design='apple'] .theme-chrome {
+    backdrop-filter: blur(22px) saturate(180%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .theme-chrome {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+  }
 }
 
 html {
   /* 优先使用系统字体，确保速度和清晰度 */
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC',
-    'Microsoft YaHei', 'Arial', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
+    'Arial', sans-serif;
   font-size: var(--font-medium);
   line-height: 1.2;
 }

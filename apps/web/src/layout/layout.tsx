@@ -47,7 +47,7 @@ export function AppLayout() {
     <div className="app-container">
       <div className="mob-layout">
         {meta.hideHeader ? null : (
-          <header className="mob-header">
+          <header className="mob-header theme-chrome">
             <Link to="/">
               <img src="/logo.svg" alt="Sun World" />
             </Link>
@@ -87,7 +87,7 @@ export function AppLayout() {
           <Outlet />
         </div>
         {meta.hideFooter ? null : (
-          <nav className="mob-footer">
+          <nav className="mob-footer theme-chrome" aria-label="移动导航">
             {mobileLinks.map(([icon, path, label]) => (
               <Link
                 key={path}

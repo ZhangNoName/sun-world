@@ -13,8 +13,14 @@ function mockColorScheme(dark = false) {
         },
         media: '(prefers-color-scheme: dark)',
         onchange: null,
-        addEventListener: (_type, listener) => listeners.add(listener),
-        removeEventListener: (_type, listener) => listeners.delete(listener),
+        addEventListener: (
+          _type: 'change',
+          listener: (event: MediaQueryListEvent) => void
+        ) => listeners.add(listener),
+        removeEventListener: (
+          _type: 'change',
+          listener: (event: MediaQueryListEvent) => void
+        ) => listeners.delete(listener),
         addListener: vi.fn(),
         removeListener: vi.fn(),
         dispatchEvent: vi.fn(),

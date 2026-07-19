@@ -22,7 +22,7 @@ export function Header() {
     return () => window.clearInterval(timer)
   }, [])
   return (
-    <header className="z-header">
+    <header className="z-header theme-chrome">
       <Link to="/" className="brand">
         <img src="/logo.svg" alt="Sun World" />
         <span>Sun World</span>

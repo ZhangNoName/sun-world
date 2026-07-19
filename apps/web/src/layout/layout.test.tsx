@@ -8,20 +8,24 @@ import { AppLayout } from './layout'
 vi.mock('@/components/LanguageSwitch', () => ({ default: () => null }))
 vi.mock('@/components/ThemeSwitch', () => ({ default: () => null }))
 
-describe('AppLayout mobile navigation', () => {
-  it('opens as a modal dialog and restores focus to its trigger', async () => {
+function renderLayout() {
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [{ index: true, element: <p>Home</p> }],
+      },
+    ],
+    { initialEntries: ['/'] }
+  )
+  return render(<RouterProvider router={router} />)
+}
+
+describe('AppLayout navigation', () => {
+  it('opens the mobile menu as a modal dialog and restores focus', async () => {
     useDeviceStore.setState({ isMobile: true })
-    const router = createMemoryRouter(
-      [
-        {
-          path: '/',
-          element: <AppLayout />,
-          children: [{ index: true, element: <p>Home</p> }],
-        },
-      ],
-      { initialEntries: ['/'] }
-    )
-    render(<RouterProvider router={router} />)
+    renderLayout()
     const trigger = screen.getByRole('button', { name: '菜单' })
     trigger.focus()
 
@@ -31,5 +35,13 @@ describe('AppLayout mobile navigation', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
+  })
+
+  it('labels the desktop shortcut navigation', () => {
+    useDeviceStore.setState({ isMobile: false })
+    renderLayout()
+
+    expect(screen.getByRole('navigation', { name: '快捷导航' })).toBeVisible()
+    expect(screen.getByRole('banner')).toHaveClass('theme-chrome')
   })
 })

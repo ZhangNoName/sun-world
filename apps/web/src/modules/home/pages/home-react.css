@@ -4,6 +4,9 @@
   overflow: auto;
   color: var(--text-default);
   background: var(--bg-page);
+  transition:
+    color var(--motion-duration) var(--motion-ease-standard),
+    background-color var(--motion-duration) var(--motion-ease-standard);
 }
 .desk-layout {
   min-height: 100vh;
@@ -26,7 +29,7 @@
   justify-content: space-between;
   border-bottom: 1px solid var(--border-default);
   background: var(--header-bg);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--material-border, transparent);
 }
 .z-header .brand,
 .z-header nav,
@@ -81,6 +84,19 @@
   border-radius: var(--radius-xl);
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--motion-duration) var(--motion-ease-standard),
+    box-shadow var(--motion-duration) var(--motion-ease-standard),
+    background-color var(--motion-duration) var(--motion-ease-standard);
+}
+
+.self-card:hover,
+.weather-card:hover,
+.icp-card:hover,
+.z-blog-card:hover,
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-default);
 }
 .self-card > img {
   display: block;
@@ -219,6 +235,13 @@
   justify-content: space-between;
   padding: 0.5rem 1rem;
   background: var(--header-bg);
+  border: 0 solid var(--material-border, var(--border-lighter));
+}
+.mob-header {
+  border-bottom-width: 1px;
+}
+.mob-footer {
+  border-top-width: 1px;
 }
 .mob-header img {
   width: 40px;
@@ -249,7 +272,18 @@
   z-index: 31;
   width: min(280px, 75vw);
   padding: 2rem 1rem;
-  background: var(--bg-surface);
+  background: var(--drawer-bg);
+  box-shadow: var(--drawer-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .self-card:hover,
+  .weather-card:hover,
+  .icp-card:hover,
+  .z-blog-card:hover,
+  .summary-card:hover {
+    transform: none;
+  }
 }
 .mob-drawer nav {
   display: flex;
