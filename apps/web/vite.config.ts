@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type PluginOption } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { createUiSourceAliases } from '../../packages/ui/source-aliases'
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
   version: string
@@ -55,16 +56,22 @@ export default defineConfig(({ mode }) => {
       fs: { allow: ['..'] },
     },
     resolve: {
-      alias: {
-        '@': resolve(__dirname, 'src'),
-        '@sun-world/icons': resolve(__dirname, '../../packages/icons/src'),
-        '@sun-world/contracts': resolve(
-          __dirname,
-          '../../packages/contracts/src'
-        ),
-        '@sun-world/editor': resolve(__dirname, '../../packages/editor/src'),
-        '@sun-world/ui': resolve(__dirname, '../../packages/ui/src'),
-      },
+      alias: [
+        ...createUiSourceAliases(resolve(__dirname, '../../packages/ui/src')),
+        { find: '@', replacement: resolve(__dirname, 'src') },
+        {
+          find: '@sun-world/icons',
+          replacement: resolve(__dirname, '../../packages/icons/src'),
+        },
+        {
+          find: '@sun-world/contracts',
+          replacement: resolve(__dirname, '../../packages/contracts/src'),
+        },
+        {
+          find: '@sun-world/editor',
+          replacement: resolve(__dirname, '../../packages/editor/src'),
+        },
+      ],
     },
     plugins,
     optimizeDeps: { exclude: ['@sun-world/editor'] },

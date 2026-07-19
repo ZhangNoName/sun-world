@@ -6,6 +6,15 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-19: `feat/shadcn-ui-package` migrates all `@sun-world/ui` primitives
+  and composed patterns to project-owned shadcn-style directories while keeping
+  public subpaths and `Sun*` APIs compatible. Component source, CSS, and indexes
+  are colocated; canonical aliases and `buttonVariants` support local
+  composition. `corepack pnpm -C packages/ui test` passed with 12 tests,
+  package ESM/CJS/declaration builds passed, and `corepack pnpm check:web`
+  passed with 47 application tests, production build, SSG, budgets, and chunk
+  checks. Not merged, pushed, or deployed.
+
 - 2026-07-19: switchable Sun World and Apple design families are implemented
   on `feat/switchable-design-themes`. The theme controller supports
   `light`/`dark`/`system`, migrates legacy preferences, persists and syncs

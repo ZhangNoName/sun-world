@@ -132,6 +132,10 @@ run('Frontend build summary check', 'node', [
   'scripts/check-web-build-summary.mjs',
 ])
 
+run('UI shadcn structure check', 'node', [
+  'scripts/check-ui-shadcn-structure.mjs',
+])
+
 run('UI package boundary check', 'node', [
   'scripts/check-ui-package-boundary.mjs',
 ])

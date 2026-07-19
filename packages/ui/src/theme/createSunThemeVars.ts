@@ -1,4 +1,4 @@
-import type { SunTheme, SunThemeVars } from '../contracts/theme'
+import type { SunTheme, SunThemeVars } from './types'
 
 export function createSunThemeVars(theme: SunTheme = {}): SunThemeVars {
   const vars: SunThemeVars = {}

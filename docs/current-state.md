@@ -1,6 +1,20 @@
 # Current State
 
-Last updated: 2026-07-17 (`refactor/react-shadcn`, React rebuild complete locally)
+Last updated: 2026-07-19 (`feat/shadcn-ui-package`, UI package migration complete locally)
+
+## Project-Owned Shadcn UI Package (2026-07-19, feature branch)
+
+- All 14 primitives live under `packages/ui/src/components/<name>` and all six
+  composed patterns live under `packages/ui/src/patterns/<name>`.
+- Implementations, styles, and public indexes are colocated. Legacy flat
+  forwarding modules, flat `Sun*.tsx` files, and split component contracts were
+  removed.
+- Existing `@sun-world/ui/*` imports and built filenames remain compatible.
+  Canonical shadcn-style aliases are additive; all `Sun*` exports remain.
+- Vite, Vitest, and TypeScript source aliases resolve the new directories during
+  local development without requiring prebuilt package output.
+- Semantic tokens remain authoritative for the Sun World and Apple design
+  families. No Tailwind runtime or new dependency was introduced.
 
 ## React Frontend Rebuild (2026-07-17, merge-ready branch)
 

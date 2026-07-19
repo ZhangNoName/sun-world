@@ -17,7 +17,9 @@ describe('createSunThemeVars', () => {
   })
 
   it('ignores empty theme values', () => {
-    expect(createSunThemeVars({ primaryColor: '', successColor: '#16a34a' })).toEqual({
+    expect(
+      createSunThemeVars({ primaryColor: '', successColor: '#16a34a' })
+    ).toEqual({
       '--sun-ui-color-success': '#16a34a',
     })
   })

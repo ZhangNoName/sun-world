@@ -33,6 +33,22 @@ const allowedSubpaths = [
   'toast',
   'tooltip',
 ]
+const primitiveSubpaths = new Set([
+  'button',
+  'card',
+  'checkbox',
+  'dialog',
+  'dropdown-menu',
+  'input',
+  'label',
+  'loading-skeleton',
+  'select',
+  'tabs',
+  'tag',
+  'textarea',
+  'toast',
+  'tooltip',
+])
 
 function normalize(path) {
   return path.split(sep).join('/')
@@ -91,9 +107,10 @@ for (const subpath of allowedSubpaths) {
     violations.push(`packages/ui/package.json must export "${exportKey}"`)
   }
 
-  const entryPath = join(uiSrcDir, `${subpath}.ts`)
+  const group = primitiveSubpaths.has(subpath) ? 'components' : 'patterns'
+  const entryPath = join(uiSrcDir, group, subpath, 'index.ts')
   if (!existsSync(entryPath)) {
-    violations.push(`packages/ui/src/${subpath}.ts is missing`)
+    violations.push(`packages/ui/src/${group}/${subpath}/index.ts is missing`)
   }
 }
 
