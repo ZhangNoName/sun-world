@@ -1,0 +1,20 @@
+.sun-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+.sun-dialog__content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1000;
+  min-width: min(28rem, calc(100vw - 2rem));
+  padding: 1rem;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--shadow-default, 0 16px 48px rgb(0 0 0 / 18%));
+}

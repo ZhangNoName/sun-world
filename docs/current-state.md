@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-07-19 (`main`, switchable themes and blog reading polish complete locally)
+Last updated: 2026-07-19 (`main`, UI package migration and blog reading polish complete locally)
 
 ## Blog Reading Experience (2026-07-19, local main)
 
@@ -15,6 +15,20 @@ Last updated: 2026-07-19 (`main`, switchable themes and blog reading polish comp
   layout, fixing direct-route styling that previously depended on homepage CSS.
 - Local verification: `corepack pnpm check:web` passed; desktop and 390x844
   browser QA passed. These changes are not pushed or deployed.
+
+## Project-Owned Shadcn UI Package (2026-07-19, local main)
+
+- All 14 primitives live under `packages/ui/src/components/<name>` and all six
+  composed patterns live under `packages/ui/src/patterns/<name>`.
+- Implementations, styles, and public indexes are colocated. Legacy flat
+  forwarding modules, flat `Sun*.tsx` files, and split component contracts were
+  removed.
+- Existing `@sun-world/ui/*` imports and built filenames remain compatible.
+  Canonical shadcn-style aliases are additive; all `Sun*` exports remain.
+- Vite, Vitest, and TypeScript source aliases resolve the new directories during
+  local development without requiring prebuilt package output.
+- Semantic tokens remain authoritative for the Sun World and Apple design
+  families. No Tailwind runtime or new dependency was introduced.
 
 ## React Frontend Rebuild (2026-07-17, merge-ready branch)
 

@@ -12,7 +12,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@sun-world/ui/components",
-    "ui": "@sun-world/ui/primitives",
+    "ui": "@sun-world/ui/components",
+    "patterns": "@sun-world/ui/patterns",
     "hooks": "@sun-world/ui/hooks",
     "lib": "@sun-world/ui/lib",
     "utils": "@sun-world/ui/lib/cn"

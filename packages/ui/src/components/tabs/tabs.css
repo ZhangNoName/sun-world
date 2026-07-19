@@ -1,0 +1,15 @@
+.sun-tabs__list {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.sun-tabs__trigger {
+  padding: 0.5rem 0.75rem;
+  border-radius: calc(var(--radius) - 2px);
+  outline: none;
+  cursor: pointer;
+}
+
+.sun-tabs__trigger[data-state='active'] {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}

@@ -19,7 +19,11 @@
       "@sun-world/icons": ["../../packages/icons/src"],
       "@sun-world/icons/*": ["../../packages/icons/src/*"],
       "@sun-world/ui": ["../../packages/ui/src/index.ts"],
-      "@sun-world/ui/*": ["../../packages/ui/src/*"]
+      "@sun-world/ui/*": [
+        "../../packages/ui/src/*",
+        "../../packages/ui/src/components/*/index.ts",
+        "../../packages/ui/src/patterns/*/index.ts"
+      ]
     }
   },
   "include": ["src"]

@@ -1,4 +1,12 @@
 :root {
+  --background: var(--bg-page, #ffffff);
+  --foreground: var(--text-default, #111827);
+  --card: var(--surface-elevated, var(--bg-component, #ffffff));
+  --card-foreground: var(--text-default, #111827);
+  --primary: var(--color-brand, #14b8a6);
+  --destructive: var(--color-danger, #e11d48);
+  --border: var(--border-default, #e5e7eb);
+  --radius: var(--sun-ui-radius, var(--radius-md, 0.625rem));
   --sun-ui-color-primary: var(--color-brand, #2563eb);
   --sun-ui-color-danger: var(--color-danger, #e11d48);
   --sun-ui-color-success: var(--color-success, #16a34a);
@@ -19,6 +27,27 @@
   box-shadow: 0 0 0 4px var(--color-focus-ring, rgb(37 99 235 / 18%));
 }
 
+@supports (backdrop-filter: blur(1px)) {
+  [data-design='apple'] .sun-dialog__content,
+  [data-design='apple'] .sun-dropdown-menu,
+  [data-design='apple'] .sun-select__content,
+  [data-design='apple'] .sun-tooltip {
+    border-color: var(--material-border);
+    background: var(--material-chrome);
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sun-dialog__content,
+  .sun-dropdown-menu,
+  .sun-select__content,
+  .sun-tooltip {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+  }
+}
+
 .sun-ui-field {
   display: inline-flex;
   flex-direction: column;
@@ -30,54 +59,7 @@
   width: 100%;
 }
 
-.sun-ui-label {
-  color: var(--text-secondary, #64748b);
-  font-size: var(--font-size-sm, 0.75rem);
-  line-height: var(--line-height-normal, 1.5);
-}
-
 .sun-ui-disabled {
   opacity: var(--btn-disabled-opacity, 0.5);
   cursor: not-allowed;
-}
-
-.sun-input-wrap {
-  display: inline-flex;
-  position: relative;
-}
-
-.sun-input {
-  border: 1px solid var(--sun-ui-border-color);
-  border-radius: var(--sun-ui-radius);
-  background: var(--sun-ui-surface);
-  color: var(--sun-ui-text);
-  font: inherit;
-  min-height: 32px;
-  min-width: 0;
-  padding: 0 var(--space-3, 0.75rem);
-}
-
-.sun-input--sm {
-  min-height: 28px;
-}
-
-.sun-input--lg {
-  min-height: 40px;
-}
-
-.sun-input--textarea {
-  min-height: 88px;
-  padding-bottom: var(--space-2, 0.5rem);
-  padding-top: var(--space-2, 0.5rem);
-  resize: vertical;
-}
-
-.sun-input__clear {
-  align-self: center;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary, #64748b);
-  cursor: pointer;
-  margin-left: calc(var(--space-6, 1.5rem) * -1);
 }

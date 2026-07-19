@@ -26,6 +26,29 @@ const entries = [
   'tooltip',
 ] as const
 
+const primitiveEntries = new Set([
+  'button',
+  'card',
+  'checkbox',
+  'dialog',
+  'dropdown-menu',
+  'input',
+  'label',
+  'loading-skeleton',
+  'select',
+  'tabs',
+  'tag',
+  'textarea',
+  'toast',
+  'tooltip',
+])
+
+const entryPath = (entry: (typeof entries)[number]) =>
+  path.resolve(
+    __dirname,
+    `src/${primitiveEntries.has(entry) ? 'components' : 'patterns'}/${entry}/index.ts`
+  )
+
 export default defineConfig({
   plugins: [
     react(),
@@ -43,10 +66,7 @@ export default defineConfig({
       entry: {
         ui: path.resolve(__dirname, 'src/index.ts'),
         ...Object.fromEntries(
-          entries.map((entry) => [
-            entry,
-            path.resolve(__dirname, `src/${entry}.ts`),
-          ])
+          entries.map((entry) => [entry, entryPath(entry)])
         ),
       },
       name: 'SunWorldUi',

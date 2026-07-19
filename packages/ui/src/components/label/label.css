@@ -1,0 +1,5 @@
+.sun-ui-label {
+  color: var(--text-secondary, #64748b);
+  font-size: var(--font-size-sm, 0.75rem);
+  line-height: var(--line-height-normal, 1.5);
+}

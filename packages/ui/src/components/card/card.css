@@ -1,0 +1,12 @@
+.sun-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.sun-card__header,
+.sun-card__content,
+.sun-card__footer {
+  padding: 1rem;
+}
