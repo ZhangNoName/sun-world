@@ -14,7 +14,18 @@
     background-color 0.16s ease,
     border-color 0.16s ease,
     color 0.16s ease,
-    opacity 0.16s ease;
+    opacity 0.16s ease,
+    transform 0.1s ease-out;
+}
+
+.sun-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sun-button:not(:disabled):active {
+    transform: none;
+  }
 }
 
 .sun-button--primary {

@@ -3,7 +3,7 @@
 :root {
   --background: var(--bg-page, #ffffff);
   --foreground: var(--text-default, #111827);
-  --card: var(--bg-surface, #ffffff);
+  --card: var(--surface-elevated, var(--bg-component, #ffffff));
   --card-foreground: var(--text-default, #111827);
   --primary: var(--color-brand, #14b8a6);
   --destructive: var(--color-danger, #e11d48);
@@ -26,7 +26,28 @@
   border-radius: var(--radius);
   background: var(--card);
   color: var(--card-foreground);
-  box-shadow: 0 16px 48px rgb(0 0 0 / 18%);
+  box-shadow: var(--shadow-default, 0 16px 48px rgb(0 0 0 / 18%));
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  [data-design='apple'] .sun-dialog__content,
+  [data-design='apple'] .sun-dropdown-menu,
+  [data-design='apple'] .sun-select__content,
+  [data-design='apple'] .sun-tooltip {
+    background: var(--material-chrome);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-color: var(--material-border);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sun-dialog__content,
+  .sun-dropdown-menu,
+  .sun-select__content,
+  .sun-tooltip {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+  }
 }
 
 .sun-dialog__content {

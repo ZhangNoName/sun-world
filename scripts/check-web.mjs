@@ -51,6 +51,8 @@ run('Frontend client secret check', 'node', [
 
 run('AI interface check', 'node', ['scripts/check-ai-interface.mjs'])
 
+run('Design theme contract check', 'node', ['scripts/check-design-themes.mjs'])
+
 run('Blog waterfall real-data check', 'node', [
   'scripts/check-blog-waterfall-real-data.mjs',
 ])
@@ -92,7 +94,13 @@ run('Contracts generate script check', 'corepack', [
   'check:contracts:generate',
 ])
 
-run('Frontend type check', 'corepack', ['pnpm', '-C', 'apps/web', 'run', 'typecheck'])
+run('Frontend type check', 'corepack', [
+  'pnpm',
+  '-C',
+  'apps/web',
+  'run',
+  'typecheck',
+])
 
 run('Frontend React tests', 'corepack', [
   'pnpm',

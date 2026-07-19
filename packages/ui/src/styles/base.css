@@ -3,12 +3,20 @@
   --sun-ui-color-danger: var(--color-danger, #e11d48);
   --sun-ui-color-success: var(--color-success, #16a34a);
   --sun-ui-color-warning: var(--color-warning, #d97706);
-  --sun-ui-radius: var(--radius-md, 8px);
+  --sun-ui-radius: var(--radius-control, var(--radius-md, 8px));
   --sun-ui-border-color: var(--border-default, #dce6ee);
   --sun-ui-surface: var(--bg-component, #ffffff);
   --sun-ui-muted-surface: var(--bg-fill, #eef4f8);
   --sun-ui-text: var(--text-default, #334155);
   --sun-ui-strong-text: var(--text-strong, #172033);
+}
+
+.sun-button:focus-visible,
+.sun-input:focus-visible,
+.sun-input__clear:focus-visible {
+  outline: 2px solid var(--color-brand, #2563eb);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-focus-ring, rgb(37 99 235 / 18%));
 }
 
 .sun-ui-field {
