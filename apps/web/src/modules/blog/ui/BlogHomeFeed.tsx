@@ -3,14 +3,22 @@ import { SunIcon } from '@sun-world/icons/react'
 import { SunButton } from '@sun-world/ui/button'
 import { SunInput } from '@sun-world/ui/input'
 import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-
+import { SunSelect } from '@sun-world/ui/select'
 import { toast } from '@sun-world/ui/toast'
+
+import { Waterfall } from '@/components/Waterfall/waterfall'
 import { useViewportWidth } from '@/shared/browser/viewport'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useBlogList } from '../composables/useBlogList'
 import type { BlogSortBy, BlogSortOrder } from '../types'
 import { BlogCard } from './BlogCard'
-import { Waterfall } from '@/components/Waterfall/waterfall'
+import '../styles/blog-experience.css'
+
+const SORT_OPTIONS = [
+  { value: 'updated_at:desc', label: '最新优先' },
+  { value: 'updated_at:asc', label: '最早优先' },
+  { value: 'view_num:desc', label: '浏览量最高' },
+]
 
 export function BlogHomeFeed() {
   const { tagList, categoryList, loaded, loadBlogBaseData } = useBlogBaseData()
@@ -72,7 +80,7 @@ export function BlogHomeFeed() {
           <span key={tag}>{tag}</span>
         ))}
       </section>
-      <section className="query-panel" aria-label="博客筛选">
+      <section className="query-panel blog-toolbar" aria-label="博客筛选">
         <SunInput
           label="搜索博客"
           value={keyword}
@@ -83,21 +91,17 @@ export function BlogHomeFeed() {
           type="search"
           placeholder="搜索标题或摘要"
         />
-        <select
+        <SunSelect
+          label="排序方式"
           value={sort}
-          onChange={(event) => {
-            setSort(event.target.value)
-          }}
-          aria-label="排序方式"
-        >
-          <option value="updated_at:desc">最新优先</option>
-          <option value="updated_at:asc">最早优先</option>
-          <option value="view_num:desc">浏览量最高</option>
-        </select>
+          onValueChange={setSort}
+          options={SORT_OPTIONS}
+        />
         <SunButton onClick={apply}>搜索</SunButton>
       </section>
       <div className="view-config" role="group" aria-label="文章列表显示模式">
         <button
+          className="view-config__button"
           type="button"
           aria-pressed={mode === 'list'}
           onClick={() => setMode('list')}
@@ -106,6 +110,7 @@ export function BlogHomeFeed() {
           列表
         </button>
         <button
+          className="view-config__button"
           type="button"
           aria-pressed={mode === 'waterfall'}
           disabled={width <= 695}

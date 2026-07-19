@@ -19,7 +19,7 @@ export function BlogCard(props: BlogCardProps) {
         if (event.key === 'Enter' || event.key === ' ') open()
       }}
     >
-      <div className="blog-meta">
+      <div className="blog-meta z-blog-card__meta">
         <span>
           <SunIcon name="calendar" size={16} />
           {props.publishTime}
@@ -33,21 +33,23 @@ export function BlogCard(props: BlogCardProps) {
           {props.byteNum}
         </span>
       </div>
-      <h2>{props.title}</h2>
-      <p>{props.abstract}</p>
+      <h2 className="z-blog-card__title">{props.title}</h2>
+      <p className="z-blog-card__excerpt">{props.abstract}</p>
       <div className="blog-tags">
         {props.tags.map((tag) => (
           <SunTag key={tag} label={tag} />
         ))}
       </div>
       <button
+        className="z-blog-card__action"
         type="button"
         onClick={(event) => {
           event.stopPropagation()
           open()
         }}
       >
-        {t('readMore')}…
+        <span>{t('readMore')}</span>
+        <SunIcon name="chevron-right" size={17} />
       </button>
     </article>
   )

@@ -9,6 +9,7 @@ import { buildBlogPostingJsonLd, useJsonLd, usePageMeta } from '@/shared/seo'
 import { getBlogErrorMessage } from '../errors'
 import { useBlogReader } from '../composables/useBlogReader'
 import { CatalogCard } from '../ui/CatalogCard'
+import '../styles/blog-experience.css'
 
 export function BlogDetailPage() {
   const params = useParams()
@@ -48,33 +49,35 @@ export function BlogDetailPage() {
   }, [id, reader.loadBlog])
   return (
     <div className="blog-page">
-      <aside>
+      <aside className="blog-page__catalog">
         <CatalogCard
           catalog={reader.catalog}
           activeId={reader.activeHeadingId}
           onSelect={reader.scrollToHeading}
         />
       </aside>
-      <main>
+      <main className="blog-page__article">
         {reader.loading ? (
           <SunLoadingSkeleton lines={5} />
         ) : (
           <>
-            <div className="blog-meta">
-              <span>
-                <SunIcon name="calendar" />
-                {reader.publishedAt}
-              </span>
-              <span>
-                <SunIcon name="message-circle" />
-                {reader.commentCount}
-              </span>
-              <span>
-                <SunIcon name="file-text" />
-                {reader.wordCount}
-              </span>
-            </div>
-            <h1>{reader.blogInfo.title}</h1>
+            <header className="article-header">
+              <div className="blog-meta article-header__meta">
+                <span>
+                  <SunIcon name="calendar" />
+                  {reader.publishedAt}
+                </span>
+                <span>
+                  <SunIcon name="message-circle" />
+                  {reader.commentCount}
+                </span>
+                <span>
+                  <SunIcon name="file-text" />
+                  {reader.wordCount}
+                </span>
+              </div>
+              <h1>{reader.blogInfo.title}</h1>
+            </header>
             <div ref={reader.blogPreview} className="preview-container">
               <SunMarkdownPreview
                 content={reader.blogInfo.content}

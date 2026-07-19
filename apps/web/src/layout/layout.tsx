@@ -10,6 +10,7 @@ import { useDeviceStore } from '@/store/tg'
 import type { RouteMeta } from '@/modules/types'
 import Footer from './footer'
 import Header from './header'
+import './layout.css'
 
 const mobileLinks = [
   ['home', '/home', '首页'],

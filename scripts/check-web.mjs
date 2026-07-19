@@ -69,6 +69,10 @@ run('Blog detail catalog check', 'node', [
   'scripts/check-blog-detail-catalog.mjs',
 ])
 
+run('Blog visual system check', 'node', [
+  'scripts/check-blog-visual-system.mjs',
+])
+
 run('Public SSG contract check', 'node', ['scripts/check-web-ssg.mjs'])
 
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])

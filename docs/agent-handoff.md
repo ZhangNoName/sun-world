@@ -6,6 +6,17 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-19: blog list and article reading surfaces were visually rebuilt on
+  local `main` after the switchable-theme rollout. The feed now uses the shared
+  Radix select, a composed search toolbar, segmented view controls, and refined
+  article cards. Article detail has a centered reading surface, sticky styled
+  catalog, responsive layout, and complete Markdown typography for code,
+  quotes, tables, links, and media. Shared application chrome CSS now loads from
+  the layout itself, so direct article routes no longer depend on homepage CSS.
+  `corepack pnpm check:web` passed (47 React tests, TypeScript, production build,
+  SSG, budgets, and chunk checks). Browser QA passed for desktop Sun World,
+  Apple light, and 390x844 mobile layouts. Not pushed or deployed.
+
 - 2026-07-19: switchable Sun World and Apple design families are implemented
   on `feat/switchable-design-themes`. The theme controller supports
   `light`/`dark`/`system`, migrates legacy preferences, persists and syncs

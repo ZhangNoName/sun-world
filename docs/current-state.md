@@ -1,6 +1,20 @@
 # Current State
 
-Last updated: 2026-07-17 (`refactor/react-shadcn`, React rebuild complete locally)
+Last updated: 2026-07-19 (`main`, switchable themes and blog reading polish complete locally)
+
+## Blog Reading Experience (2026-07-19, local main)
+
+- Blog list filtering uses shared UI controls and a cohesive responsive toolbar;
+  list/waterfall selection and article actions no longer render as native browser
+  buttons.
+- Article detail uses a centered reading column with a sticky catalog and full
+  Markdown typography for headings, code, quotes, tables, links, and images.
+- The experience responds to both Sun World and Apple design families, including
+  dark mode, reduced motion, and reduced transparency preferences.
+- Application header/footer/mobile navigation styling is owned by the shared
+  layout, fixing direct-route styling that previously depended on homepage CSS.
+- Local verification: `corepack pnpm check:web` passed; desktop and 390x844
+  browser QA passed. These changes are not pushed or deployed.
 
 ## React Frontend Rebuild (2026-07-17, merge-ready branch)
 

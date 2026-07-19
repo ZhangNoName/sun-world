@@ -1,0 +1,148 @@
+.app-container {
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
+  color: var(--text-default);
+  background: var(--bg-page);
+  transition:
+    color var(--motion-duration) var(--motion-ease-standard),
+    background-color var(--motion-duration) var(--motion-ease-standard);
+}
+
+.desk-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.desk-layout > .content {
+  flex: 1;
+  width: min(95%, var(--container-max-width));
+  margin: 64px auto 0;
+}
+
+.z-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  height: 64px;
+  padding: 0 2.5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--header-bg);
+  box-shadow: 0 1px 0 var(--material-border, transparent);
+}
+
+.z-header .brand,
+.z-header nav,
+.z-header nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.z-header .brand img {
+  width: 42px;
+  height: 42px;
+}
+
+.z-header a,
+.mob-footer a,
+.mob-drawer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.z-footer {
+  margin-top: 2rem;
+  padding: 2rem 7.5%;
+  display: flex;
+  justify-content: space-between;
+  background: var(--bg-brand-light);
+}
+
+.z-footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.z-footer img {
+  width: 96px;
+}
+
+.mob-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mob-header,
+.mob-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--header-bg);
+  border: 0 solid var(--material-border, var(--border-lighter));
+}
+
+.mob-header {
+  border-bottom-width: 1px;
+}
+
+.mob-footer {
+  border-top-width: 1px;
+}
+
+.mob-header img {
+  width: 40px;
+}
+
+.main-container {
+  flex: 1;
+  overflow: auto;
+}
+
+.mob-footer a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  border: 0;
+  background: rgb(0 0 0/0.45);
+}
+
+.mob-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 31;
+  width: min(280px, 75vw);
+  padding: 2rem 1rem;
+  background: var(--drawer-bg);
+  box-shadow: var(--drawer-shadow);
+}
+
+.mob-drawer nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.mob-drawer a {
+  padding: 0.75rem;
+}
+
+@media (max-width: 695px) {
+  .mob-footer span {
+    display: none;
+  }
+}
