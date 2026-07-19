@@ -24,11 +24,13 @@ describe('ThemeSwitch', () => {
     ).toBeInTheDocument()
   })
 
-  it('offers precise family and color mode choices', () => {
+  it('offers precise family and color mode choices', async () => {
     renderSwitch()
     fireEvent.click(screen.getByText('主题选项'))
 
-    expect(screen.getByRole('radiogroup', { name: '设计风格' })).toBeVisible()
+    expect(
+      await screen.findByRole('radiogroup', { name: '设计风格' })
+    ).toBeVisible()
     expect(screen.getByRole('radio', { name: 'Sun World' })).toBeChecked()
     fireEvent.click(screen.getByRole('radio', { name: 'Apple' }))
     expect(document.documentElement).toHaveAttribute('data-design', 'apple')
