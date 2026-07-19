@@ -258,6 +258,29 @@ The filing is rendered only on the homepage by
 the left-side weather card; mobile placement is inside
 `apps/web/src/modules/home/pages/HomePage.tsx`.
 
+## Switchable Design Themes
+
+- The web app supports two independent design families, `sun-world` and
+  `apple`, each with light and dark appearances. Color mode can also follow
+  `prefers-color-scheme`.
+- Theme preferences are stored as `{ family, mode }` under
+  `sun-world-theme`. Legacy `theme=sun-light|sun-dark` values migrate to the
+  Sun World family automatically.
+- Runtime state is exposed on `<html>` as `data-design` and
+  `data-color-mode`; legacy `sun-light` / `sun-dark` classes remain for
+  compatibility.
+- The main theme button switches design family in one click without changing
+  color mode. The adjacent options control selects an exact family and mode;
+  its implementation is lazy-loaded as a `ThemeOptions` chunk.
+- Theme tokens live in `apps/web/src/styles/design-tokens.css`. Shared UI
+  surfaces consume the semantic tokens and include reduced-motion,
+  reduced-transparency, and increased-contrast fallbacks.
+- `scripts/check-design-themes.mjs` guards the two families, both appearances,
+  semantic material tokens, and accessibility preference media queries.
+- The entry-module gzip budget is 162 KiB after adding the global theme
+  controller. The verified entry is 160.2 KiB; the detailed theme options are
+  a separate 0.48 KiB gzip lazy chunk.
+
 ## Known Issues
 
 - The editor declaration build warns that API Extractor bundles TypeScript 5.4

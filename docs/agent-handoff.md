@@ -6,6 +6,19 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-19: switchable Sun World and Apple design families are implemented
+  on `feat/switchable-design-themes`. The theme controller supports
+  `light`/`dark`/`system`, migrates legacy preferences, persists and syncs
+  selections, and exposes a one-click family switch plus lazy precise options.
+  Global chrome, shared UI controls, and homepage surfaces consume the new
+  semantic materials, typography, motion, and accessibility fallbacks.
+  `corepack pnpm check:web` passed, including 47 React tests, TypeScript, SSG
+  production build, the new theme contract, performance budgets, and chunk
+  checks. Browser QA passed for Apple light/dark, desktop one-click and precise
+  selection, mobile layout/drawer access, and the ICP filing. The entry bundle
+  is 160.2 KiB gzip against the intentionally updated 162 KiB budget; detailed
+  options are a 0.48 KiB lazy chunk. Not deployed.
+
 - 2026-07-18: the React guidelines remediation and review documentation were
   pushed and deployed from `main` at `036a680f`. GitHub Actions run
   `29594687950` completed successfully, including frontend checks, the
