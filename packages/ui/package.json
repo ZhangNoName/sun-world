@@ -19,6 +19,11 @@
       "import": "./dist/ui.es.js",
       "default": "./dist/ui.es.js"
     },
+    "./badge": {
+      "types": "./dist/types/badge.d.ts",
+      "import": "./dist/badge.es.js",
+      "default": "./dist/badge.es.js"
+    },
     "./button": {
       "types": "./dist/types/button.d.ts",
       "import": "./dist/button.es.js",
@@ -59,10 +64,30 @@
       "import": "./dist/dropdown-menu.es.js",
       "default": "./dist/dropdown-menu.es.js"
     },
+    "./field": {
+      "types": "./dist/types/field.d.ts",
+      "import": "./dist/field.es.js",
+      "default": "./dist/field.es.js"
+    },
     "./select": {
       "types": "./dist/types/select.d.ts",
       "import": "./dist/select.es.js",
       "default": "./dist/select.es.js"
+    },
+    "./separator": {
+      "types": "./dist/types/separator.d.ts",
+      "import": "./dist/separator.es.js",
+      "default": "./dist/separator.es.js"
+    },
+    "./skeleton": {
+      "types": "./dist/types/skeleton.d.ts",
+      "import": "./dist/skeleton.es.js",
+      "default": "./dist/skeleton.es.js"
+    },
+    "./sonner": {
+      "types": "./dist/types/sonner.d.ts",
+      "import": "./dist/sonner.es.js",
+      "default": "./dist/sonner.es.js"
     },
     "./tabs": {
       "types": "./dist/types/tabs.d.ts",
@@ -128,10 +153,14 @@
     "@radix-ui/react-dropdown-menu": "^2.1.20",
     "@radix-ui/react-label": "^2.1.11",
     "@radix-ui/react-select": "^2.3.3",
+    "@radix-ui/react-separator": "^1.1.12",
+    "@radix-ui/react-slot": "^1.3.0",
     "@radix-ui/react-tabs": "^1.1.17",
     "@radix-ui/react-tooltip": "^1.2.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lucide-react": "^1.25.0",
+    "shadcn": "^4.13.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0"
   },

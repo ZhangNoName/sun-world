@@ -1,9 +1,8 @@
+import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
-import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-import { SunSelect } from '@sun-world/ui/select'
+import { Button } from '@sun-world/ui/button'
+import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { toast } from '@sun-world/ui/toast'
 
 import { Waterfall } from '@/components/Waterfall/waterfall'
@@ -81,7 +80,7 @@ export function BlogHomeFeed() {
         ))}
       </section>
       <section className="query-panel blog-toolbar" aria-label="博客筛选">
-        <SunInput
+        <LabeledInput
           label="搜索博客"
           value={keyword}
           onValueChange={setKeyword}
@@ -91,13 +90,13 @@ export function BlogHomeFeed() {
           type="search"
           placeholder="搜索标题或摘要"
         />
-        <SunSelect
+        <SelectField
           label="排序方式"
           value={sort}
           onValueChange={setSort}
           options={SORT_OPTIONS}
         />
-        <SunButton onClick={apply}>搜索</SunButton>
+        <Button onClick={apply}>搜索</Button>
       </section>
       <div className="view-config" role="group" aria-label="文章列表显示模式">
         <button
@@ -121,7 +120,7 @@ export function BlogHomeFeed() {
         </button>
       </div>
       {blog.loading && blog.items.length === 0 ? (
-        <SunLoadingSkeleton lines={4} />
+        <LoadingSkeleton lines={4} />
       ) : null}
       {!blog.loading && blog.items.length === 0 ? (
         <p className="empty-state">暂时没有文章</p>
@@ -136,13 +135,13 @@ export function BlogHomeFeed() {
         </section>
       )}
       <div ref={loaderRef} className="loader-btn">
-        <SunButton
+        <Button
           loading={blog.loading && blog.items.length > 0}
           disabled={!blog.hasMore}
           onClick={() => void blog.loadMore()}
         >
           {blog.hasMore ? '加载更多' : '没有更多了'}
-        </SunButton>
+        </Button>
       </div>
       {showTop ? (
         <button

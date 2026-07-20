@@ -1,5 +1,5 @@
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
+import { Button } from '@sun-world/ui/button'
+import { Input } from '@sun-world/ui/input'
 import { SunMarkdownEditor } from '@/shared/markdown'
 import { useBlogAuthoring } from '../composables/useBlogAuthoring'
 
@@ -9,15 +9,15 @@ export function ArticleEditorPage() {
     <main className="article-page">
       <div className="func-bar">
         <span>统计信息：字数 {authoring.blogWordCount}</span>
-        <SunButton
+        <Button
           loading={authoring.saving}
           onClick={() => void authoring.saveBlog()}
         >
           保存
-        </SunButton>
+        </Button>
       </div>
       <div className="title-container">
-        <SunInput
+        <Input
           value={authoring.title}
           onValueChange={authoring.setTitle}
           placeholder="标题"

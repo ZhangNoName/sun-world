@@ -1,5 +1,5 @@
-import { SunButton } from '@sun-world/ui/button'
-import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
+import { Button } from '@sun-world/ui/button'
+import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { useAdminMetrics } from '../composables/useAdminMetrics'
 import './admin.css'
 
@@ -19,9 +19,9 @@ export function AdminMetricsPage() {
               ? `更新于 ${data.formatDateTime(data.lastLoadedAt)}`
               : '尚未更新'}
           </span>
-          <SunButton loading={data.loading} onClick={() => void data.refresh()}>
+          <Button loading={data.loading} onClick={() => void data.refresh()}>
             刷新
-          </SunButton>
+          </Button>
         </div>
       </header>
       {data.errorMessage ? (
@@ -30,7 +30,7 @@ export function AdminMetricsPage() {
         </p>
       ) : null}
       {data.loading && !data.snapshot ? (
-        <SunLoadingSkeleton lines={6} />
+        <LoadingSkeleton lines={6} />
       ) : (
         <>
           <MetricGrid

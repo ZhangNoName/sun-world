@@ -1,2 +1,3 @@
 export * from './input'
-export { SunInput as Input } from './input'
+/** @deprecated Compose Label and Input explicitly. */
+export { SunInput } from './legacy'

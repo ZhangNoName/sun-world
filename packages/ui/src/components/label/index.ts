@@ -1,2 +1,3 @@
 export * from './label'
-export { SunLabel as Label } from './label'
+/** @deprecated Use Label. */
+export { SunLabel } from './legacy'

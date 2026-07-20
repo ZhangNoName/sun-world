@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "../../packages/ui/src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/components",
+    "ui": "@sun-world/ui/components",
+    "patterns": "@sun-world/ui/patterns",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "utils": "@sun-world/ui/lib/cn"
+  }
+}

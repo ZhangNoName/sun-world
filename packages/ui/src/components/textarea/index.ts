@@ -1,2 +1,3 @@
 export * from './textarea'
-export { SunTextarea as Textarea } from './textarea'
+/** @deprecated Compose Label and Textarea explicitly. */
+export { SunTextarea } from './legacy'

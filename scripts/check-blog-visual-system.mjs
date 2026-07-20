@@ -44,8 +44,13 @@ for (const selector of [
   }
 }
 
-if (!homeFeed.includes('@sun-world/ui/select')) {
-  throw new Error('Blog filtering must use the shared SunSelect control')
+if (
+  !homeFeed.includes('@/shared/ui/form-controls') ||
+  !homeFeed.includes('SelectField')
+) {
+  throw new Error(
+    'Blog filtering must compose the canonical shared Select control'
+  )
 }
 if (
   !homeFeed.includes('./../styles/blog-experience.css') &&

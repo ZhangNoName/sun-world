@@ -441,7 +441,25 @@ html {
   --shadow-default: 0 20px 56px rgba(0, 0, 0, 0.48);
 }
 
-[data-design='apple'][data-color-mode] {
+[data-design][data-color-mode] {
+  --background: var(--bg-page);
+  --foreground: var(--text-default);
+  --card: var(--surface-elevated);
+  --card-foreground: var(--text-default);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--text-default);
+  --primary: var(--color-brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-fill);
+  --secondary-foreground: var(--text-strong);
+  --muted: var(--bg-fill);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--color-brand-bg);
+  --accent-foreground: var(--text-strong);
+  --destructive: var(--color-danger);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--color-brand);
   --text-default: var(--color-text-regular);
   --text-strong: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { SunIcon } from '@sun-world/icons/react'
-import { SunTag } from '@sun-world/ui/tag'
+import { Badge } from '@sun-world/ui/tag'
 
 import type { BlogCardProps } from '../types'
 
@@ -37,7 +37,7 @@ export function BlogCard(props: BlogCardProps) {
       <p className="z-blog-card__excerpt">{props.abstract}</p>
       <div className="blog-tags">
         {props.tags.map((tag) => (
-          <SunTag key={tag} label={tag} />
+          <Badge key={tag}>{tag}</Badge>
         ))}
       </div>
       <button

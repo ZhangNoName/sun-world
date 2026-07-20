@@ -1,4 +1,4 @@
-import { SunInput } from '@sun-world/ui/input'
+import { LabeledInput } from '@/shared/ui/form-controls'
 import type { EditorElementPatch } from '../hooks/useEditorCanvas'
 
 export function EditorCanvasRight({
@@ -20,13 +20,13 @@ export function EditorCanvasRight({
       </p>
       {attrs ? (
         <div className="property-form">
-          <SunInput
+          <LabeledInput
             label="名称"
             value={attrs.name ?? name ?? ''}
             onValueCommit={(value) => onUpdate({ name: value })}
           />
           {(['x', 'y', 'width', 'height', 'rotation'] as const).map((key) => (
-            <SunInput
+            <LabeledInput
               key={key}
               label={key.toUpperCase()}
               type="number"

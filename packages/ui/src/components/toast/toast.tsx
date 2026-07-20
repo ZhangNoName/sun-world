@@ -13,3 +13,7 @@ export const toast = {
 export function SunToastProvider(props: ToasterProps) {
   return <Toaster position="top-right" richColors closeButton {...props} />
 }
+
+export function ToastProvider(props: ToasterProps) {
+  return <Toaster position="top-right" richColors closeButton {...props} />
+}

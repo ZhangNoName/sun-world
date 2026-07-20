@@ -1,4 +1,4 @@
-import { SunButton } from '@sun-world/ui/button'
+import { Button } from '@sun-world/ui/button'
 import { SunIcon } from '@sun-world/icons/react'
 import { lazy, Suspense } from 'react'
 import { useTheme } from '@/shared/design'
@@ -11,15 +11,15 @@ export function ThemeSwitch() {
 
   return (
     <div className="theme-switch">
-      <SunButton
+      <Button
         className="theme-switch__quick"
-        variant="icon"
+        variant="ghost"
         size="icon"
         aria-label={`切换到 ${destination} 风格`}
         onClick={toggleFamily}
       >
         <SunIcon name={family === 'apple' ? 'sun' : 'moon'} />
-      </SunButton>
+      </Button>
       <details className="theme-switch__details">
         <summary aria-label="打开主题选项">主题选项</summary>
         <Suspense

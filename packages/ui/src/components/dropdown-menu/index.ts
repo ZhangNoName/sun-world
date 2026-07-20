@@ -1,2 +1,3 @@
 export * from './dropdown-menu'
-export { SunDropdownMenu as DropdownMenu } from './dropdown-menu'
+/** @deprecated Compose DropdownMenu parts directly. */
+export { SunDropdownMenu } from './legacy'

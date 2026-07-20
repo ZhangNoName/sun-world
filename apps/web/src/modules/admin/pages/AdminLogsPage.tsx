@@ -1,6 +1,5 @@
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
-import { SunSelect } from '@sun-world/ui/select'
+import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
+import { Button } from '@sun-world/ui/button'
 import {
   useAdminLogs,
   type AdminLogSeverity,
@@ -26,9 +25,9 @@ export function AdminLogsPage() {
           <h1>审计日志</h1>
           <p>仅展示经过脱敏的稳定事件字段。</p>
         </div>
-        <SunButton loading={logs.loading} onClick={() => void logs.refresh()}>
+        <Button loading={logs.loading} onClick={() => void logs.refresh()}>
           刷新
-        </SunButton>
+        </Button>
       </header>
       <form
         className="admin-filters"
@@ -37,7 +36,7 @@ export function AdminLogsPage() {
           void logs.refresh()
         }}
       >
-        <SunSelect
+        <SelectField
           label="级别"
           value={logs.severity || 'all'}
           options={severityOptions}
@@ -45,13 +44,13 @@ export function AdminLogsPage() {
             logs.setSeverity(value === 'all' ? '' : (value as AdminLogSeverity))
           }
         />
-        <SunInput
+        <LabeledInput
           label="事件类型"
           value={logs.eventType}
           onValueChange={logs.setEventType}
           placeholder="例如 request_completed"
         />
-        <SunInput
+        <LabeledInput
           label="数量"
           type="number"
           min={1}
@@ -59,9 +58,9 @@ export function AdminLogsPage() {
           value={String(logs.limit)}
           onValueChange={(value) => logs.setLimit(Number(value))}
         />
-        <SunButton type="submit" variant="secondary">
+        <Button type="submit" variant="secondary">
           应用筛选
-        </SunButton>
+        </Button>
       </form>
       {logs.retentionCopy ? (
         <p className="retention-summary">{logs.retentionCopy}</p>

@@ -1,2 +1,3 @@
 export * from './dialog'
-export { SunDialog as Dialog } from './dialog'
+/** @deprecated Compose Dialog parts directly. */
+export { SunDialog } from './legacy'

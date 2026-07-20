@@ -1,7 +1,7 @@
+import { LabeledInput } from '@/shared/ui/form-controls'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
+import { Button } from '@sun-world/ui/button'
 import { toast } from '@sun-world/ui/toast'
 import { useAuthStore } from '@/store/auth'
 import { getAccountErrorMessage } from '@/modules/account/errors'
@@ -41,13 +41,13 @@ export function LoginPage() {
       formDescription="使用你的账号继续访问 Sun World。"
     >
       <form className="auth-form" onSubmit={submit}>
-        <SunInput
+        <LabeledInput
           label="账号"
           value={account}
           onValueChange={setAccount}
           autoComplete="username"
         />
-        <SunInput
+        <LabeledInput
           label="密码"
           value={password}
           onValueChange={setPassword}
@@ -59,9 +59,9 @@ export function LoginPage() {
             {error}
           </p>
         ) : null}
-        <SunButton type="submit" size="lg" loading={loading}>
+        <Button type="submit" size="lg" loading={loading}>
           登录
-        </SunButton>
+        </Button>
       </form>
       <p className="auth-link">
         还没有账号？ <Link to="/register">注册</Link>

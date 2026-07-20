@@ -1,15 +1,20 @@
 import { resolve } from 'node:path'
 
 const primitives = [
+  'badge',
   'button',
   'card',
   'checkbox',
   'dialog',
   'dropdown-menu',
+  'field',
   'input',
   'label',
   'loading-skeleton',
   'select',
+  'separator',
+  'skeleton',
+  'sonner',
   'tabs',
   'tag',
   'textarea',

@@ -1,2 +1,3 @@
 export * from './tooltip'
-export { SunTooltip as Tooltip } from './tooltip'
+/** @deprecated Compose Tooltip parts directly. */
+export { SunTooltip } from './legacy'

@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
 const entries = [
+  'badge',
   'button',
   'card',
   'chat-composer',
@@ -12,12 +13,16 @@ const entries = [
   'date-picker',
   'dialog',
   'dropdown-menu',
+  'field',
   'input',
   'label',
   'list',
   'loading-skeleton',
   'pagination',
   'select',
+  'separator',
+  'skeleton',
+  'sonner',
   'tabs',
   'tag',
   'textarea',
@@ -27,15 +32,20 @@ const entries = [
 ] as const
 
 const primitiveEntries = new Set([
+  'badge',
   'button',
   'card',
   'checkbox',
   'dialog',
   'dropdown-menu',
+  'field',
   'input',
   'label',
   'loading-skeleton',
   'select',
+  'separator',
+  'skeleton',
+  'sonner',
   'tabs',
   'tag',
   'textarea',

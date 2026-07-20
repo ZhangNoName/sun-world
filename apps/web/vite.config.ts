@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type PluginOption } from 'vite'
@@ -28,7 +29,7 @@ function stripRouteOnlyPreloadsPlugin() {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const production = mode === 'production'
-  const plugins: PluginOption[] = [react()]
+  const plugins: PluginOption[] = [react(), tailwindcss()]
   if (mode === 'visualizer')
     plugins.push(
       visualizer({ open: true, gzipSize: true, brotliSize: true }) as never

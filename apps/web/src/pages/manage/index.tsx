@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
-import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-import { SunTabs } from '@sun-world/ui/tabs'
+import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
+import { TabsView } from '@/shared/ui/compound-controls'
 import ManageBlogPage from './blog'
 import ManageAigcPage from './aigc'
 import './manage.css'
@@ -17,11 +17,11 @@ type ManageTab = 'overview' | 'blog' | 'aigc' | 'metrics' | 'logs'
 export function ManagePage() {
   const [activeTab, setActiveTab] = useState<ManageTab>('blog')
   const lazyView = (node: React.ReactNode) => (
-    <Suspense fallback={<SunLoadingSkeleton lines={8} />}>{node}</Suspense>
+    <Suspense fallback={<LoadingSkeleton lines={8} />}>{node}</Suspense>
   )
   return (
     <main className="manage-page">
-      <SunTabs
+      <TabsView
         value={activeTab}
         onValueChange={(value) => setActiveTab(value as ManageTab)}
         items={[

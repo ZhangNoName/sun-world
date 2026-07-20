@@ -1,2 +1,3 @@
 export * from './select'
-export { SunSelect as Select } from './select'
+/** @deprecated Compose Select parts directly. */
+export { SunSelect } from './legacy'

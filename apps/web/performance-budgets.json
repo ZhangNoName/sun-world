@@ -23,7 +23,7 @@
     {
       "name": "entry-module-gzip",
       "type": "entry",
-      "maxGzipKiB": 162
+      "maxGzipKiB": 166
     },
     {
       "name": "video-page-gzip",

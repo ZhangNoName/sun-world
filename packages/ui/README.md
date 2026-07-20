@@ -1,75 +1,77 @@
 # @sun-world/ui
 
-Project-owned shadcn-style React components for Sun World.
+Project-owned shadcn/ui components for Sun World.
 
-The package follows the shadcn ownership model: component source is kept in
-this repository, complex interaction is built on Radix UI, variants use CVA,
-and styles consume Sun World's semantic design tokens. Shadcn is not installed
-as a runtime component dependency.
+The primitive source is generated from and maintained against the shadcn
+`new-york` baseline. Radix provides compound interaction, CVA provides variants,
+and Tailwind CSS v4 consumes the shared semantic theme variables. This is source
+ownership, not a black-box component dependency.
 
 ## Structure
 
 ```text
 src/
-  components/       # reusable UI primitives
-    button/
-      button.tsx
-      button.css
-      index.ts
-  patterns/         # composed application patterns
-    chat-composer/
-  lib/               # shared class utilities
-  styles/            # shared foundations and all-styles entry
-  theme/             # theme types and variable helpers
+  components/<name>/  # canonical shadcn primitive, index, compatibility adapter
+  patterns/<name>/    # product-level compositions built from primitives
+  lib/                # cn() and shared utilities
+  styles/             # Tailwind entry and semantic theme bridge
+  theme/              # programmatic theme helpers
 ```
 
-Every public UI unit owns its implementation, stylesheet, and entrypoint in one
-directory. Add tests beside the relevant component or extend the shared React
-contract suites when behavior spans multiple components.
+## Usage
 
-## Imports
-
-Prefer stable component subpaths so consumers only load what they use:
+Use canonical component names and explicit compound composition:
 
 ```tsx
-import { Button, SunButton } from '@sun-world/ui/button'
-import { Select, SunSelect } from '@sun-world/ui/select'
-import { ChatComposer } from '@sun-world/ui/chat-composer'
+import { Button } from '@sun-world/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@sun-world/ui/select'
+
+<Button variant="outline">Save</Button>
+<Select value={value} onValueChange={setValue}>
+  <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+  <SelectContent><SelectItem value="tech">Tech</SelectItem></SelectContent>
+</Select>
 ```
 
-`Sun*` names are compatibility exports. Canonical aliases such as `Button`,
-`Card`, `CardHeader`, and `Input` are available for shadcn-style composition.
-The root `@sun-world/ui` entry remains supported for intentional full-library
-consumers.
+`Sun*` exports are deprecated compatibility adapters. New application code must
+not import them. They remain for one migration window and do not own canonical
+component styles.
 
-## Styling And Themes
+## Themes
 
-Components import `src/styles/base.css` and their colocated stylesheet. Apps
-that intentionally want every component style can import:
+Tailwind utilities resolve through the standard shadcn variables (`background`,
+`foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`,
+`destructive`, `border`, `input`, and `ring`). Sun World and Apple map their
+tokens onto that surface, so design-family selection and light/dark/system mode
+remain independent.
 
-```ts
-import '@sun-world/ui/styles.css'
-```
+Apple overlay materials retain reduced-transparency, reduced-motion, and
+increased-contrast fallbacks.
 
-Components use semantic variables rather than hard-coded theme-family colors.
-Sun World, Apple, light, dark, system, reduced-motion, reduced-transparency,
-and increased-contrast behavior belongs to the consuming token layer.
+## CLI
 
-## Adding Or Updating A Component
-
-1. Put primitives in `src/components/<kebab-name>` and composed UI in
-   `src/patterns/<kebab-name>`.
-2. Keep `<name>.tsx`, `<name>.css`, and `index.ts` together.
-3. Preserve the `sun-` CSS namespace.
-4. Add the entry to `vite.config.ts`, `package.json`, and `source-aliases.ts`.
-5. Write a failing behavior or structure test before implementation.
-6. Verify public subpath imports and semantic theme behavior.
-
-## Commands
+Run the CLI from the repository root and target the UI workspace:
 
 ```bash
+corepack pnpm dlx shadcn@latest add <component> -c packages/ui
+```
+
+The CLI writes a flat file under `src/components`; move it into
+`src/components/<name>/<name>.tsx`, use package-relative imports internally, and
+export it from that directory's `index.ts`. This preserves the repository's
+one-folder-per-component convention.
+
+## Verification
+
+```bash
+corepack pnpm exec node scripts/check-ui-native-shadcn.mjs
 corepack pnpm -C packages/ui test
 corepack pnpm -C packages/ui build
-corepack pnpm exec node scripts/check-ui-shadcn-structure.mjs
 corepack pnpm check:web
 ```

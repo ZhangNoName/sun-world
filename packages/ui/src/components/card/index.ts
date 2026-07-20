@@ -1,7 +1,3 @@
 export * from './card'
-export {
-  SunCard as Card,
-  SunCardContent as CardContent,
-  SunCardFooter as CardFooter,
-  SunCardHeader as CardHeader,
-} from './card'
+/** @deprecated Use the canonical Card composition. */
+export { SunCard, SunCardContent, SunCardFooter, SunCardHeader } from './legacy'

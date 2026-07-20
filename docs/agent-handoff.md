@@ -6,6 +6,16 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-20: `feat/native-shadcn-ui` replaces the earlier shadcn-inspired
+  implementation with the real shadcn `new-york` source model, Tailwind CSS v4,
+  canonical Radix composition, canonical app imports, and standard semantic
+  theme variables for both Sun World and Apple. `Sun*` exports are deprecated
+  compatibility adapters. `corepack pnpm -C packages/ui test` passed 12/12,
+  the UI package build passed, and `corepack pnpm check:web` passed 47/47 app
+  tests, TypeScript, production build, 30-article SSG, package guards, and all
+  performance budgets. Browser QA confirmed the homepage renders in Apple dark
+  and switches to Sun World dark with one click. Not pushed or deployed.
+
 - 2026-07-19: blog list and article reading surfaces were visually rebuilt on
   local `main` after the switchable-theme rollout. The feed now uses the shared
   Radix select, a composed search toolbar, segmented view controls, and refined

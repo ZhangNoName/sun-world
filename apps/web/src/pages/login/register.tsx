@@ -1,7 +1,7 @@
+import { LabeledInput } from '@/shared/ui/form-controls'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
+import { Button } from '@sun-world/ui/button'
 import { toast } from '@sun-world/ui/toast'
 import { useAuthStore } from '@/store/auth'
 import { getAccountErrorMessage } from '@/modules/account/errors'
@@ -62,29 +62,29 @@ export function RegisterPage() {
       formDescription="填写基础信息，即可创建新账号。"
     >
       <form className="auth-form" onSubmit={submit}>
-        <SunInput
+        <LabeledInput
           label="昵称"
           value={form.name}
           onValueChange={field('name')}
         />
-        <SunInput
+        <LabeledInput
           label="手机号"
           value={form.phone}
           onValueChange={field('phone')}
         />
-        <SunInput
+        <LabeledInput
           label="邮箱"
           type="email"
           value={form.email}
           onValueChange={field('email')}
         />
-        <SunInput
+        <LabeledInput
           label="密码"
           type="password"
           value={form.password}
           onValueChange={field('password')}
         />
-        <SunInput
+        <LabeledInput
           label="确认密码"
           type="password"
           value={form.confirm}
@@ -95,9 +95,9 @@ export function RegisterPage() {
             {error}
           </p>
         ) : null}
-        <SunButton type="submit" size="lg" loading={loading}>
+        <Button type="submit" size="lg" loading={loading}>
           注册
-        </SunButton>
+        </Button>
       </form>
       <p className="auth-link">
         已有账号？ <Link to="/login">登录</Link>

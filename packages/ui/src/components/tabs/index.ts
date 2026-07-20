@@ -1,2 +1,3 @@
 export * from './tabs'
-export { SunTabs as Tabs } from './tabs'
+/** @deprecated Compose Tabs parts directly. */
+export { SunTabs } from './legacy'

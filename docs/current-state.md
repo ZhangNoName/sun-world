@@ -1,6 +1,19 @@
 # Current State
 
-Last updated: 2026-07-19 (`main`, UI package migration and blog reading polish complete locally)
+Last updated: 2026-07-20 (`feat/native-shadcn-ui`, native shadcn migration in verification)
+
+## Native Shadcn UI (2026-07-20, local feature branch)
+
+- `packages/ui` now uses shadcn CLI `new-york` source, Tailwind CSS v4, Radix
+  primitives, canonical compound APIs, and executable monorepo `components.json`
+  configuration.
+- Application primitive imports use canonical names. Labeled form fields and
+  compound page controls are explicit product compositions; `Sun*` remains only
+  as deprecated package compatibility.
+- Sun World and Apple map onto the complete shadcn semantic variable surface;
+  family selection remains independent from light/dark/system mode.
+- The entry gzip budget is 166 KiB for the native shadcn/Radix baseline. Total JS
+  remains capped at 1200 KiB and total CSS at 30 KiB.
 
 ## Blog Reading Experience (2026-07-19, local main)
 
@@ -305,8 +318,8 @@ the left-side weather card; mobile placement is inside
   reduced-transparency, and increased-contrast fallbacks.
 - `scripts/check-design-themes.mjs` guards the two families, both appearances,
   semantic material tokens, and accessibility preference media queries.
-- The entry-module gzip budget is 162 KiB after adding the global theme
-  controller. The verified entry is 160.2 KiB; the detailed theme options are
+- The entry-module gzip budget was 162 KiB after adding the global theme
+  controller. That historical build measured 160.2 KiB; the detailed theme options are
   a separate 0.48 KiB gzip lazy chunk.
 
 ## Known Issues

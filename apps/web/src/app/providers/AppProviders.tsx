@@ -1,6 +1,6 @@
 import { useEffect, type PropsWithChildren } from 'react'
 import { I18nextProvider } from 'react-i18next'
-import { SunToastProvider } from '@sun-world/ui/toast'
+import { ToastProvider } from '@sun-world/ui/toast'
 
 import i18n, { setLocale, type AppLocale } from '@/i18n'
 import { ThemeProvider } from '@/shared/design/theme'
@@ -25,7 +25,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
           {children}
-          <SunToastProvider />
+          <ToastProvider />
         </ThemeProvider>
       </I18nextProvider>
     </AppErrorBoundary>

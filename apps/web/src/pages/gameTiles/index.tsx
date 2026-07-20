@@ -1,7 +1,6 @@
+import { CheckboxField, LabeledInput } from '@/shared/ui/form-controls'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { SunButton } from '@sun-world/ui/button'
-import { SunCheckbox } from '@sun-world/ui/checkbox'
-import { SunInput } from '@sun-world/ui/input'
+import { Button } from '@sun-world/ui/button'
 import { toast } from '@sun-world/ui/toast'
 import { downloadUrl, saveTilesAsZip, saveTilesJson } from '@/util/function'
 import './tiles.css'
@@ -175,7 +174,7 @@ export function GameTilesPage() {
         </label>
         <div className="config-grid">
           {(['row', 'col', 'width', 'height', 'gap'] as const).map((key) => (
-            <SunInput
+            <LabeledInput
               key={key}
               label={
                 {
@@ -197,32 +196,29 @@ export function GameTilesPage() {
           当前 {selected.row + 1} 行 {selected.col + 1} 列
         </p>
         <div className="export-options">
-          <SunCheckbox
+          <CheckboxField
             label="整图"
             checked={exports.includes('all')}
-            onCheckedChange={(value) => toggleExport('all', value)}
+            onCheckedChange={(value) => toggleExport('all', value === true)}
           />
-          <SunCheckbox
+          <CheckboxField
             label="PNG 切片 ZIP"
             checked={exports.includes('split')}
-            onCheckedChange={(value) => toggleExport('split', value)}
+            onCheckedChange={(value) => toggleExport('split', value === true)}
           />
-          <SunCheckbox
+          <CheckboxField
             label="瓦片 JSON"
             checked={exports.includes('json')}
-            onCheckedChange={(value) => toggleExport('json', value)}
+            onCheckedChange={(value) => toggleExport('json', value === true)}
           />
         </div>
         <div className="tile-actions">
-          <SunButton
-            onClick={() => void runExport()}
-            disabled={!exports.length}
-          >
+          <Button onClick={() => void runExport()} disabled={!exports.length}>
             导出
-          </SunButton>
-          <SunButton variant="danger" onClick={clear}>
+          </Button>
+          <Button variant="destructive" onClick={clear}>
             清空
-          </SunButton>
+          </Button>
         </div>
       </aside>
     </main>

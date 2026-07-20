@@ -1,2 +1,3 @@
 export * from './checkbox'
-export { SunCheckbox as Checkbox } from './checkbox'
+/** @deprecated Use Checkbox. */
+export { SunCheckbox } from './legacy'

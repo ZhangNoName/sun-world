@@ -1,49 +1,18 @@
-import { useId, type ChangeEvent, type TextareaHTMLAttributes } from 'react'
+import * as React from 'react'
 
 import { cn } from '../../lib/cn'
-import '../../styles/base.css'
-import '../input/input.css'
-import './textarea.css'
 
-export interface SunTextareaProps extends Omit<
-  TextareaHTMLAttributes<HTMLTextAreaElement>,
-  'value' | 'onChange'
-> {
-  value?: string
-  onValueChange?: (value: string) => void
-  label?: string
-}
-
-export function SunTextarea({
-  id,
-  value = '',
-  onValueChange,
-  label,
-  disabled,
-  className,
-  ...props
-}: SunTextareaProps) {
-  const generatedId = useId()
-  const inputId = id ?? `sun-textarea-${generatedId}`
-  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    if (!disabled) onValueChange?.(event.target.value)
-  }
+function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   return (
-    <span className="sun-ui-field">
-      {label ? (
-        <label className="sun-ui-label" htmlFor={inputId}>
-          {label}
-        </label>
-      ) : null}
-      <textarea
-        id={inputId}
-        value={value}
-        disabled={disabled}
-        aria-label={props['aria-label'] ?? label}
-        className={cn('sun-input sun-input--textarea', className)}
-        onChange={handleChange}
-        {...props}
-      />
-    </span>
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        'flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40',
+        className
+      )}
+      {...props}
+    />
   )
 }
+
+export { Textarea }

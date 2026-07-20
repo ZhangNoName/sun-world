@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useMatches } from 'react-router'
 import { SunIcon } from '@sun-world/icons/react'
-import { SunButton } from '@sun-world/ui/button'
-import { SunDialog } from '@sun-world/ui/dialog'
+import { Button } from '@sun-world/ui/button'
 
+import { DialogPanel } from '@/shared/ui/compound-controls'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import { useDeviceStore } from '@/store/tg'
@@ -52,16 +52,16 @@ export function AppLayout() {
             <Link to="/">
               <img src="/logo.svg" alt="Sun World" />
             </Link>
-            <SunDialog
+            <DialogPanel
               title="导航菜单"
               open={drawer}
               onOpenChange={setDrawer}
               overlayClassName="drawer-overlay"
               contentClassName="mob-drawer"
               trigger={
-                <SunButton variant="icon" size="icon" aria-label="菜单">
+                <Button variant="ghost" size="icon" aria-label="菜单">
                   <SunIcon name="menu" />
-                </SunButton>
+                </Button>
               }
             >
               <nav>
@@ -81,7 +81,7 @@ export function AppLayout() {
               </nav>
               <ThemeSwitch />
               <LanguageSwitch />
-            </SunDialog>
+            </DialogPanel>
           </header>
         )}
         <div className={`main-container ${meta.className ?? ''}`}>

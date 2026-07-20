@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { SunIcon } from '@sun-world/icons/react'
-import { SunLoadingSkeleton } from '@sun-world/ui/loading-skeleton'
+import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { toast } from '@sun-world/ui/toast'
 
 import { SunMarkdownPreview } from '@/shared/markdown'
@@ -58,7 +58,7 @@ export function BlogDetailPage() {
       </aside>
       <main className="blog-page__article">
         {reader.loading ? (
-          <SunLoadingSkeleton lines={5} />
+          <LoadingSkeleton lines={5} />
         ) : (
           <>
             <header className="article-header">

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ToolName } from '@sun-world/editor'
 import { SunIcon, type SunIconProps } from '@sun-world/icons/react'
-import { SunButton } from '@sun-world/ui/button'
+import { Button } from '@sun-world/ui/button'
 import { useEditorCanvas } from '../hooks/useEditorCanvas'
 import { EditorCanvasLeft } from '../ui/EditorCanvasLeft'
 import { EditorCanvasRight } from '../ui/EditorCanvasRight'
@@ -48,9 +48,9 @@ export function EditorCanvasPage() {
             <SunIcon name={tool.icon} size={20} />
           </button>
         ))}
-        <SunButton size="sm" variant="secondary" onClick={canvas.save}>
+        <Button size="sm" variant="secondary" onClick={canvas.save}>
           保存
-        </SunButton>
+        </Button>
       </div>
     </main>
   )

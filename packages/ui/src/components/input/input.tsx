@@ -1,73 +1,43 @@
-import { useId, type ChangeEvent, type InputHTMLAttributes } from 'react'
+import * as React from 'react'
 
 import { cn } from '../../lib/cn'
-import '../../styles/base.css'
-import './input.css'
 
-export interface SunInputProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  'value' | 'onChange' | 'size'
-> {
-  value?: string
+type InputProps = Omit<React.ComponentProps<'input'>, 'onChange'> & {
+  onChange?: React.ChangeEventHandler<HTMLInputElement>
   onValueChange?: (value: string) => void
   onValueCommit?: (value: string) => void
-  label?: string
-  inputSize?: 'sm' | 'md' | 'lg'
-  clearable?: boolean
 }
 
-export function SunInput({
-  id,
-  value = '',
+function Input({
+  className,
+  type,
+  onChange,
+  onBlur,
   onValueChange,
   onValueCommit,
-  label,
-  inputSize = 'md',
-  clearable = false,
-  className,
-  disabled,
   ...props
-}: SunInputProps) {
-  const generatedId = useId()
-  const inputId = id ?? `sun-input-${generatedId}`
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (!disabled) onValueChange?.(event.target.value)
-  }
+}: InputProps) {
   return (
-    <span className="sun-ui-field">
-      {label ? (
-        <label className="sun-ui-label" htmlFor={inputId}>
-          {label}
-        </label>
-      ) : null}
-      <span className="sun-input-wrap">
-        <input
-          id={inputId}
-          value={value}
-          disabled={disabled}
-          aria-label={props['aria-label'] ?? label}
-          className={cn(
-            'sun-input',
-            `sun-input--${inputSize}`,
-            disabled && 'sun-ui-disabled',
-            className
-          )}
-          onChange={handleChange}
-          onBlur={(event) => onValueCommit?.(event.currentTarget.value)}
-          {...props}
-        />
-        {clearable && value ? (
-          <button
-            className="sun-input__clear"
-            type="button"
-            disabled={disabled}
-            aria-label="Clear input"
-            onClick={() => onValueChange?.('')}
-          >
-            ×
-          </button>
-        ) : null}
-      </span>
-    </span>
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        'h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
+        'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+        className
+      )}
+      onChange={(event) => {
+        onChange?.(event)
+        onValueChange?.(event.currentTarget.value)
+      }}
+      onBlur={(event) => {
+        onBlur?.(event)
+        onValueCommit?.(event.currentTarget.value)
+      }}
+      {...props}
+    />
   )
 }
+
+export { Input, type InputProps }

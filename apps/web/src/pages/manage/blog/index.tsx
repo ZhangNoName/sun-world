@@ -1,8 +1,7 @@
+import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
 import { Link } from 'react-router'
-import { SunButton } from '@sun-world/ui/button'
-import { SunInput } from '@sun-world/ui/input'
+import { Button } from '@sun-world/ui/button'
 import { SunPagination } from '@sun-world/ui/pagination'
-import { SunSelect } from '@sun-world/ui/select'
 import { useBlogManagement } from '@/modules/blog/composables/useBlogManagement'
 
 export function ManageBlogPage() {
@@ -29,14 +28,14 @@ export function ManageBlogPage() {
           void blog.submit()
         }}
       >
-        <SunInput
+        <LabeledInput
           label="标题关键词"
           value={blog.keyword}
           onValueChange={blog.setKeyword}
           maxLength={31}
           placeholder="最多 30 个字符"
         />
-        <SunSelect
+        <SelectField
           label="排序字段"
           value={blog.sortBy}
           onValueChange={(value) => blog.setSortBy(value as typeof blog.sortBy)}
@@ -46,7 +45,7 @@ export function ManageBlogPage() {
             { value: 'view_num', label: '浏览量' },
           ]}
         />
-        <SunSelect
+        <SelectField
           label="排序方向"
           value={blog.sortOrder}
           onValueChange={(value) =>
@@ -57,16 +56,12 @@ export function ManageBlogPage() {
             { value: 'asc', label: '升序' },
           ]}
         />
-        <SunButton type="submit" loading={blog.loading}>
+        <Button type="submit" loading={blog.loading}>
           查询
-        </SunButton>
-        <SunButton
-          type="button"
-          variant="ghost"
-          onClick={() => void blog.reset()}
-        >
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => void blog.reset()}>
           重置
-        </SunButton>
+        </Button>
       </form>
       {blog.validationMessage ? (
         <p className="admin-error" role="alert">

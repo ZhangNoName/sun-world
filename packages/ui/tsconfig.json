@@ -3,6 +3,17 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@sun-world/ui/components": ["src/components"],
+      "@sun-world/ui/components/*": ["src/components/*"],
+      "@sun-world/ui/patterns": ["src/patterns"],
+      "@sun-world/ui/patterns/*": ["src/patterns/*"],
+      "@sun-world/ui/hooks": ["src/hooks"],
+      "@sun-world/ui/hooks/*": ["src/hooks/*"],
+      "@sun-world/ui/lib": ["src/lib"],
+      "@sun-world/ui/lib/*": ["src/lib/*"]
+    },
     "strict": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
