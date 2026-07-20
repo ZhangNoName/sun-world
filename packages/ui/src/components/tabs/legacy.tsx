@@ -1,5 +1,6 @@
-import * as TabsPrimitive from '@radix-ui/react-tabs'
 import type { ReactNode } from 'react'
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 import '../../styles/base.css'
 import './tabs.css'
 
@@ -23,28 +24,28 @@ export function SunTabs({
   items,
 }: SunTabsProps) {
   return (
-    <TabsPrimitive.Root
+    <Tabs
       value={value}
       defaultValue={defaultValue ?? items[0]?.value}
       onValueChange={onValueChange}
     >
-      <TabsPrimitive.List className="sun-tabs__list">
+      <TabsList className="sun-tabs__list">
         {items.map((item) => (
-          <TabsPrimitive.Trigger
+          <TabsTrigger
             key={item.value}
             value={item.value}
             disabled={item.disabled}
             className="sun-tabs__trigger"
           >
             {item.label}
-          </TabsPrimitive.Trigger>
+          </TabsTrigger>
         ))}
-      </TabsPrimitive.List>
+      </TabsList>
       {items.map((item) => (
-        <TabsPrimitive.Content key={item.value} value={item.value}>
+        <TabsContent key={item.value} value={item.value}>
           {item.content}
-        </TabsPrimitive.Content>
+        </TabsContent>
       ))}
-    </TabsPrimitive.Root>
+    </Tabs>
   )
 }

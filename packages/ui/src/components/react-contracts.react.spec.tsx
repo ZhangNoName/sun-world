@@ -173,7 +173,9 @@ describe('@sun-world/ui React contracts', () => {
     )
     await userEvent.type(screen.getByLabelText('Summary'), 'Hello')
     await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Delete' }))
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' })
+    )
     await userEvent.hover(screen.getByRole('button', { name: 'Help' }))
     expect(onValueChange).toHaveBeenCalled()
     expect(onSelect).toHaveBeenCalledWith('delete')

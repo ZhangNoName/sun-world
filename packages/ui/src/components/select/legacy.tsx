@@ -1,6 +1,12 @@
-import * as SelectPrimitive from '@radix-ui/react-select'
 import { useId } from 'react'
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select'
 import { SunLabel } from '../label'
 import '../../styles/base.css'
 import './select.css'
@@ -33,45 +39,29 @@ export function SunSelect({
   return (
     <span className="sun-ui-field">
       {label ? <SunLabel htmlFor={id}>{label}</SunLabel> : null}
-      <SelectPrimitive.Root
+      <Select
         value={value || undefined}
         defaultValue={defaultValue}
         onValueChange={onValueChange}
         disabled={disabled}
+        items={options}
       >
-        <SelectPrimitive.Trigger
-          id={id}
-          className="sun-select"
-          aria-label={label}
-        >
-          <SelectPrimitive.Value placeholder={placeholder} />
-          <SelectPrimitive.Icon>⌄</SelectPrimitive.Icon>
-        </SelectPrimitive.Trigger>
-        <SelectPrimitive.Portal>
-          <SelectPrimitive.Content
-            className="sun-select__content"
-            position="popper"
-          >
-            <SelectPrimitive.Viewport>
-              {options.map((option) => (
-                <SelectPrimitive.Item
-                  key={option.value}
-                  value={option.value}
-                  disabled={option.disabled}
-                  className="sun-select__item"
-                >
-                  <SelectPrimitive.ItemText>
-                    {option.label}
-                  </SelectPrimitive.ItemText>
-                  <SelectPrimitive.ItemIndicator>
-                    ✓
-                  </SelectPrimitive.ItemIndicator>
-                </SelectPrimitive.Item>
-              ))}
-            </SelectPrimitive.Viewport>
-          </SelectPrimitive.Content>
-        </SelectPrimitive.Portal>
-      </SelectPrimitive.Root>
+        <SelectTrigger id={id} className="sun-select" aria-label={label}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent className="sun-select__content" position="popper">
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+              className="sun-select__item"
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </span>
   )
 }

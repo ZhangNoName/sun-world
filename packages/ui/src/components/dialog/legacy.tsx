@@ -1,6 +1,13 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type { ReactNode } from 'react'
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from './dialog'
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
 import './dialog.css'
@@ -26,36 +33,26 @@ export function SunDialog({
   overlayClassName,
   contentClassName,
 }: SunDialogProps) {
+  const triggerIsElement = typeof trigger !== 'string'
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Trigger asChild>
-        {typeof trigger === 'string' ? (
-          <button type="button">{trigger}</button>
-        ) : (
-          trigger
-        )}
-      </DialogPrimitive.Trigger>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay
-          className={cn('sun-dialog__overlay', overlayClassName)}
-        />
-        <DialogPrimitive.Content
-          className={cn('sun-dialog__content', contentClassName)}
-        >
-          <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
-          {description ? (
-            <DialogPrimitive.Description>
-              {description}
-            </DialogPrimitive.Description>
-          ) : null}
-          {children}
-          <DialogPrimitive.Close asChild>
-            <button type="button" aria-label="Close dialog">
-              ×
-            </button>
-          </DialogPrimitive.Close>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild={triggerIsElement}>{trigger}</DialogTrigger>
+      <DialogContent
+        className={cn('sun-dialog__content', contentClassName)}
+        overlayClassName={cn('sun-dialog__overlay', overlayClassName)}
+        showCloseButton={false}
+      >
+        <DialogTitle>{title}</DialogTitle>
+        {description ? (
+          <DialogDescription>{description}</DialogDescription>
+        ) : null}
+        {children}
+        <DialogClose asChild>
+          <button type="button" aria-label="Close dialog">
+            ×
+          </button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -38,7 +38,7 @@ export function SelectField({
   return (
     <div className="sun-ui-field">
       <Label htmlFor={id}>{label}</Label>
-      <Select {...props}>
+      <Select items={options} {...props}>
         <SelectTrigger id={id}>
           <SelectValue placeholder={label} />
         </SelectTrigger>

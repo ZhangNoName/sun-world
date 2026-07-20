@@ -1,5 +1,11 @@
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import type { ReactElement, ReactNode } from 'react'
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './tooltip'
 import '../../styles/base.css'
 import './tooltip.css'
 
@@ -11,16 +17,13 @@ export function SunTooltip({
   children: ReactElement
 }) {
   return (
-    <TooltipPrimitive.Provider delayDuration={0}>
-      <TooltipPrimitive.Root>
-        <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
-        <TooltipPrimitive.Portal>
-          <TooltipPrimitive.Content className="sun-tooltip" sideOffset={4}>
-            {content}
-            <TooltipPrimitive.Arrow />
-          </TooltipPrimitive.Content>
-        </TooltipPrimitive.Portal>
-      </TooltipPrimitive.Root>
-    </TooltipPrimitive.Provider>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent className="sun-tooltip" sideOffset={4}>
+          {content}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }

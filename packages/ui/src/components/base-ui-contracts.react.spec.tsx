@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createRef } from 'react'
+import { createRef, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '@sun-world/ui/button'
@@ -11,9 +11,11 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
+  DialogTrigger,
 } from '@sun-world/ui/dialog'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -25,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@sun-world/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@sun-world/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@sun-world/ui/tabs'
 import {
   Tooltip,
   TooltipContent,
@@ -72,7 +74,7 @@ describe('Base UI migration contracts', () => {
     )
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Sort' }))
-    await userEvent.click(screen.getByRole('option', { name: 'Oldest' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Oldest' }))
 
     expect(onValueChange).toHaveBeenCalledWith('oldest')
   })
@@ -133,13 +135,21 @@ describe('Base UI migration contracts', () => {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="archived" disabled>
+            Archived
+          </SelectItem>
           <SelectItem value="oldest">Oldest</SelectItem>
         </SelectContent>
       </Select>
     )
 
     screen.getByRole('combobox', { name: 'Sort by keyboard' }).focus()
-    await userEvent.keyboard('{Enter}{ArrowDown}{Enter}')
+    await userEvent.keyboard('{Enter}')
+    expect(screen.getByRole('option', { name: 'Archived' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
+    await userEvent.keyboard('{ArrowDown}{Enter}')
 
     expect(onValueChange).toHaveBeenCalledWith('oldest')
   })
@@ -156,15 +166,63 @@ describe('Base UI migration contracts', () => {
     )
 
     const dialog = screen.getByRole('dialog', { name: 'Delete article' })
-    expect(dialog.parentElement).toBe(document.body)
+    expect(dialog.closest('[data-base-ui-portal]')?.parentElement).toBe(
+      document.body
+    )
 
     await userEvent.keyboard('{Escape}')
 
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
+  it('keeps force-mounted Dialog content in its portal while closed', () => {
+    render(
+      <Dialog>
+        <DialogContent forceMount>
+          <DialogTitle>Persistent dialog</DialogTitle>
+        </DialogContent>
+      </Dialog>
+    )
+
+    const content = document.querySelector('[data-slot="dialog-content"]')
+    expect(content).toBeInTheDocument()
+    expect(content?.closest('[data-base-ui-portal]')?.parentElement).toBe(
+      document.body
+    )
+  })
+
+  it('dismisses Dialog on an outside press', async () => {
+    render(
+      <>
+        <button type="button">Outside action</button>
+        <Dialog modal={false}>
+          <DialogTrigger asChild>
+            <Button>Open editor</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Edit article</DialogTitle>
+          </DialogContent>
+        </Dialog>
+      </>
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Open editor' })
+    await userEvent.click(trigger)
+    expect(screen.getByRole('dialog', { name: 'Edit article' })).toBeVisible()
+
+    const outsideAction = screen.getByRole('button', {
+      name: 'Outside action',
+    })
+    fireEvent.pointerDown(outsideAction, { pointerType: 'mouse' })
+    fireEvent.click(outsideAction)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
   it('preserves the Dropdown Menu selection event payload', async () => {
-    const onSelect = vi.fn()
+    const onSelect = vi.fn((event: Event) => event.preventDefault())
     render(
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -177,26 +235,85 @@ describe('Base UI migration contracts', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Archive' }))
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Archive' })
+    )
 
     expect(onSelect).toHaveBeenCalledWith(expect.any(Event))
-    expect(onSelect.mock.calls[0]?.[0]?.defaultPrevented).toBe(false)
+    expect(onSelect.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+    expect(
+      screen.getByRole('menuitem', { name: 'Archive' })
+    ).toBeInTheDocument()
+  })
+
+  it('skips disabled Dropdown Menu items and reports checked item state', async () => {
+    const onDisabledSelect = vi.fn()
+    const onCheckedChange = vi.fn()
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>View options</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem disabled onSelect={onDisabledSelect}>
+            Hidden action
+          </DropdownMenuItem>
+          <DropdownMenuCheckboxItem checked onCheckedChange={onCheckedChange}>
+            Show summaries
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'View options' }))
+    const disabledItem = await screen.findByRole('menuitem', {
+      name: 'Hidden action',
+    })
+    const checkedItem = screen.getByRole('menuitemcheckbox', {
+      name: 'Show summaries',
+    })
+
+    expect(disabledItem).toHaveAttribute('aria-disabled', 'true')
+    expect(checkedItem).toHaveAttribute('aria-checked', 'true')
+    expect(checkedItem).toHaveAttribute('data-checked', '')
+    await userEvent.click(disabledItem)
+    expect(onDisabledSelect).not.toHaveBeenCalled()
+
+    await userEvent.click(checkedItem)
+    expect(onCheckedChange).toHaveBeenCalledWith(false)
   })
 
   it('preserves controlled Tabs value changes', async () => {
-    const onValueChange = vi.fn()
-    render(
-      <Tabs value="overview" onValueChange={onValueChange}>
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-        </TabsList>
-      </Tabs>
-    )
+    const onValueChange = vi.fn<(value: string) => void>()
+    function ControlledTabs() {
+      const [value, setValue] = useState('overview')
+      return (
+        <Tabs
+          value={value}
+          onValueChange={(nextValue) => {
+            onValueChange(nextValue)
+            setValue(nextValue)
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview">Overview panel</TabsContent>
+          <TabsContent value="activity">Activity panel</TabsContent>
+        </Tabs>
+      )
+    }
+    render(<ControlledTabs />)
 
     await userEvent.click(screen.getByRole('tab', { name: 'Activity' }))
 
     expect(onValueChange).toHaveBeenCalledWith('activity')
+    expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
+      'data-active',
+      ''
+    )
+    expect(screen.getByText('Activity panel')).toBeVisible()
   })
 
   it('exposes Tooltip content to assistive technology', async () => {
@@ -216,6 +333,28 @@ describe('Base UI migration contracts', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'Keyboard shortcuts'
     )
+  })
+
+  it('composes Tooltip provider delay with a trigger and popup', async () => {
+    render(
+      <TooltipProvider delayDuration={50}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button>Formatting help</Button>
+          </TooltipTrigger>
+          <TooltipContent>Markdown shortcuts</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+
+    await userEvent.hover(
+      screen.getByRole('button', { name: 'Formatting help' })
+    )
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('Markdown shortcuts')
+    expect(tooltip).toHaveAttribute('data-open', '')
   })
 
   it('forwards Button refs while preserving disabled interaction', async () => {

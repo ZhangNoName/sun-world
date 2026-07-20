@@ -1,5 +1,11 @@
-import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu'
 import type { ReactNode } from 'react'
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu'
 import '../../styles/base.css'
 import './dropdown-menu.css'
 
@@ -20,31 +26,26 @@ export function SunDropdownMenu({
   items,
   onSelect,
 }: SunDropdownMenuProps) {
+  const triggerIsElement = typeof trigger !== 'string'
   return (
-    <DropdownPrimitive.Root>
-      <DropdownPrimitive.Trigger asChild>
-        {typeof trigger === 'string' ? (
-          <button type="button">{trigger}</button>
-        ) : (
-          trigger
-        )}
-      </DropdownPrimitive.Trigger>
-      <DropdownPrimitive.Portal>
-        <DropdownPrimitive.Content className="sun-dropdown-menu" sideOffset={4}>
-          {items.map((item) => (
-            <DropdownPrimitive.Item
-              key={item.value}
-              disabled={item.disabled}
-              className={
-                item.destructive ? 'sun-dropdown-menu__item--danger' : undefined
-              }
-              onSelect={() => onSelect?.(item.value)}
-            >
-              {item.label}
-            </DropdownPrimitive.Item>
-          ))}
-        </DropdownPrimitive.Content>
-      </DropdownPrimitive.Portal>
-    </DropdownPrimitive.Root>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild={triggerIsElement}>
+        {trigger}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="sun-dropdown-menu" sideOffset={4}>
+        {items.map((item) => (
+          <DropdownMenuItem
+            key={item.value}
+            disabled={item.disabled}
+            className={
+              item.destructive ? 'sun-dropdown-menu__item--danger' : undefined
+            }
+            onSelect={() => onSelect?.(item.value)}
+          >
+            {item.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
