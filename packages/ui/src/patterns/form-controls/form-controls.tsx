@@ -49,10 +49,11 @@ export function SelectField({
         <SelectTrigger
           id={id}
           aria-label={hideVisibleLabel ? label : undefined}
+          className="w-full"
         >
           <SelectValue placeholder={label} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent position="popper">
           {options.map((option) => (
             <SelectItem
               key={option.value}

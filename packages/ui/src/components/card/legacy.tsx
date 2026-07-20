@@ -2,7 +2,6 @@ import type { HTMLAttributes } from 'react'
 
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import './card.css'
 
 export function SunCard({
   className,

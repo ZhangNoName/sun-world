@@ -4,7 +4,6 @@ import { Checkbox } from './checkbox'
 import { SunLabel } from '../label'
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import './checkbox.css'
 
 export interface SunCheckboxProps {
   checked?: boolean

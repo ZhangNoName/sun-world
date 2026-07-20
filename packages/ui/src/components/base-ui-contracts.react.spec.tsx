@@ -41,6 +41,8 @@ import {
 } from '@sun-world/ui/tooltip'
 import { Label } from '@sun-world/ui/label'
 import { Separator } from '@sun-world/ui/separator'
+import { SunSelect } from '@sun-world/ui/select'
+import { SelectField } from '../patterns/form-controls'
 
 async function waitForPopupLifecycle(duration = 50) {
   await act(
@@ -49,6 +51,57 @@ async function waitForPopupLifecycle(duration = 50) {
 }
 
 describe('Base UI migration contracts', () => {
+  it('keeps the legacy Select adapter free of a separate visual language', () => {
+    render(
+      <SunSelect
+        label="Legacy sort"
+        options={[{ value: 'newest', label: 'Newest first' }]}
+      />
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Legacy sort' })
+    expect(trigger).toHaveAttribute('data-slot', 'select-trigger')
+    expect(trigger.className).not.toContain('sun-select')
+  })
+
+  it('anchors form Select popups to their trigger width', async () => {
+    render(
+      <SelectField
+        label="Sort articles"
+        options={[{ value: 'newest', label: 'Newest first' }]}
+      />
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Sort articles' })
+    expect(trigger.className).toContain('w-full')
+    await userEvent.click(trigger)
+
+    expect(
+      screen.getByRole('listbox').parentElement?.className
+    ).toContain('w-(--anchor-width)')
+  })
+
+  it('uses the Base Nova Select visual slots', async () => {
+    render(
+      <Select defaultValue="newest">
+        <SelectTrigger aria-label="Base Nova sort">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="newest">Newest first</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Base Nova sort' })
+    expect(trigger.className).toContain('rounded-lg')
+    await userEvent.click(trigger)
+    expect(screen.getByRole('listbox').parentElement?.className).toContain(
+      'w-(--anchor-width)'
+    )
+    expect(screen.getByRole('option').className).toContain('rounded-md')
+  })
+
   it('renders Button and Badge child links through their compatibility prop', () => {
     const buttonRef = createRef<HTMLAnchorElement>()
     const badgeRef = createRef<HTMLAnchorElement>()

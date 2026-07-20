@@ -7,7 +7,6 @@ import {
   TooltipTrigger,
 } from './tooltip'
 import '../../styles/base.css'
-import './tooltip.css'
 
 export function SunTooltip({
   content,

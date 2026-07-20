@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu'
 import '../../styles/base.css'
-import './dropdown-menu.css'
 
 export interface SunDropdownMenuItem {
   value: string

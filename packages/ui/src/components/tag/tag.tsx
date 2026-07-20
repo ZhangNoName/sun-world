@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react'
 
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import './tag.css'
 
 export interface SunTagProps {
   label: string | number

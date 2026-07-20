@@ -10,7 +10,6 @@ import {
 } from './dialog'
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import './dialog.css'
 
 export interface SunDialogProps {
   trigger: ReactNode

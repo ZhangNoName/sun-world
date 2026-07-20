@@ -38,7 +38,7 @@ for (const [group, names] of [
 ]) {
   for (const name of names) {
     const directory = resolve(uiSource, group, name)
-    for (const file of ['index.ts', `${name}.tsx`, `${name}.css`]) {
+    for (const file of ['index.ts', `${name}.tsx`]) {
       if (!existsSync(resolve(directory, file)))
         failures.push(`Missing ${group}/${name}/${file}`)
     }

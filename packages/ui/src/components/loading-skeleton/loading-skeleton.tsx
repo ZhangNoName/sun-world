@@ -1,5 +1,4 @@
 import '../../styles/base.css'
-import './loading-skeleton.css'
 
 export function SunLoadingSkeleton({ lines = 3 }: { lines?: number }) {
   return (

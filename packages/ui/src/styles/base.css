@@ -48,7 +48,6 @@
 @supports (backdrop-filter: blur(1px)) {
   [data-design='apple'] .sun-dialog__content,
   [data-design='apple'] .sun-dropdown-menu,
-  [data-design='apple'] .sun-select__content,
   [data-design='apple'] .sun-tooltip {
     border-color: var(--material-border);
     background: var(--material-chrome);
@@ -59,7 +58,6 @@
 @media (prefers-reduced-transparency: reduce) {
   .sun-dialog__content,
   .sun-dropdown-menu,
-  .sun-select__content,
   .sun-tooltip {
     background: var(--surface-elevated);
     backdrop-filter: none;

@@ -2,7 +2,6 @@ import { useId, type ChangeEvent, type InputHTMLAttributes } from 'react'
 
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import './input.css'
 
 export interface SunInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,

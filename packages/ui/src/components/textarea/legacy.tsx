@@ -2,8 +2,6 @@ import { useId, type ChangeEvent, type TextareaHTMLAttributes } from 'react'
 
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
-import '../input/input.css'
-import './textarea.css'
 
 export interface SunTextareaProps extends Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,

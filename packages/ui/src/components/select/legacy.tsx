@@ -9,7 +9,6 @@ import {
 } from './select'
 import { SunLabel } from '../label'
 import '../../styles/base.css'
-import './select.css'
 
 export interface SunSelectOption {
   value: string
@@ -46,16 +45,15 @@ export function SunSelect({
         disabled={disabled}
         items={options}
       >
-        <SelectTrigger id={id} className="sun-select" aria-label={label}>
+        <SelectTrigger id={id} aria-label={label}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="sun-select__content" position="popper">
+        <SelectContent position="popper">
           {options.map((option) => (
             <SelectItem
               key={option.value}
               value={option.value}
               disabled={option.disabled}
-              className="sun-select__item"
             >
               {option.label}
             </SelectItem>

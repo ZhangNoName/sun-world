@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 import '../../styles/base.css'
-import './tabs.css'
 
 export interface SunTabItem {
   value: string
