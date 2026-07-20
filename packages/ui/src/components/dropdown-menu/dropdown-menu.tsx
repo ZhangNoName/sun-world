@@ -4,8 +4,12 @@ import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react'
 
 import { cn } from '../../lib/cn'
 import {
+  CompoundLayerElementsProvider,
   composeAutoFocus,
+  createCompoundContentEventState,
   handleContentDismissal,
+  useCompoundContentEventBridge,
+  useCompoundLayerElements,
   type AutoFocusEventHandler,
   type CompoundContentEventHandlers,
   type CompoundContentEventHandlersRef,
@@ -13,7 +17,7 @@ import {
 
 type DropdownMenuCompatibilityContextValue = {
   contentEventsRef: CompoundContentEventHandlersRef
-  selectionCanceledRef: React.MutableRefObject<boolean>
+  selectionCanceledEvents: WeakSet<object>
 }
 
 const DropdownMenuCompatibilityContext =
@@ -22,13 +26,14 @@ const DropdownMenuCompatibilityContext =
 function handleDropdownMenuOpenChange(
   open: boolean,
   eventDetails: DropdownMenuPrimitive.Root.ChangeEventDetails,
-  selectionCanceledRef: React.MutableRefObject<boolean>,
+  selectionCanceledEvents: WeakSet<object>,
   onOpenChange: ((open: boolean) => void) | undefined
 ) {
-  const selectionCanceled = selectionCanceledRef.current
-  selectionCanceledRef.current = false
-
-  if (!open && eventDetails.reason === 'item-press' && selectionCanceled) {
+  if (
+    !open &&
+    eventDetails.reason === 'item-press' &&
+    selectionCanceledEvents.has(eventDetails.event)
+  ) {
     eventDetails.cancel()
     return
   }
@@ -44,34 +49,41 @@ type DropdownMenuProps = Omit<
 }
 
 function DropdownMenu({ onOpenChange, ...props }: DropdownMenuProps) {
-  const contentEventsRef = React.useRef<
-    CompoundContentEventHandlers | undefined
-  >(undefined)
-  const selectionCanceledRef = React.useRef(false)
+  const layerElements = useCompoundLayerElements()
+  const contentEventsRef = React.useRef(
+    createCompoundContentEventState(layerElements)
+  )
+  const selectionCanceledEvents = React.useMemo(() => new WeakSet<object>(), [])
   const contextValue = React.useMemo(
-    () => ({ contentEventsRef, selectionCanceledRef }),
-    []
+    () => ({ contentEventsRef, selectionCanceledEvents }),
+    [selectionCanceledEvents]
   )
 
   return (
-    <DropdownMenuCompatibilityContext.Provider value={contextValue}>
-      <DropdownMenuPrimitive.Root
-        {...props}
-        onOpenChange={(open, eventDetails) => {
-          if (
-            handleContentDismissal(open, eventDetails, contentEventsRef.current)
-          ) {
-            return
-          }
-          handleDropdownMenuOpenChange(
-            open,
-            eventDetails,
-            selectionCanceledRef,
-            onOpenChange
-          )
-        }}
-      />
-    </DropdownMenuCompatibilityContext.Provider>
+    <CompoundLayerElementsProvider value={layerElements}>
+      <DropdownMenuCompatibilityContext.Provider value={contextValue}>
+        <DropdownMenuPrimitive.Root
+          {...props}
+          onOpenChange={(open, eventDetails) => {
+            if (
+              handleContentDismissal(
+                open,
+                eventDetails,
+                contentEventsRef.current
+              )
+            ) {
+              return
+            }
+            handleDropdownMenuOpenChange(
+              open,
+              eventDetails,
+              selectionCanceledEvents,
+              onOpenChange
+            )
+          }}
+        />
+      </DropdownMenuCompatibilityContext.Provider>
+    </CompoundLayerElementsProvider>
   )
 }
 
@@ -159,6 +171,7 @@ function DropdownMenuContent({
   onFocusOutside,
   onInteractOutside,
   onPointerDownOutside,
+  ref,
   side,
   sticky,
   ...props
@@ -166,14 +179,20 @@ function DropdownMenuContent({
   const compatibilityContext = React.useContext(
     DropdownMenuCompatibilityContext
   )
-  if (compatibilityContext) {
-    compatibilityContext.contentEventsRef.current = {
+  const contentRef = useCompoundContentEventBridge(
+    compatibilityContext?.contentEventsRef,
+    {
       onEscapeKeyDown,
       onFocusOutside,
       onInteractOutside,
       onPointerDownOutside,
-    }
-  }
+    },
+    ref
+  )
+  const getContentElement = () =>
+    compatibilityContext?.contentEventsRef.current.popupElement ??
+    compatibilityContext?.contentEventsRef.current.lastPopupElement ??
+    null
 
   return (
     <DropdownMenuPortal forceMount={forceMount}>
@@ -191,7 +210,13 @@ function DropdownMenuContent({
       >
         <DropdownMenuPrimitive.Popup
           data-slot="dropdown-menu-content"
-          finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
+          ref={contentRef}
+          finalFocus={composeAutoFocus(
+            finalFocus,
+            onCloseAutoFocus,
+            'close',
+            getContentElement
+          )}
           className={cn(
             'z-50 max-h-(--available-height) min-w-[8rem] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
             className
@@ -217,7 +242,7 @@ function dispatchMenuSelect(
   event: React.MouseEvent<HTMLElement>,
   onClick: React.MouseEventHandler<HTMLElement> | undefined,
   onSelect: MenuSelectHandler | undefined,
-  selectionCanceledRef: React.MutableRefObject<boolean> | undefined
+  selectionCanceledEvents: WeakSet<object> | undefined
 ) {
   onClick?.(event)
   const selectEvent = new CustomEvent('menu.itemSelect', {
@@ -232,8 +257,9 @@ function dispatchMenuSelect(
     )
   }
   event.currentTarget.dispatchEvent(selectEvent)
-  if (selectEvent.defaultPrevented && selectionCanceledRef) {
-    selectionCanceledRef.current = true
+  if (selectEvent.defaultPrevented) {
+    selectionCanceledEvents?.add(event)
+    selectionCanceledEvents?.add(event.nativeEvent)
   }
 }
 
@@ -273,7 +299,7 @@ function DropdownMenuItem({
           event,
           onClick,
           onSelect,
-          compatibilityContext?.selectionCanceledRef
+          compatibilityContext?.selectionCanceledEvents
         )
       }
       {...props}
@@ -333,7 +359,7 @@ function DropdownMenuCheckboxItem({
           event,
           onClick,
           onSelect,
-          compatibilityContext?.selectionCanceledRef
+          compatibilityContext?.selectionCanceledEvents
         )
       }
       {...props}
@@ -402,7 +428,7 @@ function DropdownMenuRadioItem({
           event,
           onClick,
           onSelect,
-          compatibilityContext?.selectionCanceledRef
+          compatibilityContext?.selectionCanceledEvents
         )
       }
       {...props}
@@ -474,34 +500,47 @@ type DropdownMenuSubProps = Omit<
 }
 
 function DropdownMenuSub({ onOpenChange, ...props }: DropdownMenuSubProps) {
-  const contentEventsRef = React.useRef<
-    CompoundContentEventHandlers | undefined
-  >(undefined)
-  const selectionCanceledRef = React.useRef(false)
+  const parentCompatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+  const layerElements = useCompoundLayerElements()
+  const contentEventsRef = React.useRef(
+    createCompoundContentEventState(layerElements)
+  )
+  const selectionCanceledEvents = React.useMemo(
+    () => parentCompatibilityContext?.selectionCanceledEvents ?? new WeakSet(),
+    [parentCompatibilityContext]
+  )
   const contextValue = React.useMemo(
-    () => ({ contentEventsRef, selectionCanceledRef }),
-    []
+    () => ({ contentEventsRef, selectionCanceledEvents }),
+    [selectionCanceledEvents]
   )
 
   return (
-    <DropdownMenuCompatibilityContext.Provider value={contextValue}>
-      <DropdownMenuPrimitive.SubmenuRoot
-        {...props}
-        onOpenChange={(open, eventDetails) => {
-          if (
-            handleContentDismissal(open, eventDetails, contentEventsRef.current)
-          ) {
-            return
-          }
-          handleDropdownMenuOpenChange(
-            open,
-            eventDetails,
-            selectionCanceledRef,
-            onOpenChange
-          )
-        }}
-      />
-    </DropdownMenuCompatibilityContext.Provider>
+    <CompoundLayerElementsProvider value={layerElements}>
+      <DropdownMenuCompatibilityContext.Provider value={contextValue}>
+        <DropdownMenuPrimitive.SubmenuRoot
+          {...props}
+          onOpenChange={(open, eventDetails) => {
+            if (
+              handleContentDismissal(
+                open,
+                eventDetails,
+                contentEventsRef.current
+              )
+            ) {
+              return
+            }
+            handleDropdownMenuOpenChange(
+              open,
+              eventDetails,
+              selectionCanceledEvents,
+              onOpenChange
+            )
+          }}
+        />
+      </DropdownMenuCompatibilityContext.Provider>
+    </CompoundLayerElementsProvider>
   )
 }
 
@@ -547,20 +586,27 @@ function DropdownMenuSubContent({
   onFocusOutside,
   onInteractOutside,
   onPointerDownOutside,
+  ref,
   sticky,
   ...props
 }: DropdownMenuSubContentProps) {
   const compatibilityContext = React.useContext(
     DropdownMenuCompatibilityContext
   )
-  if (compatibilityContext) {
-    compatibilityContext.contentEventsRef.current = {
+  const contentRef = useCompoundContentEventBridge(
+    compatibilityContext?.contentEventsRef,
+    {
       onEscapeKeyDown,
       onFocusOutside,
       onInteractOutside,
       onPointerDownOutside,
-    }
-  }
+    },
+    ref
+  )
+  const getContentElement = () =>
+    compatibilityContext?.contentEventsRef.current.popupElement ??
+    compatibilityContext?.contentEventsRef.current.lastPopupElement ??
+    null
 
   return (
     <DropdownMenuPortal forceMount={forceMount}>
@@ -578,7 +624,13 @@ function DropdownMenuSubContent({
       >
         <DropdownMenuPrimitive.Popup
           data-slot="dropdown-menu-sub-content"
-          finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
+          ref={contentRef}
+          finalFocus={composeAutoFocus(
+            finalFocus,
+            onCloseAutoFocus,
+            'close',
+            getContentElement
+          )}
           className={cn(
             'z-50 min-w-[8rem] origin-(--transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
             className

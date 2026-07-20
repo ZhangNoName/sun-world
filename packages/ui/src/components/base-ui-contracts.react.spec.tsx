@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createRef, useState } from 'react'
+import { createRef, memo, useState, type ComponentProps } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '@sun-world/ui/button'
@@ -20,6 +20,9 @@ import {
   DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@sun-world/ui/dropdown-menu'
 import {
@@ -188,6 +191,30 @@ describe('Base UI migration contracts', () => {
     expect(trigger).not.toHaveTextContent('oldest')
   })
 
+  it('recovers initial Select labels from prop-forwarding memo items', () => {
+    const WrappedSelectItem = memo(function WrappedSelectItem(
+      props: ComponentProps<typeof SelectItem>
+    ) {
+      return <SelectItem {...props} />
+    })
+
+    render(
+      <Select defaultValue="newest">
+        <SelectTrigger aria-label="Wrapped sort">
+          <SelectValue placeholder="Choose a sort" />
+        </SelectTrigger>
+        <SelectContent>
+          <WrappedSelectItem value="newest">Newest first</WrappedSelectItem>
+          <WrappedSelectItem value="oldest">Oldest first</WrappedSelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    expect(
+      screen.getByRole('combobox', { name: 'Wrapped sort' })
+    ).toHaveTextContent('Newest first')
+  })
+
   it('treats an empty Select value as no selection', () => {
     render(
       <Select value="">
@@ -273,8 +300,16 @@ describe('Base UI migration contracts', () => {
   })
 
   it('exposes cancelable Dialog dismissal and close-auto-focus callbacks', async () => {
+    let closeAutoFocusTarget: EventTarget | null = null
+    let closeAutoFocusCurrentTarget: EventTarget | null = null
+    let openAutoFocusTarget: EventTarget | null = null
+    let openAutoFocusCurrentTarget: EventTarget | null = null
     const onCloseAutoFocus = vi.fn((event: Event) => event.preventDefault())
-    const onOpenAutoFocus = vi.fn((event: Event) => event.preventDefault())
+    const onOpenAutoFocus = vi.fn((event: Event) => {
+      openAutoFocusTarget = event.target
+      openAutoFocusCurrentTarget = event.currentTarget
+      event.preventDefault()
+    })
     const onEscapeKeyDown = vi.fn((event: KeyboardEvent) =>
       event.preventDefault()
     )
@@ -301,6 +336,9 @@ describe('Base UI migration contracts', () => {
 
     await waitFor(() => expect(onOpenAutoFocus).toHaveBeenCalled())
     expect(onOpenAutoFocus.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+    const dialog = screen.getByRole('dialog', { name: 'Cancelable dialog' })
+    expect(openAutoFocusTarget).toBe(dialog)
+    expect(openAutoFocusCurrentTarget).toBe(dialog)
     await userEvent.keyboard('{Escape}')
     expect(onEscapeKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent))
     expect(
@@ -310,7 +348,7 @@ describe('Base UI migration contracts', () => {
     const outside = screen.getByRole('button', { name: 'Outside dialog' })
     fireEvent.pointerDown(outside, { pointerType: 'mouse' })
     fireEvent.click(outside)
-    expect(onPointerDownOutside).toHaveBeenCalled()
+    expect(onPointerDownOutside).toHaveBeenCalledTimes(1)
     expect(
       onPointerDownOutside.mock.calls[0]?.[0]?.detail.originalEvent
     ).toBeInstanceOf(Event)
@@ -318,9 +356,73 @@ describe('Base UI migration contracts', () => {
       screen.getByRole('dialog', { name: 'Cancelable dialog' })
     ).toBeVisible()
 
+    onCloseAutoFocus.mockImplementation((event: Event) => {
+      closeAutoFocusTarget = event.target
+      closeAutoFocusCurrentTarget = event.currentTarget
+      event.preventDefault()
+    })
     await userEvent.click(screen.getByRole('button', { name: 'Finish' }))
     await waitFor(() => expect(onCloseAutoFocus).toHaveBeenCalled())
     expect(onCloseAutoFocus.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+    expect(closeAutoFocusTarget).toBe(dialog)
+    expect(closeAutoFocusCurrentTarget).toBe(dialog)
+  })
+
+  it('reports real Dialog outside targets even when Base suppresses dismissal', async () => {
+    const pointerTargets: Array<[EventTarget | null, EventTarget | null]> = []
+    const focusTargets: Array<[EventTarget | null, EventTarget | null]> = []
+    const interactTargets: Array<[EventTarget | null, EventTarget | null]> = []
+    const onPointerDownOutside = vi.fn(
+      (event: CustomEvent<{ originalEvent: PointerEvent }>) => {
+        pointerTargets.push([event.target, event.currentTarget])
+        event.preventDefault()
+      }
+    )
+    const onFocusOutside = vi.fn(
+      (event: CustomEvent<{ originalEvent: FocusEvent }>) => {
+        focusTargets.push([event.target, event.currentTarget])
+        event.preventDefault()
+      }
+    )
+    const onInteractOutside = vi.fn((event: Event) => {
+      interactTargets.push([event.target, event.currentTarget])
+    })
+
+    render(
+      <>
+        <button type="button">Suppressed outside</button>
+        <Dialog defaultOpen disablePointerDismissal>
+          <DialogContent
+            onFocusOutside={onFocusOutside}
+            onInteractOutside={onInteractOutside}
+            onPointerDownOutside={onPointerDownOutside}
+          >
+            <DialogTitle>Non-dismissible dialog</DialogTitle>
+          </DialogContent>
+        </Dialog>
+      </>
+    )
+
+    const outside = screen
+      .getByText('Suppressed outside')
+      .closest('button') as HTMLButtonElement
+    const dialog = screen.getByRole('dialog', {
+      name: 'Non-dismissible dialog',
+    })
+    fireEvent.focusIn(outside, { relatedTarget: dialog })
+    fireEvent.pointerDown(outside, { pointerType: 'mouse' })
+
+    await waitFor(() => {
+      expect(onPointerDownOutside).toHaveBeenCalledTimes(1)
+      expect(onFocusOutside).toHaveBeenCalledTimes(1)
+    })
+    expect(pointerTargets[0]).toEqual([outside, outside])
+    expect(focusTargets[0]).toEqual([outside, outside])
+    expect(interactTargets).toEqual([
+      [outside, outside],
+      [outside, outside],
+    ])
+    expect(dialog).toBeVisible()
   })
 
   it('preserves the Dropdown Menu selection event payload', async () => {
@@ -351,6 +453,52 @@ describe('Base UI migration contracts', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps the parent menu tree open when nested selection is canceled', async () => {
+    const onSelect = vi.fn((event: Event) => event.preventDefault())
+    const onPointerDownOutside = vi.fn()
+    const onInteractOutside = vi.fn()
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Nested actions</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          onInteractOutside={onInteractOutside}
+          onPointerDownOutside={onPointerDownOutside}
+        >
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>More actions</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onSelect={onSelect}>
+                Archive nested
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+
+    const rootTrigger = screen.getByRole('button', { name: 'Nested actions' })
+    await userEvent.click(rootTrigger)
+    const subTrigger = await screen.findByRole('menuitem', {
+      name: 'More actions',
+    })
+    await userEvent.hover(subTrigger)
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Archive nested' })
+    )
+
+    expect(onSelect).toHaveBeenCalledTimes(1)
+    expect(onPointerDownOutside).not.toHaveBeenCalled()
+    expect(onInteractOutside).not.toHaveBeenCalled()
+    await waitForPopupLifecycle()
+    expect(rootTrigger).toHaveAttribute('aria-expanded', 'true')
+    expect(subTrigger).toHaveAttribute('aria-expanded', 'true')
+    expect(
+      screen.getByRole('menuitem', { name: 'Archive nested' })
+    ).toBeInTheDocument()
+  })
+
   it('exposes a cancelable Dropdown Menu outside-pointer callback', async () => {
     const onPointerDownOutside = vi.fn(
       (event: CustomEvent<{ originalEvent: PointerEvent }>) =>
@@ -377,7 +525,7 @@ describe('Base UI migration contracts', () => {
     fireEvent.pointerDown(outside, { pointerType: 'mouse' })
     fireEvent.click(outside)
 
-    expect(onPointerDownOutside).toHaveBeenCalled()
+    expect(onPointerDownOutside).toHaveBeenCalledTimes(1)
     await waitForPopupLifecycle()
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
   })
@@ -685,6 +833,9 @@ describe('Base UI migration contracts', () => {
 
     const trigger = screen.getByRole('combobox', { name: 'Select lifecycle' })
     await userEvent.click(trigger)
+    await waitFor(() =>
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    )
     await userEvent.keyboard('{Escape}')
     expect(onEscapeKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent))
     await waitForPopupLifecycle()
@@ -745,6 +896,81 @@ describe('Base UI migration contracts', () => {
     await userEvent.click(selectTrigger)
     await userEvent.click(await screen.findByRole('option', { name: 'Newest' }))
     expect(selectTrigger).toHaveTextContent('Newest')
+  })
+
+  it('retains force-mounted Select popup identity across open and close', async () => {
+    const contentRef = createRef<HTMLDivElement>()
+    render(
+      <Select>
+        <SelectTrigger aria-label="Stable force-mounted select">
+          <SelectValue placeholder="Choose" />
+        </SelectTrigger>
+        <SelectContent forceMount ref={contentRef}>
+          <SelectItem value="newest">Newest</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    const trigger = screen.getByRole('combobox', {
+      name: 'Stable force-mounted select',
+    })
+    const initialPopup = document.querySelector('[data-slot="select-content"]')
+    const initialOption = document.querySelector('[data-slot="select-item"]')
+    expect(contentRef.current).toBe(initialPopup)
+
+    await userEvent.click(trigger)
+    expect(document.querySelector('[data-slot="select-content"]')).toBe(
+      initialPopup
+    )
+    expect(document.querySelector('[data-slot="select-item"]')).toBe(
+      initialOption
+    )
+    expect(contentRef.current).toBe(initialPopup)
+
+    await userEvent.click(await screen.findByRole('option', { name: 'Newest' }))
+    await waitForPopupLifecycle()
+    expect(document.querySelector('[data-slot="select-content"]')).toBe(
+      initialPopup
+    )
+    expect(document.querySelector('[data-slot="select-item"]')).toBe(
+      initialOption
+    )
+    expect(contentRef.current).toBe(initialPopup)
+    await waitFor(() => expect(trigger).toHaveFocus())
+  })
+
+  it('keeps a force-mounted Select inside its modal Dialog lifecycle', async () => {
+    render(
+      <Dialog defaultOpen>
+        <DialogContent initialFocus={false} showCloseButton={false}>
+          <DialogTitle>Preferences</DialogTitle>
+          <Select>
+            <SelectTrigger aria-label="Dialog sort">
+              <SelectValue placeholder="Choose" />
+            </SelectTrigger>
+            <SelectContent forceMount>
+              <SelectItem value="newest">Newest</SelectItem>
+            </SelectContent>
+          </Select>
+        </DialogContent>
+      </Dialog>
+    )
+
+    const dialog = screen.getByRole('dialog', { name: 'Preferences' })
+    const popup = document.querySelector<HTMLElement>(
+      '[data-slot="select-content"]'
+    )
+    const trigger = screen.getByRole('combobox', { name: 'Dialog sort' })
+    expect(popup).not.toBeNull()
+    expect(dialog).toContainElement(popup)
+    expect(popup?.closest('[aria-hidden="true"]')).toBeNull()
+
+    await userEvent.click(trigger)
+    await userEvent.click(await screen.findByRole('option', { name: 'Newest' }))
+
+    expect(dialog).toBeVisible()
+    expect(popup?.closest('[aria-hidden="true"]')).toBeNull()
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 
   it('composes Tooltip provider delay with a trigger and popup', async () => {

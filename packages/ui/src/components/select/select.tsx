@@ -1,12 +1,15 @@
 import * as React from 'react'
 import { Select as SelectPrimitive } from '@base-ui/react/select'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
-import { createPortal } from 'react-dom'
 
 import { cn } from '../../lib/cn'
 import {
+  CompoundLayerElementsProvider,
   composeAutoFocus,
+  createCompoundContentEventState,
   handleContentDismissal,
+  useCompoundContentEventBridge,
+  useCompoundLayerElements,
   type AutoFocusEventHandler,
   type CompoundContentEventHandlers,
   type CompoundContentEventHandlersRef,
@@ -31,13 +34,16 @@ function collectSelectItemLabels(
 
     const element = child as React.ReactElement<{
       children?: React.ReactNode
-      value?: unknown
+      value?: string
     }>
     if (
-      element.type === SelectItem &&
-      typeof element.props.value === 'string'
+      typeof element.props.value === 'string' &&
+      element.props.children !== undefined &&
+      (isSelectItemElementType(element.type) ||
+        typeof element.type !== 'string')
     ) {
       labels.set(element.props.value, element.props.children)
+      return
     }
 
     if (element.props.children !== undefined) {
@@ -46,6 +52,14 @@ function collectSelectItemLabels(
   })
 
   return labels
+}
+
+function isSelectItemElementType(type: unknown): boolean {
+  if (type === SelectItem) return true
+  if (typeof type !== 'object' || type === null || !('type' in type)) {
+    return false
+  }
+  return isSelectItemElementType((type as { type?: unknown }).type)
 }
 
 type SelectProps = Omit<
@@ -76,9 +90,10 @@ function Select({
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
     defaultOpen ?? false
   )
-  const contentEventsRef = React.useRef<
-    CompoundContentEventHandlers | undefined
-  >(undefined)
+  const layerElements = useCompoundLayerElements()
+  const contentEventsRef = React.useRef(
+    createCompoundContentEventState(layerElements)
+  )
   const value = isControlled ? valueProp : uncontrolledValue
   const open = isOpenControlled ? openProp : uncontrolledOpen
   const labels = React.useMemo(
@@ -91,33 +106,35 @@ function Select({
   )
 
   return (
-    <SelectCompatibilityContext.Provider value={contextValue}>
-      <SelectPrimitive.Root
-        {...props}
-        open={open}
-        value={value === '' ? null : value}
-        onOpenChange={(nextOpen, eventDetails) => {
-          if (
-            handleContentDismissal(
-              nextOpen,
-              eventDetails,
-              contentEventsRef.current
-            )
-          ) {
-            return
-          }
-          if (!isOpenControlled) setUncontrolledOpen(nextOpen)
-          onOpenChange?.(nextOpen)
-        }}
-        onValueChange={(nextValue) => {
-          if (nextValue === null) return
-          if (!isControlled) setUncontrolledValue(nextValue)
-          onValueChange?.(nextValue)
-        }}
-      >
-        {children}
-      </SelectPrimitive.Root>
-    </SelectCompatibilityContext.Provider>
+    <CompoundLayerElementsProvider value={layerElements}>
+      <SelectCompatibilityContext.Provider value={contextValue}>
+        <SelectPrimitive.Root
+          {...props}
+          open={open}
+          value={value === '' ? null : value}
+          onOpenChange={(nextOpen, eventDetails) => {
+            if (
+              handleContentDismissal(
+                nextOpen,
+                eventDetails,
+                contentEventsRef.current
+              )
+            ) {
+              return
+            }
+            if (!isOpenControlled) setUncontrolledOpen(nextOpen)
+            onOpenChange?.(nextOpen)
+          }}
+          onValueChange={(nextValue) => {
+            if (nextValue === null) return
+            if (!isControlled) setUncontrolledValue(nextValue)
+            onValueChange?.(nextValue)
+          }}
+        >
+          {children}
+        </SelectPrimitive.Root>
+      </SelectCompatibilityContext.Provider>
+    </CompoundLayerElementsProvider>
   )
 }
 
@@ -224,18 +241,25 @@ function SelectContent({
   onCloseAutoFocus,
   onEscapeKeyDown,
   onPointerDownOutside,
+  ref,
   side,
   sideOffset,
   sticky,
   ...props
 }: SelectContentProps) {
   const compatibilityContext = React.useContext(SelectCompatibilityContext)
-  if (compatibilityContext) {
-    compatibilityContext.contentEventsRef.current = {
+  const contentRef = useCompoundContentEventBridge(
+    compatibilityContext?.contentEventsRef,
+    {
       onEscapeKeyDown,
       onPointerDownOutside,
-    }
-  }
+    },
+    ref
+  )
+  const getContentElement = () =>
+    compatibilityContext?.contentEventsRef.current.popupElement ??
+    compatibilityContext?.contentEventsRef.current.lastPopupElement ??
+    null
 
   const content = (
     <SelectPrimitive.Positioner
@@ -250,7 +274,13 @@ function SelectContent({
     >
       <SelectPrimitive.Popup
         data-slot="select-content"
-        finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
+        ref={contentRef}
+        finalFocus={composeAutoFocus(
+          finalFocus,
+          onCloseAutoFocus,
+          'close',
+          getContentElement
+        )}
         className={cn(
           'relative z-50 max-h-(--available-height) min-w-[8rem] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
           position === 'popper' &&
@@ -275,14 +305,10 @@ function SelectContent({
     </SelectPrimitive.Positioner>
   )
 
-  if (forceMount && compatibilityContext && !compatibilityContext.open) {
-    if (typeof document === 'undefined') return null
-    return createPortal(
-      <div data-base-ui-portal="" data-slot="select-portal">
-        {content}
-      </div>,
-      document.body
-    )
+  if (forceMount) {
+    // Select.Portal has no public keep-mounted option. Positioner supports this
+    // inline composition and owns the closed hidden/inert lifecycle itself.
+    return content
   }
 
   return <SelectPrimitive.Portal>{content}</SelectPrimitive.Portal>

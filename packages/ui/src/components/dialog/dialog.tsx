@@ -7,8 +7,12 @@ import { XIcon } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Button } from '../button'
 import {
+  CompoundLayerElementsProvider,
   composeAutoFocus,
+  createCompoundContentEventState,
   handleContentDismissal,
+  useCompoundContentEventBridge,
+  useCompoundLayerElements,
   type AutoFocusEventHandler,
   type CompoundContentEventHandlers,
   type CompoundContentEventHandlersRef,
@@ -26,25 +30,32 @@ type DialogProps = Omit<DialogPrimitive.Root.Props, 'onOpenChange'> & {
 }
 
 function Dialog({ onOpenChange, ...props }: DialogProps) {
-  const contentEventsRef = React.useRef<
-    CompoundContentEventHandlers | undefined
-  >(undefined)
+  const layerElements = useCompoundLayerElements()
+  const contentEventsRef = React.useRef(
+    createCompoundContentEventState(layerElements)
+  )
   const contextValue = React.useMemo(() => ({ contentEventsRef }), [])
 
   return (
-    <DialogCompatibilityContext.Provider value={contextValue}>
-      <DialogPrimitive.Root
-        {...props}
-        onOpenChange={(open, eventDetails) => {
-          if (
-            handleContentDismissal(open, eventDetails, contentEventsRef.current)
-          ) {
-            return
-          }
-          onOpenChange?.(open)
-        }}
-      />
-    </DialogCompatibilityContext.Provider>
+    <CompoundLayerElementsProvider value={layerElements}>
+      <DialogCompatibilityContext.Provider value={contextValue}>
+        <DialogPrimitive.Root
+          {...props}
+          onOpenChange={(open, eventDetails) => {
+            if (
+              handleContentDismissal(
+                open,
+                eventDetails,
+                contentEventsRef.current
+              )
+            ) {
+              return
+            }
+            onOpenChange?.(open)
+          }}
+        />
+      </DialogCompatibilityContext.Provider>
+    </CompoundLayerElementsProvider>
   )
 }
 
@@ -166,27 +177,45 @@ function DialogContent({
   onInteractOutside,
   onOpenAutoFocus,
   onPointerDownOutside,
+  ref,
   showCloseButton = true,
   overlayClassName,
   ...props
 }: DialogContentProps) {
   const compatibilityContext = React.useContext(DialogCompatibilityContext)
-  if (compatibilityContext) {
-    compatibilityContext.contentEventsRef.current = {
+  const contentRef = useCompoundContentEventBridge(
+    compatibilityContext?.contentEventsRef,
+    {
       onEscapeKeyDown,
       onFocusOutside,
       onInteractOutside,
       onPointerDownOutside,
-    }
-  }
+    },
+    ref
+  )
+  const getContentElement = () =>
+    compatibilityContext?.contentEventsRef.current.popupElement ??
+    compatibilityContext?.contentEventsRef.current.lastPopupElement ??
+    null
 
   return (
     <DialogPortal forceMount={forceMount}>
       <DialogOverlay className={overlayClassName} forceMount={forceMount} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        initialFocus={composeAutoFocus(initialFocus, onOpenAutoFocus, 'open')}
-        finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
+        ref={contentRef}
+        initialFocus={composeAutoFocus(
+          initialFocus,
+          onOpenAutoFocus,
+          'open',
+          getContentElement
+        )}
+        finalFocus={composeAutoFocus(
+          finalFocus,
+          onCloseAutoFocus,
+          'close',
+          getContentElement
+        )}
         className={cn(
           'fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95 sm:max-w-lg',
           className

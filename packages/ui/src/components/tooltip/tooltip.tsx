@@ -3,7 +3,11 @@ import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
 
 import { cn } from '../../lib/cn'
 import {
+  CompoundLayerElementsProvider,
+  createCompoundContentEventState,
   handleContentDismissal,
+  useCompoundContentEventBridge,
+  useCompoundLayerElements,
   type CompoundContentEventHandlers,
   type CompoundContentEventHandlersRef,
 } from '../compound-compat'
@@ -61,34 +65,37 @@ function Tooltip({
   ...props
 }: TooltipProps) {
   const providerConfig = React.useContext(TooltipProviderConfigContext)
-  const contentEventsRef = React.useRef<
-    CompoundContentEventHandlers | undefined
-  >(undefined)
+  const layerElements = useCompoundLayerElements()
+  const contentEventsRef = React.useRef(
+    createCompoundContentEventState(layerElements)
+  )
   const contextValue = React.useMemo(() => ({ contentEventsRef }), [])
 
   return (
-    <TooltipCompatibilityContext.Provider value={contextValue}>
-      <TooltipRootDelayContext.Provider value={delayDuration}>
-        <TooltipPrimitive.Root
-          disableHoverablePopup={
-            disableHoverableContent ?? providerConfig.disableHoverableContent
-          }
-          onOpenChange={(open, eventDetails) => {
-            if (
-              handleContentDismissal(
-                open,
-                eventDetails,
-                contentEventsRef.current
-              )
-            ) {
-              return
+    <CompoundLayerElementsProvider value={layerElements}>
+      <TooltipCompatibilityContext.Provider value={contextValue}>
+        <TooltipRootDelayContext.Provider value={delayDuration}>
+          <TooltipPrimitive.Root
+            disableHoverablePopup={
+              disableHoverableContent ?? providerConfig.disableHoverableContent
             }
-            onOpenChange?.(open)
-          }}
-          {...props}
-        />
-      </TooltipRootDelayContext.Provider>
-    </TooltipCompatibilityContext.Provider>
+            onOpenChange={(open, eventDetails) => {
+              if (
+                handleContentDismissal(
+                  open,
+                  eventDetails,
+                  contentEventsRef.current
+                )
+              ) {
+                return
+              }
+              onOpenChange?.(open)
+            }}
+            {...props}
+          />
+        </TooltipRootDelayContext.Provider>
+      </TooltipCompatibilityContext.Provider>
+    </CompoundLayerElementsProvider>
   )
 }
 
@@ -156,17 +163,20 @@ function TooltipContent({
   forceMount,
   onEscapeKeyDown,
   onPointerDownOutside,
+  ref,
   side,
   sticky,
   ...props
 }: TooltipContentProps) {
   const compatibilityContext = React.useContext(TooltipCompatibilityContext)
-  if (compatibilityContext) {
-    compatibilityContext.contentEventsRef.current = {
+  const contentRef = useCompoundContentEventBridge(
+    compatibilityContext?.contentEventsRef,
+    {
       onEscapeKeyDown,
       onPointerDownOutside,
-    }
-  }
+    },
+    ref
+  )
 
   return (
     <TooltipPrimitive.Portal keepMounted={forceMount}>
@@ -184,6 +194,7 @@ function TooltipContent({
       >
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
+          ref={contentRef}
           role="tooltip"
           className={cn(
             'z-50 w-fit origin-(--transform-origin) animate-in rounded-md bg-foreground px-3 py-1.5 text-xs text-balance text-background fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
