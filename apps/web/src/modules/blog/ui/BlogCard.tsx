@@ -44,6 +44,7 @@ export function BlogCard(props: BlogCardProps) {
       <Button
         className="z-blog-card__action"
         type="button"
+        aria-label={`${t('readMore')}: ${props.title}`}
         onClick={(event) => {
           event.stopPropagation()
           open()

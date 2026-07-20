@@ -13,7 +13,7 @@ export function SelfInfoCard() {
     <section className="self-card" aria-label="站点信息">
       <img src="/logo.svg" alt="Sun World" />
       <p>一个迷人的小屋</p>
-      <dl>
+      <dl className="profile-metrics" aria-label="站点统计">
         <div>
           <dt>文章</dt>
           <dd>{stats.blog_count}</dd>

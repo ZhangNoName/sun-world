@@ -21,7 +21,7 @@ export function WeatherCard() {
         {CurrentLocationArea.addressComponent.country}{' '}
         {CurrentLocationArea.addressComponent.province}
       </p>
-      <dl>
+      <dl className="weather-metrics" aria-label="天气详情">
         <div>
           <dt>{t('weather.temp')}</dt>
           <dd>{weather.temp} °C</dd>

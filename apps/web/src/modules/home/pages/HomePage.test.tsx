@@ -1,13 +1,23 @@
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}))
 vi.mock('@/modules/blog/ui/BlogHomeFeed', () => ({
   BlogHomeFeed: () => <div>feed</div>,
 }))
-vi.mock('@/modules/blog/ui/SelfInfoCard', () => ({
-  SelfInfoCard: () => <div>profile</div>,
+vi.mock('@/modules/blog/composables/useBlogBaseData', () => ({
+  useBlogBaseData: () => ({
+    stats: {
+      blog_count: 30,
+      category_count: 5,
+      tag_count: 26,
+      total_view_num: 120,
+    },
+    loadBlogBaseData: vi.fn().mockResolvedValue(undefined),
+  }),
 }))
-vi.mock('../ui/WeatherCard', () => ({ WeatherCard: () => <div>weather</div> }))
 
 import { HomePage } from './HomePage'
 
@@ -19,5 +29,23 @@ describe('HomePage', () => {
     links.forEach((link) =>
       expect(link).toHaveAttribute('href', 'https://beian.miit.gov.cn/')
     )
+  })
+
+  it('exposes the profile metrics as a named four-column definition list', () => {
+    render(<HomePage />)
+
+    const metrics = screen.getByLabelText('站点统计')
+    expect(metrics).toHaveClass('profile-metrics')
+    expect(metrics.tagName).toBe('DL')
+    expect(metrics.children).toHaveLength(4)
+  })
+
+  it('exposes the weather metrics as a named four-column definition list', () => {
+    render(<HomePage />)
+
+    const metrics = screen.getByLabelText('天气详情')
+    expect(metrics).toHaveClass('weather-metrics')
+    expect(metrics.tagName).toBe('DL')
+    expect(metrics.children).toHaveLength(4)
   })
 })
