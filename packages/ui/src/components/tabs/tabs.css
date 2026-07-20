@@ -10,6 +10,7 @@
   cursor: pointer;
 }
 
-.sun-tabs__trigger[data-state='active'] {
+.sun-tabs__trigger[data-state='active'],
+.sun-tabs__trigger[data-active] {
   background: color-mix(in srgb, var(--primary) 14%, transparent);
 }

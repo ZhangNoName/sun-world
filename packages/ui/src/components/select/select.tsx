@@ -1,26 +1,123 @@
 import * as React from 'react'
 import { Select as SelectPrimitive } from '@base-ui/react/select'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import { cn } from '../../lib/cn'
+import {
+  composeAutoFocus,
+  handleContentDismissal,
+  type AutoFocusEventHandler,
+  type CompoundContentEventHandlers,
+  type CompoundContentEventHandlersRef,
+} from '../compound-compat'
 
-type SelectProps = Omit<
-  SelectPrimitive.Root.Props<string>,
-  'onOpenChange' | 'onValueChange'
-> & {
-  onOpenChange?: (open: boolean) => void
-  onValueChange?: (value: string) => void
+type SelectCompatibilityContextValue = {
+  contentEventsRef: CompoundContentEventHandlersRef
+  labels: ReadonlyMap<string, React.ReactNode>
+  open: boolean
+  value: string
 }
 
-function Select({ onOpenChange, onValueChange, ...props }: SelectProps) {
+const SelectCompatibilityContext =
+  React.createContext<SelectCompatibilityContextValue | null>(null)
+
+function collectSelectItemLabels(
+  children: React.ReactNode,
+  labels = new Map<string, React.ReactNode>()
+) {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+
+    const element = child as React.ReactElement<{
+      children?: React.ReactNode
+      value?: unknown
+    }>
+    if (
+      element.type === SelectItem &&
+      typeof element.props.value === 'string'
+    ) {
+      labels.set(element.props.value, element.props.children)
+    }
+
+    if (element.props.children !== undefined) {
+      collectSelectItemLabels(element.props.children, labels)
+    }
+  })
+
+  return labels
+}
+
+type SelectProps = Omit<
+  SelectPrimitive.Root.Props<string, false>,
+  'defaultValue' | 'multiple' | 'onOpenChange' | 'onValueChange' | 'value'
+> & {
+  defaultValue?: string
+  onOpenChange?: (open: boolean) => void
+  onValueChange?: (value: string) => void
+  value?: string
+}
+
+function Select({
+  children,
+  defaultOpen,
+  defaultValue,
+  onOpenChange,
+  onValueChange,
+  open: openProp,
+  value: valueProp,
+  ...props
+}: SelectProps) {
+  const isControlled = valueProp !== undefined
+  const isOpenControlled = openProp !== undefined
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue ?? ''
+  )
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
+    defaultOpen ?? false
+  )
+  const contentEventsRef = React.useRef<
+    CompoundContentEventHandlers | undefined
+  >(undefined)
+  const value = isControlled ? valueProp : uncontrolledValue
+  const open = isOpenControlled ? openProp : uncontrolledOpen
+  const labels = React.useMemo(
+    () => collectSelectItemLabels(children),
+    [children]
+  )
+  const contextValue = React.useMemo(
+    () => ({ contentEventsRef, labels, open, value }),
+    [labels, open, value]
+  )
+
   return (
-    <SelectPrimitive.Root
-      {...props}
-      onOpenChange={(open) => onOpenChange?.(open)}
-      onValueChange={(value) => {
-        if (value !== null) onValueChange?.(value)
-      }}
-    />
+    <SelectCompatibilityContext.Provider value={contextValue}>
+      <SelectPrimitive.Root
+        {...props}
+        open={open}
+        value={value === '' ? null : value}
+        onOpenChange={(nextOpen, eventDetails) => {
+          if (
+            handleContentDismissal(
+              nextOpen,
+              eventDetails,
+              contentEventsRef.current
+            )
+          ) {
+            return
+          }
+          if (!isOpenControlled) setUncontrolledOpen(nextOpen)
+          onOpenChange?.(nextOpen)
+        }}
+        onValueChange={(nextValue) => {
+          if (nextValue === null) return
+          if (!isControlled) setUncontrolledValue(nextValue)
+          onValueChange?.(nextValue)
+        }}
+      >
+        {children}
+      </SelectPrimitive.Root>
+    </SelectCompatibilityContext.Provider>
   )
 }
 
@@ -30,10 +127,21 @@ function SelectGroup(
   return <SelectPrimitive.Group data-slot="select-group" {...props} />
 }
 
-function SelectValue(
-  props: React.ComponentProps<typeof SelectPrimitive.Value>
-) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+function SelectValue({
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  const compatibilityContext = React.useContext(SelectCompatibilityContext)
+  const itemLabel =
+    compatibilityContext?.value === ''
+      ? undefined
+      : compatibilityContext?.labels.get(compatibilityContext.value)
+
+  return (
+    <SelectPrimitive.Value data-slot="select-value" {...props}>
+      {children ?? itemLabel}
+    </SelectPrimitive.Value>
+  )
 }
 
 type SelectTriggerProps = Omit<
@@ -93,7 +201,13 @@ type SelectContentProps = Omit<
   React.ComponentProps<typeof SelectPrimitive.Popup>,
   keyof SelectPositionerProps
 > &
-  SelectPositionerProps & {
+  SelectPositionerProps &
+  Pick<
+    CompoundContentEventHandlers,
+    'onEscapeKeyDown' | 'onPointerDownOutside'
+  > & {
+    forceMount?: boolean
+    onCloseAutoFocus?: AutoFocusEventHandler
     position?: 'item-aligned' | 'popper'
   }
 
@@ -105,49 +219,73 @@ function SelectContent({
   alignOffset,
   collisionBoundary,
   collisionPadding,
+  finalFocus,
+  forceMount,
+  onCloseAutoFocus,
+  onEscapeKeyDown,
+  onPointerDownOutside,
   side,
   sideOffset,
   sticky,
   ...props
 }: SelectContentProps) {
-  return (
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner
-        align={align}
-        alignOffset={alignOffset}
-        alignItemWithTrigger={position === 'item-aligned'}
-        collisionBoundary={collisionBoundary}
-        collisionPadding={collisionPadding}
-        side={side}
-        sideOffset={sideOffset}
-        sticky={sticky}
+  const compatibilityContext = React.useContext(SelectCompatibilityContext)
+  if (compatibilityContext) {
+    compatibilityContext.contentEventsRef.current = {
+      onEscapeKeyDown,
+      onPointerDownOutside,
+    }
+  }
+
+  const content = (
+    <SelectPrimitive.Positioner
+      align={align}
+      alignOffset={alignOffset}
+      alignItemWithTrigger={position === 'item-aligned'}
+      collisionBoundary={collisionBoundary}
+      collisionPadding={collisionPadding}
+      side={side}
+      sideOffset={sideOffset}
+      sticky={sticky}
+    >
+      <SelectPrimitive.Popup
+        data-slot="select-content"
+        finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
+        className={cn(
+          'relative z-50 max-h-(--available-height) min-w-[8rem] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
+          position === 'popper' &&
+            'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+          className
+        )}
+        {...props}
       >
-        <SelectPrimitive.Popup
-          data-slot="select-content"
+        <SelectScrollUpButton />
+        <SelectPrimitive.List
+          data-slot="select-viewport"
           className={cn(
-            'relative z-50 max-h-(--available-height) min-w-[8rem] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
+            'p-1',
             position === 'popper' &&
-              'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
-            className
+              'h-(--anchor-height) w-full min-w-(--anchor-width) scroll-my-1'
           )}
-          {...props}
         >
-          <SelectScrollUpButton />
-          <SelectPrimitive.List
-            data-slot="select-viewport"
-            className={cn(
-              'p-1',
-              position === 'popper' &&
-                'h-(--anchor-height) w-full min-w-(--anchor-width) scroll-my-1'
-            )}
-          >
-            {children}
-          </SelectPrimitive.List>
-          <SelectScrollDownButton />
-        </SelectPrimitive.Popup>
-      </SelectPrimitive.Positioner>
-    </SelectPrimitive.Portal>
+          {children}
+        </SelectPrimitive.List>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Popup>
+    </SelectPrimitive.Positioner>
   )
+
+  if (forceMount && compatibilityContext && !compatibilityContext.open) {
+    if (typeof document === 'undefined') return null
+    return createPortal(
+      <div data-base-ui-portal="" data-slot="select-portal">
+        {content}
+      </div>,
+      document.body
+    )
+  }
+
+  return <SelectPrimitive.Portal>{content}</SelectPrimitive.Portal>
 }
 
 function SelectLabel({

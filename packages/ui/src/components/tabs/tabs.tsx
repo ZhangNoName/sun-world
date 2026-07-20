@@ -10,19 +10,29 @@ const TabsActivationContext = React.createContext(true)
 
 type TabsProps = Omit<
   React.ComponentProps<typeof TabsPrimitive.Root>,
-  'onValueChange'
+  'defaultValue' | 'onValueChange' | 'value'
 > & {
   activationMode?: 'automatic' | 'manual'
+  defaultValue?: string
   onValueChange?: (value: string) => void
+  value?: string
 }
 
 function Tabs({
   className,
   orientation = 'horizontal',
   activationMode = 'automatic',
+  defaultValue,
   onValueChange,
+  value: valueProp,
   ...props
 }: TabsProps) {
+  const isControlled = valueProp !== undefined
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue ?? ''
+  )
+  const value = isControlled ? valueProp : uncontrolledValue
+
   return (
     <TabsActivationContext.Provider value={activationMode === 'automatic'}>
       <TabsPrimitive.Root
@@ -33,8 +43,12 @@ function Tabs({
           'group/tabs flex gap-2 data-[orientation=horizontal]:flex-col',
           className
         )}
-        onValueChange={(value) => {
-          if (typeof value === 'string') onValueChange?.(value)
+        value={value === '' ? null : value}
+        onValueChange={(nextValue, eventDetails) => {
+          if (eventDetails.reason !== 'none') return
+          if (typeof nextValue !== 'string') return
+          if (!isControlled) setUncontrolledValue(nextValue)
+          onValueChange?.(nextValue)
         }}
         {...props}
       />

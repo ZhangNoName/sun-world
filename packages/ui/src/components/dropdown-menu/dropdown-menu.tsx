@@ -3,6 +3,38 @@ import { Menu as DropdownMenuPrimitive } from '@base-ui/react/menu'
 import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react'
 
 import { cn } from '../../lib/cn'
+import {
+  composeAutoFocus,
+  handleContentDismissal,
+  type AutoFocusEventHandler,
+  type CompoundContentEventHandlers,
+  type CompoundContentEventHandlersRef,
+} from '../compound-compat'
+
+type DropdownMenuCompatibilityContextValue = {
+  contentEventsRef: CompoundContentEventHandlersRef
+  selectionCanceledRef: React.MutableRefObject<boolean>
+}
+
+const DropdownMenuCompatibilityContext =
+  React.createContext<DropdownMenuCompatibilityContextValue | null>(null)
+
+function handleDropdownMenuOpenChange(
+  open: boolean,
+  eventDetails: DropdownMenuPrimitive.Root.ChangeEventDetails,
+  selectionCanceledRef: React.MutableRefObject<boolean>,
+  onOpenChange: ((open: boolean) => void) | undefined
+) {
+  const selectionCanceled = selectionCanceledRef.current
+  selectionCanceledRef.current = false
+
+  if (!open && eventDetails.reason === 'item-press' && selectionCanceled) {
+    eventDetails.cancel()
+    return
+  }
+
+  onOpenChange?.(open)
+}
 
 type DropdownMenuProps = Omit<
   DropdownMenuPrimitive.Root.Props,
@@ -12,11 +44,34 @@ type DropdownMenuProps = Omit<
 }
 
 function DropdownMenu({ onOpenChange, ...props }: DropdownMenuProps) {
+  const contentEventsRef = React.useRef<
+    CompoundContentEventHandlers | undefined
+  >(undefined)
+  const selectionCanceledRef = React.useRef(false)
+  const contextValue = React.useMemo(
+    () => ({ contentEventsRef, selectionCanceledRef }),
+    []
+  )
+
   return (
-    <DropdownMenuPrimitive.Root
-      {...props}
-      onOpenChange={(open) => onOpenChange?.(open)}
-    />
+    <DropdownMenuCompatibilityContext.Provider value={contextValue}>
+      <DropdownMenuPrimitive.Root
+        {...props}
+        onOpenChange={(open, eventDetails) => {
+          if (
+            handleContentDismissal(open, eventDetails, contentEventsRef.current)
+          ) {
+            return
+          }
+          handleDropdownMenuOpenChange(
+            open,
+            eventDetails,
+            selectionCanceledRef,
+            onOpenChange
+          )
+        }}
+      />
+    </DropdownMenuCompatibilityContext.Provider>
   )
 }
 
@@ -82,9 +137,11 @@ type DropdownMenuContentProps = Omit<
   React.ComponentProps<typeof DropdownMenuPrimitive.Popup>,
   keyof DropdownMenuPositionerProps
 > &
-  DropdownMenuPositionerProps & {
+  DropdownMenuPositionerProps &
+  CompoundContentEventHandlers & {
     avoidCollisions?: boolean
     forceMount?: boolean
+    onCloseAutoFocus?: AutoFocusEventHandler
   }
 
 function DropdownMenuContent({
@@ -95,11 +152,29 @@ function DropdownMenuContent({
   avoidCollisions = true,
   collisionBoundary,
   collisionPadding,
+  finalFocus,
   forceMount,
+  onCloseAutoFocus,
+  onEscapeKeyDown,
+  onFocusOutside,
+  onInteractOutside,
+  onPointerDownOutside,
   side,
   sticky,
   ...props
 }: DropdownMenuContentProps) {
+  const compatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+  if (compatibilityContext) {
+    compatibilityContext.contentEventsRef.current = {
+      onEscapeKeyDown,
+      onFocusOutside,
+      onInteractOutside,
+      onPointerDownOutside,
+    }
+  }
+
   return (
     <DropdownMenuPortal forceMount={forceMount}>
       <DropdownMenuPrimitive.Positioner
@@ -116,6 +191,7 @@ function DropdownMenuContent({
       >
         <DropdownMenuPrimitive.Popup
           data-slot="dropdown-menu-content"
+          finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
           className={cn(
             'z-50 max-h-(--available-height) min-w-[8rem] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
             className
@@ -140,17 +216,24 @@ type MenuSelectHandler = (event: Event) => void
 function dispatchMenuSelect(
   event: React.MouseEvent<HTMLElement>,
   onClick: React.MouseEventHandler<HTMLElement> | undefined,
-  onSelect: MenuSelectHandler | undefined
+  onSelect: MenuSelectHandler | undefined,
+  selectionCanceledRef: React.MutableRefObject<boolean> | undefined
 ) {
   onClick?.(event)
-  const nativeEvent = event.nativeEvent
-  onSelect?.(nativeEvent)
-  if (nativeEvent.defaultPrevented) {
-    event.preventDefault()
-    const baseUIEvent = event as React.MouseEvent<HTMLElement> & {
-      preventBaseUIHandler?: () => void
-    }
-    baseUIEvent.preventBaseUIHandler?.()
+  const selectEvent = new CustomEvent('menu.itemSelect', {
+    bubbles: true,
+    cancelable: true,
+  })
+  if (onSelect) {
+    event.currentTarget.addEventListener(
+      'menu.itemSelect',
+      (customEvent) => onSelect(customEvent),
+      { once: true }
+    )
+  }
+  event.currentTarget.dispatchEvent(selectEvent)
+  if (selectEvent.defaultPrevented && selectionCanceledRef) {
+    selectionCanceledRef.current = true
   }
 }
 
@@ -172,6 +255,10 @@ function DropdownMenuItem({
   variant = 'default',
   ...props
 }: DropdownMenuItemProps) {
+  const compatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
@@ -181,7 +268,14 @@ function DropdownMenuItem({
         "relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-highlighted:bg-accent data-highlighted:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:data-highlighted:bg-destructive/10 data-[variant=destructive]:data-highlighted:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 dark:data-[variant=destructive]:data-highlighted:bg-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground data-[variant=destructive]:*:[svg]:text-destructive!",
         className
       )}
-      onClick={(event) => dispatchMenuSelect(event, onClick, onSelect)}
+      onClick={(event) =>
+        dispatchMenuSelect(
+          event,
+          onClick,
+          onSelect,
+          compatibilityContext?.selectionCanceledRef
+        )
+      }
       {...props}
     />
   )
@@ -206,6 +300,23 @@ function DropdownMenuCheckboxItem({
   onSelect,
   ...props
 }: DropdownMenuCheckboxItemProps) {
+  const compatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+  const isIndeterminate = checked === 'indeterminate'
+  const compatibilityStateProps = isIndeterminate
+    ? {
+        'aria-checked': 'mixed' as const,
+        'data-indeterminate': '',
+        'data-state': 'indeterminate',
+      }
+    : checked === undefined
+      ? {}
+      : {
+          'aria-checked': checked,
+          'data-state': checked ? 'checked' : 'unchecked',
+        }
+
   return (
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
@@ -213,13 +324,24 @@ function DropdownMenuCheckboxItem({
         "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-highlighted:bg-accent data-highlighted:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
-      checked={checked === 'indeterminate' ? false : checked}
+      checked={isIndeterminate ? false : checked}
+      closeOnClick
+      {...compatibilityStateProps}
       onCheckedChange={(nextChecked) => onCheckedChange?.(nextChecked)}
-      onClick={(event) => dispatchMenuSelect(event, onClick, onSelect)}
+      onClick={(event) =>
+        dispatchMenuSelect(
+          event,
+          onClick,
+          onSelect,
+          compatibilityContext?.selectionCanceledRef
+        )
+      }
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
-        <DropdownMenuPrimitive.CheckboxItemIndicator>
+        <DropdownMenuPrimitive.CheckboxItemIndicator
+          keepMounted={isIndeterminate}
+        >
           <CheckIcon className="size-4" />
         </DropdownMenuPrimitive.CheckboxItemIndicator>
       </span>
@@ -263,6 +385,10 @@ function DropdownMenuRadioItem({
   onSelect,
   ...props
 }: DropdownMenuRadioItemProps) {
+  const compatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+
   return (
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
@@ -270,7 +396,15 @@ function DropdownMenuRadioItem({
         "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-highlighted:bg-accent data-highlighted:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
-      onClick={(event) => dispatchMenuSelect(event, onClick, onSelect)}
+      closeOnClick
+      onClick={(event) =>
+        dispatchMenuSelect(
+          event,
+          onClick,
+          onSelect,
+          compatibilityContext?.selectionCanceledRef
+        )
+      }
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
@@ -340,11 +474,34 @@ type DropdownMenuSubProps = Omit<
 }
 
 function DropdownMenuSub({ onOpenChange, ...props }: DropdownMenuSubProps) {
+  const contentEventsRef = React.useRef<
+    CompoundContentEventHandlers | undefined
+  >(undefined)
+  const selectionCanceledRef = React.useRef(false)
+  const contextValue = React.useMemo(
+    () => ({ contentEventsRef, selectionCanceledRef }),
+    []
+  )
+
   return (
-    <DropdownMenuPrimitive.SubmenuRoot
-      {...props}
-      onOpenChange={(open) => onOpenChange?.(open)}
-    />
+    <DropdownMenuCompatibilityContext.Provider value={contextValue}>
+      <DropdownMenuPrimitive.SubmenuRoot
+        {...props}
+        onOpenChange={(open, eventDetails) => {
+          if (
+            handleContentDismissal(open, eventDetails, contentEventsRef.current)
+          ) {
+            return
+          }
+          handleDropdownMenuOpenChange(
+            open,
+            eventDetails,
+            selectionCanceledRef,
+            onOpenChange
+          )
+        }}
+      />
+    </DropdownMenuCompatibilityContext.Provider>
   )
 }
 
@@ -383,10 +540,28 @@ function DropdownMenuSubContent({
   avoidCollisions = true,
   collisionBoundary,
   collisionPadding,
+  finalFocus,
   forceMount,
+  onCloseAutoFocus,
+  onEscapeKeyDown,
+  onFocusOutside,
+  onInteractOutside,
+  onPointerDownOutside,
   sticky,
   ...props
 }: DropdownMenuSubContentProps) {
+  const compatibilityContext = React.useContext(
+    DropdownMenuCompatibilityContext
+  )
+  if (compatibilityContext) {
+    compatibilityContext.contentEventsRef.current = {
+      onEscapeKeyDown,
+      onFocusOutside,
+      onInteractOutside,
+      onPointerDownOutside,
+    }
+  }
+
   return (
     <DropdownMenuPortal forceMount={forceMount}>
       <DropdownMenuPrimitive.Positioner
@@ -403,6 +578,7 @@ function DropdownMenuSubContent({
       >
         <DropdownMenuPrimitive.Popup
           data-slot="dropdown-menu-sub-content"
+          finalFocus={composeAutoFocus(finalFocus, onCloseAutoFocus, 'close')}
           className={cn(
             'z-50 min-w-[8rem] origin-(--transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-ending-style:animate-out data-ending-style:fade-out-0 data-ending-style:zoom-out-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-starting-style:animate-in data-starting-style:fade-in-0 data-starting-style:zoom-in-95',
             className

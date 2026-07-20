@@ -2,6 +2,11 @@ import * as React from 'react'
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
 
 import { cn } from '../../lib/cn'
+import {
+  handleContentDismissal,
+  type CompoundContentEventHandlers,
+  type CompoundContentEventHandlersRef,
+} from '../compound-compat'
 
 const TooltipProviderConfigContext = React.createContext({
   disableHoverableContent: false,
@@ -9,6 +14,11 @@ const TooltipProviderConfigContext = React.createContext({
 const TooltipRootDelayContext = React.createContext<number | undefined>(
   undefined
 )
+type TooltipCompatibilityContextValue = {
+  contentEventsRef: CompoundContentEventHandlersRef
+}
+const TooltipCompatibilityContext =
+  React.createContext<TooltipCompatibilityContextValue | null>(null)
 
 type TooltipProviderProps = TooltipPrimitive.Provider.Props & {
   delayDuration?: number
@@ -51,16 +61,34 @@ function Tooltip({
   ...props
 }: TooltipProps) {
   const providerConfig = React.useContext(TooltipProviderConfigContext)
+  const contentEventsRef = React.useRef<
+    CompoundContentEventHandlers | undefined
+  >(undefined)
+  const contextValue = React.useMemo(() => ({ contentEventsRef }), [])
+
   return (
-    <TooltipRootDelayContext.Provider value={delayDuration}>
-      <TooltipPrimitive.Root
-        disableHoverablePopup={
-          disableHoverableContent ?? providerConfig.disableHoverableContent
-        }
-        onOpenChange={(open) => onOpenChange?.(open)}
-        {...props}
-      />
-    </TooltipRootDelayContext.Provider>
+    <TooltipCompatibilityContext.Provider value={contextValue}>
+      <TooltipRootDelayContext.Provider value={delayDuration}>
+        <TooltipPrimitive.Root
+          disableHoverablePopup={
+            disableHoverableContent ?? providerConfig.disableHoverableContent
+          }
+          onOpenChange={(open, eventDetails) => {
+            if (
+              handleContentDismissal(
+                open,
+                eventDetails,
+                contentEventsRef.current
+              )
+            ) {
+              return
+            }
+            onOpenChange?.(open)
+          }}
+          {...props}
+        />
+      </TooltipRootDelayContext.Provider>
+    </TooltipCompatibilityContext.Provider>
   )
 }
 
@@ -107,7 +135,11 @@ type TooltipContentProps = Omit<
   React.ComponentProps<typeof TooltipPrimitive.Popup>,
   keyof TooltipPositionerProps
 > &
-  TooltipPositionerProps & {
+  TooltipPositionerProps &
+  Pick<
+    CompoundContentEventHandlers,
+    'onEscapeKeyDown' | 'onPointerDownOutside'
+  > & {
     avoidCollisions?: boolean
     forceMount?: boolean
   }
@@ -122,10 +154,20 @@ function TooltipContent({
   collisionBoundary,
   collisionPadding,
   forceMount,
+  onEscapeKeyDown,
+  onPointerDownOutside,
   side,
   sticky,
   ...props
 }: TooltipContentProps) {
+  const compatibilityContext = React.useContext(TooltipCompatibilityContext)
+  if (compatibilityContext) {
+    compatibilityContext.contentEventsRef.current = {
+      onEscapeKeyDown,
+      onPointerDownOutside,
+    }
+  }
+
   return (
     <TooltipPrimitive.Portal keepMounted={forceMount}>
       <TooltipPrimitive.Positioner

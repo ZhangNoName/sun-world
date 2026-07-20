@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -18,6 +18,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@sun-world/ui/dropdown-menu'
 import {
@@ -36,6 +38,12 @@ import {
 } from '@sun-world/ui/tooltip'
 import { Label } from '@sun-world/ui/label'
 import { Separator } from '@sun-world/ui/separator'
+
+async function waitForPopupLifecycle(duration = 50) {
+  await act(
+    () => new Promise<void>((resolve) => window.setTimeout(resolve, duration))
+  )
+}
 
 describe('Base UI migration contracts', () => {
   it('renders Button and Badge child links through their compatibility prop', () => {
@@ -154,6 +162,49 @@ describe('Base UI migration contracts', () => {
     expect(onValueChange).toHaveBeenCalledWith('oldest')
   })
 
+  it('renders Select item labels without requiring Root.items', async () => {
+    render(
+      <Select defaultValue="newest">
+        <SelectTrigger aria-label="Labelled sort">
+          <SelectValue placeholder="Choose a sort" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="newest">Newest first</SelectItem>
+          <SelectItem value="oldest">Oldest first</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Labelled sort' })
+    expect(trigger).toHaveTextContent('Newest first')
+    expect(trigger).not.toHaveTextContent('newest')
+
+    await userEvent.click(trigger)
+    await userEvent.click(
+      await screen.findByRole('option', { name: 'Oldest first' })
+    )
+
+    expect(trigger).toHaveTextContent('Oldest first')
+    expect(trigger).not.toHaveTextContent('oldest')
+  })
+
+  it('treats an empty Select value as no selection', () => {
+    render(
+      <Select value="">
+        <SelectTrigger aria-label="Empty sort">
+          <SelectValue placeholder="Choose a sort" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="newest">Newest first</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Empty sort' })
+    expect(trigger).toHaveTextContent('Choose a sort')
+    expect(trigger).toHaveAttribute('data-placeholder', '')
+  })
+
   it('reports Dialog close requests from its portal', async () => {
     const onOpenChange = vi.fn()
     render(
@@ -221,6 +272,57 @@ describe('Base UI migration contracts', () => {
     })
   })
 
+  it('exposes cancelable Dialog dismissal and close-auto-focus callbacks', async () => {
+    const onCloseAutoFocus = vi.fn((event: Event) => event.preventDefault())
+    const onOpenAutoFocus = vi.fn((event: Event) => event.preventDefault())
+    const onEscapeKeyDown = vi.fn((event: KeyboardEvent) =>
+      event.preventDefault()
+    )
+    const onPointerDownOutside = vi.fn(
+      (event: CustomEvent<{ originalEvent: PointerEvent }>) =>
+        event.preventDefault()
+    )
+    render(
+      <>
+        <button type="button">Outside dialog</button>
+        <Dialog modal={false} defaultOpen>
+          <DialogContent
+            onCloseAutoFocus={onCloseAutoFocus}
+            onEscapeKeyDown={onEscapeKeyDown}
+            onOpenAutoFocus={onOpenAutoFocus}
+            onPointerDownOutside={onPointerDownOutside}
+          >
+            <DialogTitle>Cancelable dialog</DialogTitle>
+            <DialogClose>Finish</DialogClose>
+          </DialogContent>
+        </Dialog>
+      </>
+    )
+
+    await waitFor(() => expect(onOpenAutoFocus).toHaveBeenCalled())
+    expect(onOpenAutoFocus.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+    await userEvent.keyboard('{Escape}')
+    expect(onEscapeKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent))
+    expect(
+      screen.getByRole('dialog', { name: 'Cancelable dialog' })
+    ).toBeVisible()
+
+    const outside = screen.getByRole('button', { name: 'Outside dialog' })
+    fireEvent.pointerDown(outside, { pointerType: 'mouse' })
+    fireEvent.click(outside)
+    expect(onPointerDownOutside).toHaveBeenCalled()
+    expect(
+      onPointerDownOutside.mock.calls[0]?.[0]?.detail.originalEvent
+    ).toBeInstanceOf(Event)
+    expect(
+      screen.getByRole('dialog', { name: 'Cancelable dialog' })
+    ).toBeVisible()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Finish' }))
+    await waitFor(() => expect(onCloseAutoFocus).toHaveBeenCalled())
+    expect(onCloseAutoFocus.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+  })
+
   it('preserves the Dropdown Menu selection event payload', async () => {
     const onSelect = vi.fn((event: Event) => event.preventDefault())
     render(
@@ -234,16 +336,133 @@ describe('Base UI migration contracts', () => {
       </DropdownMenu>
     )
 
-    await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
+    const trigger = screen.getByRole('button', { name: 'Actions' })
+    await userEvent.click(trigger)
     await userEvent.click(
       await screen.findByRole('menuitem', { name: 'Archive' })
     )
 
     expect(onSelect).toHaveBeenCalledWith(expect.any(Event))
     expect(onSelect.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+    await waitForPopupLifecycle()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
     expect(
       screen.getByRole('menuitem', { name: 'Archive' })
     ).toBeInTheDocument()
+  })
+
+  it('exposes a cancelable Dropdown Menu outside-pointer callback', async () => {
+    const onPointerDownOutside = vi.fn(
+      (event: CustomEvent<{ originalEvent: PointerEvent }>) =>
+        event.preventDefault()
+    )
+    render(
+      <>
+        <button type="button">Outside menu</button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button>Menu lifecycle</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent onPointerDownOutside={onPointerDownOutside}>
+            <DropdownMenuItem>Archive</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </>
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Menu lifecycle' })
+    await userEvent.click(trigger)
+    await waitForPopupLifecycle(550)
+    const outside = screen.getByRole('button', { name: 'Outside menu' })
+    fireEvent.pointerDown(outside, { pointerType: 'mouse' })
+    fireEvent.click(outside)
+
+    expect(onPointerDownOutside).toHaveBeenCalled()
+    await waitForPopupLifecycle()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('preserves indeterminate Checkbox state and toggles even when selection is canceled', async () => {
+    const onCheckedChange = vi.fn()
+    const onSelect = vi.fn((event: Event) => event.preventDefault())
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Summary options</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem
+            checked="indeterminate"
+            onCheckedChange={onCheckedChange}
+            onSelect={onSelect}
+          >
+            Show summaries
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Summary options' })
+    await userEvent.click(trigger)
+    const item = await screen.findByRole('menuitemcheckbox', {
+      name: 'Show summaries',
+    })
+    expect(item).toHaveAttribute('aria-checked', 'mixed')
+    expect(item).toHaveAttribute('data-state', 'indeterminate')
+    expect(item.querySelector('svg')).toBeInTheDocument()
+
+    await userEvent.click(item)
+
+    expect(onCheckedChange).toHaveBeenCalledWith(true)
+    await waitForPopupLifecycle()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('closes Checkbox and Radio items by default while reporting their changes', async () => {
+    const onCheckedChange = vi.fn()
+    const onValueChange = vi.fn()
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Display options</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem onCheckedChange={onCheckedChange}>
+            Show summaries
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuRadioGroup
+            value="comfortable"
+            onValueChange={onValueChange}
+          >
+            <DropdownMenuRadioItem value="compact">
+              Compact
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="comfortable">
+              Comfortable
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Display options' })
+    await userEvent.click(trigger)
+    await userEvent.click(
+      await screen.findByRole('menuitemcheckbox', { name: 'Show summaries' })
+    )
+    expect(onCheckedChange).toHaveBeenCalledWith(true)
+    await waitFor(() =>
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    )
+
+    await userEvent.click(trigger)
+    await userEvent.click(
+      await screen.findByRole('menuitemradio', { name: 'Compact' })
+    )
+    expect(onValueChange).toHaveBeenCalledWith('compact')
+    await waitFor(() =>
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    )
   })
 
   it('skips disabled Dropdown Menu items and reports checked item state', async () => {
@@ -316,6 +535,88 @@ describe('Base UI migration contracts', () => {
     expect(screen.getByText('Activity panel')).toBeVisible()
   })
 
+  it('leaves uncontrolled Tabs unselected when no default is provided', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Tabs onValueChange={onValueChange}>
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">Overview panel</TabsContent>
+        <TabsContent value="activity">Activity panel</TabsContent>
+      </Tabs>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+        'aria-selected',
+        'false'
+      )
+      expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
+        'aria-selected',
+        'false'
+      )
+    })
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
+  it('retains an uncontrolled Tabs value when its tab disappears or is disabled', async () => {
+    const onValueChange = vi.fn()
+    function TabSet({
+      disabled = false,
+      includeActivity = true,
+    }: {
+      disabled?: boolean
+      includeActivity?: boolean
+    }) {
+      return (
+        <Tabs defaultValue="activity" onValueChange={onValueChange}>
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            {includeActivity && (
+              <TabsTrigger value="activity" disabled={disabled}>
+                Activity
+              </TabsTrigger>
+            )}
+          </TabsList>
+          <TabsContent value="overview">Overview panel</TabsContent>
+          {includeActivity && (
+            <TabsContent value="activity">Activity panel</TabsContent>
+          )}
+        </Tabs>
+      )
+    }
+
+    const { rerender } = render(<TabSet />)
+    expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+
+    rerender(<TabSet includeActivity={false} />)
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+        'aria-selected',
+        'false'
+      )
+    })
+    expect(onValueChange).not.toHaveBeenCalled()
+
+    rerender(<TabSet disabled />)
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      )
+      expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      )
+    })
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
   it('exposes Tooltip content to assistive technology', async () => {
     render(
       <TooltipProvider>
@@ -333,6 +634,117 @@ describe('Base UI migration contracts', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'Keyboard shortcuts'
     )
+  })
+
+  it('exposes a cancelable Tooltip Escape callback', async () => {
+    const onEscapeKeyDown = vi.fn((event: KeyboardEvent) =>
+      event.preventDefault()
+    )
+    render(
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button>Tooltip lifecycle</Button>
+          </TooltipTrigger>
+          <TooltipContent onEscapeKeyDown={onEscapeKeyDown}>
+            Persistent help
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+
+    await userEvent.hover(
+      screen.getByRole('button', { name: 'Tooltip lifecycle' })
+    )
+    expect(await screen.findByRole('tooltip')).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+
+    expect(onEscapeKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent))
+    await waitForPopupLifecycle()
+    expect(screen.getByRole('tooltip')).toBeVisible()
+  })
+
+  it('exposes cancelable Select dismissal and close-auto-focus callbacks', async () => {
+    const onCloseAutoFocus = vi.fn((event: Event) => event.preventDefault())
+    const onEscapeKeyDown = vi.fn((event: KeyboardEvent) =>
+      event.preventDefault()
+    )
+    render(
+      <Select>
+        <SelectTrigger aria-label="Select lifecycle">
+          <SelectValue placeholder="Choose" />
+        </SelectTrigger>
+        <SelectContent
+          onCloseAutoFocus={onCloseAutoFocus}
+          onEscapeKeyDown={onEscapeKeyDown}
+        >
+          <SelectItem value="newest">Newest</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Select lifecycle' })
+    await userEvent.click(trigger)
+    await userEvent.keyboard('{Escape}')
+    expect(onEscapeKeyDown).toHaveBeenCalledWith(expect.any(KeyboardEvent))
+    await waitForPopupLifecycle()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+
+    await userEvent.click(await screen.findByRole('option', { name: 'Newest' }))
+    await waitFor(() => expect(onCloseAutoFocus).toHaveBeenCalled())
+    expect(onCloseAutoFocus.mock.calls[0]?.[0]?.defaultPrevented).toBe(true)
+  })
+
+  it('force mounts closed Select, Menu, Dialog, and Tooltip content', async () => {
+    render(
+      <>
+        <Select>
+          <SelectTrigger aria-label="Force-mounted select">
+            <SelectValue placeholder="Choose" />
+          </SelectTrigger>
+          <SelectContent forceMount>
+            <SelectItem value="newest">Newest</SelectItem>
+          </SelectContent>
+        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger>Force-mounted menu</DropdownMenuTrigger>
+          <DropdownMenuContent forceMount>
+            <DropdownMenuItem>Archive</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Dialog>
+          <DialogContent forceMount>
+            <DialogTitle>Force-mounted dialog</DialogTitle>
+          </DialogContent>
+        </Dialog>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>Force-mounted tooltip</TooltipTrigger>
+            <TooltipContent forceMount>Persistent help</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </>
+    )
+
+    expect(
+      document.querySelector('[data-slot="select-content"]')
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="dropdown-menu-content"]')
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="dialog-content"]')
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="tooltip-content"]')
+    ).toBeInTheDocument()
+
+    const selectTrigger = screen.getByRole('combobox', {
+      name: 'Force-mounted select',
+    })
+    await userEvent.click(selectTrigger)
+    await userEvent.click(await screen.findByRole('option', { name: 'Newest' }))
+    expect(selectTrigger).toHaveTextContent('Newest')
   })
 
   it('composes Tooltip provider delay with a trigger and popup', async () => {
