@@ -4,6 +4,7 @@ import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '@sun-world/ui/button'
+import { Badge } from '@sun-world/ui/badge'
 import { Checkbox } from '@sun-world/ui/checkbox'
 import {
   Dialog,
@@ -31,8 +32,32 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@sun-world/ui/tooltip'
+import { Label } from '@sun-world/ui/label'
+import { Separator } from '@sun-world/ui/separator'
 
 describe('Base UI migration contracts', () => {
+  it('renders Button and Badge child links through their compatibility prop', () => {
+    render(
+      <>
+        <Button asChild>
+          <a href="/publish">Publish</a>
+        </Button>
+        <Badge asChild>
+          <a href="/preview">Preview</a>
+        </Badge>
+      </>
+    )
+
+    expect(screen.getByRole('link', { name: 'Publish' })).toHaveAttribute(
+      'data-slot',
+      'button'
+    )
+    expect(screen.getByRole('link', { name: 'Preview' })).toHaveAttribute(
+      'data-slot',
+      'badge'
+    )
+  })
+
   it('preserves the controlled Select value contract', async () => {
     const onValueChange = vi.fn()
     render(
@@ -57,7 +82,7 @@ describe('Base UI migration contracts', () => {
     render(
       <Checkbox
         aria-label="Publish article"
-        checked={false}
+        defaultChecked={false}
         onCheckedChange={onCheckedChange}
       />
     )
@@ -67,6 +92,29 @@ describe('Base UI migration contracts', () => {
     await userEvent.keyboard(' ')
 
     expect(onCheckedChange).toHaveBeenCalledWith(true)
+    expect(checkbox).toHaveAttribute('data-checked', '')
+  })
+
+  it('focuses the input associated with Label', async () => {
+    render(
+      <>
+        <Label htmlFor="article-title">Article title</Label>
+        <input id="article-title" />
+      </>
+    )
+
+    const input = screen.getByRole('textbox', { name: 'Article title' })
+    await userEvent.click(screen.getByText('Article title'))
+
+    expect(input).toHaveFocus()
+  })
+
+  it('exposes Separator orientation to assistive technology', () => {
+    render(<Separator orientation="vertical" />)
+
+    const separator = screen.getByRole('separator')
+    expect(separator).toHaveAttribute('aria-orientation', 'vertical')
+    expect(separator).toHaveAttribute('data-orientation', 'vertical')
   })
 
   it('supports controlled Select keyboard selection', async () => {

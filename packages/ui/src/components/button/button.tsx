@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '../../lib/cn'
 
@@ -38,32 +38,47 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
-  className,
-  variant = 'default',
-  size = 'default',
-  asChild = false,
-  loading = false,
-  disabled,
-  ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-    loading?: boolean
-  }) {
-  const Comp = asChild ? Slot : 'button'
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<'button'> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean
+      loading?: boolean
+    }
+>(function Button(
+  {
+    className,
+    variant = 'default',
+    size = 'default',
+    asChild = false,
+    loading = false,
+    disabled,
+    children,
+    ...props
+  },
+  ref
+) {
+  const isDisabled = disabled || loading
+  const render = asChild
+    ? (React.Children.only(children) as React.ReactElement)
+    : undefined
 
-  return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      aria-busy={loading || undefined}
-      disabled={disabled || loading}
-      {...props}
-    />
-  )
-}
+  return useRender({
+    render,
+    ref,
+    defaultTagName: 'button',
+    props: {
+      ...props,
+      'data-slot': 'button',
+      'data-variant': variant,
+      'data-size': size,
+      className: cn(buttonVariants({ variant, size, className })),
+      'aria-busy': loading || undefined,
+      'aria-disabled': asChild && isDisabled ? true : undefined,
+      disabled: !asChild ? isDisabled : undefined,
+      children: !asChild ? children : undefined,
+    },
+  })
+})
 
 export { Button, buttonVariants }

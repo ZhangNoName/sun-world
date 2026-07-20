@@ -1,6 +1,6 @@
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { useId } from 'react'
 
+import { Checkbox } from './checkbox'
 import { SunLabel } from '../label'
 import { cn } from '../../lib/cn'
 import '../../styles/base.css'
@@ -24,16 +24,14 @@ export function SunCheckbox({
   const id = useId()
   return (
     <span className="sun-checkbox-field">
-      <CheckboxPrimitive.Root
+      <Checkbox
         id={id}
         className={cn('sun-checkbox', disabled && 'sun-ui-disabled')}
         checked={checked}
         defaultChecked={defaultChecked}
         disabled={disabled}
-        onCheckedChange={(next) => onCheckedChange?.(next === true)}
-      >
-        <CheckboxPrimitive.Indicator>✓</CheckboxPrimitive.Indicator>
-      </CheckboxPrimitive.Root>
+        onCheckedChange={onCheckedChange}
+      />
       <SunLabel htmlFor={id}>{label}</SunLabel>
     </span>
   )

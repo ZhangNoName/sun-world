@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@sun-world\/ui\/(button|checkbox|dialog|dropdown-menu|select|tabs|tooltip)$/,
+        find: /^@sun-world\/ui\/(badge|button|checkbox|dialog|dropdown-menu|label|select|separator|tabs|tooltip)$/,
         replacement: `${path.resolve(__dirname, 'src/components')}/$1`,
       },
       { find: '@', replacement: path.resolve(__dirname, 'src') },
