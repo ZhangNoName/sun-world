@@ -3,29 +3,34 @@ import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { Button } from './button'
-import { Checkbox } from './checkbox'
-import { Dialog, DialogClose, DialogContent, DialogTitle } from './dialog'
+import { Button } from '@sun-world/ui/button'
+import { Checkbox } from '@sun-world/ui/checkbox'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from '@sun-world/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './dropdown-menu'
+} from '@sun-world/ui/dropdown-menu'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './select'
-import { Tabs, TabsList, TabsTrigger } from './tabs'
+} from '@sun-world/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@sun-world/ui/tabs'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './tooltip'
+} from '@sun-world/ui/tooltip'
 
 describe('Base UI migration contracts', () => {
   it('preserves the controlled Select value contract', async () => {
@@ -57,11 +62,30 @@ describe('Base UI migration contracts', () => {
       />
     )
 
-    await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Publish article' })
-    )
+    const checkbox = screen.getByRole('checkbox', { name: 'Publish article' })
+    checkbox.focus()
+    await userEvent.keyboard(' ')
 
     expect(onCheckedChange).toHaveBeenCalledWith(true)
+  })
+
+  it('supports controlled Select keyboard selection', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Select value="newest" onValueChange={onValueChange}>
+        <SelectTrigger aria-label="Sort by keyboard">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="oldest">Oldest</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
+    screen.getByRole('combobox', { name: 'Sort by keyboard' }).focus()
+    await userEvent.keyboard('{Enter}{ArrowDown}{Enter}')
+
+    expect(onValueChange).toHaveBeenCalledWith('oldest')
   })
 
   it('reports Dialog close requests from its portal', async () => {
@@ -78,12 +102,12 @@ describe('Base UI migration contracts', () => {
     const dialog = screen.getByRole('dialog', { name: 'Delete article' })
     expect(dialog.parentElement).toBe(document.body)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await userEvent.keyboard('{Escape}')
 
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('selects a Dropdown Menu item once', async () => {
+  it('preserves the Dropdown Menu selection event payload', async () => {
     const onSelect = vi.fn()
     render(
       <DropdownMenu>
@@ -99,7 +123,8 @@ describe('Base UI migration contracts', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Archive' }))
 
-    expect(onSelect).toHaveBeenCalledOnce()
+    expect(onSelect).toHaveBeenCalledWith(expect.any(Event))
+    expect(onSelect.mock.calls[0]?.[0]?.defaultPrevented).toBe(false)
   })
 
   it('preserves controlled Tabs value changes', async () => {
