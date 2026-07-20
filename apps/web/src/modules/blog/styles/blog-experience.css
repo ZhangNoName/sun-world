@@ -16,6 +16,19 @@
   flex-wrap: wrap;
   gap: 0.55rem;
   padding: var(--home-card-inset, 1.25rem);
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-xl);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--motion-duration) var(--motion-ease-standard),
+    box-shadow var(--motion-duration) var(--motion-ease-standard),
+    background-color var(--motion-duration) var(--motion-ease-standard);
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-default);
 }
 
 .summary-card span {
@@ -29,11 +42,14 @@
   line-height: 1.25;
 }
 
-.blog-toolbar {
+.query-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.34fr) auto;
   align-items: center;
   gap: 0.75rem;
+}
+
+.blog-toolbar {
   padding: var(--home-card-inset, 1.25rem);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
@@ -123,7 +139,6 @@
   border-radius: var(--radius-lg);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-sm);
-  cursor: pointer;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -136,7 +151,7 @@
   box-shadow: var(--shadow-md);
 }
 
-.z-blog-card:focus-visible {
+.z-blog-card__action:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
   outline-offset: 2px;
 }
@@ -202,6 +217,7 @@
   font-weight: 650;
   line-height: 1;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .z-blog-card__action svg {
@@ -221,6 +237,24 @@
 .empty-state {
   padding: 3rem;
   text-align: center;
+}
+
+.back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.waterfall-grid {
+  column-gap: var(--space-4);
+}
+
+.waterfall-item {
+  break-inside: avoid;
+  margin-bottom: var(--space-4);
 }
 
 .blog-page {
@@ -436,7 +470,7 @@
 }
 
 @media (max-width: 695px) {
-  .blog-toolbar {
+  .query-panel {
     grid-template-columns: 1fr;
   }
 
@@ -451,6 +485,10 @@
 
   .summary-card span {
     flex: 0 0 auto;
+  }
+
+  .back-to-top {
+    bottom: 72px;
   }
 
   .z-blog-card {
@@ -476,6 +514,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .summary-card:hover {
+    transform: none;
+  }
+
   .z-blog-card,
   .z-blog-card__action svg {
     transition: none;

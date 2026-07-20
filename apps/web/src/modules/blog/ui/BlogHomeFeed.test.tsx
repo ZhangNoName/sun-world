@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 
 vi.mock('react-i18next', () => ({
@@ -8,6 +9,8 @@ vi.mock('react-i18next', () => ({
 }))
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useBlogList } from '../composables/useBlogList'
+import type { BlogCardProps } from '../types'
+import { BlogCard } from './BlogCard'
 import { BlogHomeFeed } from './BlogHomeFeed'
 
 vi.mock('../composables/useBlogBaseData')
@@ -83,10 +86,60 @@ describe('BlogHomeFeed', () => {
       </MemoryRouter>
     )
 
-    const action = screen.getByRole('button', {
+    const action = screen.getByRole('link', {
       name: '阅读更多: 图搜索入门',
     })
     expect(action).toHaveClass('z-blog-card__action')
-    expect(action.closest('article')).toHaveAttribute('role', 'link')
+    expect(action).toHaveAttribute('href', '/blog/10')
+    expect(action.closest('article')).not.toHaveAttribute('role')
+    expect(screen.queryByRole('button', { name: /阅读更多/ })).toBeNull()
+  })
+})
+
+describe('BlogCard navigation semantics', () => {
+  const item: BlogCardProps = {
+    id: 10,
+    title: '图搜索入门',
+    abstract: '图搜索训练可达性与层次关系。',
+    publishTime: '2026-07-20',
+    lastUpdateTime: '2026-07-20',
+    tags: ['算法基础'],
+    byteNum: 1024,
+    commentNum: 2,
+  }
+
+  it.each([
+    ['click', async (link: HTMLElement) => userEvent.click(link)],
+    [
+      'Enter',
+      async (link: HTMLElement) => {
+        link.focus()
+        await userEvent.keyboard('{Enter}')
+      },
+    ],
+    [
+      'Space',
+      async (link: HTMLElement) => {
+        link.focus()
+        await userEvent.keyboard(' ')
+      },
+    ],
+  ])('uses one link activation for %s', async (_method, activate) => {
+    render(
+      <MemoryRouter>
+        <BlogCard {...item} />
+      </MemoryRouter>
+    )
+
+    const link = screen.getByRole('link', {
+      name: '阅读更多: 图搜索入门',
+    })
+    const clicks: Event[] = []
+    const recordClick = (event: Event) => clicks.push(event)
+    link.addEventListener('click', recordClick)
+
+    await activate(link)
+
+    expect(clicks).toHaveLength(1)
   })
 })
