@@ -10,6 +10,9 @@
     "cssVariables": true
   },
   "iconLibrary": "lucide",
+  "registries": {
+    "@base-ui": "https://ui.shadcn.com/r/styles/base-nova/{name}.json"
+  },
   "aliases": {
     "components": "@sun-world/ui/components",
     "ui": "@sun-world/ui/components",
