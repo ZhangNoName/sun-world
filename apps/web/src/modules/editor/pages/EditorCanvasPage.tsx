@@ -37,7 +37,7 @@ export function EditorCanvasPage() {
       />
       <div className="canvas-toolbar" role="toolbar" aria-label="画布工具">
         {tools.map((tool) => (
-          <button
+          <Button
             type="button"
             key={tool.name}
             className={canvas.activeTool === tool.name ? 'is-active' : ''}
@@ -46,7 +46,7 @@ export function EditorCanvasPage() {
             onClick={() => canvas.selectTool(tool.name)}
           >
             <SunIcon name={tool.icon} size={20} />
-          </button>
+          </Button>
         ))}
         <Button size="sm" variant="secondary" onClick={canvas.save}>
           保存

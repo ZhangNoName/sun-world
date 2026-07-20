@@ -1,4 +1,4 @@
-import { LabeledInput } from '@/shared/ui/form-controls'
+import { LabeledInput } from '@sun-world/ui/form-controls'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button } from '@sun-world/ui/button'

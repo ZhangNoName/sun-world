@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useMatches } from 'react-router'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/ui/button'
 
-import { DialogPanel } from '@/shared/ui/compound-controls'
+import { DialogPanel } from '@sun-world/ui/compound-controls'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import { useDeviceStore } from '@/store/tg'

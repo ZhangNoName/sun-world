@@ -1,4 +1,5 @@
 import { Button } from '@sun-world/ui/button'
+import { NativeSelectField } from '@sun-world/ui/form-controls'
 import { Input } from '@sun-world/ui/input'
 import { SunMarkdownEditor } from '@/shared/markdown'
 import { useBlogAuthoring } from '../composables/useBlogAuthoring'
@@ -23,34 +24,32 @@ export function ArticleEditorPage() {
           placeholder="标题"
           maxLength={100}
         />
-        <select
+        <NativeSelectField
+          label="文章分类"
           value={authoring.blogCategory}
           onChange={(event) => authoring.setBlogCategory(event.target.value)}
-          aria-label="文章分类"
-        >
-          <option value="">请选择文章分类</option>
-          {authoring.categoryList.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <select
+          options={[
+            { value: '', label: '请选择文章分类' },
+            ...authoring.categoryList.map((item) => ({
+              value: String(item.id),
+              label: item.name,
+            })),
+          ]}
+        />
+        <NativeSelectField
           multiple
+          label="文章标签"
           value={authoring.blogTag.map(String)}
           onChange={(event) =>
             authoring.setBlogTag(
               Array.from(event.target.selectedOptions, (option) => option.value)
             )
           }
-          aria-label="文章标签"
-        >
-          {authoring.tagList.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
+          options={authoring.tagList.map((item) => ({
+            value: String(item.id),
+            label: item.name,
+          }))}
+        />
       </div>
       <SunMarkdownEditor
         value={authoring.blogContent}

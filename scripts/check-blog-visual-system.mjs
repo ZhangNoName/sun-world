@@ -45,7 +45,7 @@ for (const selector of [
 }
 
 if (
-  !homeFeed.includes('@/shared/ui/form-controls') ||
+  !homeFeed.includes('@sun-world/ui/form-controls') ||
   !homeFeed.includes('SelectField')
 ) {
   throw new Error(

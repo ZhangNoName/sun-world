@@ -114,10 +114,20 @@
       "import": "./dist/chat-shell.es.js",
       "default": "./dist/chat-shell.es.js"
     },
+    "./compound-controls": {
+      "types": "./dist/types/compound-controls.d.ts",
+      "import": "./dist/compound-controls.es.js",
+      "default": "./dist/compound-controls.es.js"
+    },
     "./date-picker": {
       "types": "./dist/types/date-picker.d.ts",
       "import": "./dist/date-picker.es.js",
       "default": "./dist/date-picker.es.js"
+    },
+    "./form-controls": {
+      "types": "./dist/types/form-controls.d.ts",
+      "import": "./dist/form-controls.es.js",
+      "default": "./dist/form-controls.es.js"
     },
     "./list": {
       "types": "./dist/types/list.d.ts",

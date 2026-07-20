@@ -1,4 +1,4 @@
-import { LabeledInput } from '@/shared/ui/form-controls'
+import { LabeledInput } from '@sun-world/ui/form-controls'
 import type { EditorElementPatch } from '../hooks/useEditorCanvas'
 
 export function EditorCanvasRight({

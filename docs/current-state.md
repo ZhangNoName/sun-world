@@ -1,5 +1,17 @@
 # Current State
 
+## Web UI Library Enforcement (2026-07-20)
+
+- The Web entry now loads the complete Tailwind v4 + shadcn style entry and
+  scans both `apps/web/src` and `packages/ui/src`, fixing unstyled shadcn class
+  names that previously rendered like browser-native controls.
+- Web source contains no raw `button`, `input`, `textarea`, `select`, `option`,
+  `label`, or `dialog` JSX. Reusable field, file-picker, dialog, and tabs
+  compositions live in `@sun-world/ui`.
+- `scripts/check-web-ui-library.mjs` enforces the boundary in `check:web`.
+- The complete UI utility layer raises total CSS gzip to 36.2 KiB; the budget is
+  intentionally 38 KiB. JS remains 1139.1 KiB against 1200 KiB.
+
 Last updated: 2026-07-20 (`feat/native-shadcn-ui`, native shadcn migration in verification)
 
 ## Native Shadcn UI (2026-07-20, local feature branch)

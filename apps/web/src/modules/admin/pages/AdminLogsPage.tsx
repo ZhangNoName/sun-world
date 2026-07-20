@@ -1,4 +1,4 @@
-import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
+import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
 import { Button } from '@sun-world/ui/button'
 import {
   useAdminLogs,

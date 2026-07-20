@@ -12,7 +12,7 @@
       "name": "total-css-gzip",
       "type": "total",
       "extensions": [".css"],
-      "maxGzipKiB": 30
+      "maxGzipKiB": 38
     },
     {
       "name": "largest-asset-gzip",

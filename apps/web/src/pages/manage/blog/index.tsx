@@ -1,4 +1,4 @@
-import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
+import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
 import { Link } from 'react-router'
 import { Button } from '@sun-world/ui/button'
 import { SunPagination } from '@sun-world/ui/pagination'

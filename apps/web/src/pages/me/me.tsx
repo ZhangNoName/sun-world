@@ -1,4 +1,5 @@
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/ui/button'
 import { useAuthStore } from '@/store/auth'
 export function MePage() {
   const user = useAuthStore((state) => state.user) as {
@@ -18,10 +19,10 @@ export function MePage() {
           ['draft', '草稿箱'],
           ['settings', '设置'],
         ].map(([icon, label]) => (
-          <button key={label}>
+          <Button key={label} variant="ghost">
             <SunIcon name={icon as 'upload'} />
             {label}
-          </button>
+          </Button>
         ))}
       </nav>
     </main>

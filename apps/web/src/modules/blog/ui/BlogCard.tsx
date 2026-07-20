@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { SunIcon } from '@sun-world/icons/react'
 import { Badge } from '@sun-world/ui/tag'
+import { Button } from '@sun-world/ui/button'
 
 import type { BlogCardProps } from '../types'
 
@@ -40,7 +41,7 @@ export function BlogCard(props: BlogCardProps) {
           <Badge key={tag}>{tag}</Badge>
         ))}
       </div>
-      <button
+      <Button
         className="z-blog-card__action"
         type="button"
         onClick={(event) => {
@@ -50,7 +51,7 @@ export function BlogCard(props: BlogCardProps) {
       >
         <span>{t('readMore')}</span>
         <SunIcon name="chevron-right" size={17} />
-      </button>
+      </Button>
     </article>
   )
 }

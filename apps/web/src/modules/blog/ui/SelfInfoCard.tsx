@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Button } from '@sun-world/ui/button'
 
 import { openGithub } from '@/util'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
@@ -30,9 +31,9 @@ export function SelfInfoCard() {
           <dd>{stats.total_view_num}</dd>
         </div>
       </dl>
-      <button type="button" onClick={openGithub}>
+      <Button type="button" variant="outline" onClick={openGithub}>
         GitHub
-      </button>
+      </Button>
       <p>有志者，事竟成</p>
     </section>
   )

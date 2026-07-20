@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { NodeInfo } from '@sun-world/editor'
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/ui/button'
 
 export function EditorCanvasTree({
   nodes,
@@ -66,7 +67,7 @@ function TreeNode({
         className={`tree-item ${selectedId === node.id ? 'is-selected' : ''}`}
         style={{ paddingInlineStart: `${8 + level * 16}px` }}
       >
-        <button
+        <Button
           type="button"
           className="tree-toggle"
           aria-label={isExpanded ? '折叠图层' : '展开图层'}
@@ -74,14 +75,14 @@ function TreeNode({
           onClick={() => onToggle(node.id)}
         >
           <SunIcon name={hasChildren ? 'chevron-right' : 'square'} size={14} />
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           className="tree-name"
           onClick={() => onSelect(node.id)}
         >
           {node.name || node.type}
-        </button>
+        </Button>
       </div>
       {hasChildren && isExpanded
         ? node.children.map((child) => (

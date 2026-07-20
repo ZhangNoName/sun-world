@@ -1,4 +1,5 @@
 import type { MarkdownHeadingItem } from '../types'
+import { Button } from '@sun-world/ui/button'
 
 function CatalogItems({
   items,
@@ -13,13 +14,13 @@ function CatalogItems({
     <ul>
       {items.map((item) => (
         <li key={item.id}>
-          <button
+          <Button
             type="button"
             aria-current={activeId === item.id ? 'location' : undefined}
             onClick={() => onSelect(item.id)}
           >
             {item.text}
-          </button>
+          </Button>
           {item.children?.length ? (
             <CatalogItems
               items={item.children}

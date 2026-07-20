@@ -1,4 +1,6 @@
+import { Button } from '@sun-world/ui/button'
 import type { AiConversation } from '../types'
+
 export function AiConversationSidebar({
   conversations,
   activeId,
@@ -12,16 +14,17 @@ export function AiConversationSidebar({
 }) {
   return (
     <aside className="conversation-sidebar">
-      <button onClick={onNew}>新聊天</button>
+      <Button onClick={onNew}>新聊天</Button>
       <nav>
         {conversations.map((item) => (
-          <button
+          <Button
+            variant="ghost"
             key={item.id}
             aria-current={item.id === activeId ? 'page' : undefined}
             onClick={() => onSelect(item.id)}
           >
             {item.title}
-          </button>
+          </Button>
         ))}
       </nav>
     </aside>

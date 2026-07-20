@@ -7,6 +7,7 @@ import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import artplayerPluginDocumentPip from 'artplayer-plugin-document-pip'
 import artplayerPluginHlsControl from 'artplayer-plugin-hls-control'
 import { toast } from '@sun-world/ui/toast'
+import { Button } from '@sun-world/ui/button'
 import { VideoPlayer } from '../ui/VideoPlayer'
 import './video.css'
 
@@ -108,7 +109,7 @@ export function VideoPage() {
         <p className="video-url" title={url}>
           {url}
         </p>
-        <button
+        <Button
           type="button"
           onClick={() => {
             void navigator.clipboard?.writeText(url)
@@ -116,7 +117,7 @@ export function VideoPage() {
           }}
         >
           复制地址
-        </button>
+        </Button>
       </aside>
     </main>
   )

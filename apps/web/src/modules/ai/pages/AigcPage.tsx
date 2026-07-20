@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
+import { Button } from '@sun-world/ui/button'
 import { SunIcon } from '@sun-world/icons/react'
 import { useViewportWidth } from '@/shared/browser/viewport'
 import { AI_PROVIDER_OPTIONS } from '../api'
@@ -67,13 +68,13 @@ export function AigcPage() {
       sidebarWidth={width}
       rail={
         collapsed ? (
-          <button
+          <Button
             className="toggle-sidebar"
             onClick={() => setCollapsed(false)}
             aria-label="显示侧边栏"
           >
             <SunIcon name="panel-left-open" />
-          </button>
+          </Button>
         ) : null
       }
       sidebar={
@@ -84,7 +85,7 @@ export function AigcPage() {
             onSelect={chat.selectConversation}
             onNew={chat.startConversation}
           />
-          <button
+          <Button
             className="resize-handle"
             onPointerDown={startResize}
             onPointerMove={resize}

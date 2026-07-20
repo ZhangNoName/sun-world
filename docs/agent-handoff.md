@@ -6,6 +6,15 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-20: `feat/web-ui-library-enforcement` fixes the incomplete shadcn
+  style pipeline by loading the public UI stylesheet and scanning UI package
+  source classes. All Web interactive controls now come from `@sun-world/ui`;
+  reusable Web-local controls moved into package patterns, and a new guard
+  prevents raw interactive JSX from returning. `check:web` passed through all
+  tests, typecheck, build, SSG and package guards; the final CSS budget is 36.2
+  / 38 KiB. Browser QA confirmed computed shadcn button styling and Sun World
+  to Apple one-click switching. Not pushed or deployed.
+
 - 2026-07-20: `feat/native-shadcn-ui` replaces the earlier shadcn-inspired
   implementation with the real shadcn `new-york` source model, Tailwind CSS v4,
   canonical Radix composition, canonical app imports, and standard semantic

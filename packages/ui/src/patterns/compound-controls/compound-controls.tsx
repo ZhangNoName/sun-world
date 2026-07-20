@@ -4,8 +4,8 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from '@sun-world/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@sun-world/ui/tabs'
+} from '../../components/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/tabs'
 
 export function DialogPanel({
   trigger,

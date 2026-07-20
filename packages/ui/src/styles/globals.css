@@ -1,6 +1,7 @@
 @import 'tailwindcss' source('../../../../apps/web/src');
 @import 'shadcn/tailwind.css';
 @import './index.css';
+@source '../**/*.{ts,tsx}';
 
 @custom-variant dark (&:where([data-color-mode='dark'], [data-color-mode='dark'] *));
 

@@ -1,4 +1,4 @@
-import { LabeledInput } from '@/shared/ui/form-controls'
+import { LabeledInput } from '@sun-world/ui/form-controls'
 import { useState } from 'react'
 import { Button } from '@sun-world/ui/button'
 import { downloadUrl } from '@/util/function'

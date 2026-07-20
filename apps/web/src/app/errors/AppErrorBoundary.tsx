@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Button } from '@sun-world/ui/button'
 
 interface Props {
   children: ReactNode
@@ -25,9 +26,9 @@ export class AppErrorBoundary extends Component<Props, State> {
         <main role="alert" className="app-error-boundary">
           <h1>页面暂时无法显示</h1>
           <p>请刷新页面后重试。</p>
-          <button type="button" onClick={() => window.location.reload()}>
+          <Button type="button" onClick={() => window.location.reload()}>
             刷新页面
-          </button>
+          </Button>
         </main>
       )
     }

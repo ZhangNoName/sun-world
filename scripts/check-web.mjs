@@ -140,6 +140,9 @@ run('UI shadcn structure check', 'node', [
   'scripts/check-ui-shadcn-structure.mjs',
 ])
 run('Native shadcn UI check', 'node', ['scripts/check-ui-native-shadcn.mjs'])
+run('Web UI library enforcement check', 'node', [
+  'scripts/check-web-ui-library.mjs',
+])
 
 run('UI package boundary check', 'node', [
   'scripts/check-ui-package-boundary.mjs',

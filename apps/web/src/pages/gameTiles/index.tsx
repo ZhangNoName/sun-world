@@ -1,4 +1,9 @@
-import { CheckboxField, LabeledInput } from '@/shared/ui/form-controls'
+import {
+  CheckboxField,
+  FilePickerInput,
+  FilePickerLabel,
+  LabeledInput,
+} from '@sun-world/ui/form-controls'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@sun-world/ui/button'
 import { toast } from '@sun-world/ui/toast'
@@ -139,7 +144,7 @@ export function GameTilesPage() {
         {tiles.map((row, rowIndex) => (
           <div className="tile-row" style={{ gap: config.gap }} key={rowIndex}>
             {row.map((tile, colIndex) => (
-              <button
+              <Button
                 type="button"
                 className={`tile-item ${selected.row === rowIndex && selected.col === colIndex ? 'is-selected' : ''}`}
                 key={colIndex}
@@ -163,15 +168,15 @@ export function GameTilesPage() {
           <h1>游戏瓦片切片</h1>
           <p>导入图片，配置网格后导出原图、PNG 切片或 JSON。</p>
         </header>
-        <label className="file-picker">
+        <FilePickerLabel className="file-picker">
           图片文件
-          <input
+          <FilePickerInput
             aria-label="图片文件"
             type="file"
             accept="image/*"
             onChange={(event) => chooseFile(event.target.files?.[0])}
           />
-        </label>
+        </FilePickerLabel>
         <div className="config-grid">
           {(['row', 'col', 'width', 'height', 'gap'] as const).map((key) => (
             <LabeledInput

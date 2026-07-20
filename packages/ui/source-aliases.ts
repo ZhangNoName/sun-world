@@ -25,7 +25,9 @@ const primitives = [
 const patterns = [
   'chat-composer',
   'chat-shell',
+  'compound-controls',
   'date-picker',
+  'form-controls',
   'list',
   'pagination',
   'theme-provider',
@@ -33,6 +35,10 @@ const patterns = [
 
 export function createUiSourceAliases(sourceRoot: string) {
   return [
+    {
+      find: '@sun-world/ui/styles.css',
+      replacement: resolve(sourceRoot, 'styles/globals.css'),
+    },
     ...primitives.map((name) => ({
       find: `@sun-world/ui/${name}`,
       replacement: resolve(sourceRoot, `components/${name}/index.ts`),

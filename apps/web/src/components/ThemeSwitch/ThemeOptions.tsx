@@ -1,3 +1,4 @@
+import { Button } from '@sun-world/ui/button'
 import { useTheme, type ColorMode, type DesignFamily } from '@/shared/design'
 
 const families: Array<{ value: DesignFamily; label: string }> = [
@@ -14,35 +15,37 @@ export default function ThemeOptions() {
   const { family, mode, setFamily, setMode } = useTheme()
   return (
     <div className="theme-switch__panel">
-      <fieldset role="radiogroup">
+      <fieldset>
         <legend>设计风格</legend>
-        {families.map((option) => (
-          <label key={option.value}>
-            <input
-              type="radio"
-              name="design-family"
-              value={option.value}
-              checked={family === option.value}
-              onChange={() => setFamily(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
-        ))}
+        <div role="radiogroup" aria-label="设计风格">
+          {families.map((option) => (
+            <Button
+              key={option.value}
+              role="radio"
+              aria-checked={family === option.value}
+              variant={family === option.value ? 'default' : 'outline'}
+              onClick={() => setFamily(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
       </fieldset>
-      <fieldset role="radiogroup">
+      <fieldset>
         <legend>明暗模式</legend>
-        {modes.map((option) => (
-          <label key={option.value}>
-            <input
-              type="radio"
-              name="color-mode"
-              value={option.value}
-              checked={mode === option.value}
-              onChange={() => setMode(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
-        ))}
+        <div role="radiogroup" aria-label="明暗模式">
+          {modes.map((option) => (
+            <Button
+              key={option.value}
+              role="radio"
+              aria-checked={mode === option.value}
+              variant={mode === option.value ? 'default' : 'outline'}
+              onClick={() => setMode(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
       </fieldset>
     </div>
   )

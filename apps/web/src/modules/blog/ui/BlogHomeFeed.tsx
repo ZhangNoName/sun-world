@@ -1,4 +1,4 @@
-import { LabeledInput, SelectField } from '@/shared/ui/form-controls'
+import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/ui/button'
@@ -99,7 +99,7 @@ export function BlogHomeFeed() {
         <Button onClick={apply}>搜索</Button>
       </section>
       <div className="view-config" role="group" aria-label="文章列表显示模式">
-        <button
+        <Button
           className="view-config__button"
           type="button"
           aria-pressed={mode === 'list'}
@@ -107,8 +107,8 @@ export function BlogHomeFeed() {
         >
           <SunIcon name="list" />
           列表
-        </button>
-        <button
+        </Button>
+        <Button
           className="view-config__button"
           type="button"
           aria-pressed={mode === 'waterfall'}
@@ -117,7 +117,7 @@ export function BlogHomeFeed() {
         >
           <SunIcon name="columns" />
           瀑布流
-        </button>
+        </Button>
       </div>
       {blog.loading && blog.items.length === 0 ? (
         <LoadingSkeleton lines={4} />
@@ -144,7 +144,7 @@ export function BlogHomeFeed() {
         </Button>
       </div>
       {showTop ? (
-        <button
+        <Button
           className="back-to-top"
           aria-label="回到顶部"
           onClick={() =>
@@ -154,7 +154,7 @@ export function BlogHomeFeed() {
           }
         >
           <SunIcon name="chevron-right" />
-        </button>
+        </Button>
       ) : null}
     </main>
   )

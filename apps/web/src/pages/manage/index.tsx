@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
-import { TabsView } from '@/shared/ui/compound-controls'
+import { TabsView } from '@sun-world/ui/compound-controls'
 import ManageBlogPage from './blog'
 import ManageAigcPage from './aigc'
 import './manage.css'
