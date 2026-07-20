@@ -8,7 +8,7 @@ vi.mock('../composables/useBlogBaseData')
 vi.mock('../composables/useBlogList')
 
 describe('BlogHomeFeed', () => {
-  it('gives the blog search input an accessible label', () => {
+  it('keeps toolbar controls named without visible field labels', () => {
     vi.mocked(useBlogBaseData).mockReturnValue({
       tagList: [],
       categoryList: [],
@@ -38,5 +38,8 @@ describe('BlogHomeFeed', () => {
     render(<BlogHomeFeed />)
 
     expect(screen.getByRole('searchbox', { name: '搜索博客' })).toBeVisible()
+    expect(screen.getByRole('combobox', { name: '排序方式' })).toBeVisible()
+    expect(screen.queryByText('搜索博客', { selector: 'label' })).toBeNull()
+    expect(screen.queryByText('排序方式', { selector: 'label' })).toBeNull()
   })
 })

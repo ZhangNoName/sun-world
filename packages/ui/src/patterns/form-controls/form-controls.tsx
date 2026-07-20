@@ -14,14 +14,19 @@ import { cn } from '../../lib/cn'
 export function LabeledInput({
   label,
   id,
+  hideVisibleLabel = false,
   ...props
-}: InputProps & { label: string }) {
+}: InputProps & { label: string; hideVisibleLabel?: boolean }) {
   const generatedId = useId()
   const inputId = id ?? generatedId
   return (
     <div className="sun-ui-field">
-      <Label htmlFor={inputId}>{label}</Label>
-      <Input id={inputId} {...props} />
+      {hideVisibleLabel ? null : <Label htmlFor={inputId}>{label}</Label>}
+      <Input
+        id={inputId}
+        aria-label={hideVisibleLabel ? label : undefined}
+        {...props}
+      />
     </div>
   )
 }
@@ -29,17 +34,22 @@ export function LabeledInput({
 export function SelectField({
   label,
   options,
+  hideVisibleLabel = false,
   ...props
 }: React.ComponentProps<typeof Select> & {
   label: string
   options: Array<{ value: string; label: string; disabled?: boolean }>
+  hideVisibleLabel?: boolean
 }) {
   const id = useId()
   return (
     <div className="sun-ui-field">
-      <Label htmlFor={id}>{label}</Label>
+      {hideVisibleLabel ? null : <Label htmlFor={id}>{label}</Label>}
       <Select items={options} {...props}>
-        <SelectTrigger id={id}>
+        <SelectTrigger
+          id={id}
+          aria-label={hideVisibleLabel ? label : undefined}
+        >
           <SelectValue placeholder={label} />
         </SelectTrigger>
         <SelectContent>

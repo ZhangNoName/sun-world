@@ -82,6 +82,7 @@ export function BlogHomeFeed() {
       <section className="query-panel blog-toolbar" aria-label="博客筛选">
         <LabeledInput
           label="搜索博客"
+          hideVisibleLabel
           value={keyword}
           onValueChange={setKeyword}
           onKeyDown={(event) => {
@@ -92,6 +93,7 @@ export function BlogHomeFeed() {
         />
         <SelectField
           label="排序方式"
+          hideVisibleLabel
           value={sort}
           onValueChange={setSort}
           options={SORT_OPTIONS}
