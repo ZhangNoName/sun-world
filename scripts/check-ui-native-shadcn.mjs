@@ -32,6 +32,10 @@ expect(
   'packages/ui must own the shadcn build-time styles'
 )
 expect(
+  Boolean(uiPackage.dependencies?.['@base-ui/react']),
+  'packages/ui must depend on @base-ui/react'
+)
+expect(
   Boolean(webPackage.devDependencies?.tailwindcss),
   'apps/web must install Tailwind CSS'
 )
@@ -51,6 +55,28 @@ expect(
   vite.includes('@tailwindcss/vite'),
   'web Vite config must register the Tailwind plugin'
 )
+
+for (const dependencies of [
+  uiPackage.dependencies,
+  uiPackage.devDependencies,
+  uiPackage.peerDependencies,
+  uiPackage.optionalDependencies,
+]) {
+  for (const dependency of Object.keys(dependencies ?? {})) {
+    if (dependency.startsWith('@radix-ui/')) {
+      failures.push(`packages/ui/package.json must not depend on ${dependency}`)
+    }
+  }
+}
+
+for (const file of fs.readdirSync(path.join(root, 'packages/ui/src'), {
+  recursive: true,
+})) {
+  if (!/\.(css|js|jsx|ts|tsx)$/.test(file)) continue
+  if (read(path.join('packages/ui/src', file)).includes('@radix-ui/')) {
+    failures.push(`Base UI source required: packages/ui/src/${file}`)
+  }
+}
 
 for (const file of fs.readdirSync(path.join(root, 'apps/web/src'), {
   recursive: true,

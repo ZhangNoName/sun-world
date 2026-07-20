@@ -26,7 +26,7 @@ sun-world/
 ### apps/web — 博客前端 / Blog Frontend
 
 - 框架 / Framework: React 19 + React Router + Vite + TypeScript
-- UI 库 / UI Library: `@sun-world/ui`（基于 shadcn/Radix 封装）
+- UI 库 / UI Library: `@sun-world/ui`（基于 shadcn/Base UI 封装）
 - 包名 / Package: `@sun-world/blog`
 - 生产域名 / Production: https://sunworld.site
 

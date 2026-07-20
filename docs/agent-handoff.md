@@ -6,6 +6,27 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-20: `feat/base-ui-home-polish` migrates every `@sun-world/ui`
+  primitive from Radix to Base UI 1.6 while preserving package subpaths,
+  canonical compound exports, project-used callbacks, and deprecated `Sun*`
+  adapters. The UI manifest and lockfile contain no Radix packages, and the
+  native-shadcn guard now requires Base UI and rejects Radix source/manifest
+  entries. The migration's shared Base UI internals produce a measured 177.8
+  KiB gzip entry, recorded under a focused 180 KiB ceiling; total JS/CSS and
+  every route budget remain under their existing limits. Homepage search/sort
+  fields hide only their visual labels while
+  retaining accessible Chinese names; metric grids, article actions, toolbar
+  alignment, responsive ownership, and both design families were polished and
+  browser-checked at 1440x900 and 390x844 with no horizontal overflow. The live
+  weather payload was unavailable during QA, so its structure and theme were
+  checked without content validation. Base UI's public Menu API has no popup
+  `initialFocus` parity, and opaque custom Select item wrappers need explicit
+  `Root.items` metadata for initial labels. Fresh verification passed the
+  migration guard, 44 UI tests, 55 Web tests plus the full Web pipeline, the
+  root build, formatting, and whitespace checks; the final Radix scan found no
+  source/manifest matches. The known API Extractor TypeScript-version warning
+  remains non-blocking. Not pushed or deployed.
+
 - 2026-07-20: `feat/web-ui-library-enforcement` fixes the incomplete shadcn
   style pipeline by loading the public UI stylesheet and scanning UI package
   source classes. All Web interactive controls now come from `@sun-world/ui`;

@@ -12,12 +12,14 @@ const homeStyles = readFileSync(
 
 const BLOG_OWNED_SELECTORS = [
   '.blog-feed',
+  '.blog-toolbar',
   '.summary-card',
   '.query-panel',
   '.blog-list',
   '.blog-meta',
   '.blog-tags',
   '.view-config',
+  '.view-config__button',
   '.z-blog-card',
   '.loader-btn',
   '.empty-state',

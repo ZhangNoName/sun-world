@@ -1,11 +1,12 @@
 # @sun-world/ui
 
-Project-owned shadcn/ui components for Sun World.
+Project-owned shadcn-style components for Sun World.
 
-The primitive source is generated from and maintained against the shadcn
-`new-york` baseline. Radix provides compound interaction, CVA provides variants,
-and Tailwind CSS v4 consumes the shared semantic theme variables. This is source
-ownership, not a black-box component dependency.
+The package keeps the shadcn `new-york` structure and styling conventions while
+using Base UI for primitive behavior. `@base-ui/react` is the only third-party
+primitive dependency; CVA provides variants, and Tailwind CSS v4 consumes the
+shared semantic theme variables. The migration guard rejects `@radix-ui/*`
+imports and package dependencies.
 
 ## Structure
 
@@ -41,7 +42,25 @@ import {
 
 `Sun*` exports are deprecated compatibility adapters. New application code must
 not import them. They remain for one migration window and do not own canonical
-component styles.
+component styles. Existing package subpaths, canonical compound exports, and
+the project-used controlled/uncontrolled callbacks remain stable across the
+implementation change.
+
+## Base UI boundary
+
+Simple primitives use Base UI's public render and state APIs. Select, Dialog,
+Dropdown Menu, Tabs, and Tooltip adapt Base UI's public compound primitives to
+the existing `@sun-world/ui` surface. Product patterns consume those canonical
+package components rather than importing Base UI directly.
+
+Two public-API differences are intentional:
+
+- Base UI 1.6 Menu exposes `finalFocus` but no public popup `initialFocus`
+  equivalent, so Dropdown Menu does not promise Radix-style initial-focus
+  override parity.
+- Direct `SelectItem` children and the package's legacy/form adapters resolve
+  initial selected labels. An opaque custom, memo, or lazy wrapper whose items
+  React cannot inspect must provide Base UI's public `Root.items` metadata.
 
 ## Themes
 
@@ -71,7 +90,7 @@ one-folder-per-component convention.
 
 ```bash
 corepack pnpm exec node scripts/check-ui-native-shadcn.mjs
-corepack pnpm -C packages/ui test
-corepack pnpm -C packages/ui build
+corepack pnpm test:ui
 corepack pnpm check:web
+corepack pnpm build
 ```

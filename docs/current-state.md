@@ -1,5 +1,40 @@
 # Current State
 
+## Base UI Migration And Homepage Polish (2026-07-20, local feature branch)
+
+- All `@sun-world/ui` primitives now use Base UI 1.6 public APIs while keeping
+  the existing package subpaths, canonical compound exports, and deprecated
+  `Sun*` compatibility adapters used by the application.
+- `@base-ui/react` is the UI package's only third-party primitive dependency.
+  `scripts/check-ui-native-shadcn.mjs` requires it and rejects any
+  `@radix-ui/*` package entry or source import; the synchronized lockfile no
+  longer contains Radix packages.
+- The Base UI compound internals shared across lazy routes raise the measured
+  production entry to 177.8 KiB gzip, so its focused ceiling is 180 KiB. Total
+  JavaScript remains 1161.0 / 1200 KiB and CSS 37.0 / 38 KiB; all route and
+  largest-asset budgets remain unchanged.
+- The homepage search and sort fields omit standalone visible labels only for
+  that toolbar, retaining Chinese accessible names through `aria-label`.
+  Other form-pattern consumers keep visible labels by default.
+- Profile and weather metrics use named, equal-width four-column grids. Article
+  cards reserve a trailing desktop action lane and stack that accessible link
+  at the lower-right on mobile. Blog/feed styling is owned by
+  `blog-experience.css`; a static test protects the toolbar and view-control
+  selectors from homepage stylesheet overrides.
+- Browser QA covered 1440x900 and 390x844 layouts, Sun World light and Apple
+  dark, anchored sort-popup positioning, keyboard focus treatment, and no
+  horizontal overflow. Live weather content was unavailable locally, so only
+  the weather structure, sizing, and theme behavior were verified.
+- Base UI 1.6 Menu has no public popup `initialFocus` equivalent, so Dropdown
+  Menu does not promise that Radix behavior. Direct Select items and package
+  adapters resolve initial labels; opaque custom/memo/lazy item wrappers need
+  Base UI's public `Root.items` metadata.
+- Fresh branch verification passed the native-shadcn migration guard, 44 UI
+  tests, 55 Web tests plus typecheck/build/SSG/budgets/chunk guards, and the
+  root editor/icons/UI/Web build. Formatting and whitespace checks passed, and
+  the final source/manifest Radix scan returned no matches. The root build kept
+  the known non-blocking API Extractor TypeScript-version warning.
+
 ## Web UI Library Enforcement (2026-07-20)
 
 - The Web entry now loads the complete Tailwind v4 + shadcn style entry and
@@ -12,20 +47,20 @@
 - The complete UI utility layer raises total CSS gzip to 36.2 KiB; the budget is
   intentionally 38 KiB. JS remains 1139.1 KiB against 1200 KiB.
 
-Last updated: 2026-07-20 (`feat/native-shadcn-ui`, native shadcn migration in verification)
+Last updated: 2026-07-20 (`feat/base-ui-home-polish`, Base UI migration in verification)
 
-## Native Shadcn UI (2026-07-20, local feature branch)
+## Native Shadcn UI Baseline (2026-07-20, superseded locally)
 
-- `packages/ui` now uses shadcn CLI `new-york` source, Tailwind CSS v4, Radix
-  primitives, canonical compound APIs, and executable monorepo `components.json`
-  configuration.
+- `packages/ui` retains the shadcn CLI `new-york` source organization, Tailwind
+  CSS v4, canonical compound APIs, and executable monorepo `components.json`
+  configuration. Base UI now owns primitive behavior on the active branch.
 - Application primitive imports use canonical names. Labeled form fields and
   compound page controls are explicit product compositions; `Sun*` remains only
   as deprecated package compatibility.
 - Sun World and Apple map onto the complete shadcn semantic variable surface;
   family selection remains independent from light/dark/system mode.
-- The entry gzip budget is 166 KiB for the native shadcn/Radix baseline. Total JS
-  remains capped at 1200 KiB and total CSS at 30 KiB.
+- The entry gzip budget remains 166 KiB from the native shadcn baseline. Total
+  JS remains capped at 1200 KiB and total CSS at 30 KiB.
 
 ## Blog Reading Experience (2026-07-19, local main)
 
@@ -60,8 +95,9 @@ Last updated: 2026-07-20 (`feat/native-shadcn-ui`, native shadcn migration in ve
 - `apps/web` now runs React 19, React Router, TypeScript, and Vite. The production
   entry is `apps/web/src/main.tsx`; no `.vue` source or Vue runtime dependency
   remains in the web, UI, or icon packages.
-- `@sun-world/ui` is the shared shadcn-style component layer built on Radix
-  primitives. `@sun-world/icons/react` is the React icon surface.
+- `@sun-world/ui` is the shared shadcn-style component layer; it was originally
+  built on Radix and is migrated to Base UI on the active local branch.
+  `@sun-world/icons/react` is the React icon surface.
 - All existing routes and workflows were migrated: home/blog/SSG, authoring,
   authentication, AI streaming chat, admin metrics/logs/blog management, canvas,
   video, game-tile export, tools, TCX generation, QQ callback, and 404 handling.
@@ -442,7 +478,7 @@ the left-side weather card; mobile placement is inside
   ECharts on demand and dispose on unmount.
 - Tool, account, callback, management, AI, editor, video, and blog detail pages
   are route chunks with measured gzip budgets for stable named entries.
-- `@sun-world/ui` contains the shared shadcn/Radix React primitives, including
+- `@sun-world/ui` contains the shared shadcn-style Base UI React primitives, including
   buttons, inputs, selection, dialogs, dates, pagination, chat shells, themes,
   tooltips, and toast handling. Package tests and subpath exports are required.
 - The production HTML must not preload route-only or optional heavy chunks.

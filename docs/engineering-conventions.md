@@ -40,7 +40,9 @@ These conventions capture the default coding habits for this repository. Prefer 
 
 - Prefer the existing React 19, React Router, and Vite patterns used in `apps/web`.
 - Keep components scan-friendly: use function components, explicit props, small hooks, and route-level lazy imports.
-- Build reusable controls in `@sun-world/ui` from shadcn/Radix primitives; application pages should consume documented package subpaths instead of third-party primitives directly.
+- Build reusable controls in `@sun-world/ui` from the project's shadcn-style
+  Base UI primitives; application pages should consume documented package
+  subpaths instead of third-party primitives directly.
 - Avoid introducing new dependencies unless they clearly reduce complexity.
 - Use structured APIs/parsers for structured data instead of fragile string manipulation.
 - Add comments only for non-obvious behavior, browser quirks, production gotchas, or complex logic.
