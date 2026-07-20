@@ -38,14 +38,34 @@ const buttonVariants = cva(
   }
 )
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean
-      loading?: boolean
-    }
->(function Button(
+type ButtonBaseProps = React.ComponentPropsWithoutRef<'button'> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+    loading?: boolean
+  }
+
+type ButtonDefaultProps = ButtonBaseProps &
+  React.RefAttributes<HTMLButtonElement> & {
+    asChild?: false
+  }
+
+type ButtonAsChildProps<T extends React.ElementType> = Omit<
+  ButtonBaseProps,
+  'asChild' | 'children'
+> &
+  React.RefAttributes<React.ComponentRef<T>> & {
+    asChild: true
+    children: React.ReactElement<React.ComponentPropsWithRef<T>, T>
+  }
+
+interface ButtonComponent {
+  (props: ButtonDefaultProps): React.ReactElement | null
+  <T extends React.ElementType>(
+    props: ButtonAsChildProps<T>
+  ): React.ReactElement | null
+}
+
+const Button = React.forwardRef<HTMLElement, ButtonBaseProps>(function Button(
   {
     className,
     variant = 'default',
@@ -79,6 +99,6 @@ const Button = React.forwardRef<
       children: !asChild ? children : undefined,
     },
   })
-})
+}) as ButtonComponent
 
 export { Button, buttonVariants }

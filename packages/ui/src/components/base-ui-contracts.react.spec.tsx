@@ -37,25 +37,25 @@ import { Separator } from '@sun-world/ui/separator'
 
 describe('Base UI migration contracts', () => {
   it('renders Button and Badge child links through their compatibility prop', () => {
+    const buttonRef = createRef<HTMLAnchorElement>()
+    const badgeRef = createRef<HTMLAnchorElement>()
     render(
       <>
-        <Button asChild>
+        <Button asChild ref={buttonRef}>
           <a href="/publish">Publish</a>
         </Button>
-        <Badge asChild>
+        <Badge asChild ref={badgeRef}>
           <a href="/preview">Preview</a>
         </Badge>
       </>
     )
 
-    expect(screen.getByRole('link', { name: 'Publish' })).toHaveAttribute(
-      'data-slot',
-      'button'
-    )
-    expect(screen.getByRole('link', { name: 'Preview' })).toHaveAttribute(
-      'data-slot',
-      'badge'
-    )
+    const buttonLink = screen.getByRole('link', { name: 'Publish' })
+    const badgeLink = screen.getByRole('link', { name: 'Preview' })
+    expect(buttonLink).toHaveAttribute('data-slot', 'button')
+    expect(badgeLink).toHaveAttribute('data-slot', 'badge')
+    expect(buttonRef.current).toBe(buttonLink)
+    expect(badgeRef.current).toBe(badgeLink)
   })
 
   it('preserves the controlled Select value contract', async () => {
@@ -109,8 +109,16 @@ describe('Base UI migration contracts', () => {
     expect(input).toHaveFocus()
   })
 
-  it('exposes Separator orientation to assistive technology', () => {
-    render(<Separator orientation="vertical" />)
+  it('keeps decorative Separator hidden from assistive technology by default', () => {
+    const { container } = render(<Separator orientation="vertical" />)
+
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument()
+    expect(container.firstChild).toHaveAttribute('role', 'none')
+    expect(container.firstChild).not.toHaveAttribute('aria-orientation')
+  })
+
+  it('exposes non-decorative Separator orientation to assistive technology', () => {
+    render(<Separator decorative={false} orientation="vertical" />)
 
     const separator = screen.getByRole('separator')
     expect(separator).toHaveAttribute('aria-orientation', 'vertical')
