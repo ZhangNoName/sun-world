@@ -6,13 +6,15 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
-- 2026-07-20: `feat/base-ui-home-polish` migrates every `@sun-world/ui`
-  primitive from Radix to Base UI 1.6 while preserving package subpaths,
-  canonical compound exports, project-used callbacks, and deprecated `Sun*`
-  adapters. The UI manifest and lockfile contain no Radix packages, and the
-  native-shadcn guard now requires Base UI and rejects Radix source/manifest
-  entries. The migration's shared Base UI internals produce a measured 177.8
-  KiB gzip entry, recorded under a focused 180 KiB ceiling; total JS/CSS and
+- 2026-07-20: `feat/base-ui-home-polish` makes formerly Radix-backed primitives
+  use Base UI 1.6 or appropriate semantic native elements while preserving
+  package subpaths, canonical compound exports, project-used callbacks, and
+  deprecated `Sun*` adapters. Both component manifests use the `@base-ui`
+  registry, the lockfile contains no Radix packages, and the native-shadcn
+  guard now requires Base UI and rejects Radix source/manifest entries across
+  all supported JavaScript module extensions. The migration's shared Base UI
+  internals produce a measured 177.8 KiB gzip entry, recorded under a focused
+  180 KiB ceiling; total JS/CSS and
   every route budget remain under their existing limits. Homepage search/sort
   fields hide only their visual labels while
   retaining accessible Chinese names; metric grids, article actions, toolbar
@@ -21,11 +23,15 @@ older completed checkpoints to docs/handoff/archive/.
   weather payload was unavailable during QA, so its structure and theme were
   checked without content validation. Base UI's public Menu API has no popup
   `initialFocus` parity, and opaque custom Select item wrappers need explicit
-  `Root.items` metadata for initial labels. Fresh verification passed the
-  migration guard, 44 UI tests, 55 Web tests plus the full Web pipeline, the
-  root build, formatting, and whitespace checks; the final Radix scan found no
-  source/manifest matches. The known API Extractor TypeScript-version warning
-  remains non-blocking. Not pushed or deployed.
+  `Root.items` metadata for initial labels. `SelectContent forceMount` is an
+  accepted inline/non-portalled compatibility path with no application
+  consumer. Mounted compound compatibility content retains per-content
+  document capture listeners because open-only attachment is unsafe without
+  uniform Base UI open state and cancellation-parity coverage. Fresh
+  verification passed the migration guard, 44 UI tests, 56 Web tests plus the
+  full Web pipeline, the root build, formatting, and whitespace checks; the
+  final Radix scan found no source/manifest matches. The known API Extractor
+  TypeScript-version warning remains non-blocking. Not pushed or deployed.
 
 - 2026-07-20: `feat/web-ui-library-enforcement` fixes the incomplete shadcn
   style pipeline by loading the public UI stylesheet and scanning UI package

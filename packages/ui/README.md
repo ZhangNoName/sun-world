@@ -53,7 +53,7 @@ Dropdown Menu, Tabs, and Tooltip adapt Base UI's public compound primitives to
 the existing `@sun-world/ui` surface. Product patterns consume those canonical
 package components rather than importing Base UI directly.
 
-Two public-API differences are intentional:
+Compatibility differences and caveats:
 
 - Base UI 1.6 Menu exposes `finalFocus` but no public popup `initialFocus`
   equivalent, so Dropdown Menu does not promise Radix-style initial-focus
@@ -61,6 +61,15 @@ Two public-API differences are intentional:
 - Direct `SelectItem` children and the package's legacy/form adapters resolve
   initial selected labels. An opaque custom, memo, or lazy wrapper whose items
   React cannot inspect must provide Base UI's public `Root.items` metadata.
+- `SelectContent forceMount` uses Base UI's public inline
+  `Positioner`/`Popup` composition because Select Portal has no keep-mounted
+  option. It preserves the closed hidden/inert lifecycle but is intentionally
+  non-portalled. There is no application consumer of this compatibility path.
+- Compound compatibility content installs one `pointerdown` and one `focusin`
+  capture listener on its owner document while mounted. Restricting listeners
+  to open layers would require reliable open state across Dialog, Menu,
+  Submenu, Select, and Tooltip; the bridge stays behavior-first until that can
+  be centralized without weakening outside-interaction cancellation.
 
 ## Themes
 
@@ -78,7 +87,7 @@ increased-contrast fallbacks.
 Run the CLI from the repository root and target the UI workspace:
 
 ```bash
-corepack pnpm dlx shadcn@latest add <component> -c packages/ui
+corepack pnpm dlx shadcn@latest add @base-ui/<component> -c packages/ui
 ```
 
 The CLI writes a flat file under `src/components`; move it into

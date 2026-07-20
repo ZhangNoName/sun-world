@@ -2,13 +2,16 @@
 
 ## Base UI Migration And Homepage Polish (2026-07-20, local feature branch)
 
-- All `@sun-world/ui` primitives now use Base UI 1.6 public APIs while keeping
-  the existing package subpaths, canonical compound exports, and deprecated
-  `Sun*` compatibility adapters used by the application.
+- Formerly Radix-backed `@sun-world/ui` primitives use Base UI 1.6 or
+  appropriate semantic native elements while keeping the existing package
+  subpaths, canonical compound exports, and deprecated `Sun*` compatibility
+  adapters used by the application.
 - `@base-ui/react` is the UI package's only third-party primitive dependency.
-  `scripts/check-ui-native-shadcn.mjs` requires it and rejects any
-  `@radix-ui/*` package entry or source import; the synchronized lockfile no
-  longer contains Radix packages.
+  Both component manifests pin the `@base-ui` registry.
+  `scripts/check-ui-native-shadcn.mjs` requires those entries and rejects any
+  `@radix-ui/*` package entry or source import across the supported JavaScript
+  module extensions; the synchronized lockfile no longer contains Radix
+  packages.
 - The Base UI compound internals shared across lazy routes raise the measured
   production entry to 177.8 KiB gzip, so its focused ceiling is 180 KiB. Total
   JavaScript remains 1161.0 / 1200 KiB and CSS 37.0 / 38 KiB; all route and
@@ -28,9 +31,17 @@
 - Base UI 1.6 Menu has no public popup `initialFocus` equivalent, so Dropdown
   Menu does not promise that Radix behavior. Direct Select items and package
   adapters resolve initial labels; opaque custom/memo/lazy item wrappers need
-  Base UI's public `Root.items` metadata.
+  Base UI's public `Root.items` metadata. `SelectContent forceMount` is an
+  accepted inline, non-portalled compatibility path because Base UI Select
+  Portal has no keep-mounted option; no application code consumes it.
+- Compound compatibility content adds one `pointerdown` and one `focusin`
+  capture listener per mounted content layer. Open-only attachment was not
+  applied because Base UI open state is not uniformly exposed to every
+  compatibility content/submenu, and changing the timing could weaken
+  outside-interaction cancellation; centralize this only with behavior-parity
+  coverage.
 - Fresh branch verification passed the native-shadcn migration guard, 44 UI
-  tests, 55 Web tests plus typecheck/build/SSG/budgets/chunk guards, and the
+  tests, 56 Web tests plus typecheck/build/SSG/budgets/chunk guards, and the
   root editor/icons/UI/Web build. Formatting and whitespace checks passed, and
   the final source/manifest Radix scan returned no matches. The root build kept
   the known non-blocking API Extractor TypeScript-version warning.

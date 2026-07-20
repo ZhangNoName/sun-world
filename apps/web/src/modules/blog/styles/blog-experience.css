@@ -69,7 +69,7 @@
   line-height: 1.25;
 }
 
-.blog-toolbar .sun-select {
+.blog-toolbar [data-slot='select-trigger'] {
   width: 100%;
   min-height: 42px;
   display: flex;
@@ -474,7 +474,7 @@
     grid-template-columns: 1fr;
   }
 
-  .blog-toolbar .sun-button {
+  .blog-toolbar > [data-slot='button'] {
     width: 100%;
   }
 

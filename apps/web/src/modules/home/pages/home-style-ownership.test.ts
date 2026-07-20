@@ -46,4 +46,15 @@ describe('homepage style ownership', () => {
     expect(homeStyles).not.toMatch(/\.view-config\s+button/)
     expect(blogStyles).toContain('.view-config__button')
   })
+
+  it('keeps canonical toolbar controls full width without legacy selectors', () => {
+    expect(blogStyles).toMatch(
+      /\.blog-toolbar \[data-slot='select-trigger'\][^{]*\{[^}]*width:\s*100%/
+    )
+    expect(blogStyles).toMatch(
+      /@media \(max-width: 695px\)[\s\S]*?\.blog-toolbar > \[data-slot='button'\][^{]*\{[^}]*width:\s*100%/
+    )
+    expect(blogStyles).not.toContain('.blog-toolbar .sun-select')
+    expect(blogStyles).not.toContain('.blog-toolbar .sun-button')
+  })
 })

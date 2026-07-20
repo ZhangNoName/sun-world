@@ -12,8 +12,10 @@ const expect = (condition, message) => {
 const uiPackage = JSON.parse(read('packages/ui/package.json'))
 const webPackage = JSON.parse(read('apps/web/package.json'))
 const config = JSON.parse(read('packages/ui/components.json'))
+const webConfig = JSON.parse(read('apps/web/components.json'))
 const globals = read('packages/ui/src/styles/globals.css')
 const vite = read('apps/web/vite.config.ts')
+const baseUiRegistry = 'https://ui.shadcn.com/r/styles/base-nova/{name}.json'
 
 expect(
   config.style === 'new-york',
@@ -26,6 +28,14 @@ expect(
 expect(
   config.aliases?.ui === '@sun-world/ui/components',
   'components.json must target the component directory'
+)
+expect(
+  config.registries?.['@base-ui'] === baseUiRegistry,
+  'packages/ui/components.json must register the @base-ui namespace'
+)
+expect(
+  webConfig.registries?.['@base-ui'] === baseUiRegistry,
+  'apps/web/components.json must register the @base-ui namespace'
 )
 expect(
   Boolean(uiPackage.dependencies?.shadcn),
@@ -72,7 +82,7 @@ for (const dependencies of [
 for (const file of fs.readdirSync(path.join(root, 'packages/ui/src'), {
   recursive: true,
 })) {
-  if (!/\.(css|js|jsx|ts|tsx)$/.test(file)) continue
+  if (!/\.(cjs|css|cts|js|jsx|mjs|mts|ts|tsx)$/.test(file)) continue
   if (read(path.join('packages/ui/src', file)).includes('@radix-ui/')) {
     failures.push(`Base UI source required: packages/ui/src/${file}`)
   }
