@@ -44,8 +44,6 @@
 
 .query-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.34fr) auto;
-  align-items: center;
   gap: 0.75rem;
 }
 
@@ -57,53 +55,42 @@
   box-shadow: var(--shadow-sm);
 }
 
-.blog-toolbar .sun-ui-field {
-  min-width: 0;
-}
-
-.blog-toolbar [data-slot='input'],
-.blog-toolbar [data-slot='select-trigger'],
-.blog-toolbar > [data-slot='button'] {
-  min-height: 2.25rem;
-  font-size: 0.875rem;
-  line-height: 1.25;
-}
-
-.view-config {
+.blog-toolbar__actions {
   display: flex;
-  justify-content: flex-end;
-  width: fit-content;
-  margin-left: auto;
-  padding: 0.25rem;
-  border: 1px solid var(--border-default);
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
-  font-size: 0.875rem;
-}
-
-.view-config__button {
-  min-height: 34px;
-  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0 0.7rem;
-  border: 0;
-  border-radius: 0.55rem;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  cursor: pointer;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
-.view-config__button[aria-pressed='true'] {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+.blog-toolbar__search {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0.75rem);
+  transition:
+    width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.view-config__button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
+.blog-toolbar__search--open {
+  width: min(20rem, 45vw);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.blog-toolbar__search .sun-ui-field {
+  width: min(20rem, 45vw);
+}
+
+.blog-toolbar__search [data-slot='input']:focus-visible {
+  box-shadow: none;
+}
+
+.blog-toolbar__action {
+  flex: 0 0 auto;
 }
 
 .blog-list {
@@ -454,12 +441,17 @@
 }
 
 @media (max-width: 695px) {
-  .query-panel {
-    grid-template-columns: 1fr;
+  .blog-toolbar__actions {
+    justify-content: stretch;
   }
 
-  .blog-toolbar > [data-slot='button'] {
-    width: 100%;
+  .blog-toolbar__action {
+    flex: 1 1 0;
+  }
+
+  .blog-toolbar__search--open,
+  .blog-toolbar__search .sun-ui-field {
+    width: min(12rem, calc(100vw - 10rem));
   }
 
   .summary-card {

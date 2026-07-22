@@ -25,6 +25,9 @@ describe('native shadcn primitives', () => {
     expect(buttonVariants({ variant: 'ghost', size: 'sm' })).toContain(
       'hover:bg-accent'
     )
+    expect(buttonVariants({ variant: 'ghost', size: 'sm' })).toContain(
+      'cursor-pointer'
+    )
     expect(Button).not.toBe(SunButton)
   })
 

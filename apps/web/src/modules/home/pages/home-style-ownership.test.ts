@@ -18,8 +18,7 @@ const BLOG_OWNED_SELECTORS = [
   '.blog-list',
   '.blog-meta',
   '.blog-tags',
-  '.view-config',
-  '.view-config__button',
+  '.blog-toolbar__action',
   '.z-blog-card',
   '.loader-btn',
   '.empty-state',
@@ -42,19 +41,28 @@ describe('homepage style ownership', () => {
     }
   })
 
-  it('does not let a descendant button selector override view controls', () => {
-    expect(homeStyles).not.toMatch(/\.view-config\s+button/)
-    expect(blogStyles).toContain('.view-config__button')
+  it('does not let a descendant button selector override toolbar controls', () => {
+    expect(homeStyles).not.toMatch(/\.blog-toolbar\s+button/)
+    expect(blogStyles).toContain('.blog-toolbar__action')
   })
 
-  it('keeps canonical toolbar controls full width without legacy selectors', () => {
+  it('keeps compact toolbar controls responsive without legacy selectors', () => {
     expect(blogStyles).toMatch(
-      /\.blog-toolbar \[data-slot='select-trigger'\][^{]*\{[^}]*width:\s*100%/
+      /\.blog-toolbar__actions\s*\{[^}]*display:\s*flex/
     )
     expect(blogStyles).toMatch(
-      /@media \(max-width: 695px\)[\s\S]*?\.blog-toolbar > \[data-slot='button'\][^{]*\{[^}]*width:\s*100%/
+      /@media \(max-width: 695px\)[\s\S]*?\.blog-toolbar__action\s*\{[^}]*flex:\s*1\s+1\s+0/
     )
     expect(blogStyles).not.toContain('.blog-toolbar .sun-select')
-    expect(blogStyles).not.toContain('.blog-toolbar .sun-button')
+    expect(blogStyles).not.toContain("[data-slot='select-trigger']")
+  })
+
+  it('uses a contained focus state for the animated search field', () => {
+    expect(blogStyles).toContain(
+      ".blog-toolbar__search [data-slot='input']:focus-visible"
+    )
+    expect(blogStyles).toMatch(
+      /\.blog-toolbar__search \[data-slot='input'\]:focus-visible\s*\{[^}]*box-shadow:\s*none/
+    )
   })
 })

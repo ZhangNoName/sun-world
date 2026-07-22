@@ -33,7 +33,7 @@ describe('BlogHomeFeed', () => {
     })
   })
 
-  it('keeps toolbar controls named without visible field labels', () => {
+  it('keeps the compact toolbar labelled without visible field labels', () => {
     vi.mocked(useBlogList).mockReturnValue({
       items: [],
       loading: false,
@@ -49,10 +49,58 @@ describe('BlogHomeFeed', () => {
 
     render(<BlogHomeFeed />)
 
-    expect(screen.getByRole('searchbox', { name: '搜索博客' })).toBeVisible()
-    expect(screen.getByRole('combobox', { name: '排序方式' })).toBeVisible()
-    expect(screen.queryByText('搜索博客', { selector: 'label' })).toBeNull()
-    expect(screen.queryByText('排序方式', { selector: 'label' })).toBeNull()
+    expect(screen.getByRole('button', { name: '打开搜索' })).toBeVisible()
+    expect(
+      screen.getByRole('button', { name: '切换为浏览量最高排序' })
+    ).toBeVisible()
+    expect(
+      screen.getByRole('button', { name: '切换为瀑布流布局' })
+    ).toBeVisible()
+    expect(screen.queryByRole('searchbox', { name: '搜索博客' })).toBeNull()
+  })
+
+  it('opens search, cycles sorting and toggles the article layout', async () => {
+    const updateQuery = vi.fn().mockResolvedValue(undefined)
+    vi.mocked(useBlogList).mockReturnValue({
+      items: [],
+      loading: false,
+      total: 0,
+      hasMore: false,
+      keyword: '',
+      sortBy: 'updated_at',
+      sortOrder: 'desc',
+      loadFirstPage: vi.fn().mockResolvedValue(undefined),
+      loadMore: vi.fn().mockResolvedValue(undefined),
+      updateQuery,
+    })
+    render(<BlogHomeFeed />)
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: '打开搜索' }))
+    const search = screen.getByRole('searchbox', { name: '搜索博客' })
+    expect(search).toHaveFocus()
+    expect(search.closest('.blog-toolbar__search')).toHaveClass(
+      'blog-toolbar__search--open'
+    )
+
+    await user.type(search, 'React{Enter}')
+    expect(updateQuery).toHaveBeenLastCalledWith({
+      keyword: 'React',
+      sortBy: 'updated_at',
+      sortOrder: 'desc',
+    })
+
+    await user.click(
+      screen.getByRole('button', { name: '切换为浏览量最高排序' })
+    )
+    expect(updateQuery).toHaveBeenLastCalledWith({
+      keyword: 'React',
+      sortBy: 'view_num',
+      sortOrder: 'desc',
+    })
+
+    await user.click(screen.getByRole('button', { name: '切换为瀑布流布局' }))
+    expect(screen.getByRole('button', { name: '切换为列表布局' })).toBeVisible()
   })
 
   it('keeps the article action accessible in the card trailing-action hook', () => {

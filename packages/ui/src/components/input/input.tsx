@@ -8,17 +8,13 @@ type InputProps = Omit<React.ComponentProps<'input'>, 'onChange'> & {
   onValueCommit?: (value: string) => void
 }
 
-function Input({
-  className,
-  type,
-  onChange,
-  onBlur,
-  onValueChange,
-  onValueCommit,
-  ...props
-}: InputProps) {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, type, onChange, onBlur, onValueChange, onValueCommit, ...props },
+  ref
+) {
   return (
     <input
+      ref={ref}
       type={type}
       data-slot="input"
       className={cn(
@@ -38,6 +34,6 @@ function Input({
       {...props}
     />
   )
-}
+})
 
 export { Input, type InputProps }

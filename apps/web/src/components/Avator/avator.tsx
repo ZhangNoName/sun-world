@@ -6,11 +6,7 @@ export function Avator() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => navigate(user ? '/me' : '/login')}
-    >
+    <Button size="sm" onClick={() => navigate(user ? '/me' : '/login')}>
       {user ? String((user as { name?: string }).name ?? '我的') : '登录'}
     </Button>
   )

@@ -1,4 +1,4 @@
-import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
+import { LabeledInput } from '@sun-world/ui/form-controls'
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/ui/button'
@@ -15,8 +15,8 @@ import '../styles/blog-experience.css'
 
 const SORT_OPTIONS = [
   { value: 'updated_at:desc', label: '最新优先' },
-  { value: 'updated_at:asc', label: '最早优先' },
   { value: 'view_num:desc', label: '浏览量最高' },
+  { value: 'updated_at:asc', label: '最早优先' },
 ]
 
 export function BlogHomeFeed() {
@@ -24,10 +24,12 @@ export function BlogHomeFeed() {
   const blog = useBlogList(tagList, categoryList, 12)
   const [keyword, setKeyword] = useState('')
   const [sort, setSort] = useState('updated_at:desc')
+  const [searchOpen, setSearchOpen] = useState(false)
   const [showTop, setShowTop] = useState(false)
   const [mode, setMode] = useState<'list' | 'waterfall'>('list')
   const width = useViewportWidth()
   const loaderRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     void loadBlogBaseData().catch(() => toast.error('获取博客基础数据失败'))
@@ -47,6 +49,10 @@ export function BlogHomeFeed() {
   useEffect(() => {
     if (width <= 695) setMode('list')
   }, [width])
+
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus()
+  }, [searchOpen])
 
   useEffect(() => {
     if (!loaderRef.current || !blog.hasMore) return
@@ -71,6 +77,28 @@ export function BlogHomeFeed() {
       .catch(() => toast.error('搜索失败'))
   }
 
+  const advanceSort = () => {
+    const currentIndex = SORT_OPTIONS.findIndex(
+      (option) => option.value === sort
+    )
+    const next = SORT_OPTIONS[(currentIndex + 1) % SORT_OPTIONS.length]
+    const [sortBy, sortOrder] = next.value.split(':') as [
+      BlogSortBy,
+      BlogSortOrder,
+    ]
+    setSort(next.value)
+    void blog
+      .updateQuery({ keyword, sortBy, sortOrder })
+      .catch(() => toast.error('排序失败'))
+  }
+
+  const nextSort =
+    SORT_OPTIONS[
+      (SORT_OPTIONS.findIndex((option) => option.value === sort) + 1) %
+        SORT_OPTIONS.length
+    ]
+  const nextMode = mode === 'list' ? 'waterfall' : 'list'
+
   const tags = Array.from(new Set(tagList.map((tag) => tag.name))).slice(0, 12)
   return (
     <main className="blog-feed">
@@ -80,47 +108,69 @@ export function BlogHomeFeed() {
         ))}
       </section>
       <section className="query-panel blog-toolbar" aria-label="博客筛选">
-        <LabeledInput
-          label="搜索博客"
-          hideVisibleLabel
-          value={keyword}
-          onValueChange={setKeyword}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') apply()
-          }}
-          type="search"
-          placeholder="搜索标题或摘要"
-        />
-        <SelectField
-          label="排序方式"
-          hideVisibleLabel
-          value={sort}
-          onValueChange={setSort}
-          options={SORT_OPTIONS}
-        />
-        <Button onClick={apply}>搜索</Button>
+        <div
+          className="blog-toolbar__actions"
+          role="group"
+          aria-label="文章工具"
+        >
+          <div
+            className={`blog-toolbar__search${
+              searchOpen ? ' blog-toolbar__search--open' : ''
+            }`}
+          >
+            <LabeledInput
+              ref={searchInputRef}
+              label="搜索博客"
+              hideVisibleLabel
+              value={keyword}
+              tabIndex={searchOpen ? undefined : -1}
+              aria-hidden={!searchOpen}
+              onValueChange={setKeyword}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') apply()
+                if (event.key === 'Escape') setSearchOpen(false)
+              }}
+              type="search"
+              placeholder="搜索标题或摘要"
+            />
+          </div>
+          <Button
+            className="blog-toolbar__action"
+            type="button"
+            size="icon"
+            variant="outline"
+            aria-label={searchOpen ? '关闭搜索' : '打开搜索'}
+            title={searchOpen ? '关闭搜索' : '打开搜索'}
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen((open) => !open)}
+          >
+            <SunIcon name="search" />
+          </Button>
+          <Button
+            className="blog-toolbar__action"
+            type="button"
+            size="icon"
+            variant="outline"
+            aria-label={`切换为${nextSort.label}排序`}
+            title={`切换为${nextSort.label}排序`}
+            onClick={advanceSort}
+          >
+            <SunIcon name="arrow-up-down" />
+          </Button>
+          <Button
+            className="blog-toolbar__action"
+            type="button"
+            size="icon"
+            variant="outline"
+            aria-label={`切换为${nextMode === 'list' ? '列表' : '瀑布流'}布局`}
+            title={`切换为${nextMode === 'list' ? '列表' : '瀑布流'}布局`}
+            disabled={width <= 695}
+            onClick={() => setMode(nextMode)}
+          >
+            <SunIcon name={nextMode === 'list' ? 'list' : 'columns'} />
+          </Button>
+        </div>
       </section>
-      <div className="view-config" role="group" aria-label="文章列表显示模式">
-        <Button
-          className="view-config__button"
-          type="button"
-          aria-pressed={mode === 'list'}
-          onClick={() => setMode('list')}
-        >
-          <SunIcon name="list" />
-          列表
-        </Button>
-        <Button
-          className="view-config__button"
-          type="button"
-          aria-pressed={mode === 'waterfall'}
-          disabled={width <= 695}
-          onClick={() => setMode('waterfall')}
-        >
-          <SunIcon name="columns" />
-          瀑布流
-        </Button>
-      </div>
       {blog.loading && blog.items.length === 0 ? (
         <LoadingSkeleton lines={4} />
       ) : null}

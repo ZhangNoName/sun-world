@@ -9,6 +9,16 @@ export const uiIcons = {
       ['path', { d: 'm21 21-4.3-4.3' }],
     ],
   },
+  'arrow-up-down': {
+    name: 'arrow-up-down',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'm3 8 4-4 4 4' }],
+      ['path', { d: 'M7 4v16' }],
+      ['path', { d: 'm21 16-4 4-4-4' }],
+      ['path', { d: 'M17 20V4' }],
+    ],
+  },
   plus: {
     name: 'plus',
     viewBox: '0 0 24 24',

@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { forwardRef, useId } from 'react'
 import { Checkbox } from '../../components/checkbox'
 import { Input, type InputProps } from '../../components/input'
 import { Label } from '../../components/label'
@@ -11,25 +11,27 @@ import {
 } from '../../components/select'
 import { cn } from '../../lib/cn'
 
-export function LabeledInput({
-  label,
-  id,
-  hideVisibleLabel = false,
-  ...props
-}: InputProps & { label: string; hideVisibleLabel?: boolean }) {
+export const LabeledInput = forwardRef<
+  HTMLInputElement,
+  InputProps & { label: string; hideVisibleLabel?: boolean }
+>(function LabeledInput(
+  { label, id, hideVisibleLabel = false, ...props },
+  ref
+) {
   const generatedId = useId()
   const inputId = id ?? generatedId
   return (
     <div className="sun-ui-field">
       {hideVisibleLabel ? null : <Label htmlFor={inputId}>{label}</Label>}
       <Input
+        ref={ref}
         id={inputId}
         aria-label={hideVisibleLabel ? label : undefined}
         {...props}
       />
     </div>
   )
-}
+})
 
 export function SelectField({
   label,

@@ -112,6 +112,7 @@
   color: var(--text-secondary);
   font-size: 0.875rem;
   line-height: 1.5;
+  text-align: center;
 }
 .self-card > p:first-of-type {
   color: var(--text-default);
@@ -123,7 +124,7 @@
   font-size: 0.8125rem;
 }
 .self-card > [data-slot='button'] {
-  justify-self: start;
+  justify-self: center;
 }
 .profile-metrics,
 .weather-metrics {

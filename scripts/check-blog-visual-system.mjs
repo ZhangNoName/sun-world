@@ -28,7 +28,7 @@ const appLayout = readFileSync(
 
 for (const selector of [
   '.blog-toolbar',
-  '.view-config__button',
+  '.blog-toolbar__action',
   '.z-blog-card__action',
   '.blog-page__article',
   '.blog-page__catalog',
@@ -44,13 +44,13 @@ for (const selector of [
   }
 }
 
-if (
-  !homeFeed.includes('@sun-world/ui/form-controls') ||
-  !homeFeed.includes('SelectField')
-) {
+if (!homeFeed.includes('@sun-world/ui/form-controls')) {
   throw new Error(
-    'Blog filtering must compose the canonical shared Select control'
+    'Blog filtering must compose the canonical shared input control'
   )
+}
+if (!homeFeed.includes('arrow-up-down')) {
+  throw new Error('Blog filtering must expose the compact sort control')
 }
 if (
   !homeFeed.includes('./../styles/blog-experience.css') &&

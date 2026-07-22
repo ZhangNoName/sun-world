@@ -6,6 +6,22 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-22: homepage blog toolbar is now a compact three-action surface:
+  the fixed search icon expands a left-side input with a 240ms eased transition
+  and auto-focus, sort cycles newest → most viewed → oldest and applies
+  immediately, and layout toggles list / waterfall on desktop. A reusable
+  `arrow-up-down` UI icon and shared input ref forwarding were added. Focused
+  interaction/style tests, icon boundary/tests/build, UI tests, and `check:web`
+  passed. No commit, deployment, or changes to user-owned page files were made.
+
+- 2026-07-22: button cursor feedback adds `cursor-pointer` through the shared
+  `Button` primitive and a focused variant-contract assertion. The focused test
+  and complete UI suite passed (47 tests); changed task files pass Prettier and
+  `git diff --check`. The project-wide changed-file formatting script remains
+  red only for the user's existing `apps/web/src/components/Avator/avator.tsx`
+  and `apps/web/src/modules/home/pages/home-react.css` edits. No deployment or
+  commit was performed.
+
 - 2026-07-20: `feat/base-ui-home-polish` makes formerly Radix-backed primitives
   use Base UI 1.6 or appropriate semantic native elements while preserving
   package subpaths, canonical compound exports, project-used callbacks, and

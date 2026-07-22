@@ -37,14 +37,6 @@
   }
 }
 
-.sun-button:focus-visible,
-.sun-input:focus-visible,
-.sun-input__clear:focus-visible {
-  outline: 2px solid var(--color-brand, #2563eb);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-focus-ring, rgb(37 99 235 / 18%));
-}
-
 @supports (backdrop-filter: blur(1px)) {
   [data-design='apple'] .sun-dialog__content,
   [data-design='apple'] .sun-dropdown-menu,
