@@ -12,7 +12,7 @@ export function BlogCard(props: BlogCardProps) {
       <div className="blog-meta z-blog-card__meta">
         <span>
           <SunIcon name="calendar" size={16} />
-          {props.publishTime}
+          {props.lastUpdateTime}
         </span>
         <span>
           <SunIcon name="message-circle" size={16} />
@@ -30,7 +30,7 @@ export function BlogCard(props: BlogCardProps) {
           <Badge key={tag}>{tag}</Badge>
         ))}
       </div>
-      <Link
+      {/* <Link
         className="z-blog-card__action"
         to={`/blog/${encodeURIComponent(props.id)}`}
         aria-label={`${t('readMore')}: ${props.title}`}
@@ -42,7 +42,7 @@ export function BlogCard(props: BlogCardProps) {
       >
         <span>{t('readMore')}</span>
         <SunIcon name="chevron-right" size={17} />
-      </Link>
+      </Link> */}
     </article>
   )
 }

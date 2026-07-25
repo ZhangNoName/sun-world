@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ClickToComponent } from 'click-to-react-component'
 
 import '@sun-world/ui/styles.css'
 import './style.css'
@@ -45,6 +46,7 @@ createRoot(document.getElementById('app')!).render(
     <AppProviders>
       <App />
     </AppProviders>
+    {import.meta.env.DEV && <ClickToComponent />}
   </StrictMode>
 )
 

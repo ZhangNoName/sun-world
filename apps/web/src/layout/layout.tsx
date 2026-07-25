@@ -38,7 +38,7 @@ export function AppLayout() {
           <div className={`content ${meta.className ?? ''}`}>
             <Outlet />
           </div>
-          {meta.hideFooter ? null : <Footer />}
+          {/* {meta.hideFooter ? null : <Footer />} */}
         </div>
       </div>
     )
