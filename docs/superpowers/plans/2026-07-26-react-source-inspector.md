@@ -28,7 +28,7 @@
 
 **Interfaces:**
 - Consumes: Vite development mode and `react-dev-inspector`'s `Inspector` and `inspectorServer` exports.
-- Produces: a development-only `Inspector` configured with `keys={['alt']}` and Vite editor-launch middleware.
+- Produces: a development-only controlled `Inspector` with its toggle shortcut disabled and Vite editor-launch middleware.
 
 - [ ] **Step 1: Write the failing contract test**
 
@@ -47,9 +47,9 @@ describe('React source inspector', () => {
     const vite = read('vite.config.ts')
     const pkg = JSON.parse(read('package.json'))
 
-    expect(pkg.dependencies).toHaveProperty('react-dev-inspector')
+    expect(pkg.devDependencies).toHaveProperty('react-dev-inspector')
     expect(pkg.dependencies).not.toHaveProperty('click-to-react-component')
-    expect(main).toContain("keys={['alt']}")
+    expect(main).toContain('<ReactSourceInspector />')
     expect(main).toContain('import.meta.env.DEV')
     expect(vite).toContain('react-dev-inspector/plugins/vite')
     expect(vite).toContain('react-dev-inspector/plugins/babel')
@@ -67,15 +67,15 @@ Expected: FAIL because the project still depends on `click-to-react-component` a
 
 Run: `corepack pnpm --filter @sun-world/blog remove click-to-react-component`
 
-Run: `corepack pnpm --filter @sun-world/blog add react-dev-inspector@2.0.1`
+Run: `corepack pnpm --filter @sun-world/blog add -D react-dev-inspector@2.0.1 @react-dev-inspector/vite-plugin@2.0.1 @react-dev-inspector/babel-plugin@2.0.1`
 
 - [ ] **Step 4: Configure Vite source injection and editor middleware**
 
-Configure `@vitejs/plugin-react` with `babel.plugins: ['react-dev-inspector/plugins/babel']`, and add `inspectorServer()` only when `mode !== 'production'`.
+Configure `@vitejs/plugin-react` with `babel.plugins: ['@react-dev-inspector/babel-plugin']`, and add `inspectorServer()` from `@react-dev-inspector/vite-plugin` only when `mode !== 'production'`.
 
 - [ ] **Step 5: Replace the runtime component**
 
-Import `Inspector` from `react-dev-inspector`, remove `ClickToComponent`, and render `<Inspector keys={['alt']} />` behind `import.meta.env.DEV`.
+Create `ReactSourceInspector` with a controlled `active` prop, `keys={null}`, and Alt keydown/keyup/window-blur listeners. Remove `ClickToComponent`, and render `<ReactSourceInspector />` behind `import.meta.env.DEV`.
 
 - [ ] **Step 6: Verify GREEN and regression coverage**
 

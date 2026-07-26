@@ -6,6 +6,11 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-26: `fix/react-source-inspector` replaces the React-19-incompatible
+  click-to-component integration with development-only Alt + left-click source
+  navigation. Details and verification are in
+  `docs/handoff/branches/fix-react-source-inspector.md`.
+
 - 2026-07-26: `feat/figma-editor-foundation` implements the framework-neutral
   Figma-like editor foundation described in
   `docs/handoff/branches/feat-figma-editor-foundation.md`. Editor tests (41),
