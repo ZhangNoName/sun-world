@@ -1,120 +1,89 @@
-import { SWEditor } from '../editor'
-import { transformer } from '../transformer/transformer'
+import type { SWEditor } from '../editor'
+import type { InputBindingConfig } from '../types/keybinding.type'
 import { InputBindingManager } from './keyBindingManager'
-import { InputBindingConfig } from '../types/keybinding.type'
+import { InputController } from './inputController'
 
-// 🟧 EventManager（鼠标 + 键盘 + Canvas 事件管理）
-
-// 负责：
-
-// canvas 上的鼠标事件（mousedown / mousemove / mouseup）
-
-// contextmenu（右键）
-
-// wheel（滚轮缩放/滚动）
-
-// pointer events
-
-// 键盘事件和按键绑定
-
-// 坐标转换（屏幕坐标 → 画布坐标）
 export class EventManager {
-  private inputBindingManager: InputBindingManager
-
-  /**
-   * 获取输入绑定管理器
-   */
-  public getInputBindingManager(): InputBindingManager {
-    return this.inputBindingManager
-  }
+  private readonly inputBindingManager: InputBindingManager
+  private readonly inputController: InputController
+  private disposed = false
 
   constructor(
-    private editor: SWEditor,
+    private readonly editor: SWEditor,
     inputBindingConfig?: Partial<InputBindingConfig>
   ) {
-    const canvas = editor.getCanvas()
-    console.log('[EventManager] Initializing, canvas:', canvas)
-
-    // 初始化输入绑定管理器（统一管理键盘和鼠标）
     this.inputBindingManager = new InputBindingManager(
       editor,
       inputBindingConfig
     )
-
-    // 鼠标事件监听
-    console.log('[EventManager] Registering mouse event listeners')
-    canvas.addEventListener('mousedown', this.handleMouseDown)
-    canvas.addEventListener('mousemove', this.handleMouseMove)
-    canvas.addEventListener('mouseup', this.handleMouseUp)
-    canvas.addEventListener('wheel', this.handleWheel)
-
-    // 右键菜单阻止默认行为
-    canvas.addEventListener('contextmenu', (e) => {
-      // 让 InputBindingManager 处理右键事件
-      if (this.inputBindingManager.handleInputEvent(e)) {
-        return
-      }
-      e.preventDefault() // 如果没有匹配的绑定，则阻止默认右键菜单
+    this.inputController = new InputController({
+      canvas: editor.getCanvas(),
+      keyboardTarget: window,
+      onInput: this.handleInput,
     })
-
-    // 键盘事件监听
-    window.addEventListener('keydown', this.handleKeyDown)
-    window.addEventListener('keyup', this.handleKeyUp)
-
-    // 注册默认的输入绑定处理器
     this.registerDefaultHandlers()
   }
 
-  handleMouseDown = (e: MouseEvent) => {
-    // 先让 InputBindingManager 处理输入绑定
-    const bindingHandled = this.inputBindingManager.handleInputEvent(e)
+  getInputBindingManager(): InputBindingManager {
+    return this.inputBindingManager
+  }
 
-    // 如果没有匹配的绑定，则传递给工具处理
-    if (!bindingHandled) {
-      const activeTool = this.editor.getToolManager()?.getActiveTool()
-      console.log('[EventManager] Calling tool.onMouseDown', activeTool?.name)
-      activeTool?.onMouseDown?.(e)
+  getInputController(): InputController {
+    return this.inputController
+  }
+
+  destroy(): void {
+    if (this.disposed) return
+    this.disposed = true
+    this.inputController.dispose()
+    this.inputBindingManager.destroy()
+  }
+
+  private handleInput = (event: Event): void => {
+    if (
+      event instanceof KeyboardEvent &&
+      this.inputController.isEditableTarget(event.target)
+    ) {
+      return
+    }
+
+    const bindingHandled = this.inputBindingManager.handleInputEvent(event)
+    const activeTool = this.editor.getToolManager()?.getActiveTool()
+    if (bindingHandled) return
+
+    switch (event.type) {
+      case 'pointerdown':
+        activeTool?.onMouseDown?.(event as PointerEvent)
+        break
+      case 'pointermove':
+        activeTool?.onMouseMove?.(event as PointerEvent)
+        break
+      case 'pointerup':
+      case 'pointercancel':
+        activeTool?.onMouseUp?.(event as PointerEvent)
+        break
+      case 'wheel':
+        activeTool?.onWheel?.(event as WheelEvent)
+        break
+      case 'keydown':
+        activeTool?.onKeyDown?.(
+          event as KeyboardEvent,
+          this.inputController.state
+        )
+        break
+      case 'keyup':
+        activeTool?.onKeyUp?.(
+          event as KeyboardEvent,
+          this.inputController.state
+        )
+        break
+      case 'contextmenu':
+        event.preventDefault()
+        break
     }
   }
 
-  handleMouseMove = (e: MouseEvent) => {
-    // 鼠标移动主要由工具处理，但也要更新输入状态
-    this.inputBindingManager.handleInputEvent(e)
-    this.editor.getToolManager()?.getActiveTool()?.onMouseMove?.(e)
-  }
-
-  handleMouseUp = (e: MouseEvent) => {
-    // 先让 InputBindingManager 处理输入绑定
-    const bindingHandled = this.inputBindingManager.handleInputEvent(e)
-
-    // 如果没有匹配的绑定，则传递给工具处理
-    if (!bindingHandled) {
-      this.editor.getToolManager()?.getActiveTool()?.onMouseUp?.(e)
-    }
-  }
-
-  handleWheel = (e: WheelEvent) => {
-    // 滚轮事件主要由 InputBindingManager 处理
-    const bindingHandled = this.inputBindingManager.handleInputEvent(e)
-
-    // 如果没有匹配的绑定，可以传递给工具处理缩放等
-    if (!bindingHandled) {
-      this.editor.getToolManager()?.getActiveTool()?.onWheel?.(e)
-    }
-  }
-
-  handleKeyDown = (e: KeyboardEvent) => {
-    this.inputBindingManager.handleInputEvent(e)
-  }
-
-  handleKeyUp = (e: KeyboardEvent) => {
-    this.inputBindingManager.handleInputEvent(e)
-  }
-
-  /**
-   * 注册默认的输入绑定处理器
-   */
-  private registerDefaultHandlers() {
+  private registerDefaultHandlers(): void {
     const manager = this.inputBindingManager
     manager.addBinding({
       id: 'copy',
@@ -126,10 +95,7 @@ export class EventManager {
       },
       preventDefault: true,
       description: '复制',
-      action: (event, binding) => {
-        console.log('执行复制操作')
-        // this.editor.copy()
-      },
+      action: () => undefined,
     })
     manager.addBinding({
       id: 'wheel-zoom',
@@ -141,11 +107,13 @@ export class EventManager {
       },
       preventDefault: true,
       description: '滚轮缩放',
-      action: (event: Event, binding) => {
-        const e = event as WheelEvent
-        const delta = e.deltaY < 0 ? 1 : -1
-        // 使用 zoomAt 方法，在鼠标位置缩放并保持鼠标指向的画布位置不变
-        this.editor.changZoomAt(delta, e.offsetX, e.offsetY)
+      action: (event: Event) => {
+        const wheel = event as WheelEvent
+        this.editor.changZoomAt(
+          wheel.deltaY < 0 ? 1 : -1,
+          wheel.offsetX,
+          wheel.offsetY
+        )
       },
     })
     manager.addBinding({
@@ -158,9 +126,7 @@ export class EventManager {
       },
       preventDefault: true,
       description: '删除',
-      action: (event: Event, binding) => {
-        this.editor.deleteSelectedElement()
-      },
+      action: () => this.editor.deleteSelectedElement(),
     })
     manager.addBinding({
       id: 'save',
@@ -172,9 +138,7 @@ export class EventManager {
       },
       preventDefault: true,
       description: '保存',
-      action: (event: Event, binding) => {
-        this.editor.save()
-      },
+      action: () => this.editor.save(),
     })
   }
 }

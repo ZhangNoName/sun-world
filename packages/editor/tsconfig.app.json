@@ -23,6 +23,8 @@
   "include": ["src/**/*.ts"],
   "exclude": [
     "src/types/keybinding.example.ts",
-    "src/types/input-binding-demo.ts"
+    "src/types/input-binding-demo.ts",
+    "src/**/*.test.ts",
+    "src/test/**"
   ]
 }

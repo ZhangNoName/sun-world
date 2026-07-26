@@ -26,6 +26,7 @@
     "format": "node scripts/format-changed.mjs --write",
     "format:check": "node scripts/format-changed.mjs --check",
     "test:ui": "pnpm -F @sun-world/ui run test",
+    "test:editor": "pnpm -F @sun-world/editor run test",
     "test:icons": "pnpm -F @sun-world/icons run test",
     "test:contracts": "pnpm -F @sun-world/contracts run test",
     "sun-ai": "node tools/sun-ai-cli/src/cli.mjs",

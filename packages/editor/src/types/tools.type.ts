@@ -1,7 +1,7 @@
-import { ElementManager } from "../elements/elementManager"
-import { InputManager } from "../input/inputManager"
-import ViewportState from "../viewport/viewport"
-import { CursorManager } from "../cursor/cursorManager"
+import { ElementManager } from '../elements/elementManager'
+import type { InputController } from '../event/inputController'
+import ViewportState from '../viewport/viewport'
+import { CursorManager } from '../cursor/cursorManager'
 
 export type ToolName =
   | 'rect'
@@ -16,7 +16,7 @@ export type ToolName =
   | 'resize'
   | 'rotate'
 export interface ToolContext {
-  input: InputManager // 鼠标、键盘、组合键（Shift/Alt/Ctrl）
+  input: InputController // 鼠标、键盘、组合键（Shift/Alt/Ctrl）
   viewport: ViewportState // 坐标转换、缩放、平移
   elements: ElementManager // hitTest、add、update、remove
   cursor: CursorManager

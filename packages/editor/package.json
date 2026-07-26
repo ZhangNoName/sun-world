@@ -14,7 +14,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest run"
   },
   "dependencies": {
     "uuid": "^13.0.0"
@@ -23,6 +24,8 @@
     "@types/node": "^24.6.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
-    "vite-plugin-dts": "^3.8.3"
+    "vite-plugin-dts": "^3.8.3",
+    "vitest": "2.1.9",
+    "jsdom": "24.1.3"
   }
 }

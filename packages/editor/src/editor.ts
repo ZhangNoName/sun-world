@@ -3,13 +3,11 @@ import { BaseElement } from './elements/baseElement.class'
 import { ElementManager } from './elements/elementManager'
 import { EventManager } from './event/eventManager'
 import { InputBindingManager } from './event/keyBindingManager'
-import { InputManager } from './input/inputManager'
 import { CanvasRenderer } from './render/render'
 import { Rule } from './support/rules'
 import DragTool from './tools/dragTool'
 import { RectTool } from './tools/reactTools'
 import { ToolManager } from './tools/tools'
-import { Transformer } from './transformer/transformer'
 import { InputBindingConfig, MODIFIERS } from './types/keybinding.type'
 import { ToolName } from './types/tools.type'
 import { debounce, getUUID } from './utils/common'
@@ -40,13 +38,12 @@ export class SWEditor {
   private renderer: CanvasRenderer
   private elementManager = new ElementManager()
   private eventManager: EventManager
-  private inputManager = new InputManager(this)
   private toolManager: ToolManager
-  private transformer = new Transformer()
   private cursorManager: CursorManager
 
   private rule: Rule
-  private inputEvents
+  private viewportCleanup: (() => void) | null = null
+  private disposed = false
   constructor(options: IEditorOptions) {
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
@@ -74,7 +71,7 @@ export class SWEditor {
     this.cursorManager = new CursorManager(this.getCanvas())
     // 注册工具
     this.toolManager = new ToolManager({
-      input: this.inputManager,
+      input: this.eventManager.getInputController(),
       viewport: this.viewportState,
       elements: this.elementManager,
       cursor: this.cursorManager,
@@ -85,11 +82,10 @@ export class SWEditor {
     })
     // 默认激活选择工具
     this.toolManager.activateTool('drag')
-    this.viewportState.on(() => this.renderer.render())
+    this.viewportCleanup = this.viewportState.on(() => this.renderer.render())
 
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
-    this.inputEvents = new InputManager(this)
   }
   // id，只读
   get id() {
@@ -173,9 +169,12 @@ export class SWEditor {
 
   // 销毁方法
   public destroy() {
+    if (this.disposed) return
+    this.disposed = true
+    this.viewportCleanup?.()
+    this.viewportCleanup = null
+    this.eventManager.destroy()
     this.renderer.destroy()
-    this.eventManager.getInputBindingManager().destroy()
-    // ... 清理其他模块和事件监听器
   }
   public getCanvas() {
     return this.renderer.canvasElement

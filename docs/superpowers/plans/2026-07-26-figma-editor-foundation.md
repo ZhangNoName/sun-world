@@ -38,7 +38,7 @@
 - Produces: root command `test:editor` and package command `vitest run`.
 - Preserves: `new SWEditor({ containerElement })` and `SWEditor.destroy()`.
 
-- [ ] **Step 1: Add the editor Vitest harness and a failing disposal test**
+- [x] **Step 1: Add the editor Vitest harness and a failing disposal test**
 
 ```ts
 it('removes every registered listener and disposes only once', () => {
@@ -54,26 +54,26 @@ it('removes every registered listener and disposes only once', () => {
 })
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `corepack pnpm -C packages/editor test -- src/event/inputController.test.ts`
 
 Expected: FAIL because `InputController` does not exist.
 
-- [ ] **Step 3: Implement one Pointer Events input owner**
+- [x] **Step 3: Implement one Pointer Events input owner**
 
 Implement `InputController` so it registers pointer, wheel, context-menu, keydown,
 and keyup listeners through stored handler references, tracks modifier/button
 state, ignores editor shortcuts originating in editable controls, and removes all
 listeners from an idempotent `dispose()`.
 
-- [ ] **Step 4: Replace duplicate input ownership in `SWEditor`**
+- [x] **Step 4: Replace duplicate input ownership in `SWEditor`**
 
 Remove both legacy `InputManager` instances from editor composition, route active
 tool events and shortcuts through `InputController`, and make `SWEditor.destroy()`
 dispose input, subscriptions, cursor resources, and renderer exactly once.
 
-- [ ] **Step 5: Run lifecycle tests and editor build**
+- [x] **Step 5: Run lifecycle tests and editor build**
 
 Run: `corepack pnpm -C packages/editor test -- src/event/inputController.test.ts`
 
@@ -81,7 +81,7 @@ Run: `corepack pnpm build:editor`
 
 Expected: PASS with no leaked-listener or declaration errors.
 
-- [ ] **Step 6: Commit the lifecycle slice**
+- [x] **Step 6: Commit the lifecycle slice**
 
 ```bash
 git add package.json pnpm-lock.yaml packages/editor
