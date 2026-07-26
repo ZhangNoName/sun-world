@@ -28,7 +28,9 @@ the user explicitly requested that no subagents be created.
   supports one-time migration from the legacy default-document payload.
 - Task 6 is complete. The React adapter now exposes history, multi-selection,
   asynchronous save status, modifier-aware layer selection, and full cleanup.
-- Task 7 (full verification and durable handoff) is next.
+- Task 7 documentation and implemented-interaction browser coverage are
+  complete. Closure is blocked by missing layer-tree reordering and four
+  unrelated `BlogHomeFeed.test.tsx` failures.
 
 ## Important Files Touched
 
@@ -79,6 +81,9 @@ the user explicitly requested that no subagents be created.
 - The `/canvas` workspace exposes accessible undo/redo controls, hides the
   unimplemented comment tool, reports save progress and multi-selection, and
   preserves editor CSS during package tree shaking.
+- Property fields are uncontrolled drafts keyed by persisted values so blur
+  commits the typed value. The React adapter also subscribes to element changes
+  so transform gestures refresh the selected property panel.
 
 ## Verification
 
@@ -86,15 +91,29 @@ the user explicitly requested that no subagents be created.
 - `corepack pnpm build:editor`: passed.
 - Focused `useEditorCanvas` tests: passed, 3 tests.
 - `corepack pnpm -C apps/web typecheck`: passed.
+- Focused Web editor tests: passed, 5 tests across the hook and property panel.
+- `corepack pnpm format:check`: passed.
+- `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
+- Browser `/canvas`: passed rectangle creation; click, Shift, Ctrl, and marquee
+  selection; move, resize, rotate; undo/redo; property commit; save/reload;
+  editable-field shortcut safety; and route leave/re-entry without duplicate
+  creation or clean-session console errors.
+- Layer-tree selection passed, but the React tree currently has no reordering
+  interaction, so browser verification of reordering remains open.
+- `corepack pnpm check:web`: failed in four unrelated
+  `src/modules/blog/ui/BlogHomeFeed.test.tsx` cases expecting the absent
+  `阅读更多: 图搜索入门` link; 59 other Web tests passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
   than the workspace TypeScript remains non-blocking.
 
 ## Blockers
 
-None.
+The repository-wide Web gate is blocked by four unrelated BlogHomeFeed tests.
+The editor workspace still needs a layer-tree reordering interaction.
 
 ## Next Suggested Step
 
-Begin Task 7 with package documentation, complete automated verification, and
-browser verification of `/canvas`.
+Implement layer-tree reordering, resolve or update the unrelated BlogHomeFeed
+navigation expectations, rerun `corepack pnpm check:web`, then complete branch
+integration.

@@ -6,6 +6,17 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-26: `feat/figma-editor-foundation` implements the framework-neutral
+  Figma-like editor foundation described in
+  `docs/handoff/branches/feat-figma-editor-foundation.md`. Editor tests (41),
+  build, focused Web editor tests (5), Web typecheck, formatting, whitespace,
+  and comprehensive `/canvas` browser QA passed. Browser QA also produced and
+  fixed regressions for property-field commit and transform-to-panel syncing.
+  The complete `check:web` gate is still red only for four unrelated
+  `BlogHomeFeed.test.tsx` expectations for a missing `阅读更多: 图搜索入门` link;
+  59 other Web tests passed. Layer-tree reordering is also not implemented, so
+  the corresponding Task 7 browser case remains open. Not pushed or deployed.
+
 - 2026-07-22: homepage blog toolbar is now a compact three-action surface:
   the fixed search icon expands a left-side input with a 240ms eased transition
   and auto-focus, sort cycles newest → most viewed → oldest and applies
@@ -113,6 +124,9 @@ older completed checkpoints to docs/handoff/archive/.
   `docs/handoff/branches/refactor-react-shadcn.md`.
 
 ## Active Branches
+
+- feat/figma-editor-foundation: see
+  docs/handoff/branches/feat-figma-editor-foundation.md.
 
 - refactor/react-shadcn: see
   docs/handoff/branches/refactor-react-shadcn.md.

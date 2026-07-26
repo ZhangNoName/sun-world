@@ -1,5 +1,43 @@
 # Current State
 
+## Figma-Like Editor Foundation (2026-07-26, local feature branch)
+
+- `@sun-world/editor` now separates persistent scene state (`EditorDocument`),
+  transient selection (`SelectionModel`), reversible mutations
+  (`CommandManager`), unified input (`InputController`), transform tools, and
+  document-scoped persistence (`DocumentRepository`). `SWEditor` remains the
+  framework-neutral public facade.
+- Selection supports click, Shift add, Ctrl/Command toggle, marquee, move,
+  eight-direction resize, rotate, Escape cancellation, and one history entry
+  per completed gesture. Locked/hidden elements remain unselectable.
+- Persistence is injected by `documentId` and repository. Local storage uses
+  versioned per-document keys and migrates the legacy `editor-data` default
+  payload once; repository failures do not replace the in-memory document.
+- The React `/canvas` adapter exposes history, multi-selection, save state,
+  modifier-aware layer selection, and selected-attribute refresh after Canvas
+  transforms. Accessible undo/redo controls are available and the unimplemented
+  comment tool is hidden.
+- Browser QA covered creation, click/add/toggle/marquee selection, move, resize,
+  rotate, undo/redo, property editing, save/reload, editable-field shortcut
+  safety, and route leave/re-entry. A clean post-HMR browser session had no
+  console errors and one creation gesture produced exactly one new layer.
+- Layer selection works, but the current React tree exposes no layer-reordering
+  interaction, so that planned browser case remains unverified and must be
+  implemented before Task 7 can close.
+- Browser QA found and fixed two integration bugs: controlled property inputs
+  discarded edits before blur, and Canvas transforms did not refresh the right
+  property panel. Focused regression tests now cover both paths.
+- Fresh editor verification passed 41 tests and the editor production build.
+  Focused Web editor tests passed 5 tests, Web typecheck passed, formatting and
+  whitespace checks passed. `check:web` remains blocked by four pre-existing,
+  non-editor `BlogHomeFeed.test.tsx` assertions expecting the removed
+  `阅读更多: 图搜索入门` link; all 59 other Web tests passed in that run.
+- The API Extractor warning about bundled TypeScript 5.4.2 being older than the
+  workspace TypeScript remains non-blocking.
+
+Last updated: 2026-07-26 (`feat/figma-editor-foundation`, verification blocked
+by missing layer-tree reordering and unrelated BlogHomeFeed tests)
+
 ## Base UI Migration And Homepage Polish (2026-07-20, local feature branch)
 
 - Formerly Radix-backed `@sun-world/ui` primitives use Base UI 1.6 or

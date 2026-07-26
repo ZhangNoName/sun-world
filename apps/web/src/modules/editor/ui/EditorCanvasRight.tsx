@@ -25,16 +25,17 @@ export function EditorCanvasRight({
       ) : attrs ? (
         <div className="property-form">
           <LabeledInput
+            key={`name:${attrs.name ?? name ?? ''}`}
             label="名称"
-            value={attrs.name ?? name ?? ''}
+            defaultValue={attrs.name ?? name ?? ''}
             onValueCommit={(value) => onUpdate({ name: value })}
           />
           {(['x', 'y', 'width', 'height', 'rotation'] as const).map((key) => (
             <LabeledInput
-              key={key}
+              key={`${key}:${attrs[key] ?? 0}`}
               label={key.toUpperCase()}
               type="number"
-              value={String(attrs[key] ?? 0)}
+              defaultValue={String(attrs[key] ?? 0)}
               onValueCommit={(value) => {
                 const numeric = Number(value)
                 if (Number.isFinite(numeric)) onUpdate({ [key]: numeric })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   SWEditor,
   type HistoryState,
@@ -23,6 +23,7 @@ export interface EditorCanvasAdapter {
   toolChanged(listener: () => void): void | (() => void)
   onZoomChange(listener: (zoom: number) => void): void | (() => void)
   elementTreeChanged(listener: (nodes: NodeInfo[]) => void): void | (() => void)
+  elementManagerChanged(listener: () => void): void | (() => void)
   historyChanged(listener: (state: HistoryState) => void): void | (() => void)
   selectionChanged(
     listener: (ids: readonly string[]) => void
@@ -57,6 +58,7 @@ export function useEditorCanvas(
   const [saveStatus, setSaveStatus] = useState<
     'idle' | 'saving' | 'saved' | 'error'
   >('idle')
+  const selectedIdsRef = useRef<readonly string[]>([])
   const [selectedAttrs, setSelectedAttrs] = useState<EditorElementPatch | null>(
     null
   )
@@ -71,11 +73,18 @@ export function useEditorCanvas(
       instance.toolChanged(() => setActiveTool(instance.getActiveToolName())),
       instance.onZoomChange(setZoom),
       instance.elementTreeChanged(setNodes),
+      instance.elementManagerChanged(() => {
+        const ids = selectedIdsRef.current
+        if (ids.length === 1) {
+          setSelectedAttrs(instance.getElementPanelAttrs?.(ids[0]) ?? null)
+        }
+      }),
       instance.historyChanged((state) => {
         setCanUndo(state.canUndo)
         setCanRedo(state.canRedo)
       }),
       instance.selectionChanged((ids) => {
+        selectedIdsRef.current = [...ids]
         setSelectedIds([...ids])
         setSelectedId(ids.length === 1 ? ids[0] : null)
         setSelectedAttrs(

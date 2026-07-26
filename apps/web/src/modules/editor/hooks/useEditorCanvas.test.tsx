@@ -9,11 +9,14 @@ function createFakeEditor() {
   let treeListener = (_nodes: NodeInfo[]) => undefined
   let historyListener = (_state: HistoryState) => undefined
   let selectionListener = (_ids: readonly string[]) => undefined
+  let elementsListener = () => undefined
   const unsubscribeTool = vi.fn()
   const unsubscribeZoom = vi.fn()
   const unsubscribeTree = vi.fn()
   const unsubscribeHistory = vi.fn()
   const unsubscribeSelection = vi.fn()
+  const unsubscribeElements = vi.fn()
+  let panelAttrs = { width: 100 }
   const editor: EditorCanvasAdapter = {
     zoom: 1,
     setTool: vi.fn(),
@@ -38,9 +41,14 @@ function createFakeEditor() {
       selectionListener = listener
       return unsubscribeSelection
     }),
+    elementManagerChanged: vi.fn((listener) => {
+      elementsListener = listener
+      return unsubscribeElements
+    }),
     undo: vi.fn(),
     redo: vi.fn(),
     selectElement: vi.fn(),
+    getElementPanelAttrs: vi.fn(() => panelAttrs),
     updateElement: vi.fn(),
     save: vi.fn(async () => undefined),
     destroy: vi.fn(),
@@ -55,8 +63,13 @@ function createFakeEditor() {
     unsubscribeTree,
     unsubscribeHistory,
     unsubscribeSelection,
+    unsubscribeElements,
     emitHistory: (state: HistoryState) => historyListener(state),
     emitSelection: (ids: readonly string[]) => selectionListener(ids),
+    emitElements: (attrs: { width: number }) => {
+      panelAttrs = attrs
+      elementsListener()
+    },
   }
 }
 
@@ -89,6 +102,7 @@ describe('useEditorCanvas', () => {
     expect(fake.unsubscribeTree).toHaveBeenCalled()
     expect(fake.unsubscribeHistory).toHaveBeenCalled()
     expect(fake.unsubscribeSelection).toHaveBeenCalled()
+    expect(fake.unsubscribeElements).toHaveBeenCalled()
     expect(fake.editor.destroy).toHaveBeenCalled()
   })
 
@@ -108,6 +122,18 @@ describe('useEditorCanvas', () => {
     act(() => result.current.redo())
     expect(fake.editor.undo).toHaveBeenCalledOnce()
     expect(fake.editor.redo).toHaveBeenCalledOnce()
+  })
+
+  it('refreshes selected attributes after a canvas transform', () => {
+    const fake = createFakeEditor()
+    const factory = vi.fn(() => fake.editor)
+    const host = document.createElement('div')
+    const { result } = renderHook(() => useEditorCanvas(host, factory))
+
+    act(() => fake.emitSelection(['one']))
+    expect(result.current.selectedAttrs).toEqual({ width: 100 })
+    act(() => fake.emitElements({ width: 220 }))
+    expect(result.current.selectedAttrs).toEqual({ width: 220 })
   })
 
   it('reports asynchronous save progress and completion', async () => {

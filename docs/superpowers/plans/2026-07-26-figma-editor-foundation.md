@@ -366,7 +366,7 @@ git commit -m "feat(web): expose editor history and selection controls"
 - Consumes: all completed editor foundation behavior.
 - Produces: accurate package documentation and durable verification evidence.
 
-- [ ] **Step 1: Replace the template editor README**
+- [x] **Step 1: Replace the template editor README**
 
 Document package purpose, architecture, public API, input/selection behavior,
 repository injection, development commands, and current non-goals.
@@ -395,13 +395,13 @@ resize, and rotate; undo and redo; layer selection/reordering; property updates;
 save/reload; editable-field shortcut safety; and route leave/re-entry without
 duplicate events or console errors.
 
-- [ ] **Step 4: Update durable project state**
+- [x] **Step 4: Update durable project state**
 
 Record the goal, files touched, commands, results, browser observations, remaining
 non-goals, blockers, and next recommended Figma capability in `docs/current-state.md`
 and `docs/agent-handoff.md`.
 
-- [ ] **Step 5: Commit documentation and verification evidence**
+- [x] **Step 5: Commit documentation and verification evidence**
 
 ```bash
 git add packages/editor/README.md docs/current-state.md docs/agent-handoff.md
