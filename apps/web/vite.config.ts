@@ -1,10 +1,12 @@
 import react from '@vitejs/plugin-react'
+import { inspectorServer } from '@react-dev-inspector/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type PluginOption } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { createUiSourceAliases } from '../../packages/ui/source-aliases'
+import idempotentInspectorBabelPlugin from './inspector-babel-plugin'
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
   version: string
@@ -29,7 +31,15 @@ function stripRouteOnlyPreloadsPlugin() {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const production = mode === 'production'
-  const plugins: PluginOption[] = [react(), tailwindcss()]
+  const plugins: PluginOption[] = [
+    react({
+      babel: production
+        ? undefined
+        : { plugins: [idempotentInspectorBabelPlugin] },
+    }),
+    tailwindcss(),
+  ]
+  if (!production) plugins.push(inspectorServer())
   if (mode === 'visualizer')
     plugins.push(
       visualizer({ open: true, gzipSize: true, brotliSize: true }) as never
