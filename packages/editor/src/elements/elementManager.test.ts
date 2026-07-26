@@ -123,9 +123,9 @@ describe('ElementManager model delegation', () => {
     const manager = new ElementManager()
     manager.add(rect('local'))
 
-    await expect(manager.loadDocument(repository, 'workspace-a')).rejects.toThrow(
-      'load failed'
-    )
+    await expect(
+      manager.loadDocument(repository, 'workspace-a')
+    ).rejects.toThrow('load failed')
     expect(manager.getById('local')).toBeDefined()
   })
 

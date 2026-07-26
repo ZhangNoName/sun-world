@@ -183,9 +183,7 @@ export class ElementManager {
     return () => this.hierarchyChangedListeners.delete(callback)
   }
 
-  onSelectionChange(
-    callback: (ids: readonly string[]) => void
-  ): () => void {
+  onSelectionChange(callback: (ids: readonly string[]) => void): () => void {
     callback([...this.selection.selectedIds])
     this.selectionChangedListeners.add(callback)
     return () => this.selectionChangedListeners.delete(callback)
