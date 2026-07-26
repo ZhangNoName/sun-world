@@ -115,7 +115,7 @@ Run: `corepack pnpm -C packages/editor test -- src/document/editorDocument.test.
 
 Expected: FAIL because `EditorDocument` is not defined.
 
-- [ ] **Step 3: Implement `EditorDocument` and compatibility delegation**
+- [x] **Step 3: Implement `EditorDocument` and compatibility delegation**
 
 Move scene storage, hierarchy mutation, and serialization behind
 `EditorDocument`. Keep `ElementManager` temporarily delegating rendering and
@@ -134,13 +134,13 @@ Expected before implementation: FAIL because `SelectionModel` is missing.
 
 Expected after implementation: PASS.
 
-- [ ] **Step 6: Run the complete editor tests and build**
+- [x] **Step 6: Run the complete editor tests and build**
 
 Run: `corepack pnpm -C packages/editor test`
 
 Run: `corepack pnpm build:editor`
 
-- [ ] **Step 7: Commit document and selection models**
+- [x] **Step 7: Commit document and selection models**
 
 ```bash
 git add packages/editor/src

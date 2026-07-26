@@ -1,6 +1,6 @@
-import { BaseElement } from "../../elements/baseElement.class"
+import { BaseElement } from '../../elements/baseElement.class'
 import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
-import ViewportState from "../../viewport/viewport"
+import ViewportState from '../../viewport/viewport'
 import DragTool from './drag'
 import { RotateTool } from './rotate'
 import { ResizeTool } from './resize'
@@ -13,7 +13,6 @@ export default class SelectTool extends BaseTool {
   private lastY = 0
   private viewport: ViewportState
   private dragging = false
-  private selectedEl: string[] = []
   private readonly DragMode: DragTool
   private readonly AreaMode: AreaTool
   private readonly ResizeMode: ResizeTool
@@ -44,11 +43,15 @@ export default class SelectTool extends BaseTool {
 
     const isDrag = elements.hitSelectBox(canvasPos)
     if (!isDrag) {
-      elements.setMarqueeRect({ minX: canvasPos.x, minY: canvasPos.y, maxX: canvasPos.x, maxY: canvasPos.y })
+      elements.setMarqueeRect({
+        minX: canvasPos.x,
+        minY: canvasPos.y,
+        maxX: canvasPos.x,
+        maxY: canvasPos.y,
+      })
     }
 
-    this.selectedEl = elements.selectedIds
-    // console.log('选中元素', this.selectedEl.length, canvasPos.x, canvasPos.y, elements.selectedElements)
+    // Selection state is owned by ElementManager's SelectionModel adapter.
     if (controlHandle) {
       this.currentMode = this.AreaMode
     } else if (rotateHandle) {
@@ -60,7 +63,6 @@ export default class SelectTool extends BaseTool {
     }
     console.log('当前模式', this.currentMode?.name)
     this.currentMode.onMouseDown(e)
-
   }
   onMouseMove(e: MouseEvent): void {
     // console.log('SelectTool.onMouseMove', e)
@@ -77,7 +79,6 @@ export default class SelectTool extends BaseTool {
     }
     this.currentMode.onMouseUp()
     this.currentMode = null
-
   }
   activate(): void {
     console.log('选择工具 激活')

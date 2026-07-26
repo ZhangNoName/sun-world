@@ -16,9 +16,10 @@ the user explicitly requested that no subagents be created.
 - Branch: `feat/figma-editor-foundation`
 - Worktree: `.worktrees/feat-figma-editor-foundation`
 - Task 1 is complete and committed at `03aa0321`.
-- Task 2 is in progress. `EditorDocument` and `SelectionModel` exist, are exported,
-  and have passing tests. The remaining Task 2 work is to make `ElementManager`
-  delegate persistent scene state and transient selection state to these models.
+- Task 2 is complete. `ElementManager` now delegates scene storage/hierarchy to
+  `EditorDocument` and selected IDs/bounds to `SelectionModel` while preserving
+  the compatibility API consumed by tools, rendering, and React.
+- Task 3 (command history and reversible mutations) is next.
 
 ## Important Files Touched
 
@@ -45,10 +46,13 @@ the user explicitly requested that no subagents be created.
   atomically.
 - `SelectionModel` supports replace/add/toggle/clear, subtree cleanup, locked and
   hidden filtering, deterministic ordering, and combined bounds.
+- Deleting a group clears selection for its complete subtree, locked nodes are
+  excluded from Canvas selection, and cyclic reparenting is rejected without
+  corrupting the scene graph.
 
 ## Verification
 
-- `corepack pnpm -C packages/editor test`: passed, 10 tests.
+- `corepack pnpm -C packages/editor test`: passed, 13 tests.
 - `corepack pnpm build:editor`: passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
@@ -60,9 +64,6 @@ None.
 
 ## Next Suggested Step
 
-Continue Task 2 with a compatibility migration of `ElementManager`: delegate its
-store/tree methods to `EditorDocument`, delegate selected IDs and bounds to
-`SelectionModel`, keep marquee interaction as transient adapter state, migrate
-legacy snapshot hydration through `EditorDocument.importSnapshot`, then run all
-editor tests and build before marking Task 2 complete.
-
+Begin Task 3 with failing `CommandManager` tests covering execute, undo, redo,
+redo invalidation, failed-command exclusion, notifications, and disposal. Then
+implement reversible document commands and migrate facade mutations.
