@@ -30,6 +30,7 @@ This keeps database implementation details inside `apps/api` and gives the front
 packages/contracts/
   openapi.json
   src/
+    ai.ts
     api-types.ts
     generated-api-types.ts
     index.ts
@@ -37,6 +38,8 @@ packages/contracts/
 
 `openapi.json` is exported from a schema-only FastAPI app that mounts the project routers.
 `generated-api-types.ts` is generated from `openapi.json` with `openapi-typescript`.
+`ai.ts` defines the provider-neutral, versioned streaming and structured-content
+contract used by the backend and `@sun-world/ai-ui`.
 
 ## Commands
 

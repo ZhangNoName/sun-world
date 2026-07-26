@@ -3,6 +3,7 @@ import { NativeSelectField } from '@sun-world/ui/form-controls'
 import { Input } from '@sun-world/ui/input'
 import { SunMarkdownEditor } from '@/shared/markdown'
 import { useBlogAuthoring } from '../composables/useBlogAuthoring'
+import '../styles/blog-experience.css'
 
 export function ArticleEditorPage() {
   const authoring = useBlogAuthoring()

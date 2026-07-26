@@ -6,10 +6,50 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-26: modular AI workspace refactor on local `main` introduces the
+  versioned `/ai/v1` protocol, a standalone backend AI module, encrypted
+  per-user multi-provider profiles, MySQL conversation/message/feedback
+  persistence, and reusable `@sun-world/ai-ui`. The package renders text,
+  tables, lazy ECharts, links, records, and custom blocks and owns GPT-style
+  copy/edit/regenerate/feedback/stop/retry interactions plus responsive
+  history and settings. The Web adapter handles ordered SSE, temporary-to-
+  persistent conversation IDs, saved history, and inline errors. Verification
+  passed the complete `corepack pnpm check` gate (17/17), including 19 backend
+  AI tests, 6 contract tests, 8 AI UI tests, 76 Web tests, Web typecheck,
+  package builds, performance budgets, and Compose static validation. The
+  frontend Docker dependency cache layer now includes the new AI UI manifest.
+  Desktop/mobile browser QA also passed.
+  Important files and extension rules are documented in
+  `docs/architecture/ai-platform.md`; design and execution plans are under
+  `docs/superpowers/`. No commit, push, deployment, production migration, or
+  secret change was performed. Before deployment, set a stable
+  `AI_CREDENTIAL_ENCRYPTION_KEY`, apply the checked MySQL schema migration, and
+  then run the normal build/health verification.
+
 - 2026-07-26: `fix/react-source-inspector` replaces the React-19-incompatible
   click-to-component integration with development-only Alt + left-click source
   navigation. Details and verification are in
   `docs/handoff/branches/fix-react-source-inspector.md`.
+
+- 2026-07-26: mobile experience unification on local `main` gives ordinary
+  routes one `.app-container` scroll root, sticky safe-area-aware mobile header
+  and bottom navigation, a layout-owned reduced-motion-aware `返回顶部` action,
+  and a true full-height left drawer. The drawer positioning bug was traced to
+  Base UI's independent `translate: -50% -50%`; the mobile popup now overrides
+  both transform and translate. Duplicate homepage shell CSS and the
+  blog-only back-to-top implementation were removed. Phone layouts were
+  tightened for blog reading/authoring, tools, video, game tiles, Keep, admin,
+  and canvas; the previously unstyled article authoring page now has a
+  responsive editor layout. Browser QA covered 15 source-defined routes at
+  390x844 and 320x700 with no document-level horizontal overflow; scoped table
+  and tile-preview overflow remains intentional. The drawer measured
+  0,0–280,844 after the fix; sticky chrome stayed at viewport edges after
+  760px scrolling; and the global button completed a smooth scroll to zero.
+  Focused Web tests passed (21 and 19 assertions), Web typecheck passed, UI
+  tests passed (48), and `corepack pnpm check:web` passed (70 Web tests,
+  production build, 30-page SSG, budgets, and boundary checks). No commit,
+  push, or deployment was performed. Existing editor-foundation worktree
+  changes were preserved.
 
 - 2026-07-26: `feat/figma-editor-foundation` implements the framework-neutral
   Figma-like editor foundation described in

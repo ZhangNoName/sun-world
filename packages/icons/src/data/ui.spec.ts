@@ -18,6 +18,9 @@ describe('ui icon data', () => {
 
   it('exposes a stable list of supported icon names', () => {
     expect(uiIconNames).toContain('panel-left-open')
+    expect(uiIconNames).toEqual(
+      expect.arrayContaining(['copy', 'thumbs-up', 'thumbs-down', 'refresh-cw'])
+    )
     expect(Object.keys(uiIcons)).toEqual([...uiIconNames])
   })
 })

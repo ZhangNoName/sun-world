@@ -11,6 +11,7 @@ export function DialogPanel({
   trigger,
   title,
   contentClassName,
+  overlayClassName,
   children,
   ...props
 }: React.ComponentProps<typeof Dialog> & {
@@ -23,7 +24,10 @@ export function DialogPanel({
   return (
     <Dialog {...props}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className={contentClassName}>
+      <DialogContent
+        className={contentClassName}
+        overlayClassName={overlayClassName}
+      >
         <DialogTitle>{title}</DialogTitle>
         {children}
       </DialogContent>

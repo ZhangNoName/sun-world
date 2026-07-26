@@ -22,3 +22,14 @@
   gap: var(--space-4);
   margin-top: var(--space-5);
 }
+
+@media (max-width: 695px) {
+  .keep-page {
+    min-height: auto;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .keep-page section {
+    padding: var(--space-4);
+  }
+}

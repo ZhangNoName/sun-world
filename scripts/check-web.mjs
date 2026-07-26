@@ -98,6 +98,22 @@ run('Contracts generate script check', 'corepack', [
   'check:contracts:generate',
 ])
 
+run('AI UI package tests', 'corepack', [
+  'pnpm',
+  '-F',
+  '@sun-world/ai-ui',
+  'run',
+  'test',
+])
+
+run('AI UI package build', 'corepack', [
+  'pnpm',
+  '-F',
+  '@sun-world/ai-ui',
+  'run',
+  'build',
+])
+
 run('Frontend type check', 'corepack', [
   'pnpm',
   '-C',

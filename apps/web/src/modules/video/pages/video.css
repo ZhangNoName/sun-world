@@ -43,8 +43,17 @@
 @media (max-width: 800px) {
   .video-page {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
+    min-height: auto;
+    padding: var(--space-3);
   }
   .video-aside {
     order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-aside {
+    padding: var(--space-3);
   }
 }

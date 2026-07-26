@@ -100,6 +100,7 @@ class Application(FastAPI):
         self.__init_role_manager()
         self.__init_reousrce_manager()
         self.__init_auth_manager()
+        self.__init_ai_workspace_service()
         self.__init_file_manager()
         logger.info(f'当前模式为{env}')
         if env == 'local':
@@ -236,6 +237,18 @@ class Application(FastAPI):
             refresh_token_expire_days=auth_config.get(
                 'refresh_token_expire_days'),
             secret_key=jwt_secret
+        )
+
+    def __init_ai_workspace_service(self):
+        from src.modules.ai.credentials import CredentialCipher
+        from src.modules.ai.providers import ProviderRegistry
+        from src.modules.ai.repositories import MySqlAiRepository
+        from src.modules.ai.service import AiService
+
+        self.ai_service = AiService(
+            repository=MySqlAiRepository(self.mysql),
+            providers=ProviderRegistry(),
+            cipher=CredentialCipher(os.getenv("AI_CREDENTIAL_ENCRYPTION_KEY")),
         )
 
     def __init_file_manager(self):

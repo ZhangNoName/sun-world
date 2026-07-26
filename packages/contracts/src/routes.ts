@@ -37,6 +37,13 @@ export const API_ROUTES = {
     chatChunkStream: '/ai/chat-chunk-stream',
     generateImage: '/ai/generate-image',
     readImage: '/ai/read-image',
+    providers: '/ai/v1/providers',
+    providerProfiles: '/ai/v1/provider-profiles',
+    conversations: '/ai/v1/conversations',
+    conversation: '/ai/v1/conversations/{conversation_id}',
+    message: '/ai/v1/messages/{message_id}',
+    messageFeedback: '/ai/v1/messages/{message_id}/feedback',
+    runStream: '/ai/v1/runs/stream',
   },
   telemetry: {
     events: '/telemetry/events',
@@ -55,6 +62,8 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.ai.chat,
     API_ROUTES.ai.chatStream,
     API_ROUTES.ai.chatChunkStream,
+    API_ROUTES.ai.providers,
+    API_ROUTES.ai.runStream,
     API_ROUTES.telemetry.events,
   ],
   authRequired: [
@@ -66,6 +75,11 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.admin.telemetry,
     API_ROUTES.admin.alerts,
     API_ROUTES.admin.logs,
+    API_ROUTES.ai.providerProfiles,
+    API_ROUTES.ai.conversations,
+    API_ROUTES.ai.conversation,
+    API_ROUTES.ai.message,
+    API_ROUTES.ai.messageFeedback,
   ],
 } as const
 
@@ -168,6 +182,42 @@ export const API_ROUTE_METHODS = {
   },
   'ai.readImage': {
     path: API_ROUTES.ai.readImage,
+    method: 'POST',
+  },
+  'ai.providers': {
+    path: API_ROUTES.ai.providers,
+    method: 'GET',
+  },
+  'ai.providerProfiles.list': {
+    path: API_ROUTES.ai.providerProfiles,
+    method: 'GET',
+  },
+  'ai.providerProfiles.save': {
+    path: API_ROUTES.ai.providerProfiles,
+    method: 'POST',
+  },
+  'ai.conversations.list': {
+    path: API_ROUTES.ai.conversations,
+    method: 'GET',
+  },
+  'ai.conversations.create': {
+    path: API_ROUTES.ai.conversations,
+    method: 'POST',
+  },
+  'ai.conversation': {
+    path: API_ROUTES.ai.conversation,
+    method: 'GET',
+  },
+  'ai.message': {
+    path: API_ROUTES.ai.message,
+    method: 'PATCH',
+  },
+  'ai.messageFeedback': {
+    path: API_ROUTES.ai.messageFeedback,
+    method: 'PUT',
+  },
+  'ai.runStream': {
+    path: API_ROUTES.ai.runStream,
     method: 'POST',
   },
   'telemetry.events': {

@@ -14,7 +14,8 @@ sun-world/
 ├── packages/
 │   ├── editor/       # 富文本编辑器组件 / Rich text editor library (@sun-world/editor)
 │   ├── icons/        # 图标组件库 / Icon component library (@sun-world/icons)
-│   ├── contracts/    # 前后端契约 / Shared API contracts (planned)
+│   ├── ai-ui/        # AI 工作区界面 / Reusable AI workspace UI (@sun-world/ai-ui)
+│   ├── contracts/    # 前后端契约 / Shared API contracts
 │   └── db/           # 数据库访问层 / Database access layer (planned, not active)
 ├── deploy/           # 部署文档与示例 / Deployment docs and examples
 ├── docs/             # 项目文档 / Project documentation
@@ -72,6 +73,11 @@ pnpm dev:icons             # 开发模式 / Dev mode
 前端和后端共享的类型、路由常量和 OpenAPI 契约。
 Shared types, route constants, and OpenAPI contracts between frontend and backend.
 
+### @sun-world/ai-ui — AI 工作区 / AI Workspace UI
+
+可复用的 AI 会话外壳、消息操作、服务商设置和结构化内容渲染器。应用层只负责数据与事件适配。
+Reusable AI workspace shell, message actions, provider settings, and structured-content renderers. Applications only adapt data and events.
+
 ### db（规划中 / Planned）
 
 数据库访问层预留。当前后端使用 Python/FastAPI 直接访问数据库，因此 Prisma/TypeScript 数据库层暂不激活。
@@ -83,6 +89,7 @@ Reserved for a future database access layer. Not active because the backend is P
 pnpm dev              # 启动所有开发服务 / Start all dev services
 pnpm build            # 构建所有项目 / Build all projects
 pnpm build:web        # 构建前端 / Build frontend
+pnpm build:ai-ui      # 构建 AI 界面包 / Build AI UI package
 pnpm build:blog       # build:web 的兼容别名 / Compatibility alias for build:web
 pnpm check:web        # 检查前端 / Check frontend
 pnpm check:api        # 检查后端 / Check backend
@@ -102,6 +109,7 @@ bash scripts/check-all.sh   # 完整检查 / Full verification
 - [商业平台蓝图 / Commercial Platform Blueprint](docs/architecture/commercial-platform-blueprint.md)
 - [可观测性与分析 / Observability and Analytics](docs/architecture/observability-and-analytics.md)
 - [API 契约 / API Contracts](docs/architecture/api-contracts.md)
+- [AI 平台架构 / AI Platform Architecture](docs/architecture/ai-platform.md)
 - [单体仓库迁移计划 / Monorepo Migration Plan](docs/architecture/monorepo-migration.md)
 - [部署切换指南 / Deployment Cutover Guide](docs/architecture/deployment-cutover.md)
 - [环境变量与密钥管理 / Secrets and Env Management](docs/architecture/secrets-and-env.md)

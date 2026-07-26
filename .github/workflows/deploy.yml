@@ -536,6 +536,27 @@ jobs:
           chmod 600 ~/.ssh/sun_world_deploy_key
           ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
 
+      - name: Sync AI secrets on Lighthouse
+        if: needs.detect-changes.outputs.api_changed == 'true'
+        env:
+          AI_CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.AI_CREDENTIAL_ENCRYPTION_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
+          LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
+          LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$AI_CREDENTIAL_ENCRYPTION_KEY" ] || [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "Required AI deployment secrets are not configured." >&2
+            exit 1
+          fi
+          printf '%s\0%s\0' "$AI_CREDENTIAL_ENCRYPTION_KEY" "$DEEPSEEK_API_KEY" |
+            ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+              -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+              "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" \
+              'python3 /home/lighthouse/blog/sun-world/deploy/backend/sync_ai_secrets.py /home/lighthouse/.config/blog_end/auth.env'
+
       - name: Deploy local images on Lighthouse
         env:
           WEB_CHANGED: ${{ needs.detect-changes.outputs.web_changed }}

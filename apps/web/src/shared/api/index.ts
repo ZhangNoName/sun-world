@@ -41,7 +41,10 @@ function buildPath(
   })
 }
 
-function toPathParams<Path extends MethodPath<Method>, Method extends HttpMethod>(
+function toPathParams<
+  Path extends MethodPath<Method>,
+  Method extends HttpMethod,
+>(
   options?: TypedRequestOptions<Path, Method>
 ): Record<string, PathParamValue> | undefined {
   return options?.path as Record<string, PathParamValue> | undefined
@@ -87,6 +90,18 @@ export function apiPut<Path extends MethodPath<'put'>>(
   options?: TypedRequestOptions<Path, 'put'>
 ): Promise<ApiSuccessData<Path, 'put'>> {
   return legacyRequest.put<ApiSuccessData<Path, 'put'>>(
+    buildPath(path, toPathParams(options)),
+    (body ?? {}) as object,
+    options?.config
+  )
+}
+
+export function apiPatch<Path extends MethodPath<'patch'>>(
+  path: Path,
+  body?: ApiRequestBody<Path, 'patch'>,
+  options?: TypedRequestOptions<Path, 'patch'>
+): Promise<ApiSuccessData<Path, 'patch'>> {
+  return legacyRequest.patch<ApiSuccessData<Path, 'patch'>>(
     buildPath(path, toPathParams(options)),
     (body ?? {}) as object,
     options?.config

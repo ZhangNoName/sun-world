@@ -198,6 +198,14 @@ html {
   overflow: hidden;
 }
 
+.main-container {
+  overflow-wrap: anywhere;
+}
+
+.main-container :where(img, video, iframe) {
+  max-width: 100%;
+}
+
 ::selection {
   color: var(--btn-text-color);
   background: var(--color-brand);
@@ -253,5 +261,15 @@ a {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-width: 695px) {
+  .main-container :where(h1, h2, h3, p) {
+    min-width: 0;
+  }
+
+  .main-container :where(button, a, input, select, textarea) {
+    touch-action: manipulation;
   }
 }

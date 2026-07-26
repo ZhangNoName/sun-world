@@ -163,6 +163,11 @@
   background: var(--bg-component);
 }
 @media (max-width: 720px) {
+  .admin-page {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
   .admin-heading,
   .admin-actions,
   .admin-row {
@@ -182,5 +187,14 @@
   .log-title time {
     width: 100%;
     margin-left: 0;
+  }
+
+  .admin-filters > *,
+  .admin-actions > * {
+    width: 100%;
+  }
+
+  .chart-card {
+    height: min(70vw, 320px);
   }
 }

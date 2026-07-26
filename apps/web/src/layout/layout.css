@@ -1,7 +1,9 @@
 .app-container {
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   overflow: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   color: var(--text-default);
   background: var(--bg-page);
   transition:
@@ -78,7 +80,7 @@
 }
 
 .mob-layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -94,10 +96,20 @@
 }
 
 .mob-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: calc(3.5rem + env(safe-area-inset-top));
+  padding-top: calc(0.5rem + env(safe-area-inset-top));
   border-bottom-width: 1px;
 }
 
 .mob-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  min-height: calc(3rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   border-top-width: 1px;
 }
 
@@ -107,7 +119,8 @@
 
 .main-container {
   flex: 1;
-  overflow: auto;
+  min-width: 0;
+  overflow: visible;
 }
 
 .mob-footer a {
@@ -116,6 +129,9 @@
   flex-direction: column;
   align-items: center;
   padding: 0.5rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  justify-content: center;
 }
 
 .drawer-overlay {
@@ -126,14 +142,23 @@
   background: rgb(0 0 0/0.45);
 }
 
-.mob-drawer {
+[data-slot='dialog-content'].mob-drawer {
   position: fixed;
-  inset: 0 auto 0 0;
+  inset: 0 auto auto 0;
   z-index: 31;
   width: min(280px, 75vw);
-  padding: 2rem 1rem;
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  padding: calc(1.25rem + env(safe-area-inset-top)) 1rem
+    calc(1.25rem + env(safe-area-inset-bottom));
+  gap: 0.75rem;
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
   background: var(--drawer-bg);
   box-shadow: var(--drawer-shadow);
+  transform: none;
+  translate: none;
 }
 
 .mob-drawer nav {
@@ -142,10 +167,39 @@
 }
 
 .mob-drawer a {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
   padding: 0.75rem;
+  border-radius: var(--radius-md);
+}
+
+.mob-drawer a:hover,
+.mob-drawer a[aria-current='page'] {
+  background: var(--bg-hover);
+}
+
+.shell-back-to-top {
+  --shell-back-to-top-bottom: 1.25rem;
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: var(--shell-back-to-top-bottom);
+  z-index: 25;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-default);
+}
+
+.shell-back-to-top .sun-icon {
+  transform: rotate(-90deg);
 }
 
 @media (max-width: 695px) {
+  .shell-back-to-top {
+    --shell-back-to-top-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+
   .mob-footer span {
     display: none;
   }

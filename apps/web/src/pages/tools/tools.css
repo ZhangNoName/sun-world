@@ -42,3 +42,19 @@
   color: var(--text-strong);
   font-size: var(--font-size-xl);
 }
+
+@media (max-width: 695px) {
+  .tools-page {
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .tool-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tool-card {
+    min-height: 0;
+    padding: var(--space-4);
+  }
+}

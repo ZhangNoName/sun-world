@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 
@@ -43,5 +43,26 @@ describe('AppLayout navigation', () => {
 
     expect(screen.getByRole('navigation', { name: '快捷导航' })).toBeVisible()
     expect(screen.getByRole('banner')).toHaveClass('theme-chrome')
+  })
+
+  it('offers a global back-to-top action after meaningful scrolling', async () => {
+    useDeviceStore.setState({ isMobile: true })
+    renderLayout()
+    const scrollRoot = document.querySelector<HTMLElement>('.app-container')
+    expect(scrollRoot).not.toBeNull()
+    Object.defineProperty(scrollRoot, 'scrollTop', {
+      configurable: true,
+      value: 480,
+      writable: true,
+    })
+
+    fireEvent.scroll(scrollRoot!)
+
+    const backToTop = await screen.findByRole('button', { name: '返回顶部' })
+    const scrollTo = vi.fn()
+    scrollRoot!.scrollTo = scrollTo
+    await userEvent.click(backToTop)
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
   })
 })

@@ -1,50 +1,25 @@
-.chat-workspace {
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-page);
+.ai-chat-page-wrapper {
+  min-height: 0;
+  overflow: hidden;
 }
-.conversation-sidebar {
+
+.ai-chat-page-wrapper > .sun-chat-shell {
   height: 100%;
+}
+
+.desk-layout:has(> .ai-chat-page-wrapper) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-container.ai-chat-page-wrapper {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
 }
-.conversation-sidebar nav {
-  display: flex;
-  flex-direction: column;
-}
-.message-stream {
-  flex: 1;
-  overflow: auto;
-  padding: 5rem max(1rem, calc((100% - 760px) / 2)) 8rem;
-}
-.message-stream article {
-  margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 1rem;
-  background: var(--bg-component);
-}
-.message-user {
-  margin-left: 20% !important;
-}
-.ai-composer {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  width: min(760px, calc(100% - 2rem));
-  transform: translateX(-50%);
-}
-.resize-handle {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 5px;
-  cursor: ew-resize;
-  border: 0;
-  background: transparent;
-}
-.model-chip {
-  position: absolute;
-  right: 1rem;
-  top: 1rem;
+
+.mob-layout:has(> .ai-chat-page-wrapper) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
 }

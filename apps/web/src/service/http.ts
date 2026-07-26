@@ -19,6 +19,16 @@ import {
 import type { RequestTracingMeta } from '@/shared/observability/request-id'
 import { trackApiError, trackApiTiming } from '@/shared/telemetry'
 import { toast } from '@sun-world/ui/toast'
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    suppressErrorToast?: boolean
+  }
+
+  interface InternalAxiosRequestConfig {
+    suppressErrorToast?: boolean
+  }
+}
 //基础URL，axios将会自动拼接在url前
 //process.env.NODE_ENV 判断是否为开发环境 根据不同环境使用不同的baseURL 方便调试
 // console.log('当前环境下的变量', import.meta.env)
@@ -125,7 +135,7 @@ service.interceptors.response.use(
         body,
         getResponseRequestId(response)
       )
-      notifyApiError(apiError)
+      notifyApiError(apiError, response.config)
       return Promise.reject(apiError)
     }
     // 非 envelope 响应（如 SSE、文件流）原样返回
@@ -145,7 +155,7 @@ service.interceptors.response.use(
           data,
           getAxiosErrorRequestId(error)
         )
-        notifyApiError(apiError)
+        notifyApiError(apiError, error.config)
         return Promise.reject(apiError)
       }
       // HTTP 状态码错误转换为 ApiError
@@ -156,7 +166,7 @@ service.interceptors.response.use(
         data,
         getAxiosErrorRequestId(error)
       )
-      notifyApiError(apiError)
+      notifyApiError(apiError, error.config)
       return Promise.reject(apiError)
     }
     // 网络错误（无响应）
@@ -168,7 +178,7 @@ service.interceptors.response.use(
         null,
         getAxiosErrorRequestId(error)
       )
-      notifyApiError(apiError)
+      notifyApiError(apiError, error.config)
       return Promise.reject(apiError)
     }
     const apiError = new ApiError(-1, '网络发生错误，请检查', undefined, null)
@@ -213,7 +223,8 @@ export class ApiError extends Error {
   }
 }
 
-function notifyApiError(error: ApiError) {
+function notifyApiError(error: ApiError, config?: AxiosRequestConfig) {
+  if (config?.suppressErrorToast) return
   const message = resolveErrorMessage(error, {
     fallback: '请求失败',
     preferBackendMessage: true,
@@ -283,7 +294,7 @@ export interface ResponseType<T = any> {
 
 // 核心处理代码 — interceptor 已完成 envelope 解包与 ApiError 转换
 const requestHandler = <T>(
-  method: 'get' | 'post' | 'put' | 'delete',
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete',
   url: string,
   params: object = {},
   config: AxiosRequestConfig = {}
@@ -299,6 +310,9 @@ const requestHandler = <T>(
       break
     case 'put':
       response = service.put(url, { ...params }, { ...config })
+      break
+    case 'patch':
+      response = service.patch(url, { ...params }, { ...config })
       break
     case 'delete':
       response = service.delete(url, { params: { ...params }, ...config })
@@ -351,6 +365,8 @@ const request = {
     requestHandler<T>('post', url, params, config),
   put: <T>(url: string, params?: object, config?: AxiosRequestConfig) =>
     requestHandler<T>('put', url, params, config),
+  patch: <T>(url: string, params?: object, config?: AxiosRequestConfig) =>
+    requestHandler<T>('patch', url, params, config),
   delete: <T>(url: string, params?: object, config?: AxiosRequestConfig) =>
     requestHandler<T>('delete', url, params, config),
 }

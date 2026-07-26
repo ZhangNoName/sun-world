@@ -55,6 +55,10 @@ keys in `VITE_*` variables. Vite bundles those values into browser JavaScript.
 If a key has ever been committed or bundled, rotate or revoke it on the
 provider side.
 
+The AI workspace never reads provider credentials from `VITE_*`. Personal
+provider keys are submitted once to the backend and are not cached in browser
+storage.
+
 ## 后端 / Backend (`apps/api`)
 
 ### 当前状态 / Current State
@@ -68,6 +72,33 @@ provider side.
 - LangSmith tracing keys are server-side only. The API reads
   `LANGSMITH_API_KEY`, with `LANGCHAIN_API_KEY` as a compatibility fallback.
   Do not expose either value through `VITE_*`.
+
+### AI provider variables
+
+| Variable | Purpose | Required |
+|---|---|---|
+| `DEEPSEEK_API_KEY` | Default DeepSeek credential | No; first default choice |
+| `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | DeepSeek endpoint/model override | No |
+| `OPENROUTER_API_KEY` | Default OpenRouter credential when DeepSeek is absent | No |
+| `OPENROUTER_BASE_URL` / `OPENROUTER_MODEL` | OpenRouter endpoint/model override | No |
+| `OPENAI_API_KEY` | Default OpenAI credential when earlier choices are absent | No |
+| `OPENAI_BASE_URL` / `OPENAI_MODEL` | OpenAI endpoint/model override | No |
+| `AI_URL` / `AI_CHAT_MODEL` | Legacy compatible endpoint/model fallback | No |
+| `AI_CREDENTIAL_ENCRYPTION_KEY` | Fernet key used to encrypt per-user provider keys in MySQL | Required before personal keys can be saved |
+
+Generate `AI_CREDENTIAL_ENCRYPTION_KEY` outside the repository with a secure
+Fernet-compatible generator, store it in the protected service environment,
+and keep it stable across deployments. Rotating it requires an explicit
+credential migration or users must save their provider keys again. API profile
+responses contain only a boolean and masked suffix, never ciphertext or
+plaintext.
+
+Production stores `AI_CREDENTIAL_ENCRYPTION_KEY` and `DEEPSEEK_API_KEY` as
+GitHub Actions repository secrets. When an API deployment runs, the workflow
+sends both values over the existing SSH channel through standard input and
+`deploy/backend/sync_ai_secrets.py` atomically updates only those entries in
+`/home/lighthouse/.config/blog_end/auth.env`. The helper preserves every other
+server-side variable, writes mode `0600`, and never prints secret values.
 
 ### 切换后 / After Cutover
 

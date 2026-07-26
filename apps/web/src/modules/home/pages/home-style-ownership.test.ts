@@ -22,7 +22,6 @@ const BLOG_OWNED_SELECTORS = [
   '.z-blog-card',
   '.loader-btn',
   '.empty-state',
-  '.back-to-top',
   '.waterfall-grid',
   '.waterfall-item',
 ]
@@ -38,6 +37,24 @@ describe('homepage style ownership', () => {
         homeStyles,
         `${selector} must not be redefined by home-react.css`
       ).not.toContain(selector)
+    }
+  })
+
+  it('leaves all shared application shell selectors to layout.css', () => {
+    for (const selector of [
+      '.app-container',
+      '.desk-layout',
+      '.z-header',
+      '.mob-layout',
+      '.mob-header',
+      '.mob-footer',
+      '.main-container',
+      '.drawer-overlay',
+      '.mob-drawer',
+    ]) {
+      expect(homeStyles, `${selector} belongs to layout.css`).not.toContain(
+        selector
+      )
     }
   })
 

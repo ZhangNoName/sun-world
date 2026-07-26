@@ -1,5 +1,64 @@
 # Current State
 
+## Modular AI Workspace Platform (2026-07-26, local main)
+
+- AI is split into a provider-neutral V1 contract, a standalone FastAPI
+  `src/modules/ai` service/repository/provider layer, reusable
+  `@sun-world/ai-ui`, and a thin Web adapter. Legacy chat routes stay mounted
+  for compatibility.
+- V1 streams ordered `run.started`, `content.delta`, `component.upsert`,
+  `message.completed`, and `run.failed` events. Render blocks cover sanitized
+  Markdown text, tables, lazy ECharts, safe links, saved-record references, and
+  namespaced custom components.
+- Authenticated conversations, structured messages, likes/dislikes, edits,
+  regeneration, and per-user provider profiles persist in four MySQL tables.
+  First-turn temporary IDs are reconciled to server IDs and follow-up runs use
+  stored history. Guest runs never forge a persistent user identity.
+- DeepSeek is the first server default, with correctly paired OpenRouter and
+  OpenAI fallbacks. Users can select provider/base URL/model and save an API
+  key encrypted by `AI_CREDENTIAL_ENCRYPTION_KEY`; browser storage and API
+  responses never contain saved keys.
+- The package-owned GPT-style UI supports copy, inline edit/regenerate,
+  like/dislike, stop/retry, resizable/collapsible history, provider settings,
+  responsive drawers, package renderer injection, and inline owned errors.
+- Fresh complete `corepack pnpm check` verification passed 17/17 gates,
+  including 19 backend AI tests, 6 contract tests, 8 AI UI tests, 76 Web tests,
+  Web typecheck, API checks, package builds, performance budgets, and Compose
+  static validation. The frontend Docker cache layer includes the AI UI
+  package manifest.
+  Browser QA passed at 1280x720 and 390x844, including model settings, full
+  viewport sizing, mobile drawer/scrim, controlled send, and inline failure.
+- Full architecture and extension rules are in
+  `docs/architecture/ai-platform.md`. The work has not been committed, pushed,
+  deployed, or applied to a production database.
+
+## Mobile Experience Unification (2026-07-26, local main)
+
+- Ordinary routes use `.app-container` as the single page scroll root.
+  Mobile header and bottom navigation are sticky, safe-area-aware, and remain
+  visible during long-page scrolling.
+- A shared layout-level `返回顶部` control appears after 360px on all ordinary
+  routes, respects reduced-motion preference, and sits above mobile navigation.
+  The older blog-only implementation was removed.
+- Mobile navigation is a full-height left drawer with internal overflow,
+  background scroll locking, route-aware active state, and correct overlay
+  class forwarding through `DialogPanel`. Its prior half-offscreen placement
+  came from an unoverridden Base UI `translate: -50% -50%`.
+- Homepage CSS no longer duplicates shared shell selectors. Blog cards,
+  article reading and authoring, tools, video, game tiles, Keep, administration,
+  and canvas have phone-specific sizing and local overflow safeguards.
+- Browser QA at 390x844 and 320x700 covered `/home`, `/blog/39`, `/tools`,
+  `/video`, `/me`, `/game_tiles`, `/keep`, `/login`, `/register`,
+  `/new_article`, `/manage`, `/manage/metrics`, `/manage/logs`, `/canvas`, and
+  `/aigc`. Every route kept document width equal to viewport width; wide game
+  previews and management tables scroll only inside their containers.
+- Fresh verification passed focused layout/home/blog/editor tests, Web
+  typecheck, 48 UI tests, and the complete `corepack pnpm check:web` pipeline
+  with 70 Web tests, production build, 30 article SSG pages, budgets, and chunk
+  checks. The first full UI run had one Select timing failure; its isolated and
+  full-suite reruns both passed without a code change.
+- The work is local only and has not been committed, pushed, or deployed.
+
 ## Figma-Like Editor Foundation (2026-07-26, local feature branch)
 
 - `@sun-world/editor` now separates persistent scene state (`EditorDocument`),

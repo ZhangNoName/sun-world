@@ -8,6 +8,7 @@ import LanguageSwitch from '@/components/LanguageSwitch'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import { useDeviceStore } from '@/store/tg'
 import type { RouteMeta } from '@/modules/types'
+import { BackToTopButton } from './BackToTopButton'
 import Footer from './footer'
 import Header from './header'
 import './layout.css'
@@ -26,6 +27,7 @@ export function AppLayout() {
   const meta =
     (matches.at(-1)?.handle as { meta?: RouteMeta } | undefined)?.meta ?? {}
   const [drawer, setDrawer] = useState(false)
+  const showBackToTop = !(meta.hideHeader && meta.hideFooter)
   useEffect(() => {
     setDrawer(false)
   }, [location.pathname])
@@ -38,6 +40,9 @@ export function AppLayout() {
           <div className={`content ${meta.className ?? ''}`}>
             <Outlet />
           </div>
+          {showBackToTop ? (
+            <BackToTopButton resetKey={location.pathname} />
+          ) : null}
           {/* {meta.hideFooter ? null : <Footer />} */}
         </div>
       </div>
@@ -74,7 +79,13 @@ export function AppLayout() {
                   '/video',
                   '/me',
                 ].map((path) => (
-                  <Link key={path} to={path}>
+                  <Link
+                    key={path}
+                    to={path}
+                    aria-current={
+                      location.pathname === path ? 'page' : undefined
+                    }
+                  >
                     {path.slice(1) || 'home'}
                   </Link>
                 ))}
@@ -101,6 +112,9 @@ export function AppLayout() {
             ))}
           </nav>
         )}
+        {showBackToTop ? (
+          <BackToTopButton resetKey={location.pathname} />
+        ) : null}
       </div>
     </div>
   )

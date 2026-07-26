@@ -65,6 +65,16 @@ const checks = [
     args: ['build:ui'],
   },
   {
+    label: 'AI UI package test',
+    command: 'pnpm',
+    args: ['test:ai-ui'],
+  },
+  {
+    label: 'AI UI package build',
+    command: 'pnpm',
+    args: ['build:ai-ui'],
+  },
+  {
     label: 'Frontend full check',
     command: 'pnpm',
     args: ['check:web'],

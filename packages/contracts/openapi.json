@@ -176,6 +176,591 @@
         "title": "AdminLogSnapshot",
         "type": "object"
       },
+      "AiChartBlock": {
+        "properties": {
+          "option": {
+            "additionalProperties": true,
+            "title": "Option",
+            "type": "object"
+          },
+          "summary": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "type": {
+            "const": "chart",
+            "default": "chart",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": ["option", "summary"],
+        "title": "AiChartBlock",
+        "type": "object"
+      },
+      "AiConversation": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/AiMessage"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["id", "title"],
+        "title": "AiConversation",
+        "type": "object"
+      },
+      "AiConversationSummary": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["id", "title"],
+        "title": "AiConversationSummary",
+        "type": "object"
+      },
+      "AiCustomBlock": {
+        "properties": {
+          "name": {
+            "maxLength": 160,
+            "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$",
+            "title": "Name",
+            "type": "string"
+          },
+          "payload": {
+            "title": "Payload"
+          },
+          "type": {
+            "const": "custom",
+            "default": "custom",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": ["name", "payload"],
+        "title": "AiCustomBlock",
+        "type": "object"
+      },
+      "AiFeedbackRequest": {
+        "properties": {
+          "value": {
+            "enum": ["like", "dislike", "none"],
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": ["value"],
+        "title": "AiFeedbackRequest",
+        "type": "object"
+      },
+      "AiLinkBlock": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "label": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "type": {
+            "const": "link",
+            "default": "link",
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": ["label", "url"],
+        "title": "AiLinkBlock",
+        "type": "object"
+      },
+      "AiMessage": {
+        "properties": {
+          "blocks": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "chart": "#/components/schemas/AiChartBlock",
+                  "custom": "#/components/schemas/AiCustomBlock",
+                  "link": "#/components/schemas/AiLinkBlock",
+                  "record": "#/components/schemas/AiRecordBlock",
+                  "table": "#/components/schemas/AiTableBlock",
+                  "text": "#/components/schemas/AiTextBlock"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AiTextBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/AiTableBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/AiChartBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/AiLinkBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/AiRecordBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/AiCustomBlock"
+                }
+              ]
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "enum": ["like", "dislike"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": ["user", "assistant", "system", "tool"],
+            "title": "Role",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "status": {
+            "default": "completed",
+            "enum": [
+              "pending",
+              "streaming",
+              "completed",
+              "interrupted",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["id", "conversation_id", "role", "blocks", "sequence"],
+        "title": "AiMessage",
+        "type": "object"
+      },
+      "AiMessageEditRequest": {
+        "properties": {
+          "content": {
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          }
+        },
+        "required": ["content"],
+        "title": "AiMessageEditRequest",
+        "type": "object"
+      },
+      "AiProviderDescriptor": {
+        "properties": {
+          "default_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Base Url"
+          },
+          "default_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Model"
+          },
+          "id": {
+            "enum": ["deepseek", "openai", "openrouter", "openai-compatible"],
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "title": "AiProviderDescriptor",
+        "type": "object"
+      },
+      "AiProviderProfile": {
+        "properties": {
+          "api_key_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Hint"
+          },
+          "base_url": {
+            "title": "Base Url",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "has_api_key": {
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "name",
+          "base_url",
+          "model",
+          "is_default",
+          "has_api_key"
+        ],
+        "title": "AiProviderProfile",
+        "type": "object"
+      },
+      "AiProviderProfileInput": {
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "base_url": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Base Url",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "is_default": {
+            "default": false,
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "provider": {
+            "enum": ["deepseek", "openai", "openrouter", "openai-compatible"],
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": ["provider", "name", "base_url", "model"],
+        "title": "AiProviderProfileInput",
+        "type": "object"
+      },
+      "AiRecordBlock": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "record_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Record Id",
+            "type": "string"
+          },
+          "record_type": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Record Type",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "const": "record",
+            "default": "record",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": ["record_type", "record_id", "title"],
+        "title": "AiRecordBlock",
+        "type": "object"
+      },
+      "AiRunRequest": {
+        "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "message": {
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "parent_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Message Id"
+          },
+          "provider_profile_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Profile Id"
+          }
+        },
+        "required": ["message"],
+        "title": "AiRunRequest",
+        "type": "object"
+      },
+      "AiTableBlock": {
+        "properties": {
+          "caption": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caption"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/AiTableColumn"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "type": {
+            "const": "table",
+            "default": "table",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": ["columns", "rows"],
+        "title": "AiTableBlock",
+        "type": "object"
+      },
+      "AiTableColumn": {
+        "properties": {
+          "key": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": ["key", "label"],
+        "title": "AiTableColumn",
+        "type": "object"
+      },
+      "AiTextBlock": {
+        "properties": {
+          "format": {
+            "default": "markdown",
+            "enum": ["plain", "markdown"],
+            "title": "Format",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "text",
+            "default": "text",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": ["text"],
+        "title": "AiTextBlock",
+        "type": "object"
+      },
       "ApiResponse_AdminAlertsSnapshot_": {
         "properties": {
           "code": {
@@ -238,6 +823,102 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[AdminLogSnapshot]",
+        "type": "object"
+      },
+      "ApiResponse_AiConversation_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiConversation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiConversation]",
+        "type": "object"
+      },
+      "ApiResponse_AiMessage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiMessage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiMessage]",
+        "type": "object"
+      },
+      "ApiResponse_AiProviderProfile_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiProviderProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiProviderProfile]",
         "type": "object"
       },
       "ApiResponse_AuthSession_": {
@@ -753,6 +1434,114 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[bool]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiConversationSummary__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiConversationSummary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiConversationSummary]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiProviderDescriptor__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiProviderDescriptor"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiProviderDescriptor]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiProviderProfile__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiProviderProfile"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiProviderProfile]]",
         "type": "object"
       },
       "ApiResponse_str_": {
@@ -2773,6 +3562,294 @@
         },
         "summary": "Generate Image",
         "tags": ["ai"]
+      }
+    },
+    "/ai/v1/conversations": {
+      "get": {
+        "operationId": "list_conversations_ai_v1_conversations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiConversationSummary__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Conversations",
+        "tags": ["ai-v1"]
+      },
+      "post": {
+        "operationId": "create_conversation_ai_v1_conversations_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiConversation_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Conversation",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/conversations/{conversation_id}": {
+      "get": {
+        "operationId": "get_conversation_ai_v1_conversations__conversation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiConversation_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Conversation",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/messages/{message_id}": {
+      "patch": {
+        "operationId": "edit_message_ai_v1_messages__message_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiMessageEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiMessage_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Message",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/messages/{message_id}/feedback": {
+      "put": {
+        "operationId": "set_message_feedback_ai_v1_messages__message_id__feedback_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiFeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Message Feedback",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/provider-profiles": {
+      "get": {
+        "operationId": "list_provider_profiles_ai_v1_provider_profiles_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiProviderProfile__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Provider Profiles",
+        "tags": ["ai-v1"]
+      },
+      "post": {
+        "operationId": "save_provider_profile_ai_v1_provider_profiles_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiProviderProfileInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiProviderProfile_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Provider Profile",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/providers": {
+      "get": {
+        "operationId": "list_providers_ai_v1_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiProviderDescriptor__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Providers",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/runs/stream": {
+      "post": {
+        "operationId": "stream_run_ai_v1_runs_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stream Run",
+        "tags": ["ai-v1"]
       }
     },
     "/auth/login": {

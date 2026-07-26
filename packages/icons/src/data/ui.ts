@@ -99,6 +99,53 @@ export const uiIcons = {
       ['path', { d: 'M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z' }],
     ],
   },
+  copy: {
+    name: 'copy',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['rect', { width: 14, height: 14, x: 8, y: 8, rx: 2 }],
+      [
+        'path',
+        { d: 'M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' },
+      ],
+    ],
+  },
+  'thumbs-up': {
+    name: 'thumbs-up',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M7 10v12' }],
+      [
+        'path',
+        {
+          d: 'M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 7A2 2 0 0 1 17.5 21H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2h0a3.1 3.1 0 0 1 3 3.9Z',
+        },
+      ],
+    ],
+  },
+  'thumbs-down': {
+    name: 'thumbs-down',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M17 14V2' }],
+      [
+        'path',
+        {
+          d: 'm9 18.1 1-4.1H4.2a2 2 0 0 1-1.9-2.6l2.3-7A2 2 0 0 1 6.5 3H20a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2.8a2 2 0 0 0-1.8 1.1L12 22h0a3.1 3.1 0 0 1-3-3.9Z',
+        },
+      ],
+    ],
+  },
+  'refresh-cw': {
+    name: 'refresh-cw',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M21 12a9 9 0 0 1-15.2 6.5L3 16' }],
+      ['path', { d: 'M3 21v-5h5' }],
+      ['path', { d: 'M3 12A9 9 0 0 1 18.2 5.5L21 8' }],
+      ['path', { d: 'M21 3v5h-5' }],
+    ],
+  },
   'more-horizontal': {
     name: 'more-horizontal',
     viewBox: '0 0 24 24',

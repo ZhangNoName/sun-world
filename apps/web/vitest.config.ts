@@ -14,6 +14,10 @@ export default defineConfig({
         replacement: resolve(__dirname, '../../packages/contracts/src'),
       },
       {
+        find: '@sun-world/ai-ui',
+        replacement: resolve(__dirname, '../../packages/ai-ui/src'),
+      },
+      {
         find: '@sun-world/editor',
         replacement: resolve(__dirname, '../../packages/editor/src'),
       },

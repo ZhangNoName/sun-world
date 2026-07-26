@@ -1,55 +1,82 @@
-import type { AiStreamMessage } from './types'
+import {
+  AI_PROTOCOL_VERSION,
+  isAiStreamEvent,
+  type AiStreamEvent,
+} from '@sun-world/contracts'
 
-interface Callbacks {
-  onMessage: (content: string) => void
-  onComplete: () => void
+interface AiSseCallbacks {
+  onEvent: (event: AiStreamEvent) => void
+  onProtocolError?: (error: Error) => void
 }
-export function parseSseChunks(callbacks: Callbacks) {
+
+export function parseAiSseChunks(callbacks: AiSseCallbacks) {
   let pending = ''
-  let completed = false
-  const line = (raw: string) => {
-    const trimmed = raw.trim()
-    if (!trimmed.startsWith('data:')) return
-    const payload = trimmed.slice(5).trim()
-    if (payload === '[DONE]') {
-      completed = true
-      callbacks.onComplete()
+  let expectedSequence = 0
+  const eventIds = new Set<string>()
+
+  const processFrame = (frame: string) => {
+    const payload = frame
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.slice(5).trimStart())
+      .join('\n')
+      .trim()
+    if (!payload || payload === '[DONE]') return
+
+    let candidate: unknown
+    try {
+      candidate = JSON.parse(payload)
+    } catch {
+      callbacks.onProtocolError?.(new Error('AI 返回了无法解析的数据'))
       return
     }
-    try {
-      const data = JSON.parse(payload) as AiStreamMessage
-      if (data.error) throw new Error(data.error)
-      if (data.done) {
-        completed = true
-        callbacks.onComplete()
-      } else if (data.token || data.text)
-        callbacks.onMessage(data.token ?? data.text ?? '')
-    } catch (error) {
-      if (payload.startsWith('{')) throw error
+
+    if (
+      candidate &&
+      typeof candidate === 'object' &&
+      'version' in candidate &&
+      candidate.version !== AI_PROTOCOL_VERSION
+    ) {
+      callbacks.onProtocolError?.(new Error('不支持的 AI 协议版本'))
+      return
     }
+    if (!isAiStreamEvent(candidate)) {
+      callbacks.onProtocolError?.(new Error('AI 返回的数据格式不完整'))
+      return
+    }
+    if (eventIds.has(candidate.event_id)) return
+    if (candidate.sequence !== expectedSequence) {
+      callbacks.onProtocolError?.(new Error('AI 流事件顺序不完整'))
+      return
+    }
+
+    eventIds.add(candidate.event_id)
+    expectedSequence += 1
+    callbacks.onEvent(candidate)
   }
+
   return {
     push(chunk: string) {
       pending += chunk
-      const lines = pending.split('\n')
-      pending = lines.pop() ?? ''
-      lines.forEach(line)
+      const frames = pending.split(/\r?\n\r?\n/)
+      pending = frames.pop() ?? ''
+      frames.forEach(processFrame)
     },
     finish() {
-      if (pending.trim()) line(pending)
-      return completed
+      if (pending.trim()) processFrame(pending)
+      pending = ''
     },
   }
 }
 
-export async function readSseStream(
+export async function readAiSseStream(
   stream: ReadableStream<Uint8Array>,
-  callbacks: Callbacks,
+  callbacks: AiSseCallbacks,
   signal?: AbortSignal
 ) {
   const reader = stream.getReader()
   const decoder = new TextDecoder()
-  const parser = parseSseChunks(callbacks)
+  const parser = parseAiSseChunks(callbacks)
   try {
     while (true) {
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
@@ -57,7 +84,8 @@ export async function readSseStream(
       if (done) break
       parser.push(decoder.decode(value, { stream: true }))
     }
-    if (!parser.finish()) callbacks.onComplete()
+    parser.push(decoder.decode())
+    parser.finish()
   } finally {
     reader.releaseLock()
   }

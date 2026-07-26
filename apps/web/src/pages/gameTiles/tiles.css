@@ -70,8 +70,25 @@
 @media (max-width: 820px) {
   .tiles-page {
     grid-template-columns: 1fr;
+    padding: var(--space-3);
   }
   .tiles-preview {
-    min-height: 50vh;
+    min-height: min(50vh, 28rem);
+  }
+}
+
+@media (max-width: 560px) {
+  .tiles-preview,
+  .tiles-config {
+    padding: var(--space-3);
+  }
+
+  .config-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .export-options > *,
+  .tile-actions > * {
+    flex: 1 1 100%;
   }
 }

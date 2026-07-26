@@ -42,6 +42,7 @@ const scripts = [
   },
   { script: resolve(repoRoot, 'scripts/check-request-metrics.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-rum-metrics.py'), args: [] },
+  { script: resolve(repoRoot, 'scripts/check-ai-secret-sync.py'), args: [] },
 ]
 
 const candidates = [
@@ -95,6 +96,28 @@ for (const candidate of candidates) {
   }
 
   if (failed) continue
+  const aiTests = spawnSync(
+    candidate,
+    [
+      '-m',
+      'unittest',
+      'discover',
+      '-s',
+      resolve(repoRoot, 'apps/api/tests'),
+      '-p',
+      'test_ai_*.py',
+    ],
+    {
+      cwd: repoRoot,
+      stdio: 'inherit',
+      shell: process.platform === 'win32' && !isPath,
+    }
+  )
+  if (aiTests.error) {
+    lastError = aiTests.error.message
+    continue
+  }
+  if ((aiTests.status ?? 1) !== 0) process.exit(aiTests.status ?? 1)
   process.exit(0)
 }
 

@@ -93,6 +93,16 @@ installing `bash` and `libpq5`, and pip uses Tencent's PyPI mirror, so Lighthous
 avoid the slow GitHub-to-CCR upload path and reduce cross-region package
 downloads.
 
+## AI Secrets
+
+The repository Actions settings contain `AI_CREDENTIAL_ENCRYPTION_KEY` and
+`DEEPSEEK_API_KEY`. Before an API cutover, the deploy job sends their values
+through SSH standard input to `deploy/backend/sync_ai_secrets.py`. The helper
+atomically updates only those two entries in the existing production secret
+file, preserves all other variables, sets file mode `0600`, and emits no secret
+values. Do not pass either value as a command-line argument or include it in
+workflow logs.
+
 ## MySQL Schema Guard
 
 The API image contains a conservative MySQL schema migration module:

@@ -25,7 +25,6 @@ export function BlogHomeFeed() {
   const [keyword, setKeyword] = useState('')
   const [sort, setSort] = useState('updated_at:desc')
   const [searchOpen, setSearchOpen] = useState(false)
-  const [showTop, setShowTop] = useState(false)
   const [mode, setMode] = useState<'list' | 'waterfall'>('list')
   const width = useViewportWidth()
   const loaderRef = useRef<HTMLDivElement>(null)
@@ -38,13 +37,6 @@ export function BlogHomeFeed() {
     if (loaded)
       void blog.loadFirstPage().catch(() => toast.error('获取博客列表失败'))
   }, [loaded])
-
-  useEffect(() => {
-    const root = document.querySelector<HTMLElement>('.app-container')
-    const onScroll = () => setShowTop(Boolean(root && root.scrollTop > 360))
-    root?.addEventListener('scroll', onScroll, { passive: true })
-    return () => root?.removeEventListener('scroll', onScroll)
-  }, [])
 
   useEffect(() => {
     if (width <= 695) setMode('list')
@@ -195,19 +187,6 @@ export function BlogHomeFeed() {
           {blog.hasMore ? '加载更多' : '没有更多了'}
         </Button>
       </div>
-      {showTop ? (
-        <Button
-          className="back-to-top"
-          aria-label="回到顶部"
-          onClick={() =>
-            document
-              .querySelector<HTMLElement>('.app-container')
-              ?.scrollTo({ top: 0, behavior: 'smooth' })
-          }
-        >
-          <SunIcon name="chevron-right" />
-        </Button>
-      ) : null}
     </main>
   )
 }

@@ -18,6 +18,7 @@
 
     "baseUrl": ".",
     "paths": {
+      "@sun-world/ai-ui": ["packages/ai-ui/src/index.ts"],
       "@/*": ["packages/*/src"],
       "@blog/*": ["apps/web/src/*"],
       "@icons/*": ["packages/icons/src/*"],

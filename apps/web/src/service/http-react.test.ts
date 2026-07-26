@@ -5,4 +5,8 @@ describe('HTTP React state boundary', () => {
     expect(source).toContain('useAuthStore.getState()')
     expect(source).not.toContain("import('element-plus')")
   })
+
+  it('lets feature-owned error surfaces suppress duplicate global toasts', () => {
+    expect(source).toContain('config?.suppressErrorToast')
+  })
 })

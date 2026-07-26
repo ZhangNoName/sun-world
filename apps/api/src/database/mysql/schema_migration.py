@@ -121,6 +121,67 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
         "primary_key": ["blog_id", "tag_id"],
         "indexes": ["KEY `idx_blog_tag_tag_id` (`tag_id`)"],
     },
+    "ai_provider_profiles": {
+        "columns": [
+            {"name": "id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "user_id", "definition": "INT NOT NULL", "type": "int"},
+            {"name": "provider", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "name", "definition": "VARCHAR(120) NOT NULL", "type": "varchar"},
+            {"name": "base_url", "definition": "VARCHAR(2048) NOT NULL", "type": "varchar"},
+            {"name": "model", "definition": "VARCHAR(200) NOT NULL", "type": "varchar"},
+            {"name": "api_key_ciphertext", "definition": "TEXT NULL", "type": "varchar"},
+            {"name": "api_key_hint", "definition": "VARCHAR(32) NULL", "type": "varchar"},
+            {"name": "is_default", "definition": "TINYINT(1) NOT NULL DEFAULT 0", "type": "tinyint"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "KEY `idx_ai_provider_profiles_user` (`user_id`, `updated_at`)",
+            "KEY `idx_ai_provider_profiles_default` (`user_id`, `is_default`)",
+        ],
+    },
+    "ai_conversations": {
+        "columns": [
+            {"name": "id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "user_id", "definition": "INT NOT NULL", "type": "int"},
+            {"name": "title", "definition": "VARCHAR(500) NOT NULL", "type": "varchar"},
+            {"name": "is_deleted", "definition": "TINYINT(1) NOT NULL DEFAULT 0", "type": "tinyint"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": ["KEY `idx_ai_conversations_user_updated` (`user_id`, `is_deleted`, `updated_at`)"],
+    },
+    "ai_messages": {
+        "columns": [
+            {"name": "id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "conversation_id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "role", "definition": "VARCHAR(32) NOT NULL", "type": "varchar"},
+            {"name": "blocks", "definition": "JSON NOT NULL", "type": "json"},
+            {"name": "sequence", "definition": "INT NOT NULL", "type": "int"},
+            {"name": "status", "definition": "VARCHAR(32) NOT NULL DEFAULT 'completed'", "type": "varchar"},
+            {"name": "parent_message_id", "definition": "VARCHAR(64) NULL", "type": "varchar"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "UNIQUE KEY `idx_ai_messages_sequence` (`conversation_id`, `sequence`)",
+            "KEY `idx_ai_messages_parent` (`parent_message_id`)",
+        ],
+    },
+    "ai_message_feedback": {
+        "columns": [
+            {"name": "message_id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "user_id", "definition": "INT NOT NULL", "type": "int"},
+            {"name": "value", "definition": "VARCHAR(16) NOT NULL", "type": "varchar"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["message_id", "user_id"],
+        "indexes": ["KEY `idx_ai_message_feedback_user` (`user_id`, `updated_at`)"],
+    },
 }
 
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -201,6 +262,7 @@ def column_type_matches(actual_type: str, expected_type: str) -> bool:
         "varchar": {"varchar", "char", "text", "mediumtext", "longtext"},
         "datetime": {"datetime", "timestamp"},
         "date": {"date", "datetime", "timestamp"},
+        "json": {"json"},
     }
     return normalized in aliases.get(expected_type, {expected_type})
 

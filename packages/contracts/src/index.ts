@@ -17,27 +17,25 @@ export type {
   webhooks,
 } from './generated-api-types'
 
-export {
-  API_ROUTES,
-  API_ROUTE_GROUPS,
-  API_ROUTE_METHODS,
-} from './routes'
-export type {
-  ApiRoute,
-  ApiRouteGroup,
-} from './routes'
+export { API_ROUTES, API_ROUTE_GROUPS, API_ROUTE_METHODS } from './routes'
+export type { ApiRoute, ApiRouteGroup } from './routes'
 
-export {
-  API_SUCCESS_CODE,
-  DEFAULT_PAGE_SIZE,
-} from './shared'
-export type {
-  ApiError,
-  ApiResponse,
-  PageRequest,
-  PageResult,
-} from './shared'
+export { API_SUCCESS_CODE, DEFAULT_PAGE_SIZE } from './shared'
+export type { ApiError, ApiResponse, PageRequest, PageResult } from './shared'
 
+export type { ApiEndpoint } from './http'
+
+export { AI_PROTOCOL_VERSION, isAiStreamEvent } from './ai'
 export type {
-  ApiEndpoint,
-} from './http'
+  AiChartBlock,
+  AiContentBlock,
+  AiCustomBlock,
+  AiJsonPrimitive,
+  AiJsonValue,
+  AiLinkBlock,
+  AiRecordBlock,
+  AiStreamEvent,
+  AiStreamEventType,
+  AiTableBlock,
+  AiTextBlock,
+} from './ai'

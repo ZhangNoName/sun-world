@@ -189,6 +189,127 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/ai/v1/conversations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Conversations */
+    get: operations['list_conversations_ai_v1_conversations_get']
+    put?: never
+    /** Create Conversation */
+    post: operations['create_conversation_ai_v1_conversations_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/conversations/{conversation_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Conversation */
+    get: operations['get_conversation_ai_v1_conversations__conversation_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/messages/{message_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Edit Message */
+    patch: operations['edit_message_ai_v1_messages__message_id__patch']
+    trace?: never
+  }
+  '/ai/v1/messages/{message_id}/feedback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Set Message Feedback */
+    put: operations['set_message_feedback_ai_v1_messages__message_id__feedback_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/provider-profiles': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Provider Profiles */
+    get: operations['list_provider_profiles_ai_v1_provider_profiles_get']
+    put?: never
+    /** Save Provider Profile */
+    post: operations['save_provider_profile_ai_v1_provider_profiles_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/providers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Providers */
+    get: operations['list_providers_ai_v1_providers_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/runs/stream': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Stream Run */
+    post: operations['stream_run_ai_v1_runs_stream_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/auth/login': {
     parameters: {
       query?: never
@@ -817,6 +938,270 @@ export interface components {
       /** Retained File Count */
       retained_file_count: number
     }
+    /** AiChartBlock */
+    AiChartBlock: {
+      /** Option */
+      option: {
+        [key: string]: unknown
+      }
+      /** Summary */
+      summary: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'chart'
+    }
+    /** AiConversation */
+    AiConversation: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Id */
+      id: string
+      /** Messages */
+      messages?: components['schemas']['AiMessage'][]
+      /** Title */
+      title: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiConversationSummary */
+    AiConversationSummary: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Id */
+      id: string
+      /** Title */
+      title: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiCustomBlock */
+    AiCustomBlock: {
+      /** Name */
+      name: string
+      /** Payload */
+      payload: unknown
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'custom'
+    }
+    /** AiFeedbackRequest */
+    AiFeedbackRequest: {
+      /**
+       * Value
+       * @enum {string}
+       */
+      value: 'like' | 'dislike' | 'none'
+    }
+    /** AiLinkBlock */
+    AiLinkBlock: {
+      /** Description */
+      description?: string | null
+      /** Label */
+      label: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'link'
+      /** Url */
+      url: string
+    }
+    /** AiMessage */
+    AiMessage: {
+      /** Blocks */
+      blocks: (
+        | components['schemas']['AiTextBlock']
+        | components['schemas']['AiTableBlock']
+        | components['schemas']['AiChartBlock']
+        | components['schemas']['AiLinkBlock']
+        | components['schemas']['AiRecordBlock']
+        | components['schemas']['AiCustomBlock']
+      )[]
+      /** Conversation Id */
+      conversation_id: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Feedback */
+      feedback?: ('like' | 'dislike') | null
+      /** Id */
+      id: string
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'user' | 'assistant' | 'system' | 'tool'
+      /** Sequence */
+      sequence: number
+      /**
+       * Status
+       * @default completed
+       * @enum {string}
+       */
+      status: 'pending' | 'streaming' | 'completed' | 'interrupted' | 'failed'
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiMessageEditRequest */
+    AiMessageEditRequest: {
+      /** Content */
+      content: string
+    }
+    /** AiProviderDescriptor */
+    AiProviderDescriptor: {
+      /** Default Base Url */
+      default_base_url?: string | null
+      /** Default Model */
+      default_model?: string | null
+      /**
+       * Id
+       * @enum {string}
+       */
+      id: 'deepseek' | 'openai' | 'openrouter' | 'openai-compatible'
+      /** Name */
+      name: string
+    }
+    /** AiProviderProfile */
+    AiProviderProfile: {
+      /** Api Key Hint */
+      api_key_hint?: string | null
+      /** Base Url */
+      base_url: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Has Api Key */
+      has_api_key: boolean
+      /** Id */
+      id: string
+      /** Is Default */
+      is_default: boolean
+      /** Model */
+      model: string
+      /** Name */
+      name: string
+      /** Provider */
+      provider: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiProviderProfileInput */
+    AiProviderProfileInput: {
+      /** Api Key */
+      api_key?: string | null
+      /** Base Url */
+      base_url: string
+      /** Id */
+      id?: string | null
+      /**
+       * Is Default
+       * @default false
+       */
+      is_default: boolean
+      /** Model */
+      model: string
+      /** Name */
+      name: string
+      /**
+       * Provider
+       * @enum {string}
+       */
+      provider: 'deepseek' | 'openai' | 'openrouter' | 'openai-compatible'
+    }
+    /** AiRecordBlock */
+    AiRecordBlock: {
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown
+      }
+      /** Record Id */
+      record_id: string
+      /** Record Type */
+      record_type: string
+      /** Title */
+      title: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'record'
+    }
+    /** AiRunRequest */
+    AiRunRequest: {
+      /** Conversation Id */
+      conversation_id?: string | null
+      /** Message */
+      message: string
+      /** Parent Message Id */
+      parent_message_id?: string | null
+      /** Provider Profile Id */
+      provider_profile_id?: string | null
+    }
+    /** AiTableBlock */
+    AiTableBlock: {
+      /** Caption */
+      caption?: string | null
+      /** Columns */
+      columns: components['schemas']['AiTableColumn'][]
+      /** Rows */
+      rows: {
+        [key: string]: unknown
+      }[]
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'table'
+    }
+    /** AiTableColumn */
+    AiTableColumn: {
+      /** Key */
+      key: string
+      /** Label */
+      label: string
+    }
+    /** AiTextBlock */
+    AiTextBlock: {
+      /**
+       * Format
+       * @default markdown
+       * @enum {string}
+       */
+      format: 'plain' | 'markdown'
+      /** Text */
+      text: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'text'
+    }
     /** ApiResponse[AdminAlertsSnapshot] */
     ApiResponse_AdminAlertsSnapshot_: {
       /** Code */
@@ -830,6 +1215,30 @@ export interface components {
       /** Code */
       code: number | string
       data?: components['schemas']['AdminLogSnapshot'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiConversation] */
+    ApiResponse_AiConversation_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiConversation'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiMessage] */
+    ApiResponse_AiMessage_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiMessage'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiProviderProfile] */
+    ApiResponse_AiProviderProfile_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiProviderProfile'] | null
       /** Msg */
       msg: string
     }
@@ -962,6 +1371,33 @@ export interface components {
       code: number | string
       /** Data */
       data?: boolean | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiConversationSummary]] */
+    ApiResponse_list_AiConversationSummary__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiConversationSummary'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiProviderDescriptor]] */
+    ApiResponse_list_AiProviderDescriptor__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiProviderDescriptor'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiProviderProfile]] */
+    ApiResponse_list_AiProviderProfile__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiProviderProfile'][] | null
       /** Msg */
       msg: string
     }
@@ -2164,6 +2600,253 @@ export interface operations {
       cookie?: never
     }
     requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_conversations_ai_v1_conversations_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiConversationSummary__']
+        }
+      }
+    }
+  }
+  create_conversation_ai_v1_conversations_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiConversation_']
+        }
+      }
+    }
+  }
+  get_conversation_ai_v1_conversations__conversation_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        conversation_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiConversation_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  edit_message_ai_v1_messages__message_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        message_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiMessageEditRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiMessage_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  set_message_feedback_ai_v1_messages__message_id__feedback_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        message_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiFeedbackRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_provider_profiles_ai_v1_provider_profiles_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiProviderProfile__']
+        }
+      }
+    }
+  }
+  save_provider_profile_ai_v1_provider_profiles_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiProviderProfileInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiProviderProfile_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_providers_ai_v1_providers_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiProviderDescriptor__']
+        }
+      }
+    }
+  }
+  stream_run_ai_v1_runs_stream_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiRunRequest']
+      }
+    }
     responses: {
       /** @description Successful Response */
       200: {
