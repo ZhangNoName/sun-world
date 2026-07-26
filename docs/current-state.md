@@ -1,6 +1,6 @@
 # Current State
 
-## Modular AI Workspace Platform (2026-07-26, local main)
+## Modular AI Workspace Platform (2026-07-27, deployed main)
 
 - AI is split into a provider-neutral V1 contract, a standalone FastAPI
   `src/modules/ai` service/repository/provider layer, reusable
@@ -29,10 +29,15 @@
   Browser QA passed at 1280x720 and 390x844, including model settings, full
   viewport sizing, mobile drawer/scrim, controlled send, and inline failure.
 - Full architecture and extension rules are in
-  `docs/architecture/ai-platform.md`. The work has not been committed, pushed,
-  deployed, or applied to a production database.
+  `docs/architecture/ai-platform.md`. Commit `ee279f1c` is deployed from
+  `main` by successful GitHub Actions run `30211244371`. The run synchronized
+  `AI_CREDENTIAL_ENCRYPTION_KEY` and `DEEPSEEK_API_KEY` into the server env,
+  applied the MySQL schema, built both images, and switched both services.
+  Public frontend, API health, and `/ai/v1/providers` checks returned HTTP 200;
+  health returned `{"status":"ok"}` and all four provider descriptors are
+  available. Secret values remain outside Git and outside deployment logs.
 
-## Mobile Experience Unification (2026-07-26, local main)
+## Mobile Experience Unification (2026-07-27, deployed main)
 
 - Ordinary routes use `.app-container` as the single page scroll root.
   Mobile header and bottom navigation are sticky, safe-area-aware, and remain
@@ -57,7 +62,8 @@
   with 70 Web tests, production build, 30 article SSG pages, budgets, and chunk
   checks. The first full UI run had one Select timing failure; its isolated and
   full-suite reruns both passed without a code change.
-- The work is local only and has not been committed, pushed, or deployed.
+- The work is included in commit `ee279f1c`, pushed to `origin/main`, and
+  deployed successfully by GitHub Actions run `30211244371`.
 
 ## Figma-Like Editor Foundation (2026-07-26, local feature branch)
 

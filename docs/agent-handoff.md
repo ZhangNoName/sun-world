@@ -21,10 +21,15 @@ older completed checkpoints to docs/handoff/archive/.
   Desktop/mobile browser QA also passed.
   Important files and extension rules are documented in
   `docs/architecture/ai-platform.md`; design and execution plans are under
-  `docs/superpowers/`. No commit, push, deployment, production migration, or
-  secret change was performed. Before deployment, set a stable
-  `AI_CREDENTIAL_ENCRYPTION_KEY`, apply the checked MySQL schema migration, and
-  then run the normal build/health verification.
+  `docs/superpowers/`. The complete worktree was committed as `ee279f1c`,
+  pushed to `origin/main`, and deployed by GitHub Actions run `30211244371`.
+  The run passed all quality jobs, built both Lighthouse images, synchronized
+  the GitHub Actions `AI_CREDENTIAL_ENCRYPTION_KEY` and `DEEPSEEK_API_KEY`
+  secrets without logging their values, applied the production schema, and
+  switched both services successfully. Public verification returned HTTP 200
+  for `sunworld.site`, `www.sunworld.site`, `/healthz`, and
+  `/ai/v1/providers`; health returned `{"status":"ok"}`, and the provider
+  endpoint exposed DeepSeek, OpenAI, OpenRouter, and OpenAI-compatible.
 
 - 2026-07-26: `fix/react-source-inspector` replaces the React-19-incompatible
   click-to-component integration with development-only Alt + left-click source
@@ -47,9 +52,10 @@ older completed checkpoints to docs/handoff/archive/.
   760px scrolling; and the global button completed a smooth scroll to zero.
   Focused Web tests passed (21 and 19 assertions), Web typecheck passed, UI
   tests passed (48), and `corepack pnpm check:web` passed (70 Web tests,
-  production build, 30-page SSG, budgets, and boundary checks). No commit,
-  push, or deployment was performed. Existing editor-foundation worktree
-  changes were preserved.
+  production build, 30-page SSG, budgets, and boundary checks). These changes
+  were included in `ee279f1c`, pushed to `main`, and deployed successfully in
+  run `30211244371`. Existing editor-foundation worktree changes were
+  preserved.
 
 - 2026-07-26: `feat/figma-editor-foundation` implements the framework-neutral
   Figma-like editor foundation described in
