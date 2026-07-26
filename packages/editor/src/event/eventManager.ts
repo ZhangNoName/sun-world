@@ -117,10 +117,66 @@ export class EventManager {
       },
     })
     manager.addBinding({
+      id: 'undo',
+      inputs: {
+        win: {
+          input: { ctrlKey: true, shiftKey: false, keyCode: 'z' },
+          eventType: 'keydown',
+        },
+        mac: {
+          input: { metaKey: true, shiftKey: false, keyCode: 'z' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '撤销',
+      action: () => this.editor.undo(),
+    })
+    manager.addBinding({
+      id: 'redo',
+      inputs: {
+        win: {
+          input: { ctrlKey: true, shiftKey: true, keyCode: 'z' },
+          eventType: 'keydown',
+        },
+        mac: {
+          input: { metaKey: true, shiftKey: true, keyCode: 'z' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '重做',
+      action: () => this.editor.redo(),
+    })
+    manager.addBinding({
+      id: 'redo-windows',
+      inputs: {
+        win: {
+          input: { ctrlKey: true, keyCode: 'y' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '重做',
+      action: () => this.editor.redo(),
+    })
+    manager.addBinding({
       id: 'delete',
       inputs: {
         common: {
           input: { keyCode: 'Delete' },
+          eventType: 'keydown',
+        },
+      },
+      preventDefault: true,
+      description: '删除',
+      action: () => this.editor.deleteSelectedElement(),
+    })
+    manager.addBinding({
+      id: 'backspace',
+      inputs: {
+        common: {
+          input: { keyCode: 'Backspace' },
           eventType: 'keydown',
         },
       },

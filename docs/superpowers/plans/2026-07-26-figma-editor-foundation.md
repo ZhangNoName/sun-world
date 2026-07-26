@@ -166,40 +166,40 @@ git commit -m "refactor(editor): separate document and selection models"
 - Produces: add, delete-subtree, update-attributes, transform, and reparent commands.
 - Consumes: `EditorDocument` snapshots and mutation results from Task 2.
 
-- [ ] **Step 1: Write failing history-stack tests**
+- [x] **Step 1: Write failing history-stack tests**
 
 Cover execute, undo, redo, redo invalidation after a new command, failed-command
 exclusion, listener notification, and idempotent disposal.
 
-- [ ] **Step 2: Verify RED and implement the minimal `CommandManager`**
+- [x] **Step 2: Verify RED and implement the minimal `CommandManager`**
 
 Run: `corepack pnpm -C packages/editor test -- src/history/commandManager.test.ts`
 
 Expected before implementation: FAIL due to the missing manager.
 
-- [ ] **Step 3: Write failing reversible document-command tests**
+- [x] **Step 3: Write failing reversible document-command tests**
 
 Demonstrate that add, subtree delete, property update, transform, and reparent
 restore exact IDs, parent order, geometry, and selection-relevant data.
 
-- [ ] **Step 4: Implement document commands and migrate facade mutations**
+- [x] **Step 4: Implement document commands and migrate facade mutations**
 
 Route `updateElement`, `deleteSelectedElement`, creation, drag completion, and
 tree movement through commands. Expose `undo`, `redo`, `canUndo`, `canRedo`, and
 history subscriptions on `SWEditor`.
 
-- [ ] **Step 5: Add keyboard shortcuts through `InputController`**
+- [x] **Step 5: Add keyboard shortcuts through `InputController`**
 
 Implement platform-aware Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl/Cmd+Y, Delete,
 Backspace, and Ctrl/Cmd+S while preserving normal behavior in editable fields.
 
-- [ ] **Step 6: Run editor tests and build**
+- [x] **Step 6: Run editor tests and build**
 
 Run: `corepack pnpm -C packages/editor test`
 
 Run: `corepack pnpm build:editor`
 
-- [ ] **Step 7: Commit history support**
+- [x] **Step 7: Commit history support**
 
 ```bash
 git add packages/editor/src

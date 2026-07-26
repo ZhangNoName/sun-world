@@ -19,7 +19,9 @@ the user explicitly requested that no subagents be created.
 - Task 2 is complete. `ElementManager` now delegates scene storage/hierarchy to
   `EditorDocument` and selected IDs/bounds to `SelectionModel` while preserving
   the compatibility API consumed by tools, rendering, and React.
-- Task 3 (command history and reversible mutations) is next.
+- Task 3 is complete. Command history now covers add, subtree delete, property
+  updates, multi-element transforms, reparenting, and one-entry drag gestures.
+- Task 4 (Figma-style selection handles and transform gestures) is next.
 
 ## Important Files Touched
 
@@ -49,10 +51,15 @@ the user explicitly requested that no subagents be created.
 - Deleting a group clears selection for its complete subtree, locked nodes are
   excluded from Canvas selection, and cyclic reparenting is rejected without
   corrupting the scene graph.
+- `CommandManager` exposes undo/redo capability state and excludes failed
+  commands. New commands clear redo history.
+- Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y, Delete, Backspace, and save shortcuts are
+  routed through the unified input pipeline and ignored inside editable fields.
+- Continuous drag previews are committed as one transform history entry.
 
 ## Verification
 
-- `corepack pnpm -C packages/editor test`: passed, 13 tests.
+- `corepack pnpm -C packages/editor test`: passed, 24 tests.
 - `corepack pnpm build:editor`: passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
@@ -64,6 +71,5 @@ None.
 
 ## Next Suggested Step
 
-Begin Task 3 with failing `CommandManager` tests covering execute, undo, redo,
-redo invalidation, failed-command exclusion, notifications, and disposal. Then
-implement reversible document commands and migrate facade mutations.
+Begin Task 4 with failing shared handle-geometry tests, then make selection
+rendering and hit testing consume exactly the same screen-consistent geometry.

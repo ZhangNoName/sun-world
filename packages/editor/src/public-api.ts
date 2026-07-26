@@ -22,3 +22,14 @@ export type {
   SelectableNode,
   SelectionSource,
 } from './selection/selectionModel'
+export { CommandManager } from './history/commandManager'
+export { CompositeCommand } from './history/command'
+export type { EditorCommand, HistoryState } from './history/command'
+export {
+  AddElementCommand,
+  DeleteElementsCommand,
+  ReparentElementCommand,
+  TransformElementsCommand,
+  UpdateElementCommand,
+} from './history/documentCommands'
+export type { ElementPatch, ElementTransform } from './history/documentCommands'

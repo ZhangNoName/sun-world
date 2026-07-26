@@ -1,4 +1,15 @@
 import { EditorDocument } from '../document/editorDocument'
+import { CompositeCommand, type HistoryState } from '../history/command'
+import { CommandManager } from '../history/commandManager'
+import {
+  AddElementCommand,
+  DeleteElementsCommand,
+  ReparentElementCommand,
+  UpdateElementCommand,
+  type ElementPatch,
+  type ElementTransform,
+  TransformElementsCommand,
+} from '../history/documentCommands'
 import { SelectionModel } from '../selection/selectionModel'
 import type { IBox, IPoint } from '../types/common.type'
 import { intersectBox, isPointInBox } from '../utils/common'
@@ -17,6 +28,7 @@ export class ElementManager {
   private readonly eleName = new EleName()
   private readonly storageKey = 'editor-data'
   private readonly document = new EditorDocument()
+  private readonly history = new CommandManager()
   private readonly selection = new SelectionModel({
     getSelectableNode: (id) => this.document.getById(id),
     getDescendantIds: (id) => this.document.getDescendantIds(id),
@@ -42,18 +54,23 @@ export class ElementManager {
   }
 
   add(element: BaseElement, parentId = this.ROOT_ID, index?: number): void {
-    const result = this.document.add(
-      element,
-      this.normalizeParentId(parentId),
-      index
+    const changed = this.history.execute(
+      new AddElementCommand(
+        this.document,
+        element,
+        this.normalizeParentId(parentId),
+        index
+      )
     )
-    if (result.ok && !this.isHydrating) this.emitHierarchyChanged()
+    if (changed && !this.isHydrating) this.emitHierarchyChanged()
   }
 
   remove(id: string): void {
     this.selection.removeSubtree(id)
-    const result = this.document.remove(id)
-    if (result.ok && !this.isHydrating) this.emitHierarchyChanged()
+    const changed = this.history.execute(
+      new DeleteElementsCommand(this.document, [id])
+    )
+    if (changed && !this.isHydrating) this.emitHierarchyChanged()
   }
 
   getAll(): BaseElement[] {
@@ -69,12 +86,15 @@ export class ElementManager {
   }
 
   moveNode(id: string, newParentId?: string | null, index?: number): void {
-    const result = this.document.reparent(
-      id,
-      this.normalizeParentId(newParentId),
-      index
+    const changed = this.history.execute(
+      new ReparentElementCommand(
+        this.document,
+        id,
+        this.normalizeParentId(newParentId),
+        index
+      )
     )
-    if (result.ok) this.emitHierarchyChanged()
+    if (changed) this.emitHierarchyChanged()
   }
 
   moveNodes(ids: string[], newParentId: string, index?: number): void {
@@ -87,19 +107,69 @@ export class ElementManager {
       }
       return true
     })
-    let insertionIndex = index
-    let changed = false
-    for (const id of topLevelIds) {
-      const result = this.document.reparent(
-        id,
-        this.normalizeParentId(newParentId),
-        insertionIndex
-      )
-      if (!result.ok) continue
-      changed = true
-      if (insertionIndex !== undefined) insertionIndex += 1
-    }
+    const targetParentId = this.normalizeParentId(newParentId)
+    const commands = topLevelIds.map(
+      (id, offset) =>
+        new ReparentElementCommand(
+          this.document,
+          id,
+          targetParentId,
+          index === undefined ? undefined : index + offset
+        )
+    )
+    const changed = this.history.execute(new CompositeCommand(commands))
     if (changed) this.emitHierarchyChanged()
+  }
+
+  updateElement(id: string, patch: ElementPatch): boolean {
+    const changed = this.history.execute(
+      new UpdateElementCommand(this.document, id, patch)
+    )
+    if (changed) this.emitElementsChanged()
+    return changed
+  }
+
+  deleteSelectedElements(): boolean {
+    const ids = [...this.selection.selectedIds]
+    if (ids.length === 0) return false
+    const changed = this.history.execute(
+      new DeleteElementsCommand(this.document, ids)
+    )
+    if (!changed) return false
+    ids.forEach((id) => this.selection.removeSubtree(id))
+    this.emitHierarchyChanged()
+    return true
+  }
+
+  get canUndo(): boolean {
+    return this.history.canUndo
+  }
+
+  get canRedo(): boolean {
+    return this.history.canRedo
+  }
+
+  undo(): boolean {
+    const changed = this.history.undo()
+    if (changed) this.emitHierarchyChanged()
+    return changed
+  }
+
+  redo(): boolean {
+    const changed = this.history.redo()
+    if (changed) this.emitHierarchyChanged()
+    return changed
+  }
+
+  onHistoryChange(callback: (state: HistoryState) => void): () => void {
+    callback({ canUndo: this.canUndo, canRedo: this.canRedo })
+    return this.history.onChange(callback)
+  }
+
+  destroy(): void {
+    this.history.dispose()
+    this.hierarchyChangedListeners.clear()
+    this.elementsChangedListeners.clear()
   }
 
   update(): void {
@@ -252,6 +322,33 @@ export class ElementManager {
 
   moveSelectedElement(dx: number, dy: number): void {
     this.selectedElements.forEach((element) => element.move(dx, dy))
+  }
+
+  captureSelectedTransforms(): ElementTransform[] {
+    return this.selectedElements.map((element) => ({
+      id: element.id,
+      patch: { ...element.getPanelAttrs() },
+    }))
+  }
+
+  commitSelectedTransforms(before: readonly ElementTransform[]): boolean {
+    const after = before
+      .map(({ id }) => this.document.getById(id))
+      .filter((element): element is BaseElement => Boolean(element))
+      .map((element) => ({
+        id: element.id,
+        patch: { ...element.getPanelAttrs() },
+      }))
+    if (JSON.stringify(before) === JSON.stringify(after)) return false
+
+    before.forEach(({ id, patch }) =>
+      this.document.getById(id)?.updateAttrs(patch)
+    )
+    const changed = this.history.execute(
+      new TransformElementsCommand(this.document, after)
+    )
+    if (changed) this.emitElementsChanged()
+    return changed
   }
 
   renderAll(context: CanvasRenderingContext2D): void {

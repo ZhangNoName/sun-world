@@ -15,6 +15,7 @@ import ViewportState from './viewport/viewport'
 import { NodeInfo } from './elements/ele.type'
 import { CursorManager } from './cursor/cursorManager'
 import { ControlManager } from './controlHandle/controlManager'
+import type { HistoryState } from './history/command'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -174,6 +175,7 @@ export class SWEditor {
     this.viewportCleanup?.()
     this.viewportCleanup = null
     this.eventManager.destroy()
+    this.elementManager.destroy()
     this.renderer.destroy()
   }
   public getCanvas() {
@@ -207,16 +209,29 @@ export class SWEditor {
     id: string,
     patch: Parameters<BaseElement['updateAttrs']>[0]
   ) {
-    const element = this.elementManager.getById(id)
-    if (!element) return
-    element.updateAttrs(patch)
-    this.elementManager.update()
-    this.renderer.render()
+    if (this.elementManager.updateElement(id, patch)) this.renderer.render()
   }
   public deleteElement(id: string) {
     this.elementManager.remove(id)
   }
-  public deleteSelectedElement() {}
+  public deleteSelectedElement() {
+    return this.elementManager.deleteSelectedElements()
+  }
+  public undo() {
+    return this.elementManager.undo()
+  }
+  public redo() {
+    return this.elementManager.redo()
+  }
+  public get canUndo() {
+    return this.elementManager.canUndo
+  }
+  public get canRedo() {
+    return this.elementManager.canRedo
+  }
+  public historyChanged(callback: (state: HistoryState) => void) {
+    return this.elementManager.onHistoryChange(callback)
+  }
   public save() {
     this.elementManager.saveLocal()
   }

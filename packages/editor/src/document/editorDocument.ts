@@ -79,6 +79,11 @@ export class EditorDocument {
     return ids
   }
 
+  getSiblingIndex(id: string): number {
+    const element = this.store.get(id)
+    return element?.parent?.children.findIndex((child) => child.id === id) ?? -1
+  }
+
   add(
     element: BaseElement,
     parentId = this.ROOT_ID,

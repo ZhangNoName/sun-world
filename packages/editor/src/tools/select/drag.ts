@@ -1,6 +1,6 @@
-import { BaseElement } from "../../elements/baseElement.class"
+import type { ElementTransform } from '../../history/documentCommands'
 import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
-import ViewportState from "../../viewport/viewport"
+import ViewportState from '../../viewport/viewport'
 import { SystemCursor } from '../../cursor/cursorManager'
 
 export default class DragTool extends BaseTool {
@@ -11,10 +11,10 @@ export default class DragTool extends BaseTool {
   private viewport: ViewportState
   private selectedEl: string[] = []
   private parentId: string | null = null
+  private initialTransforms: ElementTransform[] = []
   constructor(ctx: ToolContext) {
     super(ctx)
     this.viewport = ctx.viewport
-
   }
   onMouseMove(e: MouseEvent): void {
     if (!this.selectedEl) return
@@ -24,21 +24,19 @@ export default class DragTool extends BaseTool {
     const dy = y - this.lastY
     this.lastX = x
     this.lastY = y
-    elements.hitTopExcludeSelected(x, y)
-
     elements.moveSelectedElement(dx, dy)
     this.ctx.render()
-
   }
   onMouseUp(): void {
     // console.log('DragTool.onMouseUp')
     this.selectedEl = []
     this.dragging = false
     const { viewport, elements } = this.ctx
+    elements.commitSelectedTransforms(this.initialTransforms)
+    this.initialTransforms = []
     elements.calcSelectBox()
     this.ctx.render()
     this.ctx.cursor.setCursor(SystemCursor.Default)
-
   }
   onMouseDown(e: MouseEvent): void {
     this.ctx.cursor.setCursor(SystemCursor.Grabbing)
@@ -48,6 +46,7 @@ export default class DragTool extends BaseTool {
     this.lastX = p.x
     this.lastY = p.y
     this.dragging = true
+    this.initialTransforms = this.ctx.elements.captureSelectedTransforms()
     this.ctx.elements.clearSelectedBox()
   }
   onKeyDown(e: KeyboardEvent): void {
@@ -57,7 +56,6 @@ export default class DragTool extends BaseTool {
     console.log('DragTool.onWheel')
   }
   activate(): void {
-
     console.log('DragTool.activate')
   }
   deactivate(): void {

@@ -95,8 +95,14 @@ export abstract class BaseElement {
       patch.width !== undefined ||
       patch.height !== undefined
     if (hasGeo) {
-      this.attrs.transform.e = patch.x ?? this.attrs.transform.e
-      this.attrs.transform.f = patch.y ?? this.attrs.transform.f
+      const current = decomposeTRS(this.attrs.transform)
+      this.attrs.transform = composeTRS(
+        patch.x ?? current.x,
+        patch.y ?? current.y,
+        patch.rotation ?? current.rotation,
+        current.sx,
+        current.sy
+      )
       this.attrs.width = patch.width ?? this.attrs.width
       this.attrs.height = patch.height ?? this.attrs.height
       this._updateAABBCache()
