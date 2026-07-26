@@ -16,6 +16,8 @@ import { NodeInfo } from './elements/ele.type'
 import { CursorManager } from './cursor/cursorManager'
 import { ControlManager } from './controlHandle/controlManager'
 import type { HistoryState } from './history/command'
+import type { DocumentRepository } from './persistence/documentRepository'
+import { LocalStorageDocumentRepository } from './persistence/localStorageDocumentRepository'
 
 export interface IEditorOptions {
   containerElement: HTMLDivElement
@@ -26,6 +28,8 @@ export interface IEditorOptions {
   showPerfMonitor?: boolean
   userPreference?: Partial<BaseConfig>
   inputBindingConfig?: Partial<InputBindingConfig>
+  documentId?: string
+  repository?: DocumentRepository
 }
 
 interface Events {
@@ -41,11 +45,17 @@ export class SWEditor {
   private eventManager: EventManager
   private toolManager: ToolManager
   private cursorManager: CursorManager
+  private readonly documentId: string
+  private readonly repository: DocumentRepository
+  public readonly ready: Promise<void>
 
   private rule: Rule
   private viewportCleanup: (() => void) | null = null
   private disposed = false
   constructor(options: IEditorOptions) {
+    this.documentId = options.documentId ?? 'default'
+    this.repository =
+      options.repository ?? new LocalStorageDocumentRepository(localStorage)
     // 1. 实例化核心状态 (唯一数据源)
     this.viewportState = new ViewportState()
     // this.editorState = new EditorState()
@@ -84,6 +94,9 @@ export class SWEditor {
     // 默认激活选择工具
     this.toolManager.activateTool('drag')
     this.viewportCleanup = this.viewportState.on(() => this.renderer.render())
+    this.ready = this.elementManager
+      .loadDocument(this.repository, this.documentId)
+      .then(() => this.renderer.render())
 
     // 注意：事件处理已由 EventManager 统一管理，不需要在这里重复绑定
     // this.bindEvents(options.containerElement)
@@ -232,7 +245,7 @@ export class SWEditor {
   public historyChanged(callback: (state: HistoryState) => void) {
     return this.elementManager.onHistoryChange(callback)
   }
-  public save() {
-    this.elementManager.saveLocal()
+  public save(): Promise<void> {
+    return this.elementManager.saveDocument(this.repository, this.documentId)
   }
 }

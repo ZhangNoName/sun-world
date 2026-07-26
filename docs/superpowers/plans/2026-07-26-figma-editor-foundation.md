@@ -280,27 +280,27 @@ git commit -m "feat(editor): add figma-style selection transforms"
 - Produces: browser local-storage and in-memory repository implementations.
 - Adds: `documentId` and optional `repository` to `IEditorOptions`.
 
-- [ ] **Step 1: Write failing repository isolation and migration tests**
+- [x] **Step 1: Write failing repository isolation and migration tests**
 
 Cover two document IDs, versioned keys, invalid JSON, invalid snapshots,
 repository errors, and one-time migration of valid legacy `editor-data`.
 
-- [ ] **Step 2: Verify RED and implement repositories**
+- [x] **Step 2: Verify RED and implement repositories**
 
 Run: `corepack pnpm -C packages/editor test -- src/persistence/localStorageDocumentRepository.test.ts`
 
-- [ ] **Step 3: Inject persistence into `SWEditor`**
+- [x] **Step 3: Inject persistence into `SWEditor`**
 
 Remove direct local-storage access from `ElementManager`; load and save via the
 configured repository without clearing in-memory state on repository failure.
 
-- [ ] **Step 4: Run editor tests and build**
+- [x] **Step 4: Run editor tests and build**
 
 Run: `corepack pnpm -C packages/editor test`
 
 Run: `corepack pnpm build:editor`
 
-- [ ] **Step 5: Commit persistence isolation**
+- [x] **Step 5: Commit persistence isolation**
 
 ```bash
 git add packages/editor/src

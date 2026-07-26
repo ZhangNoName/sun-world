@@ -2,6 +2,8 @@ import { FillType } from './element.config'
 import { ElementManager } from './elementManager'
 import { GroupElement } from './group'
 import { RectElement } from './react'
+import { MemoryDocumentRepository } from '../persistence/memoryDocumentRepository'
+import type { DocumentRepository } from '../persistence/documentRepository'
 
 function rect(id: string, locked = false) {
   return new RectElement({
@@ -95,5 +97,35 @@ describe('ElementManager model delegation', () => {
       x: 0,
       y: 0,
     })
+  })
+
+  it('loads and saves through an injected document repository', async () => {
+    const repository = new MemoryDocumentRepository()
+    const source = new ElementManager()
+    source.add(rect('persisted'))
+    await source.saveDocument(repository, 'workspace-a')
+
+    const restored = new ElementManager()
+    expect(await restored.loadDocument(repository, 'workspace-a')).toBe(true)
+    expect(restored.getAll().map((element) => element.id)).toEqual([
+      'persisted',
+    ])
+    expect(restored.canUndo).toBe(false)
+  })
+
+  it('preserves in-memory state when repository loading fails', async () => {
+    const repository: DocumentRepository = {
+      load: async () => {
+        throw new Error('load failed')
+      },
+      save: async () => undefined,
+    }
+    const manager = new ElementManager()
+    manager.add(rect('local'))
+
+    await expect(manager.loadDocument(repository, 'workspace-a')).rejects.toThrow(
+      'load failed'
+    )
+    expect(manager.getById('local')).toBeDefined()
   })
 })

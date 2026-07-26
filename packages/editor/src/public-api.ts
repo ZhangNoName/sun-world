@@ -33,3 +33,6 @@ export {
   UpdateElementCommand,
 } from './history/documentCommands'
 export type { ElementPatch, ElementTransform } from './history/documentCommands'
+export type { DocumentRepository } from './persistence/documentRepository'
+export { LocalStorageDocumentRepository } from './persistence/localStorageDocumentRepository'
+export { MemoryDocumentRepository } from './persistence/memoryDocumentRepository'

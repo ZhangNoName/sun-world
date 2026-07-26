@@ -24,7 +24,9 @@ the user explicitly requested that no subagents be created.
 - Task 4 is complete. Selection rendering and hit testing share one handle
   geometry, and select interactions support modifier selection, marquee, move,
   eight-direction resize, rotate, cancellation, and pointer capture.
-- Task 5 (document-scoped persistence) is next.
+- Task 5 is complete. Persistence is document-scoped, repository-backed, and
+  supports one-time migration from the legacy default-document payload.
+- Task 6 (React workspace integration) is next.
 
 ## Important Files Touched
 
@@ -33,6 +35,9 @@ the user explicitly requested that no subagents be created.
 - `packages/editor/src/editor.ts`
 - `packages/editor/src/document/editorDocument.ts`
 - `packages/editor/src/selection/selectionModel.ts`
+- `packages/editor/src/persistence/documentRepository.ts`
+- `packages/editor/src/persistence/localStorageDocumentRepository.ts`
+- `packages/editor/src/persistence/memoryDocumentRepository.ts`
 - `packages/editor/src/public-api.ts`
 - `packages/editor/vitest.config.ts`
 - `packages/editor/package.json`
@@ -64,10 +69,15 @@ the user explicitly requested that no subagents be created.
   one history entry; Escape restores the gesture snapshot without adding one.
 - Pointer capture keeps gestures active outside Canvas bounds and is released on
   completion or controller disposal.
+- `DocumentRepository` isolates snapshots by document ID. The browser and memory
+  implementations clone or validate snapshots, expose failures to callers, and
+  keep persistence concerns out of `ElementManager`.
+- `SWEditor` accepts `documentId` and `repository`, exposes a `ready` promise,
+  and saves asynchronously without replacing in-memory state after load errors.
 
 ## Verification
 
-- `corepack pnpm -C packages/editor test`: passed, 34 tests.
+- `corepack pnpm -C packages/editor test`: passed, 40 tests.
 - `corepack pnpm build:editor`: passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
@@ -79,5 +89,5 @@ None.
 
 ## Next Suggested Step
 
-Begin Task 5 with failing repository isolation and legacy-migration tests, then
-remove direct local-storage access from `ElementManager`.
+Begin Task 6 with failing React hook tests for history subscriptions, undo/redo,
+multi-selection state, save status, and cleanup.

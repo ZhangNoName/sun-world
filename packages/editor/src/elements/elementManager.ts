@@ -17,16 +17,10 @@ import type { BaseElement } from './baseElement.class'
 import type { ElementType } from './element.config'
 import type { NodeInfo } from './ele.type'
 import { EleName } from './name'
-
-type PersistedV1 = {
-  version: 1
-  updatedAt: number
-  data: ReturnType<BaseElement['toJSON']>[]
-}
+import type { DocumentRepository } from '../persistence/documentRepository'
 
 export class ElementManager {
   private readonly eleName = new EleName()
-  private readonly storageKey = 'editor-data'
   private readonly document = new EditorDocument()
   private readonly history = new CommandManager()
   private readonly selection = new SelectionModel({
@@ -41,13 +35,8 @@ export class ElementManager {
   private readonly elementsChangedListeners = new Set<
     (elements: BaseElement[]) => void
   >()
-  private isHydrating = false
 
   public readonly ROOT_ID = this.document.ROOT_ID
-
-  constructor() {
-    this.loadLocal()
-  }
 
   generateName(type: ElementType): string {
     return this.eleName.getName(type)
@@ -62,7 +51,7 @@ export class ElementManager {
         index
       )
     )
-    if (changed && !this.isHydrating) this.emitHierarchyChanged()
+    if (changed) this.emitHierarchyChanged()
   }
 
   remove(id: string): void {
@@ -70,7 +59,7 @@ export class ElementManager {
     const changed = this.history.execute(
       new DeleteElementsCommand(this.document, [id])
     )
-    if (changed && !this.isHydrating) this.emitHierarchyChanged()
+    if (changed) this.emitHierarchyChanged()
   }
 
   getAll(): BaseElement[] {
@@ -173,7 +162,7 @@ export class ElementManager {
   }
 
   update(): void {
-    if (!this.isHydrating) this.emitElementsChanged()
+    this.emitElementsChanged()
   }
 
   onElementsChange(callback: (elements: BaseElement[]) => void): () => void {
@@ -188,34 +177,25 @@ export class ElementManager {
     return () => this.hierarchyChangedListeners.delete(callback)
   }
 
-  saveLocal(): void {
-    const snapshot = this.document.exportSnapshot()
-    const data: PersistedV1 = {
-      version: 1,
-      updatedAt: Date.now(),
-      data: snapshot.children,
-    }
-    localStorage.setItem(this.storageKey, JSON.stringify(data))
+  async saveDocument(
+    repository: DocumentRepository,
+    documentId: string
+  ): Promise<void> {
+    await repository.save(documentId, this.document.exportSnapshot())
   }
 
-  loadLocal(): void {
-    const raw = localStorage.getItem(this.storageKey)
-    if (!raw) return
-    try {
-      const parsed = JSON.parse(raw) as PersistedV1
-      if (parsed?.version !== 1 || !Array.isArray(parsed.data)) return
-      this.isHydrating = true
-      const result = this.document.importSnapshot({
-        version: 1,
-        children: parsed.data,
-      })
-      if (result.ok) this.selection.clear()
-    } catch {
-      // Invalid legacy data must not prevent editor startup.
-    } finally {
-      this.isHydrating = false
-    }
+  async loadDocument(
+    repository: DocumentRepository,
+    documentId: string
+  ): Promise<boolean> {
+    const snapshot = await repository.load(documentId)
+    if (!snapshot) return false
+    const imported = this.document.importSnapshot(snapshot)
+    if (!imported.ok) return false
+    this.selection.clear()
+    this.history.clear()
     this.emitHierarchyChanged()
+    return true
   }
 
   getMarqueeRect(): IBox | null {
