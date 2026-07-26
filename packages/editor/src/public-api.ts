@@ -9,3 +9,16 @@ export type {
   InputControllerOptions,
   InputState,
 } from './event/inputController'
+export { EditorDocument } from './document/editorDocument'
+export type {
+  DetachedSubtree,
+  DocumentError,
+  DocumentResult,
+  EditorDocumentNodeSnapshot,
+  EditorDocumentSnapshotV1,
+} from './document/editorDocument'
+export { SelectionModel } from './selection/selectionModel'
+export type {
+  SelectableNode,
+  SelectionSource,
+} from './selection/selectionModel'

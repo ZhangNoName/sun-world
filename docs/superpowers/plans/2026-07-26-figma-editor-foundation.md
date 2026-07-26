@@ -104,12 +104,12 @@ git commit -m "refactor(editor): unify input lifecycle"
 - Produces: `SelectionModel` with `replace`, `toggle`, `add`, `clear`, `removeSubtree`, and combined bounds.
 - Consumes: existing `BaseElement`, `GroupElement`, and matrix utilities.
 
-- [ ] **Step 1: Write failing document-invariant tests**
+- [x] **Step 1: Write failing document-invariant tests**
 
 Cover unique IDs, required parents, cycle rejection, stable sibling order,
 all-or-nothing import, subtree removal/restoration, and snapshot round trips.
 
-- [ ] **Step 2: Verify document tests fail for missing model**
+- [x] **Step 2: Verify document tests fail for missing model**
 
 Run: `corepack pnpm -C packages/editor test -- src/document/editorDocument.test.ts`
 
@@ -121,12 +121,12 @@ Move scene storage, hierarchy mutation, and serialization behind
 `EditorDocument`. Keep `ElementManager` temporarily delegating rendering and
 legacy public calls so `/canvas` remains functional.
 
-- [ ] **Step 4: Write failing selection semantics tests**
+- [x] **Step 4: Write failing selection semantics tests**
 
 Cover replace, Ctrl/Meta toggle, Shift add, clear, locked/invisible exclusion,
 subtree cleanup, deterministic order, and aggregate bounds.
 
-- [ ] **Step 5: Verify selection tests fail, then implement `SelectionModel`**
+- [x] **Step 5: Verify selection tests fail, then implement `SelectionModel`**
 
 Run: `corepack pnpm -C packages/editor test -- src/selection/selectionModel.test.ts`
 

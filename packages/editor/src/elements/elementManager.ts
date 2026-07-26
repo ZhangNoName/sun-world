@@ -56,7 +56,6 @@ export class ElementManager {
   private isHydrating = false
 
   constructor() {
-
     this.store.set(this.ROOT_ID, this.root)
     this.loadLocal()
   }
@@ -72,7 +71,6 @@ export class ElementManager {
     if (!parentId || parentId === '') return this.ROOT_ID
     return parentId
   }
-
 
   add(el: BaseElement, parentId: string = this.ROOT_ID, index?: number) {
     const pid = this.normalizeParentId(parentId)
@@ -108,16 +106,19 @@ export class ElementManager {
       q.push(...cur.children)
       this.store.delete(cur.id)
     }
-    this.selectedElementIds = this.selectedElementIds.filter(sid => sid !== id)
+    this.selectedElementIds = this.selectedElementIds.filter(
+      (sid) => sid !== id
+    )
 
     if (!this.isHydrating) {
-
       this.emitHierarchyChanged()
     }
   }
 
   getAll() {
-    return Array.from(this.store.values()).filter(el => el.id !== this.ROOT_ID)
+    return Array.from(this.store.values()).filter(
+      (el) => el.id !== this.ROOT_ID
+    )
   }
 
   getMarqueeRect() {
@@ -137,30 +138,28 @@ export class ElementManager {
     this.selectedBox = null
   }
   calcSelectBox() {
-    if (this.selectedElements.length === 0) return null;
+    if (this.selectedElements.length === 0) return null
 
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    let hasValidBox = false;
+    let minX = Infinity
+    let maxX = -Infinity
+    let minY = Infinity
+    let maxY = -Infinity
+    let hasValidBox = false
 
     for (const element of this.selectedElements) {
-      const box = element?.box;
-      if (!box) continue;
+      const box = element?.box
+      if (!box) continue
 
-      if (box.minX < minX) minX = box.minX;
-      if (box.maxX > maxX) maxX = box.maxX;
-      if (box.minY < minY) minY = box.minY;
-      if (box.maxY > maxY) maxY = box.maxY;
+      if (box.minX < minX) minX = box.minX
+      if (box.maxX > maxX) maxX = box.maxX
+      if (box.minY < minY) minY = box.minY
+      if (box.maxY > maxY) maxY = box.maxY
 
-      hasValidBox = true;
+      hasValidBox = true
     }
 
     this.selectedBox = hasValidBox ? { minX, maxX, minY, maxY } : null
-
   }
-
 
   getRootElements() {
     return this.root.children
@@ -184,12 +183,16 @@ export class ElementManager {
    * - 每次移动都只会移动同一个层级的节点，也就是父元素
    */
   moveNodes(ids: string[], newParentId: string, index?: number) {
-
     const targetParentId = this.normalizeParentId(newParentId)
     const oldParent = this.store.get(ids[0])?.parent
     const targetParent = this.store.get(targetParentId)
     if (!targetParent || !oldParent) {
-      console.log('移动节点- 目标父元素或旧父元素不存在', ids, targetParentId, oldParent)
+      console.log(
+        '移动节点- 目标父元素或旧父元素不存在',
+        ids,
+        targetParentId,
+        oldParent
+      )
       return
     }
     const oldParentWorldMatrix = oldParent.worldMatrix
@@ -203,16 +206,12 @@ export class ElementManager {
       targetParent.addChild(el)
     }
 
-
-
     this.emitHierarchyChanged()
-
   }
   // 元素更新后调用（几何/样式变化）
   update() {
     // this.emitElementsChanged()
     if (!this.isHydrating) {
-
       this.emitElementsChanged()
     }
   }
@@ -232,7 +231,6 @@ export class ElementManager {
     return () => this.hierarchyChangedListeners.delete(cb)
   }
   private emitHierarchyChanged() {
-   
     this.hierarchyChangedListeners.forEach((cb) => cb(this.tree))
     this.emitElementsChanged()
   }
@@ -241,7 +239,7 @@ export class ElementManager {
     const data: PersistedV1 = {
       version: 1,
       updatedAt: Date.now(),
-      data: this.root.children.map(c => c.toJSON()),
+      data: this.root.children.map((c) => c.toJSON()),
     }
     localStorage.setItem(this.storageKey, JSON.stringify(data))
     console.log('保存成功')
@@ -258,7 +256,6 @@ export class ElementManager {
       if (!raw) return
       const parsed = JSON.parse(raw) as PersistedV1
       if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.data)) return
-
 
       const createElement = (item: any): BaseElement => {
         let el: BaseElement
@@ -313,7 +310,12 @@ export class ElementManager {
     if (!this.selectedBox) {
       return false
     }
-    return x >= this.selectedBox.minX && x <= this.selectedBox.maxX && y >= this.selectedBox.minY && y <= this.selectedBox.maxY
+    return (
+      x >= this.selectedBox.minX &&
+      x <= this.selectedBox.maxX &&
+      y >= this.selectedBox.minY &&
+      y <= this.selectedBox.maxY
+    )
   }
 
   hitTest() {
@@ -366,7 +368,6 @@ export class ElementManager {
     this.selectedBox = null
     if (!areaBox) return
     const walk = (els: BaseElement[]) => {
-
       for (const el of els) {
         if (!el.visible) continue
         const aabb = el.box
@@ -431,7 +432,7 @@ export class ElementManager {
   }
 
   get selectedElements() {
-    return this.selectedElementIds.map(o => this.store.get(o))
+    return this.selectedElementIds.map((o) => this.store.get(o))
   }
   setSelectedElement(id: string) {
     if (!this.selectedElementIds.includes(id)) {
@@ -460,9 +461,10 @@ export class ElementManager {
     }
 
     parent.children = parent.children.filter((c) => c.id !== elementId)
-    const i = (index === undefined || index < 0 || index > parent.children.length)
-      ? parent.children.length
-      : index
+    const i =
+      index === undefined || index < 0 || index > parent.children.length
+        ? parent.children.length
+        : index
     parent.children.splice(i, 0, child)
   }
 
@@ -482,7 +484,7 @@ export class ElementManager {
     }
   }
 
-  get tree(){
-    return this.root.children.map(c => c.getNodeInfo())
+  get tree() {
+    return this.root.children.map((c) => c.getNodeInfo())
   }
 }
