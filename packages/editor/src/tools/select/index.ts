@@ -1,4 +1,7 @@
-import { BaseElement } from '../../elements/baseElement.class'
+import {
+  createHandleGeometry,
+  hitTestHandle,
+} from '../../controlHandle/handleGeometry'
 import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
 import ViewportState from '../../viewport/viewport'
 import DragTool from './drag'
@@ -37,24 +40,26 @@ export default class SelectTool extends BaseTool {
 
     // 转换屏幕坐标 → 画布坐标
     const canvasPos = viewport.screenToCanvas(e.offsetX, e.offsetY)
-    const controlHandle = false
-    const rotateHandle = false
+    const selectedBox = elements.getSelectedBox()
+    const modifierSelection =
+      this.ctx.input.state.shift ||
+      this.ctx.input.state.ctrl ||
+      this.ctx.input.state.meta
+    const handle =
+      selectedBox && !modifierSelection
+        ? hitTestHandle(
+            createHandleGeometry(selectedBox, viewport.scale),
+            canvasPos
+          )
+        : null
     // 点击命中检测
 
-    const isDrag = elements.hitSelectBox(canvasPos)
-    if (!isDrag) {
-      elements.setMarqueeRect({
-        minX: canvasPos.x,
-        minY: canvasPos.y,
-        maxX: canvasPos.x,
-        maxY: canvasPos.y,
-      })
-    }
-
+    const isDrag = !modifierSelection && elements.hitSelectBox(canvasPos)
     // Selection state is owned by ElementManager's SelectionModel adapter.
-    if (controlHandle) {
-      this.currentMode = this.AreaMode
-    } else if (rotateHandle) {
+    if (handle?.kind === 'resize') {
+      this.ResizeMode.setHandle(handle.name)
+      this.currentMode = this.ResizeMode
+    } else if (handle?.kind === 'rotate') {
       this.currentMode = this.RotateMode
     } else if (isDrag) {
       this.currentMode = this.DragMode
@@ -87,6 +92,6 @@ export default class SelectTool extends BaseTool {
     console.log('选择工具 取消')
   }
   onKeyDown(e: KeyboardEvent): void {
-    // console.log('SelectTool.onKeyDown', e)
+    this.currentMode?.onKeyDown(e)
   }
 }

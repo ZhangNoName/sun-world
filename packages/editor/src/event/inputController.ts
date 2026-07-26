@@ -41,6 +41,7 @@ export class InputController {
   }
 
   private disposed = false
+  private activePointerId: number | null = null
   private readonly canvas: EventTarget
   private readonly keyboardTarget: EventTarget
   private readonly onInput?: InputControllerOptions['onInput']
@@ -75,6 +76,7 @@ export class InputController {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    this.releaseActivePointer()
     CANVAS_EVENTS.forEach((type) =>
       this.canvas.removeEventListener(type, this.handleInput)
     )
@@ -85,7 +87,33 @@ export class InputController {
 
   private handleInput = (event: Event): void => {
     this.updateState(event)
+    this.updatePointerCapture(event)
     this.onInput?.(event, this.state)
+  }
+
+  private updatePointerCapture(event: Event): void {
+    if (!('pointerId' in event)) return
+    const pointerId = Number(event.pointerId)
+    const canvas = this.canvas as EventTarget & {
+      setPointerCapture?: (id: number) => void
+      releasePointerCapture?: (id: number) => void
+    }
+    if (event.type === 'pointerdown') {
+      this.activePointerId = pointerId
+      canvas.setPointerCapture?.(pointerId)
+    } else if (event.type === 'pointerup' || event.type === 'pointercancel') {
+      canvas.releasePointerCapture?.(pointerId)
+      if (this.activePointerId === pointerId) this.activePointerId = null
+    }
+  }
+
+  private releaseActivePointer(): void {
+    if (this.activePointerId === null) return
+    const canvas = this.canvas as EventTarget & {
+      releasePointerCapture?: (id: number) => void
+    }
+    canvas.releasePointerCapture?.(this.activePointerId)
+    this.activePointerId = null
   }
 
   private updateState(event: Event): void {

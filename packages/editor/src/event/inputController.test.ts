@@ -61,4 +61,23 @@ describe('InputController', () => {
     expect(controller.isEditableTarget(canvas)).toBe(false)
     controller.dispose()
   })
+
+  it('captures an active pointer and releases it on completion', () => {
+    const canvas = document.createElement('canvas')
+    const setPointerCapture = vi.fn()
+    const releasePointerCapture = vi.fn()
+    Object.assign(canvas, { setPointerCapture, releasePointerCapture })
+    const controller = new InputController({ canvas, keyboardTarget: window })
+    const down = new Event('pointerdown')
+    const up = new Event('pointerup')
+    Object.defineProperty(down, 'pointerId', { value: 7 })
+    Object.defineProperty(up, 'pointerId', { value: 7 })
+
+    canvas.dispatchEvent(down)
+    canvas.dispatchEvent(up)
+
+    expect(setPointerCapture).toHaveBeenCalledWith(7)
+    expect(releasePointerCapture).toHaveBeenCalledWith(7)
+    controller.dispose()
+  })
 })

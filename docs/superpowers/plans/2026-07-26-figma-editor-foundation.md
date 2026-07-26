@@ -226,38 +226,38 @@ git commit -m "feat(editor): add reversible command history"
 - Produces: select states `idle`, `marquee`, `move`, `resize`, and `rotate`.
 - Consumes: `SelectionModel` and `CommandManager` from prior tasks.
 
-- [ ] **Step 1: Write failing handle geometry tests**
+- [x] **Step 1: Write failing handle geometry tests**
 
 Cover eight resize handles, the rotation handle, screen-consistent sizes across
 zoom levels, nearest-hit priority, and no hit outside tolerance.
 
-- [ ] **Step 2: Verify RED and implement shared handle geometry**
+- [x] **Step 2: Verify RED and implement shared handle geometry**
 
 Run: `corepack pnpm -C packages/editor test -- src/controlHandle/handleGeometry.test.ts`
 
-- [ ] **Step 3: Write failing select state-machine tests**
+- [x] **Step 3: Write failing select state-machine tests**
 
 Cover click selection, Shift additive selection, Ctrl/Meta toggle, marquee,
 move, resize, rotate, Escape cancellation, pointer-up commit, and pointer capture.
 
-- [ ] **Step 4: Implement the select interaction state machine**
+- [x] **Step 4: Implement the select interaction state machine**
 
 Use one gesture snapshot and emit one command on pointer-up. Escape restores the
 snapshot without adding history. Locked elements remain immutable and
 unselectable from Canvas interactions.
 
-- [ ] **Step 5: Render selection overlays from the same geometry**
+- [x] **Step 5: Render selection overlays from the same geometry**
 
 Replace disconnected control drawing/hit-test logic with the shared handle
 geometry and ensure handle sizes stay visually constant while zooming.
 
-- [ ] **Step 6: Run editor tests and build**
+- [x] **Step 6: Run editor tests and build**
 
 Run: `corepack pnpm -C packages/editor test`
 
 Run: `corepack pnpm build:editor`
 
-- [ ] **Step 7: Commit selection and transforms**
+- [x] **Step 7: Commit selection and transforms**
 
 ```bash
 git add packages/editor/src

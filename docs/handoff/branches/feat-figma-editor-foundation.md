@@ -21,7 +21,10 @@ the user explicitly requested that no subagents be created.
   the compatibility API consumed by tools, rendering, and React.
 - Task 3 is complete. Command history now covers add, subtree delete, property
   updates, multi-element transforms, reparenting, and one-entry drag gestures.
-- Task 4 (Figma-style selection handles and transform gestures) is next.
+- Task 4 is complete. Selection rendering and hit testing share one handle
+  geometry, and select interactions support modifier selection, marquee, move,
+  eight-direction resize, rotate, cancellation, and pointer capture.
+- Task 5 (document-scoped persistence) is next.
 
 ## Important Files Touched
 
@@ -56,10 +59,15 @@ the user explicitly requested that no subagents be created.
 - Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y, Delete, Backspace, and save shortcuts are
   routed through the unified input pipeline and ignored inside editable fields.
 - Continuous drag previews are committed as one transform history entry.
+- Transform handles stay eight screen pixels at every zoom and the rotation
+  handle stays 24 screen pixels from the selection. Resize and rotation commit
+  one history entry; Escape restores the gesture snapshot without adding one.
+- Pointer capture keeps gestures active outside Canvas bounds and is released on
+  completion or controller disposal.
 
 ## Verification
 
-- `corepack pnpm -C packages/editor test`: passed, 24 tests.
+- `corepack pnpm -C packages/editor test`: passed, 34 tests.
 - `corepack pnpm build:editor`: passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
@@ -71,5 +79,5 @@ None.
 
 ## Next Suggested Step
 
-Begin Task 4 with failing shared handle-geometry tests, then make selection
-rendering and hit testing consume exactly the same screen-consistent geometry.
+Begin Task 5 with failing repository isolation and legacy-migration tests, then
+remove direct local-storage access from `ElementManager`.

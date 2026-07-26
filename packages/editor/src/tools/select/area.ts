@@ -1,58 +1,73 @@
-import { BaseTool, ToolContext, ToolName } from '../../types/tools.type'
-import ViewportState from '../../viewport/viewport'
+import {
+  BaseTool,
+  type ToolContext,
+  type ToolName,
+} from '../../types/tools.type'
 
 export class AreaTool extends BaseTool {
   name: ToolName = 'area'
-  private isPanning = false
+  private active = false
   private startX = 0
   private startY = 0
-  private viewport: ViewportState
+  private initialSelection: string[] = []
+  private selectionMode: 'replace' | 'add' | 'toggle' = 'replace'
 
-
-  constructor(ctx: ToolContext) {
-    super(ctx)
-    this.viewport = ctx.viewport
+  constructor(context: ToolContext) {
+    super(context)
   }
-  onMouseDown(e: MouseEvent): void {
-    console.log('区域选择 鼠标按下')
-    // console.log('AreaTool.onMouseDown', e)
-    this.isPanning = true
-    const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
-    this.startX = p.x
-    this.startY = p.y
 
-    this.ctx.elements.setMarqueeRect({ minX: p.x, minY: p.y, maxX: p.x, maxY: p.y })
+  onMouseDown(event: MouseEvent): void {
+    this.active = true
+    const point = this.ctx.viewport.screenToCanvas(event.offsetX, event.offsetY)
+    this.startX = point.x
+    this.startY = point.y
+    this.initialSelection = [...this.ctx.elements.selectedIds]
+    this.selectionMode = this.ctx.input.state.shift
+      ? 'add'
+      : this.ctx.input.state.ctrl || this.ctx.input.state.meta
+        ? 'toggle'
+        : 'replace'
+    this.ctx.elements.setMarqueeRect({
+      minX: point.x,
+      minY: point.y,
+      maxX: point.x,
+      maxY: point.y,
+    })
     this.ctx.render()
   }
-  onMouseMove(e: MouseEvent): void {
-    // console.log('区域选择 鼠标移动')
-    if (!this.isPanning) return
-    const p = this.viewport.screenToCanvas(e.offsetX, e.offsetY)
 
-    const minX = Math.min(this.startX, p.x)
-    const maxX = Math.max(this.startX, p.x)
-    const minY = Math.min(this.startY, p.y)
-    const maxY = Math.max(this.startY, p.y)
-    this.ctx.elements.setMarqueeRect({ minX, minY, maxX, maxY })
+  onMouseMove(event: MouseEvent): void {
+    if (!this.active) return
+    const point = this.ctx.viewport.screenToCanvas(event.offsetX, event.offsetY)
+    this.ctx.elements.setMarqueeRect({
+      minX: Math.min(this.startX, point.x),
+      minY: Math.min(this.startY, point.y),
+      maxX: Math.max(this.startX, point.x),
+      maxY: Math.max(this.startY, point.y),
+    })
     this.ctx.render()
   }
+
   onMouseUp(): void {
-    console.log('区域选择 取消')
-    this.isPanning = false
+    if (!this.active) return
+    this.active = false
+    const hits = [...this.ctx.elements.selectedIds]
+    if (this.selectionMode === 'add') {
+      this.ctx.elements.replaceSelection([...this.initialSelection, ...hits])
+    } else if (this.selectionMode === 'toggle') {
+      this.ctx.elements.replaceSelection(this.initialSelection)
+      this.ctx.elements.toggleSelection(hits)
+    }
     this.ctx.elements.clearMarqueeRect()
-
+    this.ctx.elements.calcSelectBox()
     this.ctx.render()
   }
-  onKeyDown(e: KeyboardEvent): void {
-    console.log('区域选择 按键', e)
-  }
-  onWheel(e: WheelEvent): void {
-    console.log('区域选择 滚轮', e)
-  }
-  activate(): void {
-    console.log('区域选择 激活')
-  }
-  deactivate(): void {
-    console.log('区域选择 取消')
+
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape' || !this.active) return
+    this.active = false
+    this.ctx.elements.replaceSelection(this.initialSelection)
+    this.ctx.elements.clearMarqueeRect()
+    this.ctx.render()
   }
 }

@@ -1,7 +1,6 @@
-
-import type { ElementManager } from "../elements/elementManager"
+import type { ElementManager } from '../elements/elementManager'
 import { debounce, rafThrottle } from '../utils/common'
-import ViewportState from "../viewport/viewport"
+import ViewportState from '../viewport/viewport'
 import { Rule } from '../support/rules'
 import { elementConfig } from '../elements/element.config'
 import { applyToPoint, box2Point, matrix2Array } from '../utils/matrix'
@@ -40,7 +39,6 @@ export class CanvasRenderer {
     this.containerElement = containerElement
     this.viewport = viewportState
     this.elementManager = elementManager
-
 
     // 获取设备像素比
     this.devicePixelRatio = window.devicePixelRatio || 1
@@ -128,7 +126,6 @@ export class CanvasRenderer {
     this.isDirty = true
   }
   renderName() {
-
     const elements = this.elementManager.getRootElements()
     if (!elements?.length) return
     const nameConfig = elementConfig.name
@@ -160,13 +157,13 @@ export class CanvasRenderer {
     const scale = this.viewport.scale
     ctx.transform(...matrix2Array(this.viewport.transform))
     if (selectedBox) {
-      this.controlManager.setBox(selectedBox)
+      this.controlManager.setBox(selectedBox, scale)
       const { x, y, width, height } = box2Point(selectedBox)
       // this.transform()
       // ctx.setLineDash([6, 4])
       ctx.strokeStyle = '#1890ff'
       ctx.fillStyle = 'rgba(24, 144, 255, 0.12)'
-      ctx.lineWidth = 1
+      ctx.lineWidth = 1 / Math.max(Math.abs(scale), 0.0001)
       ctx.beginPath()
       ctx.rect(x, y, width, height)
       ctx.fill()
@@ -199,17 +196,14 @@ export class CanvasRenderer {
   render = rafThrottle(() => {
     const ctx = this.ctx
     // 获取显示尺寸（CSS 像素），用于清除和绘制
-    const displayWidth =
-      this.canvasElement.width
-    const displayHeight =
-      this.canvasElement.height
+    const displayWidth = this.canvasElement.width
+    const displayHeight = this.canvasElement.height
 
     ctx.clearRect(0, 0, displayWidth, displayHeight)
     this.transform()
     this.elementManager.renderAll(ctx)
 
     ctx.restore()
-
 
     this.renderSelect()
 
@@ -236,4 +230,3 @@ export class CanvasRenderer {
     this.ctx.transform(a, b, c, d, e, f)
   }
 }
-

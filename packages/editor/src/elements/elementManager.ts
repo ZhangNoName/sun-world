@@ -320,6 +320,21 @@ export class ElementManager {
     this.selectionBoxVisible = true
   }
 
+  replaceSelection(ids: Iterable<string>): void {
+    this.selection.replace(ids)
+    this.selectionBoxVisible = true
+  }
+
+  addSelection(ids: Iterable<string>): void {
+    this.selection.add(ids)
+    this.selectionBoxVisible = true
+  }
+
+  toggleSelection(ids: Iterable<string>): void {
+    for (const id of ids) this.selection.toggle(id)
+    this.selectionBoxVisible = true
+  }
+
   moveSelectedElement(dx: number, dy: number): void {
     this.selectedElements.forEach((element) => element.move(dx, dy))
   }
@@ -349,6 +364,18 @@ export class ElementManager {
     )
     if (changed) this.emitElementsChanged()
     return changed
+  }
+
+  applyTransformPreview(transforms: readonly ElementTransform[]): void {
+    transforms.forEach(({ id, patch }) =>
+      this.document.getById(id)?.updateAttrs(patch)
+    )
+    this.emitElementsChanged()
+  }
+
+  restoreTransformPreview(transforms: readonly ElementTransform[]): void {
+    this.applyTransformPreview(transforms)
+    this.calcSelectBox()
   }
 
   renderAll(context: CanvasRenderingContext2D): void {
