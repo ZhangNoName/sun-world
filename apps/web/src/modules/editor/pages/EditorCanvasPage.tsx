@@ -14,7 +14,6 @@ const tools: Array<{
 }> = [
   { name: 'select', label: '选择', icon: 'arrow' },
   { name: 'drag', label: '拖动画布', icon: 'canvas' },
-  { name: 'comment', label: '批注', icon: 'message-circle' },
   { name: 'rect', label: '矩形', icon: 'square' },
 ]
 
@@ -31,11 +30,32 @@ export function EditorCanvasPage() {
       <div className="canvas-host" ref={setHost} aria-label="画布编辑区域" />
       <EditorCanvasRight
         zoom={canvas.zoom}
+        selectedCount={canvas.selectedIds.length}
         name={canvas.selectedNode?.name}
         attrs={canvas.selectedAttrs}
         onUpdate={canvas.updateSelected}
       />
       <div className="canvas-toolbar" role="toolbar" aria-label="画布工具">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-label="撤销（Ctrl+Z）"
+          disabled={!canvas.canUndo}
+          onClick={canvas.undo}
+        >
+          撤销
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-label="重做（Ctrl+Shift+Z）"
+          disabled={!canvas.canRedo}
+          onClick={canvas.redo}
+        >
+          重做
+        </Button>
         {tools.map((tool) => (
           <Button
             type="button"
@@ -48,8 +68,13 @@ export function EditorCanvasPage() {
             <SunIcon name={tool.icon} size={20} />
           </Button>
         ))}
-        <Button size="sm" variant="secondary" onClick={canvas.save}>
-          保存
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={canvas.saveStatus === 'saving'}
+          onClick={() => void canvas.save()}
+        >
+          {canvas.saveStatus === 'saving' ? '保存中…' : '保存'}
         </Button>
       </div>
     </main>

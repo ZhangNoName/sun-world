@@ -10,7 +10,10 @@ export function EditorCanvasTree({
 }: {
   nodes: NodeInfo[]
   selectedId: string | null
-  onSelect: (id: string) => void
+  onSelect: (
+    id: string,
+    modifiers?: { additive?: boolean; toggle?: boolean }
+  ) => void
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const toggle = (id: string) =>
@@ -53,7 +56,10 @@ function TreeNode({
   selectedId: string | null
   expanded: Set<string>
   onToggle: (id: string) => void
-  onSelect: (id: string) => void
+  onSelect: (
+    id: string,
+    modifiers?: { additive?: boolean; toggle?: boolean }
+  ) => void
 }) {
   const hasChildren = node.children.length > 0
   const isExpanded = expanded.has(node.id)
@@ -79,7 +85,12 @@ function TreeNode({
         <Button
           type="button"
           className="tree-name"
-          onClick={() => onSelect(node.id)}
+          onClick={(event) =>
+            onSelect(node.id, {
+              additive: event.shiftKey,
+              toggle: event.ctrlKey || event.metaKey,
+            })
+          }
         >
           {node.name || node.type}
         </Button>

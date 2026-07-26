@@ -26,7 +26,9 @@ the user explicitly requested that no subagents be created.
   eight-direction resize, rotate, cancellation, and pointer capture.
 - Task 5 is complete. Persistence is document-scoped, repository-backed, and
   supports one-time migration from the legacy default-document payload.
-- Task 6 (React workspace integration) is next.
+- Task 6 is complete. The React adapter now exposes history, multi-selection,
+  asynchronous save status, modifier-aware layer selection, and full cleanup.
+- Task 7 (full verification and durable handoff) is next.
 
 ## Important Files Touched
 
@@ -74,11 +76,16 @@ the user explicitly requested that no subagents be created.
   keep persistence concerns out of `ElementManager`.
 - `SWEditor` accepts `documentId` and `repository`, exposes a `ready` promise,
   and saves asynchronously without replacing in-memory state after load errors.
+- The `/canvas` workspace exposes accessible undo/redo controls, hides the
+  unimplemented comment tool, reports save progress and multi-selection, and
+  preserves editor CSS during package tree shaking.
 
 ## Verification
 
 - `corepack pnpm -C packages/editor test`: passed, 40 tests.
 - `corepack pnpm build:editor`: passed.
+- Focused `useEditorCanvas` tests: passed, 3 tests.
+- `corepack pnpm -C apps/web typecheck`: passed.
 - `git diff --check`: passed with only Windows LF/CRLF conversion warnings.
 - The known API Extractor warning about its bundled TypeScript 5.4.2 being older
   than the workspace TypeScript remains non-blocking.
@@ -89,5 +96,5 @@ None.
 
 ## Next Suggested Step
 
-Begin Task 6 with failing React hook tests for history subscriptions, undo/redo,
-multi-selection state, save status, and cleanup.
+Begin Task 7 with package documentation, complete automated verification, and
+browser verification of `/canvas`.

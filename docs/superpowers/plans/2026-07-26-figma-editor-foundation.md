@@ -323,32 +323,32 @@ git commit -m "refactor(editor): isolate document persistence"
 - Consumes: history, selection, document loading, and command APIs from Tasks 1-5.
 - Produces: React state for `canUndo`, `canRedo`, multi-selection, save status, and command-backed property edits.
 
-- [ ] **Step 1: Extend the fake adapter and write failing hook tests**
+- [x] **Step 1: Extend the fake adapter and write failing hook tests**
 
 Assert history state subscriptions, undo/redo forwarding, multi-selection state,
 save status, and complete cleanup.
 
-- [ ] **Step 2: Verify RED and update `useEditorCanvas`**
+- [x] **Step 2: Verify RED and update `useEditorCanvas`**
 
 Run: `corepack pnpm -C apps/web test:react -- src/modules/editor/hooks/useEditorCanvas.test.tsx`
 
-- [ ] **Step 3: Add accessible workspace controls**
+- [x] **Step 3: Add accessible workspace controls**
 
 Add undo/redo buttons with disabled state and shortcuts in their accessible
 labels, multi-selection property feedback, modifier-aware layer selection, and
 real tool labels. Hide the placeholder comment tool until implemented.
 
-- [ ] **Step 4: Protect package CSS from tree shaking**
+- [x] **Step 4: Protect package CSS from tree shaking**
 
 Change editor package `sideEffects` to include `src/**/*.css` and `dist/*.css`.
 
-- [ ] **Step 5: Run focused Web tests and type checking**
+- [x] **Step 5: Run focused Web tests and type checking**
 
 Run: `corepack pnpm -C apps/web test:react -- src/modules/editor/hooks/useEditorCanvas.test.tsx`
 
 Run: `corepack pnpm -C apps/web typecheck`
 
-- [ ] **Step 6: Commit React integration**
+- [x] **Step 6: Commit React integration**
 
 ```bash
 git add apps/web/src/modules/editor packages/editor/package.json

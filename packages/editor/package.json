@@ -12,7 +12,10 @@
       "require": "./dist/editor.cjs.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "src/**/*.css",
+    "dist/*.css"
+  ],
   "scripts": {
     "build": "vite build",
     "test": "vitest run"

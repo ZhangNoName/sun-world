@@ -208,9 +208,13 @@ export class SWEditor {
   public elementTreeChanged(cb: (root: NodeInfo[]) => void) {
     return this.elementManager.onHierarchyChange(cb)
   }
-  public selectElement(id: string) {
-    this.elementManager.clearSelectedElement()
-    this.elementManager.setSelectedElement(id)
+  public selectElement(
+    id: string,
+    modifiers?: { additive?: boolean; toggle?: boolean }
+  ) {
+    if (modifiers?.toggle) this.elementManager.toggleSelection([id])
+    else if (modifiers?.additive) this.elementManager.addSelection([id])
+    else this.elementManager.replaceSelection([id])
     this.elementManager.calcSelectBox()
     this.renderer.render()
   }
@@ -244,6 +248,9 @@ export class SWEditor {
   }
   public historyChanged(callback: (state: HistoryState) => void) {
     return this.elementManager.onHistoryChange(callback)
+  }
+  public selectionChanged(callback: (ids: readonly string[]) => void) {
+    return this.elementManager.onSelectionChange(callback)
   }
   public save(): Promise<void> {
     return this.elementManager.saveDocument(this.repository, this.documentId)

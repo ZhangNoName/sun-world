@@ -3,11 +3,13 @@ import type { EditorElementPatch } from '../hooks/useEditorCanvas'
 
 export function EditorCanvasRight({
   zoom,
+  selectedCount,
   name,
   attrs,
   onUpdate,
 }: {
   zoom: number
+  selectedCount: number
   name?: string
   attrs: EditorElementPatch | null
   onUpdate: (patch: EditorElementPatch) => void
@@ -18,7 +20,9 @@ export function EditorCanvasRight({
       <p className="zoom-label">
         缩放 {new Intl.NumberFormat('zh-CN', { style: 'percent' }).format(zoom)}
       </p>
-      {attrs ? (
+      {selectedCount > 1 ? (
+        <p className="editor-empty">已选择 {selectedCount} 个图层</p>
+      ) : attrs ? (
         <div className="property-form">
           <LabeledInput
             label="名称"

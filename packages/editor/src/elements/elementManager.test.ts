@@ -128,4 +128,20 @@ describe('ElementManager model delegation', () => {
     )
     expect(manager.getById('local')).toBeDefined()
   })
+
+  it('notifies selection subscribers and releases them on unsubscribe', () => {
+    const manager = new ElementManager()
+    manager.add(rect('one'))
+    manager.add(rect('two'))
+    const listener = vi.fn()
+    const unsubscribe = manager.onSelectionChange(listener)
+
+    manager.replaceSelection(['one', 'two'])
+    unsubscribe()
+    manager.clearSelectedElement()
+
+    expect(listener).toHaveBeenNthCalledWith(1, [])
+    expect(listener).toHaveBeenNthCalledWith(2, ['one', 'two'])
+    expect(listener).toHaveBeenCalledTimes(2)
+  })
 })

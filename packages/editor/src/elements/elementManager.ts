@@ -35,6 +35,9 @@ export class ElementManager {
   private readonly elementsChangedListeners = new Set<
     (elements: BaseElement[]) => void
   >()
+  private readonly selectionChangedListeners = new Set<
+    (ids: readonly string[]) => void
+  >()
 
   public readonly ROOT_ID = this.document.ROOT_ID
 
@@ -56,6 +59,7 @@ export class ElementManager {
 
   remove(id: string): void {
     this.selection.removeSubtree(id)
+    this.emitSelectionChanged()
     const changed = this.history.execute(
       new DeleteElementsCommand(this.document, [id])
     )
@@ -126,6 +130,7 @@ export class ElementManager {
     )
     if (!changed) return false
     ids.forEach((id) => this.selection.removeSubtree(id))
+    this.emitSelectionChanged()
     this.emitHierarchyChanged()
     return true
   }
@@ -159,6 +164,7 @@ export class ElementManager {
     this.history.dispose()
     this.hierarchyChangedListeners.clear()
     this.elementsChangedListeners.clear()
+    this.selectionChangedListeners.clear()
   }
 
   update(): void {
@@ -177,6 +183,14 @@ export class ElementManager {
     return () => this.hierarchyChangedListeners.delete(callback)
   }
 
+  onSelectionChange(
+    callback: (ids: readonly string[]) => void
+  ): () => void {
+    callback([...this.selection.selectedIds])
+    this.selectionChangedListeners.add(callback)
+    return () => this.selectionChangedListeners.delete(callback)
+  }
+
   async saveDocument(
     repository: DocumentRepository,
     documentId: string
@@ -193,6 +207,7 @@ export class ElementManager {
     const imported = this.document.importSnapshot(snapshot)
     if (!imported.ok) return false
     this.selection.clear()
+    this.emitSelectionChanged()
     this.history.clear()
     this.emitHierarchyChanged()
     return true
@@ -242,6 +257,7 @@ export class ElementManager {
   ): boolean {
     if (!this.marqueeRect) {
       this.selection.clear()
+      this.emitSelectionChanged()
       return false
     }
     const selected: string[] = []
@@ -256,6 +272,7 @@ export class ElementManager {
     }
     visit(this.document.rootChildren)
     this.selection.replace(selected)
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
     return selected.length > 0
   }
@@ -292,26 +309,31 @@ export class ElementManager {
 
   setSelectedElement(id: string): void {
     this.selection.add([id])
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
   }
 
   clearSelectedElement(): void {
     this.selection.clear()
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
   }
 
   replaceSelection(ids: Iterable<string>): void {
     this.selection.replace(ids)
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
   }
 
   addSelection(ids: Iterable<string>): void {
     this.selection.add(ids)
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
   }
 
   toggleSelection(ids: Iterable<string>): void {
     for (const id of ids) this.selection.toggle(id)
+    this.emitSelectionChanged()
     this.selectionBoxVisible = true
   }
 
@@ -379,5 +401,10 @@ export class ElementManager {
     const tree = this.tree
     this.hierarchyChangedListeners.forEach((callback) => callback(tree))
     this.emitElementsChanged()
+  }
+
+  private emitSelectionChanged(): void {
+    const ids = [...this.selection.selectedIds]
+    this.selectionChangedListeners.forEach((callback) => callback(ids))
   }
 }

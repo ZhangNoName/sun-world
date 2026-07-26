@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SWEditor, type NodeInfo, type ToolName } from '@sun-world/editor'
+import {
+  SWEditor,
+  type HistoryState,
+  type NodeInfo,
+  type ToolName,
+} from '@sun-world/editor'
 
 export interface EditorElementPatch {
   x?: number
@@ -18,10 +23,19 @@ export interface EditorCanvasAdapter {
   toolChanged(listener: () => void): void | (() => void)
   onZoomChange(listener: (zoom: number) => void): void | (() => void)
   elementTreeChanged(listener: (nodes: NodeInfo[]) => void): void | (() => void)
-  selectElement(id: string): void
+  historyChanged(listener: (state: HistoryState) => void): void | (() => void)
+  selectionChanged(
+    listener: (ids: readonly string[]) => void
+  ): void | (() => void)
+  undo(): boolean
+  redo(): boolean
+  selectElement(
+    id: string,
+    modifiers?: { additive?: boolean; toggle?: boolean }
+  ): void
   getElementPanelAttrs?(id: string): EditorElementPatch | null
   updateElement(id: string, patch: EditorElementPatch): void
-  save(): void
+  save(): void | Promise<void>
   destroy(): void
 }
 export type EditorFactory = (host: HTMLDivElement) => EditorCanvasAdapter
@@ -37,6 +51,12 @@ export function useEditorCanvas(
   const [zoom, setZoom] = useState(1)
   const [nodes, setNodes] = useState<NodeInfo[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([])
+  const [canUndo, setCanUndo] = useState(false)
+  const [canRedo, setCanRedo] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<
+    'idle' | 'saving' | 'saved' | 'error'
+  >('idle')
   const [selectedAttrs, setSelectedAttrs] = useState<EditorElementPatch | null>(
     null
   )
@@ -51,6 +71,19 @@ export function useEditorCanvas(
       instance.toolChanged(() => setActiveTool(instance.getActiveToolName())),
       instance.onZoomChange(setZoom),
       instance.elementTreeChanged(setNodes),
+      instance.historyChanged((state) => {
+        setCanUndo(state.canUndo)
+        setCanRedo(state.canRedo)
+      }),
+      instance.selectionChanged((ids) => {
+        setSelectedIds([...ids])
+        setSelectedId(ids.length === 1 ? ids[0] : null)
+        setSelectedAttrs(
+          ids.length === 1
+            ? (instance.getElementPanelAttrs?.(ids[0]) ?? null)
+            : null
+        )
+      }),
     ]
     return () => {
       cleanups.forEach((cleanup) => cleanup?.())
@@ -64,8 +97,8 @@ export function useEditorCanvas(
     [editor]
   )
   const selectNode = useCallback(
-    (id: string) => {
-      editor?.selectElement(id)
+    (id: string, modifiers?: { additive?: boolean; toggle?: boolean }) => {
+      editor?.selectElement(id, modifiers)
       setSelectedId(id)
       setSelectedAttrs(editor?.getElementPanelAttrs?.(id) ?? null)
     },
@@ -83,6 +116,17 @@ export function useEditorCanvas(
     () => findNode(nodes, selectedId),
     [nodes, selectedId]
   )
+  const save = useCallback(async () => {
+    if (!editor) return
+    setSaveStatus('saving')
+    try {
+      await editor.save()
+      setSaveStatus('saved')
+    } catch (error) {
+      setSaveStatus('error')
+      throw error
+    }
+  }, [editor])
 
   return {
     editor,
@@ -90,12 +134,18 @@ export function useEditorCanvas(
     zoom,
     nodes,
     selectedId,
+    selectedIds,
     selectedNode,
     selectedAttrs,
     selectTool,
     selectNode,
     updateSelected,
-    save: () => editor?.save(),
+    canUndo,
+    canRedo,
+    undo: () => editor?.undo(),
+    redo: () => editor?.redo(),
+    saveStatus,
+    save,
   }
 }
 

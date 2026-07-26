@@ -3,7 +3,10 @@ import { EditorCanvasTree } from './EditorCanvasTree'
 export function EditorCanvasLeft(props: {
   nodes: NodeInfo[]
   selectedId: string | null
-  onSelect: (id: string) => void
+  onSelect: (
+    id: string,
+    modifiers?: { additive?: boolean; toggle?: boolean }
+  ) => void
 }) {
   return (
     <aside className="editor-sidebar editor-sidebar--left">

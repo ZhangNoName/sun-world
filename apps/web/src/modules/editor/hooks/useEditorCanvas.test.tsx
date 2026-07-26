@@ -1,14 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
 import type { NodeInfo, ToolName } from '@sun-world/editor'
+import type { HistoryState } from '@sun-world/editor'
 import { useEditorCanvas, type EditorCanvasAdapter } from './useEditorCanvas'
 
 function createFakeEditor() {
   let toolListener = () => undefined
   let zoomListener = (_value: number) => undefined
   let treeListener = (_nodes: NodeInfo[]) => undefined
+  let historyListener = (_state: HistoryState) => undefined
+  let selectionListener = (_ids: readonly string[]) => undefined
   const unsubscribeTool = vi.fn()
   const unsubscribeZoom = vi.fn()
   const unsubscribeTree = vi.fn()
+  const unsubscribeHistory = vi.fn()
+  const unsubscribeSelection = vi.fn()
   const editor: EditorCanvasAdapter = {
     zoom: 1,
     setTool: vi.fn(),
@@ -25,9 +30,19 @@ function createFakeEditor() {
       treeListener = listener
       return unsubscribeTree
     }),
+    historyChanged: vi.fn((listener) => {
+      historyListener = listener
+      return unsubscribeHistory
+    }),
+    selectionChanged: vi.fn((listener) => {
+      selectionListener = listener
+      return unsubscribeSelection
+    }),
+    undo: vi.fn(),
+    redo: vi.fn(),
     selectElement: vi.fn(),
     updateElement: vi.fn(),
-    save: vi.fn(),
+    save: vi.fn(async () => undefined),
     destroy: vi.fn(),
   }
   return {
@@ -38,6 +53,10 @@ function createFakeEditor() {
     unsubscribeTool,
     unsubscribeZoom,
     unsubscribeTree,
+    unsubscribeHistory,
+    unsubscribeSelection,
+    emitHistory: (state: HistoryState) => historyListener(state),
+    emitSelection: (ids: readonly string[]) => selectionListener(ids),
   }
 }
 
@@ -55,8 +74,10 @@ describe('useEditorCanvas', () => {
 
     act(() => result.current.selectTool('rect'))
     expect(fake.editor.setTool).toHaveBeenCalledWith('rect')
-    act(() => result.current.selectNode('node-1'))
-    expect(fake.editor.selectElement).toHaveBeenCalledWith('node-1')
+    act(() => result.current.selectNode('node-1', { additive: true }))
+    expect(fake.editor.selectElement).toHaveBeenCalledWith('node-1', {
+      additive: true,
+    })
     act(() => result.current.updateSelected({ width: 240 }))
     expect(fake.editor.updateElement).toHaveBeenCalledWith('node-1', {
       width: 240,
@@ -66,6 +87,48 @@ describe('useEditorCanvas', () => {
     expect(fake.unsubscribeTool).toHaveBeenCalled()
     expect(fake.unsubscribeZoom).toHaveBeenCalled()
     expect(fake.unsubscribeTree).toHaveBeenCalled()
+    expect(fake.unsubscribeHistory).toHaveBeenCalled()
+    expect(fake.unsubscribeSelection).toHaveBeenCalled()
     expect(fake.editor.destroy).toHaveBeenCalled()
+  })
+
+  it('tracks history and multi-selection and forwards undo and redo', () => {
+    const fake = createFakeEditor()
+    const host = document.createElement('div')
+    const factory = vi.fn(() => fake.editor)
+    const { result } = renderHook(() => useEditorCanvas(host, factory))
+
+    act(() => fake.emitHistory({ canUndo: true, canRedo: false }))
+    act(() => fake.emitSelection(['one', 'two']))
+    expect(result.current.canUndo).toBe(true)
+    expect(result.current.canRedo).toBe(false)
+    expect(result.current.selectedIds).toEqual(['one', 'two'])
+
+    act(() => result.current.undo())
+    act(() => result.current.redo())
+    expect(fake.editor.undo).toHaveBeenCalledOnce()
+    expect(fake.editor.redo).toHaveBeenCalledOnce()
+  })
+
+  it('reports asynchronous save progress and completion', async () => {
+    let finishSave: () => void = () => undefined
+    const fake = createFakeEditor()
+    vi.mocked(fake.editor.save).mockImplementation(
+      () => new Promise<void>((resolve) => (finishSave = resolve))
+    )
+    const host = document.createElement('div')
+    const factory = vi.fn(() => fake.editor)
+    const { result } = renderHook(() => useEditorCanvas(host, factory))
+
+    let savePromise: Promise<void> | undefined
+    act(() => {
+      savePromise = result.current.save()
+    })
+    expect(result.current.saveStatus).toBe('saving')
+    await act(async () => {
+      finishSave()
+      await savePromise
+    })
+    expect(result.current.saveStatus).toBe('saved')
   })
 })
