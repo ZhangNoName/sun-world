@@ -11,6 +11,7 @@ const sse = read('apps/web/src/modules/ai/sse.ts')
 const workspace = read('packages/ai-ui/src/AiWorkspace.tsx')
 const renderer = read('packages/ai-ui/src/AiBlockRenderer.tsx')
 const settings = read('packages/ai-ui/src/AiProviderSettings.tsx')
+const pageStyles = read('apps/web/src/modules/ai/pages/ai.css')
 const routes = read('packages/contracts/src/routes.ts')
 const backendRouter = read('apps/api/src/modules/ai/router.py')
 
@@ -71,6 +72,15 @@ if (
 if (/localStorage|sessionStorage/.test(settings))
   throw new Error(
     'Provider credentials must never be stored in browser storage.'
+  )
+
+if (
+  !pageStyles.includes('.desk-layout > .content.ai-chat-page-wrapper') ||
+  !pageStyles.includes('width: 100%') ||
+  !pageStyles.includes('margin: 0')
+)
+  throw new Error(
+    'AI workspace must opt out of the desktop content width and top-margin constraints.'
   )
 
 console.log('AI platform interface check passed.')

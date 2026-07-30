@@ -6,6 +6,17 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-07-30: fixed the `/aigc` desktop layout regression on local `main`.
+  The AI route already supplied `ai-chat-page-wrapper`, but its stylesheet
+  targeted the wrong direct child, so the page remained inside the general
+  1280px content width and 64px top margin. The corrected selector targets
+  `.content.ai-chat-page-wrapper` and makes only that full-screen workspace
+  fill the desktop layout. `scripts/check-ai-interface.mjs` now guards this
+  opt-out. The focused guard and layout test passed; Web typecheck, all 76 Web
+  tests, production build, formatting, and whitespace checks passed. Browser
+  QA at 2048x1080 measured the AI wrapper and shell at 2048x1080 from (0,0)
+  with no horizontal overflow. Not committed, pushed, or deployed.
+
 - 2026-07-26: modular AI workspace refactor on local `main` introduces the
   versioned `/ai/v1` protocol, a standalone backend AI module, encrypted
   per-user multi-provider profiles, MySQL conversation/message/feedback

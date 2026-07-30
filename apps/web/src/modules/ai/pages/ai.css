@@ -7,10 +7,17 @@
   height: 100%;
 }
 
-.desk-layout:has(> .ai-chat-page-wrapper) {
+.desk-layout:has(> .content.ai-chat-page-wrapper) {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
+}
+
+.desk-layout > .content.ai-chat-page-wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
 }
 
 .main-container.ai-chat-page-wrapper {
