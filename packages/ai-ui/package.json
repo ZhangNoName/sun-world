@@ -21,6 +21,7 @@
     }
   },
   "dependencies": {
+    "@sun-world/ai-composer": "workspace:*",
     "@sun-world/contracts": "workspace:*",
     "@sun-world/icons": "workspace:*",
     "@sun-world/ui": "workspace:*",

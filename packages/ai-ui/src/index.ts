@@ -4,6 +4,10 @@ export { AiProviderSettings } from './AiProviderSettings'
 export { AiWorkspace } from './AiWorkspace'
 export type { AiWorkspaceProps } from './AiWorkspace'
 export type {
+  AiComposerCommand,
+  AiComposerSubmitPayload,
+} from '@sun-world/ai-composer'
+export type {
   AiCustomBlockValue,
   AiProviderDraft,
   AiRendererRegistry,

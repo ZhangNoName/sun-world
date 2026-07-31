@@ -59,6 +59,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@sun-world/ai-composer':
+        specifier: workspace:*
+        version: link:../../packages/ai-composer
       '@sun-world/ai-ui':
         specifier: workspace:*
         version: link:../../packages/ai-ui
@@ -247,6 +250,9 @@ importers:
 
   packages/ai-ui:
     dependencies:
+      '@sun-world/ai-composer':
+        specifier: workspace:*
+        version: link:../ai-composer
       '@sun-world/contracts':
         specifier: workspace:*
         version: link:../contracts

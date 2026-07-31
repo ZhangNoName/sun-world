@@ -1,4 +1,5 @@
 export { AiComposer } from './AiComposer'
+export { AiComposerSubmitError } from './errors'
 export type {
   AiComposerCommand,
   AiComposerHandle,

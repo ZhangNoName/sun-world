@@ -21,6 +21,7 @@ import {
 } from './commands/commands'
 import { ModelSelector } from './model-selector/ModelSelector'
 import { MarkdownPreview } from './markdown/MarkdownPreview'
+import { AiComposerSubmitError } from './errors'
 import { createBrowserSpeechAdapter } from './speech/browserSpeechAdapter'
 import { useSpeechInput } from './speech/useSpeechInput'
 import type {
@@ -55,7 +56,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const submittingRef = useRef(false)
     const [submitting, setSubmitting] = useState(false)
-    const [submissionError, setSubmissionError] = useState(false)
+    const [submissionError, setSubmissionError] = useState<string>()
     const [files, setFiles] = useState<File[]>([])
     const [rejectedFiles, setRejectedFiles] = useState(0)
     const [selectedCommandId, setSelectedCommandId] = useState<string>()
@@ -112,7 +113,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
 
       submittingRef.current = true
       setSubmitting(true)
-      setSubmissionError(false)
+      setSubmissionError(undefined)
       try {
         await onSubmit({
           markdown: nextMarkdown,
@@ -124,8 +125,12 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         setFiles([])
         setSelectedCommandId(undefined)
         return true
-      } catch {
-        setSubmissionError(true)
+      } catch (error) {
+        setSubmissionError(
+          error instanceof AiComposerSubmitError
+            ? error.message
+            : '发送失败，请重试。'
+        )
         return false
       } finally {
         submittingRef.current = false
@@ -139,7 +144,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     }
     const reset = () => {
       speech.stop()
-      setSubmissionError(false)
+      setSubmissionError(undefined)
       setFiles([])
       setSelectedCommandId(undefined)
       setCommandPaletteDismissed(false)
@@ -375,7 +380,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             {disabledReason}
           </span>
         ) : null}
-        {submissionError ? <div role="alert">发送失败，请重试。</div> : null}
+        {submissionError ? <div role="alert">{submissionError}</div> : null}
       </form>
     )
   }

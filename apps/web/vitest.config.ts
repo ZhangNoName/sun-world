@@ -18,6 +18,10 @@ export default defineConfig({
         replacement: resolve(__dirname, '../../packages/ai-ui/src'),
       },
       {
+        find: '@sun-world/ai-composer',
+        replacement: resolve(__dirname, '../../packages/ai-composer/src'),
+      },
+      {
         find: '@sun-world/editor',
         replacement: resolve(__dirname, '../../packages/editor/src'),
       },

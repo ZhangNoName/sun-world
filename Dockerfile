@@ -10,6 +10,7 @@ RUN npm install -g pnpm@10.15.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/ai-ui/package.json ./packages/ai-ui/package.json
+COPY packages/ai-composer/package.json ./packages/ai-composer/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/editor/package.json ./packages/editor/package.json
 COPY packages/icons/package.json ./packages/icons/package.json

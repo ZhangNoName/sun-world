@@ -303,12 +303,11 @@
 .sw-ai-composer-wrap {
   position: absolute;
   z-index: 4;
-  right: max(1rem, calc((100% - 760px) / 2));
+  right: max(1rem, calc((100% - 900px) / 2));
   bottom: 0.9rem;
-  left: max(1rem, calc((100% - 760px) / 2));
+  left: max(1rem, calc((100% - 900px) / 2));
 }
-.sw-ai-composer-wrap .sun-chat-composer {
-  border-radius: 1.35rem;
+.sw-ai-composer-wrap .sw-ai-composer {
   background: color-mix(in srgb, var(--bg-component) 90%, transparent);
   box-shadow: 0 18px 50px color-mix(in srgb, black 14%, transparent);
   backdrop-filter: blur(20px) saturate(150%);
@@ -319,12 +318,6 @@
   color: var(--text-secondary);
   text-align: center;
 }
-.sw-ai-stop {
-  position: absolute;
-  right: 0.65rem;
-  bottom: 2.9rem;
-}
-
 .sw-ai-thinking {
   display: inline-flex;
   gap: 0.28rem;
@@ -452,7 +445,7 @@
 @media (prefers-reduced-transparency: reduce) {
   .sw-ai-toolbar,
   .sw-ai-sidebar,
-  .sw-ai-composer-wrap .sun-chat-composer {
+  .sw-ai-composer-wrap .sw-ai-composer {
     background: var(--bg-component);
     backdrop-filter: none;
   }
@@ -461,7 +454,7 @@
 @media (prefers-contrast: more) {
   .sw-ai-toolbar,
   .sw-ai-sidebar,
-  .sw-ai-composer-wrap .sun-chat-composer {
+  .sw-ai-composer-wrap .sw-ai-composer {
     border: 1px solid currentColor;
     background: var(--bg-component);
   }

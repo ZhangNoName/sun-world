@@ -164,7 +164,7 @@ describe('AiWorkspace', () => {
     expect(onRetry).toHaveBeenCalledTimes(1)
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     expect(screen.getByText('我的 DeepSeek')).toBeInTheDocument()
-    expect(screen.getByText('deepseek-chat')).toBeInTheDocument()
+    expect(screen.getAllByText('deepseek-chat')).toHaveLength(2)
   })
 
   it('closes the mobile conversation drawer from its scrim', async () => {
@@ -216,7 +216,78 @@ describe('AiWorkspace', () => {
     await user.type(composer, '  生成一张表  ')
     await user.click(screen.getByRole('button', { name: '发送消息' }))
 
-    expect(onSend).toHaveBeenCalledWith('生成一张表')
+    expect(onSend).toHaveBeenCalledWith({
+      markdown: '生成一张表',
+      files: [],
+      modelId: 'provider:deepseek',
+      commandId: undefined,
+    })
     expect(composer).toHaveValue('')
+  })
+
+  it('maps provider profiles into selectable composer models', async () => {
+    const user = userEvent.setup()
+    const onSend = vi.fn()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          { id: 'deepseek', name: 'DeepSeek', defaultModel: 'deepseek-chat' },
+        ]}
+        providerProfiles={[
+          {
+            id: 'profile-1',
+            provider: 'deepseek',
+            name: '我的推理模型',
+            baseUrl: 'https://api.deepseek.com',
+            model: 'deepseek-reasoner',
+            isDefault: true,
+            hasApiKey: true,
+          },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={onSend}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByRole('button', { name: '选择模型，当前 deepseek-reasoner' })
+    ).toBeInTheDocument()
+    await user.type(
+      screen.getByRole('textbox', { name: '给 Sun World AI 发消息' }),
+      'reason'
+    )
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({ modelId: 'profile:profile-1' })
+    )
+  })
+
+  it('delegates the loading composer stop action', async () => {
+    const user = userEvent.setup()
+    const onStop = vi.fn()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'running' }}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={onStop}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: '停止生成' }))
+    expect(onStop).toHaveBeenCalledTimes(1)
   })
 })

@@ -13,6 +13,10 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: [
       {
+        find: '@sun-world/ai-composer',
+        replacement: path.resolve(__dirname, '../ai-composer/src'),
+      },
+      {
         find: '@sun-world/contracts',
         replacement: path.resolve(__dirname, '../contracts/src'),
       },

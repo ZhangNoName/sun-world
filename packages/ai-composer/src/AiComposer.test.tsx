@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import {
   AiComposer,
+  AiComposerSubmitError,
   type AiComposerHandle,
   type AiComposerProps,
 } from './index'
@@ -95,6 +96,24 @@ describe('AiComposer core', () => {
     expect(screen.getByRole('textbox', { name: '消息' })).toHaveValue('keep me')
     expect(screen.getByRole('alert')).toHaveTextContent('发送失败，请重试。')
     expect(screen.getByRole('alert')).not.toHaveTextContent('secret')
+  })
+
+  it('shows an explicitly safe host submission error', async () => {
+    const user = userEvent.setup()
+    render(
+      <ComposerHarness
+        onSubmit={() =>
+          Promise.reject(
+            new AiComposerSubmitError('当前服务暂不支持附件，请移除后重试。')
+          )
+        }
+      />
+    )
+    await user.type(screen.getByRole('textbox', { name: '消息' }), 'question')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      '当前服务暂不支持附件，请移除后重试。'
+    )
   })
 
   it('silently disables submission for empty, disabled, and unavailable model states', () => {

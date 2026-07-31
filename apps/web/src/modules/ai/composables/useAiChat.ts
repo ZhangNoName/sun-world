@@ -8,6 +8,10 @@ import type {
   AiUiProvider,
   AiUiProviderProfile,
 } from '@sun-world/ai-ui'
+import {
+  AiComposerSubmitError,
+  type AiComposerSubmitPayload,
+} from '@sun-world/ai-composer'
 import { useAuthStore } from '@/store/auth'
 
 import {
@@ -144,10 +148,14 @@ export function useAiChat() {
     []
   )
 
-  const sendMessage = useCallback(
+  const sendTextMessage = useCallback(
     async (
       raw: string,
-      options?: { reuseUser?: boolean; parentMessageId?: string }
+      options?: {
+        reuseUser?: boolean
+        parentMessageId?: string
+        providerProfileId?: string | null
+      }
     ) => {
       const text = raw.trim()
       if (!text || runState.status === 'running') return
@@ -300,7 +308,10 @@ export function useAiChat() {
               ? null
               : conversationId,
             provider_profile_id:
-              providerProfiles.find((profile) => profile.isDefault)?.id ?? null,
+              options?.providerProfileId !== undefined
+                ? options.providerProfileId
+                : (providerProfiles.find((profile) => profile.isDefault)?.id ??
+                  null),
             parent_message_id: options?.parentMessageId ?? null,
           },
           {
@@ -368,6 +379,25 @@ export function useAiChat() {
     [activeConversationId, providerProfiles, runState.status, updateMessage]
   )
 
+  const sendMessage = useCallback(
+    async (payload: AiComposerSubmitPayload) => {
+      if (payload.files.length) {
+        throw new AiComposerSubmitError(
+          '当前服务暂不支持附件，请移除附件后重试。'
+        )
+      }
+      if (payload.commandId) {
+        throw new AiComposerSubmitError(
+          '当前服务暂不支持命令，请移除命令后重试。'
+        )
+      }
+      await sendTextMessage(payload.markdown, {
+        providerProfileId: providerProfileId(payload.modelId),
+      })
+    },
+    [sendTextMessage]
+  )
+
   const stop = useCallback(() => controller.current?.abort(), [])
 
   const editMessage = useCallback(
@@ -396,12 +426,12 @@ export function useAiChat() {
           return
         }
       }
-      await sendMessage(content, {
+      await sendTextMessage(content, {
         reuseUser: true,
         parentMessageId: messageId,
       })
     },
-    [activeConversationId, messagesByConversation, sendMessage, user]
+    [activeConversationId, messagesByConversation, sendTextMessage, user]
   )
 
   const regenerate = useCallback(
@@ -420,12 +450,12 @@ export function useAiChat() {
           index
         ),
       }))
-      await sendMessage(firstText(source.blocks), {
+      await sendTextMessage(firstText(source.blocks), {
         reuseUser: true,
         parentMessageId: source.id,
       })
     },
-    [activeConversationId, messagesByConversation, sendMessage]
+    [activeConversationId, messagesByConversation, sendTextMessage]
   )
 
   const retryLast = useCallback(() => {
@@ -585,6 +615,12 @@ function stringValue(value: unknown) {
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'AI 请求失败，请稍后重试。'
+}
+
+function providerProfileId(modelId: string) {
+  return modelId.startsWith('profile:')
+    ? modelId.slice('profile:'.length)
+    : null
 }
 
 function isRole(value: string): value is AiUiMessage['role'] {

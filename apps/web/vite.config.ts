@@ -71,6 +71,10 @@ export default defineConfig(({ mode }) => {
         ...createUiSourceAliases(resolve(__dirname, '../../packages/ui/src')),
         { find: '@', replacement: resolve(__dirname, 'src') },
         {
+          find: '@sun-world/ai-composer',
+          replacement: resolve(__dirname, '../../packages/ai-composer/src'),
+        },
+        {
           find: '@sun-world/ai-ui',
           replacement: resolve(__dirname, '../../packages/ai-ui/src'),
         },

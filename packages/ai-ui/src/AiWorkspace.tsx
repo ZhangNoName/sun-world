@@ -1,13 +1,18 @@
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
   type PointerEvent,
 } from 'react'
+import {
+  AiComposer,
+  type AiComposerCommand,
+  type AiComposerSubmitPayload,
+} from '@sun-world/ai-composer'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/ui/button'
-import { SunChatComposer } from '@sun-world/ui/chat-composer'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
 
 import { AiMessageView } from './AiMessageView'
@@ -30,12 +35,13 @@ export interface AiWorkspaceProps {
   runState: AiRunState
   providers?: AiUiProvider[]
   providerProfiles?: AiUiProviderProfile[]
+  commands?: AiComposerCommand[]
   renderers?: AiRendererRegistry
   sidebarWidth?: number
   onSidebarWidthChange?: (width: number) => void
   onNewConversation: () => void
   onSelectConversation: (id: string) => void
-  onSend: (value: string) => void
+  onSend: (payload: AiComposerSubmitPayload) => void | Promise<void>
   onStop: () => void
   onEditMessage: (messageId: string, content: string) => void
   onRegenerate: (messageId: string) => void
@@ -60,6 +66,7 @@ export function AiWorkspace({
   runState,
   providers = fallbackProviders,
   providerProfiles = [],
+  commands = [],
   renderers,
   sidebarWidth = 288,
   onSidebarWidthChange,
@@ -76,6 +83,11 @@ export function AiWorkspace({
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [draft, setDraft] = useState('')
+  const defaultProfile = providerProfiles.find((profile) => profile.isDefault)
+  const defaultModelId = defaultProfile
+    ? `profile:${defaultProfile.id}`
+    : `provider:${providers[0]?.id ?? 'deepseek'}`
+  const [selectedModelId, setSelectedModelId] = useState(defaultModelId)
   const [currentSidebarWidth, setCurrentSidebarWidth] = useState(sidebarWidth)
   const drag = useRef<{
     pointerId: number
@@ -84,6 +96,34 @@ export function AiWorkspace({
   } | null>(null)
 
   useEffect(() => setCurrentSidebarWidth(sidebarWidth), [sidebarWidth])
+
+  const composerModels = useMemo(
+    () => [
+      ...providerProfiles.map((profile) => ({
+        id: `profile:${profile.id}`,
+        label: profile.model,
+        description: profile.name,
+        group: '已保存模型',
+      })),
+      ...providers.map((provider) => ({
+        id: `provider:${provider.id}`,
+        label: provider.defaultModel ?? provider.name,
+        description: provider.name,
+        group: '服务默认模型',
+      })),
+    ],
+    [providerProfiles, providers]
+  )
+
+  useEffect(() => {
+    if (defaultProfile) setSelectedModelId(`profile:${defaultProfile.id}`)
+  }, [defaultProfile?.id])
+
+  useEffect(() => {
+    if (!composerModels.some((model) => model.id === selectedModelId)) {
+      setSelectedModelId(composerModels[0]?.id ?? defaultModelId)
+    }
+  }, [composerModels, defaultModelId, selectedModelId])
 
   useEffect(() => {
     if (typeof matchMedia !== 'function') return
@@ -259,26 +299,18 @@ export function AiWorkspace({
         </section>
 
         <div className="sw-ai-composer-wrap">
-          <SunChatComposer
+          <AiComposer
             value={draft}
             onValueChange={setDraft}
             placeholder="给 Sun World AI 发消息"
             loading={runState.status === 'running'}
+            models={composerModels}
+            modelId={selectedModelId}
+            onModelChange={setSelectedModelId}
+            commands={commands}
             onSubmit={onSend}
-            submitLabel="发送消息"
-            submitContent={<SunIcon name="send" />}
+            onCancel={onStop}
           />
-          {runState.status === 'running' ? (
-            <Button
-              type="button"
-              className="sw-ai-stop"
-              aria-label="停止生成"
-              onClick={onStop}
-            >
-              <SunIcon name="square" size="xs" />
-              停止
-            </Button>
-          ) : null}
           <small>AI 可能会出错，请核对重要信息。</small>
         </div>
       </main>
