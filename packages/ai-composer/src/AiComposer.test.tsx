@@ -23,6 +23,7 @@ function ComposerHarness({
   onCancel,
   modelId = 'deepseek',
   disabled,
+  loading,
   composerRef,
   commands,
   accept,
@@ -34,6 +35,7 @@ function ComposerHarness({
   onCancel?: AiComposerProps['onCancel']
   modelId?: string
   disabled?: boolean
+  loading?: boolean
   composerRef?: React.RefObject<AiComposerHandle | null>
   commands?: AiComposerProps['commands']
   accept?: string
@@ -55,6 +57,7 @@ function ComposerHarness({
       onSubmit={onSubmit}
       onCancel={onCancel}
       disabled={disabled}
+      loading={loading}
       placeholder="消息"
       accept={accept}
       maxFiles={maxFiles}
@@ -98,6 +101,25 @@ describe('AiComposer core', () => {
     expect(screen.getByRole('alert')).not.toHaveTextContent('secret')
   })
 
+  it('clears a submission error when the draft changes', async () => {
+    const user = userEvent.setup()
+    render(
+      <ComposerHarness
+        onSubmit={() => Promise.reject(new Error('failed request'))}
+      />
+    )
+    const textbox = screen.getByRole('textbox')
+
+    await user.type(textbox, 'first draft')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(screen.getByRole('alert')).toHaveClass(
+      'sw-ai-composer__notice--error'
+    )
+
+    await user.type(textbox, ' updated')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('shows an explicitly safe host submission error', async () => {
     const user = userEvent.setup()
     render(
@@ -119,6 +141,9 @@ describe('AiComposer core', () => {
   it('silently disables submission for empty, disabled, and unavailable model states', () => {
     const { rerender } = render(<ComposerHarness />)
     expect(screen.getByRole('button', { name: '发送消息' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '发送消息' })).toHaveClass(
+      'sw-ai-composer__primary-action--disabled'
+    )
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 
     rerender(<ComposerHarness disabled />)
@@ -156,6 +181,43 @@ describe('AiComposer core', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1)
 
     await act(async () => resolveSubmit?.())
+  })
+
+  it('replaces send with an enabled stop action while submission is pending', async () => {
+    const user = userEvent.setup()
+    const onCancel = vi.fn()
+    let resolveSubmit: (() => void) | undefined
+    const onSubmit = vi.fn(
+      () => new Promise<void>((resolve) => (resolveSubmit = resolve))
+    )
+    render(<ComposerHarness onSubmit={onSubmit} onCancel={onCancel} />)
+
+    await user.type(screen.getByRole('textbox'), 'generate')
+    expect(screen.getByRole('button', { name: '发送消息' })).toHaveClass(
+      'sw-ai-composer__primary-action--ready'
+    )
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+
+    const stop = screen.getByRole('button', { name: '停止生成' })
+    expect(stop).toBeEnabled()
+    expect(stop).toHaveClass('sw-ai-composer__primary-action--generating')
+    expect(
+      screen.queryByRole('button', { name: '发送消息' })
+    ).not.toBeInTheDocument()
+
+    await user.click(stop)
+    expect(onCancel).toHaveBeenCalledTimes(1)
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+
+    await act(async () => resolveSubmit?.())
+  })
+
+  it('shows the stop action for host-controlled generation', () => {
+    render(<ComposerHarness loading onCancel={vi.fn()} />)
+    expect(screen.getByRole('button', { name: '停止生成' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '停止生成' })).toHaveClass(
+      'sw-ai-composer__primary-action--generating'
+    )
   })
 
   it('exposes focus, setQuestion, submit overrides, cancel, and reset', async () => {

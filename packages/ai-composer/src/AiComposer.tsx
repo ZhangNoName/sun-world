@@ -21,6 +21,7 @@ import {
 } from './commands/commands'
 import { ModelSelector } from './model-selector/ModelSelector'
 import { AiComposerSubmitError } from './errors'
+import { ComposerNotice } from './feedback/ComposerNotice'
 import { createBrowserSpeechAdapter } from './speech/browserSpeechAdapter'
 import { useSpeechInput } from './speech/useSpeechInput'
 import type {
@@ -84,12 +85,13 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       : []
     const commandPaletteOpen =
       Boolean(trigger) && commands.length > 0 && !commandPaletteDismissed
-    const canSubmit =
+    const sendReady =
       value.trim().length > 0 &&
       Boolean(selectedModel && !selectedModel.disabled) &&
-      !disabled &&
-      !loading &&
-      !submitting
+      !disabled
+    const primaryActionState =
+      submitting || loading ? 'generating' : sendReady ? 'ready' : 'disabled'
+    const canSubmit = primaryActionState === 'ready'
 
     const resize = () => {
       const textarea = textareaRef.current
@@ -254,6 +256,17 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         : !selectedModel || selectedModel.disabled
           ? '请选择可用模型'
           : '请输入消息'
+    const speechNotice =
+      speechNoticeVisible && speech.status === 'denied'
+        ? '请在浏览器设置中允许麦克风权限。'
+        : speechNoticeVisible && speech.status === 'unsupported'
+          ? '当前浏览器不支持语音输入。'
+          : undefined
+    const hasFeedback =
+      Boolean(rejectedFiles) ||
+      Boolean(speechNotice) ||
+      speech.status === 'error' ||
+      Boolean(submissionError)
 
     return (
       <form className="sw-ai-composer" onSubmit={handleSubmit}>
@@ -290,6 +303,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
           onChange={(event) => {
             setCommandPaletteDismissed(false)
             setActiveCommandIndex(-1)
+            setSubmissionError(undefined)
             onValueChange(event.target.value)
           }}
           onInput={resize}
@@ -298,6 +312,30 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         {speech.interimTranscript ? (
           <div className="sw-ai-composer__speech-interim" role="status">
             {speech.interimTranscript}
+          </div>
+        ) : null}
+        {hasFeedback ? (
+          <div className="sw-ai-composer__feedback">
+            {rejectedFiles ? (
+              <ComposerNotice tone="warning" role="status">
+                {rejectedFiles} 个文件未添加
+              </ComposerNotice>
+            ) : null}
+            {speechNotice ? (
+              <ComposerNotice tone="warning" role="status">
+                {speechNotice}
+              </ComposerNotice>
+            ) : null}
+            {speech.status === 'error' ? (
+              <ComposerNotice tone="error" role="alert">
+                语音识别失败，请重试。
+              </ComposerNotice>
+            ) : null}
+            {submissionError ? (
+              <ComposerNotice tone="error" role="alert">
+                {submissionError}
+              </ComposerNotice>
+            ) : null}
           </div>
         ) : null}
         <div className="sw-ai-composer__toolbar">
@@ -348,33 +386,27 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             >
               <SunIcon name="mic" />
             </button>
-            {loading ? (
-              <button type="button" aria-label="停止生成" onClick={cancel}>
+            {primaryActionState === 'generating' ? (
+              <button
+                type="button"
+                className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
+                aria-label="停止生成"
+                onClick={cancel}
+              >
                 <SunIcon name="square" size="xs" />
               </button>
             ) : (
-              <button type="submit" aria-label="发送消息" disabled={!canSubmit}>
+              <button
+                type="submit"
+                className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
+                aria-label="发送消息"
+                disabled={primaryActionState === 'disabled'}
+              >
                 <SunIcon name="send" size="sm" />
               </button>
             )}
           </div>
         </div>
-        {rejectedFiles ? (
-          <div role="status">{rejectedFiles} 个文件未添加</div>
-        ) : null}
-        {speechNoticeVisible &&
-        (speech.status === 'denied' || speech.status === 'unsupported') ? (
-          <div className="sw-ai-composer__notice" role="status">
-            {speech.status === 'denied'
-              ? '请在浏览器设置中允许麦克风权限。'
-              : '当前浏览器不支持语音输入。'}
-          </div>
-        ) : null}
-        {speech.status === 'error' ? (
-          <div className="sw-ai-composer__notice" role="alert">
-            语音识别失败，请重试。
-          </div>
-        ) : null}
         {!canSubmit ? (
           <span
             id="sw-ai-composer-disabled-reason"
@@ -383,7 +415,6 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             {disabledReason}
           </span>
         ) : null}
-        {submissionError ? <div role="alert">{submissionError}</div> : null}
       </form>
     )
   }
