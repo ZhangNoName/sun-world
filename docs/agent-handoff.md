@@ -6,6 +6,20 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-08-01: AI composer status feedback and primary-action states are
+  implemented on local `main`. The bottom validation copy is now a compact,
+  tone-aware notice above the toolbar, stale submission errors clear when the
+  draft changes, and the send control has explicit disabled, ready, and
+  generating states. Generating renders a white stop square and invokes the
+  existing public cancel path; submit payloads and imperative APIs remain
+  unchanged. Component tests cover all three states, cancellation, host loading,
+  notice tone, and edit-to-clear behavior. Live `/aigc` QA at 1280x720 verified
+  40px controls, compact 12px feedback, no overlap, and no horizontal overflow.
+  Important files: `packages/ai-composer/src/AiComposer.tsx`,
+  `packages/ai-composer/src/feedback/ComposerNotice.tsx`, package tests/CSS,
+  `design-qa.md`, and the related specs under `docs/superpowers/`. No blockers
+  remain; no push or deploy was performed.
+
 - 2026-08-01: the AI composer attachment strip is implemented on local `main`.
   Attachments now render above the textarea in one horizontally scrollable row;
   images use revocable local object-URL thumbnails and PDF, spreadsheet,

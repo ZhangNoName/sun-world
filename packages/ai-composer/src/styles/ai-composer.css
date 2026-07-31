@@ -217,21 +217,22 @@
   width: 34px;
 }
 
-.sw-ai-composer__primary-action {
+.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action {
   border-radius: 999px;
   height: 40px;
   margin-left: 4px;
   width: 40px;
 }
 
-.sw-ai-composer__primary-action--ready,
-.sw-ai-composer__primary-action--generating {
+.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action--ready,
+.sw-ai-composer__tools--end
+  > button.sw-ai-composer__primary-action--generating {
   background: var(--composer-strong);
   color: var(--composer-surface);
   opacity: 1;
 }
 
-.sw-ai-composer button.sw-ai-composer__primary-action--disabled {
+.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action--disabled {
   background: color-mix(in srgb, var(--composer-strong) 42%, transparent);
   color: var(--composer-surface);
   opacity: 0.48;

@@ -48,6 +48,34 @@
 
 final result: passed
 
+## Status feedback and primary action iteration (2026-08-01)
+
+- Reference: `C:/Users/haha/AppData/Local/Temp/codex-clipboard-48f135d7-7758-48ae-ad7e-e29b18e32a0c.png`.
+- Live desktop verification used `/aigc` at a `1280 × 720` viewport and
+  compared the supplied reference with the implemented composer state.
+- The primary action now has three explicit states: disabled, ready, and
+  generating. All three measure `40 × 40px`; disabled uses the muted surface,
+  ready uses the strong foreground surface, and generating keeps that surface
+  while replacing the send icon with a white stop square.
+- The generating control remains enabled, exposes `停止生成`, and calls the
+  public cancel path. Automated coverage verifies that cancel does not submit
+  a second request.
+- Host validation feedback now appears in a compact, tinted notice above the
+  toolbar instead of occupying a wide line beneath the controls. The live
+  attachment rejection measured `12px` text with a `17.4px` line height and
+  `role="alert"`.
+- Editing the draft clears the stale submission notice. File, speech
+  permission, speech recognition, and submission feedback share the same
+  reusable notice surface without changing the public submit payload or
+  imperative API.
+- Browser QA exposed a selector-specificity conflict that reduced the action
+  to `34px` and made the ready surface transparent. The scoped primary-action
+  selectors now win over the generic toolbar button rules.
+- The document retained zero horizontal overflow and the notice did not
+  overlap the composer toolbar.
+
+final result: passed
+
 ## Attachment strip iteration (2026-08-01)
 
 - Live desktop verification used the `/aigc` page at a `1280 × 720` viewport.
