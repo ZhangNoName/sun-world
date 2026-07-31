@@ -259,6 +259,30 @@ describe('AiComposer core', () => {
     expect(trigger).toHaveFocus()
   })
 
+  it('closes the model selector when the user clicks outside it', async () => {
+    const user = userEvent.setup()
+    render(<ComposerHarness />)
+
+    await user.click(screen.getByRole('button', { name: /DeepSeek/ }))
+    expect(screen.getByRole('listbox')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('textbox'))
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('closes the model selector with Escape and restores trigger focus', async () => {
+    const user = userEvent.setup()
+    render(<ComposerHarness />)
+    const trigger = screen.getByRole('button', { name: /DeepSeek/ })
+
+    await user.click(trigger)
+    await user.keyboard('{Escape}')
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
+  })
+
   it('selects a slash command with the keyboard and submits a structured id', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockResolvedValue(undefined)

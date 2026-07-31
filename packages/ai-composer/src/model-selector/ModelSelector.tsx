@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 
 import type { AiComposerModel } from '../types'
@@ -15,12 +15,31 @@ export function ModelSelector({
   onModelChange,
 }: ModelSelectorProps) {
   const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const current = models.find((model) => model.id === modelId)
   const label = current?.label ?? '选择模型'
 
+  useEffect(() => {
+    if (!open) return
+    const closeOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      queueMicrotask(() => triggerRef.current?.focus())
+    }
+    document.addEventListener('pointerdown', closeOutside)
+    document.addEventListener('keydown', closeWithEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside)
+      document.removeEventListener('keydown', closeWithEscape)
+    }
+  }, [open])
+
   return (
-    <div className="sw-ai-composer__model-selector">
+    <div ref={rootRef} className="sw-ai-composer__model-selector">
       <button
         ref={triggerRef}
         type="button"
