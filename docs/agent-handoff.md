@@ -24,8 +24,8 @@ older completed checkpoints to docs/handoff/archive/.
   verification remains the next step. The new component adds 1.69 KiB gzip CSS
   and brings the measured Web total to 38.7 KiB, so the total CSS ceiling was
   deliberately updated from 38 to 40 KiB without changing route or JavaScript
-  budgets. Final implementation and documentation commit is the only remaining
-  local step. No push or deployment was performed.
+  budgets. Implementation, documentation, and verification are complete on
+  local `main`. No push or deployment was performed.
 
 - 2026-07-30: fixed the `/aigc` desktop layout regression on local `main`.
   The AI route already supplied `ai-chat-page-wrapper`, but its stylesheet
