@@ -316,19 +316,18 @@ describe('AiComposer core', () => {
     expect(screen.queryByText('Adding Sun World Icons')).not.toBeInTheDocument()
   })
 
-  it('switches between Markdown editing and safe live preview', async () => {
+  it('keeps Markdown as source text without an inline preview control', async () => {
     const user = userEvent.setup()
     render(<ComposerHarness />)
-    fireEvent.change(screen.getByRole('textbox', { name: '消息' }), {
-      target: {
-        value: '# Heading\n\n| A | B |\n| --- | --- |\n| 1 | 2 |',
-      },
-    })
-    await user.click(screen.getByRole('button', { name: '预览 Markdown' }))
-    expect(screen.getByRole('heading', { name: 'Heading' })).toBeInTheDocument()
-    expect(screen.getByRole('table')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '编辑 Markdown' }))
-    expect(screen.getByRole('textbox', { name: '消息' })).toBeInTheDocument()
+    const textbox = screen.getByRole('textbox', { name: '消息' })
+
+    await user.type(textbox, '# 标题')
+
+    expect(textbox).toHaveValue('# 标题')
+    expect(
+      screen.queryByRole('button', { name: '预览 Markdown' })
+    ).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Markdown 预览')).not.toBeInTheDocument()
   })
 
   it('appends browser speech and stops recognition when cancelled', async () => {

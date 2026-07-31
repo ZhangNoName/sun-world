@@ -67,45 +67,6 @@
   opacity: 0.35;
 }
 
-.sw-ai-composer__mode-switch {
-  align-self: flex-end;
-  min-height: 24px;
-}
-
-.sw-ai-composer__mode-switch button {
-  color: var(--composer-secondary);
-  font-size: 12px;
-  padding: 3px 7px;
-}
-
-.sw-ai-composer__markdown {
-  line-height: 1.6;
-  max-height: 220px;
-  min-height: 56px;
-  overflow: auto;
-  padding: 4px 2px 10px;
-}
-
-.sw-ai-composer__markdown > :first-child {
-  margin-top: 0;
-}
-
-.sw-ai-composer__markdown > :last-child {
-  margin-bottom: 0;
-}
-
-.sw-ai-composer__markdown table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.sw-ai-composer__markdown td,
-.sw-ai-composer__markdown th {
-  border: 1px solid var(--composer-border);
-  padding: 6px 8px;
-  text-align: left;
-}
-
 .sw-ai-composer__attachments {
   display: flex;
   flex-wrap: wrap;

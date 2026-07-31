@@ -20,7 +20,6 @@ import {
   nextEnabledCommandIndex,
 } from './commands/commands'
 import { ModelSelector } from './model-selector/ModelSelector'
-import { MarkdownPreview } from './markdown/MarkdownPreview'
 import { AiComposerSubmitError } from './errors'
 import { createBrowserSpeechAdapter } from './speech/browserSpeechAdapter'
 import { useSpeechInput } from './speech/useSpeechInput'
@@ -63,7 +62,6 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const [activeCommandIndex, setActiveCommandIndex] = useState(-1)
     const [commandPaletteDismissed, setCommandPaletteDismissed] =
       useState(false)
-    const [previewing, setPreviewing] = useState(false)
     const [speechNoticeVisible, setSpeechNoticeVisible] = useState(false)
     const resolvedSpeechAdapter = useMemo(
       () => speechAdapter ?? createBrowserSpeechAdapter(),
@@ -148,7 +146,6 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       setFiles([])
       setSelectedCommandId(undefined)
       setCommandPaletteDismissed(false)
-      setPreviewing(false)
       setSpeechNoticeVisible(false)
       onValueChange('')
     }
@@ -255,38 +252,24 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             onSelect={selectCommand}
           />
         ) : null}
-        <div className="sw-ai-composer__mode-switch">
-          <button
-            type="button"
-            aria-label={previewing ? '编辑 Markdown' : '预览 Markdown'}
-            onClick={() => setPreviewing((current) => !current)}
-          >
-            <SunIcon name={previewing ? 'edit' : 'file-text'} size="xs" />
-            {previewing ? '编辑' : '预览'}
-          </button>
-        </div>
-        {previewing ? (
-          <MarkdownPreview markdown={value} />
-        ) : (
-          <textarea
-            ref={textareaRef}
-            aria-label={placeholder}
-            aria-describedby={
-              !canSubmit ? 'sw-ai-composer-disabled-reason' : undefined
-            }
-            value={value}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={1}
-            onChange={(event) => {
-              setCommandPaletteDismissed(false)
-              setActiveCommandIndex(-1)
-              onValueChange(event.target.value)
-            }}
-            onInput={resize}
-            onKeyDown={handleKeyDown}
-          />
-        )}
+        <textarea
+          ref={textareaRef}
+          aria-label={placeholder}
+          aria-describedby={
+            !canSubmit ? 'sw-ai-composer-disabled-reason' : undefined
+          }
+          value={value}
+          placeholder={placeholder}
+          disabled={disabled}
+          rows={1}
+          onChange={(event) => {
+            setCommandPaletteDismissed(false)
+            setActiveCommandIndex(-1)
+            onValueChange(event.target.value)
+          }}
+          onInput={resize}
+          onKeyDown={handleKeyDown}
+        />
         {speech.interimTranscript ? (
           <div className="sw-ai-composer__speech-interim" role="status">
             {speech.interimTranscript}

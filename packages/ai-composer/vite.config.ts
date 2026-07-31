@@ -30,15 +30,7 @@ export default defineConfig(({ mode }) => ({
       fileName: (format) => `ai-composer.${format}.js`,
     },
     rollupOptions: {
-      external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
-        /^@sun-world\//,
-        'react-markdown',
-        'remark-gfm',
-        'rehype-sanitize',
-      ],
+      external: ['react', 'react-dom', 'react/jsx-runtime', /^@sun-world\//],
     },
   },
 }))
