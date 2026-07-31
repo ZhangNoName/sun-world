@@ -15,6 +15,7 @@ sun-world/
 │   ├── editor/       # 富文本编辑器组件 / Rich text editor library (@sun-world/editor)
 │   ├── icons/        # 图标组件库 / Icon component library (@sun-world/icons)
 │   ├── ai-ui/        # AI 工作区界面 / Reusable AI workspace UI (@sun-world/ai-ui)
+│   ├── ai-composer/  # AI 输入框 / Reusable AI composer (@sun-world/ai-composer)
 │   ├── contracts/    # 前后端契约 / Shared API contracts
 │   └── db/           # 数据库访问层 / Database access layer (planned, not active)
 ├── deploy/           # 部署文档与示例 / Deployment docs and examples
@@ -78,6 +79,10 @@ Shared types, route constants, and OpenAPI contracts between frontend and backen
 可复用的 AI 会话外壳、消息操作、服务商设置和结构化内容渲染器。应用层只负责数据与事件适配。
 Reusable AI workspace shell, message actions, provider settings, and structured-content renderers. Applications only adapt data and events.
 
+### @sun-world/ai-composer — AI 输入框 / AI Composer
+
+Codex 风格的独立受控输入框，支持实时 Markdown 预览、提交时附件交付、模型切换、斜杠命令、浏览器语音权限流程与命令式 API。使用说明见 `packages/ai-composer/README.md`。
+
 ### db（规划中 / Planned）
 
 数据库访问层预留。当前后端使用 Python/FastAPI 直接访问数据库，因此 Prisma/TypeScript 数据库层暂不激活。
@@ -90,6 +95,7 @@ pnpm dev              # 启动所有开发服务 / Start all dev services
 pnpm build            # 构建所有项目 / Build all projects
 pnpm build:web        # 构建前端 / Build frontend
 pnpm build:ai-ui      # 构建 AI 界面包 / Build AI UI package
+pnpm build:ai-composer # 构建 AI 输入框包 / Build AI composer package
 pnpm build:blog       # build:web 的兼容别名 / Compatibility alias for build:web
 pnpm check:web        # 检查前端 / Check frontend
 pnpm check:api        # 检查后端 / Check backend

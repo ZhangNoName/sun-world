@@ -1,5 +1,39 @@
 # Current State
 
+## Reusable AI Composer (2026-07-31, local main)
+
+- New standalone `@sun-world/ai-composer` provides the Codex-style controlled
+  input used by `/aigc`: live sanitized Markdown preview, in-memory
+  attachments handed to the host only on submit, controlled model selection,
+  searchable slash commands, and loading/cancel states.
+- Browser speech is isolated behind `SpeechInputAdapter`. The default adapter
+  checks microphone permission where supported, handles denial/unavailable
+  states inline, and can be replaced without coupling speech to chat transport.
+- Hosts can control the component through `focus`, `setQuestion`, `submit`,
+  `cancel`, and `reset`. Submissions contain `markdown`, `files`, `modelId`, and
+  optional `commandId`; failed submissions preserve input and attachments.
+- `/aigc` maps saved provider profiles into the model selector and delegates
+  cancellation to the existing SSE abort path. The current backend transport
+  still accepts text only, so its adapter safely rejects attachments and
+  commands before starting a stream.
+- The complete `corepack pnpm check` gate passes 19/19 after adding composer
+  test/build coverage to the root pipeline. This includes composer tests (23),
+  AI UI tests (10), Web tests (78), package builds, Web typecheck/build,
+  backend checks, and Compose validation. Design and implementation plans live
+  under `docs/superpowers/`; package usage is documented in
+  `packages/ai-composer/README.md`.
+- Browser QA passed on local `/aigc`: the 1280x720 composer measured 900px
+  wide with no document overflow; slash filtering/selection, safe Markdown
+  rendering, profile switching, and host-owned command rejection all behaved
+  correctly while preserving the draft. A fresh 390x844 load collapsed the
+  conversation drawer, kept the composer inside the viewport, and produced no
+  horizontal overflow. The only console warning was the existing React Router
+  missing `HydrateFallback` warning.
+- The composer's package-owned visual and interaction states add 1.69 KiB gzip
+  CSS. The measured Web total is 38.7 KiB, so the focused total CSS budget was
+  intentionally moved from 38 to 40 KiB; JavaScript and per-route budgets are
+  unchanged.
+
 ## Modular AI Workspace Platform (2026-07-27, deployed main)
 
 - AI is split into a provider-neutral V1 contract, a standalone FastAPI

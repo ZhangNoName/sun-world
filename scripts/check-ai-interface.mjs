@@ -9,6 +9,8 @@ const hook = read('apps/web/src/modules/ai/composables/useAiChat.ts')
 const api = read('apps/web/src/modules/ai/api.ts')
 const sse = read('apps/web/src/modules/ai/sse.ts')
 const workspace = read('packages/ai-ui/src/AiWorkspace.tsx')
+const composer = read('packages/ai-composer/src/AiComposer.tsx')
+const composerTypes = read('packages/ai-composer/src/types.ts')
 const renderer = read('packages/ai-ui/src/AiBlockRenderer.tsx')
 const settings = read('packages/ai-ui/src/AiProviderSettings.tsx')
 const pageStyles = read('apps/web/src/modules/ai/pages/ai.css')
@@ -21,7 +23,7 @@ for (const snippet of ['@sun-world/ai-ui', '<AiWorkspace', 'onRetry='])
 
 for (const snippet of [
   'SunChatShell',
-  'SunChatComposer',
+  'AiComposer',
   'AiMessageView',
   'AiProviderSettings',
   'role="separator"',
@@ -30,6 +32,32 @@ for (const snippet of [
 ])
   if (!workspace.includes(snippet))
     throw new Error(`AI UI package missing: ${snippet}`)
+
+for (const snippet of [
+  'AiComposerSubmitPayload',
+  'onCancel={onStop}',
+  'commands={commands}',
+])
+  if (!workspace.includes(snippet))
+    throw new Error(`AI composer integration missing: ${snippet}`)
+
+for (const snippet of [
+  'forwardRef<AiComposerHandle',
+  'createBrowserSpeechAdapter',
+  '<MarkdownPreview',
+])
+  if (!composer.includes(snippet))
+    throw new Error(`AI composer package missing: ${snippet}`)
+
+for (const method of [
+  'focus()',
+  'setQuestion(',
+  'submit(',
+  'cancel()',
+  'reset()',
+])
+  if (!composerTypes.includes(method))
+    throw new Error(`AI composer imperative API missing: ${method}`)
 
 for (const blockType of ['text', 'table', 'chart', 'link', 'record'])
   if (!renderer.includes(`block.type === '${blockType}'`))

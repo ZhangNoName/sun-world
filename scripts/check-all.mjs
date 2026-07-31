@@ -70,6 +70,16 @@ const checks = [
     args: ['test:ai-ui'],
   },
   {
+    label: 'AI composer package test',
+    command: 'pnpm',
+    args: ['test:ai-composer'],
+  },
+  {
+    label: 'AI composer package build',
+    command: 'pnpm',
+    args: ['build:ai-composer'],
+  },
+  {
     label: 'AI UI package build',
     command: 'pnpm',
     args: ['build:ai-ui'],
