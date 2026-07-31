@@ -6,20 +6,27 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
-- 2026-07-31: reusable Codex-style `@sun-world/ai-composer` was implemented
+- 2026-08-01: the composer was polished against the supplied ChatGPT Work
+  reference. Inline Markdown preview and renderer dependencies were removed;
+  the focused textarea no longer receives a global focus shadow. Desktop light
+  theme QA passed at 1280x720, including the `/` command palette. Evidence is in
+  `design-qa.md` and `docs/design-qa/ai-composer/`. The final
+  `corepack pnpm check` repository gate passes 19/19.
+
+- 2026-07-31: reusable ChatGPT Work-style `@sun-world/ai-composer` was implemented
   directly on local `main` and integrated into `/aigc`. It supports controlled
-  input, live sanitized Markdown preview, submit-time attachment handoff,
+  input, source-only Markdown editing, submit-time attachment handoff,
   model profiles, searchable slash commands, modular browser speech permission
   handling, loading/cancel behavior, and imperative host APIs. The existing
   Web adapter maps selected saved profiles to `provider_profile_id` and rejects
   currently unsupported files/commands before opening a stream. Commits through
   `1b6ce266` contain the design, plan, package, styling, and integration.
   The complete `corepack pnpm check` gate passes 19/19 after adding composer
-  test/build stages; this includes composer tests (23), AI UI tests (10), Web
+  test/build stages; this includes composer tests (21), AI UI tests (10), Web
   tests (78), package builds, Web typecheck/build, API checks, and Compose
   validation. Browser QA passed at 1280x720 and on
   a fresh 390x844 load with no horizontal overflow; it covered slash command
-  display/selection, Markdown preview, model switching, safe rejection with
+  display/selection, Markdown source editing, model switching, safe rejection with
   draft preservation, and mobile drawer collapse. Final full repository
   verification remains the next step. The new component adds 1.69 KiB gzip CSS
   and brings the measured Web total to 38.7 KiB, so the total CSS ceiling was

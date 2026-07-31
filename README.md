@@ -81,7 +81,7 @@ Reusable AI workspace shell, message actions, provider settings, and structured-
 
 ### @sun-world/ai-composer — AI 输入框 / AI Composer
 
-Codex 风格的独立受控输入框，支持实时 Markdown 预览、提交时附件交付、模型切换、斜杠命令、浏览器语音权限流程与命令式 API。使用说明见 `packages/ai-composer/README.md`。
+ChatGPT 工作模式风格的独立受控输入框，支持 Markdown 源文本提交、提交时附件交付、模型切换、斜杠命令、浏览器语音权限流程与命令式 API。使用说明见 `packages/ai-composer/README.md`。
 
 ### db（规划中 / Planned）
 

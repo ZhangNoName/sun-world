@@ -7,15 +7,15 @@
   --composer-strong: var(--text-strong, #111827);
   background: var(--composer-surface);
   border: 1px solid var(--composer-border);
-  border-radius: 24px;
+  border-radius: 28px;
   box-shadow:
     0 14px 36px rgba(15, 23, 42, 0.08),
     0 2px 8px rgba(15, 23, 42, 0.04);
   color: var(--composer-text);
   display: flex;
   flex-direction: column;
-  min-height: 132px;
-  padding: 14px 16px 12px;
+  min-height: 148px;
+  padding: 22px 16px 12px;
   position: relative;
   width: 100%;
 }
@@ -37,6 +37,13 @@
 
 .sw-ai-composer textarea::placeholder {
   color: var(--composer-secondary);
+}
+
+.sw-ai-composer textarea:focus,
+.sw-ai-composer textarea:focus-visible {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
 }
 
 .sw-ai-composer button,
@@ -161,9 +168,9 @@
   background: var(--composer-strong);
   border-radius: 999px;
   color: var(--composer-surface);
-  height: 38px;
+  height: 40px;
   margin-left: 4px;
-  width: 38px;
+  width: 40px;
 }
 
 .sw-ai-composer__model-selector {

@@ -1,9 +1,22 @@
 # Current State
 
+## ChatGPT Work Composer Polish (2026-08-01, local main)
+
+- Removed the inline Markdown preview control and its renderer dependencies;
+  Markdown stays as source text until submit and is rendered by the host message
+  surface.
+- Matched the supplied ChatGPT Work composer crop with a 148px desktop height,
+  28px radius, 40px submit control, and neutral focused textarea styling.
+- Visual QA evidence and the same-screen reference comparison are recorded in
+  `design-qa.md` and `docs/design-qa/ai-composer/`.
+- The final `corepack pnpm check` repository gate passes 19/19, including
+  package tests/builds, Web typecheck/build, API checks, and static Compose
+  validation.
+
 ## Reusable AI Composer (2026-07-31, local main)
 
-- New standalone `@sun-world/ai-composer` provides the Codex-style controlled
-  input used by `/aigc`: live sanitized Markdown preview, in-memory
+- New standalone `@sun-world/ai-composer` provides the ChatGPT Work-style
+  controlled input used by `/aigc`: source-only Markdown editing, in-memory
   attachments handed to the host only on submit, controlled model selection,
   searchable slash commands, and loading/cancel states.
 - Browser speech is isolated behind `SpeechInputAdapter`. The default adapter
@@ -17,14 +30,14 @@
   still accepts text only, so its adapter safely rejects attachments and
   commands before starting a stream.
 - The complete `corepack pnpm check` gate passes 19/19 after adding composer
-  test/build coverage to the root pipeline. This includes composer tests (23),
+  test/build coverage to the root pipeline. This includes composer tests (21),
   AI UI tests (10), Web tests (78), package builds, Web typecheck/build,
   backend checks, and Compose validation. Design and implementation plans live
   under `docs/superpowers/`; package usage is documented in
   `packages/ai-composer/README.md`.
 - Browser QA passed on local `/aigc`: the 1280x720 composer measured 900px
-  wide with no document overflow; slash filtering/selection, safe Markdown
-  rendering, profile switching, and host-owned command rejection all behaved
+  wide with no document overflow; slash filtering/selection, Markdown source
+  editing, profile switching, and host-owned command rejection all behaved
   correctly while preserving the draft. A fresh 390x844 load collapsed the
   conversation drawer, kept the composer inside the viewport, and produced no
   horizontal overflow. The only console warning was the existing React Router
