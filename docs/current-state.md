@@ -12,6 +12,10 @@
 - The final `corepack pnpm check` repository gate passes 19/19, including
   package tests/builds, Web typecheck/build, API checks, and static Compose
   validation.
+- The model selector now dismisses on outside pointer interaction and Escape;
+  Escape and option selection restore trigger focus. Its popover uses a compact
+  220px width with 12px labels and 10px descriptions. Composer coverage is now
+  23 tests, including both new dismissal regressions.
 
 ## Reusable AI Composer (2026-07-31, local main)
 

@@ -47,3 +47,22 @@
    styles before and after focus. No P0, P1, or P2 visual issues remain.
 
 final result: passed
+
+## Model selector popover iteration (2026-08-01)
+
+- Implementation capture:
+  `docs/design-qa/ai-composer/model-selector-popover-final.png` at the same
+  `1280 × 720` desktop viewport and browser DPR `1.5`.
+- Live computed geometry: `220px` popover width, `12px` option and label text,
+  `10px` description text, `7px 8px` option padding, and no horizontal
+  document overflow (`scrollWidth = clientWidth = 1280`).
+- Browser interaction evidence: the popover was open before an outside click
+  and closed afterward; Escape closed it, set `aria-expanded="false"`, and
+  restored focus to the model trigger. Selecting a model also closed the
+  popover and restored trigger focus.
+- Automated regression evidence: outside pointer dismissal and Escape focus
+  restoration both failed against the previous implementation and pass after
+  the scoped listener fix.
+- No P0, P1, or P2 issues remain in this iteration.
+
+final result: passed

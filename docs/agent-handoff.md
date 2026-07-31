@@ -6,6 +6,12 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-08-01: model selector popover polish adds outside-pointer dismissal,
+  Escape dismissal with trigger focus restoration, and a compact 220px /
+  12px / 10px visual scale. Both behavior regressions passed red-green TDD;
+  live browser verification passed at 1280x720, and the final
+  `corepack pnpm check` repository gate passes 19/19.
+
 - 2026-08-01: the composer was polished against the supplied ChatGPT Work
   reference. Inline Markdown preview and renderer dependencies were removed;
   the focused textarea no longer receives a global focus shadow. Desktop light
