@@ -6,6 +6,7 @@ export interface FileLimits {
 
 export interface FileValidationResult {
   accepted: File[]
+  duplicates: File[]
   rejectedCount: number
 }
 
@@ -15,13 +16,17 @@ export function validateIncomingFiles(
   limits: FileLimits
 ): FileValidationResult {
   const accepted = [...current]
+  const duplicates: File[] = []
   const keys = new Set(current.map(fileKey))
   let rejectedCount = 0
 
   for (const file of incoming) {
     const key = fileKey(file)
+    if (keys.has(key)) {
+      duplicates.push(file)
+      continue
+    }
     if (
-      keys.has(key) ||
       accepted.length >= limits.maxFiles ||
       file.size > limits.maxFileSize ||
       !matchesAccept(file, limits.accept)
@@ -33,7 +38,7 @@ export function validateIncomingFiles(
     accepted.push(file)
   }
 
-  return { accepted, rejectedCount }
+  return { accepted, duplicates, rejectedCount }
 }
 
 function fileKey(file: File) {

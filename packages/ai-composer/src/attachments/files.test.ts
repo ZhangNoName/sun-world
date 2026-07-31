@@ -4,7 +4,7 @@ const file = (name: string, size: number, type: string, lastModified = 1) =>
   new File([new Uint8Array(size)], name, { type, lastModified })
 
 describe('validateIncomingFiles', () => {
-  it('accepts matching files and rejects duplicate, oversized, and excess files', () => {
+  it('accepts matching files and separates duplicates from rejected files', () => {
     const existing = [file('existing.txt', 2, 'text/plain', 10)]
     const result = validateIncomingFiles(
       existing,
@@ -21,7 +21,8 @@ describe('validateIncomingFiles', () => {
       'existing.txt',
       'photo.png',
     ])
-    expect(result.rejectedCount).toBe(3)
+    expect(result.duplicates.map((item) => item.name)).toEqual(['existing.txt'])
+    expect(result.rejectedCount).toBe(2)
   })
 
   it('rejects files that do not match MIME types or extensions', () => {
@@ -31,6 +32,7 @@ describe('validateIncomingFiles', () => {
       { accept: '.md,image/png', maxFiles: 3, maxFileSize: 8 }
     )
     expect(result.accepted.map((item) => item.name)).toEqual(['notes.md'])
+    expect(result.duplicates).toEqual([])
     expect(result.rejectedCount).toBe(1)
   })
 })
