@@ -57,6 +57,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const [submitting, setSubmitting] = useState(false)
     const [submissionError, setSubmissionError] = useState<string>()
     const [files, setFiles] = useState<File[]>([])
+    const [duplicateFiles, setDuplicateFiles] = useState<string[]>([])
     const [rejectedFiles, setRejectedFiles] = useState(0)
     const [selectedCommandId, setSelectedCommandId] = useState<string>()
     const [activeCommandIndex, setActiveCommandIndex] = useState(-1)
@@ -99,6 +100,12 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
 
     useEffect(resize, [value])
 
+    useEffect(() => {
+      if (!duplicateFiles.length) return
+      const timeout = window.setTimeout(() => setDuplicateFiles([]), 2500)
+      return () => window.clearTimeout(timeout)
+    }, [duplicateFiles])
+
     const submit = async (
       overrides: AiComposerSubmitOverrides = {}
     ): Promise<boolean> => {
@@ -121,6 +128,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         })
         onValueChange('')
         setFiles([])
+        setDuplicateFiles([])
         setSelectedCommandId(undefined)
         return true
       } catch (error) {
@@ -144,6 +152,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       speech.stop()
       setSubmissionError(undefined)
       setFiles([])
+      setDuplicateFiles([])
       setSelectedCommandId(undefined)
       setCommandPaletteDismissed(false)
       setSpeechNoticeVisible(false)
@@ -231,6 +240,9 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         maxFileSize,
       })
       setFiles(result.accepted)
+      setDuplicateFiles([
+        ...new Set(result.duplicates.map((file) => file.name)),
+      ])
       setRejectedFiles(result.rejectedCount)
       event.target.value = ''
     }
@@ -251,6 +263,19 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             activeIndex={activeCommandIndex}
             onSelect={selectCommand}
           />
+        ) : null}
+        <AttachmentList
+          files={files}
+          onRemove={(index) =>
+            setFiles((items) =>
+              items.filter((_, itemIndex) => itemIndex !== index)
+            )
+          }
+        />
+        {duplicateFiles.length ? (
+          <div className="sw-ai-composer__duplicate-notice" role="status">
+            重复文件：{duplicateFiles.join('、')}
+          </div>
         ) : null}
         <textarea
           ref={textareaRef}
@@ -275,17 +300,12 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             {speech.interimTranscript}
           </div>
         ) : null}
-        <AttachmentList
-          files={files}
-          onRemove={(index) =>
-            setFiles((items) =>
-              items.filter((_, itemIndex) => itemIndex !== index)
-            )
-          }
-        />
         <div className="sw-ai-composer__toolbar">
           <div className="sw-ai-composer__tools sw-ai-composer__tools--start">
-            <label className="sw-ai-composer__icon-button" title="添加附件">
+            <label
+              className="sw-ai-composer__icon-button sw-ai-composer__attachment-trigger"
+              title="添加附件"
+            >
               <SunIcon name="plus" />
               <span className="sw-ai-composer__sr-only">添加附件</span>
               <input

@@ -48,6 +48,27 @@
 
 final result: passed
 
+## Attachment strip iteration (2026-08-01)
+
+- Live desktop verification used the `/aigc` page at a `1280 × 720` viewport.
+- Three images and two text/code files rendered as three local thumbnails and
+  two type-aware icon cards. No file size text was present.
+- Five non-image cards stayed in one row: `clientWidth = 867`,
+  `scrollWidth = 912`, `flex-wrap = nowrap`, and `overflow-x = auto`.
+  Horizontal wheel/trackpad input changed `scrollLeft` from `0` to `45.33`.
+- The hidden scrollbar preserved the ChatGPT-like clean surface while the last
+  clipped card communicated that more content is available horizontally.
+- Re-uploading `package.json` kept one card, showed
+  `重复文件：package.json`, and removed the notice after 2.5 seconds.
+- The attachment strip is the first composer child and the textarea follows it;
+  the `+` trigger resolves to a transparent background with no outline or
+  shadow in its scoped focus states.
+- Image previews use `object-fit: cover`, remove controls remain visible, and no
+  image opens a larger viewer.
+- No P0, P1, or P2 visual issues remain in this iteration.
+
+final result: passed
+
 ## Model selector popover iteration (2026-08-01)
 
 - Implementation capture:

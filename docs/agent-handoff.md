@@ -6,6 +6,21 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-08-01: the AI composer attachment strip is implemented on local `main`.
+  Attachments now render above the textarea in one horizontally scrollable row;
+  images use revocable local object-URL thumbnails and PDF, spreadsheet,
+  archive, audio, video, code, and document files use shared Sun World icons.
+  File sizes were removed, duplicate uploads keep one card and show a 2.5-second
+  inline reminder, and the `+` trigger has no focus surface. Public submit and
+  imperative APIs are unchanged. TDD covers duplicate classification, file
+  presentation, preview URL cleanup, and notice timing. Live `/aigc` QA at
+  1280x720 verified mixed previews, hidden-scrollbar overflow and actual
+  horizontal scrolling. `corepack pnpm check` passes 19/19; no push or deploy
+  was performed. Important files: `packages/ai-composer/src/attachments/`,
+  `packages/ai-composer/src/AiComposer.tsx`, its package CSS/tests,
+  `packages/icons/src/data/ui.ts`, and `design-qa.md`. No blockers remain; the
+  next optional step is review, push, or deploy when requested.
+
 - 2026-08-01: model selector popover polish adds outside-pointer dismissal,
   Escape dismissal with trigger focus restoration, and a compact 220px /
   12px / 10px visual scale. Both behavior regressions passed red-green TDD;

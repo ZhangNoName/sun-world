@@ -76,22 +76,59 @@
 
 .sw-ai-composer__attachments {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   list-style: none;
   margin: 0 0 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
   padding: 0;
+  scrollbar-width: none;
 }
 
-.sw-ai-composer__attachments li {
+.sw-ai-composer__attachments::-webkit-scrollbar {
+  display: none;
+}
+
+.sw-ai-composer__attachment {
   align-items: center;
   background: var(--composer-muted);
   border: 1px solid var(--composer-border);
   border-radius: 12px;
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
-  max-width: 250px;
-  padding: 7px 8px 7px 10px;
+  min-height: 50px;
+  overflow: hidden;
+  position: relative;
+  width: 176px;
+}
+
+.sw-ai-composer__attachment--file {
+  padding: 7px 34px 7px 9px;
+}
+
+.sw-ai-composer__attachment--image {
+  height: 72px;
+  padding: 0;
+  width: 112px;
+}
+
+.sw-ai-composer__attachment-icon {
+  align-items: center;
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 9px;
+  display: flex;
+  flex: 0 0 34px;
+  height: 34px;
+  justify-content: center;
+}
+
+.sw-ai-composer__attachment-image {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
 }
 
 .sw-ai-composer__attachment-copy {
@@ -103,19 +140,27 @@
 
 .sw-ai-composer__attachment-copy strong {
   font-size: 12px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sw-ai-composer__attachment-copy small {
-  color: var(--composer-secondary);
-  font-size: 10px;
+.sw-ai-composer__attachments button {
+  background: color-mix(in srgb, var(--composer-strong) 72%, transparent);
+  border-radius: 999px;
+  color: var(--composer-surface);
+  height: 26px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 26px;
 }
 
-.sw-ai-composer__attachments button {
-  height: 26px;
-  width: 26px;
+.sw-ai-composer__duplicate-notice {
+  color: var(--composer-secondary);
+  font-size: 12px;
+  padding: 0 2px 6px;
 }
 
 .sw-ai-composer__toolbar {
@@ -148,6 +193,15 @@
   height: 34px;
   position: relative;
   width: 34px;
+}
+
+.sw-ai-composer__attachment-trigger:focus,
+.sw-ai-composer__attachment-trigger:focus-visible,
+.sw-ai-composer__attachment-trigger:focus-within {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .sw-ai-composer__icon-button input {

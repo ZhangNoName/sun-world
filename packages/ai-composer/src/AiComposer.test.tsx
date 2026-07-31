@@ -227,6 +227,30 @@ describe('AiComposer core', () => {
     expect(screen.queryByText('notes.md')).not.toBeInTheDocument()
   })
 
+  it('shows a temporary notice for a duplicate attachment', async () => {
+    vi.useFakeTimers()
+    const attachment = new File(['hello'], 'notes.md', {
+      type: 'text/markdown',
+      lastModified: 10,
+    })
+
+    try {
+      render(<ComposerHarness accept=".md" />)
+      const input = screen.getByLabelText(/添加附件/)
+
+      fireEvent.change(input, { target: { files: [attachment] } })
+      fireEvent.change(input, { target: { files: [attachment] } })
+
+      expect(screen.getAllByText('notes.md')).toHaveLength(1)
+      expect(screen.getByRole('status')).toHaveTextContent('重复文件：notes.md')
+
+      act(() => vi.advanceTimersByTime(2500))
+      expect(screen.queryByText('重复文件：notes.md')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('switches the controlled model and submits its id', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockResolvedValue(undefined)
