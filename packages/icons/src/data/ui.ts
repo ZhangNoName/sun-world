@@ -246,6 +246,68 @@ export const uiIcons = {
       ['path', { d: 'M16 17H8' }],
     ],
   },
+  'file-pdf': {
+    name: 'file-pdf',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'M8 18v-6h2a2 2 0 0 1 0 4H8' }],
+      ['path', { d: 'M14 18v-6h1.5a2.5 2.5 0 0 1 0 5H14' }],
+    ],
+  },
+  'file-code': {
+    name: 'file-code',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'm10 13-2 2 2 2' }],
+      ['path', { d: 'm14 13 2 2-2 2' }],
+    ],
+  },
+  'file-spreadsheet': {
+    name: 'file-spreadsheet',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'M8 13h8' }],
+      ['path', { d: 'M8 17h8' }],
+      ['path', { d: 'M12 10v10' }],
+    ],
+  },
+  'file-archive': {
+    name: 'file-archive',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'M8 13h8' }],
+      ['path', { d: 'M10 17h4' }],
+    ],
+  },
+  'file-audio': {
+    name: 'file-audio',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'M15 12v5' }],
+      ['path', { d: 'M15 13l-4 1v4' }],
+      ['circle', { cx: 9.5, cy: 18, r: 1.5 }],
+      ['circle', { cx: 13.5, cy: 17, r: 1.5 }],
+    ],
+  },
+  'file-video': {
+    name: 'file-video',
+    viewBox: '0 0 24 24',
+    nodes: [
+      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
+      ['path', { d: 'm10 13 5 3-5 3Z' }],
+    ],
+  },
   list: {
     name: 'list',
     viewBox: '0 0 24 24',
