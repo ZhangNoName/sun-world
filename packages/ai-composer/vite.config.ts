@@ -7,7 +7,13 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     ...(mode === 'lib'
-      ? [dts({ outDir: 'dist/types', insertTypesEntry: true })]
+      ? [
+          dts({
+            outDir: 'dist/types',
+            insertTypesEntry: true,
+            exclude: ['src/**/*.test.*', 'src/test/**'],
+          }),
+        ]
       : []),
   ],
   test: {
@@ -20,6 +26,7 @@ export default defineConfig(({ mode }) => ({
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'SunWorldAiComposer',
+      formats: ['es'],
       fileName: (format) => `ai-composer.${format}.js`,
     },
     rollupOptions: {

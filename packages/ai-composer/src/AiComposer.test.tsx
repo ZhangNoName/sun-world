@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -7,6 +7,10 @@ import {
   type AiComposerHandle,
   type AiComposerProps,
 } from './index'
+import type {
+  SpeechInputAdapter,
+  SpeechRecognitionCallbacks,
+} from './speech/types'
 
 const models = [
   { id: 'deepseek', label: 'DeepSeek' },
@@ -23,6 +27,7 @@ function ComposerHarness({
   accept,
   maxFiles,
   maxFileSize,
+  speechAdapter,
 }: {
   onSubmit?: AiComposerProps['onSubmit']
   onCancel?: AiComposerProps['onCancel']
@@ -33,6 +38,7 @@ function ComposerHarness({
   accept?: string
   maxFiles?: number
   maxFileSize?: number
+  speechAdapter?: SpeechInputAdapter
 }) {
   const [value, setValue] = useState('')
   const [selectedModelId, setSelectedModelId] = useState(modelId)
@@ -52,6 +58,7 @@ function ComposerHarness({
       accept={accept}
       maxFiles={maxFiles}
       maxFileSize={maxFileSize}
+      speechAdapter={speechAdapter}
     />
   )
 }
@@ -272,5 +279,47 @@ describe('AiComposer core', () => {
       screen.getByRole('button', { name: '移除命令 Adding Sun World Icons' })
     )
     expect(screen.queryByText('Adding Sun World Icons')).not.toBeInTheDocument()
+  })
+
+  it('switches between Markdown editing and safe live preview', async () => {
+    const user = userEvent.setup()
+    render(<ComposerHarness />)
+    fireEvent.change(screen.getByRole('textbox', { name: '消息' }), {
+      target: {
+        value: '# Heading\n\n| A | B |\n| --- | --- |\n| 1 | 2 |',
+      },
+    })
+    await user.click(screen.getByRole('button', { name: '预览 Markdown' }))
+    expect(screen.getByRole('heading', { name: 'Heading' })).toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '编辑 Markdown' }))
+    expect(screen.getByRole('textbox', { name: '消息' })).toBeInTheDocument()
+  })
+
+  it('appends browser speech and stops recognition when cancelled', async () => {
+    const user = userEvent.setup()
+    let callbacks: SpeechRecognitionCallbacks | undefined
+    const stop = vi.fn()
+    const adapter: SpeechInputAdapter = {
+      isSupported: () => true,
+      checkPermission: vi.fn().mockResolvedValue('granted'),
+      start: vi.fn((value) => {
+        callbacks = value
+        return { stop }
+      }),
+    }
+    render(<ComposerHarness speechAdapter={adapter} onCancel={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: '开始语音输入' }))
+    expect(
+      await screen.findByRole('button', { name: '停止语音输入' })
+    ).toBeInTheDocument()
+    act(() => callbacks?.onInterim('临时文本'))
+    expect(screen.getByText('临时文本')).toBeInTheDocument()
+    act(() => callbacks?.onFinal('最终文本'))
+    expect(screen.getByRole('textbox', { name: '消息' })).toHaveValue('最终文本')
+
+    await user.click(screen.getByRole('button', { name: '停止语音输入' }))
+    expect(stop).toHaveBeenCalledTimes(1)
   })
 })

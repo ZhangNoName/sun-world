@@ -1,4 +1,5 @@
 import type { Ref } from 'react'
+import type { SpeechInputAdapter } from './speech/types'
 
 export interface AiComposerModel {
   id: string
@@ -55,4 +56,5 @@ export interface AiComposerProps {
   accept?: string
   maxFiles?: number
   maxFileSize?: number
+  speechAdapter?: SpeechInputAdapter
 }

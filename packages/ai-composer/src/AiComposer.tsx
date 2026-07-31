@@ -2,6 +2,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -18,6 +19,9 @@ import {
   nextEnabledCommandIndex,
 } from './commands/commands'
 import { ModelSelector } from './model-selector/ModelSelector'
+import { MarkdownPreview } from './markdown/MarkdownPreview'
+import { createBrowserSpeechAdapter } from './speech/browserSpeechAdapter'
+import { useSpeechInput } from './speech/useSpeechInput'
 import type {
   AiComposerCommand,
   AiComposerHandle,
@@ -42,6 +46,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       accept,
       maxFiles = 5,
       maxFileSize = 10 * 1024 * 1024,
+      speechAdapter,
     },
     ref
   ) {
@@ -54,6 +59,16 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const [selectedCommandId, setSelectedCommandId] = useState<string>()
     const [activeCommandIndex, setActiveCommandIndex] = useState(-1)
     const [commandPaletteDismissed, setCommandPaletteDismissed] = useState(false)
+    const [previewing, setPreviewing] = useState(false)
+    const resolvedSpeechAdapter = useMemo(
+      () => speechAdapter ?? createBrowserSpeechAdapter(),
+      [speechAdapter]
+    )
+    const speech = useSpeechInput({
+      adapter: resolvedSpeechAdapter,
+      onFinalTranscript: (transcript) =>
+        onValueChange(appendTranscript(value, transcript)),
+    })
 
     const selectedModel = models.find((model) => model.id === modelId)
     const selectedCommand = commands.find(
@@ -84,6 +99,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const submit = async (
       overrides: AiComposerSubmitOverrides = {}
     ): Promise<boolean> => {
+      speech.stop()
       if (submittingRef.current || disabled || loading) return false
       const nextMarkdown = (overrides.markdown ?? value).trim()
       const nextModelId = overrides.modelId ?? modelId
@@ -113,12 +129,17 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       }
     }
 
-    const cancel = () => onCancel?.()
+    const cancel = () => {
+      speech.stop()
+      onCancel?.()
+    }
     const reset = () => {
+      speech.stop()
       setSubmissionError(false)
       setFiles([])
       setSelectedCommandId(undefined)
       setCommandPaletteDismissed(false)
+      setPreviewing(false)
       onValueChange('')
     }
 
@@ -144,6 +165,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         onSubmit,
         onValueChange,
         selectedCommandId,
+        speech,
         value,
       ]
     )
@@ -223,22 +245,42 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             onSelect={selectCommand}
           />
         ) : null}
-        <textarea
-          ref={textareaRef}
-          aria-label={placeholder}
-          aria-describedby={!canSubmit ? 'sw-ai-composer-disabled-reason' : undefined}
-          value={value}
-          placeholder={placeholder}
-          disabled={disabled}
-          rows={1}
-          onChange={(event) => {
-            setCommandPaletteDismissed(false)
-            setActiveCommandIndex(-1)
-            onValueChange(event.target.value)
-          }}
-          onInput={resize}
-          onKeyDown={handleKeyDown}
-        />
+        <div className="sw-ai-composer__mode-switch">
+          <button
+            type="button"
+            aria-label={previewing ? '编辑 Markdown' : '预览 Markdown'}
+            onClick={() => setPreviewing((current) => !current)}
+          >
+            {previewing ? '编辑' : '预览'}
+          </button>
+        </div>
+        {previewing ? (
+          <MarkdownPreview markdown={value} />
+        ) : (
+          <textarea
+            ref={textareaRef}
+            aria-label={placeholder}
+            aria-describedby={
+              !canSubmit ? 'sw-ai-composer-disabled-reason' : undefined
+            }
+            value={value}
+            placeholder={placeholder}
+            disabled={disabled}
+            rows={1}
+            onChange={(event) => {
+              setCommandPaletteDismissed(false)
+              setActiveCommandIndex(-1)
+              onValueChange(event.target.value)
+            }}
+            onInput={resize}
+            onKeyDown={handleKeyDown}
+          />
+        )}
+        {speech.interimTranscript ? (
+          <div className="sw-ai-composer__speech-interim" role="status">
+            {speech.interimTranscript}
+          </div>
+        ) : null}
         <AttachmentList
           files={files}
           onRemove={(index) =>
@@ -271,6 +313,16 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             modelId={modelId}
             onModelChange={onModelChange}
           />
+          <button
+            type="button"
+            aria-label={
+              speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
+            }
+            disabled={disabled || loading || speech.status === 'checking'}
+            onClick={() => void speech.toggle()}
+          >
+            {speech.status === 'listening' ? '停止录音' : '语音'}
+          </button>
           {loading ? (
             <button type="button" aria-label="停止生成" onClick={cancel}>
               停止
@@ -284,6 +336,16 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         {rejectedFiles ? (
           <div role="status">{rejectedFiles} 个文件未添加</div>
         ) : null}
+        {speech.status === 'denied' || speech.status === 'unsupported' ? (
+          <div role="status">
+            {speech.status === 'denied'
+              ? '请在浏览器设置中允许麦克风权限。'
+              : '当前浏览器不支持语音输入。'}
+          </div>
+        ) : null}
+        {speech.status === 'error' ? (
+          <div role="alert">语音识别失败，请重试。</div>
+        ) : null}
         {!canSubmit ? (
           <span id="sw-ai-composer-disabled-reason" className="sr-only">
             {disabledReason}
@@ -294,3 +356,10 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     )
   }
 )
+
+function appendTranscript(current: string, transcript: string) {
+  const value = transcript.trim()
+  if (!value) return current
+  if (!current || /\s$/.test(current)) return `${current}${value}`
+  return `${current} ${value}`
+}
