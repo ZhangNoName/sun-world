@@ -1,0 +1,354 @@
+.sw-ai-composer {
+  --composer-border: var(--border-default, rgba(15, 23, 42, 0.12));
+  --composer-surface: var(--surface-elevated, var(--bg-component, #fff));
+  --composer-muted: var(--bg-fill, rgba(15, 23, 42, 0.055));
+  --composer-text: var(--text-default, #1f2937);
+  --composer-secondary: var(--text-secondary, #6b7280);
+  --composer-strong: var(--text-strong, #111827);
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 24px;
+  box-shadow:
+    0 14px 36px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+  color: var(--composer-text);
+  display: flex;
+  flex-direction: column;
+  min-height: 132px;
+  padding: 14px 16px 12px;
+  position: relative;
+  width: 100%;
+}
+
+.sw-ai-composer textarea {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  max-height: 220px;
+  min-height: 56px;
+  outline: none;
+  padding: 4px 2px 10px;
+  resize: none;
+  width: 100%;
+}
+
+.sw-ai-composer textarea::placeholder {
+  color: var(--composer-secondary);
+}
+
+.sw-ai-composer button,
+.sw-ai-composer__icon-button {
+  -webkit-tap-highlight-color: transparent;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 6px;
+  justify-content: center;
+}
+
+.sw-ai-composer button:focus-visible,
+.sw-ai-composer__icon-button:focus-within {
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--ring, #2563eb) 24%, transparent);
+  outline: 2px solid var(--ring, #2563eb);
+  outline-offset: 1px;
+}
+
+.sw-ai-composer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.sw-ai-composer__mode-switch {
+  align-self: flex-end;
+  min-height: 24px;
+}
+
+.sw-ai-composer__mode-switch button {
+  color: var(--composer-secondary);
+  font-size: 12px;
+  padding: 3px 7px;
+}
+
+.sw-ai-composer__markdown {
+  line-height: 1.6;
+  max-height: 220px;
+  min-height: 56px;
+  overflow: auto;
+  padding: 4px 2px 10px;
+}
+
+.sw-ai-composer__markdown > :first-child {
+  margin-top: 0;
+}
+
+.sw-ai-composer__markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.sw-ai-composer__markdown table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.sw-ai-composer__markdown td,
+.sw-ai-composer__markdown th {
+  border: 1px solid var(--composer-border);
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.sw-ai-composer__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.sw-ai-composer__attachments li {
+  align-items: center;
+  background: var(--composer-muted);
+  border: 1px solid var(--composer-border);
+  border-radius: 12px;
+  display: flex;
+  gap: 8px;
+  max-width: 250px;
+  padding: 7px 8px 7px 10px;
+}
+
+.sw-ai-composer__attachment-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sw-ai-composer__attachment-copy strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sw-ai-composer__attachment-copy small {
+  color: var(--composer-secondary);
+  font-size: 10px;
+}
+
+.sw-ai-composer__attachments button {
+  height: 26px;
+  width: 26px;
+}
+
+.sw-ai-composer__toolbar {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: auto;
+  min-height: 36px;
+}
+
+.sw-ai-composer__tools {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sw-ai-composer__tools--start > button {
+  background: var(--composer-muted);
+  font-size: 12px;
+  max-width: 260px;
+  overflow: hidden;
+  padding: 7px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sw-ai-composer__icon-button {
+  height: 34px;
+  position: relative;
+  width: 34px;
+}
+
+.sw-ai-composer__icon-button input {
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+
+.sw-ai-composer__tools--end > button {
+  height: 34px;
+  width: 34px;
+}
+
+.sw-ai-composer__tools--end > button[type='submit'],
+.sw-ai-composer__tools--end > button[aria-label='停止生成'] {
+  background: var(--composer-strong);
+  border-radius: 999px;
+  color: var(--composer-surface);
+  height: 38px;
+  margin-left: 4px;
+  width: 38px;
+}
+
+.sw-ai-composer__model-selector {
+  position: relative;
+}
+
+.sw-ai-composer__model-selector > button {
+  color: var(--composer-secondary);
+  font-size: 13px;
+  max-width: 170px;
+  padding: 7px 8px;
+}
+
+.sw-ai-composer__model-selector [role='listbox'] {
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 14px;
+  bottom: calc(100% + 10px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+  min-width: 240px;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  z-index: 20;
+}
+
+.sw-ai-composer__model-selector [role='option'] {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  padding: 9px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.sw-ai-composer__model-selector [role='option'][aria-selected='true'],
+.sw-ai-composer__model-selector [role='option']:hover {
+  background: var(--composer-muted);
+}
+
+.sw-ai-composer__model-selector [role='option'] span {
+  color: var(--composer-secondary);
+  font-size: 11px;
+}
+
+.sw-ai-composer__command-palette {
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 18px;
+  bottom: calc(100% + 12px);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.14);
+  left: 0;
+  max-height: min(420px, 54vh);
+  overflow: auto;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  z-index: 30;
+}
+
+.sw-ai-composer__command-palette [role='option'] {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  min-height: 44px;
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.sw-ai-composer__command-palette [role='option']:hover,
+.sw-ai-composer__command-palette [role='option'][aria-selected='true'] {
+  background: var(--composer-muted);
+}
+
+.sw-ai-composer__command-copy {
+  align-items: baseline;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(180px, 0.65fr) minmax(220px, 1fr);
+  min-width: 0;
+}
+
+.sw-ai-composer__command-copy strong,
+.sw-ai-composer__command-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sw-ai-composer__command-copy span,
+.sw-ai-composer__command-palette kbd {
+  color: var(--composer-secondary);
+  font-size: 12px;
+}
+
+.sw-ai-composer__speech-interim,
+.sw-ai-composer__notice {
+  color: var(--composer-secondary);
+  font-size: 12px;
+  padding: 4px 2px;
+}
+
+.sw-ai-composer__speech-interim {
+  font-style: italic;
+}
+
+.sw-ai-composer__sr-only {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (max-width: 640px) {
+  .sw-ai-composer {
+    border-radius: 20px;
+    padding-inline: 12px;
+  }
+
+  .sw-ai-composer__command-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sw-ai-composer__tools--start > button {
+    max-width: 120px;
+  }
+
+  .sw-ai-composer__model-selector > button span {
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw-ai-composer *,
+  .sw-ai-composer *::before,
+  .sw-ai-composer *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

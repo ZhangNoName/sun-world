@@ -9,6 +9,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from 'react'
+import { SunIcon } from '@sun-world/icons/react'
 
 import { AttachmentList } from './attachments/AttachmentList'
 import { validateIncomingFiles } from './attachments/files'
@@ -28,6 +29,7 @@ import type {
   AiComposerProps,
   AiComposerSubmitOverrides,
 } from './types'
+import './styles/ai-composer.css'
 
 export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
   function AiComposer(
@@ -58,8 +60,10 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const [rejectedFiles, setRejectedFiles] = useState(0)
     const [selectedCommandId, setSelectedCommandId] = useState<string>()
     const [activeCommandIndex, setActiveCommandIndex] = useState(-1)
-    const [commandPaletteDismissed, setCommandPaletteDismissed] = useState(false)
+    const [commandPaletteDismissed, setCommandPaletteDismissed] =
+      useState(false)
     const [previewing, setPreviewing] = useState(false)
+    const [speechNoticeVisible, setSpeechNoticeVisible] = useState(false)
     const resolvedSpeechAdapter = useMemo(
       () => speechAdapter ?? createBrowserSpeechAdapter(),
       [speechAdapter]
@@ -140,6 +144,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       setSelectedCommandId(undefined)
       setCommandPaletteDismissed(false)
       setPreviewing(false)
+      setSpeechNoticeVisible(false)
       onValueChange('')
     }
 
@@ -251,6 +256,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             aria-label={previewing ? '编辑 Markdown' : '预览 Markdown'}
             onClick={() => setPreviewing((current) => !current)}
           >
+            <SunIcon name={previewing ? 'edit' : 'file-text'} size="xs" />
             {previewing ? '编辑' : '预览'}
           </button>
         </div>
@@ -284,70 +290,88 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         <AttachmentList
           files={files}
           onRemove={(index) =>
-            setFiles((items) => items.filter((_, itemIndex) => itemIndex !== index))
+            setFiles((items) =>
+              items.filter((_, itemIndex) => itemIndex !== index)
+            )
           }
         />
         <div className="sw-ai-composer__toolbar">
-          <label>
-            <span>添加附件</span>
-            <input
-              type="file"
-              aria-label="添加附件"
-              accept={accept}
-              multiple
-              disabled={disabled || loading}
-              onChange={addFiles}
+          <div className="sw-ai-composer__tools sw-ai-composer__tools--start">
+            <label className="sw-ai-composer__icon-button" title="添加附件">
+              <SunIcon name="plus" />
+              <span className="sw-ai-composer__sr-only">添加附件</span>
+              <input
+                type="file"
+                aria-label="添加附件"
+                accept={accept}
+                multiple
+                disabled={disabled || loading}
+                onChange={addFiles}
+              />
+            </label>
+            {selectedCommand ? (
+              <button
+                type="button"
+                aria-label={`移除命令 ${selectedCommand.label}`}
+                onClick={() => setSelectedCommandId(undefined)}
+              >
+                <SunIcon name="square" size="xs" />
+                <span>{selectedCommand.label}</span>
+                <SunIcon name="x" size="xs" />
+              </button>
+            ) : null}
+          </div>
+          <div className="sw-ai-composer__tools sw-ai-composer__tools--end">
+            <ModelSelector
+              models={models}
+              modelId={modelId}
+              onModelChange={onModelChange}
             />
-          </label>
-          {selectedCommand ? (
             <button
               type="button"
-              aria-label={`移除命令 ${selectedCommand.label}`}
-              onClick={() => setSelectedCommandId(undefined)}
+              aria-label={
+                speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
+              }
+              disabled={disabled || loading || speech.status === 'checking'}
+              onClick={() => {
+                setSpeechNoticeVisible(true)
+                void speech.toggle()
+              }}
             >
-              <span>{selectedCommand.label}</span> ×
+              <SunIcon name="mic" />
             </button>
-          ) : null}
-          <ModelSelector
-            models={models}
-            modelId={modelId}
-            onModelChange={onModelChange}
-          />
-          <button
-            type="button"
-            aria-label={
-              speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
-            }
-            disabled={disabled || loading || speech.status === 'checking'}
-            onClick={() => void speech.toggle()}
-          >
-            {speech.status === 'listening' ? '停止录音' : '语音'}
-          </button>
-          {loading ? (
-            <button type="button" aria-label="停止生成" onClick={cancel}>
-              停止
-            </button>
-          ) : (
-            <button type="submit" aria-label="发送消息" disabled={!canSubmit}>
-              发送
-            </button>
-          )}
+            {loading ? (
+              <button type="button" aria-label="停止生成" onClick={cancel}>
+                <SunIcon name="square" size="xs" />
+              </button>
+            ) : (
+              <button type="submit" aria-label="发送消息" disabled={!canSubmit}>
+                <SunIcon name="send" size="sm" />
+              </button>
+            )}
+          </div>
         </div>
         {rejectedFiles ? (
           <div role="status">{rejectedFiles} 个文件未添加</div>
         ) : null}
-        {speech.status === 'denied' || speech.status === 'unsupported' ? (
-          <div role="status">
+        {speechNoticeVisible &&
+        (speech.status === 'denied' || speech.status === 'unsupported') ? (
+          <div className="sw-ai-composer__notice" role="status">
             {speech.status === 'denied'
               ? '请在浏览器设置中允许麦克风权限。'
               : '当前浏览器不支持语音输入。'}
           </div>
         ) : null}
         {speech.status === 'error' ? (
-          <div role="alert">语音识别失败，请重试。</div>
+          <div className="sw-ai-composer__notice" role="alert">
+            语音识别失败，请重试。
+          </div>
         ) : null}
         {!canSubmit ? (
-          <span id="sw-ai-composer-disabled-reason" className="sr-only">
+          <span
+            id="sw-ai-composer-disabled-reason"
+            className="sw-ai-composer__sr-only"
+          >
             {disabledReason}
           </span>
         ) : null}

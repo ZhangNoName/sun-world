@@ -158,7 +158,10 @@ describe('AiComposer core', () => {
     )
 
     await act(() =>
-      ref.current?.submit({ markdown: 'external question', modelId: 'deepseek' })
+      ref.current?.submit({
+        markdown: 'external question',
+        modelId: 'deepseek',
+      })
     )
     expect(onSubmit).toHaveBeenLastCalledWith({
       markdown: 'external question',
@@ -226,6 +229,17 @@ describe('AiComposer core', () => {
     )
   })
 
+  it('returns focus to the model trigger after choosing an option', async () => {
+    const user = userEvent.setup()
+    render(<ComposerHarness />)
+    const trigger = screen.getByRole('button', {
+      name: '选择模型，当前 DeepSeek',
+    })
+    await user.click(trigger)
+    await user.click(screen.getByRole('option', { name: 'DeepSeek' }))
+    expect(trigger).toHaveFocus()
+  })
+
   it('selects a slash command with the keyboard and submits a structured id', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockResolvedValue(undefined)
@@ -270,7 +284,9 @@ describe('AiComposer core', () => {
     const textbox = screen.getByRole('textbox', { name: '消息' })
     await user.type(textbox, '/')
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('listbox', { name: '命令' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('listbox', { name: '命令' })
+    ).not.toBeInTheDocument()
 
     await user.clear(textbox)
     await user.type(textbox, '/icons')
@@ -317,7 +333,9 @@ describe('AiComposer core', () => {
     act(() => callbacks?.onInterim('临时文本'))
     expect(screen.getByText('临时文本')).toBeInTheDocument()
     act(() => callbacks?.onFinal('最终文本'))
-    expect(screen.getByRole('textbox', { name: '消息' })).toHaveValue('最终文本')
+    expect(screen.getByRole('textbox', { name: '消息' })).toHaveValue(
+      '最终文本'
+    )
 
     await user.click(screen.getByRole('button', { name: '停止语音输入' }))
     expect(stop).toHaveBeenCalledTimes(1)

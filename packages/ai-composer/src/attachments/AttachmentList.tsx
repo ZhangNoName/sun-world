@@ -1,3 +1,5 @@
+import { SunIcon } from '@sun-world/icons/react'
+
 interface AttachmentListProps {
   files: File[]
   onRemove(index: number): void
@@ -9,14 +11,17 @@ export function AttachmentList({ files, onRemove }: AttachmentListProps) {
     <ul className="sw-ai-composer__attachments" aria-label="附件">
       {files.map((file, index) => (
         <li key={`${file.name}:${file.size}:${file.lastModified}`}>
-          <span>{file.name}</span>
-          <small>{formatFileSize(file.size)}</small>
+          <SunIcon name="file-text" size="sm" />
+          <span className="sw-ai-composer__attachment-copy">
+            <strong>{file.name}</strong>
+            <small>{formatFileSize(file.size)}</small>
+          </span>
           <button
             type="button"
             aria-label={`移除 ${file.name}`}
             onClick={() => onRemove(index)}
           >
-            ×
+            <SunIcon name="x" size="xs" />
           </button>
         </li>
       ))}

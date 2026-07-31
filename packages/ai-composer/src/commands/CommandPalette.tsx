@@ -1,4 +1,5 @@
 import type { AiComposerCommand } from '../types'
+import { SunIcon } from '@sun-world/icons/react'
 
 interface CommandPaletteProps {
   commands: AiComposerCommand[]
@@ -12,7 +13,11 @@ export function CommandPalette({
   onSelect,
 }: CommandPaletteProps) {
   return (
-    <div className="sw-ai-composer__command-palette" role="listbox" aria-label="命令">
+    <div
+      className="sw-ai-composer__command-palette"
+      role="listbox"
+      aria-label="命令"
+    >
       {commands.length ? (
         commands.map((command, index) => (
           <button
@@ -24,8 +29,11 @@ export function CommandPalette({
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => onSelect(command)}
           >
-            <strong>{command.label}</strong>
-            {command.description ? <span>{command.description}</span> : null}
+            <SunIcon name="square" size="sm" />
+            <span className="sw-ai-composer__command-copy">
+              <strong>{command.label}</strong>
+              {command.description ? <span>{command.description}</span> : null}
+            </span>
             {command.shortcut ? <kbd>{command.shortcut}</kbd> : null}
           </button>
         ))
