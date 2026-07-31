@@ -19,26 +19,39 @@ function ComposerHarness({
   modelId = 'deepseek',
   disabled,
   composerRef,
+  commands,
+  accept,
+  maxFiles,
+  maxFileSize,
 }: {
   onSubmit?: AiComposerProps['onSubmit']
   onCancel?: AiComposerProps['onCancel']
   modelId?: string
   disabled?: boolean
   composerRef?: React.RefObject<AiComposerHandle | null>
+  commands?: AiComposerProps['commands']
+  accept?: string
+  maxFiles?: number
+  maxFileSize?: number
 }) {
   const [value, setValue] = useState('')
+  const [selectedModelId, setSelectedModelId] = useState(modelId)
   return (
     <AiComposer
       ref={composerRef}
       value={value}
       onValueChange={setValue}
       models={models}
-      modelId={modelId}
-      onModelChange={vi.fn()}
+      modelId={selectedModelId}
+      onModelChange={setSelectedModelId}
+      commands={commands}
       onSubmit={onSubmit}
       onCancel={onCancel}
       disabled={disabled}
       placeholder="消息"
+      accept={accept}
+      maxFiles={maxFiles}
+      maxFileSize={maxFileSize}
     />
   )
 }
@@ -153,5 +166,111 @@ describe('AiComposer core', () => {
     act(() => ref.current?.setQuestion('reset me'))
     act(() => ref.current?.reset())
     expect(screen.getByRole('textbox', { name: '消息' })).toHaveValue('')
+  })
+
+  it('selects, submits, and removes original File attachments', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn().mockResolvedValue(undefined)
+    const attachment = new File(['hello'], 'notes.md', {
+      type: 'text/markdown',
+      lastModified: 10,
+    })
+    render(
+      <ComposerHarness
+        onSubmit={onSubmit}
+        accept=".md"
+        maxFiles={2}
+        maxFileSize={20}
+      />
+    )
+
+    await user.upload(screen.getByLabelText('添加附件'), attachment)
+    expect(screen.getByText('notes.md')).toBeInTheDocument()
+    await user.type(screen.getByRole('textbox', { name: '消息' }), 'read it')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ files: [attachment] })
+    )
+    expect(screen.queryByText('notes.md')).not.toBeInTheDocument()
+
+    await user.upload(screen.getByLabelText('添加附件'), attachment)
+    await user.click(screen.getByRole('button', { name: '移除 notes.md' }))
+    expect(screen.queryByText('notes.md')).not.toBeInTheDocument()
+  })
+
+  it('switches the controlled model and submits its id', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn().mockResolvedValue(undefined)
+    render(<ComposerHarness onSubmit={onSubmit} />)
+
+    await user.click(
+      screen.getByRole('button', { name: '选择模型，当前 DeepSeek' })
+    )
+    await user.click(screen.getByRole('option', { name: 'Disabled' }))
+    expect(
+      screen.getByRole('button', { name: '选择模型，当前 DeepSeek' })
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('option', { name: 'DeepSeek' }))
+    await user.type(screen.getByRole('textbox', { name: '消息' }), 'model')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ modelId: 'deepseek' })
+    )
+  })
+
+  it('selects a slash command with the keyboard and submits a structured id', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn().mockResolvedValue(undefined)
+    render(
+      <ComposerHarness
+        onSubmit={onSubmit}
+        commands={[
+          {
+            id: 'visualize',
+            label: 'Accessibility Visualization',
+            description: 'Make charts inclusive',
+          },
+          { id: 'icons', label: 'Adding Sun World Icons' },
+        ]}
+      />
+    )
+    const textbox = screen.getByRole('textbox', { name: '消息' })
+
+    await user.type(textbox, '/access')
+    expect(screen.getByRole('listbox', { name: '命令' })).toBeInTheDocument()
+    await user.keyboard('{ArrowDown}{Enter}')
+    expect(screen.getByText('Accessibility Visualization')).toBeInTheDocument()
+    expect(textbox).toHaveValue('')
+
+    await user.type(textbox, 'create a chart')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(onSubmit).toHaveBeenCalledWith({
+      markdown: 'create a chart',
+      files: [],
+      modelId: 'deepseek',
+      commandId: 'visualize',
+    })
+  })
+
+  it('closes the command palette with Escape and removes a selected command', async () => {
+    const user = userEvent.setup()
+    render(
+      <ComposerHarness
+        commands={[{ id: 'icons', label: 'Adding Sun World Icons' }]}
+      />
+    )
+    const textbox = screen.getByRole('textbox', { name: '消息' })
+    await user.type(textbox, '/')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('listbox', { name: '命令' })).not.toBeInTheDocument()
+
+    await user.clear(textbox)
+    await user.type(textbox, '/icons')
+    await user.keyboard('{Enter}')
+    await user.click(
+      screen.getByRole('button', { name: '移除命令 Adding Sun World Icons' })
+    )
+    expect(screen.queryByText('Adding Sun World Icons')).not.toBeInTheDocument()
   })
 })

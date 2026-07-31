@@ -4,11 +4,22 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type ChangeEvent,
   type FormEvent,
   type KeyboardEvent,
 } from 'react'
 
+import { AttachmentList } from './attachments/AttachmentList'
+import { validateIncomingFiles } from './attachments/files'
+import { CommandPalette } from './commands/CommandPalette'
+import {
+  commandQuery,
+  filterCommands,
+  nextEnabledCommandIndex,
+} from './commands/commands'
+import { ModelSelector } from './model-selector/ModelSelector'
 import type {
+  AiComposerCommand,
   AiComposerHandle,
   AiComposerProps,
   AiComposerSubmitOverrides,
@@ -21,11 +32,16 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       onValueChange,
       models,
       modelId,
+      onModelChange,
+      commands = [],
       onSubmit,
       onCancel,
       loading = false,
       disabled = false,
       placeholder = '消息',
+      accept,
+      maxFiles = 5,
+      maxFileSize = 10 * 1024 * 1024,
     },
     ref
   ) {
@@ -33,8 +49,22 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const submittingRef = useRef(false)
     const [submitting, setSubmitting] = useState(false)
     const [submissionError, setSubmissionError] = useState(false)
+    const [files, setFiles] = useState<File[]>([])
+    const [rejectedFiles, setRejectedFiles] = useState(0)
+    const [selectedCommandId, setSelectedCommandId] = useState<string>()
+    const [activeCommandIndex, setActiveCommandIndex] = useState(-1)
+    const [commandPaletteDismissed, setCommandPaletteDismissed] = useState(false)
 
     const selectedModel = models.find((model) => model.id === modelId)
+    const selectedCommand = commands.find(
+      (command) => command.id === selectedCommandId
+    )
+    const trigger = commandQuery(value)
+    const visibleCommands = trigger
+      ? filterCommands(commands, trigger.query)
+      : []
+    const commandPaletteOpen =
+      Boolean(trigger) && commands.length > 0 && !commandPaletteDismissed
     const canSubmit =
       value.trim().length > 0 &&
       Boolean(selectedModel && !selectedModel.disabled) &&
@@ -66,11 +96,13 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       try {
         await onSubmit({
           markdown: nextMarkdown,
-          files: overrides.files ?? [],
+          files: overrides.files ?? files,
           modelId: nextModelId,
-          commandId: overrides.commandId,
+          commandId: overrides.commandId ?? selectedCommandId,
         })
         onValueChange('')
+        setFiles([])
+        setSelectedCommandId(undefined)
         return true
       } catch {
         setSubmissionError(true)
@@ -84,6 +116,9 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const cancel = () => onCancel?.()
     const reset = () => {
       setSubmissionError(false)
+      setFiles([])
+      setSelectedCommandId(undefined)
+      setCommandPaletteDismissed(false)
       onValueChange('')
     }
 
@@ -99,7 +134,18 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         cancel,
         reset,
       }),
-      [disabled, loading, modelId, models, onCancel, onSubmit, onValueChange, value]
+      [
+        disabled,
+        files,
+        loading,
+        modelId,
+        models,
+        onCancel,
+        onSubmit,
+        onValueChange,
+        selectedCommandId,
+        value,
+      ]
     )
 
     const handleSubmit = (event: FormEvent) => {
@@ -107,9 +153,57 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       void submit()
     }
     const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (commandPaletteOpen) {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          setCommandPaletteDismissed(true)
+          return
+        }
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault()
+          setActiveCommandIndex((current) =>
+            nextEnabledCommandIndex(
+              visibleCommands,
+              current,
+              event.key === 'ArrowDown' ? 1 : -1
+            )
+          )
+          return
+        }
+        if (event.key === 'Enter' || event.key === 'Tab') {
+          const command =
+            visibleCommands[activeCommandIndex] ??
+            visibleCommands.find((item) => !item.disabled)
+          if (command) {
+            event.preventDefault()
+            selectCommand(command)
+            return
+          }
+        }
+      }
       if (event.key !== 'Enter' || event.shiftKey) return
       event.preventDefault()
       void submit()
+    }
+
+    const selectCommand = (command: AiComposerCommand) => {
+      if (command.disabled) return
+      setSelectedCommandId(command.id)
+      setActiveCommandIndex(-1)
+      setCommandPaletteDismissed(true)
+      if (trigger) onValueChange(value.slice(0, trigger.start).trimEnd())
+      textareaRef.current?.focus()
+    }
+
+    const addFiles = (event: ChangeEvent<HTMLInputElement>) => {
+      const result = validateIncomingFiles(files, event.target.files ?? [], {
+        accept,
+        maxFiles,
+        maxFileSize,
+      })
+      setFiles(result.accepted)
+      setRejectedFiles(result.rejectedCount)
+      event.target.value = ''
     }
 
     const disabledReason = disabled
@@ -122,6 +216,13 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
 
     return (
       <form className="sw-ai-composer" onSubmit={handleSubmit}>
+        {commandPaletteOpen ? (
+          <CommandPalette
+            commands={visibleCommands}
+            activeIndex={activeCommandIndex}
+            onSelect={selectCommand}
+          />
+        ) : null}
         <textarea
           ref={textareaRef}
           aria-label={placeholder}
@@ -130,11 +231,46 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          onChange={(event) => onValueChange(event.target.value)}
+          onChange={(event) => {
+            setCommandPaletteDismissed(false)
+            setActiveCommandIndex(-1)
+            onValueChange(event.target.value)
+          }}
           onInput={resize}
           onKeyDown={handleKeyDown}
         />
+        <AttachmentList
+          files={files}
+          onRemove={(index) =>
+            setFiles((items) => items.filter((_, itemIndex) => itemIndex !== index))
+          }
+        />
         <div className="sw-ai-composer__toolbar">
+          <label>
+            <span>添加附件</span>
+            <input
+              type="file"
+              aria-label="添加附件"
+              accept={accept}
+              multiple
+              disabled={disabled || loading}
+              onChange={addFiles}
+            />
+          </label>
+          {selectedCommand ? (
+            <button
+              type="button"
+              aria-label={`移除命令 ${selectedCommand.label}`}
+              onClick={() => setSelectedCommandId(undefined)}
+            >
+              <span>{selectedCommand.label}</span> ×
+            </button>
+          ) : null}
+          <ModelSelector
+            models={models}
+            modelId={modelId}
+            onModelChange={onModelChange}
+          />
           {loading ? (
             <button type="button" aria-label="停止生成" onClick={cancel}>
               停止
@@ -145,6 +281,9 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             </button>
           )}
         </div>
+        {rejectedFiles ? (
+          <div role="status">{rejectedFiles} 个文件未添加</div>
+        ) : null}
         {!canSubmit ? (
           <span id="sw-ai-composer-disabled-reason" className="sr-only">
             {disabledReason}
