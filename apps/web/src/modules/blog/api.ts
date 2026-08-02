@@ -1,5 +1,5 @@
 import { API_ROUTES } from '@sun-world/contracts'
-import { apiGet, apiPost } from '@/shared/api'
+import { apiDelete, apiGet, apiPost, apiPut } from '@/shared/api'
 import type {
   BlogCategoryList,
   BlogCreateContract,
@@ -65,6 +65,30 @@ export async function createBlog(
   } as BlogCreateContract
 
   return apiPost(API_ROUTES.blog.create, payload)
+}
+
+export function deleteBlog(id: string | number): Promise<unknown> {
+  return apiDelete(API_ROUTES.blog.delete, { path: { blog_id: String(id) } })
+}
+
+export function updateBlog(
+  id: string | number,
+  params: CreateBlogPayload
+): Promise<unknown> {
+  const payload = {
+    ...params,
+    id: Number(id),
+    author: params.author ?? undefined,
+    category:
+      params.category === undefined || params.category === null
+        ? undefined
+        : Number(params.category),
+    tag: params.tag?.map(normalizeTagInput),
+  } as BlogCreateContract
+
+  return apiPut(API_ROUTES.blog.update, payload, {
+    path: { blog_id: Number(id) },
+  })
 }
 
 function normalizeTagInput(

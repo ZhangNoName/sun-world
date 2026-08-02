@@ -9,41 +9,46 @@ const expect = (condition, message) => {
   if (!condition) failures.push(message)
 }
 
+const basePackage = JSON.parse(read('packages/base-ui/package.json'))
 const uiPackage = JSON.parse(read('packages/ui/package.json'))
 const webPackage = JSON.parse(read('apps/web/package.json'))
-const config = JSON.parse(read('packages/ui/components.json'))
+const config = JSON.parse(read('packages/base-ui/components.json'))
 const webConfig = JSON.parse(read('apps/web/components.json'))
 const globals = read('packages/ui/src/styles/globals.css')
 const vite = read('apps/web/vite.config.ts')
 const baseUiRegistry = 'https://ui.shadcn.com/r/styles/base-nova/{name}.json'
 
 expect(
-  config.style === 'new-york',
-  'components.json must use the new-york baseline'
+  config.style === 'base-nova',
+  'components.json must use the base-nova baseline'
 )
 expect(
   config.tailwind?.css === 'src/styles/globals.css',
   'components.json must target the real global CSS'
 )
 expect(
-  config.aliases?.ui === '@sun-world/ui/components',
+  config.aliases?.ui === '@sun-world/base-ui/components',
   'components.json must target the component directory'
 )
 expect(
   config.registries?.['@base-ui'] === baseUiRegistry,
-  'packages/ui/components.json must register the @base-ui namespace'
+  'packages/base-ui/components.json must register the @base-ui namespace'
 )
 expect(
   webConfig.registries?.['@base-ui'] === baseUiRegistry,
   'apps/web/components.json must register the @base-ui namespace'
 )
 expect(
-  Boolean(uiPackage.dependencies?.shadcn),
-  'packages/ui must own the shadcn build-time styles'
+  Boolean(basePackage.dependencies?.shadcn),
+  'packages/base-ui must own the shadcn build-time styles'
 )
 expect(
-  Boolean(uiPackage.dependencies?.['@base-ui/react']),
-  'packages/ui must depend on @base-ui/react'
+  Boolean(basePackage.dependencies?.['@base-ui/react']),
+  'packages/base-ui must depend on @base-ui/react'
+)
+expect(
+  uiPackage.dependencies?.['@sun-world/base-ui'] === 'workspace:*',
+  'packages/ui must depend on @sun-world/base-ui'
 )
 expect(
   Boolean(webPackage.devDependencies?.tailwindcss),
@@ -67,6 +72,10 @@ expect(
 )
 
 for (const dependencies of [
+  basePackage.dependencies,
+  basePackage.devDependencies,
+  basePackage.peerDependencies,
+  basePackage.optionalDependencies,
   uiPackage.dependencies,
   uiPackage.devDependencies,
   uiPackage.peerDependencies,
@@ -79,12 +88,23 @@ for (const dependencies of [
   }
 }
 
-for (const file of fs.readdirSync(path.join(root, 'packages/ui/src'), {
-  recursive: true,
-})) {
-  if (!/\.(cjs|css|cts|js|jsx|mjs|mts|ts|tsx)$/.test(file)) continue
-  if (read(path.join('packages/ui/src', file)).includes('@radix-ui/')) {
-    failures.push(`Base UI source required: packages/ui/src/${file}`)
+for (const packageName of ['base-ui', 'ui']) {
+  for (const file of fs.readdirSync(
+    path.join(root, `packages/${packageName}/src`),
+    {
+      recursive: true,
+    }
+  )) {
+    if (!/\.(cjs|css|cts|js|jsx|mjs|mts|ts|tsx)$/.test(file)) continue
+    if (
+      read(path.join(`packages/${packageName}/src`, file)).includes(
+        '@radix-ui/'
+      )
+    ) {
+      failures.push(
+        `Radix source is not allowed: packages/${packageName}/src/${file}`
+      )
+    }
   }
 }
 

@@ -30,3 +30,6 @@ export type AdminStatusMetric = components['schemas']['StatusMetric']
 export type AdminRumEventSample = components['schemas']['RumEventSample']
 export type AdminMetricAlert = components['schemas']['MetricAlert']
 export type AdminLogEvent = components['schemas']['AdminLogEvent']
+export type AdminAiProvider = components['schemas']['AiProviderCatalog']
+export type AdminAiProviderInput =
+  components['schemas']['AiProviderCatalogInput']

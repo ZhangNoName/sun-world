@@ -77,6 +77,9 @@ def export_openapi(output: Path) -> None:
         install_schema_stubs(schema_app)
 
         routers_module = importlib.import_module("src.routers")
+        dictionary_router = importlib.import_module(
+            "src.modules.dictionaries.router"
+        ).router
         routers = [
             routers_module.blog_router,
             routers_module.base_router,
@@ -89,6 +92,7 @@ def export_openapi(output: Path) -> None:
             routers_module.telemetry_router,
             routers_module.admin_router,
             routers_module.health_router,
+            dictionary_router,
         ]
         for router in routers:
             schema_app.include_router(router)

@@ -1,6 +1,7 @@
-import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
+import { SwSelect } from '@sun-world/ui/sw-select'
 import { Link } from 'react-router'
-import { Button } from '@sun-world/ui/button'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { SunPagination } from '@sun-world/ui/pagination'
 import { useBlogManagement } from '@/modules/blog/composables/useBlogManagement'
 
@@ -28,14 +29,14 @@ export function ManageBlogPage() {
           void blog.submit()
         }}
       >
-        <LabeledInput
+        <SwInput
           label="标题关键词"
           value={blog.keyword}
           onValueChange={blog.setKeyword}
           maxLength={31}
           placeholder="最多 30 个字符"
         />
-        <SelectField
+        <SwSelect
           label="排序字段"
           value={blog.sortBy}
           onValueChange={(value) => blog.setSortBy(value as typeof blog.sortBy)}
@@ -45,7 +46,7 @@ export function ManageBlogPage() {
             { value: 'view_num', label: '浏览量' },
           ]}
         />
-        <SelectField
+        <SwSelect
           label="排序方向"
           value={blog.sortOrder}
           onValueChange={(value) =>
@@ -69,9 +70,19 @@ export function ManageBlogPage() {
         </p>
       ) : null}
       {blog.errorMessage ? (
-        <p className="admin-error" role="alert">
-          {blog.errorMessage}
-        </p>
+        <div className="manage-error-state">
+          <p className="admin-error" role="alert">
+            {blog.errorMessage}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void blog.refresh()}
+            disabled={blog.loading}
+          >
+            重试
+          </Button>
+        </div>
       ) : null}
       <div className="table-scroll">
         <table className="manage-table">
@@ -113,7 +124,7 @@ export function ManageBlogPage() {
                 </td>
               </tr>
             ))}
-            {!blog.loading && !blog.items.length ? (
+            {!blog.errorMessage && !blog.loading && !blog.items.length ? (
               <tr>
                 <td colSpan={8} className="admin-empty">
                   暂无文章

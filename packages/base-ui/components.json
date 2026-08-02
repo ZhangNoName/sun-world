@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "@base-ui": "https://ui.shadcn.com/r/styles/base-nova/{name}.json"
+  },
+  "aliases": {
+    "components": "@sun-world/base-ui/components",
+    "ui": "@sun-world/base-ui/components",
+    "hooks": "@sun-world/base-ui/hooks",
+    "lib": "@sun-world/base-ui/lib",
+    "utils": "@sun-world/base-ui/lib/cn"
+  }
+}

@@ -1,116 +1,47 @@
-import { forwardRef, useId } from 'react'
-import { Checkbox } from '../../components/checkbox'
-import { Input, type InputProps } from '../../components/input'
-import { Label } from '../../components/label'
+import * as React from 'react'
+import { forwardRef } from 'react'
+
+import { Checkbox } from '@sun-world/base-ui/checkbox'
+import { Input } from '@sun-world/base-ui/input'
+import { Label } from '@sun-world/base-ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../components/select'
+  SwNativeSelect,
+  SwSelect,
+  type SwNativeSelectProps,
+  type SwSelectProps,
+} from '../../components/sw-select/sw-select'
+import { SwInput, type SwInputProps } from '../../components/sw-input/sw-input'
 import { cn } from '../../lib/cn'
 
+/** @deprecated Use SwInput from @sun-world/ui/sw-input. */
 export const LabeledInput = forwardRef<
   HTMLInputElement,
-  InputProps & { label: string; hideVisibleLabel?: boolean }
->(function LabeledInput(
-  { label, id, hideVisibleLabel = false, ...props },
-  ref
-) {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
-  return (
-    <div className="sun-ui-field">
-      {hideVisibleLabel ? null : <Label htmlFor={inputId}>{label}</Label>}
-      <Input
-        ref={ref}
-        id={inputId}
-        aria-label={hideVisibleLabel ? label : undefined}
-        {...props}
-      />
-    </div>
-  )
+  SwInputProps & { label: string }
+>(function LabeledInput(props, ref) {
+  return <SwInput ref={ref} {...props} />
 })
 
-export function SelectField({
-  label,
-  options,
-  hideVisibleLabel = false,
-  ...props
-}: React.ComponentProps<typeof Select> & {
-  label: string
-  options: Array<{ value: string; label: string; disabled?: boolean }>
-  hideVisibleLabel?: boolean
-}) {
-  const id = useId()
-  return (
-    <div className="sun-ui-field">
-      {hideVisibleLabel ? null : <Label htmlFor={id}>{label}</Label>}
-      <Select items={options} {...props}>
-        <SelectTrigger
-          id={id}
-          aria-label={hideVisibleLabel ? label : undefined}
-          className="w-full"
-        >
-          <SelectValue placeholder={label} />
-        </SelectTrigger>
-        <SelectContent position="popper">
-          {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              disabled={option.disabled}
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  )
+/** @deprecated Use SwSelect from @sun-world/ui/sw-select. */
+export function SelectField(props: SwSelectProps & { label: string }) {
+  return <SwSelect {...props} />
+}
+
+/** @deprecated Use SwNativeSelect from @sun-world/ui/sw-select. */
+export function NativeSelectField(
+  props: SwNativeSelectProps & { label: string }
+) {
+  return <SwNativeSelect {...props} />
 }
 
 export function CheckboxField({
   label,
   ...props
 }: React.ComponentProps<typeof Checkbox> & { label: string }) {
-  const id = useId()
+  const id = React.useId()
   return (
     <div className="flex items-center gap-2">
       <Checkbox id={id} {...props} />
       <Label htmlFor={id}>{label}</Label>
-    </div>
-  )
-}
-
-export function NativeSelectField({
-  label,
-  options,
-  className,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & {
-  label: string
-  options: Array<{ value: string; label: string }>
-}) {
-  const id = useId()
-  return (
-    <div className="sun-ui-field">
-      <Label htmlFor={id}>{label}</Label>
-      <select
-        id={id}
-        className={cn(
-          'border-input bg-background ring-offset-background focus-visible:ring-ring h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50',
-          className
-        )}
-        {...props}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
     </div>
   )
 }
@@ -124,7 +55,7 @@ export function FilePicker({
   label: string
   onFileChange: (file?: File) => void
 }) {
-  const id = useId()
+  const id = React.useId()
   return (
     <div className={cn('sun-ui-field', className)}>
       <Label htmlFor={id}>{label}</Label>

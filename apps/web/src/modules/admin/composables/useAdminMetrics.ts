@@ -6,6 +6,7 @@ import {
   fetchAdminTelemetry,
 } from '../api'
 import { getAdminErrorMessage } from '../errors'
+import { useManageCopy, useManageLocale } from '../manageCopy'
 import type {
   AdminAlertsSnapshot,
   AdminMetricsHistorySnapshot,
@@ -23,6 +24,8 @@ export interface AdminMetricCard {
 }
 
 export function useAdminMetrics() {
+  const copy = useManageCopy()
+  const locale = useManageLocale()
   const [snapshot, setSnapshot] = useState<AdminMetricsSnapshot | null>(null)
   const [telemetrySnapshot, setTelemetrySnapshot] =
     useState<AdminTelemetrySnapshot | null>(null)
@@ -105,19 +108,39 @@ export function useAdminMetrics() {
     const total = snapshot?.total_requests ?? 0
     const errors = snapshot?.error_requests ?? 0
     return [
-      card('total', '总请求', total, '当前进程累计请求数'),
+      card(
+        'total',
+        copy.metrics.totalRequests,
+        total,
+        copy.metrics.currentProcessRequests
+      ),
       card(
         'errors',
-        '错误请求',
+        copy.metrics.errorRequests,
         errors,
-        `${formatPercent(total ? errors / total : 0)} 错误率`,
+        `${formatPercent(total ? errors / total : 0, locale)} ${copy.metrics.errorRate}`,
         errors ? 'danger' : 'success'
       ),
-      latencyCard('avg', '平均耗时', snapshot?.avg_duration_ms ?? 0),
-      latencyCard('p95', 'P95 耗时', snapshot?.p95_duration_ms ?? 0),
-      latencyCard('max', '峰值耗时', snapshot?.max_duration_ms ?? 0),
+      latencyCard(
+        'avg',
+        copy.metrics.avgDuration,
+        snapshot?.avg_duration_ms ?? 0,
+        copy.metrics.latencyCaption
+      ),
+      latencyCard(
+        'p95',
+        copy.metrics.p95Duration,
+        snapshot?.p95_duration_ms ?? 0,
+        copy.metrics.latencyCaption
+      ),
+      latencyCard(
+        'max',
+        copy.metrics.peakDuration,
+        snapshot?.max_duration_ms ?? 0,
+        copy.metrics.latencyCaption
+      ),
     ]
-  }, [snapshot])
+  }, [copy, locale, snapshot])
   const telemetryCards = useMemo<AdminMetricCard[]>(() => {
     const total = telemetrySnapshot?.total_events ?? 0
     const rejected = telemetrySnapshot?.rejected_events ?? 0
@@ -127,45 +150,58 @@ export function useAdminMetrics() {
       (names.unhandled_rejection ?? 0) +
       (names.api_error ?? 0)
     return [
-      card('rum-total', 'RUM 事件', total, '浏览器遥测事件'),
+      card(
+        'rum-total',
+        copy.metrics.rumEvents,
+        total,
+        copy.metrics.browserTelemetry
+      ),
       card(
         'rum-rejected',
-        '拒绝事件',
+        copy.metrics.rejectedEvents,
         rejected,
-        `${formatPercent(total ? rejected / total : 0)} 被契约拒绝`,
+        `${formatPercent(total ? rejected / total : 0, locale)} ${copy.metrics.rejectedByContract}`,
         rejected ? 'warning' : 'success'
       ),
-      card('rum-vitals', 'Web Vitals', webVitals.length, '浏览器性能指标种类'),
+      card(
+        'rum-vitals',
+        copy.metrics.webVitals,
+        webVitals.length,
+        copy.metrics.webVitalsKinds
+      ),
       card(
         'rum-errors',
-        '浏览器错误',
+        copy.metrics.browserErrors,
         errors,
-        '全局、Promise 与 API 错误',
+        copy.metrics.browserErrorsCaption,
         errors ? 'danger' : 'success'
       ),
     ]
-  }, [telemetrySnapshot, webVitals.length])
+  }, [copy, locale, telemetrySnapshot, webVitals.length])
   const alertCards = [
     card(
       'alerts-total',
-      '活动告警',
+      copy.metrics.alerts,
       alertsSnapshot?.alert_count ?? 0,
-      `${alertsSnapshot?.critical_count ?? 0} 严重 / ${alertsSnapshot?.warning_count ?? 0} 警告`,
+      copy.metrics.severitySummary(
+        alertsSnapshot?.critical_count ?? 0,
+        alertsSnapshot?.warning_count ?? 0
+      ),
       alertsSnapshot?.alert_count ? 'danger' : 'success'
     ),
   ]
   const historyCards = [
     card(
       'history-request',
-      '请求历史',
+      copy.metrics.requestHistory,
       requestHistory?.snapshot_count ?? 0,
-      `最近 ${requestHistory?.limit ?? 20} 个快照`
+      copy.metrics.snapshots(requestHistory?.limit ?? 20)
     ),
     card(
       'history-rum',
-      'RUM 历史',
+      copy.metrics.rumHistory,
       rumHistory?.snapshot_count ?? 0,
-      `最近 ${rumHistory?.limit ?? 20} 个快照`
+      copy.metrics.snapshots(rumHistory?.limit ?? 20)
     ),
   ]
 
@@ -188,7 +224,8 @@ export function useAdminMetrics() {
     errorMessage,
     lastLoadedAt,
     refresh,
-    formatDateTime,
+    formatDateTime: (value: string | Date | null | undefined) =>
+      formatDateTime(value, locale),
     formatNumber,
   }
 }
@@ -205,10 +242,11 @@ function card(
 function latencyCard(
   key: string,
   label: string,
-  value: number
+  value: number,
+  caption: string
 ): AdminMetricCard {
   return {
-    ...card(key, label, value, '当前窗口响应耗时', latencyTone(value)),
+    ...card(key, label, value, caption, latencyTone(value)),
     value: `${formatNumber(value)}ms`,
   }
 }
@@ -218,13 +256,14 @@ export function formatNumber(value: number): string {
   }).format(value)
 }
 export function formatDateTime(
-  value: string | Date | null | undefined
+  value: string | Date | null | undefined,
+  locale: 'zh' | 'en' = 'zh'
 ): string {
   if (!value) return '-'
   const date = value instanceof Date ? value : new Date(value)
   return Number.isNaN(date.getTime())
     ? '-'
-    : new Intl.DateTimeFormat('zh-CN', {
+    : new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'zh-CN', {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
@@ -232,8 +271,8 @@ export function formatDateTime(
         second: '2-digit',
       }).format(date)
 }
-function formatPercent(value: number): string {
-  return new Intl.NumberFormat('zh-CN', {
+function formatPercent(value: number, locale: 'zh' | 'en'): string {
+  return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'zh-CN', {
     style: 'percent',
     maximumFractionDigits: 2,
   }).format(value)

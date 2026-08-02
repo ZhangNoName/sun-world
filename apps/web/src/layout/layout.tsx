@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useMatches } from 'react-router'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 import { DialogPanel } from '@sun-world/ui/compound-controls'
 import LanguageSwitch from '@/components/LanguageSwitch'
 import ThemeSwitch from '@/components/ThemeSwitch'
+import i18n from '@/i18n'
 import { useDeviceStore } from '@/store/tg'
 import type { RouteMeta } from '@/modules/types'
 import { BackToTopButton } from './BackToTopButton'
 import Footer from './footer'
 import Header from './header'
 import './layout.css'
+
+const ManageLayout = lazy(
+  () => import('@/modules/admin/components/ManageLayout')
+)
 
 const mobileLinks = [
   ['home', '/home', '首页'],
@@ -31,6 +36,24 @@ export function AppLayout() {
   useEffect(() => {
     setDrawer(false)
   }, [location.pathname])
+  if (
+    location.pathname === '/manage' ||
+    location.pathname.startsWith('/manage/')
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <main className="manage-route-loading" role="status">
+            {i18n.language?.startsWith('en')
+              ? 'Loading management center…'
+              : '正在加载管理中心…'}
+          </main>
+        }
+      >
+        <ManageLayout />
+      </Suspense>
+    )
+  }
 
   if (!mobile) {
     return (

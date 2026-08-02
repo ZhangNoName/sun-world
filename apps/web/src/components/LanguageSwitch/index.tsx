@@ -1,4 +1,4 @@
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { useTranslation } from 'react-i18next'
 import { setLocale } from '@/i18n'
 

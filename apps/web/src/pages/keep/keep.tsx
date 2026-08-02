@@ -1,6 +1,6 @@
-import { LabeledInput } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import { useState } from 'react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { downloadUrl } from '@/util/function'
 import './keep.css'
 
@@ -81,21 +81,21 @@ export default function KeepPage() {
         <h1>室内跑步 TCX 生成器</h1>
         <p>生成可导入 Garmin 等运动平台的标准 TCX 活动文件。</p>
         <div className="keep-form">
-          <LabeledInput
+          <SwInput
             label="时长（分钟）"
             type="number"
             min={1}
             value={minutes}
             onValueChange={setMinutes}
           />
-          <LabeledInput
+          <SwInput
             label="距离（米）"
             type="number"
             min={0}
             value={distance}
             onValueChange={setDistance}
           />
-          <LabeledInput
+          <SwInput
             label="热量（千卡）"
             type="number"
             min={0}

@@ -7,6 +7,7 @@ import type {
   BlogSortOrder,
   BlogTag,
 } from '../types'
+import { getAdminErrorMessage } from '@/modules/admin/errors'
 
 const PAGE_SIZE = 10
 
@@ -33,24 +34,29 @@ export function useBlogManagement() {
   const [items, setItems] = useState<BlogRawItem[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [tags, setTags] = useState<BlogTag[]>([])
+  const [taxonomyRevision, setTaxonomyRevision] = useState(0)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [taxonomyErrorMessage, setTaxonomyErrorMessage] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
   const requestId = useRef(0)
 
   useEffect(() => {
     let active = true
+    setTaxonomyErrorMessage('')
     void Promise.all([fetchBlogCategories(), fetchBlogTags()])
       .then(([nextCategories, nextTags]) => {
         if (!active) return
         setCategories(nextCategories)
         setTags(nextTags)
       })
-      .catch(() => undefined)
+      .catch((error) => {
+        if (active) setTaxonomyErrorMessage(getAdminErrorMessage(error))
+      })
     return () => {
       active = false
     }
-  }, [])
+  }, [taxonomyRevision])
 
   useEffect(() => {
     const currentId = ++requestId.current
@@ -68,9 +74,7 @@ export function useBlogManagement() {
       })
       .catch((error: unknown) => {
         if (currentId !== requestId.current) return
-        setErrorMessage(
-          error instanceof Error ? error.message : '博客列表加载失败'
-        )
+        setErrorMessage(getAdminErrorMessage(error))
       })
       .finally(() => {
         if (currentId === requestId.current) setLoading(false)
@@ -127,15 +131,17 @@ export function useBlogManagement() {
     categories,
     tags,
     loading,
-    errorMessage,
+    errorMessage: errorMessage || taxonomyErrorMessage,
     validationMessage,
     submit,
     reset,
     changePage,
-    refresh: async () =>
+    refresh: async () => {
+      setTaxonomyRevision((current) => current + 1)
       setQuery((current) => ({
         ...current,
         revision: current.revision + 1,
-      })),
+      }))
+    },
   }
 }

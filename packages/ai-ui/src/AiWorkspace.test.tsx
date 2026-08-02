@@ -1,4 +1,10 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { AiWorkspace } from './AiWorkspace'
@@ -73,7 +79,14 @@ describe('AiWorkspace', () => {
         conversations={[]}
         messages={[]}
         runState={{ status: 'idle' }}
-        providers={[{ id: 'deepseek', name: 'DeepSeek' }]}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+        ]}
         onNewConversation={vi.fn()}
         onSelectConversation={vi.fn()}
         onSend={vi.fn()}
@@ -91,6 +104,120 @@ describe('AiWorkspace', () => {
     await user.click(screen.getByRole('button', { name: '关闭设置' }))
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     expect(screen.getByLabelText('API Key')).toHaveValue('')
+  })
+
+  it('updates the provider defaults when a service provider is selected', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+          {
+            id: 'openai',
+            name: 'OpenAI',
+            defaultBaseUrl: 'https://api.openai.com/v1',
+            defaultModel: 'gpt-4.1-mini',
+          },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: '模型设置' }))
+    await user.click(screen.getByRole('combobox', { name: '服务商' }))
+    expect(screen.getByRole('dialog')).not.toContainElement(
+      await screen.findByRole('listbox')
+    )
+    await user.click(await screen.findByRole('option', { name: /^OpenAI$/ }))
+
+    expect(screen.getByLabelText('配置名称')).toHaveValue('OpenAI')
+    expect(screen.getByLabelText('Base URL')).toHaveValue(
+      'https://api.openai.com/v1'
+    )
+    expect(screen.getByLabelText('模型')).toHaveValue('gpt-4.1-mini')
+  })
+
+  it('closes provider settings after a successful save', async () => {
+    const user = userEvent.setup()
+    const onSaveProvider = vi.fn().mockResolvedValue(undefined)
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+        onSaveProvider={onSaveProvider}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /设置/ }))
+    await user.click(screen.getByRole('button', { name: /保存配置/ }))
+
+    await waitFor(() => expect(onSaveProvider).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    )
+  })
+
+  it('shows a provider save failure inside settings', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+        onSaveProvider={vi.fn().mockRejectedValue(new Error('保存请求失败'))}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /设置/ }))
+    await user.click(screen.getByRole('button', { name: /保存配置/ }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('保存请求失败')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('resizes the conversation sidebar with pointer and keyboard input', () => {
@@ -175,6 +302,14 @@ describe('AiWorkspace', () => {
         conversations={[]}
         messages={[]}
         runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+        ]}
         onNewConversation={vi.fn()}
         onSelectConversation={vi.fn()}
         onSend={vi.fn()}
@@ -200,6 +335,14 @@ describe('AiWorkspace', () => {
         conversations={[]}
         messages={[]}
         runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'deepseek',
+            name: 'DeepSeek',
+            defaultBaseUrl: 'https://api.deepseek.com',
+            defaultModel: 'deepseek-chat',
+          },
+        ]}
         onNewConversation={vi.fn()}
         onSelectConversation={vi.fn()}
         onSend={onSend}
@@ -267,6 +410,38 @@ describe('AiWorkspace', () => {
     await user.click(screen.getByRole('button', { name: '发送消息' }))
     expect(onSend).toHaveBeenCalledWith(
       expect.objectContaining({ modelId: 'profile:profile-1' })
+    )
+  })
+
+  it('shows the model provider as a compact option tag', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          { id: 'deepseek', name: 'DeepSeek', defaultModel: 'deepseek-chat' },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: '选择模型，当前 deepseek-chat' })
+    )
+    const option = screen.getByRole('option', {
+      name: 'deepseek-chat DeepSeek',
+    })
+
+    expect(within(option).getByText('DeepSeek')).toHaveClass(
+      'sw-ai-model-provider-tag'
     )
   })
 

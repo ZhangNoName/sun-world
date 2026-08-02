@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 const SHOW_AFTER_PX = 360
 

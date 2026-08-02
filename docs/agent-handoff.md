@@ -1,10 +1,150 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-02 Base UI package separation
+
+- Goal: separate frozen generic shadcn/Base UI primitives from Sun World-owned
+  protocols and product compositions without changing component styles.
+- Status: implemented locally on dirty `main`; `@sun-world/base-ui` now owns
+  the current official `base-nova` generic primitive snapshot, while
+  `@sun-world/ui` owns protocols/patterns and depends on base-ui one way.
+  Application imports, shadcn configs, and boundary scripts were migrated to
+  make ownership visible from the import path. The official base source is not
+  customized; compatibility lives in `Sw*` adapters and deprecated `Sun*`
+  adapters.
+- Important files: `packages/base-ui/`, `packages/ui/package.json`,
+  `packages/ui/source-aliases.ts`, `apps/web/components.json`,
+  `apps/web/vite.config.ts`, and the UI boundary/structure check scripts.
+- Follow-up: `packages/ui/src/styles/globals.css` now scans
+  `packages/base-ui/src`, so Base UI utility classes are emitted in the
+  application bundle. The Base UI root exports use explicit directory entry
+  points to avoid a stale flat `components/button.tsx` shadowing the canonical
+  `components/button/index.ts` entry. The UI test timeout is 20 seconds because
+  the full Base UI source graph makes the Select interaction tests slower on
+  this workspace.
+- Verification: base/UI builds, Base/UI/Web typechecks, AI UI tests/build, Web
+  build, full UI tests (38), boundary checks, native shadcn check, structure
+  check, browser checks for home/login/AI at desktop and mobile sizes, and
+  targeted formatting passed. No commit, push, or deploy.
+
 This file is the short active handoff entrypoint. Keep it concise so branch
 merges stay easy. Put branch-specific work in docs/handoff/branches/ and move
 older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
+
+- 2026-08-02: tightened the development React source inspector behavior. The
+  existing `react-dev-inspector` replacement for the removed
+  `click-to-react-component` now remains active across inspector click
+  callbacks only while `Alt` is physically held; releasing `Alt` or losing
+  window focus immediately disables it. Added a regression test for the
+  inspector's self-deactivation callback. Focused test, serial full Web tests
+  (47 files, 111 tests), typecheck, and `git diff --check` passed. No commit,
+  push, or deploy was performed.
+
+- 2026-08-02: global UI/theme and auth refresh work is implemented locally on
+  dirty `main`. The app now uses shadcn semantic color variables for
+  light/dark/system modes, with legacy aliases derived from them; the old
+  design-family toggle was removed and the shared UI fallback no longer
+  overrides an app-mounted dark mode. The login surface follows the
+  login-04-style two-column treatment, Manage follows the sidebar-07-style
+  full-width shell with a global theme control, and only explicit blog routes
+  retain the centered side whitespace. HttpOnly-cookie session restore is
+  single-flight, device IDs persist, token refresh retries one request after a
+  401, and anonymous startup restore no longer shows a refresh-error toast.
+  Markdown editing follows the active theme. Important files include
+  `apps/web/src/shared/design/theme.ts`, `apps/web/src/styles/design-tokens.css`,
+  `apps/web/src/store/auth.ts`, `apps/web/src/service/http.ts`,
+  `apps/web/src/pages/login/AuthPageShell.tsx`, `apps/web/src/pages/login/auth.css`,
+  `apps/web/src/modules/admin/components/ManageLayout.tsx`, and
+  `apps/api/src/routers/auth/auth.py`. Web tests, UI tests, API auth tests,
+  typechecks, package builds, SSG, UI structure/boundary/blog checks, and
+  browser checks passed; the final full Web regression passed with 47 files and
+  110 tests.
+  No deployment, push, or task-code commit was performed; the earlier docs
+  commit is `ed1367c5`.
+
+- 2026-08-01: authentication/admin reliability work is implemented locally and
+  remains uncommitted. Existing users now expose nullable `username`; login
+  uses exact username/email/phone matching with deterministic legacy duplicate
+  handling, malformed/expired python-jose tokens return clean 401 responses,
+  registration keeps the inserted user ID, and login/refresh/logout normalize
+  and clear access, refresh, and device cookies, including legacy `/api`
+  cookie paths. `/admin/*`, blog creation,
+  deletion, and the article editor require the admin role; direct management
+  routes have a frontend guard. MySQL now uses a bounded 2-connection pool
+  with ping/borrow/return/replacement semantics and propagates database errors,
+  so a missing AI catalog table is no longer returned as an empty success.
+  Management tabs expose loading/error/empty/data states, request IDs and
+  retry actions, and the provider form is responsive at 1280px. Added
+  regression coverage for auth identifiers/JWTs, cookie lifecycle, admin and
+  blog authorization, missing-table errors, pool concurrency/replacement, and
+  frontend session/guard/error behavior. API tests (37), `pnpm check:api`,
+  full Web checks (81 React tests, contracts, package builds, typecheck,
+  production build, SSG, UI boundary and budgets), Prettier, and
+  `git diff --check` pass. The UI boundary check now documents the `sw-input`
+  and `sw-select` protocol subpaths. Main task must run the safe schema
+  plan/apply and restart the API before browser QA; no commit, push, or deploy
+  was performed.
+
+- 2026-08-01: added an authenticated AIGC provider-catalog management flow.
+  The API persists provider metadata (ID, display name, default Base URL,
+  default model, enabled state, and sort order) without storing API keys;
+  `/ai/v1/providers` reads enabled catalog entries when configured and keeps
+  the built-in registry as a fallback. The `/manage` AIGC tab now supports
+  listing, creating, editing, enabling/disabling, sorting, and deleting
+  providers, with a link back to the AI workspace. Contract routes and
+  generated OpenAPI types were refreshed. API tests, web typecheck,
+  formatting, and `git diff --check` passed. No commit, push, or deploy was
+  performed.
+
+- 2026-08-01: fixed the service-provider Select in the AI settings dialog.
+  The options were portalled outside the modal, so clicks opened the list but
+  did not update the selected provider in a real browser. `SelectContent` now
+  uses the shared dialog-safe `forceMount` mode and receives provider item
+  metadata. The regression test asserts the list stays in the dialog and that
+  selecting OpenAI applies its defaults. Browser QA confirmed the provider,
+  name, Base URL, and model all update; AI UI tests (14), build, Prettier, and
+  `git diff --check` passed. No commit, push, or deploy was performed.
+
+- 2026-08-01: compacted AI composer model-picker options into single rows.
+  The model label is left-aligned and truncates when needed; the provider now
+  appears in a right-aligned non-interactive tag, replacing the old second
+  line. A UI regression test verifies the tag, and focused/full AI UI tests,
+  AI Composer/UI builds, Prettier, and `git diff --check` passed. No commit,
+  push, or deploy was performed.
+
+- 2026-08-01: local AI credential encryption now supports the ignored,
+  single-purpose `apps/api/src/conf/local.ai-credentials.yml` configuration
+  file. Its `ai.credential_encryption_key` takes priority over the deployment
+  environment-variable fallback, and the generated local file is ignored by
+  Git. A focused application-config test covers this precedence. The local API
+  must be restarted to load the new file. Application config test, API checks,
+  and `git diff --check` passed; no commit, push, or deploy was performed.
+
+- 2026-08-01: fixed the authenticated AI provider-profile save 500. The auth
+  manager returns a dictionary user record, while the AI router assumed an
+  object with `.id`; `get_optional_ai_user_id` now accepts either representation
+  and passes the numeric ID to the provider-profile service. A router-level
+  regression test exercises an authenticated POST with a dict-backed user.
+  `apps/api` router tests (3), Python compilation, `pnpm check:api`, and
+  `git diff --check` passed. The local API process was started without reload,
+  so it must be restarted before browser requests use this change. No commit,
+  push, or deploy was performed.
+
+- 2026-08-01: AI provider settings now use the shared shadcn-style `Field`,
+  composed `Select`, `Input`, and `Button` primitives. Saving awaits the
+  persistence callback, displays a disabled `保存中…` state, clears the
+  browser-only key and closes on success, and renders persistence or auth
+  failures inside the dialog. The Web adapter rethrows provider-save failures
+  so the dialog can expose them instead of hiding them behind the modal.
+  Regression tests cover successful close and visible failure. Important files:
+  `packages/ai-ui/src/AiProviderSettings.tsx`,
+  `packages/ai-ui/src/AiWorkspace.test.tsx`,
+  `packages/ai-ui/src/ai-ui.css`, and
+  `apps/web/src/modules/ai/composables/useAiChat.ts`. Focused and package AI UI
+  tests (12), AI UI build, Web typecheck, Prettier, and `git diff --check`
+  passed. A complete `corepack pnpm check` attempt timed out after 120 seconds
+  without a task-specific failure. No commit, push, or deploy was performed.
 
 - 2026-08-01: AI composer status feedback and primary-action states are
   implemented on local `main`. The bottom validation copy is now a compact,
@@ -484,6 +624,96 @@ older completed checkpoints to docs/handoff/archive/.
       to extensionless `.html` files, updates frontend Nginx to resolve
       `$uri.html`, and retries public frontend probes in the deploy workflow.
       Commit and push this fix before considering the publish fully green.
+
+## Active checkpoint: 2026-08-01 Manage admin shell and data pages
+
+- Goal: implement the approved Manage backend refactor while preserving the existing dirty workspace changes.
+- Status: implemented locally; browser QA passed; no deployment, push, commit, or staging performed.
+- Important task files: `apps/web/src/modules/admin/components/`, `apps/web/src/modules/admin/pages/Manage*`, `apps/web/src/modules/admin/index.ts`, `apps/web/src/layout/layout.tsx`, `apps/api/src/modules/dictionaries/`, `apps/api/src/database/mysql/schema_migration.py`, `apps/api/src/controller/blog_manage.py`, `apps/api/src/routers/blog/blog.py`, `packages/contracts/`, `design-qa.md`, and `docs/superpowers/plans/2026-08-01-manage-admin-shell-data-page.md`.
+- Behavior: `/manage/*` is an independent guarded shell; generic data pages provide the approved ref API and request lifecycle; dictionaries support cached labels and admin CRUD; blog/provider/log pages use the generic list; create/edit uses right-side SchemaForm drawers; legacy manage paths redirect to canonical paths.
+- Commands run: `corepack pnpm check:api`, `corepack pnpm check:icons`, `corepack pnpm test:icons`, `corepack pnpm build:icons`, `corepack pnpm check:web:ui-boundary`, contracts test/generation, focused admin Vitest suites, `corepack pnpm -F @sun-world/blog typecheck`, `corepack pnpm -F @sun-world/blog build`, `corepack pnpm format:check`, and `git diff --check`.
+- Verification result: listed focused commands passed. API checks retain existing Pydantic deprecation warnings and expected unauthenticated telemetry logs. Full `corepack pnpm check` passed all preceding stages but stopped at frontend performance budgets: total JS/CSS thresholds remain over limits, and the old `AdminLogsPage` chunk-name budget no longer matches the migrated `ManageLogsDataPage` chunk. The Manage shell was made lazy so the entry-module budget now passes.
+- Blockers: local browser/API had no administrator session, so guarded data content was not bypassed for visual QA; component/API tests cover those states. Existing unrelated modifications remain in the shared workspace, and the repository-level performance budget needs a separate decision rather than an unreviewed threshold change.
+- Next step: review the task-scoped diff and integrate when the surrounding dirty-worktree work is ready.
+
+## Active checkpoint: 2026-08-02 Manage localization follow-up
+
+- Goal: make `/manage/*` Chinese by default while retaining a lower-left language switch for English and future locale expansion.
+- Status: implemented locally on top of the existing dirty workspace; no deployment, push, commit, or staging performed.
+- Important files touched: `apps/web/src/modules/admin/manageCopy.ts`, `apps/web/src/modules/admin/components/ManageLanguageSwitch.tsx`, `ManageLayout.tsx`, `ManageTable.tsx`, `ManageSearchForm.tsx`, `SchemaForm.tsx`, `ManageDataPage.tsx`, admin data/metrics/log pages and composables, `apps/web/src/layout/layout.tsx`, and focused admin tests.
+- Behavior: no saved locale resolves to `zh`; the lower-left menu switches `zh`/`en`, persists through `setLocale`, updates copy without navigation, and updates the document title. Admin labels, CRUD drawers, table states, guard states, metrics, and accessibility labels use centralized copy.
+- Verification: `corepack pnpm -F @sun-world/blog exec vitest run src/modules/admin src/pages/manage` passed (11 files, 19 tests); `corepack pnpm -F @sun-world/blog typecheck`, `corepack pnpm -F @sun-world/blog build`, `corepack pnpm format:check`, and `git diff --check` passed.
+- Blockers: none for this localization follow-up. The focused suite still reports the existing `act(...)` warning from `src/pages/manage/index.test.tsx`; it does not fail the suite.
+
+## Active checkpoint: 2026-08-02 Manage table shadcn and responsive pagination follow-up
+
+- Goal: make the reusable ManageTable use the project shadcn Table primitives and provide reliable horizontal scrolling and responsive pagination on desktop and mobile.
+- Status: implemented locally on top of the existing dirty workspace; no deployment, push, commit, or staging performed.
+- Important files touched: `apps/web/src/modules/admin/components/ManageTable.tsx`, `ManageTable.test.tsx`, `manage-data.css`, `packages/ui/src/components/table/`, `packages/ui/package.json`, `packages/ui/source-aliases.ts`, `packages/ui/vite.config.ts`, `packages/ui/src/index.ts`, `scripts/check-ui-package-boundary.mjs`, and `scripts/check-ui-shadcn-structure.mjs`.
+- Behavior: the data grid now composes standard shadcn table slots and uses the primitive's overflow viewport; the table keeps its minimum content width for safe horizontal scrolling. Pagination has a separate responsive overflow region so page buttons remain reachable at 390px widths.
+- Verification: focused ManageTable tests, UI package tests (55 tests), UI build, UI boundary check, shadcn structure check, Web typecheck, Web build/SSG, format check, and `git diff --check` passed. The broader admin suite now passes 11 files and 23 tests.
+- The screenshot follow-up moved search into the table toolbar, keeps create actions on the left, places pagination outside the bounded two-axis table viewport, fixes the header with sticky column heads, and adds a keyboard-accessible page-size selector that reloads from page 1.
+- Browser QA at 1280×900 and 390×844 confirmed the independent shell and responsive drawer. The local browser has no administrator session, so guarded data-page behavior was verified through component tests without bypassing authentication.
+- A root `corepack pnpm check` attempt timed out after 180 seconds without emitting a task-specific failure. No deployment, push, commit, or staging was performed.
+- Next step: review the task-scoped diff and integrate when the surrounding dirty-worktree work is ready.
+
+## Active checkpoint: 2026-08-02 Manage shadcn UI refresh
+
+- Goal: replace the custom Manage visual composition with the approved shadcn
+  dashboard/sidebar structure while preserving all existing behavior.
+- Status: implemented locally on top of the shared dirty workspace; no
+  deployment, push, commit, or staging performed.
+- Important files: `packages/ui/src/components/sidebar/`,
+  `packages/ui/package.json`, `packages/ui/source-aliases.ts`,
+  `packages/ui/vite.config.ts`, `apps/web/src/modules/admin/components/ManageLayout.tsx`,
+  `ManageTable.tsx`, `ManageDataPage.tsx`, `manage-layout.css`, and
+  `manage-data.css`; design and plan are dated 2026-08-02 under
+  `docs/superpowers/`.
+- Behavior: Manage now composes `SidebarProvider`, `Sidebar`, and
+  `SidebarInset`; data pages use a shadcn Card/Table dashboard surface with
+  heading, left action slot, right search slot, sticky header, internal table
+  scrolling, and separate page-size/pagination footer. Chinese default,
+  lower-left language switch, account menu, routes, guards, and public ref APIs
+  remain unchanged.
+- Commands and results: focused
+  `corepack pnpm -F @sun-world/blog exec vitest run --config vitest.config.ts src/modules/admin src/pages/manage`
+  passed (11 files, 23 tests); Web typecheck passed; `corepack pnpm -F @sun-world/ui build`
+  passed; Web build/SSG passed; `node scripts/check-ui-shadcn-structure.mjs`
+  passed; `corepack pnpm format:check` passed. Desktop browser shell QA passed
+  at the available 1280px viewport. The local browser had no administrator
+  session, so guarded data content was verified by tests only.
+- Known note: the first parallel format-check run raced a Vite temporary
+  timestamp config file; a serial rerun passed. Existing `act(...)` warning in
+  `src/pages/manage/index.test.tsx` remains non-failing. A fresh root
+  `corepack pnpm check` attempt also timed out after 180 seconds without
+  emitting a task-specific failure; the targeted Web and UI checks above are
+  green.
+- Next step: review the task-scoped diff and integrate when the surrounding
+  dirty-workspace work is ready.
+
+## Active checkpoint: 2026-08-02 Public AI default provider
+
+- Goal: remove AI mocks, expose one encrypted global DeepSeek provider to all
+  front-end visitors, and allow anonymous chat without database persistence.
+- Status: implemented locally; database schema/provider seed applied; no
+  deployment, push, commit, or staging performed.
+- Important files: `apps/api/src/controller/auth_manager.py`,
+  `apps/api/src/modules/ai/{router,service,repositories,providers}.py`,
+  `apps/api/src/database/mysql/schema_migration.py`,
+  `apps/web/src/modules/ai/composables/useAiChat.ts`,
+  `packages/ai-ui/src/{AiWorkspace,AiProviderSettings}.tsx`, and
+  `scripts/seed-ai-default-provider.py`.
+- Behavior: public provider/run routes accept guest requests; stale optional
+  cookies downgrade to guest access; global provider credentials are decrypted
+  only server-side; guest context is bounded in process; authenticated history
+  remains MySQL-backed; provider profiles/catalog mock rows were cleared while
+  AI conversation history was preserved.
+- Verification: API unittest discovery (47 tests), AI UI tests (14), Web
+  tests (47 files/114 tests), Web typecheck, AI UI build, Web production
+  build/SSG, live provider listing, anonymous stream, and stale-cookie stream
+  all passed. Existing Pydantic/React `act(...)` warnings remain non-failing.
+- Next step: review the task-scoped diff and integrate when the surrounding
+  dirty workspace is ready.
 
 ## Archives
 

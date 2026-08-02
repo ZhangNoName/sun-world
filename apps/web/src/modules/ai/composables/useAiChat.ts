@@ -46,14 +46,7 @@ export function useAiChat() {
     Record<string, AiUiMessage[]>
   >({ [initialConversation.id]: [] })
   const [runState, setRunState] = useState<AiRunState>({ status: 'idle' })
-  const [providers, setProviders] = useState<AiUiProvider[]>([
-    {
-      id: 'deepseek',
-      name: 'DeepSeek',
-      defaultBaseUrl: 'https://api.deepseek.com',
-      defaultModel: 'deepseek-chat',
-    },
-  ])
+  const [providers, setProviders] = useState<AiUiProvider[]>([])
   const [providerProfiles, setProviderProfiles] = useState<
     AiUiProviderProfile[]
   >([])
@@ -304,9 +297,7 @@ export function useAiChat() {
         await streamAiRun(
           {
             message: text,
-            conversation_id: conversationId.includes('-local-')
-              ? null
-              : conversationId,
+            conversation_id: conversationId,
             provider_profile_id:
               options?.providerProfileId !== undefined
                 ? options.providerProfileId
@@ -483,34 +474,25 @@ export function useAiChat() {
   const saveProvider = useCallback(
     async (draft: AiProviderDraft) => {
       if (!user) {
-        setRunState({
-          status: 'error',
-          code: 'AI_AUTH_REQUIRED',
-          message: '登录后可以保存自己的模型和 API Key。',
-        })
-        return
+        throw new Error('登录后可以保存自己的模型和 API Key。')
       }
-      try {
-        const saved = await saveAiProviderProfile({
-          provider: draft.provider as
-            | 'deepseek'
-            | 'openai'
-            | 'openrouter'
-            | 'openai-compatible',
-          name: draft.name,
-          base_url: draft.baseUrl,
-          model: draft.model,
-          api_key: draft.apiKey ?? null,
-          is_default: draft.isDefault,
-        })
-        if (saved)
-          setProviderProfiles((items) => [
-            mapProviderProfile(saved),
-            ...items.filter((item) => item.id !== saved.id),
-          ])
-      } catch (error) {
-        setRunState({ status: 'error', message: errorMessage(error) })
-      }
+      const saved = await saveAiProviderProfile({
+        provider: draft.provider as
+          | 'deepseek'
+          | 'openai'
+          | 'openrouter'
+          | 'openai-compatible',
+        name: draft.name,
+        base_url: draft.baseUrl,
+        model: draft.model,
+        api_key: draft.apiKey ?? null,
+        is_default: draft.isDefault,
+      })
+      if (saved)
+        setProviderProfiles((items) => [
+          mapProviderProfile(saved),
+          ...items.filter((item) => item.id !== saved.id),
+        ])
     },
     [user]
   )

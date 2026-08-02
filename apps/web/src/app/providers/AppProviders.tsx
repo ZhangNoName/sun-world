@@ -4,11 +4,18 @@ import { ToastProvider } from '@sun-world/ui/toast'
 
 import i18n, { setLocale, type AppLocale } from '@/i18n'
 import { ThemeProvider } from '@/shared/design/theme'
+import { useAuthStore } from '@/store/auth'
 import { installDeviceListener } from '@/store/tg'
 import { AppErrorBoundary } from '../errors/AppErrorBoundary'
 
 export function AppProviders({ children }: PropsWithChildren) {
+  const restoreSession = useAuthStore((state) => state.restoreSession)
+
   useEffect(() => installDeviceListener(), [])
+
+  useEffect(() => {
+    void restoreSession()
+  }, [restoreSession])
 
   useEffect(() => {
     const syncLocale = (event: StorageEvent) => {

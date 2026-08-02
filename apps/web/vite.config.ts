@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type PluginOption } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { createBaseUiSourceAliases } from '../../packages/base-ui/source-aliases'
 import { createUiSourceAliases } from '../../packages/ui/source-aliases'
 import idempotentInspectorBabelPlugin from './inspector-babel-plugin'
 
@@ -68,6 +69,9 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: [
+        ...createBaseUiSourceAliases(
+          resolve(__dirname, '../../packages/base-ui/src')
+        ),
         ...createUiSourceAliases(resolve(__dirname, '../../packages/ui/src')),
         { find: '@', replacement: resolve(__dirname, 'src') },
         {

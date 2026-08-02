@@ -1,7 +1,7 @@
-import { LabeledInput } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Button } from '@sun-world/ui/button'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { toast } from '@sun-world/ui/toast'
 import { useAuthStore } from '@/store/auth'
 import { getAccountErrorMessage } from '@/modules/account/errors'
@@ -41,13 +41,13 @@ export function LoginPage() {
       formDescription="使用你的账号继续访问 Sun World。"
     >
       <form className="auth-form" onSubmit={submit}>
-        <LabeledInput
+        <SwInput
           label="账号"
           value={account}
           onValueChange={setAccount}
           autoComplete="username"
         />
-        <LabeledInput
+        <SwInput
           label="密码"
           value={password}
           onValueChange={setPassword}

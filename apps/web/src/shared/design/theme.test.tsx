@@ -35,15 +35,14 @@ function mockColorScheme(dark = false) {
 }
 
 describe('ThemeProvider', () => {
-  it('defaults to the Sun World family and system color mode', () => {
+  it('defaults to system color mode without a design family', () => {
     mockColorScheme(false)
     const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider })
 
-    expect(result.current.family).toBe('sun-world')
     expect(result.current.mode).toBe('system')
     expect(result.current.resolvedMode).toBe('light')
-    expect(document.documentElement).toHaveAttribute('data-design', 'sun-world')
     expect(document.documentElement).toHaveClass('sun-light')
+    expect(document.documentElement).toHaveAttribute('data-color-mode', 'light')
   })
 
   it('migrates a legacy dark preference', () => {
@@ -51,24 +50,21 @@ describe('ThemeProvider', () => {
     localStorage.setItem('theme', 'sun-dark')
     const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider })
 
-    expect(result.current.family).toBe('sun-world')
     expect(result.current.mode).toBe('dark')
     expect(JSON.parse(localStorage.getItem('sun-world-theme') ?? '')).toEqual({
-      family: 'sun-world',
       mode: 'dark',
     })
   })
 
-  it('switches design family in one action without changing color mode', () => {
+  it('toggles color mode in one action', () => {
     mockColorScheme(false)
     const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider })
 
-    act(() => result.current.setMode('dark'))
-    act(() => result.current.toggleFamily())
+    act(() => result.current.setMode('light'))
+    act(() => result.current.toggleMode())
 
-    expect(result.current.family).toBe('apple')
     expect(result.current.mode).toBe('dark')
-    expect(document.documentElement).toHaveAttribute('data-design', 'apple')
+    expect(document.documentElement).toHaveAttribute('data-color-mode', 'dark')
     expect(document.documentElement).toHaveClass('sun-dark')
   })
 
@@ -93,12 +89,11 @@ describe('ThemeProvider', () => {
       window.dispatchEvent(
         new StorageEvent('storage', {
           key: 'sun-world-theme',
-          newValue: JSON.stringify({ family: 'apple', mode: 'dark' }),
+          newValue: JSON.stringify({ mode: 'dark' }),
         })
       )
     })
 
-    expect(result.current.family).toBe('apple')
     expect(result.current.mode).toBe('dark')
   })
 
@@ -109,7 +104,6 @@ describe('ThemeProvider', () => {
     })
 
     const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider })
-    expect(result.current.family).toBe('sun-world')
     expect(result.current.mode).toBe('system')
   })
 })

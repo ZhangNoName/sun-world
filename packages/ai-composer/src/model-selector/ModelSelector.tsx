@@ -66,7 +66,11 @@ export function ModelSelector({
               }}
             >
               <strong>{model.label}</strong>
-              {model.description ? <span>{model.description}</span> : null}
+              {model.description ? (
+                <span className="sw-ai-model-provider-tag">
+                  {model.description}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>

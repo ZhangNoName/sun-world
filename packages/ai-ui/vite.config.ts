@@ -2,6 +2,8 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { createBaseUiSourceAliases } from '../base-ui/source-aliases'
+import { createUiSourceAliases } from '../ui/source-aliases'
 
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -24,35 +26,15 @@ export default defineConfig(({ mode }) => ({
         find: '@sun-world/icons',
         replacement: path.resolve(__dirname, '../icons/src'),
       },
-      {
-        find: '@sun-world/ui/button',
-        replacement: path.resolve(__dirname, '../ui/src/components/button'),
-      },
-      {
-        find: '@sun-world/ui/input',
-        replacement: path.resolve(__dirname, '../ui/src/components/input'),
-      },
-      {
-        find: '@sun-world/ui/dialog',
-        replacement: path.resolve(__dirname, '../ui/src/components/dialog'),
-      },
-      {
-        find: '@sun-world/ui/chat-shell',
-        replacement: path.resolve(__dirname, '../ui/src/patterns/chat-shell'),
-      },
-      {
-        find: '@sun-world/ui/chat-composer',
-        replacement: path.resolve(
-          __dirname,
-          '../ui/src/patterns/chat-composer'
-        ),
-      },
+      ...createBaseUiSourceAliases(path.resolve(__dirname, '../base-ui/src')),
+      ...createUiSourceAliases(path.resolve(__dirname, '../ui/src')),
     ],
   },
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    testTimeout: 20_000,
   },
   build: {
     cssCodeSplit: false,

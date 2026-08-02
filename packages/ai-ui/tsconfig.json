@@ -3,6 +3,14 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@sun-world/base-ui": ["../base-ui/src/index.ts"],
+      "@sun-world/base-ui/*": [
+        "../base-ui/src/*",
+        "../base-ui/src/components/*/index.ts"
+      ]
+    },
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true,

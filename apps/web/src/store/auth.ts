@@ -1,8 +1,11 @@
 import { create } from 'zustand'
+import type { AxiosRequestConfig } from 'axios'
 
 import {
   getCurrentUser,
   login as accountLogin,
+  logout as accountLogout,
+  refreshToken as accountRefreshToken,
   register as accountRegister,
 } from '@/modules/account/api'
 import type { AuthSession, UserInfo } from '@/modules/account/types'
@@ -16,7 +19,10 @@ interface RegisterInput {
   password: string
 }
 
+export type AuthStatus = 'unknown' | 'restoring' | 'authenticated' | 'anonymous'
+
 interface AuthState {
+  status: AuthStatus
   accessTokenExpire: number | null
   refreshTokenExpire: number | null
   deviceId: string
@@ -28,6 +34,8 @@ interface AuthState {
   isAccessTokenExpiringSoon: () => boolean
   isRefreshTokenExpired: () => boolean
   refreshTokensIfNeeded: () => Promise<void>
+  restoreSession: () => Promise<UserInfo | null>
+  refreshSession: (config?: AxiosRequestConfig) => Promise<void>
   login: (username: string, password: string) => Promise<AuthSession>
   register: (data: RegisterInput) => ReturnType<typeof accountRegister>
   logout: () => Promise<void>
@@ -41,6 +49,7 @@ function expiryFromSession(value?: string | null) {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
+  status: 'unknown',
   accessTokenExpire: getAccessTokenExpire(),
   refreshTokenExpire: getRefreshTokenExpire(),
   deviceId: getDeviceId(),
@@ -67,7 +76,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   clearTokens() {
-    set({ accessTokenExpire: null, refreshTokenExpire: null, user: null })
+    set({
+      accessTokenExpire: null,
+      refreshTokenExpire: null,
+      user: null,
+      status: 'anonymous',
+    })
   },
 
   isAccessTokenExpired() {
@@ -89,38 +103,84 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async refreshTokensIfNeeded() {
+    get().syncExpireFromCookie()
+    if (get().accessTokenExpire === null) return
     if (!get().isAccessTokenExpiringSoon()) return
     if (get().isRefreshTokenExpired()) {
       get().clearTokens()
       throw new Error('Refresh token 已过期，需要重新登录')
     }
+    await get().refreshSession()
+  },
+
+  async restoreSession() {
+    if (get().status === 'authenticated' && get().user) return get().user
+    if (restorePromise) return restorePromise
+
+    set({ status: 'restoring' })
+    restorePromise = getCurrentUser({ suppressErrorToast: true })
+      .then((user) => {
+        set({ user, status: 'authenticated' })
+        get().syncExpireFromCookie()
+        return user
+      })
+      .catch(() => {
+        get().clearTokens()
+        return null
+      })
+      .finally(() => {
+        restorePromise = null
+      })
+
+    return restorePromise
+  },
+
+  async refreshSession(config) {
+    if (refreshPromise) return refreshPromise
+
+    refreshPromise = accountRefreshToken(config)
+      .then((session) => {
+        get().updateTokenExpire(session as AuthSession)
+        return get().restoreSession()
+      })
+      .then(() => undefined)
+      .catch((error) => {
+        get().clearTokens()
+        throw error
+      })
+      .finally(() => {
+        refreshPromise = null
+      })
+
+    return refreshPromise
   },
 
   async login(username, password) {
     const session = await accountLogin({ username, password })
     get().updateTokenExpire(session)
-    await get().getUser()
+    await get().restoreSession()
     return session
   },
 
   async register(data) {
     const session = await accountRegister(data)
     get().updateTokenExpire(session as AuthSession)
+    await get().restoreSession()
     return session
   },
 
   async logout() {
-    get().clearTokens()
+    try {
+      await accountLogout()
+    } finally {
+      get().clearTokens()
+    }
   },
 
   async getUser() {
-    try {
-      const user = await getCurrentUser()
-      set({ user })
-      return user
-    } catch {
-      set({ user: null })
-      return null
-    }
+    return get().restoreSession()
   },
 }))
+
+let restorePromise: Promise<UserInfo | null> | null = null
+let refreshPromise: Promise<void> | null = null

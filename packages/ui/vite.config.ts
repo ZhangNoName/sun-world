@@ -2,63 +2,33 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { createBaseUiSourceAliases } from '../base-ui/source-aliases'
 
 const entries = [
-  'badge',
-  'button',
-  'card',
   'chat-composer',
   'chat-shell',
   'compound-controls',
-  'checkbox',
   'date-picker',
   'form-controls',
-  'dialog',
-  'dropdown-menu',
-  'field',
-  'input',
-  'label',
+  'sw-button',
+  'sw-dialog',
+  'sw-dropdown-menu',
+  'sw-sidebar',
+  'sw-input',
   'list',
   'loading-skeleton',
   'pagination',
-  'select',
-  'separator',
-  'skeleton',
+  'sw-select',
   'sonner',
-  'tabs',
   'tag',
-  'textarea',
   'theme-provider',
   'toast',
-  'tooltip',
 ] as const
-
-const primitiveEntries = new Set([
-  'badge',
-  'button',
-  'card',
-  'checkbox',
-  'dialog',
-  'dropdown-menu',
-  'field',
-  'input',
-  'label',
-  'loading-skeleton',
-  'select',
-  'separator',
-  'skeleton',
-  'sonner',
-  'tabs',
-  'tag',
-  'textarea',
-  'toast',
-  'tooltip',
-])
 
 const entryPath = (entry: (typeof entries)[number]) =>
   path.resolve(
     __dirname,
-    `src/${primitiveEntries.has(entry) ? 'components' : 'patterns'}/${entry}/index.ts`
+    `src/${['sw-input', 'sw-select', 'sw-button', 'sw-dialog', 'sw-dropdown-menu', 'sw-sidebar', 'loading-skeleton', 'sonner', 'tag', 'toast'].includes(entry) ? 'components' : 'patterns'}/${entry}/index.ts`
   )
 
 export default defineConfig({
@@ -71,7 +41,12 @@ export default defineConfig({
       exclude: ['src/**/*.spec.*', 'src/test/**'],
     }),
   ],
-  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  resolve: {
+    alias: [
+      ...createBaseUiSourceAliases(path.resolve(__dirname, '../base-ui/src')),
+      { find: '@', replacement: path.resolve(__dirname, 'src') },
+    ],
+  },
   build: {
     cssCodeSplit: false,
     lib: {

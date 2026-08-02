@@ -1,5 +1,5 @@
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { useAuthStore } from '@/store/auth'
 export function MePage() {
   const user = useAuthStore((state) => state.user) as {

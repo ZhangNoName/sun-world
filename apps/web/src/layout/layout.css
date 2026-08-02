@@ -19,8 +19,18 @@
 
 .desk-layout > .content {
   flex: 1;
+  width: 100%;
+  margin: 64px 0 0;
+}
+
+.desk-layout > .content.blog-page-wrapper {
   width: min(95%, var(--container-max-width));
   margin: 64px auto 0;
+}
+
+.desk-layout > .content.auth-page-wrapper,
+.desk-layout > .content.canvas-page-wrapper {
+  margin-top: 0;
 }
 
 .z-header {

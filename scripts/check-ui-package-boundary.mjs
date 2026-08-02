@@ -1,66 +1,61 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join, relative, sep } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const appSrcDir = join(repoRoot, 'apps/web/src')
 const appDistAssetsDir = join(repoRoot, 'apps/web/dist/assets')
+const basePackagePath = join(repoRoot, 'packages/base-ui/package.json')
+const baseSrcDir = join(repoRoot, 'packages/base-ui/src')
 const uiPackagePath = join(repoRoot, 'packages/ui/package.json')
 const uiSrcDir = join(repoRoot, 'packages/ui/src')
 const viteConfigPath = join(repoRoot, 'apps/web/vite.config.ts')
 const violations = []
 
-const allowedSubpaths = [
+const baseSubpaths = [
   'badge',
   'button',
   'card',
+  'checkbox',
+  'dialog',
+  'dropdown-menu',
+  'field',
+  'input',
+  'label',
+  'select',
+  'separator',
+  'sheet',
+  'skeleton',
+  'sidebar',
+  'table',
+  'tabs',
+  'textarea',
+  'tooltip',
+]
+const uiComponentSubpaths = [
+  'loading-skeleton',
+  'sonner',
+  'sw-input',
+  'sw-select',
+  'sw-button',
+  'sw-dialog',
+  'sw-dropdown-menu',
+  'sw-sidebar',
+  'tag',
+  'toast',
+]
+const uiPatternSubpaths = [
   'chat-composer',
   'chat-shell',
   'compound-controls',
-  'checkbox',
   'date-picker',
-  'dialog',
-  'dropdown-menu',
-  'field',
   'form-controls',
-  'input',
-  'label',
   'list',
-  'loading-skeleton',
   'pagination',
-  'select',
-  'separator',
-  'skeleton',
-  'sonner',
-  'tabs',
-  'tag',
-  'textarea',
   'theme-provider',
-  'toast',
-  'tooltip',
 ]
-const primitiveSubpaths = new Set([
-  'badge',
-  'button',
-  'card',
-  'checkbox',
-  'dialog',
-  'dropdown-menu',
-  'field',
-  'input',
-  'label',
-  'loading-skeleton',
-  'select',
-  'separator',
-  'skeleton',
-  'sonner',
-  'tabs',
-  'tag',
-  'textarea',
-  'toast',
-  'tooltip',
-])
+const uiSubpaths = [...uiComponentSubpaths, ...uiPatternSubpaths, 'styles.css']
 
 function normalize(path) {
   return path.split(sep).join('/')
@@ -71,11 +66,8 @@ function walkFiles(dir, predicate) {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name)
     const stats = statSync(path)
-    if (stats.isDirectory()) {
-      files.push(...walkFiles(path, predicate))
-    } else if (stats.isFile() && predicate(path)) {
-      files.push(path)
-    }
+    if (stats.isDirectory()) files.push(...walkFiles(path, predicate))
+    else if (stats.isFile() && predicate(path)) files.push(path)
   }
   return files
 }
@@ -88,53 +80,80 @@ function formatPath(path) {
   return normalize(relative(repoRoot, path))
 }
 
-const appFiles = walkFiles(appSrcDir, (path) => /\.(?:ts|tsx)$/.test(path))
-const uiImportPattern =
-  /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/ui(?:\/[^'"]*)?)['"]/g
+function checkExports(packagePath, sourceRoot, subpaths, groupFor) {
+  if (!existsSync(packagePath)) {
+    violations.push(`${formatPath(packagePath)} is missing`)
+    return
+  }
+  const packageJson = readJson(packagePath)
+  for (const subpath of subpaths) {
+    const exportKey = `./${subpath}`
+    if (!packageJson.exports?.[exportKey]) {
+      violations.push(`${formatPath(packagePath)} must export "${exportKey}"`)
+    }
+    if (subpath === 'styles.css') continue
+    const group = groupFor(subpath)
+    const entryPath = join(sourceRoot, group, subpath, 'index.ts')
+    if (!existsSync(entryPath)) {
+      violations.push(`${formatPath(entryPath)} is missing`)
+    }
+  }
+}
+
+const appFiles = walkFiles(appSrcDir, (path) => /.(?:ts|tsx)$/.test(path))
+const importPattern =
+  /import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"](@sun-world\/(?:base-ui|ui)(?:\/[^'"]*)?)['"]/g
 
 for (const file of appFiles) {
   const source = readFileSync(file, 'utf8')
-  const imports = [...source.matchAll(uiImportPattern)].map((match) => match[1])
-  for (const specifier of imports) {
-    if (specifier === '@sun-world/ui') {
+  for (const match of source.matchAll(importPattern)) {
+    const specifier = match[1]
+    const [scope, ...rest] = specifier.split('/')
+    const packageName = `${scope}/${rest.shift()}`
+    const subpath = rest.join('/')
+    if (!subpath) {
       violations.push(
-        `${formatPath(file)} imports @sun-world/ui root; app code must use component subpaths`
+        `${formatPath(file)} imports ${packageName} root; app code must use component subpaths`
       )
       continue
     }
-
-    const subpath = specifier.replace('@sun-world/ui/', '')
-    if (!allowedSubpaths.includes(subpath)) {
+    const allowed =
+      packageName === '@sun-world/base-ui' ? baseSubpaths : uiSubpaths
+    if (!allowed.includes(subpath)) {
       violations.push(
-        `${formatPath(file)} imports unsupported UI path "${specifier}"; use a documented component subpath`
+        `${formatPath(file)} imports unsupported UI path "${specifier}"`
       )
     }
   }
 }
 
-const uiPackage = readJson(uiPackagePath)
-for (const subpath of allowedSubpaths) {
-  const exportKey = `./${subpath}`
-  if (!uiPackage.exports?.[exportKey]) {
-    violations.push(`packages/ui/package.json must export "${exportKey}"`)
-  }
+checkExports(basePackagePath, baseSrcDir, baseSubpaths, () => 'components')
+checkExports(uiPackagePath, uiSrcDir, uiComponentSubpaths, () => 'components')
+checkExports(uiPackagePath, uiSrcDir, uiPatternSubpaths, () => 'patterns')
 
-  const group = primitiveSubpaths.has(subpath) ? 'components' : 'patterns'
-  const entryPath = join(uiSrcDir, group, subpath, 'index.ts')
-  if (!existsSync(entryPath)) {
-    violations.push(`packages/ui/src/${group}/${subpath}/index.ts is missing`)
+const uiPackage = readJson(uiPackagePath)
+for (const subpath of baseSubpaths) {
+  if (uiPackage.exports?.[`./${subpath}`]) {
+    violations.push(
+      `packages/ui/package.json must not export base primitive "./${subpath}"`
+    )
   }
+}
+if (uiPackage.dependencies?.['@sun-world/base-ui'] !== 'workspace:*') {
+  violations.push(
+    'packages/ui must depend on @sun-world/base-ui via workspace:*'
+  )
 }
 
 const viteConfigSource = readFileSync(viteConfigPath, 'utf8')
+if (!viteConfigSource.includes('createBaseUiSourceAliases')) {
+  violations.push(
+    'apps/web/vite.config.ts must register base-ui source aliases'
+  )
+}
 if (/packages\/ui\/src\/[\s\S]*return\s+['"]ui['"]/.test(viteConfigSource)) {
   violations.push(
     'apps/web/vite.config.ts must not force all @sun-world/ui source into one manual ui chunk'
-  )
-}
-if (/@sun-world\/ui['"]\)\)\s*return\s+['"]ui['"]/.test(viteConfigSource)) {
-  violations.push(
-    'apps/web/vite.config.ts must not force @sun-world/ui package imports into one manual ui chunk'
   )
 }
 
@@ -152,9 +171,7 @@ if (existsSync(appDistAssetsDir)) {
 
 if (violations.length) {
   console.error('UI package boundary check failed:')
-  for (const violation of violations) {
-    console.error(`- ${violation}`)
-  }
+  for (const violation of violations) console.error(`- ${violation}`)
   process.exit(1)
 }
 

@@ -1,32 +1,34 @@
-import { LabeledInput, SelectField } from '@sun-world/ui/form-controls'
-import { Button } from '@sun-world/ui/button'
+import { SwInput } from '@sun-world/ui/sw-input'
+import { SwSelect } from '@sun-world/ui/sw-select'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import {
   useAdminLogs,
   type AdminLogSeverity,
 } from '../composables/useAdminLogs'
+import { useManageCopy } from '../manageCopy'
 import './admin.css'
 
-const severityOptions = [
-  { value: 'all', label: '全部级别' },
-  { value: 'debug', label: 'Debug' },
-  { value: 'info', label: 'Info' },
-  { value: 'warning', label: 'Warning' },
-  { value: 'error', label: 'Error' },
-  { value: 'critical', label: 'Critical' },
-]
-
 export function AdminLogsPage() {
+  const copy = useManageCopy()
   const logs = useAdminLogs()
+  const severityOptions = [
+    { value: 'all', label: copy.logs.allLevels },
+    { value: 'debug', label: copy.logs.severityLabels.debug },
+    { value: 'info', label: copy.logs.severityLabels.info },
+    { value: 'warning', label: copy.logs.severityLabels.warning },
+    { value: 'error', label: copy.logs.severityLabels.error },
+    { value: 'critical', label: copy.logs.severityLabels.critical },
+  ]
   return (
     <main className="admin-page">
       <header className="admin-heading">
         <div>
-          <p className="eyebrow">Security</p>
-          <h1>审计日志</h1>
-          <p>仅展示经过脱敏的稳定事件字段。</p>
+          <p className="eyebrow">{copy.logs.eyebrow}</p>
+          <h1>{copy.logs.title}</h1>
+          <p>{copy.logs.description}</p>
         </div>
         <Button loading={logs.loading} onClick={() => void logs.refresh()}>
-          刷新
+          {copy.logs.refresh}
         </Button>
       </header>
       <form
@@ -36,22 +38,22 @@ export function AdminLogsPage() {
           void logs.refresh()
         }}
       >
-        <SelectField
-          label="级别"
+        <SwSelect
+          label={copy.logs.level}
           value={logs.severity || 'all'}
           options={severityOptions}
           onValueChange={(value) =>
             logs.setSeverity(value === 'all' ? '' : (value as AdminLogSeverity))
           }
         />
-        <LabeledInput
-          label="事件类型"
+        <SwInput
+          label={copy.logs.eventType}
           value={logs.eventType}
           onValueChange={logs.setEventType}
-          placeholder="例如 request_completed"
+          placeholder={copy.logs.eventPlaceholder}
         />
-        <LabeledInput
-          label="数量"
+        <SwInput
+          label={copy.logs.count}
           type="number"
           min={1}
           max={200}
@@ -59,26 +61,36 @@ export function AdminLogsPage() {
           onValueChange={(value) => logs.setLimit(Number(value))}
         />
         <Button type="submit" variant="secondary">
-          应用筛选
+          {copy.logs.applyFilters}
         </Button>
       </form>
       {logs.retentionCopy ? (
         <p className="retention-summary">{logs.retentionCopy}</p>
       ) : null}
-      {logs.errorMessage ? (
+      {logs.errorMessage && logs.snapshot ? (
         <p className="admin-error" role="alert">
           {logs.errorMessage}
         </p>
       ) : null}
-      {!logs.loading && !logs.events.length ? (
-        <p className="admin-empty">暂无审计事件</p>
+      {logs.errorMessage && !logs.snapshot ? (
+        <section className="admin-error-state">
+          <p className="admin-error" role="alert">
+            {logs.errorMessage}
+          </p>
+          <Button loading={logs.loading} onClick={() => void logs.refresh()}>
+            {copy.logs.retry}
+          </Button>
+        </section>
       ) : null}
-      <section className="log-list" aria-label="审计事件">
+      {!logs.errorMessage && !logs.loading && !logs.events.length ? (
+        <p className="admin-empty">{copy.logs.empty}</p>
+      ) : null}
+      <section className="log-list" aria-label={copy.logs.auditEvents}>
         {logs.events.map((event) => (
           <article className="log-event" key={event.id}>
             <div className="log-title">
               <span className={`severity tone-${event.severity}`}>
-                {event.severity}
+                {copy.logs.severityLabels[event.severity] ?? event.severity}
               </span>
               <strong>{event.event_type}</strong>
               <time dateTime={event.timestamp}>
@@ -87,23 +99,23 @@ export function AdminLogsPage() {
             </div>
             <dl>
               <div>
-                <dt>路由</dt>
+                <dt>{copy.logs.route}</dt>
                 <dd>
                   {event.method || '-'} {event.route || '-'}
                 </dd>
               </div>
               <div>
-                <dt>状态</dt>
+                <dt>{copy.logs.status}</dt>
                 <dd>{event.status_code ?? '-'}</dd>
               </div>
               <div>
-                <dt>耗时</dt>
+                <dt>{copy.logs.duration}</dt>
                 <dd>
                   {event.duration_ms == null ? '-' : `${event.duration_ms}ms`}
                 </dd>
               </div>
               <div>
-                <dt>请求 ID</dt>
+                <dt>{copy.logs.requestId}</dt>
                 <dd>{event.request_id || '-'}</dd>
               </div>
             </dl>

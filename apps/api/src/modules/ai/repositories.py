@@ -13,6 +13,8 @@ from .schemas import (
     AiConversation,
     AiConversationSummary,
     AiMessage,
+    AiProviderCatalog,
+    AiProviderCatalogInput,
     AiProviderProfile,
     AiProviderProfileInput,
     AiTextBlock,
@@ -36,6 +38,11 @@ class AiRepository(Protocol):
     ) -> AiMessage: ...
     async def set_feedback(self, user_id: int, message_id: str, value: str | None) -> None: ...
     async def get_feedback(self, user_id: int, message_id: str) -> str | None: ...
+    async def list_provider_catalog(self) -> list[AiProviderCatalog]: ...
+    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog: ...
+    async def update_provider_catalog_entry(self, provider_id: str, value: AiProviderCatalogInput) -> AiProviderCatalog: ...
+    async def delete_provider_catalog_entry(self, provider_id: str) -> None: ...
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None: ...
 
 
 def _id(prefix: str) -> str:
@@ -49,6 +56,8 @@ class InMemoryAiRepository:
         self._conversation_order: dict[str, int] = {}
         self._next_order = 0
         self._profiles: dict[str, tuple[int, AiProviderProfile, str | None]] = {}
+        self._provider_catalog: dict[str, AiProviderCatalog] = {}
+        self._provider_catalog_secrets: dict[str, str | None] = {}
 
     async def create_conversation(self, user_id: int, title: str) -> AiConversation:
         conversation = AiConversation(id=_id("conv"), title=title)
@@ -111,6 +120,48 @@ class InMemoryAiRepository:
 
     async def get_feedback(self, user_id: int, message_id: str) -> str | None:
         return self._feedback.get((user_id, message_id))
+
+    async def list_provider_catalog(self) -> list[AiProviderCatalog]:
+        return sorted(self._provider_catalog.values(), key=lambda item: (item.sort_order, item.id))
+
+    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog:
+        if value.id in self._provider_catalog:
+            raise AiDomainError("AI_PROVIDER_ALREADY_EXISTS", "Provider already exists.", status_code=409)
+        catalog_entry = AiProviderCatalog(**value.model_dump())
+        self._provider_catalog[catalog_entry.id] = catalog_entry
+        self._provider_catalog_secrets[catalog_entry.id] = None
+        return catalog_entry
+
+    async def update_provider_catalog_entry(
+        self,
+        provider_id: str,
+        value: AiProviderCatalogInput,
+    ) -> AiProviderCatalog:
+        existing = self._provider_catalog.get(provider_id)
+        if existing is None:
+            raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
+        catalog_entry = AiProviderCatalog(
+            **value.model_dump(),
+            created_at=existing.created_at,
+            updated_at=datetime.now(timezone.utc),
+        )
+        if catalog_entry.id != provider_id:
+            raise AiDomainError("AI_PROVIDER_ID_IMMUTABLE", "Provider ID cannot be changed.", status_code=409)
+        self._provider_catalog[provider_id] = catalog_entry
+        return catalog_entry
+
+    async def delete_provider_catalog_entry(self, provider_id: str) -> None:
+        if provider_id not in self._provider_catalog:
+            raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
+        del self._provider_catalog[provider_id]
+        self._provider_catalog_secrets.pop(provider_id, None)
+
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None:
+        for catalog_entry in await self.list_provider_catalog():
+            encrypted_key = self._provider_catalog_secrets.get(catalog_entry.id)
+            if catalog_entry.is_enabled and encrypted_key:
+                return catalog_entry, encrypted_key
+        return None
 
     async def list_provider_profiles(self, user_id: int) -> list[AiProviderProfile]:
         return [profile for owner, profile, _secret in self._profiles.values() if owner == user_id]
@@ -294,6 +345,83 @@ class MySqlAiRepository:
             (message_id, user_id),
         )
         return row["value"] if row else None
+
+    async def list_provider_catalog(self) -> list[AiProviderCatalog]:
+        rows = self.db.fetch_all(
+            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, created_at, updated_at "
+            "FROM ai_provider_catalog ORDER BY sort_order ASC, id ASC"
+        )
+        return [AiProviderCatalog(**row) for row in rows]
+
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None:
+        row = self.db.fetch_one(
+            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, "
+            "created_at, updated_at, api_key_ciphertext "
+            "FROM ai_provider_catalog "
+            "WHERE is_enabled = 1 AND api_key_ciphertext IS NOT NULL "
+            "ORDER BY sort_order ASC, id ASC LIMIT 1"
+        )
+        if not row:
+            return None
+        encrypted_key = row.pop("api_key_ciphertext")
+        if not encrypted_key:
+            return None
+        return AiProviderCatalog(**row), encrypted_key
+
+    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog:
+        existing = self.db.fetch_one("SELECT id FROM ai_provider_catalog WHERE id = %s", (value.id,))
+        if existing:
+            raise AiDomainError("AI_PROVIDER_ALREADY_EXISTS", "Provider already exists.", status_code=409)
+        self.db.execute(
+            "INSERT INTO ai_provider_catalog "
+            "(id, name, default_base_url, default_model, is_enabled, sort_order) VALUES (%s, %s, %s, %s, %s, %s)",
+            (
+                value.id,
+                value.name,
+                value.default_base_url,
+                value.default_model,
+                value.is_enabled,
+                value.sort_order,
+            ),
+        )
+        return await self._get_provider_catalog_entry(value.id)
+
+    async def update_provider_catalog_entry(
+        self,
+        provider_id: str,
+        value: AiProviderCatalogInput,
+    ) -> AiProviderCatalog:
+        if value.id != provider_id:
+            raise AiDomainError("AI_PROVIDER_ID_IMMUTABLE", "Provider ID cannot be changed.", status_code=409)
+        self.db.execute(
+            "UPDATE ai_provider_catalog SET name = %s, default_base_url = %s, default_model = %s, "
+            "is_enabled = %s, sort_order = %s WHERE id = %s",
+            (
+                value.name,
+                value.default_base_url,
+                value.default_model,
+                value.is_enabled,
+                value.sort_order,
+                provider_id,
+            ),
+        )
+        return await self._get_provider_catalog_entry(provider_id)
+
+    async def delete_provider_catalog_entry(self, provider_id: str) -> None:
+        existing = self.db.fetch_one("SELECT id FROM ai_provider_catalog WHERE id = %s", (provider_id,))
+        if not existing:
+            raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
+        self.db.execute("DELETE FROM ai_provider_catalog WHERE id = %s", (provider_id,))
+
+    async def _get_provider_catalog_entry(self, provider_id: str) -> AiProviderCatalog:
+        row = self.db.fetch_one(
+            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, created_at, updated_at "
+            "FROM ai_provider_catalog WHERE id = %s",
+            (provider_id,),
+        )
+        if not row:
+            raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
+        return AiProviderCatalog(**row)
 
     async def list_provider_profiles(self, user_id: int) -> list[AiProviderProfile]:
         rows = self.db.fetch_all(

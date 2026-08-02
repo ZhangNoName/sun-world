@@ -13,6 +13,7 @@
   "dependencies": {
     "@sun-world/ai-composer": "workspace:*",
     "@sun-world/ai-ui": "workspace:*",
+    "@sun-world/base-ui": "workspace:*",
     "@sun-world/editor": "workspace:*",
     "@sun-world/icons": "workspace:*",
     "@sun-world/ui": "workspace:*",

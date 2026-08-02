@@ -1,19 +1,18 @@
 # @sun-world/ui
 
-Project-owned shadcn-style components for Sun World.
+Sun World protocol components and product-level compositions.
 
-The package keeps the shadcn `new-york` structure and styling conventions while
-using Base UI for primitive behavior. `@base-ui/react` is the only third-party
-primitive dependency; CVA provides variants, and Tailwind CSS v4 consumes the
-shared semantic theme variables. The migration guard rejects `@radix-ui/*`
-imports and package dependencies.
+Generic shadcn/Base UI primitives live in `@sun-world/base-ui`. This package
+depends on that package and adds the project-owned layer: `SwInput`, `SwSelect`,
+toasts, loading surfaces, theme integration, and composed patterns.
 
 ## Structure
 
 ```text
 src/
-  components/<name>/  # canonical shadcn primitive, index, compatibility adapter
-  patterns/<name>/    # product-level compositions built from primitives
+  components/<name>/  # Sun World protocols and integrations
+  compat/<name>/      # deprecated Sun* adapters only
+  patterns/<name>/    # product-level compositions built from base-ui
   lib/                # cn() and shared utilities
   styles/             # Tailwind entry and semantic theme bridge
   theme/              # programmatic theme helpers
@@ -24,14 +23,14 @@ src/
 Use canonical component names and explicit compound composition:
 
 ```tsx
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@sun-world/ui/select'
+} from '@sun-world/base-ui/select'
 
 <Button variant="outline">Save</Button>
 <Select value={value} onValueChange={setValue}>
@@ -41,35 +40,30 @@ import {
 ```
 
 `Sun*` exports are deprecated compatibility adapters. New application code must
-not import them. They remain for one migration window and do not own canonical
-component styles. Existing package subpaths, canonical compound exports, and
-the project-used controlled/uncontrolled callbacks remain stable across the
-implementation change.
+not import them. The base primitives are intentionally not re-exported from
+this package, so an import path now identifies the owning layer.
 
 ## Base UI boundary
 
-Simple primitives use Base UI's public render and state APIs. Select, Dialog,
-Dropdown Menu, Tabs, and Tooltip adapt Base UI's public compound primitives to
-the existing `@sun-world/ui` surface. Product patterns consume those canonical
-package components rather than importing Base UI directly.
+`@sun-world/base-ui` contains the generic primitive source and public Base UI
+compound components. Product patterns in this package consume those exports;
+application code should import from the owning package directly.
 
 Compatibility differences and caveats:
 
-- Base UI 1.6 Menu exposes `finalFocus` but no public popup `initialFocus`
-  equivalent, so Dropdown Menu does not promise Radix-style initial-focus
-  override parity.
-- Direct `SelectItem` children and the package's legacy/form adapters resolve
-  initial selected labels. An opaque custom, memo, or lazy wrapper whose items
-  React cannot inspect must provide Base UI's public `Root.items` metadata.
-- `SelectContent forceMount` uses Base UI's public inline
-  `Positioner`/`Popup` composition because Select Portal has no keep-mounted
-  option. It preserves the closed hidden/inert lifecycle but is intentionally
-  non-portalled. There is no application consumer of this compatibility path.
-- Compound compatibility content installs one `pointerdown` and one `focusin`
-  capture listener on its owner document while mounted. Restricting listeners
-  to open layers would require reliable open state across Dialog, Menu,
-  Submenu, Select, and Tooltip; the bridge stays behavior-first until that can
-  be centralized without weakening outside-interaction cancellation.
+- `@sun-world/base-ui` follows the current Base Nova API. Its callbacks may
+  include Base UI event-details objects, and its composition uses `render`
+  instead of Radix-style `asChild`.
+- `@sun-world/ui` protocol adapters translate legacy Sun World callback and
+  prop shapes at the boundary. They do not patch the Base UI source or restore
+  Radix-only props on the base package.
+- `SwSelect surface="modal"` is a Sun World surface marker only; the popup
+  keeps Base UI's standard portal behavior. Dialog-safe placement must be
+  treated as an application/layout concern rather than a change to the frozen
+  primitive.
+- Compound compatibility content owns any temporary interaction bridge needed
+  by deprecated `Sun*` adapters. New application code should use `Sw*`
+  protocols or the direct base primitive instead.
 
 ## Themes
 
@@ -84,16 +78,15 @@ increased-contrast fallbacks.
 
 ## CLI
 
-Run the CLI from the repository root and target the UI workspace:
+Run the CLI against the base package only:
 
 ```bash
-corepack pnpm dlx shadcn@latest add @base-ui/<component> -c packages/ui
+corepack pnpm dlx shadcn@latest add @base-ui/<component> -c packages/base-ui
 ```
 
-The CLI writes a flat file under `src/components`; move it into
-`src/components/<name>/<name>.tsx`, use package-relative imports internally, and
-export it from that directory's `index.ts`. This preserves the repository's
-one-folder-per-component convention.
+The CLI writes the primitive into `packages/base-ui/src/components`. Do not
+copy base primitives into `packages/ui`; add Sun World behavior there only when
+it is a real protocol or product composition.
 
 ## Verification
 

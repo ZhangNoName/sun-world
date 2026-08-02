@@ -12,6 +12,8 @@ export const API_ROUTES = {
     list: '/blogs/',
     detail: '/blogs/{blog_id}',
     create: '/blogs/',
+    delete: '/blogs/{blog_id}',
+    update: '/blogs/{blog_id}',
   },
   auth: {
     login: '/auth/login',
@@ -30,6 +32,15 @@ export const API_ROUTES = {
     telemetry: '/admin/telemetry',
     alerts: '/admin/alerts',
     logs: '/admin/logs',
+    aiProviders: '/admin/ai/providers',
+    aiProvider: '/admin/ai/providers/{provider_id}',
+    dictionaryTypes: '/admin/dictionaries/types',
+    dictionaryType: '/admin/dictionaries/types/{type_id}',
+    dictionaryItems: '/admin/dictionaries/types/{type_id}/items',
+    dictionaryItem: '/admin/dictionaries/types/{type_id}/items/{item_id}',
+  },
+  dictionaries: {
+    read: '/dictionaries/{code}',
   },
   ai: {
     chat: '/ai/chat',
@@ -65,6 +76,7 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.ai.providers,
     API_ROUTES.ai.runStream,
     API_ROUTES.telemetry.events,
+    API_ROUTES.dictionaries.read,
   ],
   authRequired: [
     API_ROUTES.auth.logout,
@@ -75,6 +87,14 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.admin.telemetry,
     API_ROUTES.admin.alerts,
     API_ROUTES.admin.logs,
+    API_ROUTES.admin.aiProviders,
+    API_ROUTES.admin.aiProvider,
+    API_ROUTES.admin.dictionaryTypes,
+    API_ROUTES.admin.dictionaryType,
+    API_ROUTES.admin.dictionaryItems,
+    API_ROUTES.admin.dictionaryItem,
+    API_ROUTES.blog.delete,
+    API_ROUTES.blog.update,
     API_ROUTES.ai.providerProfiles,
     API_ROUTES.ai.conversations,
     API_ROUTES.ai.conversation,
@@ -115,6 +135,14 @@ export const API_ROUTE_METHODS = {
   'blog.create': {
     path: API_ROUTES.blog.create,
     method: 'POST',
+  },
+  'blog.delete': {
+    path: API_ROUTES.blog.delete,
+    method: 'DELETE',
+  },
+  'blog.update': {
+    path: API_ROUTES.blog.update,
+    method: 'PUT',
   },
   'auth.login': {
     path: API_ROUTES.auth.login,
@@ -162,6 +190,58 @@ export const API_ROUTE_METHODS = {
   },
   'admin.logs': {
     path: API_ROUTES.admin.logs,
+    method: 'GET',
+  },
+  'admin.aiProviders.list': {
+    path: API_ROUTES.admin.aiProviders,
+    method: 'GET',
+  },
+  'admin.aiProviders.create': {
+    path: API_ROUTES.admin.aiProviders,
+    method: 'POST',
+  },
+  'admin.aiProvider.update': {
+    path: API_ROUTES.admin.aiProvider,
+    method: 'PUT',
+  },
+  'admin.aiProvider.delete': {
+    path: API_ROUTES.admin.aiProvider,
+    method: 'DELETE',
+  },
+  'admin.dictionaryTypes.list': {
+    path: API_ROUTES.admin.dictionaryTypes,
+    method: 'GET',
+  },
+  'admin.dictionaryTypes.create': {
+    path: API_ROUTES.admin.dictionaryTypes,
+    method: 'POST',
+  },
+  'admin.dictionaryType.update': {
+    path: API_ROUTES.admin.dictionaryType,
+    method: 'PUT',
+  },
+  'admin.dictionaryType.delete': {
+    path: API_ROUTES.admin.dictionaryType,
+    method: 'DELETE',
+  },
+  'admin.dictionaryItems.list': {
+    path: API_ROUTES.admin.dictionaryItems,
+    method: 'GET',
+  },
+  'admin.dictionaryItems.create': {
+    path: API_ROUTES.admin.dictionaryItems,
+    method: 'POST',
+  },
+  'admin.dictionaryItem.update': {
+    path: API_ROUTES.admin.dictionaryItem,
+    method: 'PUT',
+  },
+  'admin.dictionaryItem.delete': {
+    path: API_ROUTES.admin.dictionaryItem,
+    method: 'DELETE',
+  },
+  'dictionaries.read': {
+    path: API_ROUTES.dictionaries.read,
     method: 'GET',
   },
   'ai.chat': {

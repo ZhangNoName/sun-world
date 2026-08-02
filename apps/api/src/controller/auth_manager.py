@@ -4,7 +4,8 @@ import hmac
 from typing import Optional
 import hashlib
 import secrets
-from jose import JWTError, jwt
+from jose import jwt
+from jose.exceptions import ExpiredSignatureError, JWTError
 from loguru import logger
 from src.controller.user_manage import UserManager
 from src.database.redis.redis_manage import RedisManager
@@ -117,12 +118,22 @@ class AuthManager:
 
     def register_user(self, user: User) -> bool:
         """注册用户"""
+        identifiers = {
+            str(user.username or user.name).strip(),
+            str(user.email or '').strip(),
+            str(user.phone or '').strip(),
+        }
+        for identifier in identifiers:
+            if identifier and self.user_manager.get_user_by_login_identifier(identifier):
+                return False
         user.password = self.hash_password(user.password)
         return self.user_manager.create_user(user)
 
     def authenticate_user(self, username_or_email_or_phone: str, password: str, device_id: str) -> Optional[TokenModel]:
         """验证用户身份并生成 token"""
-        users = self.user_manager.get_user_by_email(username_or_email_or_phone)
+        users = self.user_manager.get_user_by_login_identifier(
+            username_or_email_or_phone
+        )
         if not users:
             return None
         user = users[0]
@@ -183,7 +194,7 @@ class AuthManager:
                 return None
 
             # 黑名单检查
-            if self.is_token_blacklisted(token):
+            if (check_redis or token_type == "refresh") and self.is_token_blacklisted(token):
                 logger.warning(f"Token is blacklisted: {token[:20]}...")
                 return None
 
@@ -198,10 +209,10 @@ class AuthManager:
                     return None
 
             return user_id
-        except jwt.ExpiredSignatureError as e:
+        except ExpiredSignatureError as e:
             logger.warning(f"Token expired: {e}")
             return None
-        except jwt.InvalidTokenError as e:
+        except JWTError as e:
             logger.warning(f"Invalid token: {e}")
             return None
 

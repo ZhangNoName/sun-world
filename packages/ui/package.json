@@ -19,90 +19,45 @@
       "import": "./dist/ui.es.js",
       "default": "./dist/ui.es.js"
     },
-    "./badge": {
-      "types": "./dist/types/badge.d.ts",
-      "import": "./dist/badge.es.js",
-      "default": "./dist/badge.es.js"
+    "./sw-input": {
+      "types": "./dist/types/sw-input.d.ts",
+      "import": "./dist/sw-input.es.js",
+      "default": "./dist/sw-input.es.js"
     },
-    "./button": {
-      "types": "./dist/types/button.d.ts",
-      "import": "./dist/button.es.js",
-      "default": "./dist/button.es.js"
+    "./sw-select": {
+      "types": "./dist/types/sw-select.d.ts",
+      "import": "./dist/sw-select.es.js",
+      "default": "./dist/sw-select.es.js"
     },
-    "./input": {
-      "types": "./dist/types/input.d.ts",
-      "import": "./dist/input.es.js",
-      "default": "./dist/input.es.js"
+    "./sw-button": {
+      "types": "./dist/types/sw-button.d.ts",
+      "import": "./dist/sw-button.es.js",
+      "default": "./dist/sw-button.es.js"
     },
-    "./textarea": {
-      "types": "./dist/types/textarea.d.ts",
-      "import": "./dist/textarea.es.js",
-      "default": "./dist/textarea.es.js"
+    "./sw-dialog": {
+      "types": "./dist/types/sw-dialog.d.ts",
+      "import": "./dist/sw-dialog.es.js",
+      "default": "./dist/sw-dialog.es.js"
     },
-    "./label": {
-      "types": "./dist/types/label.d.ts",
-      "import": "./dist/label.es.js",
-      "default": "./dist/label.es.js"
+    "./sw-dropdown-menu": {
+      "types": "./dist/types/sw-dropdown-menu.d.ts",
+      "import": "./dist/sw-dropdown-menu.es.js",
+      "default": "./dist/sw-dropdown-menu.es.js"
     },
-    "./card": {
-      "types": "./dist/types/card.d.ts",
-      "import": "./dist/card.es.js",
-      "default": "./dist/card.es.js"
-    },
-    "./checkbox": {
-      "types": "./dist/types/checkbox.d.ts",
-      "import": "./dist/checkbox.es.js",
-      "default": "./dist/checkbox.es.js"
-    },
-    "./dialog": {
-      "types": "./dist/types/dialog.d.ts",
-      "import": "./dist/dialog.es.js",
-      "default": "./dist/dialog.es.js"
-    },
-    "./dropdown-menu": {
-      "types": "./dist/types/dropdown-menu.d.ts",
-      "import": "./dist/dropdown-menu.es.js",
-      "default": "./dist/dropdown-menu.es.js"
-    },
-    "./field": {
-      "types": "./dist/types/field.d.ts",
-      "import": "./dist/field.es.js",
-      "default": "./dist/field.es.js"
-    },
-    "./select": {
-      "types": "./dist/types/select.d.ts",
-      "import": "./dist/select.es.js",
-      "default": "./dist/select.es.js"
-    },
-    "./separator": {
-      "types": "./dist/types/separator.d.ts",
-      "import": "./dist/separator.es.js",
-      "default": "./dist/separator.es.js"
-    },
-    "./skeleton": {
-      "types": "./dist/types/skeleton.d.ts",
-      "import": "./dist/skeleton.es.js",
-      "default": "./dist/skeleton.es.js"
+    "./sw-sidebar": {
+      "types": "./dist/types/sw-sidebar.d.ts",
+      "import": "./dist/sw-sidebar.es.js",
+      "default": "./dist/sw-sidebar.es.js"
     },
     "./sonner": {
       "types": "./dist/types/sonner.d.ts",
       "import": "./dist/sonner.es.js",
       "default": "./dist/sonner.es.js"
     },
-    "./tabs": {
-      "types": "./dist/types/tabs.d.ts",
-      "import": "./dist/tabs.es.js",
-      "default": "./dist/tabs.es.js"
-    },
     "./toast": {
       "types": "./dist/types/toast.d.ts",
       "import": "./dist/toast.es.js",
       "default": "./dist/toast.es.js"
-    },
-    "./tooltip": {
-      "types": "./dist/types/tooltip.d.ts",
-      "import": "./dist/tooltip.es.js",
-      "default": "./dist/tooltip.es.js"
     },
     "./chat-composer": {
       "types": "./dist/types/chat-composer.d.ts",
@@ -158,6 +113,7 @@
     "./dist/*": "./dist/*"
   },
   "dependencies": {
+    "@sun-world/base-ui": "workspace:*",
     "@base-ui/react": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

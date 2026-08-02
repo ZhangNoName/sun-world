@@ -30,7 +30,6 @@ export function SunPagination({
   const blocked = disabled || loading
   return (
     <nav className="sun-pagination" aria-label={label ?? 'Pagination'}>
-      {label ? <div className="sun-ui-label">{label}</div> : null}
       {mobile ? (
         <button
           data-sun-load-more

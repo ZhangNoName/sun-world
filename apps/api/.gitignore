@@ -11,6 +11,7 @@ uploads/
 runtime/
 src/conf/local.override.yml
 src/conf/local.override.yaml
+src/conf/*.ai-credentials.yml
 *.ipynb
 !*.example.ipynb
 .env

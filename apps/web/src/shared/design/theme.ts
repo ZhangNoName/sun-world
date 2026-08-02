@@ -9,32 +9,24 @@ import {
   type PropsWithChildren,
 } from 'react'
 
-export type DesignFamily = 'sun-world' | 'apple'
 export type ColorMode = 'light' | 'dark' | 'system'
 export type ResolvedColorMode = Exclude<ColorMode, 'system'>
 export interface ThemePreference {
-  family: DesignFamily
   mode: ColorMode
 }
 
 interface ThemeContextValue extends ThemePreference {
   resolvedMode: ResolvedColorMode
-  setFamily: (family: DesignFamily) => void
   setMode: (mode: ColorMode) => void
-  toggleFamily: () => void
+  toggleMode: () => void
 }
 
 const STORAGE_KEY = 'sun-world-theme'
 const LEGACY_STORAGE_KEY = 'theme'
 const DEFAULT_PREFERENCE: ThemePreference = {
-  family: 'sun-world',
   mode: 'system',
 }
 const ThemeContext = createContext<ThemeContextValue | null>(null)
-
-function isFamily(value: unknown): value is DesignFamily {
-  return value === 'sun-world' || value === 'apple'
-}
 
 function isMode(value: unknown): value is ColorMode {
   return value === 'light' || value === 'dark' || value === 'system'
@@ -43,10 +35,8 @@ function isMode(value: unknown): value is ColorMode {
 function parsePreference(value: string | null): ThemePreference | null {
   if (!value) return null
   try {
-    const parsed = JSON.parse(value) as Partial<ThemePreference>
-    return isFamily(parsed.family) && isMode(parsed.mode)
-      ? { family: parsed.family, mode: parsed.mode }
-      : null
+    const parsed = JSON.parse(value) as { mode?: unknown }
+    return isMode(parsed.mode) ? { mode: parsed.mode } : null
   } catch {
     return null
   }
@@ -59,7 +49,7 @@ function initialPreference(): ThemePreference {
     if (stored) return stored
     const legacy = localStorage.getItem(LEGACY_STORAGE_KEY)
     if (legacy === 'sun-light' || legacy === 'sun-dark') {
-      return { family: 'sun-world', mode: legacy === 'sun-dark' ? 'dark' : 'light' }
+      return { mode: legacy === 'sun-dark' ? 'dark' : 'light' }
     }
   } catch {
     return DEFAULT_PREFERENCE
@@ -75,10 +65,9 @@ function systemMode(): ResolvedColorMode {
     : 'light'
 }
 
-function applyTheme(family: DesignFamily, mode: ResolvedColorMode) {
+function applyTheme(mode: ResolvedColorMode) {
   if (typeof document === 'undefined') return
   const root = document.documentElement
-  root.dataset.design = family
   root.dataset.colorMode = mode
   root.classList.toggle('sun-light', mode === 'light')
   root.classList.toggle('sun-dark', mode === 'dark')
@@ -101,7 +90,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     preference.mode === 'system' ? systemPreference : preference.mode
 
   useEffect(() => {
-    applyTheme(preference.family, resolvedMode)
+    applyTheme(resolvedMode)
     persistTheme(preference)
   }, [preference, resolvedMode])
 
@@ -125,32 +114,28 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     return () => window.removeEventListener('storage', syncTheme)
   }, [])
 
-  const setFamily = useCallback(
-    (family: DesignFamily) => setPreference((current) => ({ ...current, family })),
-    []
-  )
   const setMode = useCallback(
     (mode: ColorMode) => setPreference((current) => ({ ...current, mode })),
     []
   )
-  const toggleFamily = useCallback(
+  const toggleMode = useCallback(
     () =>
       setPreference((current) => ({
-        ...current,
-        family: current.family === 'sun-world' ? 'apple' : 'sun-world',
+        mode: (current.mode === 'system' ? resolvedMode : current.mode) === 'dark'
+          ? 'light'
+          : 'dark',
       })),
-    []
+    [resolvedMode]
   )
 
   const value = useMemo(
     () => ({
       ...preference,
       resolvedMode,
-      setFamily,
       setMode,
-      toggleFamily,
+      toggleMode,
     }),
-    [preference, resolvedMode, setFamily, setMode, toggleFamily]
+    [preference, resolvedMode, setMode, toggleMode]
   )
 
   return createElement(ThemeContext.Provider, { value }, children)

@@ -1,13 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Button } from '@sun-world/ui/button'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@sun-world/ui/dialog'
-import { Input } from '@sun-world/ui/input'
+} from '@sun-world/base-ui/dialog'
+import { SwInput } from '@sun-world/ui/sw-input'
+import { SwSelect } from '@sun-world/ui/sw-select'
 
 import type {
   AiProviderDraft,
@@ -28,31 +29,56 @@ export function AiProviderSettings({
   onOpenChange: (open: boolean) => void
   onSave?: (draft: AiProviderDraft) => void | Promise<void>
 }) {
-  const defaultProvider = providers[0]
-  const [provider, setProvider] = useState(defaultProvider?.id ?? 'deepseek')
-  const [name, setName] = useState(defaultProvider?.name ?? 'DeepSeek')
-  const [baseUrl, setBaseUrl] = useState(
-    defaultProvider?.defaultBaseUrl ?? 'https://api.deepseek.com'
-  )
-  const [model, setModel] = useState(
-    defaultProvider?.defaultModel ?? 'deepseek-chat'
-  )
+  const [provider, setProvider] = useState('')
+  const [name, setName] = useState('')
+  const [baseUrl, setBaseUrl] = useState('')
+  const [model, setModel] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (open) setApiKey('')
+    if (open) {
+      setApiKey('')
+      setSaveError(null)
+    }
   }, [open])
 
-  const submit = (event: FormEvent) => {
+  useEffect(() => {
+    const defaultProvider = providers[0]
+    setProvider(defaultProvider?.id ?? '')
+    setName(defaultProvider?.name ?? '')
+    setBaseUrl(defaultProvider?.defaultBaseUrl ?? '')
+    setModel(defaultProvider?.defaultModel ?? '')
+  }, [providers])
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    void onSave?.({
-      provider,
-      name: name.trim(),
-      baseUrl: baseUrl.trim(),
-      model: model.trim(),
-      apiKey: apiKey || undefined,
-      isDefault: true,
-    })
+    if (!onSave) {
+      setSaveError('保存功能暂不可用，请稍后重试。')
+      return
+    }
+
+    setIsSaving(true)
+    setSaveError(null)
+    try {
+      await onSave({
+        provider,
+        name: name.trim(),
+        baseUrl: baseUrl.trim(),
+        model: model.trim(),
+        apiKey: apiKey || undefined,
+        isDefault: true,
+      })
+      setApiKey('')
+      onOpenChange(false)
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : '保存失败，请重试。'
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const changeProvider = (providerId: string) => {
@@ -91,56 +117,64 @@ export function AiProviderSettings({
             ))}
           </section>
         ) : null}
-        <form onSubmit={submit}>
-          <label>
-            服务商
-            <select
+        <form onSubmit={submit} className="space-y-6">
+          <div className="space-y-4">
+            <SwSelect
+              label="服务商"
+              options={providers.map((item) => ({
+                value: item.id,
+                label: item.name,
+              }))}
               value={provider}
-              onChange={(event) => changeProvider(event.currentTarget.value)}
-            >
-              {providers.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            配置名称
-            <Input value={name} onValueChange={setName} required />
-          </label>
-          <label>
-            Base URL
-            <Input
+              onValueChange={changeProvider}
+              surface="modal"
+              disabled={isSaving}
+            />
+            <SwInput
+              label="配置名称"
+              value={name}
+              onValueChange={setName}
+              required
+              disabled={isSaving}
+            />
+            <SwInput
+              label="Base URL"
               value={baseUrl}
               onValueChange={setBaseUrl}
               type="url"
               required
+              disabled={isSaving}
             />
-          </label>
-          <label>
-            模型
-            <Input value={model} onValueChange={setModel} required />
-          </label>
-          <label>
-            API Key
-            <Input
+            <SwInput
+              label="模型"
+              value={model}
+              onValueChange={setModel}
+              required
+              disabled={isSaving}
+            />
+            <SwInput
+              label="API Key"
               value={apiKey}
               onValueChange={setApiKey}
               type="password"
               autoComplete="off"
+              disabled={isSaving}
             />
-          </label>
+          </div>
+          {saveError ? <p role="alert">{saveError}</p> : null}
           <div className="sw-ai-settings-actions">
             <Button
               type="button"
               variant="ghost"
               aria-label="关闭设置"
               onClick={() => onOpenChange(false)}
+              disabled={isSaving}
             >
               取消
             </Button>
-            <Button type="submit">保存配置</Button>
+            <Button type="submit" loading={isSaving}>
+              {isSaving ? '保存中…' : '保存配置'}
+            </Button>
           </div>
         </form>
       </DialogContent>

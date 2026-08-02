@@ -162,6 +162,39 @@ class BlogManager:
         result = self.db.execute(sql, (blog_id,))
         return result > 0
 
+    def update_blog(self, blog_id: int, blog: BlogCreate) -> bool:
+        """Update blog metadata, content, and tag relations."""
+        existing = self.db.fetch_one(
+            """
+            SELECT id
+            FROM blog
+            WHERE id = %s AND COALESCE(is_deleted, 0) = 0
+            """,
+            (blog_id,),
+        )
+        if not existing:
+            return False
+
+        self.db.execute(
+            """
+            UPDATE blog
+            SET title = %s, author = %s, abstract = %s,
+                category = %s, updated_at = NOW()
+            WHERE id = %s AND COALESCE(is_deleted, 0) = 0
+            """,
+            (blog.title, blog.author, blog.abstract, blog.category, blog_id),
+        )
+        self.db.execute("DELETE FROM blog_tag WHERE blog_id = %s", (blog_id,))
+        for tag in blog.tag:
+            self.get_or_create_tag(tag, str(blog_id))
+
+        return self.contentDB.update_one(
+            "blogs",
+            {"blogId": blog_id},
+            {"title": blog.title, "content": blog.content},
+            upsert=False,
+        )
+
     def get_blog(self, blog_id:int) -> BlogDetail:
         """
         获取指定ID的博客。
