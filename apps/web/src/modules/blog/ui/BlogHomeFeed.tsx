@@ -1,7 +1,7 @@
-import { LabeledInput } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { toast } from '@sun-world/ui/toast'
 
@@ -110,7 +110,7 @@ export function BlogHomeFeed() {
               searchOpen ? ' blog-toolbar__search--open' : ''
             }`}
           >
-            <LabeledInput
+            <SwInput
               ref={searchInputRef}
               label="搜索博客"
               hideVisibleLabel

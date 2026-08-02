@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
+  "style": "base-nova",
   "rsc": false,
   "tsx": true,
   "tailwind": {
@@ -15,10 +15,10 @@
   },
   "aliases": {
     "components": "@/components",
-    "ui": "@sun-world/ui/components",
+    "ui": "@sun-world/base-ui/components",
     "patterns": "@sun-world/ui/patterns",
     "hooks": "@/hooks",
     "lib": "@/lib",
-    "utils": "@sun-world/ui/lib/cn"
+    "utils": "@sun-world/base-ui/lib/cn"
   }
 }

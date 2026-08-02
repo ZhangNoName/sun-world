@@ -29,6 +29,11 @@ class FakeRegistry:
             api_key="secret",
         )
 
+    def list_descriptors(self):
+        from src.modules.ai.schemas import AiProviderDescriptor
+
+        return [AiProviderDescriptor(id="deepseek", name="DeepSeek")]
+
     def create(self, _config):
         self.created_config = _config
         return self.provider
@@ -45,13 +50,113 @@ class BrokenRegistry(FakeRegistry):
         self.provider = BrokenProvider()
 
 
+async def configured_service(repository, registry):
+    from cryptography.fernet import Fernet
+
+    from src.modules.ai.credentials import CredentialCipher
+    from src.modules.ai.schemas import AiProviderCatalog
+    from src.modules.ai.service import AiService
+
+    cipher = CredentialCipher(Fernet.generate_key().decode("ascii"))
+    catalog = AiProviderCatalog(
+        id="deepseek",
+        name="DeepSeek",
+        default_base_url="https://api.deepseek.com",
+        default_model="deepseek-chat",
+        is_enabled=True,
+    )
+    encrypted_key = cipher.encrypt("test-global-key")
+
+    async def get_default_provider_record():
+        return catalog, encrypted_key
+
+    repository.get_default_provider_record = get_default_provider_record
+    return AiService(repository, registry, cipher)
+
+
 class AiServiceTests(unittest.IsolatedAsyncioTestCase):
+    async def test_uses_persisted_enabled_catalog_instead_of_builtin_descriptors(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        await repository.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="team-provider",
+                name="Team Provider",
+                default_base_url="https://team.example.test/v1",
+                default_model="team-chat",
+                is_enabled=True,
+                sort_order=5,
+            )
+        )
+        await repository.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="disabled-provider",
+                name="Disabled Provider",
+                default_base_url="https://disabled.example.test/v1",
+                default_model="disabled-chat",
+                is_enabled=False,
+                sort_order=1,
+            )
+        )
+
+        descriptors = await AiService(repository, FakeRegistry()).list_providers()
+
+        self.assertEqual([item.id for item in descriptors], ["team-provider"])
+        self.assertEqual(descriptors[0].name, "Team Provider")
+
+    async def test_returns_no_descriptors_when_catalog_is_empty(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.service import AiService
+
+        descriptors = await AiService(InMemoryAiRepository(), FakeRegistry()).list_providers()
+
+        self.assertEqual(descriptors, [])
+
+    async def test_guest_run_uses_the_encrypted_global_provider_record(self):
+        from cryptography.fernet import Fernet
+
+        from src.modules.ai.credentials import CredentialCipher
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalog, AiRunRequest
+        from src.modules.ai.service import AiService
+
+        cipher = CredentialCipher(Fernet.generate_key().decode("ascii"))
+        repository = InMemoryAiRepository()
+        catalog = AiProviderCatalog(
+            id="deepseek",
+            name="DeepSeek",
+            default_base_url="https://api.deepseek.com",
+            default_model="deepseek-chat",
+            is_enabled=True,
+        )
+
+        async def get_default_provider_record():
+            return catalog, cipher.encrypt("sk-global-secret")
+
+        repository.get_default_provider_record = get_default_provider_record
+        registry = FakeRegistry()
+        service = AiService(repository, registry, cipher)
+
+        _events = [
+            event
+            async for event in service.stream_run(
+                user_id=None,
+                request=AiRunRequest(message="Use global config"),
+            )
+        ]
+
+        self.assertEqual(registry.created_config.provider, "deepseek")
+        self.assertEqual(registry.created_config.api_key, "sk-global-secret")
+
     async def test_guest_stream_emits_monotonic_events_and_one_terminal_event(self):
         from src.modules.ai.repositories import InMemoryAiRepository
         from src.modules.ai.schemas import AiRunRequest
         from src.modules.ai.service import AiService
 
-        service = AiService(InMemoryAiRepository(), FakeRegistry())
+        service = await configured_service(InMemoryAiRepository(), FakeRegistry())
 
         events = [
             event
@@ -79,7 +184,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         from src.modules.ai.service import AiService
 
         repository = InMemoryAiRepository()
-        service = AiService(repository, FakeRegistry())
+        service = await configured_service(repository, FakeRegistry())
         events = [
             event
             async for event in service.stream_run(
@@ -132,7 +237,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         from src.modules.ai.schemas import AiRunRequest
         from src.modules.ai.service import AiService
 
-        service = AiService(InMemoryAiRepository(), BrokenRegistry())
+        service = await configured_service(InMemoryAiRepository(), BrokenRegistry())
         events = [
             event
             async for event in service.stream_run(
@@ -153,7 +258,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
 
         repository = InMemoryAiRepository()
         registry = FakeRegistry()
-        service = AiService(repository, registry)
+        service = await configured_service(repository, registry)
         profile = await service.save_provider_profile(
             7,
             AiProviderProfileInput(
@@ -183,7 +288,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         from src.modules.ai.service import AiService
 
         registry = FakeRegistry()
-        service = AiService(InMemoryAiRepository(), registry)
+        service = await configured_service(InMemoryAiRepository(), registry)
         first_events = [
             event
             async for event in service.stream_run(
@@ -211,6 +316,39 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
             ],
         )
 
+    async def test_guest_follow_up_keeps_bounded_in_memory_context(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiRunRequest
+
+        registry = FakeRegistry()
+        service = await configured_service(InMemoryAiRepository(), registry)
+        first_events = [
+            event
+            async for event in service.stream_run(
+                None,
+                AiRunRequest(conversation_id="guest-chat", message="first"),
+            )
+        ]
+        _second_events = [
+            event
+            async for event in service.stream_run(
+                None,
+                AiRunRequest(
+                    conversation_id=first_events[0].conversation_id,
+                    message="second",
+                ),
+            )
+        ]
+
+        self.assertEqual(
+            registry.provider.messages,
+            [
+                {"role": "user", "content": "first"},
+                {"role": "assistant", "content": "hello world"},
+                {"role": "user", "content": "second"},
+            ],
+        )
+
     async def test_regeneration_truncates_after_parent_without_duplicate_user_turn(self):
         from src.modules.ai.repositories import InMemoryAiRepository
         from src.modules.ai.schemas import AiRunRequest
@@ -218,7 +356,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
 
         repository = InMemoryAiRepository()
         registry = FakeRegistry()
-        service = AiService(repository, registry)
+        service = await configured_service(repository, registry)
         first_events = [
             event
             async for event in service.stream_run(7, AiRunRequest(message="first"))

@@ -103,7 +103,7 @@ describe('BlogHomeFeed', () => {
     expect(screen.getByRole('button', { name: '切换为列表布局' })).toBeVisible()
   })
 
-  it('keeps the article action accessible in the card trailing-action hook', () => {
+  it('makes the entire card the direct detail link', () => {
     vi.mocked(useBlogList).mockReturnValue({
       items: [
         {
@@ -134,13 +134,10 @@ describe('BlogHomeFeed', () => {
       </MemoryRouter>
     )
 
-    const action = screen.getByRole('link', {
-      name: '阅读更多: 图搜索入门',
-    })
-    expect(action).toHaveClass('z-blog-card__action')
-    expect(action).toHaveAttribute('href', '/blog/10')
-    expect(action.closest('article')).not.toHaveAttribute('role')
-    expect(screen.queryByRole('button', { name: /阅读更多/ })).toBeNull()
+    const card = screen.getByRole('link', { name: '图搜索入门' })
+    expect(card).toHaveClass('z-blog-card')
+    expect(card).toHaveAttribute('href', '/blog/10')
+    expect(screen.queryByText('阅读更多')).toBeNull()
   })
 })
 
@@ -179,9 +176,7 @@ describe('BlogCard navigation semantics', () => {
       </MemoryRouter>
     )
 
-    const link = screen.getByRole('link', {
-      name: '阅读更多: 图搜索入门',
-    })
+    const link = screen.getByRole('link', { name: item.title })
     const clicks: Event[] = []
     const recordClick = (event: Event) => clicks.push(event)
     link.addEventListener('click', recordClick)

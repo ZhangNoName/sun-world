@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { useAuthStore } from '@/store/auth'
 
 export function Avator() {

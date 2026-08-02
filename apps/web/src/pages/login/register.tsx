@@ -1,7 +1,7 @@
-import { LabeledInput } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Button } from '@sun-world/ui/button'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { toast } from '@sun-world/ui/toast'
 import { useAuthStore } from '@/store/auth'
 import { getAccountErrorMessage } from '@/modules/account/errors'
@@ -62,29 +62,25 @@ export function RegisterPage() {
       formDescription="填写基础信息，即可创建新账号。"
     >
       <form className="auth-form" onSubmit={submit}>
-        <LabeledInput
-          label="昵称"
-          value={form.name}
-          onValueChange={field('name')}
-        />
-        <LabeledInput
+        <SwInput label="昵称" value={form.name} onValueChange={field('name')} />
+        <SwInput
           label="手机号"
           value={form.phone}
           onValueChange={field('phone')}
         />
-        <LabeledInput
+        <SwInput
           label="邮箱"
           type="email"
           value={form.email}
           onValueChange={field('email')}
         />
-        <LabeledInput
+        <SwInput
           label="密码"
           type="password"
           value={form.password}
           onValueChange={field('password')}
         />
-        <LabeledInput
+        <SwInput
           label="确认密码"
           type="password"
           value={form.confirm}

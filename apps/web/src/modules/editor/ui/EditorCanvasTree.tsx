@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { NodeInfo } from '@sun-world/editor'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 export function EditorCanvasTree({
   nodes,

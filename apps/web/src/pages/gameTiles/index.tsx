@@ -2,10 +2,10 @@ import {
   CheckboxField,
   FilePickerInput,
   FilePickerLabel,
-  LabeledInput,
 } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { toast } from '@sun-world/ui/toast'
 import { downloadUrl, saveTilesAsZip, saveTilesJson } from '@/util/function'
 import './tiles.css'
@@ -179,7 +179,7 @@ export function GameTilesPage() {
         </FilePickerLabel>
         <div className="config-grid">
           {(['row', 'col', 'width', 'height', 'gap'] as const).map((key) => (
-            <LabeledInput
+            <SwInput
               key={key}
               label={
                 {

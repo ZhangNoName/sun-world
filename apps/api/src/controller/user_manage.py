@@ -11,7 +11,7 @@ class UserManager:
     """
     table_name = "users"
     all_attr = [
-        'id', 'name',  'age', 'phone', 'email',
+        'id', 'username', 'name',  'age', 'phone', 'email',
         'password', 'birth_day', 'create_time', 'status',"sex"
     ]
 
@@ -45,12 +45,14 @@ class UserManager:
         """
         sql = f"""
         INSERT INTO {self.table_name}
-        ( name, sex, age, phone, email, password, birth_day, create_time)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
+        ( username, name, sex, age, phone, email, password, birth_day, create_time)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,NOW())
         """
-        val = (user.name, user.sex, user.age, user.phone, user.email, user.password, user.birth_day)
+        val = (user.username or user.name, user.name, user.sex, user.age, user.phone, user.email, user.password, user.birth_day)
         try:
             res = self.db.execute(sql, val)
+            if isinstance(res, int) and res > 0:
+                user.id = res
             logger.info(f"用户创建成功 {res}")
              # 默认分配角色 id=2
             self.set_role_by_id(res, [2])
@@ -154,6 +156,46 @@ class UserManager:
 
             users.append(user_data)
 
+        return users
+
+    def get_user_by_login_identifier(self, identifier: str) -> List[User]:
+        """Return active users matching username, email, or phone exactly."""
+        value = str(identifier or '').strip()
+        if not value:
+            return []
+        sql = f"""
+        SELECT {self.get_all_user_attr()}
+        FROM {self.table_name}
+        WHERE status = 1
+          AND (username = %s OR email = %s OR phone = %s)
+        ORDER BY id ASC
+        LIMIT 20
+        """
+        rows = self.db.fetch_all(sql, (value, value, value)) or []
+        users: List[User] = []
+        for row in rows:
+            user_data = dict(row)
+            user_id = user_data['id']
+            user_data['roles'] = self.db.fetch_all(
+                """
+                SELECT r.id, r.name, r.code
+                FROM roles r
+                INNER JOIN user_roles ur ON r.id = ur.role_id
+                WHERE ur.user_id = %s
+                """,
+                user_id,
+            ) or []
+            user_data['resources'] = self.db.fetch_all(
+                """
+                SELECT DISTINCT res.id, res.name, res.code, res.type, res.path
+                FROM resources res
+                INNER JOIN role_resources rr ON res.id = rr.resource_id
+                INNER JOIN user_roles ur ON rr.role_id = ur.role_id
+                WHERE ur.user_id = %s
+                """,
+                user_id,
+            ) or []
+            users.append(User(**user_data))
         return users
 
     def get_user_by_email(self, name: str, page: int = 1, per_page: int = 10) -> List[User]:

@@ -27,6 +27,7 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
     "users": {
         "columns": [
             {"name": "id", "definition": "INT NOT NULL AUTO_INCREMENT", "type": "int"},
+            {"name": "username", "definition": "VARCHAR(128) NULL", "type": "varchar"},
             {"name": "name", "definition": "VARCHAR(255) NOT NULL", "type": "varchar"},
             {"name": "sex", "definition": "INT NOT NULL DEFAULT 0", "type": "int"},
             {"name": "age", "definition": "INT NOT NULL DEFAULT 0", "type": "int"},
@@ -38,7 +39,10 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
             {"name": "status", "definition": "TINYINT(1) NOT NULL DEFAULT 1", "type": "tinyint"},
         ],
         "primary_key": ["id"],
-        "indexes": ["UNIQUE KEY `idx_users_email` (`email`)"],
+        "indexes": [
+            "UNIQUE KEY `idx_users_email` (`email`)",
+            "KEY `idx_users_username` (`username`)",
+        ],
     },
     "roles": {
         "columns": [
@@ -121,6 +125,44 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
         "primary_key": ["blog_id", "tag_id"],
         "indexes": ["KEY `idx_blog_tag_tag_id` (`tag_id`)"],
     },
+    "dictionary_types": {
+        "columns": [
+            {"name": "id", "definition": "INT NOT NULL AUTO_INCREMENT", "type": "int"},
+            {"name": "code", "definition": "VARCHAR(128) NOT NULL", "type": "varchar"},
+            {"name": "name", "definition": "VARCHAR(255) NOT NULL", "type": "varchar"},
+            {"name": "description", "definition": "VARCHAR(500) NULL", "type": "varchar"},
+            {"name": "is_enabled", "definition": "TINYINT(1) NOT NULL DEFAULT 1", "type": "tinyint"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "UNIQUE KEY `idx_dictionary_types_code` (`code`)",
+            "KEY `idx_dictionary_types_enabled` (`is_enabled`, `code`)",
+        ],
+    },
+    "dictionary_items": {
+        "columns": [
+            {"name": "id", "definition": "INT NOT NULL AUTO_INCREMENT", "type": "int"},
+            {"name": "dictionary_type_id", "definition": "INT NOT NULL", "type": "int"},
+            {"name": "value", "definition": "VARCHAR(128) NOT NULL", "type": "varchar"},
+            {"name": "label", "definition": "VARCHAR(255) NOT NULL", "type": "varchar"},
+            {"name": "color", "definition": "VARCHAR(32) NULL", "type": "varchar"},
+            {"name": "sort_order", "definition": "INT NOT NULL DEFAULT 0", "type": "int"},
+            {"name": "is_enabled", "definition": "TINYINT(1) NOT NULL DEFAULT 1", "type": "tinyint"},
+            {"name": "extension_json", "definition": "JSON NULL", "type": "json"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "UNIQUE KEY `idx_dictionary_items_type_value` (`dictionary_type_id`, `value`)",
+            "KEY `idx_dictionary_items_enabled_order` (`dictionary_type_id`, `is_enabled`, `sort_order`, `id`)",
+        ],
+        "constraints": [
+            "CONSTRAINT `fk_dictionary_items_type` FOREIGN KEY (`dictionary_type_id`) REFERENCES `dictionary_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE",
+        ],
+    },
     "ai_provider_profiles": {
         "columns": [
             {"name": "id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
@@ -140,6 +182,22 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
             "KEY `idx_ai_provider_profiles_user` (`user_id`, `updated_at`)",
             "KEY `idx_ai_provider_profiles_default` (`user_id`, `is_default`)",
         ],
+    },
+    "ai_provider_catalog": {
+        "columns": [
+            {"name": "id", "definition": "VARCHAR(64) NOT NULL", "type": "varchar"},
+            {"name": "name", "definition": "VARCHAR(120) NOT NULL", "type": "varchar"},
+            {"name": "default_base_url", "definition": "VARCHAR(2048) NULL", "type": "varchar"},
+            {"name": "default_model", "definition": "VARCHAR(200) NULL", "type": "varchar"},
+            {"name": "api_key_ciphertext", "definition": "TEXT NULL", "type": "varchar"},
+            {"name": "api_key_hint", "definition": "VARCHAR(32) NULL", "type": "varchar"},
+            {"name": "is_enabled", "definition": "TINYINT(1) NOT NULL DEFAULT 1", "type": "tinyint"},
+            {"name": "sort_order", "definition": "INT NOT NULL DEFAULT 0", "type": "int"},
+            {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
+            {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
+        ],
+        "primary_key": ["id"],
+        "indexes": ["KEY `idx_ai_provider_catalog_enabled_sort` (`is_enabled`, `sort_order`)"],
     },
     "ai_conversations": {
         "columns": [
@@ -282,6 +340,7 @@ def build_create_table_sql(table_name: str, table_schema: dict[str, Any]) -> str
         key_columns = ", ".join(quote_identifier(column) for column in primary_key)
         lines.append(f"PRIMARY KEY ({key_columns})")
     lines.extend(table_schema.get("indexes", []))
+    lines.extend(table_schema.get("constraints", []))
     body = ",\n  ".join(lines)
     return (
         f"CREATE TABLE IF NOT EXISTS {quote_identifier(table_name)} (\n"

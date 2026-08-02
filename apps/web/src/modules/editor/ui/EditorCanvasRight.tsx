@@ -1,4 +1,4 @@
-import { LabeledInput } from '@sun-world/ui/form-controls'
+import { SwInput } from '@sun-world/ui/sw-input'
 import type { EditorElementPatch } from '../hooks/useEditorCanvas'
 
 export function EditorCanvasRight({
@@ -24,14 +24,14 @@ export function EditorCanvasRight({
         <p className="editor-empty">已选择 {selectedCount} 个图层</p>
       ) : attrs ? (
         <div className="property-form">
-          <LabeledInput
+          <SwInput
             key={`name:${attrs.name ?? name ?? ''}`}
             label="名称"
             defaultValue={attrs.name ?? name ?? ''}
             onValueCommit={(value) => onUpdate({ name: value })}
           />
           {(['x', 'y', 'width', 'height', 'rotation'] as const).map((key) => (
-            <LabeledInput
+            <SwInput
               key={`${key}:${attrs[key] ?? 0}`}
               label={key.toUpperCase()}
               type="number"

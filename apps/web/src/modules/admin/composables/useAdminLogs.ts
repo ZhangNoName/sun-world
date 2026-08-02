@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchAdminLogs } from '../api'
 import { getAdminErrorMessage } from '../errors'
+import { useManageCopy, useManageLocale } from '../manageCopy'
 import type { AdminLogEvent, AdminLogsSnapshot } from '../types'
 
 export type AdminLogSeverity = NonNullable<AdminLogEvent['severity']>
@@ -11,6 +12,8 @@ export interface AdminLogsFilters {
 }
 
 export function useAdminLogs(initial: AdminLogsFilters = {}) {
+  const copy = useManageCopy()
+  const locale = useManageLocale()
   const [snapshot, setSnapshot] = useState<AdminLogsSnapshot | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -64,9 +67,13 @@ export function useAdminLogs(initial: AdminLogsFilters = {}) {
     lastLoadedAt,
     refresh,
     retentionCopy: snapshot
-      ? `保留 ${snapshot.retained_file_count} 个日志文件，单文件上限 ${formatBytes(snapshot.max_file_bytes)}`
+      ? copy.logs.retention(
+          snapshot.retained_file_count,
+          formatBytes(snapshot.max_file_bytes)
+        )
       : '',
-    formatDateTime,
+    formatDateTime: (value: string | undefined) =>
+      formatDateTime(value, locale),
   }
 }
 
@@ -78,12 +85,15 @@ function formatBytes(value: number) {
     ? `${(value / 1024 / 1024).toFixed(1)} MB`
     : `${Math.ceil(value / 1024)} KB`
 }
-function formatDateTime(value: string | undefined): string {
+function formatDateTime(
+  value: string | undefined,
+  locale: 'zh' | 'en'
+): string {
   if (!value) return '-'
   const date = new Date(value)
   return Number.isNaN(date.getTime())
     ? '-'
-    : new Intl.DateTimeFormat('zh-CN', {
+    : new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'zh-CN', {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',

@@ -12,7 +12,7 @@ import {
   type AiComposerSubmitPayload,
 } from '@sun-world/ai-composer'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
 
 import { AiMessageView } from './AiMessageView'
@@ -50,21 +50,12 @@ export interface AiWorkspaceProps {
   onSaveProvider?: (draft: AiProviderDraft) => void | Promise<void>
 }
 
-const fallbackProviders: AiUiProvider[] = [
-  {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    defaultBaseUrl: 'https://api.deepseek.com',
-    defaultModel: 'deepseek-chat',
-  },
-]
-
 export function AiWorkspace({
   conversations,
   activeConversationId,
   messages,
   runState,
-  providers = fallbackProviders,
+  providers = [],
   providerProfiles = [],
   commands = [],
   renderers,
@@ -86,7 +77,9 @@ export function AiWorkspace({
   const defaultProfile = providerProfiles.find((profile) => profile.isDefault)
   const defaultModelId = defaultProfile
     ? `profile:${defaultProfile.id}`
-    : `provider:${providers[0]?.id ?? 'deepseek'}`
+    : providers[0]?.id
+      ? `provider:${providers[0].id}`
+      : ''
   const [selectedModelId, setSelectedModelId] = useState(defaultModelId)
   const [currentSidebarWidth, setCurrentSidebarWidth] = useState(sidebarWidth)
   const drag = useRef<{

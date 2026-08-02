@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
+import { SwDialogContent } from '../../components/sw-dialog'
+import { Dialog, DialogTitle, DialogTrigger } from '@sun-world/base-ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from '../../components/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/tabs'
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@sun-world/base-ui/tabs'
 
 export function DialogPanel({
   trigger,
@@ -23,14 +24,14 @@ export function DialogPanel({
 }) {
   return (
     <Dialog {...props}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent
+      <DialogTrigger render={trigger as React.ReactElement} />
+      <SwDialogContent
         className={contentClassName}
         overlayClassName={overlayClassName}
       >
         <DialogTitle>{title}</DialogTitle>
         {children}
-      </DialogContent>
+      </SwDialogContent>
     </Dialog>
   )
 }

@@ -4,6 +4,42 @@
  */
 
 export interface paths {
+  '/admin/ai/providers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Admin Ai Providers */
+    get: operations['list_admin_ai_providers_admin_ai_providers_get']
+    put?: never
+    /** Create Admin Ai Provider */
+    post: operations['create_admin_ai_provider_admin_ai_providers_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/ai/providers/{provider_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Admin Ai Provider */
+    put: operations['update_admin_ai_provider_admin_ai_providers__provider_id__put']
+    post?: never
+    /** Delete Admin Ai Provider */
+    delete: operations['delete_admin_ai_provider_admin_ai_providers__provider_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/admin/alerts': {
     parameters: {
       query?: never
@@ -19,6 +55,78 @@ export interface paths {
     put?: never
     post?: never
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/dictionaries/types': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Dictionary Types */
+    get: operations['list_dictionary_types_admin_dictionaries_types_get']
+    put?: never
+    /** Create Dictionary Type */
+    post: operations['create_dictionary_type_admin_dictionaries_types_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/dictionaries/types/{type_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Dictionary Type */
+    put: operations['update_dictionary_type_admin_dictionaries_types__type_id__put']
+    post?: never
+    /** Delete Dictionary Type */
+    delete: operations['delete_dictionary_type_admin_dictionaries_types__type_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/dictionaries/types/{type_id}/items': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Dictionary Items */
+    get: operations['list_dictionary_items_admin_dictionaries_types__type_id__items_get']
+    put?: never
+    /** Create Dictionary Item */
+    post: operations['create_dictionary_item_admin_dictionaries_types__type_id__items_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/dictionaries/types/{type_id}/items/{item_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Dictionary Item */
+    put: operations['update_dictionary_item_admin_dictionaries_types__type_id__items__item_id__put']
+    post?: never
+    /** Delete Dictionary Item */
+    delete: operations['delete_dictionary_item_admin_dictionaries_types__type_id__items__item_id__delete']
     options?: never
     head?: never
     patch?: never
@@ -336,10 +444,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /**
-     * Logout
-     * @description 登出：从 cookie 或 header 获取 token 并加入黑名单
-     */
+    /** Logout */
     post: operations['logout_auth_logout_post']
     delete?: never
     options?: never
@@ -373,11 +478,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /**
-     * Refresh Token
-     * @description 刷新 access_token
-     *     优先从 cookie 中读取 refresh_token，如果没有则从 header 读取
-     */
+    /** Refresh Token */
     post: operations['refresh_token_auth_refresh_token_post']
     delete?: never
     options?: never
@@ -552,7 +653,8 @@ export interface paths {
      *         Blog: 博客对象，如果不存在则抛出 404 错误
      */
     get: operations['get_blog_blogs__blog_id__get']
-    put?: never
+    /** Update Blog */
+    put: operations['update_blog_blogs__blog_id__put']
     post?: never
     /**
      * Delete Blog
@@ -565,6 +667,23 @@ export interface paths {
      *         dict: 包含删除成功消息的字典
      */
     delete: operations['delete_blog_blogs__blog_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/dictionaries/{code}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Enabled Dictionary */
+    get: operations['get_enabled_dictionary_dictionaries__code__get']
+    put?: never
+    post?: never
+    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -1068,17 +1187,66 @@ export interface components {
       /** Content */
       content: string
     }
+    /** AiProviderCatalog */
+    AiProviderCatalog: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Default Base Url */
+      default_base_url?: string | null
+      /** Default Model */
+      default_model?: string | null
+      /** Id */
+      id: string
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Name */
+      name: string
+      /**
+       * Sort Order
+       * @default 0
+       */
+      sort_order: number
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiProviderCatalogInput */
+    AiProviderCatalogInput: {
+      /** Default Base Url */
+      default_base_url?: string | null
+      /** Default Model */
+      default_model?: string | null
+      /** Id */
+      id: string
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Name */
+      name: string
+      /**
+       * Sort Order
+       * @default 0
+       */
+      sort_order: number
+    }
     /** AiProviderDescriptor */
     AiProviderDescriptor: {
       /** Default Base Url */
       default_base_url?: string | null
       /** Default Model */
       default_model?: string | null
-      /**
-       * Id
-       * @enum {string}
-       */
-      id: 'deepseek' | 'openai' | 'openrouter' | 'openai-compatible'
+      /** Id */
+      id: string
       /** Name */
       name: string
     }
@@ -1128,11 +1296,8 @@ export interface components {
       model: string
       /** Name */
       name: string
-      /**
-       * Provider
-       * @enum {string}
-       */
-      provider: 'deepseek' | 'openai' | 'openrouter' | 'openai-compatible'
+      /** Provider */
+      provider: string
     }
     /** AiRecordBlock */
     AiRecordBlock: {
@@ -1234,6 +1399,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[AiProviderCatalog] */
+    ApiResponse_AiProviderCatalog_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiProviderCatalog'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[AiProviderProfile] */
     ApiResponse_AiProviderProfile_: {
       /** Code */
@@ -1279,6 +1452,38 @@ export interface components {
       /** Code */
       code: number | string
       data?: components['schemas']['BlogStats'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[DictionaryItem] */
+    ApiResponse_DictionaryItem_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['DictionaryItem'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[DictionaryPage[DictionaryItem]] */
+    ApiResponse_DictionaryPage_DictionaryItem__: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['DictionaryPage_DictionaryItem_'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[DictionaryPage[DictionaryType]] */
+    ApiResponse_DictionaryPage_DictionaryType__: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['DictionaryPage_DictionaryType_'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[DictionaryType] */
+    ApiResponse_DictionaryType_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['DictionaryType'] | null
       /** Msg */
       msg: string
     }
@@ -1383,6 +1588,15 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[list[AiProviderCatalog]] */
+    ApiResponse_list_AiProviderCatalog__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiProviderCatalog'][] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[list[AiProviderDescriptor]] */
     ApiResponse_list_AiProviderDescriptor__: {
       /** Code */
@@ -1398,6 +1612,15 @@ export interface components {
       code: number | string
       /** Data */
       data?: components['schemas']['AiProviderProfile'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[DictionaryItemPublic]] */
+    ApiResponse_list_DictionaryItemPublic__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['DictionaryItemPublic'][] | null
       /** Msg */
       msg: string
     }
@@ -1726,6 +1949,142 @@ export interface components {
        * @enum {string}
        */
       status: 'ready' | 'not_ready'
+    }
+    /** DictionaryItem */
+    DictionaryItem: {
+      /** Color */
+      color?: string | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Dictionary Type Id */
+      dictionary_type_id: number
+      /** Extension Json */
+      extension_json?: {
+        [key: string]: unknown
+      } | null
+      /** Id */
+      id: number
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Label */
+      label: string
+      /**
+       * Sort Order
+       * @default 0
+       */
+      sort_order: number
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+      /** Value */
+      value: string
+    }
+    /** DictionaryItemInput */
+    DictionaryItemInput: {
+      /** Color */
+      color?: string | null
+      /** Extension Json */
+      extension_json?: {
+        [key: string]: unknown
+      } | null
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Label */
+      label: string
+      /**
+       * Sort Order
+       * @default 0
+       */
+      sort_order: number
+      /** Value */
+      value: string
+    }
+    /** DictionaryItemPublic */
+    DictionaryItemPublic: {
+      /** Color */
+      color?: string | null
+      /** Label */
+      label: string
+      /**
+       * Sort Order
+       * @default 0
+       */
+      sort_order: number
+      /** Value */
+      value: string
+    }
+    /** DictionaryPage[DictionaryItem] */
+    DictionaryPage_DictionaryItem_: {
+      /** List */
+      list: components['schemas']['DictionaryItem'][]
+      /** Page */
+      page: number
+      /** Page Size */
+      page_size: number
+      /** Total */
+      total: number
+    }
+    /** DictionaryPage[DictionaryType] */
+    DictionaryPage_DictionaryType_: {
+      /** List */
+      list: components['schemas']['DictionaryType'][]
+      /** Page */
+      page: number
+      /** Page Size */
+      page_size: number
+      /** Total */
+      total: number
+    }
+    /** DictionaryType */
+    DictionaryType: {
+      /** Code */
+      code: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Description */
+      description?: string | null
+      /** Id */
+      id: number
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Name */
+      name: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** DictionaryTypeInput */
+    DictionaryTypeInput: {
+      /** Code */
+      code: string
+      /** Description */
+      description?: string | null
+      /**
+       * Is Enabled
+       * @default true
+       */
+      is_enabled: boolean
+      /** Name */
+      name: string
     }
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -2219,6 +2578,11 @@ export interface components {
        * @default true
        */
       status: boolean
+      /**
+       * Username
+       * @description 稳定唯一登录用户名
+       */
+      username?: string | null
     }
     /** UserCreateResult */
     UserCreateResult: {
@@ -2314,6 +2678,11 @@ export interface components {
        * @default true
        */
       status: boolean
+      /**
+       * Username
+       * @description 稳定唯一登录用户名
+       */
+      username?: string | null
     }
     /** ValidationError */
     ValidationError: {
@@ -2333,6 +2702,125 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
+  list_admin_ai_providers_admin_ai_providers_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiProviderCatalog__']
+        }
+      }
+    }
+  }
+  create_admin_ai_provider_admin_ai_providers_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiProviderCatalogInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiProviderCatalog_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_admin_ai_provider_admin_ai_providers__provider_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        provider_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiProviderCatalogInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiProviderCatalog_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_admin_ai_provider_admin_ai_providers__provider_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        provider_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   get_admin_alerts_admin_alerts_get: {
     parameters: {
       query?: never
@@ -2349,6 +2837,276 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ApiResponse_AdminAlertsSnapshot_']
+        }
+      }
+    }
+  }
+  list_dictionary_types_admin_dictionaries_types_get: {
+    parameters: {
+      query?: {
+        page?: number
+        pageSize?: number
+        keyword?: string | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryPage_DictionaryType__']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_dictionary_type_admin_dictionaries_types_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DictionaryTypeInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_dictionary_type_admin_dictionaries_types__type_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DictionaryTypeInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_dictionary_type_admin_dictionaries_types__type_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_dictionary_items_admin_dictionaries_types__type_id__items_get: {
+    parameters: {
+      query?: {
+        page?: number
+        pageSize?: number
+        keyword?: string | null
+      }
+      header?: never
+      path: {
+        type_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryPage_DictionaryItem__']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_dictionary_item_admin_dictionaries_types__type_id__items_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DictionaryItemInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryItem_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_dictionary_item_admin_dictionaries_types__type_id__items__item_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type_id: number
+        item_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DictionaryItemInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_DictionaryItem_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_dictionary_item_admin_dictionaries_types__type_id__items__item_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type_id: number
+        item_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
@@ -3243,6 +4001,41 @@ export interface operations {
       }
     }
   }
+  update_blog_blogs__blog_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        blog_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BlogCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   delete_blog_blogs__blog_id__delete: {
     parameters: {
       query?: never
@@ -3261,6 +4054,37 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_enabled_dictionary_dictionaries__code__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        code: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_DictionaryItemPublic__']
         }
       }
       /** @description Validation Error */

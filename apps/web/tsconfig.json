@@ -23,6 +23,11 @@
         "../../packages/ui/src/*",
         "../../packages/ui/src/components/*/index.ts",
         "../../packages/ui/src/patterns/*/index.ts"
+      ],
+      "@sun-world/base-ui": ["../../packages/base-ui/src/index.ts"],
+      "@sun-world/base-ui/*": [
+        "../../packages/base-ui/src/*",
+        "../../packages/base-ui/src/components/*/index.ts"
       ]
     }
   },

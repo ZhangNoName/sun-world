@@ -56,6 +56,29 @@ describe('useAiChat', () => {
     stream.mockReset()
   })
 
+  it('does not synthesize a provider before the API returns one', () => {
+    const { result } = renderHook(() => useAiChat())
+
+    expect(result.current.providers).toEqual([])
+  })
+
+  it('sends the local conversation id for an anonymous run', async () => {
+    stream.mockImplementation(async (_payload, options) => {
+      options.onEvent(aiEvent('run.started', 0, {}))
+      options.onEvent(
+        aiEvent('message.completed', 1, {
+          blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
+        })
+      )
+    })
+    const { result } = renderHook(() => useAiChat())
+    const localConversationId = result.current.activeConversationId
+
+    await act(() => result.current.sendMessage(payload('hello')))
+
+    expect(stream.mock.calls[0]?.[0].conversation_id).toBe(localConversationId)
+  })
+
   it('ignores empty prompts and maps versioned stream events into blocks', async () => {
     stream.mockImplementation(async (_payload, options) => {
       options.onEvent(aiEvent('run.started', 0, {}))

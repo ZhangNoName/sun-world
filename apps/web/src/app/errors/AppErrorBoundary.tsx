@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 interface Props {
   children: ReactNode

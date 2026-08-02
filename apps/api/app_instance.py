@@ -56,6 +56,16 @@ def _require_mapping_config(config: object, config_path: Path, description: str)
     return config
 
 
+def get_credential_encryption_key(config: dict) -> str | None:
+    ai_config = config.get("ai", {})
+    configured_key = (
+        ai_config.get("credential_encryption_key")
+        if isinstance(ai_config, dict)
+        else None
+    )
+    return configured_key or os.getenv("AI_CREDENTIAL_ENCRYPTION_KEY")
+
+
 class Application(FastAPI):
     def __init__(self, **args):
         super(Application, self).__init__(**args)
@@ -101,6 +111,7 @@ class Application(FastAPI):
         self.__init_reousrce_manager()
         self.__init_auth_manager()
         self.__init_ai_workspace_service()
+        self.__init_dictionary_service()
         self.__init_file_manager()
         logger.info(f'当前模式为{env}')
         if env == 'local':
@@ -147,6 +158,19 @@ class Application(FastAPI):
 
             self.config = _deep_merge(self.config, override_config)
             logger.info(f'Loaded {env} override configuration from {override_path}')
+
+        credentials_path = _resolve_config_path(
+            f'./src/conf/{env}.ai-credentials.yml'
+        )
+        if credentials_path.exists():
+            with open(credentials_path, 'r', encoding='utf-8') as file:
+                credentials_config = _require_mapping_config(
+                    yaml.safe_load(file),
+                    credentials_path,
+                    "AI credentials config",
+                )
+            self.config = _deep_merge(self.config, credentials_config)
+            logger.info(f'Loaded {env} AI credentials configuration')
         logger.info(f'Loaded {env} configuration from {config_path}')
         logger.debug(f'Loaded configuration sections: {list((self.config or {}).keys())}')
 
@@ -248,8 +272,14 @@ class Application(FastAPI):
         self.ai_service = AiService(
             repository=MySqlAiRepository(self.mysql),
             providers=ProviderRegistry(),
-            cipher=CredentialCipher(os.getenv("AI_CREDENTIAL_ENCRYPTION_KEY")),
+            cipher=CredentialCipher(get_credential_encryption_key(self.config)),
         )
+
+    def __init_dictionary_service(self):
+        from src.modules.dictionaries.repository import MySqlDictionaryRepository
+        from src.modules.dictionaries.service import DictionaryService
+
+        self.dictionary_service = DictionaryService(MySqlDictionaryRepository(self.mysql))
 
     def __init_file_manager(self):
         self.file = FileManager()

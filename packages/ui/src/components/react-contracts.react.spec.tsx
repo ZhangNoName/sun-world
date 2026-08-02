@@ -3,22 +3,25 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { SunButton } from './button'
-import { SunCheckbox } from './checkbox'
-import { SunDialog } from './dialog'
-import { SunDropdownMenu } from './dropdown-menu'
-import { SunInput } from './input'
+import { SunButton } from '../compat/button'
+import { SunCheckbox } from '../compat/checkbox'
+import { SunDialog } from '../compat/dialog'
+import { SunDropdownMenu } from '../compat/dropdown-menu'
+import { SunInput } from '../compat/input'
 import { SunLoadingSkeleton } from './loading-skeleton'
-import { SunSelect } from './select'
-import { SunTabs } from './tabs'
+import { SunSelect } from '../compat/select'
+import { SwInput } from './sw-input'
+import { SwNativeSelect, SwSelect } from './sw-select'
+import { SunTabs } from '../compat/tabs'
 import { SunTag } from './tag'
-import { SunTooltip } from './tooltip'
-import { SunTextarea } from './textarea'
+import { SunTooltip } from '../compat/tooltip'
+import { SunTextarea } from '../compat/textarea'
 import { SunChatComposer } from '../patterns/chat-composer'
 import { SunDatePicker } from '../patterns/date-picker'
 import { SunList } from '../patterns/list'
 import { SunPagination } from '../patterns/pagination'
 import { SunThemeProvider } from '../patterns/theme-provider'
+import { Dialog, DialogContent, DialogTitle } from '@sun-world/base-ui/dialog'
 
 describe('@sun-world/ui React contracts', () => {
   it('renders and invokes an enabled button', async () => {
@@ -45,6 +48,145 @@ describe('@sun-world/ui React contracts', () => {
     render(<SunInput label="Title" value="" onValueChange={onValueChange} />)
     await userEvent.type(screen.getByLabelText('Title'), 'Sun')
     expect(onValueChange).toHaveBeenCalled()
+  })
+
+  it('forwards deprecated SunInput compatibility props to SwInput', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SunInput
+        label="Legacy keyword"
+        value="Sun"
+        inputSize="lg"
+        clearable
+        onValueChange={onValueChange}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear input' }))
+
+    expect(onValueChange).toHaveBeenCalledWith('')
+    expect(screen.getByLabelText('Legacy keyword')).toHaveAttribute(
+      'data-size',
+      'lg'
+    )
+  })
+
+  it('associates a SwInput label and emits its string value', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SwInput
+        label="Configuration name"
+        value=""
+        onValueChange={onValueChange}
+      />
+    )
+
+    await userEvent.type(screen.getByLabelText('Configuration name'), 'D')
+
+    expect(onValueChange).toHaveBeenCalledWith('D')
+  })
+
+  it('keeps SwInput clearable compatibility through its protocol API', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SwInput
+        label="Keyword"
+        value="Sun World"
+        inputSize="lg"
+        clearable
+        onValueChange={onValueChange}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear input' }))
+
+    expect(onValueChange).toHaveBeenCalledWith('')
+    expect(screen.getByLabelText('Keyword')).toHaveAttribute('data-size', 'lg')
+  })
+
+  it('renders SwSelect options and emits the selected value', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SwSelect
+        label="Provider"
+        value=""
+        options={[
+          { value: 'deepseek', label: 'DeepSeek' },
+          { value: 'openai', label: 'OpenAI' },
+        ]}
+        onValueChange={onValueChange}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('combobox', { name: 'Provider' }))
+    await userEvent.click(screen.getByRole('option', { name: 'OpenAI' }))
+
+    expect(onValueChange).toHaveBeenCalledWith('openai')
+  })
+
+  it('keeps hidden SwSelect labels available to assistive technology', () => {
+    render(
+      <SwSelect
+        label="Sort"
+        hideVisibleLabel
+        options={[{ value: 'newest', label: 'Newest' }]}
+      />
+    )
+
+    expect(screen.getByRole('combobox', { name: 'Sort' })).toBeVisible()
+    expect(screen.queryByText('Sort')).not.toBeInTheDocument()
+  })
+
+  it('emits selected values from a multiple SwNativeSelect', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SwNativeSelect
+        multiple
+        label="Tags"
+        value={['one']}
+        options={[
+          { value: 'one', label: 'One' },
+          { value: 'two', label: 'Two' },
+        ]}
+        onValueChange={onValueChange}
+      />
+    )
+
+    await userEvent.selectOptions(screen.getByLabelText('Tags'), ['two'])
+
+    expect(onValueChange).toHaveBeenCalledWith(['one', 'two'])
+  })
+
+  it('keeps the modal SwSelect surface marker while using Base UI portals', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Dialog defaultOpen>
+        <DialogContent initialFocus={false} showCloseButton={false}>
+          <DialogTitle>Provider settings</DialogTitle>
+          <SwSelect
+            label="Provider"
+            surface="modal"
+            value="deepseek"
+            options={[
+              { value: 'deepseek', label: 'DeepSeek' },
+              { value: 'openai', label: 'OpenAI' },
+            ]}
+            onValueChange={onValueChange}
+          />
+        </DialogContent>
+      </Dialog>
+    )
+
+    const dialog = screen.getByRole('dialog', { name: 'Provider settings' })
+    expect(dialog.querySelector('[data-slot="select-content"]')).toBeNull()
+    await userEvent.click(screen.getByRole('combobox', { name: 'Provider' }))
+    const popup = await screen.findByRole('listbox')
+    expect(popup.closest('[data-slot="select-content"]')).toHaveClass(
+      'sun-select-content--modal'
+    )
+    await userEvent.click(await screen.findByRole('option', { name: 'OpenAI' }))
+
+    expect(onValueChange).toHaveBeenCalledWith('openai')
   })
 
   it('submits trimmed chat text with Enter and preserves Shift+Enter', async () => {

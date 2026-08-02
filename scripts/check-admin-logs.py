@@ -42,7 +42,7 @@ def main() -> int:
         encoding="utf-8"
     )
     assert '@router.get("/logs", response_model=ApiResponse[AdminLogSnapshot])' in router_source
-    assert "_current_user: User = Depends(get_current_user)" in router_source
+    assert "_current_user: User = Depends(require_admin)" in router_source
     assert "limit: int = Query(default=50, ge=1, le=100)" in router_source
 
     print("Admin logs protocol check passed")

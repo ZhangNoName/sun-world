@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, field
-from typing import AsyncIterator, Mapping, Protocol
+from typing import AsyncIterator, Protocol
 
 import httpx
 
 from .errors import AiDomainError
-from .schemas import AiProviderDescriptor
 
 
 @dataclass(frozen=True)
@@ -76,61 +74,6 @@ class OpenAiCompatibleProvider:
 
 
 class ProviderRegistry:
-    def __init__(self, environment: Mapping[str, str] | None = None):
-        self.environment = environment if environment is not None else os.environ
-
-    def list_descriptors(self) -> list[AiProviderDescriptor]:
-        return [
-            AiProviderDescriptor(
-                id="deepseek",
-                name="DeepSeek",
-                default_base_url="https://api.deepseek.com",
-                default_model="deepseek-chat",
-            ),
-            AiProviderDescriptor(
-                id="openai",
-                name="OpenAI",
-                default_base_url="https://api.openai.com/v1",
-                default_model="gpt-4.1-mini",
-            ),
-            AiProviderDescriptor(
-                id="openrouter",
-                name="OpenRouter",
-                default_base_url="https://openrouter.ai/api/v1",
-            ),
-            AiProviderDescriptor(id="openai-compatible", name="OpenAI compatible"),
-        ]
-
-    def resolve_default(self) -> ProviderConfig:
-        env = self.environment
-        if env.get("DEEPSEEK_API_KEY"):
-            return ProviderConfig(
-                provider="deepseek",
-                model=env.get("DEEPSEEK_MODEL") or env.get("AI_CHAT_MODEL") or "deepseek-chat",
-                base_url=env.get("DEEPSEEK_BASE_URL") or env.get("AI_URL") or "https://api.deepseek.com",
-                api_key=env["DEEPSEEK_API_KEY"],
-            )
-        if env.get("OPENROUTER_API_KEY"):
-            return ProviderConfig(
-                provider="openrouter",
-                model=env.get("OPENROUTER_MODEL") or env.get("AI_CHAT_MODEL") or "openai/gpt-4.1-mini",
-                base_url=env.get("OPENROUTER_BASE_URL") or env.get("AI_URL") or "https://openrouter.ai/api/v1",
-                api_key=env["OPENROUTER_API_KEY"],
-            )
-        if env.get("OPENAI_API_KEY"):
-            return ProviderConfig(
-                provider="openai",
-                model=env.get("OPENAI_MODEL") or env.get("AI_CHAT_MODEL") or "gpt-4.1-mini",
-                base_url=env.get("OPENAI_BASE_URL") or env.get("AI_URL") or "https://api.openai.com/v1",
-                api_key=env["OPENAI_API_KEY"],
-            )
-        return ProviderConfig(
-            provider="deepseek",
-            model=env.get("DEEPSEEK_MODEL") or env.get("AI_CHAT_MODEL") or "deepseek-chat",
-            base_url=env.get("DEEPSEEK_BASE_URL") or env.get("AI_URL") or "https://api.deepseek.com",
-            api_key=None,
-        )
-
     @staticmethod
     def create(config: ProviderConfig) -> AiProvider:
         return OpenAiCompatibleProvider(config)

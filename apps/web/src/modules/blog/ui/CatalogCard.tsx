@@ -1,5 +1,5 @@
 import type { MarkdownHeadingItem } from '../types'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 function CatalogItems({
   items,

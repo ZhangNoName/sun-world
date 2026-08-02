@@ -1,11 +1,20 @@
-import { Button } from '@sun-world/ui/button'
-import { NativeSelectField } from '@sun-world/ui/form-controls'
-import { Input } from '@sun-world/ui/input'
+import { SwButton as Button } from '@sun-world/ui/sw-button'
+import { SwInput } from '@sun-world/ui/sw-input'
+import { SwNativeSelect } from '@sun-world/ui/sw-select'
 import { SunMarkdownEditor } from '@/shared/markdown'
+import { AdminRouteGuard } from '@/modules/admin/components/AdminRouteGuard'
 import { useBlogAuthoring } from '../composables/useBlogAuthoring'
 import '../styles/blog-experience.css'
 
 export function ArticleEditorPage() {
+  return (
+    <AdminRouteGuard>
+      <ArticleEditorContent />
+    </AdminRouteGuard>
+  )
+}
+
+function ArticleEditorContent() {
   const authoring = useBlogAuthoring()
   return (
     <main className="article-page">
@@ -19,16 +28,17 @@ export function ArticleEditorPage() {
         </Button>
       </div>
       <div className="title-container">
-        <Input
+        <SwInput
+          aria-label="文章标题"
           value={authoring.title}
           onValueChange={authoring.setTitle}
           placeholder="标题"
           maxLength={100}
         />
-        <NativeSelectField
+        <SwNativeSelect
           label="文章分类"
           value={authoring.blogCategory}
-          onChange={(event) => authoring.setBlogCategory(event.target.value)}
+          onValueChange={(value) => authoring.setBlogCategory(String(value))}
           options={[
             { value: '', label: '请选择文章分类' },
             ...authoring.categoryList.map((item) => ({
@@ -37,14 +47,12 @@ export function ArticleEditorPage() {
             })),
           ]}
         />
-        <NativeSelectField
+        <SwNativeSelect
           multiple
           label="文章标签"
           value={authoring.blogTag.map(String)}
-          onChange={(event) =>
-            authoring.setBlogTag(
-              Array.from(event.target.selectedOptions, (option) => option.value)
-            )
+          onValueChange={(value) =>
+            authoring.setBlogTag(Array.isArray(value) ? value : [value])
           }
           options={authoring.tagList.map((item) => ({
             value: String(item.id),

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 import { AiBlockRenderer } from './AiBlockRenderer'
 import type { AiRendererRegistry, AiUiMessage } from './types'

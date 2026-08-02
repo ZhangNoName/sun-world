@@ -9,6 +9,7 @@ from src.type.blog_type import BlogCreate, BlogCreateResult, BlogDetail, BlogPag
 from src.core.response import ok, fail
 from src.core.response import ApiResponse
 from src.core.error_codes import BLOG_CREATE_FAILED, BLOG_NOT_FOUND
+from src.routers.auth.auth import require_admin
 
 
 # 创建博客 API 路由
@@ -22,7 +23,11 @@ def get_blog_manager() -> BlogManager:
 
 # 创建新博客
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[BlogCreateResult])
-async def create_blog(blog: BlogCreate, blog_manager: BlogManager = Depends(get_blog_manager)):
+async def create_blog(
+    blog: BlogCreate,
+    _current_user=Depends(require_admin),
+    blog_manager: BlogManager = Depends(get_blog_manager),
+):
     """
     创建新的博客
 
@@ -97,7 +102,11 @@ async def get_blogs_paginated(
 
 # 删除指定博客
 @router.delete("/{blog_id}", response_model=ApiResponse[None])
-async def delete_blog(blog_id: str, blog_manager: BlogManager = Depends(get_blog_manager)):
+async def delete_blog(
+    blog_id: str,
+    _current_user=Depends(require_admin),
+    blog_manager: BlogManager = Depends(get_blog_manager),
+):
     """
     删除指定 ID 的博客
 
@@ -110,3 +119,15 @@ async def delete_blog(blog_id: str, blog_manager: BlogManager = Depends(get_blog
     if not blog_manager.delete_blog(blog_id):
         return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
     return ok(data=None, msg="删除成功")
+
+
+@router.put("/{blog_id}", response_model=ApiResponse[None])
+async def update_blog(
+    blog_id: int,
+    blog: BlogCreate,
+    _current_user=Depends(require_admin),
+    blog_manager: BlogManager = Depends(get_blog_manager),
+):
+    if not blog_manager.update_blog(blog_id, blog):
+        return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
+    return ok(data=None, msg="更新成功")

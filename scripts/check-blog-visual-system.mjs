@@ -37,14 +37,17 @@ for (const selector of [
   '.sun-markdown-preview blockquote',
   '.sun-markdown-preview table',
   '@media (max-width: 900px)',
-  "[data-design='apple']",
+  'var(--surface-elevated)',
 ]) {
   if (!stylesheet.includes(selector)) {
     throw new Error(`Blog experience stylesheet must include ${selector}`)
   }
 }
 
-if (!homeFeed.includes('@sun-world/ui/form-controls')) {
+if (
+  !homeFeed.includes('@sun-world/ui/sw-input') &&
+  !homeFeed.includes('@sun-world/ui/form-controls')
+) {
   throw new Error(
     'Blog filtering must compose the canonical shared input control'
   )

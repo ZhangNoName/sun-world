@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 
 import { openGithub } from '@/util'
 import { useBlogBaseData } from '../composables/useBlogBaseData'

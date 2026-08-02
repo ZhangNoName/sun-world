@@ -7,6 +7,8 @@ import { API_BASE_URL } from '@/shared/config'
 import { useAuthStore } from '@/store/auth'
 import { getDeviceId } from '@/util/auth'
 import {
+  AUTH_TOKEN_EXPIRED,
+  AUTH_UNAUTHORIZED,
   getErrorSeverity,
   isErrorCodeInNamespace,
   resolveErrorMessage,
@@ -23,10 +25,12 @@ import { toast } from '@sun-world/ui/toast'
 declare module 'axios' {
   interface AxiosRequestConfig {
     suppressErrorToast?: boolean
+    _authRetry?: boolean
   }
 
   interface InternalAxiosRequestConfig {
     suppressErrorToast?: boolean
+    _authRetry?: boolean
   }
 }
 //基础URL，axios将会自动拼接在url前
@@ -39,10 +43,12 @@ const timeout = 30000
 
 type TracedAxiosRequestConfig = InternalAxiosRequestConfig & {
   metadata?: RequestTracingMeta
+  _authRetry?: boolean
 }
 
 type TracedAxiosConfig = AxiosRequestConfig & {
   metadata?: RequestTracingMeta
+  _authRetry?: boolean
 }
 
 type AxiosErrorLike = {
@@ -65,6 +71,40 @@ const service = axios.create({
   withCredentials: true,
 })
 
+const AUTH_ROUTES = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/logout',
+  '/auth/refresh_token',
+]
+
+function isAuthRoute(url?: string) {
+  return AUTH_ROUTES.some((route) => url?.includes(route))
+}
+
+function isUnauthorized(error: ApiError) {
+  if (error.code === AUTH_UNAUTHORIZED) return false
+  return (
+    error.code === 401 ||
+    error.code === '401' ||
+    error.status === 401 ||
+    error.code === AUTH_TOKEN_EXPIRED
+  )
+}
+
+function getStructuredErrorPayload(data: unknown):
+  | { code: number | string; msg?: string; message?: string }
+  | null {
+  if (!data || typeof data !== 'object') return null
+  const record = data as Record<string, unknown>
+  if ('code' in record) return record as never
+  const detail = record.detail
+  if (detail && typeof detail === 'object' && 'code' in detail) {
+    return detail as never
+  }
+  return null
+}
+
 //统一请求拦截 可配置自定义headers 例如 language、token等
 service.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
@@ -73,30 +113,16 @@ service.interceptors.request.use(
       readRequestIdFromHeaders(config.headers as Record<string, unknown>) ??
       createRequestId()
 
-    // const authStore = useAuthStore()
-
-    // 如果 token 即将过期，自动刷新（token 从 cookie 自动带过去）
-    // 跳过登录、注册和刷新 token 的请求
-    // if (
-    //   !config.url?.includes('/auth/login') &&
-    //   !config.url?.includes('/auth/register') &&
-    //   !config.url?.includes('/auth/refresh_token')
-    // ) {
-    //   try {
-    //     await authStore.refreshTokensIfNeeded()
-    //   } catch (error) {
-    //     console.error('刷新 token 失败', error)
-    //     // 刷新失败时抛出错误，让响应拦截器处理
-    //     throw error
-    //   }
-    // }
+    const authStore = useAuthStore.getState()
+    if (!isAuthRoute(config.url) && authStore.user) {
+      await authStore.refreshTokensIfNeeded()
+    }
 
     //配置自定义请求头（不包含 token，token 从 cookie 自动带过去）
     config.headers = {
       'Content-Type': 'application/json',
       ...config.headers,
       [getRequestIdHeaderName()]: requestId,
-      withCredentials: true, // 允许携带 cookie
     } as any
     tracedConfig.metadata = {
       ...(tracedConfig.metadata ?? {}),
@@ -146,15 +172,19 @@ service.interceptors.response.use(
     if (error && error.response) {
       const data = error.response.data
       // 如果后端已返回 envelope 格式的错误响应，使用它
-      if (data && typeof data === 'object' && 'code' in data) {
-        const msg = data.msg || data.message || '请求失败'
+      const structuredError = getStructuredErrorPayload(data)
+      if (structuredError) {
+        const msg =
+          structuredError.msg || structuredError.message || '请求失败'
         const apiError = new ApiError(
-          data.code,
+          structuredError.code,
           msg,
           error.response.status,
-          data,
+          structuredError,
           getAxiosErrorRequestId(error)
         )
+        const retried = await retryUnauthorizedRequest(apiError, error.config)
+        if (retried) return retried
         notifyApiError(apiError, error.config)
         return Promise.reject(apiError)
       }
@@ -166,6 +196,8 @@ service.interceptors.response.use(
         data,
         getAxiosErrorRequestId(error)
       )
+      const retried = await retryUnauthorizedRequest(apiError, error.config)
+      if (retried) return retried
       notifyApiError(apiError, error.config)
       return Promise.reject(apiError)
     }
@@ -229,6 +261,7 @@ function notifyApiError(error: ApiError, config?: AxiosRequestConfig) {
     fallback: '请求失败',
     preferBackendMessage: true,
   })
+
   const isAuthError =
     error.code === 401 ||
     error.code === '401' ||
@@ -246,6 +279,33 @@ function notifyApiError(error: ApiError, config?: AxiosRequestConfig) {
   }
 
   showMessage('error', message)
+}
+
+async function retryUnauthorizedRequest(
+  error: ApiError,
+  config?: AxiosRequestConfig
+) {
+  const tracedConfig = config as TracedAxiosConfig | undefined
+  const authStore = useAuthStore.getState()
+  if (
+    !tracedConfig ||
+    !isUnauthorized(error) ||
+    isAuthRoute(tracedConfig.url) ||
+    tracedConfig._authRetry ||
+    (!authStore.user && authStore.status !== 'restoring')
+  ) {
+    return null
+  }
+
+  try {
+    await authStore.refreshSession({ suppressErrorToast: true })
+    return service.request({
+      ...tracedConfig,
+      _authRetry: true,
+    })
+  } catch {
+    return null
+  }
 }
 
 // HTTP 状态码默认文案

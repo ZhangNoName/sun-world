@@ -1,5 +1,6 @@
 import { API_ROUTES } from '@sun-world/contracts'
 import { apiGet, apiPost } from '@/shared/api'
+import type { AxiosRequestConfig } from 'axios'
 import type {
   AuthSession,
   LoginParams,
@@ -24,12 +25,16 @@ export function logout(): Promise<LogoutResult> {
   return apiPost(API_ROUTES.auth.logout)
 }
 
-export function refreshToken(): Promise<RefreshSession> {
-  return apiPost(API_ROUTES.auth.refreshToken)
+export function refreshToken(
+  config?: AxiosRequestConfig
+): Promise<RefreshSession> {
+  return apiPost(API_ROUTES.auth.refreshToken, undefined, {
+    config,
+  })
 }
 
-export function getCurrentUser(): Promise<UserInfo> {
-  return apiGet(API_ROUTES.user.me)
+export function getCurrentUser(config?: AxiosRequestConfig): Promise<UserInfo> {
+  return apiGet(API_ROUTES.user.me, { config })
 }
 
 export function requestResetPassword(

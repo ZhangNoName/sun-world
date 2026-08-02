@@ -7,7 +7,14 @@ from .errors import AiDomainError
 from .credentials import CredentialCipher
 from .providers import ProviderConfig, ProviderRegistry
 from .repositories import AiRepository
-from .schemas import AiProviderProfileInput, AiRunRequest, AiStreamEvent, AiTextBlock
+from .schemas import (
+    AiProviderCatalogInput,
+    AiProviderDescriptor,
+    AiProviderProfileInput,
+    AiRunRequest,
+    AiStreamEvent,
+    AiTextBlock,
+)
 
 
 def _id(prefix: str) -> str:
@@ -27,6 +34,10 @@ def _provider_messages(conversation) -> list[dict[str, str]]:
     return messages
 
 
+MAX_GUEST_CONTEXT_MESSAGES = 40
+MAX_GUEST_CONVERSATIONS = 512
+
+
 class AiService:
     def __init__(
         self,
@@ -37,9 +48,53 @@ class AiService:
         self.repository = repository
         self.providers = providers
         self.cipher = cipher or CredentialCipher(None)
+        self._guest_transcripts: dict[str, list[dict[str, str]]] = {}
 
-    def list_providers(self):
-        return self.providers.list_descriptors()
+    def _remember_guest_transcript(
+        self,
+        conversation_id: str,
+        messages: list[dict[str, str]],
+    ) -> None:
+        if conversation_id not in self._guest_transcripts:
+            while len(self._guest_transcripts) >= MAX_GUEST_CONVERSATIONS:
+                self._guest_transcripts.pop(next(iter(self._guest_transcripts)))
+        self._guest_transcripts[conversation_id] = messages[-MAX_GUEST_CONTEXT_MESSAGES:]
+
+    async def list_providers(self) -> list[AiProviderDescriptor]:
+        method = getattr(self.repository, "list_provider_catalog", None)
+        catalog = await method() if method is not None else []
+        return [
+            AiProviderDescriptor(
+                id=item.id,
+                name=item.name,
+                default_base_url=item.default_base_url,
+                default_model=item.default_model,
+            )
+            for item in catalog
+            if item.is_enabled
+        ]
+
+    async def list_provider_catalog(self):
+        method = getattr(self.repository, "list_provider_catalog", None)
+        return await method() if method else []
+
+    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput):
+        method = getattr(self.repository, "create_provider_catalog_entry", None)
+        if method is None:
+            raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
+        return await method(value)
+
+    async def update_provider_catalog_entry(self, provider_id: str, value: AiProviderCatalogInput):
+        method = getattr(self.repository, "update_provider_catalog_entry", None)
+        if method is None:
+            raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
+        return await method(provider_id, value)
+
+    async def delete_provider_catalog_entry(self, provider_id: str) -> None:
+        method = getattr(self.repository, "delete_provider_catalog_entry", None)
+        if method is None:
+            raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
+        await method(provider_id)
 
     async def list_provider_profiles(self, user_id: int):
         method = getattr(self.repository, "list_provider_profiles", None)
@@ -97,7 +152,21 @@ class AiService:
                 "Sign in to use a personal provider profile.",
                 status_code=401,
             )
-        return self.providers.resolve_default()
+        default_method = getattr(self.repository, "get_default_provider_record", None)
+        default_record = await default_method() if default_method is not None else None
+        if default_record:
+            profile, encrypted_key = default_record
+            return ProviderConfig(
+                provider=profile.id,
+                model=profile.default_model or "",
+                base_url=profile.default_base_url or "",
+                api_key=self.cipher.decrypt(encrypted_key),
+            )
+        raise AiDomainError(
+            "AI_PROVIDER_NOT_CONFIGURED",
+            "No default AI provider is configured.",
+            status_code=503,
+        )
 
     async def stream_run(
         self,
@@ -134,7 +203,10 @@ class AiService:
             provider_messages = _provider_messages(conversation)
         else:
             conversation_id = request.conversation_id or _id("guest")
-            provider_messages = [{"role": "user", "content": request.message}]
+            provider_messages = [
+                *self._guest_transcripts.get(conversation_id, []),
+                {"role": "user", "content": request.message},
+            ]
 
         message_id = _id("msg")
         sequence = 0
@@ -183,6 +255,11 @@ class AiService:
                     [block],
                 )
                 message_id = saved.id
+            else:
+                self._remember_guest_transcript(
+                    conversation_id,
+                    [*provider_messages, {"role": "assistant", "content": content}],
+                )
             sequence += 1
             yield AiStreamEvent(
                 event_id=_id("evt"),

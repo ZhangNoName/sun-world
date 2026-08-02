@@ -7,7 +7,7 @@ import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import artplayerPluginDocumentPip from 'artplayer-plugin-document-pip'
 import artplayerPluginHlsControl from 'artplayer-plugin-hls-control'
 import { toast } from '@sun-world/ui/toast'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { VideoPlayer } from '../ui/VideoPlayer'
 import './video.css'
 

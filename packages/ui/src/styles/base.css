@@ -1,33 +1,41 @@
-:root {
-  --background: var(--bg-page, #ffffff);
-  --foreground: var(--text-default, #111827);
-  --card: var(--surface-elevated, var(--bg-component, #ffffff));
-  --card-foreground: var(--text-default, #111827);
-  --popover: var(--surface-elevated, var(--bg-component, #ffffff));
-  --popover-foreground: var(--text-default, #111827);
-  --primary: var(--color-brand, #14b8a6);
+:root:not([data-color-mode]) {
+  --background: #f4f8fb;
+  --foreground: #334155;
+  --card: #ffffff;
+  --card-foreground: #172033;
+  --popover: #ffffff;
+  --popover-foreground: #172033;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: var(--bg-fill, #eef4f8);
-  --secondary-foreground: var(--text-strong, #172033);
-  --muted: var(--bg-fill, #eef4f8);
-  --muted-foreground: var(--text-secondary, #64748b);
-  --accent: var(--color-brand-bg, #eef6ff);
-  --accent-foreground: var(--text-strong, #172033);
-  --destructive: var(--color-danger, #e11d48);
-  --border: var(--border-default, #e5e7eb);
-  --input: var(--border-default, #e5e7eb);
-  --ring: var(--color-brand, #14b8a6);
-  --radius: var(--sun-ui-radius, var(--radius-md, 0.625rem));
-  --sun-ui-color-primary: var(--color-brand, #2563eb);
-  --sun-ui-color-danger: var(--color-danger, #e11d48);
-  --sun-ui-color-success: var(--color-success, #16a34a);
-  --sun-ui-color-warning: var(--color-warning, #d97706);
+  --secondary: #eef4f8;
+  --secondary-foreground: #172033;
+  --muted: #eef4f8;
+  --muted-foreground: #64748b;
+  --accent: #e6f6f3;
+  --accent-foreground: #172033;
+  --destructive: #e11d48;
+  --border: #dce6ee;
+  --input: #dce6ee;
+  --ring: #2563eb;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef6ff;
+  --sidebar-accent-foreground: #172033;
+  --sidebar-border: #e8eef5;
+  --sidebar-ring: #2563eb;
+  --radius: var(--sun-ui-radius, 0.75rem);
+  --sun-ui-color-primary: var(--primary);
+  --sun-ui-color-danger: var(--destructive);
+  --sun-ui-color-success: #16a34a;
+  --sun-ui-color-warning: #d97706;
   --sun-ui-radius: var(--radius-control, var(--radius-md, 8px));
-  --sun-ui-border-color: var(--border-default, #dce6ee);
-  --sun-ui-surface: var(--bg-component, #ffffff);
-  --sun-ui-muted-surface: var(--bg-fill, #eef4f8);
-  --sun-ui-text: var(--text-default, #334155);
-  --sun-ui-strong-text: var(--text-strong, #172033);
+  --sun-ui-border-color: var(--border);
+  --sun-ui-surface: var(--card);
+  --sun-ui-muted-surface: var(--muted);
+  --sun-ui-text: var(--foreground);
+  --sun-ui-strong-text: var(--card-foreground);
 }
 
 @media (prefers-contrast: more) {
@@ -38,9 +46,9 @@
 }
 
 @supports (backdrop-filter: blur(1px)) {
-  [data-design='apple'] .sun-dialog__content,
-  [data-design='apple'] .sun-dropdown-menu,
-  [data-design='apple'] .sun-tooltip {
+  [data-color-mode='dark'] .sun-dialog__content,
+  [data-color-mode='dark'] .sun-dropdown-menu,
+  [data-color-mode='dark'] .sun-tooltip {
     border-color: var(--material-border);
     background: var(--material-chrome);
     backdrop-filter: blur(24px) saturate(180%);

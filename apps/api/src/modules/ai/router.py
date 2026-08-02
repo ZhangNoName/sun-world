@@ -37,8 +37,14 @@ def get_optional_ai_user_id(request: Request) -> int | None:
     auth = getattr(app, "auth", None)
     if not token or auth is None:
         return None
-    user = auth.get_user_from_token(token, check_redis=False)
-    return int(user.id) if user and user.id is not None else None
+    try:
+        user = auth.get_user_from_token(token, check_redis=False)
+    except Exception:
+        return None
+    if not user:
+        return None
+    user_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+    return int(user_id) if user_id is not None else None
 
 
 def require_ai_user_id(user_id: int | None = Depends(get_optional_ai_user_id)) -> int:
@@ -56,7 +62,7 @@ def raise_http(error: AiDomainError) -> None:
 
 @router.get("/providers", response_model=ApiResponse[list[AiProviderDescriptor]])
 async def list_providers(service: AiService = Depends(get_ai_service)):
-    return ok(data=service.list_providers(), msg="AI providers loaded")
+    return ok(data=await service.list_providers(), msg="AI providers loaded")
 
 
 @router.get("/provider-profiles", response_model=ApiResponse[list[AiProviderProfile]])

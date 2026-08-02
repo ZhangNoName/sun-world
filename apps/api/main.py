@@ -9,6 +9,7 @@ from app_instance import app  # Import the app instance
 from src.core.observability import safe_log_value
 from src.core.request_context import get_request_id
 from src.core.response import fail
+from src.modules.dictionaries.router import router as dictionary_router
 from src.routers import (
     admin_router,
     ai_router,
@@ -37,7 +38,9 @@ def _safe_msg(detail, fallback: str = "请求失败") -> str:
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    msg = _safe_msg(exc.detail)
+    detail = exc.detail if isinstance(exc.detail, dict) else {}
+    msg = _safe_msg(detail.get("message") if detail else exc.detail)
+    code = detail.get("code", exc.status_code)
     logger.warning(
         f"request_id={get_request_id()} "
         f"method={request.method} "
@@ -48,7 +51,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     )
     return JSONResponse(
         status_code=exc.status_code,
-        content=fail(msg=msg, code=exc.status_code).model_dump(),
+        content=fail(msg=msg, code=code).model_dump(),
     )
 
 
@@ -117,6 +120,7 @@ routers = [
     file_router,
     telemetry_router,
     admin_router,
+    dictionary_router,
 ]
 
 # 使用循环一次性添加所有路由器

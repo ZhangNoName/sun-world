@@ -5,6 +5,7 @@ import uuid
 
 class User(BaseModel):
     id: Optional[int] = Field(None, description="用户的唯一标识符，自增主键")
+    username: Optional[str] = Field(None, description="稳定唯一登录用户名")
     name: str = Field(..., description="昵称")
     sex: int = Field(..., description="性别")
     age: int = Field(..., description="年龄")
@@ -18,6 +19,7 @@ class User(BaseModel):
 
 class UserPublic(BaseModel):
     id: Optional[int] = Field(None, description="用户的唯一标识符，自增主键")
+    username: Optional[str] = Field(None, description="稳定唯一登录用户名")
     name: str = Field(..., description="昵称")
     sex: int = Field(..., description="性别")
     age: int = Field(..., description="年龄")

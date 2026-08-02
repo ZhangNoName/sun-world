@@ -5,6 +5,14 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
+      "@sun-world/base-ui/components": ["../base-ui/src/components"],
+      "@sun-world/base-ui/components/*": ["../base-ui/src/components/*"],
+      "@sun-world/base-ui/lib": ["../base-ui/src/lib"],
+      "@sun-world/base-ui/lib/*": ["../base-ui/src/lib/*"],
+      "@sun-world/base-ui/*": [
+        "../base-ui/src/*",
+        "../base-ui/src/components/*/index.ts"
+      ],
       "@sun-world/ui/components": ["src/components"],
       "@sun-world/ui/components/*": ["src/components/*"],
       "@sun-world/ui/patterns": ["src/patterns"],

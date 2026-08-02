@@ -104,15 +104,46 @@ class AiConversation(AiConversationSummary):
 
 
 class AiProviderDescriptor(BaseModel):
-    id: Literal["deepseek", "openai", "openrouter", "openai-compatible"]
+    id: str = Field(
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+    )
     name: str
     default_base_url: str | None = None
     default_model: str | None = None
 
 
+class AiProviderCatalogInput(AiProviderDescriptor):
+    name: str = Field(min_length=1, max_length=120)
+    default_base_url: str | None = Field(default=None, max_length=2048)
+    default_model: str | None = Field(default=None, max_length=200)
+    is_enabled: bool = True
+    sort_order: int = Field(default=0, ge=0, le=10_000)
+
+    @field_validator("default_base_url")
+    @classmethod
+    def validate_default_base_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip().rstrip("/")
+        if not normalized.lower().startswith("https://"):
+            raise ValueError("provider base URL must use HTTPS")
+        return normalized
+
+
+class AiProviderCatalog(AiProviderCatalogInput):
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class AiProviderProfileInput(BaseModel):
     id: str | None = None
-    provider: Literal["deepseek", "openai", "openrouter", "openai-compatible"]
+    provider: str = Field(
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+    )
     name: str = Field(min_length=1, max_length=120)
     base_url: str = Field(min_length=1, max_length=2048)
     model: str = Field(min_length=1, max_length=200)

@@ -1,5 +1,48 @@
 # Current State
 
+## Base UI Package Separation (2026-08-02, local main)
+
+- Added `packages/base-ui` as `@sun-world/base-ui`, containing the current
+  official `base-nova` shadcn/Base UI registry snapshot and its own manifest,
+  build, aliases, and exports. The `sheet` primitive is included as well.
+- `@sun-world/ui` now exposes Sun World-owned protocols/integrations and
+  product patterns. It may depend on `@sun-world/base-ui`; the reverse
+  dependency is prohibited. Application imports were migrated accordingly.
+- Existing component source and Tailwind/CSS classes were moved/copied without
+  a visual redesign. Future shadcn additions belong in `packages/base-ui`;
+  Sun World protocol adapters such as `SwButton`, `SwDialog`,
+  `SwDropdownMenu`, and `SwSidebar` belong in `packages/ui`.
+- Base/UI builds, Base/UI/Web typechecks, AI UI tests/build, Web build, the full
+  UI suite (38 tests), boundary checks, native shadcn check, structure check,
+  and targeted formatting passed. No commit, push, or deploy.
+
+## Development React Source Inspector (2026-08-02, local main)
+
+- The development-only `react-dev-inspector` replacement for
+  `click-to-react-component` is activated strictly by holding `Alt`. Its
+  internal click deactivation callback cannot turn it off while `Alt` remains
+  held; releasing `Alt` or losing focus turns it off immediately.
+- Focused and serial full Web tests pass, including the new inspector
+  regression test. No deployment was performed.
+
+## Global UI, Auth, Login, and Manage Refresh (2026-08-02, local main)
+
+- Consolidated the web and shared UI around shadcn semantic color variables
+  with `light`, `dark`, and `system` modes. Compatibility aliases derive from
+  those variables, and the package fallback is scoped so it cannot overwrite
+  the application theme.
+- Reworked login into a responsive login-04-style two-column surface and
+  Manage into a full-width sidebar-07-style shell. Only explicit blog routes
+  keep the centered side whitespace; other application routes use the full
+  width available to them.
+- Session state now restores once on startup from HttpOnly cookies, persists a
+  stable device ID, coordinates refresh requests, and retries one expired
+  request after refresh. API cookie settings are safe for local HTTP and clear
+  both current and legacy paths on logout.
+- Verification completed: Web/UI/API tests, typechecks, package builds, SSG,
+  static UI checks, and browser smoke checks. No deploy was performed.
+  Detailed active handoff is in `docs/agent-handoff.md`.
+
 ## ChatGPT Work Composer Polish (2026-08-01, local main)
 
 - Removed the inline Markdown preview control and its renderer dependencies;
@@ -693,3 +736,90 @@ the left-side weather card; mobile placement is inside
   `p95_duration_ms`, and `p99_duration_ms`; RUM Web Vitals expose
   `p50_value`, `p95_value`, and `p99_value`. Alert evaluation is local only
   and does not send notifications yet.
+
+## 2026-08-01 Manage admin shell and data pages
+
+- Implemented the approved independent `/manage/*` shell with recursive navigation, desktop collapse/hide/restore, mobile drawer, account menu, canonical routes, legacy redirects, and administrator guard behavior.
+- Added reusable `ManageDataPage`, `ManageSearchForm`, `SchemaForm`, and `ManageTable` primitives with dictionary rendering/cache, stale/error/empty/loading states, race-safe requests, selection/ref APIs, and page correction.
+- Added dictionary type/item schema migration, repositories, service, admin CRUD, enabled public read, contracts, and `/manage/system/dictionaries` management UI.
+- Migrated blog, AI provider, and audit-log screens to generic data pages; blog management now has administrator PUT update support and a right-side SchemaForm editor drawer.
+- Browser QA evidence is in `design-qa.md`; the local browser had no administrator session, so guarded data-page content was validated through focused component tests and API checks.
+- Verification passed: `corepack pnpm check:api`, `corepack pnpm check:icons`, `corepack pnpm test:icons`, `corepack pnpm build:icons`, `corepack pnpm check:web:ui-boundary`, contracts tests/generation, focused admin Vitest suites, Web typecheck, Web build, `corepack pnpm format:check`, and `git diff --check`.
+- Full `corepack pnpm check` reached the frontend performance budget stage but failed on the repository's total JS/CSS thresholds and the stale `AdminLogsPage` chunk-name budget after the log page moved to `ManageLogsDataPage`; the Manage shell was moved behind a lazy route branch and the entry-module threshold now passes. All earlier check stages passed.
+- No deployment, push, commit, or unrelated staging was performed. Next step is review/integration of the task-scoped diff on top of the existing dirty workspace.
+
+## 2026-08-02 Manage localization follow-up
+
+- Management UI copy now defaults to Simplified Chinese when no locale preference exists; the sidebar's lower-left language control switches between Chinese and English and persists through the existing `i18n` preference.
+- Centralized manage translations live in `apps/web/src/modules/admin/manageCopy.ts`; the switch is `ManageLanguageSwitch.tsx`, and the shell updates navigation, account actions, document title, data-page primitives, CRUD drawers, logs, charts, metrics, loading/error/empty states, and accessibility labels on locale changes.
+- Verification passed: `corepack pnpm -F @sun-world/blog exec vitest run src/modules/admin src/pages/manage`, `corepack pnpm -F @sun-world/blog typecheck`, `corepack pnpm -F @sun-world/blog build`, `corepack pnpm format:check`, and `git diff --check`.
+- The focused suite retains one pre-existing `act(...)` warning in `src/pages/manage/index.test.tsx`; all 11 files and 19 tests passed. No deployment, push, commit, or staging was performed.
+
+## 2026-08-02 Manage table shadcn and responsive pagination follow-up
+
+- Replaced the raw management table markup with the canonical shadcn-style `@sun-world/ui/table` composition (`Table`, header/body/row/head/cell primitives). The primitive owns the accessible table slots and its horizontal overflow viewport; ManageTable retains the configured columns, selection, dictionary rendering, and custom cell renderers.
+- Added a responsive `manage-table-pagination` viewport around the existing `SunPagination` pattern. Pagination stays keyboard-accessible and can scroll horizontally on narrow screens without widening the management shell.
+- Added the Table subpath to UI source aliases, package exports, library build entries, and UI boundary/shadcn structure checks.
+- Verification passed: focused `ManageTable.test.tsx` (4 tests), `corepack pnpm -F @sun-world/ui test` (55 tests), `corepack pnpm -F @sun-world/ui build`, UI boundary and shadcn structure checks, Web typecheck, Web build/SSG, `corepack pnpm format:check`, and `git diff --check`.
+- The broader `src/modules/admin` suite now passes 11 files and 23 tests, including the search heading regression, sticky header, toolbar composition, and page-size reload coverage. No deployment, push, commit, or staging was performed.
+- A root `corepack pnpm check` attempt timed out after 180 seconds without emitting a task-specific failure; the targeted Web and UI checks listed above passed.
+
+## 2026-08-02 Manage table layout correction
+
+- Merged the search form into the reusable table toolbar. Page actions (including create) are grouped on the left, while search and reset remain on the right; mobile stacks the same toolbar without creating a separate search card.
+- The table viewport now owns bounded two-axis scrolling, keeps pagination outside that viewport, and uses sticky column headers so vertical scrolling preserves the header. Pagination exposes a page-size selector with Chinese/English copy and reloads from page 1 when the size changes.
+- Added regression coverage for toolbar composition, shadcn table slots, two-axis scroll contract, sticky header markers, pagination placement, page-size interaction, and DataPage page-size requests.
+- Verification passed: `corepack pnpm -F @sun-world/blog exec vitest run --config vitest.config.ts src/modules/admin src/pages/manage` (11 files, 23 tests), Web typecheck, Web build/SSG, UI shadcn structure check, `corepack pnpm format:check`, and `git diff --check`.
+
+## 2026-08-02 Public AI default provider
+
+- Removed code-level AI provider mocks/fallbacks. `GET /ai/v1/providers` now
+  reads the enabled provider catalog from MySQL, and an empty catalog returns
+  `AI_PROVIDER_NOT_CONFIGURED` instead of synthesizing a provider.
+- Public AI provider listing and streaming no longer require login. Optional
+  authentication treats invalid or temporarily unverifiable cookies as guest
+  access, including when Redis is unavailable.
+- Anonymous conversations use the browser-generated conversation ID and a
+  bounded in-process transcript only; they are not written to the AI
+  conversation/message tables. Authenticated profiles and conversation
+  persistence remain unchanged.
+- The database now contains one enabled `deepseek` catalog row with an
+  encrypted credential, no user provider profiles, and the existing two
+  conversations/two messages preserved. The credential is never returned by
+  the API or printed by tooling.
+- `scripts/seed-ai-default-provider.py` is dry-run by default and accepts the
+  provider key only through `DEEPSEEK_API_KEY` when called with `--apply`.
+  It clears provider profiles/catalog rows but does not clear conversation
+  history. The two catalog credential columns were applied narrowly; unrelated
+  pending dictionary-table migration actions were not applied.
+- Verification passed: API unittest discovery (47 tests), AI UI tests (14),
+  Web tests (47 files/114 tests), Web typecheck, AI UI build, Web production
+  build/SSG, and live anonymous/stale-cookie stream checks. No deployment,
+  push, commit, or staging was performed.
+
+## 2026-08-02 Manage shadcn UI refresh
+
+- Added a local shadcn-style `@sun-world/ui/sidebar` primitive with provider,
+  inset, header/content/footer, menu, trigger, and collapse data contracts;
+  no dependency or CLI overwrite was introduced.
+- Refactored `ManageLayout` to use the sidebar/inset composition while keeping
+  recursive navigation, desktop collapse/hide/restore, mobile drawer,
+  language switch, account menu, route redirects, and administrator guard.
+- Refactored `ManageTable` to use the existing shadcn Card and Table primitives
+  and added the dashboard-style page heading in `ManageDataPage`. Search/reset
+  and create actions remain in one toolbar, table scroll remains internal, the
+  header is sticky, and pagination remains outside the viewport.
+- Important files: `packages/ui/src/components/sidebar/`, `packages/ui/package.json`,
+  `packages/ui/source-aliases.ts`, `packages/ui/vite.config.ts`,
+  `apps/web/src/modules/admin/components/ManageLayout.tsx`,
+  `ManageTable.tsx`, `ManageDataPage.tsx`, `manage-layout.css`, and
+  `manage-data.css`; task design/plan are in `docs/superpowers/specs/` and
+  `docs/superpowers/plans/` dated 2026-08-02.
+- Verification passed: focused Manage suite (11 files, 23 tests), Web
+  typecheck, UI package build, Web build/SSG, UI shadcn structure check, and
+  `corepack pnpm format:check`. Browser desktop shell inspection passed; the
+  local browser had no admin session, so guarded table content was not bypassed.
+- A prior parallel format-check attempt saw a transient Vite timestamp-file
+  race; the same checks were rerun serially and passed. No deployment, push,
+  commit, or unrelated staging was performed.
+- Browser QA at 1280×900 and 390×844 confirmed the independent Manage shell and responsive drawer. The local browser has no administrator session, so the guarded data-page surface was validated through the focused component tests; no authentication bypass was used.

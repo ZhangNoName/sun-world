@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react'
 import { createRef } from 'react'
 import { describe, expect, it } from 'vitest'
 
-import { Button, SunButton, buttonVariants } from './button'
+import { Button, buttonVariants } from '@sun-world/base-ui/button'
+import { SunButton } from '../compat/button'
 import {
   Card,
   CardAction,
@@ -11,7 +12,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from './card'
+} from '@sun-world/base-ui/card'
 
 describe('native shadcn primitives', () => {
   it('uses canonical variants and forwards the button ref', () => {
@@ -23,10 +24,10 @@ describe('native shadcn primitives', () => {
     )
     expect(ref.current).toBe(screen.getByRole('button', { name: 'Save' }))
     expect(buttonVariants({ variant: 'ghost', size: 'sm' })).toContain(
-      'hover:bg-accent'
+      'hover:bg-muted'
     )
     expect(buttonVariants({ variant: 'ghost', size: 'sm' })).toContain(
-      'cursor-pointer'
+      'select-none'
     )
     expect(Button).not.toBe(SunButton)
   })

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ToolName } from '@sun-world/editor'
 import { SunIcon, type SunIconProps } from '@sun-world/icons/react'
-import { Button } from '@sun-world/ui/button'
+import { Button } from '@sun-world/base-ui/button'
 import { useEditorCanvas } from '../hooks/useEditorCanvas'
 import { EditorCanvasLeft } from '../ui/EditorCanvasLeft'
 import { EditorCanvasRight } from '../ui/EditorCanvasRight'
