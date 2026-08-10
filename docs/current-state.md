@@ -856,5 +856,16 @@ the left-side weather card; mobile placement is inside
   typecheck, and its library build fails before bundling on TypeScript errors.
 - Verification passed with `corepack pnpm check`: all 19 repository gates,
   including 45 Web test files/112 tests, 71 API tests, package builds, SSG,
-  budgets, schema checks, formatting, and static Compose validation. No
-  production migration or deployment was performed.
+  budgets, schema checks, formatting, and static Compose validation.
+- Commit `9aa5fdb9` was fast-forwarded to `main`. The first automatic deployment
+  run `31346060274` exposed a clean-runner dependency-order defect and an unsafe
+  skipped-build deploy condition; image inspection failed before either
+  production container was replaced. Commit `188a16dd` now builds Icons, UI,
+  and AI Composer before Web checks and requires a successful image for every
+  changed target unless `deploy-existing` was explicitly requested.
+- Manual `build-and-deploy / all` run `31346480765` succeeded for commit
+  `188a16dd`: clean CI, frontend and API Lighthouse image builds, schema guard,
+  candidate API health, production cutover, and public health checks all passed.
+  Independent probes returned 200 for the main, WWW, and `/aigc` pages,
+  `{"status":"ok"}` for the API health endpoint, and the rendered homepage
+  exposed `豫ICP备2024081960号` with the required MIIT link.

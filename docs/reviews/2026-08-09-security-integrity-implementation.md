@@ -97,4 +97,13 @@ API 71 项测试，Icons/UI/AI 包测试与构建、Web 构建/SSG/预算、MySQ
 格式、Git 空白和 Compose 静态检查均通过。现有 React `act`、jsdom 网络、
 Pydantic v2、UMD globals 和 Node 弃用信息仍为非阻断告警。
 
-本补充没有执行生产数据库迁移或部署。
+## 合并与部署
+
+- `9aa5fdb9` 已快进合并到 `main`；`188a16dd` 修复了干净 CI 中依赖包未先
+  构建的问题，并阻止发生变化的目标在镜像构建被跳过时进入部署。
+- 首次自动流水线 `31346060274` 在镜像检查阶段停止，未替换生产容器。
+- 手动 `build-and-deploy / all` 流水线 `31346480765` 成功：Web/API 质量
+  检查、两套 Lighthouse 镜像、schema guard、候选 API、生产切换和公网
+  探活均通过。
+- 独立验证确认主站、WWW、`/aigc` 返回 200，API `/healthz` 返回
+  `{"status":"ok"}`，浏览器渲染后的首页包含正确的 ICP 文案和工信部链接。

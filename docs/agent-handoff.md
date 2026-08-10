@@ -5,8 +5,9 @@
 - Branch handoff: `docs/handoff/branches/codex-security-integrity-baseline.md`.
 - Report: `docs/reviews/2026-08-09-security-integrity-implementation.md`.
 - Security containment, initial transaction/session/package boundaries, and UI
-  consumer-boundary consolidation are implemented and verified. No production
-  database migration or deployment was performed.
+  consumer-boundary consolidation are implemented, merged to `main`, and
+  deployed from `188a16dd` by GitHub Actions run `31346480765`. Web, WWW, AI,
+  API health, and the rendered ICP filing link passed public smoke checks.
 
 ### Previous checkpoint: 2026-08-02 Base UI package separation
 
