@@ -257,6 +257,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build frontend package dependencies
+        run: |
+          pnpm build:icons
+          pnpm build:ui
+          pnpm -F @sun-world/ai-composer run build
+
       - name: Run frontend checks
         run: pnpm check:web
 
@@ -517,8 +523,13 @@ jobs:
       always() &&
       needs.detect-changes.outputs.any_changed == 'true' &&
       needs.detect-changes.outputs.deploy_needed == 'true' &&
-      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped') &&
-      (needs.build-api.result == 'success' || needs.build-api.result == 'skipped')
+      (
+        (github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy-existing') ||
+        (
+          (needs.detect-changes.outputs.web_changed != 'true' || needs.build-web.result == 'success') &&
+          (needs.detect-changes.outputs.api_changed != 'true' || needs.build-api.result == 'success')
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
 

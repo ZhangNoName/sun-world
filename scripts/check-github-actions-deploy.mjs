@@ -221,6 +221,33 @@ if (workflow) {
       'local verification scripts must not be treated as deployment targets'
     )
   }
+
+  const deployJob =
+    workflow.match(/\r?\n  deploy:\r?\n[\s\S]*?\r?\n    runs-on:/)?.[0] ?? ''
+  for (const fragment of [
+    "github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy-existing'",
+    "needs.detect-changes.outputs.web_changed != 'true' || needs.build-web.result == 'success'",
+    "needs.detect-changes.outputs.api_changed != 'true' || needs.build-api.result == 'success'",
+  ]) {
+    if (!deployJob.includes(fragment)) {
+      violations.push(
+        `deploy job must gate changed targets on successful image builds: ${fragment}`
+      )
+    }
+  }
+
+  if (
+    deployJob.includes(
+      "needs.build-web.result == 'success' || needs.build-web.result == 'skipped'"
+    ) ||
+    deployJob.includes(
+      "needs.build-api.result == 'success' || needs.build-api.result == 'skipped'"
+    )
+  ) {
+    violations.push(
+      'deploy job must not accept a skipped image build for a changed target'
+    )
+  }
 }
 
 if (deployDoc) {
