@@ -1,5 +1,6 @@
 import type { AiComposerCommand } from '../types'
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/base-ui/button'
 
 interface CommandPaletteProps {
   commands: AiComposerCommand[]
@@ -20,8 +21,9 @@ export function CommandPalette({
     >
       {commands.length ? (
         commands.map((command, index) => (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             role="option"
             aria-selected={index === activeIndex}
             disabled={command.disabled}
@@ -35,7 +37,7 @@ export function CommandPalette({
               {command.description ? <span>{command.description}</span> : null}
             </span>
             {command.shortcut ? <kbd>{command.shortcut}</kbd> : null}
-          </button>
+          </Button>
         ))
       ) : (
         <p>没有匹配的命令</p>

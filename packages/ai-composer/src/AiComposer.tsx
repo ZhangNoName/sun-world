@@ -10,7 +10,10 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/base-ui/button'
+import { Textarea } from '@sun-world/base-ui/textarea'
 
+import { AiFilePicker } from './attachments/AiFilePicker'
 import { AttachmentList } from './attachments/AttachmentList'
 import { validateIncomingFiles } from './attachments/files'
 import { CommandPalette } from './commands/CommandPalette'
@@ -290,7 +293,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             重复文件：{duplicateFiles.join('、')}
           </div>
         ) : null}
-        <textarea
+        <Textarea
           ref={textareaRef}
           aria-label={placeholder}
           aria-describedby={
@@ -340,31 +343,22 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         ) : null}
         <div className="sw-ai-composer__toolbar">
           <div className="sw-ai-composer__tools sw-ai-composer__tools--start">
-            <label
-              className="sw-ai-composer__icon-button sw-ai-composer__attachment-trigger"
-              title="添加附件"
-            >
-              <SunIcon name="plus" />
-              <span className="sw-ai-composer__sr-only">添加附件</span>
-              <input
-                type="file"
-                aria-label="添加附件"
-                accept={accept}
-                multiple
-                disabled={disabled || loading}
-                onChange={addFiles}
-              />
-            </label>
+            <AiFilePicker
+              accept={accept}
+              disabled={disabled || loading}
+              onChange={addFiles}
+            />
             {selectedCommand ? (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 aria-label={`移除命令 ${selectedCommand.label}`}
                 onClick={() => setSelectedCommandId(undefined)}
               >
                 <SunIcon name="square" size="xs" />
                 <span>{selectedCommand.label}</span>
                 <SunIcon name="x" size="xs" />
-              </button>
+              </Button>
             ) : null}
           </div>
           <div className="sw-ai-composer__tools sw-ai-composer__tools--end">
@@ -373,8 +367,10 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
               modelId={modelId}
               onModelChange={onModelChange}
             />
-            <button
+            <Button
               type="button"
+              size="icon"
+              variant="ghost"
               aria-label={
                 speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
               }
@@ -385,25 +381,29 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
               }}
             >
               <SunIcon name="mic" />
-            </button>
+            </Button>
             {primaryActionState === 'generating' ? (
-              <button
+              <Button
                 type="button"
+                size="icon"
+                variant="ghost"
                 className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
                 aria-label="停止生成"
                 onClick={cancel}
               >
                 <SunIcon name="square" size="xs" />
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="submit"
+                size="icon"
+                variant="ghost"
                 className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
                 aria-label="发送消息"
                 disabled={primaryActionState === 'disabled'}
               >
                 <SunIcon name="send" size="sm" />
-              </button>
+              </Button>
             )}
           </div>
         </div>

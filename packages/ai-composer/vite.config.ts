@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { createBaseUiSourceAliases } from '../base-ui/source-aliases'
 
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -16,6 +17,9 @@ export default defineConfig(({ mode }) => ({
         ]
       : []),
   ],
+  resolve: {
+    alias: createBaseUiSourceAliases(path.resolve(__dirname, '../base-ui/src')),
+  },
   test: {
     environment: 'jsdom',
     globals: true,

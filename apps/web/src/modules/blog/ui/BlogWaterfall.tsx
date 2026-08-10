@@ -1,7 +1,7 @@
-import type { BlogListItem } from '@/modules/blog/types'
-import { BlogCard } from '@/modules/blog/ui/BlogCard'
+import type { BlogListItem } from '../types'
+import { BlogCard } from './BlogCard'
 
-export function Waterfall({
+export function BlogWaterfall({
   list,
   columnCount = 3,
 }: {
@@ -19,4 +19,4 @@ export function Waterfall({
   )
 }
 
-export default Waterfall
+export default BlogWaterfall

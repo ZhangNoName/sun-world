@@ -10,10 +10,11 @@ class UserManager:
     用户管理类，提供用户的增删改查功能，同时支持获取用户的角色和资源权限。
     """
     table_name = "users"
-    all_attr = [
+    public_attr = [
         'id', 'username', 'name',  'age', 'phone', 'email',
-        'password', 'birth_day', 'create_time', 'status',"sex"
+        'birth_day', 'create_time', 'status', "sex"
     ]
+    credential_attr = [*public_attr, 'password']
 
     def __init__(self, db: MySQLManager):
         """
@@ -31,7 +32,11 @@ class UserManager:
         Returns:
             str: 字段字符串
         """
-        return ",".join(self.all_attr)
+        return ",".join(self.public_attr)
+
+    def get_credential_user_attr(self) -> str:
+        """Return fields used only by authentication queries."""
+        return ",".join(self.credential_attr)
 
     def create_user(self, user: User) -> bool:
         """
@@ -79,7 +84,11 @@ class UserManager:
             return None
 
         # 构造用户字典
-        user_data = result if isinstance(result, dict) else dict(zip(self.all_attr, result))
+        user_data = (
+            dict(result)
+            if isinstance(result, dict)
+            else dict(zip(self.public_attr, result))
+        )
 
         # 查询用户角色
         role_sql = """
@@ -130,7 +139,7 @@ class UserManager:
         users = []
         for row in result:
             # 构造用户基本信息字典
-            user_data = dict(zip(self.all_attr, row))
+            user_data = dict(zip(self.public_attr, row))
             user_id = user_data['id']
 
             # 查询用户角色
@@ -164,7 +173,7 @@ class UserManager:
         if not value:
             return []
         sql = f"""
-        SELECT {self.get_all_user_attr()}
+        SELECT {self.get_credential_user_attr()}
         FROM {self.table_name}
         WHERE status = 1
           AND (username = %s OR email = %s OR phone = %s)
@@ -174,7 +183,11 @@ class UserManager:
         rows = self.db.fetch_all(sql, (value, value, value)) or []
         users: List[User] = []
         for row in rows:
-            user_data = dict(row)
+            user_data = (
+                dict(row)
+                if isinstance(row, dict)
+                else dict(zip(self.credential_attr, row))
+            )
             user_id = user_data['id']
             user_data['roles'] = self.db.fetch_all(
                 """
@@ -224,9 +237,12 @@ class UserManager:
         users = []
         for row in result:
             # 构造用户基本信息字典
-            user_data = row
+            user_data = (
+                dict(row)
+                if isinstance(row, dict)
+                else dict(zip(self.public_attr, row))
+            )
             user_id = user_data["id"]
-            logger.debug(f"获取的id{row}{user_data}")
 
             # 查询用户角色
             role_sql = """
@@ -249,7 +265,7 @@ class UserManager:
             resources = self.db.fetch_all(resource_sql, user_id)
             user_data['resources'] = resources or []
 
-            users.append(User(**user_data))
+            users.append(user_data)
 
         return users
 

@@ -8,6 +8,7 @@ from src.controller.resource_manager import ResourceManager
 
 from app_instance import app
 from src.core.response import ok, fail
+from src.routers.auth.auth import require_admin
 
 # ------------------------------
 # Pydantic 模型
@@ -44,7 +45,9 @@ class ResourceUpdateModel(BaseModel):
 # 路由对象
 # ------------------------------
 
-router = APIRouter(prefix="/role", tags=["role"])
+router = APIRouter(
+    prefix="/role", tags=["role"], dependencies=[Depends(require_admin)]
+)
 
 
 # ------------------------------

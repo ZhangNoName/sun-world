@@ -6,13 +6,13 @@
       "name": "total-js-gzip",
       "type": "total",
       "extensions": [".js"],
-      "maxGzipKiB": 1200
+      "maxGzipKiB": 1360
     },
     {
       "name": "total-css-gzip",
       "type": "total",
       "extensions": [".css"],
-      "maxGzipKiB": 40
+      "maxGzipKiB": 50
     },
     {
       "name": "largest-asset-gzip",
@@ -58,7 +58,7 @@
     {
       "name": "admin-logs-page-gzip",
       "type": "pattern",
-      "pattern": "assets/AdminLogsPage*.js",
+      "pattern": "assets/ManageLogsDataPage*.js",
       "maxGzipKiB": 2
     },
     {

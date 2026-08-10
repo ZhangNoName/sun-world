@@ -131,6 +131,15 @@ if (!runApiCheck.includes('schema_migration.py')) {
 }
 
 if (
+  !runApiCheck.includes("'test_*.py'") ||
+  runApiCheck.includes("'test_ai_*.py'")
+) {
+  violations.push(
+    'scripts/run-api-check.mjs must execute the complete API unittest suite'
+  )
+}
+
+if (
   packageJson.scripts?.['check:api:deploy-schema'] !==
   'node scripts/check-api-deploy-schema.mjs'
 ) {

@@ -6,7 +6,8 @@
   "module": "dist/ai-ui.es.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "build": "vite build --mode lib",
+    "build": "pnpm typecheck && vite build --mode lib",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
   "sideEffects": [

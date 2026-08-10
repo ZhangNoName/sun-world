@@ -5,6 +5,12 @@ const harness = vi.hoisted(() => ({
   responseUse: vi.fn(),
   serviceRequest: vi.fn(),
   refreshSession: vi.fn(),
+  hasUser: true,
+  status: 'authenticated' as
+    | 'authenticated'
+    | 'anonymous'
+    | 'restoring'
+    | 'unknown',
 }))
 
 vi.mock('axios', () => ({
@@ -24,17 +30,6 @@ vi.mock('axios', () => ({
   },
 }))
 
-vi.mock('@/store/auth', () => ({
-  useAuthStore: {
-    getState: () => ({
-      status: 'authenticated',
-      user: { id: 1 },
-      refreshSession: harness.refreshSession,
-      syncExpireFromCookie: vi.fn(),
-    }),
-  },
-}))
-
 vi.mock('@sun-world/ui/toast', () => ({
   toast: {
     warning: vi.fn(),
@@ -51,6 +46,21 @@ describe('HTTP auth recovery', () => {
     harness.responseUse.mockClear()
     harness.serviceRequest.mockReset()
     harness.refreshSession.mockReset()
+    harness.hasUser = true
+    harness.status = 'authenticated'
+    const { createSessionPort, installSessionPort } =
+      await import('@/shared/api/sessionPort')
+    installSessionPort(
+      createSessionPort({
+        snapshot: () => ({
+          hasUser: harness.hasUser,
+          status: harness.status,
+        }),
+        preflight: async () => undefined,
+        refresh: harness.refreshSession,
+        sync: () => undefined,
+      })
+    )
     await import('./http')
     rejectResponse = harness.responseUse.mock.calls[0][1]
   })
@@ -94,13 +104,8 @@ describe('HTTP auth recovery', () => {
   })
 
   it('does not refresh a public request when there is no session', async () => {
-    const authModule = await import('@/store/auth')
-    vi.spyOn(authModule.useAuthStore, 'getState').mockReturnValue({
-      status: 'anonymous',
-      user: null,
-      refreshSession: harness.refreshSession,
-      syncExpireFromCookie: vi.fn(),
-    } as never)
+    harness.hasUser = false
+    harness.status = 'anonymous'
 
     await expect(
       rejectResponse({

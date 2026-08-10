@@ -13,9 +13,15 @@ import {
 } from 'react'
 
 import { Button } from '@sun-world/base-ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@sun-world/base-ui/card'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@sun-world/base-ui/card'
 import { Checkbox } from '@sun-world/base-ui/checkbox'
 import { SunPagination } from '@sun-world/ui/pagination'
+import { SwNativeSelect } from '@sun-world/ui/sw-select'
 import {
   Table,
   TableBody,
@@ -309,24 +315,22 @@ function ManageTableInner<T>(
         <div className="manage-table-pagination__controls">
           <div className="manage-table-pagination__page-size">
             <span>{copy.table.pageSizeLabel}</span>
-            <select
+            <SwNativeSelect
               className="manage-table-page-size"
               aria-label={copy.table.pageSizeLabel}
               value={String(pageSize)}
-              onChange={(event) => {
-                const nextPageSize = Number(event.target.value)
+              onValueChange={(value) => {
+                const nextPageSize = Number(value)
                 if (Number.isFinite(nextPageSize) && nextPageSize > 0) {
                   onPageSizeChange?.(nextPageSize)
                 }
               }}
               disabled={isLoading || !onPageSizeChange}
-            >
-              {resolvedPageSizeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {copy.table.pageSizeOption(option)}
-                </option>
-              ))}
-            </select>
+              options={resolvedPageSizeOptions.map((option) => ({
+                value: String(option),
+                label: copy.table.pageSizeOption(option),
+              }))}
+            />
           </div>
           <SunPagination
             label={copy.table.pageNavigation}

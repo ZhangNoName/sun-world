@@ -9,6 +9,8 @@ import App from './App'
 import { AppProviders } from './app/providers/AppProviders'
 import { ReactSourceInspector } from './dev/ReactSourceInspector'
 import router from './router'
+import { useAuthStore } from './store/auth'
+import { createSessionPort, installSessionPort } from './shared/api/sessionPort'
 import { installModulePreloading } from './modules/registry'
 import {
   installSeoResourceHints,
@@ -28,6 +30,26 @@ import {
 
 InterceptLocalStorage()
 installSeoResourceHints()
+
+installSessionPort(
+  createSessionPort({
+    snapshot() {
+      const state = useAuthStore.getState()
+      return { hasUser: Boolean(state.user), status: state.status }
+    },
+    preflight() {
+      return useAuthStore.getState().refreshTokensIfNeeded()
+    },
+    refresh() {
+      return useAuthStore
+        .getState()
+        .refreshSession({ suppressErrorToast: true })
+    },
+    sync() {
+      useAuthStore.getState().syncExpireFromCookie()
+    },
+  })
+)
 
 const cleanupPreloading = installModulePreloading(router)
 const cleanupRouteTiming = installRouteTiming(router)

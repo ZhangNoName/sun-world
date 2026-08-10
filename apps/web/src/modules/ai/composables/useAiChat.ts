@@ -51,6 +51,8 @@ export function useAiChat() {
     AiUiProviderProfile[]
   >([])
   const controller = useRef<AbortController | null>(null)
+  const workspaceGeneration = useRef(0)
+  const userId = user?.id ?? null
 
   useEffect(() => () => controller.current?.abort(), [])
 
@@ -75,23 +77,35 @@ export function useAiChat() {
   }, [])
 
   useEffect(() => {
-    if (!user) return
-    let cancelled = false
+    const generation = ++workspaceGeneration.current
+    controller.current?.abort()
+    controller.current = null
+    const emptyConversation = newConversation()
+    setConversations([emptyConversation])
+    setActiveConversationId(emptyConversation.id)
+    setMessagesByConversation({ [emptyConversation.id]: [] })
+    setProviderProfiles([])
+    setRunState({ status: 'idle' })
+
+    if (!userId) return
     void Promise.all([fetchAiConversations(), fetchAiProviderProfiles()])
       .then(([conversationItems, profileItems]) => {
-        if (cancelled) return
+        if (workspaceGeneration.current !== generation) return
         const mapped = (conversationItems ?? []).map(mapConversation)
         if (mapped.length) {
           setConversations(mapped)
           setActiveConversationId(mapped[0]!.id)
+          setMessagesByConversation({})
         }
         setProviderProfiles((profileItems ?? []).map(mapProviderProfile))
       })
       .catch(() => undefined)
     return () => {
-      cancelled = true
+      if (workspaceGeneration.current === generation) {
+        controller.current?.abort()
+      }
     }
-  }, [user])
+  }, [userId])
 
   const startConversation = useCallback(() => {
     const conversation = newConversation()

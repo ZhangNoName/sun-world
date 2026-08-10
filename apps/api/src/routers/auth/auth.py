@@ -12,6 +12,7 @@ from src.controller.auth_manager import AuthManager
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
     AUTH_LOGIN_FAILED,
+    AUTH_NOT_IMPLEMENTED,
     AUTH_REGISTER_CONFLICT,
     AUTH_TOKEN_EXPIRED,
     AUTH_UNAUTHORIZED,
@@ -156,6 +157,16 @@ def _error_detail(code: str, message: str) -> dict[str, str]:
     return {"code": code, "message": message}
 
 
+def _not_implemented(feature: str) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail=_error_detail(
+            AUTH_NOT_IMPLEMENTED,
+            f"{feature} is not available yet.",
+        ),
+    )
+
+
 def get_current_user(
     request: Request,
     response: Response,
@@ -168,7 +179,7 @@ def get_current_user(
             detail=_error_detail(AUTH_UNAUTHORIZED, "未找到 token，请先登录"),
         )
 
-    user = auth_manager.get_user_from_token(access_token, check_redis=False)
+    user = auth_manager.get_user_from_token(access_token, check_redis=True)
     if not user:
         refresh_token = request.cookies.get("refresh_token")
         if refresh_token:
@@ -182,7 +193,7 @@ def get_current_user(
                     request.cookies.get("device_id", str(uuid.uuid4())),
                 )
                 user = auth_manager.get_user_from_token(
-                    new_tokens.access_token, check_redis=False
+                    new_tokens.access_token, check_redis=True
                 )
 
     if not user:
@@ -271,14 +282,14 @@ async def login(
 async def request_reset_password(
     req: ResetPasswordRequest, auth: AuthManager = Depends(get_auth_manager)
 ):
-    return ok(data=None, msg="重置密码链接已发送")
+    raise _not_implemented("Password reset requests")
 
 
 @router.post("/reset_password", response_model=ApiResponse[None])
 async def reset_password(
     req: ResetPasswordModel, auth: AuthManager = Depends(get_auth_manager)
 ):
-    return ok(data=None, msg="密码已重置")
+    raise _not_implemented("Password reset")
 
 
 @router.post("/logout", response_model=ApiResponse[None])
@@ -330,5 +341,4 @@ async def refresh_token(
 
 @router.post("/qq", response_model=ApiResponse[None])
 async def qq(info: QQModel, auth: AuthManager = Depends(get_auth_manager)):
-    logger.info("qq login requested")
-    return ok(data=None, msg="qq 登录成功")
+    raise _not_implemented("QQ login")

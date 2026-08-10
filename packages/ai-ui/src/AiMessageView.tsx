@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/base-ui/button'
+import { Label } from '@sun-world/base-ui/label'
+import { Textarea } from '@sun-world/base-ui/textarea'
 
 import { AiBlockRenderer } from './AiBlockRenderer'
 import type { AiRendererRegistry, AiUiMessage } from './types'
@@ -48,8 +50,8 @@ export function AiMessageView({
       </header>
       {editing ? (
         <div className="sw-ai-message-editor">
-          <label htmlFor={`edit-${message.id}`}>编辑消息内容</label>
-          <textarea
+          <Label htmlFor={`edit-${message.id}`}>编辑消息内容</Label>
+          <Textarea
             id={`edit-${message.id}`}
             value={draft}
             onChange={(event) => setDraft(event.currentTarget.value)}

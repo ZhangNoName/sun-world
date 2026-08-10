@@ -2,13 +2,14 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
+from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
 from app_instance import app
 from src.type.user_type import User, UserCreateResult, UserPage, UserPublic
 from src.core.response import ok, fail
 from src.core.response import ApiResponse
 from src.core.error_codes import COMMON_INTERNAL_ERROR, COMMON_NOT_FOUND
-from src.routers.auth.auth import get_current_user
+from src.routers.auth.auth import get_auth_manager, get_current_user, require_admin
 
 
 # 创建用户 API 路由
@@ -25,8 +26,11 @@ def get_user_manager() -> UserManager:
 
 
 # 创建新用户
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult])
-async def create_user(user: User, user_manager: UserManager = Depends(get_user_manager)):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult], dependencies=[Depends(require_admin)])
+async def create_user(
+    user: User,
+    auth_manager: AuthManager = Depends(get_auth_manager),
+):
     """
     创建新的用户
 
@@ -36,10 +40,7 @@ async def create_user(user: User, user_manager: UserManager = Depends(get_user_m
     Returns:
         dict: 包含新用户 ID 的字典
     """
-    logger.info(f'接收到的参数：{user}')
-
-    res = user_manager.create_user(user)
-    logger.success(f'创建结果{res}')
+    res = auth_manager.register_user(user)
     if res:
         return ok(data={"id": user.id}, msg="创建成功")
     else:
@@ -62,7 +63,7 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 
 
 # 根据id获取指定用户
-@router.get("/{user_id}", response_model=ApiResponse[UserPublic])
+@router.get("/{user_id}", response_model=ApiResponse[UserPublic], dependencies=[Depends(require_admin)])
 async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
     """
     获取指定 ID 的用户
@@ -74,8 +75,6 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
         User: 用户对象，如果不存在则抛出 404 错误
     """
     user = user_manager.get_user_by_id(user_id)
-    logger.info(f'查找的结果-----{user}')
-
     if not user:
         return fail(msg="用户不存在", code=COMMON_NOT_FOUND)
 
@@ -86,7 +85,7 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
 # 分页获取用户
 
 
-@router.get("/", response_model=ApiResponse[UserPage])
+@router.get("/", response_model=ApiResponse[UserPage], dependencies=[Depends(require_admin)])
 async def get_users_paginated(
     page: int = 1,
     page_size: int = 10,
@@ -117,7 +116,7 @@ async def get_users_paginated(
 
 
 # 删除指定用户
-@router.delete("/{user_id}", response_model=ApiResponse[bool])
+@router.delete("/{user_id}", response_model=ApiResponse[bool], dependencies=[Depends(require_admin)])
 async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
     """
     停用指定 ID 的用户

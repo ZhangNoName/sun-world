@@ -3,6 +3,15 @@ import ReactMarkdown from 'react-markdown'
 import rehypeSanitize from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
 import type { AiContentBlock } from '@sun-world/contracts'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@sun-world/base-ui/table'
 
 import type { AiRendererRegistry } from './types'
 
@@ -33,27 +42,29 @@ export function AiBlockRenderer({
   if (block.type === 'table') {
     return (
       <div className="sw-ai-table-wrap">
-        <table aria-label={block.caption || 'AI 生成表格'}>
-          {block.caption ? <caption>{block.caption}</caption> : null}
-          <thead>
-            <tr>
+        <Table aria-label={block.caption || 'AI 生成表格'}>
+          {block.caption ? <TableCaption>{block.caption}</TableCaption> : null}
+          <TableHeader>
+            <TableRow>
               {block.columns.map((column) => (
-                <th scope="col" key={column.key}>
+                <TableHead scope="col" key={column.key}>
                   {column.label}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {block.rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+              <TableRow key={rowIndex}>
                 {block.columns.map((column) => (
-                  <td key={column.key}>{formatCell(row[column.key])}</td>
+                  <TableCell key={column.key}>
+                    {formatCell(row[column.key])}
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     )
   }

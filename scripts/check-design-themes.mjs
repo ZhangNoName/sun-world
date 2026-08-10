@@ -9,10 +9,8 @@ const tokens = readFileSync(
 )
 
 const required = [
-  "[data-design='sun-world'][data-color-mode='light']",
-  "[data-design='sun-world'][data-color-mode='dark']",
-  "[data-design='apple'][data-color-mode='light']",
-  "[data-design='apple'][data-color-mode='dark']",
+  ':root {',
+  "[data-color-mode='dark']",
   '--material-chrome:',
   '--surface-elevated:',
   '--font-ui:',
@@ -24,6 +22,11 @@ const required = [
 const missing = required.filter((entry) => !tokens.includes(entry))
 if (missing.length) {
   console.error(`Design theme contract missing: ${missing.join(', ')}`)
+  process.exit(1)
+}
+
+if (tokens.includes('[data-design=')) {
+  console.error('Design theme contract must not restore a design-family layer.')
   process.exit(1)
 }
 

@@ -24,7 +24,10 @@ describe('AiBlockRenderer', () => {
       </>
     )
 
-    expect(screen.getByRole('table', { name: 'Results' })).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Results' })).toHaveAttribute(
+      'data-slot',
+      'table'
+    )
     expect(screen.getByRole('cell', { name: 'Sun World' })).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Open Sun World' })

@@ -96,7 +96,7 @@ for (const candidate of candidates) {
   }
 
   if (failed) continue
-  const aiTests = spawnSync(
+  const apiTests = spawnSync(
     candidate,
     [
       '-m',
@@ -105,7 +105,7 @@ for (const candidate of candidates) {
       '-s',
       resolve(repoRoot, 'apps/api/tests'),
       '-p',
-      'test_ai_*.py',
+      'test_*.py',
     ],
     {
       cwd: repoRoot,
@@ -113,11 +113,11 @@ for (const candidate of candidates) {
       shell: process.platform === 'win32' && !isPath,
     }
   )
-  if (aiTests.error) {
-    lastError = aiTests.error.message
+  if (apiTests.error) {
+    lastError = apiTests.error.message
     continue
   }
-  if ((aiTests.status ?? 1) !== 0) process.exit(aiTests.status ?? 1)
+  if ((apiTests.status ?? 1) !== 0) process.exit(apiTests.status ?? 1)
   process.exit(0)
 }
 

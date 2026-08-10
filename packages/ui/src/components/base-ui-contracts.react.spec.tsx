@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -92,9 +92,9 @@ describe('Base UI migration contracts', () => {
     const trigger = screen.getByRole('combobox', { name: 'Base Nova sort' })
     expect(trigger.className).toContain('rounded-lg')
     await userEvent.click(trigger)
-    expect(screen.getByRole('listbox').parentElement?.className).toContain(
-      'w-(--anchor-width)'
-    )
+    expect(
+      (await screen.findByRole('listbox')).parentElement?.className
+    ).toContain('w-(--anchor-width)')
     expect(screen.getByRole('option').className).toContain('rounded-md')
   })
 
@@ -217,7 +217,9 @@ describe('Base UI migration contracts', () => {
 
     const trigger = screen.getByRole('combobox', { name: 'Sort by keyboard' })
     await userEvent.click(trigger)
-    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await waitFor(() =>
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    )
     expect(screen.getByRole('option', { name: 'Oldest' })).toBeVisible()
 
     await userEvent.keyboard('{Escape}')

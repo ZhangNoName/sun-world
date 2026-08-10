@@ -82,30 +82,29 @@ class BlogManager:
         self.db = baseDB
         self.contentDB = contentDB
 
-    def get_or_create_tag(self, tag: Union[str, TagNew],blog_id:str) -> int:
+    def get_or_create_tag(self, tag: Union[int, TagNew], blog_id: int) -> int:
         """检查标签是否存在，不存在则创建"""
-
-        if isinstance(tag, str):
-            # 已有标签，直接返回 ID
-            logger.info('已有id',tag)
-            id =  tag
+        if isinstance(tag, int) and not isinstance(tag, bool):
+            tag_id = tag
         elif isinstance(tag, TagNew):
-            # 查询是否存在该标签
             tag_name = tag.name.strip()
+            if not tag_name:
+                raise ValueError("Tag name cannot be empty")
             sql = "SELECT id FROM tag WHERE name = %s"
-            id = self.db.fetch_one(sql, tag_name)
-            if id is None:
+            existing = self.db.fetch_one(sql, (tag_name,))
+            if existing:
+                tag_id = int(existing["id"])
+            else:
                 create_sql = """
                     INSERT INTO tag (name) VALUES (%s)
                 """
-                # 不存在，插入新标签
-                id = self.db.execute(create_sql, tag_name)
-        # 插入博客标签关联表
-        if id:
-            # 插入 blog_tag 关系表
-            blog_tag_sql = "INSERT IGNORE INTO blog_tag (blog_id, tag_id) VALUES (%s, %s)"
-            self.db.execute(blog_tag_sql, (blog_id, id))
-        return id
+                tag_id = int(self.db.execute(create_sql, (tag_name,)))
+        else:
+            raise TypeError("Tag must be an integer ID or TagNew")
+
+        blog_tag_sql = "INSERT IGNORE INTO blog_tag (blog_id, tag_id) VALUES (%s, %s)"
+        self.db.execute(blog_tag_sql, (blog_id, tag_id))
+        return tag_id
 
 
     def add_blog(self, blog: BlogCreate) -> str:
@@ -260,12 +259,16 @@ class BlogManager:
         )
         blogs_data = self.db.fetch_all(query, tuple(query_params))
 
+        count_query, count_params = build_blog_list_count_query(keyword=keyword)
+        count_result = self.db.fetch_one(count_query, tuple(count_params))
+        total_count = int(count_result.get("count", 0)) if count_result else 0
+
         # 获取所有博客的 ID
         blog_ids = [blog["id"] for blog in blogs_data]
 
         if not blog_ids:
             return {
-                "total": 0,
+                "total": total_count,
                 "page": page,
                 "page_size": page_size,
                 "list": []
@@ -277,7 +280,7 @@ class BlogManager:
             SELECT blog_id, tag_id FROM blog_tag WHERE blog_id IN ({placeholders})
         """
 
-        blog_tag_data = self.db.execute(blog_tag_query, tuple(blog_ids))  # 结果: [{'blog_id': 1, 'tag_id': 2}, ...]
+        blog_tag_data = self.db.fetch_all(blog_tag_query, tuple(blog_ids))
 
         # 构建 blog_id -> tag_id 列表的映射
         blog_tag_map = {}
@@ -307,11 +310,6 @@ class BlogManager:
             blog_id = blog["id"]
             blog["tag"] = [tag_id for tag_id in blog_tag_map.get(blog_id, [])]  # 关联 tag
 
-        count_query, count_params = build_blog_list_count_query(keyword=keyword)
-        count_result = self.db.execute(count_query, tuple(count_params))
-        total_count = count_result[0].get("count", 0) if count_result else 0
-        # total_count = 10
-        # logger.info(f'查询到的结果{blogs_data}')
         return {
             "total": total_count,
             "page": page,

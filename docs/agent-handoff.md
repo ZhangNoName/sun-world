@@ -1,6 +1,14 @@
 ﻿## Current Handoff
 
-### Active checkpoint: 2026-08-02 Base UI package separation
+### Active checkpoint: 2026-08-09 security and integrity baseline
+
+- Branch handoff: `docs/handoff/branches/codex-security-integrity-baseline.md`.
+- Report: `docs/reviews/2026-08-09-security-integrity-implementation.md`.
+- Security containment, initial transaction/session/package boundaries, and UI
+  consumer-boundary consolidation are implemented and verified. No production
+  database migration or deployment was performed.
+
+### Previous checkpoint: 2026-08-02 Base UI package separation
 
 - Goal: separate frozen generic shadcn/Base UI primitives from Sun World-owned
   protocols and product compositions without changing component styles.

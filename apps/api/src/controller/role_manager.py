@@ -50,8 +50,17 @@ class RoleManager:
 
     def delete_role(self, role_id: int) -> bool:
         """删除角色，并清理关联资源"""
-        self.db.execute(f"DELETE FROM {self.role_resource_table} WHERE role_id=%s", (role_id,))
-        return self.db.execute(f"DELETE FROM {self.table_name} WHERE id=%s", (role_id,)) > 0
+        with self.db.unit_of_work() as uow:
+            uow.execute(
+                f"DELETE FROM {self.role_resource_table} WHERE role_id=%s",
+                (role_id,),
+            )
+            deleted = uow.execute(
+                f"DELETE FROM {self.table_name} WHERE id=%s",
+                (role_id,),
+            )
+            uow.commit()
+        return deleted > 0
 
     def get_role_by_id(self, role_id: int) -> Optional[Dict[str, Any]]:
         """根据ID获取角色"""
@@ -75,12 +84,18 @@ class RoleManager:
 
     def bind_resources(self, role_id: int, resource_ids: List[int]):
         """绑定角色到多个资源"""
-        # 先删除已有关联
-        self.db.execute(f"DELETE FROM {self.role_resource_table} WHERE role_id=%s", (role_id,))
-        # 批量插入
-        for res_id in resource_ids:
-            self.db.execute(f"INSERT INTO {self.role_resource_table} (role_id, resource_id) VALUES (%s, %s)",
-                            (role_id, res_id))
+        with self.db.unit_of_work() as uow:
+            uow.execute(
+                f"DELETE FROM {self.role_resource_table} WHERE role_id=%s",
+                (role_id,),
+            )
+            for res_id in resource_ids:
+                uow.execute(
+                    f"INSERT INTO {self.role_resource_table} "
+                    "(role_id, resource_id) VALUES (%s, %s)",
+                    (role_id, res_id),
+                )
+            uow.commit()
 
     def get_resources_by_role(self, role_id: int) -> List[int]:
         """获取某个角色绑定的资源ID列表"""

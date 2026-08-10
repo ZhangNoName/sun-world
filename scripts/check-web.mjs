@@ -49,6 +49,10 @@ run('Frontend client secret check', 'node', [
   'scripts/check-web-client-secrets.mjs',
 ])
 
+run('Frontend session boundary check', 'node', [
+  'scripts/check-web-session-boundary.mjs',
+])
+
 run('AI interface check', 'node', ['scripts/check-ai-interface.mjs'])
 
 run('Design theme contract check', 'node', ['scripts/check-design-themes.mjs'])

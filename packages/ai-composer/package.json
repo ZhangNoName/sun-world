@@ -6,7 +6,8 @@
   "module": "dist/ai-composer.es.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "build": "vite build --mode lib",
+    "build": "pnpm typecheck && vite build --mode lib",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
   "sideEffects": [
@@ -21,8 +22,8 @@
     }
   },
   "dependencies": {
-    "@sun-world/icons": "workspace:*",
-    "@sun-world/ui": "workspace:*"
+    "@sun-world/base-ui": "workspace:*",
+    "@sun-world/icons": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

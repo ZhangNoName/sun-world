@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/base-ui/button'
 
 import type { AiComposerModel } from '../types'
 
@@ -40,21 +41,23 @@ export function ModelSelector({
 
   return (
     <div ref={rootRef} className="sw-ai-composer__model-selector">
-      <button
+      <Button
         ref={triggerRef}
         type="button"
+        variant="ghost"
         aria-label={`选择模型，当前 ${label}`}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
         <span>{label}</span>
         <SunIcon name="chevron-down" size="xs" />
-      </button>
+      </Button>
       {open ? (
         <div role="listbox" aria-label="模型">
           {models.map((model) => (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               role="option"
               aria-selected={model.id === modelId}
               disabled={model.disabled}
@@ -71,7 +74,7 @@ export function ModelSelector({
                   {model.description}
                 </span>
               ) : null}
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}

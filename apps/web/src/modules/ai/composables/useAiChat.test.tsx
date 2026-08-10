@@ -1,7 +1,12 @@
 import { act, renderHook } from '@testing-library/react'
 import type { AiJsonValue } from '@sun-world/contracts'
 
-import { fetchAiProviderProfiles, fetchAiProviders, streamAiRun } from '../api'
+import {
+  fetchAiConversations,
+  fetchAiProviderProfiles,
+  fetchAiProviders,
+  streamAiRun,
+} from '../api'
 import { useAiChat } from './useAiChat'
 
 vi.mock('../api', () => ({
@@ -24,6 +29,7 @@ vi.mock('@/store/auth', () => ({
 const stream = vi.mocked(streamAiRun)
 const providers = vi.mocked(fetchAiProviders)
 const profiles = vi.mocked(fetchAiProviderProfiles)
+const conversations = vi.mocked(fetchAiConversations)
 
 const payload = (markdown: string) => ({
   markdown,
@@ -53,6 +59,7 @@ describe('useAiChat', () => {
     authState.user = null
     providers.mockResolvedValue([])
     profiles.mockResolvedValue([])
+    conversations.mockResolvedValue([])
     stream.mockReset()
   })
 
@@ -60,6 +67,30 @@ describe('useAiChat', () => {
     const { result } = renderHook(() => useAiChat())
 
     expect(result.current.providers).toEqual([])
+  })
+
+  it('clears the previous user workspace when identity changes', async () => {
+    authState.user = { id: 7 }
+    conversations.mockResolvedValueOnce([
+      {
+        id: 'user-7-chat',
+        title: 'Private chat',
+        created_at: '2026-08-09T00:00:00Z',
+        updated_at: '2026-08-09T00:00:00Z',
+      },
+    ])
+    const { result, rerender } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+    expect(result.current.conversations[0]?.id).toBe('user-7-chat')
+
+    authState.user = { id: 8 }
+    conversations.mockResolvedValueOnce([])
+    rerender()
+    await act(async () => undefined)
+
+    expect(result.current.conversations).toHaveLength(1)
+    expect(result.current.conversations[0]?.id).not.toBe('user-7-chat')
+    expect(result.current.messages).toEqual([])
   })
 
   it('sends the local conversation id for an anonymous run', async () => {

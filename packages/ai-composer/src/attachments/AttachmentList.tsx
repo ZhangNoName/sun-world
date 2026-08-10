@@ -1,4 +1,5 @@
 import { SunIcon } from '@sun-world/icons/react'
+import { Button } from '@sun-world/base-ui/button'
 
 import { filePresentation } from './filePresentation'
 import { ImageAttachmentPreview } from './ImageAttachmentPreview'
@@ -33,13 +34,15 @@ export function AttachmentList({ files, onRemove }: AttachmentListProps) {
             <span className="sw-ai-composer__attachment-copy">
               <strong>{file.name}</strong>
             </span>
-            <button
+            <Button
               type="button"
+              size="icon-sm"
+              variant="ghost"
               aria-label={`移除 ${file.name}`}
               onClick={() => onRemove(index)}
             >
               <SunIcon name="x" size="xs" />
-            </button>
+            </Button>
           </li>
         )
       })}

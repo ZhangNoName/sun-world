@@ -166,7 +166,12 @@ class AuthManager:
                 return None
 
             user = self.user_manager.get_user_by_id(user_id)
-            if not user or not user.status:
+            user_status = (
+                user.get("status")
+                if isinstance(user, dict)
+                else getattr(user, "status", None)
+            )
+            if not user or not user_status:
                 return None
 
             return self._create_tokens(str(user_id), device_id)

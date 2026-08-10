@@ -68,6 +68,15 @@ function ComposerHarness({
 }
 
 describe('AiComposer core', () => {
+  it('renders interactive controls through the owned UI primitives', () => {
+    render(<ComposerHarness />)
+
+    expect(screen.getByRole('textbox')).toHaveAttribute('data-slot', 'textarea')
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).toHaveAttribute('data-slot', 'button')
+    }
+  })
+
   it('submits trimmed markdown and clears only after success', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockResolvedValue(undefined)

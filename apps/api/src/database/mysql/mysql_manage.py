@@ -156,6 +156,12 @@ class MySQLManager:
         except pymysql.Error:
             raise
 
+    def unit_of_work(self):
+        """Create a connection-scoped transaction for related statements."""
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+
+        return MySQLUnitOfWork(self)
+
     def fetch_one(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[dict]:
         with self._borrow() as (_connection, cursor):
             cursor.execute(sql, params)

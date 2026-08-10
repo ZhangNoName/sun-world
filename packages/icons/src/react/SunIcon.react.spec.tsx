@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import { SunIcon, SunIconButton } from './index'
+import { SunIcon } from './index'
 
 describe('@sun-world/icons React renderer', () => {
   it('renders named icon data with size and stroke attributes', () => {
@@ -23,12 +22,5 @@ describe('@sun-world/icons React renderer', () => {
       'data-icon-name',
       'square'
     )
-  })
-
-  it('provides an accessible icon button', async () => {
-    const onClick = vi.fn()
-    render(<SunIconButton icon="plus" label="Add" onClick={onClick} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Add' }))
-    expect(onClick).toHaveBeenCalledOnce()
   })
 })

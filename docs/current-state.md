@@ -1,5 +1,12 @@
 # Current State
 
+## Security and Integrity Baseline (2026-08-09, feature branch)
+
+- Administrative routes enforce admin access; uploads use bounded UUID storage and byte-based image validation.
+- Password writes are hashed, public queries exclude credentials, token refresh/revocation is repaired, and unavailable auth flows return 501.
+- MySQL Unit of Work, transactional role-resource replacement, Blog regressions, injected Web SessionPort, AI identity reset and hard package typechecks are implemented.
+- API, Web and static Compose gates pass locally. No migration, push or deployment was performed. See `docs/reviews/2026-08-09-security-integrity-implementation.md`.
+
 ## Base UI Package Separation (2026-08-02, local main)
 
 - Added `packages/base-ui` as `@sun-world/base-ui`, containing the current
@@ -823,3 +830,31 @@ the left-side weather card; mobile placement is inside
   race; the same checks were rerun serially and passed. No deployment, push,
   commit, or unrelated staging was performed.
 - Browser QA at 1280×900 and 390×844 confirmed the independent Manage shell and responsive drawer. The local browser has no administrator session, so the guarded data-page surface was validated through the focused component tests; no authentication bypass was used.
+
+## 2026-08-10 UI consumer boundary consolidation
+
+- The two-level UI ownership model remains intentional: `@sun-world/base-ui`
+  owns generic accessible primitives, while `@sun-world/ui` owns Sun World
+  protocol components and compositions. Consumer packages may import either
+  owner through its public package export, but may not import third-party UI
+  primitive libraries directly.
+- Production JSX under `apps/web/src` and consumer `packages/*/src` no longer
+  owns raw interactive or table elements. The sole documented native-element
+  exception is the hidden `type="file"` input inside
+  `packages/ai-composer/src/attachments/AiFilePicker.tsx`; the adapter owns its
+  label, trigger, reset behavior, and accessibility contract.
+- AI Composer now uses Base UI Button/Textarea primitives and the file-picker
+  adapter; AI UI uses Base UI Button/Label/Textarea and the compound Table
+  primitive. Component tests assert the shared `data-slot` ownership contract.
+- `@sun-world/icons` is again icon-only: the obsolete `SunIconButton` wrapper
+  was removed. The blog waterfall moved from the app-global `components/`
+  directory into the blog module, and duplicate unrouted Manage/Admin log
+  pages and hooks were removed.
+- `scripts/check-web-ui-library.mjs` now scans all consumer packages, rejects
+  raw interactive/table JSX, direct third-party primitive imports, and a new
+  app-owned `shared/ui` layer. `@sun-world/ai-composer` now has a required
+  typecheck, and its library build fails before bundling on TypeScript errors.
+- Verification passed with `corepack pnpm check`: all 19 repository gates,
+  including 45 Web test files/112 tests, 71 API tests, package builds, SSG,
+  budgets, schema checks, formatting, and static Compose validation. No
+  production migration or deployment was performed.

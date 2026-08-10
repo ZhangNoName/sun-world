@@ -29,7 +29,7 @@ const appLayout = readFileSync(
 for (const selector of [
   '.blog-toolbar',
   '.blog-toolbar__action',
-  '.z-blog-card__action',
+  '.z-blog-card:focus-visible',
   '.blog-page__article',
   '.blog-page__catalog',
   '.catalog-card',

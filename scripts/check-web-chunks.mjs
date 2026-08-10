@@ -78,15 +78,15 @@ if (
 )
   failures.push('JSZip must remain dynamically imported inside export actions')
 const manage = readFileSync(
-  join(root, 'apps/web/src/pages/manage/index.tsx'),
+  join(root, 'apps/web/src/modules/admin/index.ts'),
   'utf8'
 )
 if (
-  !/lazy\(\s*\(\)\s*=>\s*import\(['"]@\/modules\/admin\/pages\/AdminChartsPage['"]\)\s*\)/.test(
+  !/lazy\(\s*\(\)\s*=>\s*import\(['"]\.\/pages\/AdminChartsPage['"]\)\s*\)/.test(
     manage
   )
 )
-  failures.push('AdminChartsPage must be lazy-loaded by the management view')
+  failures.push('AdminChartsPage must be lazy-loaded by the admin module')
 const chart = readFileSync(
   join(root, 'apps/web/src/modules/admin/ui/ChartsCard.tsx'),
   'utf8'

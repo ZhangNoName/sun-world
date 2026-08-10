@@ -5,12 +5,12 @@ import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { LoadingSkeleton } from '@sun-world/ui/loading-skeleton'
 import { toast } from '@sun-world/ui/toast'
 
-import { Waterfall } from '@/components/Waterfall/waterfall'
 import { useViewportWidth } from '@/shared/browser/viewport'
 import { useBlogBaseData } from '../composables/useBlogBaseData'
 import { useBlogList } from '../composables/useBlogList'
 import type { BlogSortBy, BlogSortOrder } from '../types'
 import { BlogCard } from './BlogCard'
+import { BlogWaterfall } from './BlogWaterfall'
 import '../styles/blog-experience.css'
 
 const SORT_OPTIONS = [
@@ -170,7 +170,7 @@ export function BlogHomeFeed() {
         <p className="empty-state">暂时没有文章</p>
       ) : null}
       {mode === 'waterfall' ? (
-        <Waterfall list={blog.items} columnCount={width <= 1024 ? 2 : 3} />
+        <BlogWaterfall list={blog.items} columnCount={width <= 1024 ? 2 : 3} />
       ) : (
         <section className="blog-list">
           {blog.items.map((item) => (

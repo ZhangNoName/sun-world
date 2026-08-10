@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const waterfall = readFileSync(
-  resolve(root, 'apps/web/src/components/Waterfall/waterfall.tsx'),
+  resolve(root, 'apps/web/src/modules/blog/ui/BlogWaterfall.tsx'),
   'utf8'
 )
 const feed = readFileSync(
@@ -13,6 +13,8 @@ const feed = readFileSync(
 for (const snippet of ['BlogListItem', 'list.map', '<BlogCard'])
   if (!waterfall.includes(snippet))
     throw new Error(`React Waterfall misses real blog data support: ${snippet}`)
-if (!feed.includes('<Waterfall list={blog.items}'))
-  throw new Error('BlogHomeFeed must pass real blog items to Waterfall.')
+if (!feed.includes('<BlogWaterfall'))
+  throw new Error('BlogHomeFeed must render the module-owned BlogWaterfall.')
+if (!feed.includes('list={blog.items}'))
+  throw new Error('BlogHomeFeed must pass real blog items to BlogWaterfall.')
 console.log('Blog waterfall real-data protocol check passed.')

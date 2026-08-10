@@ -195,12 +195,12 @@ importers:
 
   packages/ai-composer:
     dependencies:
+      '@sun-world/base-ui':
+        specifier: workspace:*
+        version: link:../base-ui
       '@sun-world/icons':
         specifier: workspace:*
         version: link:../icons
-      '@sun-world/ui':
-        specifier: workspace:*
-        version: link:../ui
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.9.1

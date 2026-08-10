@@ -5,7 +5,7 @@ import type { AppModule } from '../types'
 
 const AdminChartsPage = lazy(() => import('./pages/AdminChartsPage'))
 const AdminMetricsPage = lazy(() => import('./pages/AdminMetricsPage'))
-const AdminLogsPage = lazy(() => import('./pages/ManageLogsDataPage'))
+const ManageLogsDataPage = lazy(() => import('./pages/ManageLogsDataPage'))
 const ManageBlogPage = lazy(() => import('./pages/ManageBlogDataPage'))
 const ManageAigcPage = lazy(() => import('./pages/ManageProvidersDataPage'))
 const ManageDictionariesPage = lazy(
@@ -63,7 +63,7 @@ export const adminModule: AppModule = {
     },
     {
       path: '/manage/system/logs',
-      Component: AdminLogsPage,
+      Component: ManageLogsDataPage,
       meta: { module: 'admin', title: '审计日志 - Sun World', noIndex: true },
     },
     {

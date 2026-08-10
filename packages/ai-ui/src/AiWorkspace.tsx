@@ -163,8 +163,10 @@ export function AiWorkspace({
       sidebarCollapsed={!sidebarOpen}
       floating={
         sidebarOpen ? (
-          <button
+          <Button
             type="button"
+            size="icon"
+            variant="ghost"
             className="sw-ai-sidebar-scrim"
             aria-label="关闭对话列表遮罩"
             onClick={() => setSidebarOpen(false)}

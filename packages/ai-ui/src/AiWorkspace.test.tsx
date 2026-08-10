@@ -61,6 +61,7 @@ describe('AiWorkspace', () => {
 
     await user.click(screen.getByRole('button', { name: '编辑消息' }))
     const editor = screen.getByRole('textbox', { name: '编辑消息内容' })
+    expect(editor).toHaveAttribute('data-slot', 'textarea')
     await user.clear(editor)
     await user.type(editor, 'Edited question')
     await user.click(screen.getByRole('button', { name: '保存编辑' }))

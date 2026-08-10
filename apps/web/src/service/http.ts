@@ -4,8 +4,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios'
 import { API_BASE_URL } from '@/shared/config'
-import { useAuthStore } from '@/store/auth'
-import { getDeviceId } from '@/util/auth'
+import { getSessionPort } from '@/shared/api/sessionPort'
 import {
   AUTH_TOKEN_EXPIRED,
   AUTH_UNAUTHORIZED,
@@ -92,9 +91,9 @@ function isUnauthorized(error: ApiError) {
   )
 }
 
-function getStructuredErrorPayload(data: unknown):
-  | { code: number | string; msg?: string; message?: string }
-  | null {
+function getStructuredErrorPayload(
+  data: unknown
+): { code: number | string; msg?: string; message?: string } | null {
   if (!data || typeof data !== 'object') return null
   const record = data as Record<string, unknown>
   if ('code' in record) return record as never
@@ -113,9 +112,9 @@ service.interceptors.request.use(
       readRequestIdFromHeaders(config.headers as Record<string, unknown>) ??
       createRequestId()
 
-    const authStore = useAuthStore.getState()
-    if (!isAuthRoute(config.url) && authStore.user) {
-      await authStore.refreshTokensIfNeeded()
+    const session = getSessionPort()
+    if (!isAuthRoute(config.url) && session.snapshot().hasUser) {
+      await session.preflight()
     }
 
     //配置自定义请求头（不包含 token，token 从 cookie 自动带过去）
@@ -140,8 +139,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   function (response) {
     // token 在 cookie 中，不需要手动处理
-    const authStore = useAuthStore.getState()
-    authStore.syncExpireFromCookie?.()
+    getSessionPort().sync()
 
     const body = response.data
     // 检测是否为统一 envelope 响应（包含 code 字段）
@@ -174,8 +172,7 @@ service.interceptors.response.use(
       // 如果后端已返回 envelope 格式的错误响应，使用它
       const structuredError = getStructuredErrorPayload(data)
       if (structuredError) {
-        const msg =
-          structuredError.msg || structuredError.message || '请求失败'
+        const msg = structuredError.msg || structuredError.message || '请求失败'
         const apiError = new ApiError(
           structuredError.code,
           msg,
@@ -286,19 +283,20 @@ async function retryUnauthorizedRequest(
   config?: AxiosRequestConfig
 ) {
   const tracedConfig = config as TracedAxiosConfig | undefined
-  const authStore = useAuthStore.getState()
+  const session = getSessionPort()
+  const snapshot = session.snapshot()
   if (
     !tracedConfig ||
     !isUnauthorized(error) ||
     isAuthRoute(tracedConfig.url) ||
     tracedConfig._authRetry ||
-    (!authStore.user && authStore.status !== 'restoring')
+    (!snapshot.hasUser && snapshot.status !== 'restoring')
   ) {
     return null
   }
 
   try {
-    await authStore.refreshSession({ suppressErrorToast: true })
+    await session.refresh()
     return service.request({
       ...tracedConfig,
       _authRetry: true,

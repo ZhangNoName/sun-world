@@ -44,7 +44,8 @@ for (const snippet of [
 for (const snippet of [
   'forwardRef<AiComposerHandle',
   'createBrowserSpeechAdapter',
-  '<textarea',
+  '<Textarea',
+  '<AiFilePicker',
 ])
   if (!composer.includes(snippet))
     throw new Error(`AI composer package missing: ${snippet}`)
