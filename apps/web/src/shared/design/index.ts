@@ -11,9 +11,10 @@
 
 export { BREAKPOINTS } from '@/hooks/breakpoint/breakpoint.data'
 export type { BreakpointKey } from '@/hooks/breakpoint/breakpoint.data'
+export {
+  ROUTE_PENDING_DELAY_MS,
+  ROUTE_PENDING_MIN_VISIBLE_MS,
+  useReducedMotion,
+} from './motion'
 export { ThemeProvider, useTheme } from './theme'
-export type {
-  ColorMode,
-  ResolvedColorMode,
-  ThemePreference,
-} from './theme'
+export type { ColorMode, ResolvedColorMode, ThemePreference } from './theme'

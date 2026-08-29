@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 
 import type { AppRouteObject } from '@/modules/types'
 import { routes as coreRoutes } from './routes'
+import { InitialRouteLoadingFallback } from './RouteLoadingIndicator'
 import { AppLayout } from '@/layout/layout'
 
 function isCatchAllRoute(route: AppRouteObject) {
@@ -38,6 +39,11 @@ export function createAppRouter(extraRoutes: AppRouteObject[] = []) {
     handle: { ...(route.handle ?? {}), meta: route.meta ?? {} },
   }))
   return createBrowserRouter([
-    { path: '/', Component: AppLayout, children: routes },
+    {
+      path: '/',
+      Component: AppLayout,
+      HydrateFallback: InitialRouteLoadingFallback,
+      children: routes,
+    },
   ])
 }

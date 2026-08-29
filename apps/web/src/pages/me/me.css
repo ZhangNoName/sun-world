@@ -16,7 +16,7 @@
 .me-page__spinner {
   width: 1.5rem;
   height: 1.5rem;
-  animation: me-spin 0.9s linear infinite;
+  animation: sw-motion-spin var(--motion-duration-loop) linear infinite;
 }
 
 .me-guest-card,
@@ -477,12 +477,6 @@
   padding: var(--space-6) 0 var(--space-2);
 }
 
-@keyframes me-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (max-width: 48rem) {
   .me-hero {
     grid-template-columns: auto 1fr;
@@ -527,7 +521,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .me-page__spinner {
-    animation-duration: 1.8s;
+    animation: none;
   }
 
   .me-link-button:hover {

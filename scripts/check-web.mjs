@@ -57,6 +57,8 @@ run('AI interface check', 'node', ['scripts/check-ai-interface.mjs'])
 
 run('Design theme contract check', 'node', ['scripts/check-design-themes.mjs'])
 
+run('Frontend motion contract check', 'node', ['scripts/check-web-motion.mjs'])
+
 run('Blog waterfall real-data check', 'node', [
   'scripts/check-blog-waterfall-real-data.mjs',
 ])
@@ -78,6 +80,10 @@ run('Blog visual system check', 'node', [
 ])
 
 run('Public SSG contract check', 'node', ['scripts/check-web-ssg.mjs'])
+
+run('Frontend SPA fallback check', 'node', [
+  'scripts/check-web-spa-fallback.mjs',
+])
 
 run('Homepage ICP card check', 'node', ['scripts/check-icp-home-card.mjs'])
 

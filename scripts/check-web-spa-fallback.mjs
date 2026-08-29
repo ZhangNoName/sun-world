@@ -5,6 +5,11 @@ import { resolve } from 'node:path'
 const repoRoot = resolve(import.meta.dirname, '..')
 const dockerfilePath = resolve(repoRoot, 'Dockerfile')
 const nginxConfigPath = resolve(repoRoot, 'deploy/frontend/nginx.conf')
+const prerenderScriptPath = resolve(
+  repoRoot,
+  'scripts/prerender-public-pages.mjs'
+)
+const webIndexPath = resolve(repoRoot, 'apps/web/index.html')
 
 const violations = []
 
@@ -16,11 +21,25 @@ if (!existsSync(nginxConfigPath)) {
   violations.push('deploy/frontend/nginx.conf must exist')
 }
 
+if (!existsSync(prerenderScriptPath)) {
+  violations.push('scripts/prerender-public-pages.mjs must exist')
+}
+
+if (!existsSync(webIndexPath)) {
+  violations.push('apps/web/index.html must exist')
+}
+
 const dockerfile = existsSync(dockerfilePath)
   ? readFileSync(dockerfilePath, 'utf8')
   : ''
 const nginxConfig = existsSync(nginxConfigPath)
   ? readFileSync(nginxConfigPath, 'utf8')
+  : ''
+const prerenderScript = existsSync(prerenderScriptPath)
+  ? readFileSync(prerenderScriptPath, 'utf8')
+  : ''
+const webIndex = existsSync(webIndexPath)
+  ? readFileSync(webIndexPath, 'utf8')
   : ''
 
 if (!dockerfile.includes('deploy/frontend/nginx.conf')) {
@@ -38,7 +57,7 @@ if (nginxConfig) {
     'listen 80',
     'root /usr/share/nginx/html',
     'index index.html',
-    'try_files $uri $uri.html $uri/ /index.html',
+    'try_files $uri $uri.html /spa.html',
   ]
 
   for (const fragment of requiredFragments) {
@@ -75,6 +94,50 @@ if (nginxConfig) {
   ) {
     violations.push(
       'frontend nginx HTML and route entries must revalidate before reuse'
+    )
+  }
+}
+
+if (prerenderScript) {
+  const requiredFragments = [
+    "const distSpaPath = join(distDir, 'spa.html')",
+    'await writeSpaShell(indexHtml)',
+    'await writeFile(distSpaPath, indexHtml)',
+  ]
+
+  for (const fragment of requiredFragments) {
+    if (!prerenderScript.includes(fragment)) {
+      violations.push(`frontend prerender must preserve SPA shell: ${fragment}`)
+    }
+  }
+}
+
+if (webIndex) {
+  if (webIndex.includes('qweather-icons.css')) {
+    violations.push(
+      'apps/web/index.html must not block first paint on QWeather icon CSS'
+    )
+  }
+
+  const telegramScript = webIndex.match(
+    /<script\b[^>]*src=["']https:\/\/telegram\.org\/js\/telegram-web-app\.js["'][^>]*>/
+  )?.[0]
+
+  if (!telegramScript?.includes('defer')) {
+    violations.push(
+      'Telegram Web App script must be deferred in apps/web/index.html'
+    )
+  }
+
+  const themeBootstrapIndex = webIndex.indexOf('data-theme-bootstrap')
+  if (
+    themeBootstrapIndex === -1 ||
+    themeBootstrapIndex > webIndex.indexOf('</head>') ||
+    !webIndex.includes("localStorage.getItem('sun-world-theme')") ||
+    !webIndex.includes('root.dataset.colorMode = resolved')
+  ) {
+    violations.push(
+      'apps/web/index.html must apply the persisted color mode before first paint'
     )
   }
 }

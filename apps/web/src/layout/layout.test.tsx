@@ -91,4 +91,38 @@ describe('AppLayout navigation', () => {
 
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
   })
+
+  it('returns to the top without smooth scrolling when motion is reduced', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query) =>
+        ({
+          matches: query === '(prefers-reduced-motion: reduce)',
+          media: query,
+          onchange: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        }) as MediaQueryList
+    )
+    useDeviceStore.setState({ isMobile: true })
+    renderLayout()
+    const scrollRoot = document.querySelector<HTMLElement>('.app-container')
+    expect(scrollRoot).not.toBeNull()
+    Object.defineProperty(scrollRoot, 'scrollTop', {
+      configurable: true,
+      value: 480,
+      writable: true,
+    })
+
+    fireEvent.scroll(scrollRoot!)
+
+    const backToTop = await screen.findByRole('button', { name: '返回顶部' })
+    const scrollTo = vi.fn()
+    scrollRoot!.scrollTo = scrollTo
+    await userEvent.click(backToTop)
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' })
+  })
 })

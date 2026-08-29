@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, fireEvent, renderHook } from '@testing-library/react'
 
 import { fetchBlogById } from '../api'
 import type { BlogDetail } from '../types'
@@ -31,7 +31,43 @@ function blogDetail(id: number, title: string): BlogDetail {
   }
 }
 
+function mockReducedMotion(matches: boolean) {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query) =>
+      ({
+        matches: query === '(prefers-reduced-motion: reduce)' ? matches : false,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }) as MediaQueryList
+  )
+}
+
+function createReaderDom() {
+  const root = document.createElement('div')
+  root.className = 'app-container'
+  root.scrollTop = 120
+  root.scrollTo = vi.fn()
+  root.getBoundingClientRect = vi.fn(() => ({ top: 20 }) as DOMRect)
+  const preview = document.createElement('div')
+  const heading = document.createElement('h2')
+  heading.id = 'reader-heading'
+  heading.getBoundingClientRect = vi.fn(() => ({ top: 200 }) as DOMRect)
+  preview.append(heading)
+  document.body.append(root, preview)
+  return { heading, preview, root }
+}
+
 describe('useBlogReader', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.querySelectorAll('.app-container').forEach((node) => node.remove())
+  })
+
   it('keeps the newest article when responses resolve out of order', async () => {
     const first = deferred<BlogDetail>()
     const second = deferred<BlogDetail>()
@@ -63,5 +99,78 @@ describe('useBlogReader', () => {
     expect(view.result.current.blogInfo.id).toBe(2)
     expect(view.result.current.blogInfo.title).toBe('new')
     expect(view.result.current.loading).toBe(false)
+  })
+
+  it.each([
+    { reduced: false, behavior: 'smooth' as const },
+    { reduced: true, behavior: 'auto' as const },
+  ])(
+    'uses $behavior scrolling when reduced motion is $reduced',
+    ({ reduced, behavior }) => {
+      mockReducedMotion(reduced)
+      vi.stubGlobal('CSS', { escape: (value: string) => value })
+      const { preview, root } = createReaderDom()
+      const view = renderHook(() => useBlogReader('1'))
+      view.result.current.blogPreview.current = preview
+
+      act(() => view.result.current.scrollToHeading('reader-heading'))
+
+      expect(root.scrollTo).toHaveBeenCalledWith({ top: 212, behavior })
+      preview.remove()
+    }
+  )
+
+  it('coalesces heading measurements into one animation frame and cancels pending work', () => {
+    const frames = new Map<number, FrameRequestCallback>()
+    let nextFrameId = 1
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      vi.fn((callback: FrameRequestCallback) => {
+        const frameId = nextFrameId++
+        frames.set(frameId, callback)
+        return frameId
+      })
+    )
+    const cancelAnimationFrame = vi.fn((frameId: number) => {
+      frames.delete(frameId)
+    })
+    vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrame)
+    const { heading, preview, root } = createReaderDom()
+    const view = renderHook(() => useBlogReader('1'))
+    view.result.current.blogPreview.current = preview
+
+    act(() => {
+      view.result.current.handlePreviewCatalog([
+        { id: 'reader-heading', level: 2, text: 'Reader heading' },
+      ])
+    })
+    expect(requestAnimationFrame).toHaveBeenCalledTimes(1)
+    const initialFrame = frames.entries().next().value as [
+      number,
+      FrameRequestCallback,
+    ]
+    frames.delete(initialFrame[0])
+    act(() => initialFrame[1](0))
+    vi.mocked(heading.getBoundingClientRect).mockClear()
+
+    fireEvent.scroll(root)
+    fireEvent.scroll(root)
+    fireEvent.scroll(root)
+
+    expect(requestAnimationFrame).toHaveBeenCalledTimes(2)
+    expect(heading.getBoundingClientRect).not.toHaveBeenCalled()
+    const pendingFrame = frames.entries().next().value as [
+      number,
+      FrameRequestCallback,
+    ]
+    frames.delete(pendingFrame[0])
+    act(() => pendingFrame[1](16))
+    expect(heading.getBoundingClientRect).toHaveBeenCalledTimes(1)
+
+    fireEvent.scroll(root)
+    const cancelledFrameId = frames.keys().next().value as number
+    view.unmount()
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(cancelledFrameId)
+    preview.remove()
   })
 })

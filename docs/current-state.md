@@ -1,5 +1,45 @@
 # Current State
 
+## Frontend Motion System (2026-08-30, release candidate)
+
+- A dependency-free frontend motion system is implemented in the local working
+  tree. `apps/web/src/styles/design-tokens.css` is the sole source of CSS
+  duration, delay, and easing values for the app and Sun World-owned packages;
+  shared entrance, spin, and pulse keyframes are consolidated in
+  `apps/web/src/style.css`. The frozen upstream `packages/base-ui` source is
+  intentionally unchanged and excluded from this policy. No animation runtime
+  dependency was added.
+- `apps/web/src/shared/design/motion.ts` owns the reduced-motion subscription and
+  route behavior constants: a `150 ms` pending delay and `180 ms` minimum
+  visible time. Data navigation uses the delayed, stable route indicator, while
+  the root route's `HydrateFallback` covers an initial unresolved `route.lazy`
+  before the layout exists. Later lazy-route fallbacks register the same pending
+  state. Both render an accessible skeleton immediately instead of waiting
+  through the delay.
+- Cold document loading now keeps the untouched Vite shell as `spa.html` while
+  public pages retain SSG HTML; Nginx sends non-SSG fallback routes to the
+  neutral shell, preventing a homepage flash. Theme is applied before first
+  paint, Telegram loads with `defer`, and QWeather icon CSS loads only after
+  weather data succeeds.
+- New entrance, exit, loading, and spatial motion is limited to `transform` and
+  `opacity`; desktop hover movement is gated to hover-capable fine pointers.
+  High-frequency pointer/scroll visual updates use `requestAnimationFrame`, and
+  CSS plus JavaScript paths honor `prefers-reduced-motion`.
+- The Web-package `check:motion` script enforces the shared token and
+  route-loading contracts and
+  protects the root fallback plus reduced-motion media/global fallbacks, and
+  rejects product-level hard-coded timing, local keyframes, and
+  `transition: all`; it is wired into `check:web`. The total CSS gzip budget
+  remains unchanged at `51,200` bytes (`50 KiB`).
+- The implementation and this documentation are prepared as an isolated
+  frontend-only release candidate; they have not yet been pushed or deployed.
+  Final local verification passed: 23 focused regression tests, Web typecheck,
+  and the complete `check:web` gate with 174 Web tests, 15 AI UI tests, 6
+  contract tests, production build, SSG/SPA contracts, chunk checks, and all
+  budgets. Total CSS is `50,986 / 51,200` gzip bytes. Desktop `1440x900` and
+  mobile `390x844` browser QA covered light/dark loading, navigation, search,
+  AI resize, and theme persistence with no console warnings or errors.
+
 ## Optional Identity And Personal AIGC (2026-08-29, local main)
 
 - Optional authentication is implemented for password, purpose-bound

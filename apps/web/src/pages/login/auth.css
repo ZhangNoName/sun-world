@@ -350,13 +350,7 @@
   border: 2px solid var(--primary);
   border-top-color: transparent;
   border-radius: 999px;
-  animation: auth-callback-spin 0.8s linear infinite;
-}
-
-@keyframes auth-callback-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: sw-motion-spin var(--motion-duration-loop) linear infinite;
 }
 
 .auth-form .sun-ui-field,

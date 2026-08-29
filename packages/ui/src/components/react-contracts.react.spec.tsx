@@ -357,7 +357,15 @@ describe('@sun-world/ui React contracts', () => {
     expect(onSelect).toHaveBeenCalledWith({ id: 1, title: 'First' })
     expect(onPageChange).toHaveBeenCalledWith(2)
     expect(screen.getByText('React')).toBeVisible()
+    expect(screen.getByRole('status', { name: '正在加载' })).toHaveAttribute(
+      'aria-busy',
+      'true'
+    )
     expect(screen.getAllByTestId('sun-skeleton-line')).toHaveLength(4)
+    expect(screen.getAllByTestId('sun-skeleton-line')[0]).toHaveAttribute(
+      'data-slot',
+      'skeleton'
+    )
     expect(screen.getByTestId('sun-theme-provider')).toHaveStyle({
       '--sun-ui-color-primary': '#14b8a6',
       '--sun-ui-radius': '12px',

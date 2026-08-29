@@ -120,8 +120,8 @@
   background: var(--bg-fill);
   padding: 0.7rem 0.8rem;
   transition:
-    border-color 140ms ease,
-    background 140ms ease;
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    background var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .sw-ai-capability-option:hover,
@@ -213,7 +213,7 @@
 }
 
 .sw-ai-capability-state[role='status'] > svg {
-  animation: sw-ai-capability-spin 0.9s linear infinite;
+  animation: sw-motion-spin var(--motion-duration-loop) linear infinite;
 }
 
 .sw-ai-capability-state--guest {
@@ -414,7 +414,7 @@
 }
 
 .sw-ai-mcp-card-actions button:disabled svg[data-icon-name='loader'] {
-  animation: sw-ai-capability-spin 0.9s linear infinite;
+  animation: sw-motion-spin var(--motion-duration-loop) linear infinite;
 }
 
 .sw-ai-mcp-discovery-time {
@@ -571,12 +571,6 @@
   margin-top: 0.5rem;
   color: var(--text-secondary);
   font-size: 0.68rem;
-}
-
-@keyframes sw-ai-capability-spin {
-  to {
-    transform: rotate(1turn);
-  }
 }
 
 @media (max-width: 720px) {

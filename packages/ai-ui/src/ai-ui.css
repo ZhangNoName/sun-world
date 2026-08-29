@@ -76,7 +76,7 @@
   inset: 0 3px;
   content: '';
   background: transparent;
-  transition: background 140ms ease;
+  transition: background var(--motion-duration-fast) var(--motion-ease-standard);
 }
 .sw-ai-sidebar-resizer:hover::after,
 .sw-ai-sidebar-resizer:focus-visible::after {
@@ -153,7 +153,7 @@
   margin-top: 0.35rem;
   color: var(--text-secondary);
   opacity: 0.72;
-  transition: opacity 160ms ease;
+  transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 }
 .sw-ai-message:hover .sw-ai-message-actions,
 .sw-ai-message:focus-within .sw-ai-message-actions {
@@ -336,21 +336,15 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: currentColor;
-  animation: sw-ai-pulse 1s infinite ease-in-out;
+  animation: sw-motion-pulse var(--motion-duration-loop)
+    var(--motion-ease-standard) infinite;
 }
 .sw-ai-thinking i:nth-child(2) {
-  animation-delay: 120ms;
+  animation-delay: var(--motion-delay-pending);
 }
 .sw-ai-thinking i:nth-child(3) {
-  animation-delay: 240ms;
+  animation-delay: calc(var(--motion-delay-pending) * 2);
 }
-@keyframes sw-ai-pulse {
-  50% {
-    opacity: 0.25;
-    transform: translateY(-2px);
-  }
-}
-
 .sw-ai-profile-list {
   display: grid;
   max-height: 12rem;

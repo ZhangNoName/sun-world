@@ -7,6 +7,7 @@ import {
   readCachedLocalWeather,
   type LocalWeatherSnapshot,
 } from '../data/local-weather'
+import { ensureWeatherIconStyles } from '../data/weather-icon-styles'
 
 type WeatherState =
   | { status: 'idle' }
@@ -34,6 +35,10 @@ export function WeatherCard({
     },
     []
   )
+
+  useEffect(() => {
+    if (state.status === 'loaded') ensureWeatherIconStyles()
+  }, [state.status])
 
   const handleLoadWeather = () => {
     requestRef.current?.abort()

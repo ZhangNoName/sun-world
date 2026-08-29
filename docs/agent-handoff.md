@@ -1,5 +1,43 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-30 frontend motion system
+
+- Goal: add restrained, centrally managed frontend motion while improving warm
+  navigation feedback and cold-load structure without increasing runtime
+  dependencies or the CSS budget.
+- Status: the isolated frontend-only release candidate contains the motion tokens, reduced-
+  motion JavaScript contract, delayed route indicator, immediate cold-route
+  skeleton fallback, neutral SPA shell, pre-paint theme bootstrap, shared
+  keyframes, component migrations, high-frequency `requestAnimationFrame`
+  updates, and the Web-package `check:motion` gate. It is ready for the release
+  commit; push and deployment have not yet been performed.
+- Important files: `apps/web/src/styles/design-tokens.css`,
+  `apps/web/src/shared/design/motion.ts`,
+  `apps/web/src/app/router/RouteLoadingIndicator.tsx`,
+  `apps/web/src/app/router/create-router.ts`,
+  `apps/web/src/layout/layout.tsx`, `apps/web/index.html`,
+  `deploy/frontend/nginx.conf`, `apps/web/src/style.css`,
+  `packages/ui/src/components/loading-skeleton/`,
+  `scripts/check-web-motion.mjs`, and
+  `docs/architecture/frontend-motion-system.md`.
+- Contract: app and Sun World-owned package CSS timing and easing come only
+  from the design tokens; frozen upstream `packages/base-ui` remains unchanged
+  and outside the motion gate. The JavaScript route contract uses a `150 ms`
+  pending delay and `180 ms` minimum visible time. Lazy-route skeleton fallback
+  is immediate, including the root `HydrateFallback` used before the layout can
+  mount on a first direct visit. Motion is limited to `transform` and `opacity`,
+  hover movement requires a fine pointer, high-frequency updates are
+  frame-coalesced, and reduced-motion is honored. No animation dependency was
+  added, and the total CSS gzip ceiling remains `51,200` bytes (`50 KiB`).
+- Verification: `corepack pnpm -C apps/web check:motion`, 23 focused regression tests,
+  and `corepack pnpm -C apps/web typecheck` passed. The final
+  `corepack pnpm check:web` passed 174 Web tests, 15 AI UI tests, 6 contract
+  tests, production build, SSG/SPA contracts, UI/chunk gates, and all
+  performance budgets. CSS totals `50,986 / 51,200` gzip bytes. Desktop
+  `1440x900` and mobile `390x844` browser QA covered route/loading states,
+  search entrance, navigation drawer, AI sidebar resize, and light/dark theme
+  persistence with no console warnings or errors. `git diff --check` passed.
+
 ### Active checkpoint: 2026-08-29 optional identity and personal AIGC
 
 - Goal: optional QQ/WeChat/phone/email/Google login with verified-phone account

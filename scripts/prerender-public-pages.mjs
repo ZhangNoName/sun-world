@@ -16,6 +16,7 @@ import {
 const repoRoot = resolve(import.meta.dirname, '..')
 const distDir = join(repoRoot, 'apps/web/dist')
 const distIndexPath = join(distDir, 'index.html')
+const distSpaPath = join(distDir, 'spa.html')
 const apiBaseUrl =
   process.env.SUN_WORLD_SSG_API_BASE_URL ||
   process.env.VITE_BASE_URL ||
@@ -30,14 +31,19 @@ async function main() {
     return []
   })
 
+  await writeSpaShell(indexHtml)
   await writeHomepage(indexHtml)
   await writePrivacyPolicy(indexHtml)
   await writeArticlePages(indexHtml, articles)
   await writeSitemap(articles)
 
   console.log(
-    `[ssg] Generated public pages: home, /home, /privacy, ${articles.length} article page(s), sitemap.xml`
+    `[ssg] Generated public pages: home, /home, /privacy, ${articles.length} article page(s), spa.html, sitemap.xml`
   )
+}
+
+async function writeSpaShell(indexHtml) {
+  await writeFile(distSpaPath, indexHtml)
 }
 
 async function writeHomepage(indexHtml) {

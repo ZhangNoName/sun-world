@@ -21,6 +21,10 @@
   "exitFullScreen": "退出全屏",
   "theme": "主题",
 
+  "status": {
+    "loadingPage": "正在加载页面…"
+  },
+
   "navigation": {
     "menu": "导航菜单",
     "openMenu": "打开导航菜单",

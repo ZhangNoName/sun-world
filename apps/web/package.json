@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "vite build && node ../../scripts/prerender-public-pages.mjs",
     "build:visualizer": "vite build --mode visualizer",
+    "check:motion": "node ../../scripts/check-web-motion.mjs",
     "test:react": "vitest run --config vitest.config.ts",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "typecheck:react": "tsc -p tsconfig.app.json --noEmit"
