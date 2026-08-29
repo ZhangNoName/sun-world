@@ -54,7 +54,9 @@ describe('LoginPage', () => {
       'login-04'
     )
     expect(screen.getByRole('region', { name: 'Sun World' })).toBeVisible()
-    expect(screen.getByText('使用你的账号继续访问 Sun World。')).toBeVisible()
+    expect(
+      screen.getByText('选择适合你的登录方式，或直接以访客身份继续。')
+    ).toBeVisible()
     expect(document.querySelector('[data-slot="card"]')).toBeInTheDocument()
   })
 
@@ -79,7 +81,9 @@ describe('LoginPage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '登录' }))
 
-    await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('sun@example.com', 'secret123'))
+    await waitFor(() =>
+      expect(mocks.login).toHaveBeenCalledWith('sun@example.com', 'secret123')
+    )
     expect(mocks.success).toHaveBeenCalledWith('登录成功')
     expect(mocks.navigate).toHaveBeenCalledWith('/')
   })

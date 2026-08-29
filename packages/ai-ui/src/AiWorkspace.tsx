@@ -5,6 +5,7 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react'
 import {
   AiComposer,
@@ -37,6 +38,7 @@ export interface AiWorkspaceProps {
   providerProfiles?: AiUiProviderProfile[]
   commands?: AiComposerCommand[]
   renderers?: AiRendererRegistry
+  toolbarActions?: ReactNode
   sidebarWidth?: number
   onSidebarWidthChange?: (width: number) => void
   onNewConversation: () => void
@@ -59,6 +61,7 @@ export function AiWorkspace({
   providerProfiles = [],
   commands = [],
   renderers,
+  toolbarActions,
   sidebarWidth = 288,
   onSidebarWidthChange,
   onNewConversation,
@@ -239,19 +242,22 @@ export function AiWorkspace({
     >
       <main className="sw-ai-workspace">
         <header className="sw-ai-toolbar">
-          <div>
+          <div className="sw-ai-toolbar-brand">
             <strong>Sun World AI</strong>
             <span>{providers[0]?.name ?? 'AI'}</span>
           </div>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            aria-label="模型设置"
-            onClick={() => setSettingsOpen(true)}
-          >
-            <SunIcon name="settings" />
-          </Button>
+          <div className="sw-ai-toolbar-actions">
+            {toolbarActions}
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="模型设置"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <SunIcon name="settings" />
+            </Button>
+          </div>
         </header>
 
         <section className="sw-ai-transcript" aria-live="polite">

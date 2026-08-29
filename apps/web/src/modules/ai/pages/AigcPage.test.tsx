@@ -14,6 +14,14 @@ describe('AigcPage', () => {
       runState: { status: 'idle' },
       providers: [{ id: 'deepseek', name: 'DeepSeek' }],
       providerProfiles: [],
+      personas: [],
+      skills: [],
+      selectedPersonaId: null,
+      selectedSkillIds: [],
+      capabilityStatus: 'guest',
+      capabilityError: null,
+      isAuthenticated: false,
+      accountKey: null,
       startConversation: vi.fn(),
       selectConversation: vi.fn(),
       sendMessage: vi.fn(),
@@ -23,6 +31,13 @@ describe('AigcPage', () => {
       retryLast: vi.fn(),
       setFeedback: vi.fn(),
       saveProvider: vi.fn(),
+      selectPersona: vi.fn(),
+      toggleSkill: vi.fn(),
+      refreshCapabilities: vi.fn(),
+      savePersona: vi.fn(),
+      removePersona: vi.fn(),
+      saveSkill: vi.fn(),
+      removeSkill: vi.fn(),
     })
 
     render(<AigcPage />)
@@ -32,5 +47,8 @@ describe('AigcPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('今天想一起完成什么？')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '模型设置' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /角色与 Skills 设置/ })
+    ).toBeInTheDocument()
   })
 })

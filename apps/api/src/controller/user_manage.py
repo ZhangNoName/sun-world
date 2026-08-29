@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 from loguru import logger
 from src.database.mysql.mysql_manage import MySQLManager
+from src.type.auth_type import normalize_login_identifier
 from src.type.user_type import User
 
 
@@ -38,8 +39,13 @@ class UserManager:
         """
         return ",".join(self.public_attr)
 
-    def get_credential_user_attr(self) -> str:
+    def get_credential_user_attr(self, alias: str | None = None) -> str:
         """Return fields used only by authentication queries."""
+        if alias:
+            return ",".join(
+                f"{alias}.{attribute} AS {attribute}"
+                for attribute in self.credential_attr
+            )
         return ",".join(self.credential_attr)
 
     def create_user(self, user: User) -> bool:
@@ -59,12 +65,23 @@ class UserManager:
         """
         val = (user.username or user.name, user.name, user.sex, user.age, user.phone, user.email, user.password, user.birth_day)
         try:
-            res = self.db.execute(sql, val)
-            if isinstance(res, int) and res > 0:
-                user.id = res
+            with self.db.unit_of_work() as uow:
+                role = uow.fetch_one(
+                    "SELECT id FROM roles WHERE code = %s LIMIT 1 FOR UPDATE",
+                    ("normal",),
+                )
+                if not role:
+                    raise RuntimeError("Default normal role is not configured")
+                res = uow.execute(sql, val)
+                if not isinstance(res, int) or res <= 0:
+                    raise RuntimeError("User insert did not return an id")
+                uow.execute(
+                    "INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)",
+                    (res, role["id"]),
+                )
+                uow.commit()
+            user.id = res
             logger.info(f"用户创建成功 {res}")
-             # 默认分配角色 id=2
-            self.set_role_by_id(res, [2])
             return True
         except Exception as e:
             logger.error(f"创建用户失败: {e}")
@@ -198,19 +215,63 @@ class UserManager:
         return int(row.get('total', 0)) if row else 0
 
     def get_user_by_login_identifier(self, identifier: str) -> List[User]:
-        """Return active users matching username, email, or phone exactly."""
-        value = str(identifier or '').strip()
-        if not value:
-            return []
-        sql = f"""
-        SELECT {self.get_credential_user_attr()}
-        FROM {self.table_name}
-        WHERE status = 1
-          AND (username = %s OR email = %s OR phone = %s)
-        ORDER BY id ASC
-        LIMIT 20
+        """Return active users from one unambiguous login namespace.
+
+        Email- or phone-shaped input only resolves through the canonical
+        verified-contact table. Everything else resolves through ``username``.
+        This prevents one account's username from shadowing another account's
+        verified contact even on historical databases.
         """
-        rows = self.db.fetch_all(sql, (value, value, value)) or []
+        try:
+            value = normalize_login_identifier(identifier)
+        except ValueError:
+            return []
+        contact_kind = ""
+        normalized_contact = ""
+        contact_syntax = "@" in value
+        try:
+            from src.modules.identity.normalization import (
+                normalize_email,
+                normalize_phone,
+            )
+
+            if contact_syntax:
+                contact_kind = "email"
+                normalized_contact = normalize_email(value)
+            else:
+                try:
+                    normalized_contact = normalize_phone(value)
+                except Exception:
+                    normalized_contact = ""
+                if normalized_contact:
+                    contact_kind = "phone"
+        except Exception:
+            # An invalid email-shaped identifier must not fall back to the
+            # username namespace because new usernames cannot contain "@".
+            if contact_syntax:
+                return []
+        if contact_kind:
+            sql = f"""
+            SELECT {self.get_credential_user_attr('u')}
+            FROM {self.table_name} u
+            INNER JOIN auth_verified_contacts c ON c.user_id = u.id
+            WHERE u.status = 1
+              AND c.kind = %s
+              AND c.normalized_value = %s
+            ORDER BY u.id ASC
+            LIMIT 1
+            """
+            params = (contact_kind, normalized_contact)
+        else:
+            sql = f"""
+            SELECT {self.get_credential_user_attr('u')}
+            FROM {self.table_name} u
+            WHERE u.status = 1 AND u.username = %s
+            ORDER BY u.id ASC
+            LIMIT 1
+            """
+            params = (value,)
+        rows = self.db.fetch_all(sql, params) or []
         users: List[User] = []
         for row in rows:
             user_data = (

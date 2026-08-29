@@ -614,10 +614,14 @@ jobs:
               "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 
             API_CORS_ORIGINS="https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping"
+            API_CSRF_ALLOWED_ORIGINS="https://sunworld.site,https://www.sunworld.site,https://api.sunworld.site"
             API_ENV=(
+              -e BLOG_RUNTIME_ENV=production
               -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
               -e BLOG_CORS_ORIGINS="$API_CORS_ORIGINS"
+              -e AUTH_CSRF_ALLOWED_ORIGINS="$API_CSRF_ALLOWED_ORIGINS"
               -e BLOG_AUDIT_LOG_DIR=/data/blog/audit-logs
+              -e AI_PROVIDER_ALLOWED_HOSTS=api.deepseek.com,openrouter.ai,api.openai.com
             )
 
             sudo docker rm -f sun-world-api-candidate || true

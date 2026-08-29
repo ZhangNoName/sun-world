@@ -4,25 +4,35 @@ import hmac
 from typing import Optional
 import hashlib
 import secrets
+import os
+import uuid
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError
 from loguru import logger
 from src.controller.user_manage import UserManager
+from src.core.runtime_env import is_local_runtime
 from src.database.redis.redis_manage import RedisManager
-from src.type.auth_type import TokenModel
+from src.type.auth_type import (
+    TokenModel,
+    normalize_login_identifier,
+    normalize_username,
+)
 from src.type.user_type import User
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30000  # 默认值
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 默认值
 REFRESH_TOKEN_EXPIRE_DAYS = 7  # 默认值
 PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
 PASSWORD_HASH_ITERATIONS = 390000
+MAX_SESSION_TOKEN_LENGTH = 4096
+MAX_USER_ID_LENGTH = 20
+DEVICE_ID_LENGTH = 36
 
 
 class AuthManager:
     def __init__(self, user_manager: UserManager, db: RedisManager, enable_permission: bool = False,
                  access_token_expire_minutes: int = None, refresh_token_expire_days: int = None,
-                 secret_key: str = None):
+                 secret_key: str = None, refresh_reuse_grace_seconds: int | None = None):
         if not secret_key:
             raise ValueError("AuthManager requires a non-empty JWT secret key")
         self.user_manager = user_manager
@@ -31,6 +41,93 @@ class AuthManager:
         self.access_token_expire_minutes = access_token_expire_minutes or ACCESS_TOKEN_EXPIRE_MINUTES
         self.refresh_token_expire_days = refresh_token_expire_days or REFRESH_TOKEN_EXPIRE_DAYS
         self.secret_key = secret_key
+        configured_grace = (
+            refresh_reuse_grace_seconds
+            if refresh_reuse_grace_seconds is not None
+            else int(os.getenv("AUTH_REFRESH_REUSE_GRACE_SECONDS", "0"))
+        )
+        if configured_grace < 0 or configured_grace > 10:
+            raise ValueError(
+                "AUTH_REFRESH_REUSE_GRACE_SECONDS must be between 0 and 10"
+            )
+        if configured_grace != 0 and not is_local_runtime():
+            raise ValueError(
+                "AUTH_REFRESH_REUSE_GRACE_SECONDS must be 0 outside local runtime"
+            )
+        self.refresh_reuse_grace_seconds = configured_grace
+        self._dummy_password_hash = self.hash_password(secrets.token_urlsafe(32))
+
+    @staticmethod
+    def _validated_user_id(value: object) -> str | None:
+        if isinstance(value, bool):
+            return None
+        text = str(value) if isinstance(value, (str, int)) else ""
+        if not text or len(text) > MAX_USER_ID_LENGTH or not text.isascii():
+            return None
+        if not text.isdigit() or text.startswith("0"):
+            return None
+        try:
+            numeric = int(text)
+        except ValueError:
+            return None
+        if numeric < 1 or numeric > 9_223_372_036_854_775_807:
+            return None
+        return str(numeric)
+
+    @staticmethod
+    def validated_device_id(value: object) -> str | None:
+        """Return a canonical token-bound UUIDv4 device identifier."""
+        if not isinstance(value, str) or len(value) != DEVICE_ID_LENGTH:
+            return None
+        try:
+            parsed = uuid.UUID(value)
+        except (AttributeError, TypeError, ValueError):
+            return None
+        if parsed.version != 4 or str(parsed) != value:
+            return None
+        return value
+
+    @classmethod
+    def resolve_session_device_id(cls, candidate: object) -> str:
+        """Keep a valid browser device UUID or replace untrusted input."""
+        return cls.validated_device_id(candidate) or str(uuid.uuid4())
+
+    def _decode_refresh_token(
+        self,
+        refresh_token: object,
+    ) -> tuple[dict, str, str] | None:
+        if (
+            not isinstance(refresh_token, str)
+            or not refresh_token
+            or len(refresh_token) > MAX_SESSION_TOKEN_LENGTH
+        ):
+            return None
+        try:
+            payload = jwt.decode(
+                refresh_token,
+                self.secret_key,
+                algorithms=[ALGORITHM],
+            )
+        except (ExpiredSignatureError, JWTError, TypeError, ValueError):
+            return None
+        if payload.get("typ") != "refresh":
+            return None
+        user_id = self._validated_user_id(payload.get("sub"))
+        device_id = self.validated_device_id(payload.get("device"))
+        if user_id is None or device_id is None:
+            return None
+        return payload, user_id, device_id
+
+    def get_refresh_token_context(
+        self,
+        refresh_token: object,
+    ) -> tuple[str, str] | None:
+        """Verify a refresh JWT and return its bounded (user, device) claims."""
+        decoded = self._decode_refresh_token(refresh_token)
+        if decoded is None:
+            return None
+        _payload, user_id, device_id = decoded
+        return user_id, device_id
 
     def hash_password(self, password: str) -> str:
         salt = secrets.token_bytes(16)
@@ -71,38 +168,50 @@ class AuthManager:
     def password_needs_rehash(self, hashed_password: str) -> bool:
         return not hashed_password.startswith(f"{PASSWORD_HASH_ALGORITHM}${PASSWORD_HASH_ITERATIONS}$")
 
-    def _create_tokens(self, user_id: str, device_id: str) -> TokenModel:
-        """生成 access_token 和 refresh_token，并存入 Redis"""
+    def _build_tokens(
+        self,
+        user_id: str,
+        device_id: str,
+        *,
+        session_family_id: str | None = None,
+        auth_time: int | None = None,
+    ) -> TokenModel:
+        """Build a token pair without mutating the active Redis session."""
         now = datetime.now(timezone.utc)
 
         access_exp = now + timedelta(minutes=self.access_token_expire_minutes)
         refresh_exp = now + timedelta(days=self.refresh_token_expire_days)
 
-        payload = {"sub": str(user_id), "device": device_id}
+        issued_at = int(now.timestamp())
+        common_payload = {
+            "sub": str(user_id),
+            "device": device_id,
+            "sid": session_family_id or secrets.token_urlsafe(16),
+            "iat": issued_at,
+            # Initial credential proof time is preserved across refreshes and
+            # gates linking additional login factors.
+            "auth_time": issued_at if auth_time is None else int(auth_time),
+        }
 
         access_token = jwt.encode(
-            {**payload, "exp": int(access_exp.timestamp())},  # JWT exp 需要整数秒数
+            {
+                **common_payload,
+                "typ": "access",
+                "jti": secrets.token_urlsafe(16),
+                "exp": int(access_exp.timestamp()),
+            },
             self.secret_key,
             algorithm=ALGORITHM
         )
         refresh_token = jwt.encode(
-            {**payload, "exp": int(refresh_exp.timestamp())},  # JWT exp 需要整数秒数
+            {
+                **common_payload,
+                "typ": "refresh",
+                "jti": secrets.token_urlsafe(16),
+                "exp": int(refresh_exp.timestamp()),
+            },
             self.secret_key,
             algorithm=ALGORITHM
-        )
-
-        # Redis 存储，多设备支持（Hash key = user:{id}:tokens）
-        self.db.hset(
-            name=f"user:{user_id}:access_tokens",
-            key=device_id,
-            value=access_token,
-            ttl=int((access_exp - now).total_seconds())
-        )
-        self.db.hset(
-            name=f"user:{user_id}:refresh_tokens",
-            key=device_id,
-            value=refresh_token,
-            ttl=int((refresh_exp - now).total_seconds())
         )
 
         return TokenModel(
@@ -112,14 +221,52 @@ class AuthManager:
             refresh_token_expire=refresh_exp
         )
 
+    def _store_tokens(
+        self,
+        user_id: str,
+        device_id: str,
+        session_family_id: str,
+        tokens: TokenModel,
+    ) -> None:
+        """Persist a newly-created session that has no predecessor."""
+        now = datetime.now(timezone.utc)
+        self.db.store_session_tokens(
+            user_id=user_id,
+            device_id=device_id,
+            session_family_id=session_family_id,
+            access_token=tokens.access_token,
+            refresh_token=tokens.refresh_token,
+            access_ttl=max(1, int((tokens.access_token_expire - now).total_seconds())),
+            refresh_ttl=max(1, int((tokens.refresh_token_expire - now).total_seconds())),
+        )
+
+    def _create_tokens(self, user_id: str, device_id: str) -> TokenModel:
+        """Generate and store an initial access/refresh token pair."""
+        user_id = self._validated_user_id(user_id) or ""
+        if not user_id:
+            raise ValueError("user_id must be a positive 64-bit integer")
+        device_id = self.resolve_session_device_id(device_id)
+        session_family_id = secrets.token_urlsafe(16)
+        tokens = self._build_tokens(
+            user_id,
+            device_id,
+            session_family_id=session_family_id,
+        )
+        self._store_tokens(user_id, device_id, session_family_id, tokens)
+        return tokens
+
     def create_tokens_for_user(self, user_id: str, device_id: str) -> TokenModel:
         """为指定用户创建 token（公共方法）"""
         return self._create_tokens(str(user_id), device_id)
 
     def register_user(self, user: User) -> bool:
         """注册用户"""
+        try:
+            user.username = normalize_username(user.username or user.name)
+        except ValueError:
+            return False
         identifiers = {
-            str(user.username or user.name).strip(),
+            user.username,
             str(user.email or '').strip(),
             str(user.phone or '').strip(),
         }
@@ -131,10 +278,18 @@ class AuthManager:
 
     def authenticate_user(self, username_or_email_or_phone: str, password: str, device_id: str) -> Optional[TokenModel]:
         """验证用户身份并生成 token"""
+        try:
+            login_identifier = normalize_login_identifier(username_or_email_or_phone)
+        except ValueError:
+            self.verify_password(password, self._dummy_password_hash)
+            return None
         users = self.user_manager.get_user_by_login_identifier(
-            username_or_email_or_phone
+            login_identifier
         )
         if not users:
+            # Keep unknown-account login work close to a real password check so
+            # timing and account-enumeration signals stay bounded.
+            self.verify_password(password, self._dummy_password_hash)
             return None
         user = users[0]
         if not self.verify_password(password, user.password):
@@ -152,18 +307,10 @@ class AuthManager:
     def refresh_access_token(self, refresh_token: str) -> Optional[TokenModel]:
         """使用 refresh_token 刷新 access_token"""
         try:
-            payload = jwt.decode(refresh_token, self.secret_key,
-                                 algorithms=[ALGORITHM])
-            user_id = payload.get("sub")
-            device_id = payload.get("device")
-            if not user_id or not device_id:
+            decoded = self._decode_refresh_token(refresh_token)
+            if decoded is None:
                 return None
-
-            # 校验 Redis 中是否有对应的 refresh_token
-            stored_token = self.db.hget(
-                f"user:{user_id}:refresh_tokens", device_id)
-            if stored_token != refresh_token:
-                return None
+            payload, user_id, device_id = decoded
 
             user = self.user_manager.get_user_by_id(user_id)
             user_status = (
@@ -174,9 +321,111 @@ class AuthManager:
             if not user or not user_status:
                 return None
 
-            return self._create_tokens(str(user_id), device_id)
+            session_family_id = (
+                payload.get("sid")
+                or payload.get("jti")
+                or (
+                    "legacy_"
+                    + hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+                )
+            )
+            tokens = self._build_tokens(
+                str(user_id),
+                device_id,
+                session_family_id=session_family_id,
+                auth_time=payload.get("auth_time", 0),
+            )
+            now = datetime.now(timezone.utc)
+            rotation_status = self.db.rotate_session_tokens(
+                user_id=str(user_id),
+                device_id=device_id,
+                expected_refresh_token=refresh_token,
+                new_access_token=tokens.access_token,
+                new_refresh_token=tokens.refresh_token,
+                access_ttl=max(
+                    1,
+                    int((tokens.access_token_expire - now).total_seconds()),
+                ),
+                refresh_ttl=max(
+                    1,
+                    int((tokens.refresh_token_expire - now).total_seconds()),
+                ),
+                used_refresh_key=(
+                    "auth:used_refresh:"
+                    + hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
+                ),
+                session_family_id=session_family_id,
+                revoked_session_key=f"auth:revoked_session:{session_family_id}",
+                reuse_grace_seconds=self.refresh_reuse_grace_seconds,
+            )
+            if rotation_status == 3:
+                return self._active_session_tokens(
+                    str(user_id),
+                    device_id,
+                    session_family_id,
+                )
+            if rotation_status != 1:
+                if rotation_status == 2:
+                    logger.warning(
+                        "Refresh token reuse revoked session for user_id={} device_id={}",
+                        user_id,
+                        device_id,
+                    )
+                return None
+            return tokens
         except Exception as e:
             logger.error(f"刷新 token 失败: {e}")
+            return None
+
+    def _active_session_tokens(
+        self,
+        user_id: str,
+        device_id: str,
+        session_family_id: str,
+    ) -> TokenModel | None:
+        """Load the successor for a duplicate refresh inside the short grace."""
+        snapshot = self.db.get_session_token_snapshot(
+            user_id=user_id,
+            device_id=device_id,
+        )
+        if snapshot is None:
+            return None
+        access_token, refresh_token, active_session_family_id = snapshot
+        if active_session_family_id != session_family_id:
+            return None
+        try:
+            access_payload = jwt.decode(
+                access_token,
+                self.secret_key,
+                algorithms=[ALGORITHM],
+            )
+            refresh_payload = jwt.decode(
+                refresh_token,
+                self.secret_key,
+                algorithms=[ALGORITHM],
+            )
+            if (
+                access_payload.get("typ") != "access"
+                or refresh_payload.get("typ") != "refresh"
+                or access_payload.get("sub") != user_id
+                or refresh_payload.get("sub") != user_id
+                or access_payload.get("device") != device_id
+                or refresh_payload.get("device") != device_id
+                or access_payload.get("sid") != session_family_id
+                or refresh_payload.get("sid") != session_family_id
+            ):
+                return None
+            return TokenModel(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                access_token_expire=datetime.fromtimestamp(
+                    int(access_payload["exp"]), timezone.utc
+                ),
+                refresh_token_expire=datetime.fromtimestamp(
+                    int(refresh_payload["exp"]), timezone.utc
+                ),
+            )
+        except (JWTError, KeyError, TypeError, ValueError, OSError):
             return None
 
     def verify_token(self, token: str, token_type: str = "access", check_redis: bool = True) -> Optional[str]:
@@ -188,12 +437,22 @@ class AuthManager:
             token_type: token 类型 ("access" 或 "refresh")
             check_redis: 是否检查 Redis 中的 token（对于 access_token，可以设为 False 以提高性能）
         """
+        if (
+            not isinstance(token, str)
+            or not token
+            or len(token) > MAX_SESSION_TOKEN_LENGTH
+        ):
+            return None
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[ALGORITHM])
-            user_id = payload.get("sub")
-            device_id = payload.get("device")
+            user_id = self._validated_user_id(payload.get("sub"))
+            device_id = self.validated_device_id(payload.get("device"))
             logger.debug(f"Token payload verified for user_id={user_id}")
-            if not user_id or not device_id:
+            if (
+                not user_id
+                or not device_id
+                or payload.get("typ") != token_type
+            ):
                 logger.warning(
                     f"Token missing user_id or device_id: user_id={user_id}, device_id={device_id}")
                 return None
@@ -244,30 +503,112 @@ class AuthManager:
 
         return user
 
-    def logout(self, token: str, all_devices: bool = False) -> bool:
-        """退出登录：单设备 or 所有设备"""
+    def get_token_expiry(
+        self,
+        token: str,
+        token_type: str,
+        *,
+        check_redis: bool = True,
+    ) -> datetime | None:
+        """Return the signed active token expiry without exposing the token."""
+        if not token or not self.verify_token(
+            token,
+            token_type,
+            check_redis=check_redis,
+        ):
+            return None
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[ALGORITHM])
-            user_id = payload.get("sub")
-            device_id = payload.get("device")
+            return datetime.fromtimestamp(int(payload["exp"]), timezone.utc)
+        except (JWTError, KeyError, TypeError, ValueError, OSError):
+            return None
+
+    def get_recent_session_context(
+        self,
+        access_token: str,
+        *,
+        max_age_seconds: int,
+    ) -> tuple[int, str] | None:
+        """Return (user_id, session family) after a recent primary login."""
+        if not access_token or not self.verify_token(
+            access_token,
+            "access",
+            check_redis=True,
+        ):
+            return None
+        try:
+            payload = jwt.decode(
+                access_token,
+                self.secret_key,
+                algorithms=[ALGORITHM],
+            )
+            user_id = int(payload["sub"])
+            session_family_id = str(payload["sid"])
+            auth_time = int(payload["auth_time"])
+            now = int(datetime.now(timezone.utc).timestamp())
+        except (JWTError, KeyError, TypeError, ValueError, OSError):
+            return None
+        if (
+            user_id <= 0
+            or not session_family_id
+            or auth_time > now + 60
+            or now - auth_time > max(1, int(max_age_seconds))
+        ):
+            return None
+        return user_id, session_family_id
+
+    def logout(self, token: str, all_devices: bool = False) -> bool:
+        """退出登录：单设备 or 所有设备"""
+        if (
+            not isinstance(token, str)
+            or not token
+            or len(token) > MAX_SESSION_TOKEN_LENGTH
+        ):
+            return False
+        try:
+            # Logout must be able to clear an expired browser session without
+            # refreshing it first. Signature and token shape are still
+            # verified; only the expiry check is disabled for revocation.
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[ALGORITHM],
+                options={"verify_exp": False},
+            )
+            user_id = self._validated_user_id(payload.get("sub"))
+            device_id = self.validated_device_id(payload.get("device"))
+            token_type = payload.get("typ")
+            session_family_id = (
+                payload.get("sid")
+                or payload.get("jti")
+                or "legacy_" + hashlib.sha256(token.encode("utf-8")).hexdigest()
+            )
             exp = int(payload.get("exp", datetime.now(timezone.utc).timestamp()))
             ttl = exp - int(datetime.now(timezone.utc).timestamp())
 
-            if not user_id or not device_id:
+            if (
+                not user_id
+                or not device_id
+                or not session_family_id
+                or token_type not in {None, "access", "refresh"}
+            ):
                 return False
 
-            if all_devices:
-                # 删除用户所有设备的 token
-                self.db.delete(f"user:{user_id}:access_tokens")
-                self.db.delete(f"user:{user_id}:refresh_tokens")
-            else:
-                # 删除该设备的 token
-                self.db.delete(f"user:{user_id}:access_tokens", device_id)
-                self.db.delete(f"user:{user_id}:refresh_tokens", device_id)
+            revoked = self.db.revoke_session_tokens(
+                user_id=str(user_id),
+                device_id=device_id,
+                session_family_id=session_family_id,
+                candidate_token=token,
+                revoked_session_key=f"auth:revoked_session:{session_family_id}",
+                session_ttl=self.refresh_token_expire_days * 24 * 60 * 60,
+                all_devices=all_devices,
+            )
+            if revoked != 1:
+                return False
 
             # 加入黑名单，避免 token 还能继续用
             if ttl > 0:
-                self.db.setex(f"blacklist:{token}", ttl, "1")
+                self.db.setex(self._blacklist_key(token), ttl, "1")
 
             return True
         except Exception as e:
@@ -276,4 +617,8 @@ class AuthManager:
 
     def is_token_blacklisted(self, token: str) -> bool:
         """检查 token 是否在黑名单"""
-        return self.db.exist(f"blacklist:{token}")
+        return self.db.exist(self._blacklist_key(token))
+
+    @staticmethod
+    def _blacklist_key(token: str) -> str:
+        return "blacklist:" + hashlib.sha256(token.encode("utf-8")).hexdigest()

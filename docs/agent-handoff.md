@@ -1,6 +1,47 @@
 ﻿## Current Handoff
 
-### Active checkpoint: 2026-08-09 security and integrity baseline
+### Active checkpoint: 2026-08-29 optional identity and personal AIGC
+
+- Goal: optional QQ/WeChat/phone/email/Google login with verified-phone account
+  association, plus signed-in AIGC roles, prompt-only skills, provider profiles,
+  durable conversations, and an explicit MCP control plane without gating the
+  public site.
+- Status: implementation, attack-oriented review, full repository validation,
+  and desktop/mobile browser QA are complete locally on `main`; no push, deploy,
+  database migration, credential provisioning, or production mutation.
+  Detailed boundaries and cutover checklist are in
+  `docs/architecture/identity-and-ai-capabilities.md`,
+  `docs/architecture/ai-platform.md`, and
+  `docs/architecture/secrets-and-env.md`; the final review and operator runbook
+  are `docs/reviews/2026-08-29-optional-identity-aigc-review.md` and
+  `docs/deployment/2026-08-29-identity-ai-cutover.md`.
+- Important areas: `apps/api/src/modules/identity/`,
+  `apps/api/src/modules/ai/`, `apps/api/src/routers/auth/auth.py`,
+  `apps/api/src/database/{mysql,redis}/`, `apps/web/src/modules/{account,ai}/`,
+  `apps/web/src/pages/{login,me}/`, `packages/ai-ui/`, and
+  `packages/contracts/`.
+- Security decisions: identity first then provider-verified phone only; no
+  email auto-merge; explicit connect requires recent auth and same session;
+  production-enforced strict refresh reuse; independent narrow CSRF write
+  origins and wildcard-free credentialed CORS; purpose-bound atomic OTP
+  reservations; canonical login throttling; SSRF-safe provider/MCP egress;
+  daily AI cost breakers; revision-bound MCP catalog/audit; transactional
+  conversation writes and one run per real conversation.
+- Cutover blockers: run a controlled migration from the historical non-unique
+  `idx_users_username` to the required unique index, then run schema apply;
+  provision OAuth applications, SMTP/SMS, encryption/JWT secrets, narrow host
+  allowlists, and provider spending caps. The generic conservative migrator
+  deliberately fails instead of dropping/replacing the old index.
+- Verification: `corepack pnpm check` passed all 19/19 repository gates: 283 API
+  tests, 155 Web React tests, 38 shared UI tests, 14 AI UI tests, 39 AI composer
+  tests, and 6 contract tests, plus typechecks, builds, SSG, UI boundaries,
+  performance budgets, and static Compose validation. Browser QA passed for
+  login, registration, and guest AIGC at 1440x900 and 390x844 with no
+  horizontal overflow or unexpected global error toast. The final assessment
+  and residual P2/product follow-ups are in
+  `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
+
+### Previous checkpoint: 2026-08-09 security and integrity baseline
 
 - Branch handoff: `docs/handoff/branches/codex-security-integrity-baseline.md`.
 - Report: `docs/reviews/2026-08-09-security-integrity-implementation.md`.

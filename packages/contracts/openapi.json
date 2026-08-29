@@ -1,6 +1,26 @@
 {
   "components": {
     "schemas": {
+      "AccountConnections": {
+        "properties": {
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/VerifiedContact"
+            },
+            "title": "Contacts",
+            "type": "array"
+          },
+          "identities": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedIdentity"
+            },
+            "title": "Identities",
+            "type": "array"
+          }
+        },
+        "title": "AccountConnections",
+        "type": "object"
+      },
       "AdminAlertsSnapshot": {
         "properties": {
           "alert_count": {
@@ -328,6 +348,285 @@
         "title": "AiLinkBlock",
         "type": "object"
       },
+      "AiMcpConnection": {
+        "properties": {
+          "bearer_token_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bearer Token Hint"
+          },
+          "catalog_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Revision"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "has_bearer_token": {
+            "title": "Has Bearer Token",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_discovered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Discovered At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "revision": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["id", "name", "endpoint", "enabled", "has_bearer_token"],
+        "title": "AiMcpConnection",
+        "type": "object"
+      },
+      "AiMcpConnectionCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "bearer_token": {
+            "anyOf": [
+              {
+                "maxLength": 4096,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bearer Token"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "endpoint"],
+        "title": "AiMcpConnectionCreate",
+        "type": "object"
+      },
+      "AiMcpConnectionUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "bearer_token": {
+            "anyOf": [
+              {
+                "maxLength": 4096,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bearer Token"
+          },
+          "clear_bearer_token": {
+            "default": false,
+            "title": "Clear Bearer Token",
+            "type": "boolean"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "endpoint"],
+        "title": "AiMcpConnectionUpdate",
+        "type": "object"
+      },
+      "AiMcpDiscoveryResult": {
+        "properties": {
+          "connection": {
+            "$ref": "#/components/schemas/AiMcpConnection"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/AiMcpTool"
+            },
+            "title": "Tools",
+            "type": "array"
+          }
+        },
+        "required": ["connection", "tools"],
+        "title": "AiMcpDiscoveryResult",
+        "type": "object"
+      },
+      "AiMcpTool": {
+        "properties": {
+          "annotations": {
+            "additionalProperties": true,
+            "title": "Annotations",
+            "type": "object"
+          },
+          "connection_id": {
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 8000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "discovered_at": {
+            "format": "date-time",
+            "title": "Discovered At",
+            "type": "string"
+          },
+          "input_schema": {
+            "additionalProperties": true,
+            "title": "Input Schema",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "connection_id"],
+        "title": "AiMcpTool",
+        "type": "object"
+      },
+      "AiMcpToolCallRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "arguments": {
+            "additionalProperties": true,
+            "title": "Arguments",
+            "type": "object"
+          },
+          "confirmed": {
+            "default": false,
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "title": "AiMcpToolCallRequest",
+        "type": "object"
+      },
+      "AiMcpToolCallResult": {
+        "properties": {
+          "call_id": {
+            "title": "Call Id",
+            "type": "string"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "connection_id": {
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result"
+          },
+          "result_metadata": {
+            "additionalProperties": true,
+            "title": "Result Metadata",
+            "type": "object"
+          },
+          "status": {
+            "const": "succeeded",
+            "default": "succeeded",
+            "title": "Status",
+            "type": "string"
+          },
+          "tool_name": {
+            "title": "Tool Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_id",
+          "connection_id",
+          "tool_name",
+          "result",
+          "result_metadata"
+        ],
+        "title": "AiMcpToolCallResult",
+        "type": "object"
+      },
       "AiMessage": {
         "properties": {
           "blocks": {
@@ -435,6 +734,86 @@
         },
         "required": ["content"],
         "title": "AiMessageEditRequest",
+        "type": "object"
+      },
+      "AiPersona": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instructions": {
+            "description": "Declarative Markdown instructions for this persona.",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["name", "instructions", "id"],
+        "title": "AiPersona",
+        "type": "object"
+      },
+      "AiPersonaInput": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "instructions": {
+            "description": "Declarative Markdown instructions for this persona.",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "instructions"],
+        "title": "AiPersonaInput",
         "type": "object"
       },
       "AiProviderCatalog": {
@@ -774,7 +1153,7 @@
             "title": "Conversation Id"
           },
           "message": {
-            "maxLength": 100000,
+            "maxLength": 20000,
             "minLength": 1,
             "title": "Message",
             "type": "string"
@@ -790,6 +1169,19 @@
             ],
             "title": "Parent Message Id"
           },
+          "persona_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Persona Id"
+          },
           "provider_profile_id": {
             "anyOf": [
               {
@@ -800,10 +1192,111 @@
               }
             ],
             "title": "Provider Profile Id"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Skill Ids",
+            "type": "array"
           }
         },
         "required": ["message"],
         "title": "AiRunRequest",
+        "type": "object"
+      },
+      "AiSkill": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instructions": {
+            "description": "Prompt-only Markdown instructions; never executable code or tool configuration.",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "kind": {
+            "const": "prompt",
+            "default": "prompt",
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": ["name", "instructions", "id"],
+        "title": "AiSkill",
+        "type": "object"
+      },
+      "AiSkillInput": {
+        "additionalProperties": false,
+        "description": "A declarative Markdown prompt. It is never loaded or executed as code.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "instructions": {
+            "description": "Prompt-only Markdown instructions; never executable code or tool configuration.",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "kind": {
+            "const": "prompt",
+            "default": "prompt",
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "instructions"],
+        "title": "AiSkillInput",
         "type": "object"
       },
       "AiTableBlock": {
@@ -885,6 +1378,38 @@
         },
         "required": ["text"],
         "title": "AiTextBlock",
+        "type": "object"
+      },
+      "ApiResponse_AccountConnections_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountConnections"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AccountConnections]",
         "type": "object"
       },
       "ApiResponse_AdminAlertsSnapshot_": {
@@ -983,6 +1508,102 @@
         "title": "ApiResponse[AiConversation]",
         "type": "object"
       },
+      "ApiResponse_AiMcpConnection_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiMcpConnection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiMcpConnection]",
+        "type": "object"
+      },
+      "ApiResponse_AiMcpDiscoveryResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiMcpDiscoveryResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiMcpDiscoveryResult]",
+        "type": "object"
+      },
+      "ApiResponse_AiMcpToolCallResult_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiMcpToolCallResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiMcpToolCallResult]",
+        "type": "object"
+      },
       "ApiResponse_AiMessage_": {
         "properties": {
           "code": {
@@ -1013,6 +1634,38 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[AiMessage]",
+        "type": "object"
+      },
+      "ApiResponse_AiPersona_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiPersona"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiPersona]",
         "type": "object"
       },
       "ApiResponse_AiProviderCatalog_": {
@@ -1077,6 +1730,38 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[AiProviderProfile]",
+        "type": "object"
+      },
+      "ApiResponse_AiSkill_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiSkill"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiSkill]",
         "type": "object"
       },
       "ApiResponse_AuthSession_": {
@@ -1367,6 +2052,38 @@
         "title": "ApiResponse[DictionaryType]",
         "type": "object"
       },
+      "ApiResponse_IdentitySession_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentitySession"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[IdentitySession]",
+        "type": "object"
+      },
       "ApiResponse_List_Category__": {
         "properties": {
           "code": {
@@ -1495,6 +2212,38 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[NoneType]",
+        "type": "object"
+      },
+      "ApiResponse_OAuthStart_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OAuthStart"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[OAuthStart]",
         "type": "object"
       },
       "ApiResponse_RequestMetricsSnapshot_": {
@@ -1689,6 +2438,38 @@
         "title": "ApiResponse[UserPublic]",
         "type": "object"
       },
+      "ApiResponse_VerificationChallenge_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationChallenge"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[VerificationChallenge]",
+        "type": "object"
+      },
       "ApiResponse_bool_": {
         "properties": {
           "code": {
@@ -1756,6 +2537,114 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[list[AiConversationSummary]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiMcpConnection__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiMcpConnection"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiMcpConnection]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiMcpTool__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiMcpTool"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiMcpTool]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AiPersona__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiPersona"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiPersona]]",
         "type": "object"
       },
       "ApiResponse_list_AiProviderCatalog__": {
@@ -1866,6 +2755,78 @@
         "title": "ApiResponse[list[AiProviderProfile]]",
         "type": "object"
       },
+      "ApiResponse_list_AiSkill__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiSkill"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AiSkill]]",
+        "type": "object"
+      },
+      "ApiResponse_list_AuthMethodDescriptor__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AuthMethodDescriptor"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[AuthMethodDescriptor]]",
+        "type": "object"
+      },
       "ApiResponse_list_DictionaryItemPublic__": {
         "properties": {
           "code": {
@@ -1935,9 +2896,26 @@
         "title": "ApiResponse[str]",
         "type": "object"
       },
-      "AuthSession": {
+      "AuthMethodDescriptor": {
         "properties": {
-          "access_token": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["password", "verification_code", "oauth"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "reason": {
             "anyOf": [
               {
                 "type": "string"
@@ -1946,8 +2924,15 @@
                 "type": "null"
               }
             ],
-            "title": "Access Token"
-          },
+            "title": "Reason"
+          }
+        },
+        "required": ["id", "kind", "label", "enabled"],
+        "title": "AuthMethodDescriptor",
+        "type": "object"
+      },
+      "AuthSession": {
+        "properties": {
           "access_token_expire": {
             "anyOf": [
               {
@@ -1971,17 +2956,6 @@
             ],
             "title": "Id"
           },
-          "refresh_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refresh Token"
-          },
           "refresh_token_expire": {
             "anyOf": [
               {
@@ -2004,11 +2978,11 @@
             "items": {
               "type": "integer"
             },
+            "maxItems": 500,
             "title": "Resource Ids",
             "type": "array"
           }
         },
-        "required": ["resource_ids"],
         "title": "BindResourcesModel",
         "type": "object"
       },
@@ -2073,7 +3047,6 @@
                 "type": "null"
               }
             ],
-            "default": [],
             "description": "标签",
             "title": "Tag"
           },
@@ -2262,7 +3235,6 @@
                 "type": "null"
               }
             ],
-            "default": [],
             "description": "标签",
             "title": "Tag"
           },
@@ -2353,7 +3325,7 @@
       "Body_upload_image_file_image_upload_post": {
         "properties": {
           "file": {
-            "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File",
             "type": "string"
           }
@@ -2365,7 +3337,7 @@
       "Body_upload_video_file_video_upload_post": {
         "properties": {
           "file": {
-            "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File",
             "type": "string"
           }
@@ -2753,13 +3725,55 @@
         "title": "HealthSnapshot",
         "type": "object"
       },
-      "LoginModel": {
+      "IdentitySession": {
         "properties": {
-          "password": {
-            "title": "Password",
+          "access_token_expire": {
+            "format": "date-time",
+            "title": "Access Token Expire",
             "type": "string"
           },
-          "username": {
+          "account_created": {
+            "title": "Account Created",
+            "type": "boolean"
+          },
+          "linked_by": {
+            "enum": [
+              "identity",
+              "verified_phone",
+              "verified_email",
+              "new_account"
+            ],
+            "title": "Linked By",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "refresh_token_expire": {
+            "format": "date-time",
+            "title": "Refresh Token Expire",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user_id",
+          "account_created",
+          "linked_by",
+          "provider",
+          "access_token_expire",
+          "refresh_token_expire"
+        ],
+        "title": "IdentitySession",
+        "type": "object"
+      },
+      "LinkedIdentity": {
+        "properties": {
+          "avatar_url": {
             "anyOf": [
               {
                 "type": "string"
@@ -2768,7 +3782,55 @@
                 "type": "null"
               }
             ],
-            "title": "Username"
+            "title": "Avatar Url"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_authenticated_at": {
+            "format": "date-time",
+            "title": "Last Authenticated At",
+            "type": "string"
+          },
+          "linked_at": {
+            "format": "date-time",
+            "title": "Linked At",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": ["id", "provider", "linked_at", "last_authenticated_at"],
+        "title": "LinkedIdentity",
+        "type": "object"
+      },
+      "LoginModel": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Username",
+            "type": "string"
           }
         },
         "required": ["username", "password"],
@@ -2849,19 +3911,26 @@
         "title": "MetricsHistorySnapshot",
         "type": "object"
       },
-      "QQModel": {
+      "OAuthStart": {
         "properties": {
-          "access_token": {
-            "title": "Access Token",
+          "authorization_url": {
+            "title": "Authorization Url",
             "type": "string"
           },
-          "expires_in": {
-            "title": "Expires In",
-            "type": "integer"
+          "flow": {
+            "default": "login",
+            "enum": ["login", "connect"],
+            "title": "Flow",
+            "type": "string"
+          },
+          "provider": {
+            "enum": ["google", "qq", "wechat"],
+            "title": "Provider",
+            "type": "string"
           }
         },
-        "required": ["access_token", "expires_in"],
-        "title": "QQModel",
+        "required": ["provider", "authorization_url"],
+        "title": "OAuthStart",
         "type": "object"
       },
       "ReadinessSnapshot": {
@@ -2892,32 +3961,20 @@
       },
       "RegisterModel": {
         "properties": {
-          "email": {
-            "format": "email",
-            "title": "Email",
-            "type": "string"
-          },
           "name": {
+            "maxLength": 64,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
           "password": {
+            "maxLength": 128,
+            "minLength": 8,
             "title": "Password",
             "type": "string"
-          },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phone"
           }
         },
-        "required": ["name", "email", "phone", "password"],
+        "required": ["name", "password"],
         "title": "RegisterModel",
         "type": "object"
       },
@@ -3002,10 +4059,14 @@
       "ResetPasswordModel": {
         "properties": {
           "new_password": {
+            "maxLength": 128,
+            "minLength": 8,
             "title": "New Password",
             "type": "string"
           },
           "token": {
+            "maxLength": 2048,
+            "minLength": 1,
             "title": "Token",
             "type": "string"
           }
@@ -3018,6 +4079,7 @@
         "properties": {
           "email": {
             "format": "email",
+            "maxLength": 254,
             "title": "Email",
             "type": "string"
           }
@@ -3029,38 +4091,32 @@
       "ResourceCreateModel": {
         "properties": {
           "code": {
+            "maxLength": 100,
+            "minLength": 1,
             "title": "Code",
             "type": "string"
           },
           "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "default": "",
-            "title": "Description"
+            "maxLength": 500,
+            "title": "Description",
+            "type": "string"
           },
           "name": {
+            "maxLength": 100,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
           "path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "default": "",
-            "title": "Path"
+            "maxLength": 500,
+            "title": "Path",
+            "type": "string"
           },
           "type": {
+            "maxLength": 50,
+            "minLength": 1,
             "title": "Type",
             "type": "string"
           }
@@ -3074,6 +4130,8 @@
           "code": {
             "anyOf": [
               {
+                "maxLength": 100,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -3085,6 +4143,7 @@
           "description": {
             "anyOf": [
               {
+                "maxLength": 500,
                 "type": "string"
               },
               {
@@ -3096,6 +4155,8 @@
           "name": {
             "anyOf": [
               {
+                "maxLength": 100,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -3107,6 +4168,7 @@
           "path": {
             "anyOf": [
               {
+                "maxLength": 500,
                 "type": "string"
               },
               {
@@ -3118,6 +4180,8 @@
           "type": {
             "anyOf": [
               {
+                "maxLength": 50,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -3127,29 +4191,26 @@
             "title": "Type"
           }
         },
-        "required": ["name", "code", "type", "path", "description"],
         "title": "ResourceUpdateModel",
         "type": "object"
       },
       "RoleCreateModel": {
         "properties": {
           "code": {
+            "maxLength": 100,
+            "minLength": 1,
             "title": "Code",
             "type": "string"
           },
           "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "default": "",
-            "title": "Description"
+            "maxLength": 500,
+            "title": "Description",
+            "type": "string"
           },
           "name": {
+            "maxLength": 100,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           }
@@ -3163,6 +4224,8 @@
           "code": {
             "anyOf": [
               {
+                "maxLength": 100,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -3174,6 +4237,7 @@
           "description": {
             "anyOf": [
               {
+                "maxLength": 500,
                 "type": "string"
               },
               {
@@ -3185,6 +4249,8 @@
           "name": {
             "anyOf": [
               {
+                "maxLength": 100,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -3194,7 +4260,6 @@
             "title": "Name"
           }
         },
-        "required": ["name", "code", "description"],
         "title": "RoleUpdateModel",
         "type": "object"
       },
@@ -3814,6 +4879,13 @@
       },
       "ValidationError": {
         "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
           "loc": {
             "items": {
               "anyOf": [
@@ -3840,6 +4912,119 @@
         "required": ["loc", "msg", "type"],
         "title": "ValidationError",
         "type": "object"
+      },
+      "VerificationChallenge": {
+        "properties": {
+          "challenge_id": {
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "channel": {
+            "enum": ["phone", "email"],
+            "title": "Channel",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "resend_after": {
+            "title": "Resend After",
+            "type": "integer"
+          },
+          "target_hint": {
+            "title": "Target Hint",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "channel",
+          "target_hint",
+          "expires_in",
+          "resend_after"
+        ],
+        "title": "VerificationChallenge",
+        "type": "object"
+      },
+      "VerificationCompleteRequest": {
+        "properties": {
+          "challenge_id": {
+            "maxLength": 160,
+            "minLength": 20,
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "code": {
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": ["challenge_id", "code"],
+        "title": "VerificationCompleteRequest",
+        "type": "object"
+      },
+      "VerificationRequest": {
+        "properties": {
+          "channel": {
+            "enum": ["phone", "email"],
+            "title": "Channel",
+            "type": "string"
+          },
+          "target": {
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": ["channel", "target"],
+        "title": "VerificationRequest",
+        "type": "object"
+      },
+      "VerifiedContact": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["phone", "email"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "value_hint": {
+            "title": "Value Hint",
+            "type": "string"
+          },
+          "verification_source": {
+            "title": "Verification Source",
+            "type": "string"
+          },
+          "verified_at": {
+            "format": "date-time",
+            "title": "Verified At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "value_hint",
+          "verification_source",
+          "verified_at"
+        ],
+        "title": "VerifiedContact",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "CookieSession": {
+        "description": "HttpOnly access-token cookie issued by Sun World authentication endpoints.",
+        "in": "cookie",
+        "name": "access_token",
+        "type": "apiKey"
       }
     }
   },
@@ -3864,6 +5049,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Admin Ai Providers",
         "tags": ["admin"]
       },
@@ -3901,6 +5091,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Admin Ai Provider",
         "tags": ["admin"]
       }
@@ -3941,6 +5136,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Admin Ai Provider",
         "tags": ["admin"]
       },
@@ -3989,6 +5189,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Admin Ai Provider",
         "tags": ["admin"]
       }
@@ -4009,6 +5214,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Admin Alerts",
         "tags": ["admin"]
       }
@@ -4080,6 +5290,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Dictionary Types"
       },
       "post": {
@@ -4116,6 +5331,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Dictionary Type"
       }
     },
@@ -4155,6 +5375,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Dictionary Type"
       },
       "put": {
@@ -4202,6 +5427,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Dictionary Type"
       }
     },
@@ -4281,6 +5511,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Dictionary Items"
       },
       "post": {
@@ -4328,6 +5563,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Dictionary Item"
       }
     },
@@ -4376,6 +5616,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Dictionary Item"
       },
       "put": {
@@ -4432,6 +5677,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Dictionary Item"
       }
     },
@@ -4510,6 +5760,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Admin Logs",
         "tags": ["admin"]
       }
@@ -4530,6 +5785,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Admin Metrics",
         "tags": ["admin"]
       }
@@ -4585,6 +5845,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Admin Metrics History",
         "tags": ["admin"]
       }
@@ -4605,6 +5870,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Admin Telemetry",
         "tags": ["admin"]
       }
@@ -4812,6 +6082,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Conversations",
         "tags": ["ai-v1"]
       },
@@ -4829,6 +6104,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Conversation",
         "tags": ["ai-v1"]
       }
@@ -4869,8 +6149,331 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Conversation",
         "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/mcp/connections": {
+      "get": {
+        "operationId": "list_connections_ai_v1_mcp_connections_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiMcpConnection__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "List Connections",
+        "tags": ["ai-v1-mcp"]
+      },
+      "post": {
+        "operationId": "create_connection_ai_v1_mcp_connections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiMcpConnectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiMcpConnection_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Create Connection",
+        "tags": ["ai-v1-mcp"]
+      }
+    },
+    "/ai/v1/mcp/connections/{connection_id}": {
+      "delete": {
+        "operationId": "delete_connection_ai_v1_mcp_connections__connection_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Delete Connection",
+        "tags": ["ai-v1-mcp"]
+      },
+      "put": {
+        "operationId": "update_connection_ai_v1_mcp_connections__connection_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiMcpConnectionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiMcpConnection_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Update Connection",
+        "tags": ["ai-v1-mcp"]
+      }
+    },
+    "/ai/v1/mcp/connections/{connection_id}/discover": {
+      "post": {
+        "operationId": "discover_tools_ai_v1_mcp_connections__connection_id__discover_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiMcpDiscoveryResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Discover Tools",
+        "tags": ["ai-v1-mcp"]
+      }
+    },
+    "/ai/v1/mcp/connections/{connection_id}/tools": {
+      "get": {
+        "operationId": "list_tools_ai_v1_mcp_connections__connection_id__tools_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiMcpTool__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "List Tools",
+        "tags": ["ai-v1-mcp"]
+      }
+    },
+    "/ai/v1/mcp/connections/{connection_id}/tools/{tool_name}/call": {
+      "post": {
+        "operationId": "call_tool_ai_v1_mcp_connections__connection_id__tools__tool_name__call_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tool_name",
+            "required": true,
+            "schema": {
+              "title": "Tool Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiMcpToolCallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiMcpToolCallResult_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Call Tool",
+        "tags": ["ai-v1-mcp"]
       }
     },
     "/ai/v1/messages/{message_id}": {
@@ -4919,6 +6522,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Edit Message",
         "tags": ["ai-v1"]
       }
@@ -4969,7 +6577,219 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Set Message Feedback",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/personas": {
+      "get": {
+        "operationId": "list_personas_ai_v1_personas_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiPersona__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "List Personas",
+        "tags": ["ai-v1"]
+      },
+      "post": {
+        "operationId": "create_persona_ai_v1_personas_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiPersonaInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiPersona_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Create Persona",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/personas/{persona_id}": {
+      "delete": {
+        "operationId": "delete_persona_ai_v1_personas__persona_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "persona_id",
+            "required": true,
+            "schema": {
+              "title": "Persona Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Delete Persona",
+        "tags": ["ai-v1"]
+      },
+      "get": {
+        "operationId": "get_persona_ai_v1_personas__persona_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "persona_id",
+            "required": true,
+            "schema": {
+              "title": "Persona Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiPersona_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Get Persona",
+        "tags": ["ai-v1"]
+      },
+      "put": {
+        "operationId": "update_persona_ai_v1_personas__persona_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "persona_id",
+            "required": true,
+            "schema": {
+              "title": "Persona Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiPersonaInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiPersona_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Update Persona",
         "tags": ["ai-v1"]
       }
     },
@@ -4988,6 +6808,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Provider Profiles",
         "tags": ["ai-v1"]
       },
@@ -5025,6 +6850,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Save Provider Profile",
         "tags": ["ai-v1"]
       }
@@ -5064,8 +6894,71 @@
         "responses": {
           "200": {
             "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Versioned server-sent event stream"
+          },
+          "422": {
+            "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stream Run",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/skills": {
+      "get": {
+        "operationId": "list_skills_ai_v1_skills_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_AiSkill__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "List Skills",
+        "tags": ["ai-v1"]
+      },
+      "post": {
+        "operationId": "create_skill_ai_v1_skills_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSkillInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiSkill_"
+                }
               }
             },
             "description": "Successful Response"
@@ -5081,8 +6974,266 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Stream Run",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Create Skill",
         "tags": ["ai-v1"]
+      }
+    },
+    "/ai/v1/skills/{skill_id}": {
+      "delete": {
+        "operationId": "delete_skill_ai_v1_skills__skill_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "skill_id",
+            "required": true,
+            "schema": {
+              "title": "Skill Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Delete Skill",
+        "tags": ["ai-v1"]
+      },
+      "get": {
+        "operationId": "get_skill_ai_v1_skills__skill_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "skill_id",
+            "required": true,
+            "schema": {
+              "title": "Skill Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiSkill_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Get Skill",
+        "tags": ["ai-v1"]
+      },
+      "put": {
+        "operationId": "update_skill_ai_v1_skills__skill_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "skill_id",
+            "required": true,
+            "schema": {
+              "title": "Skill Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSkillInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiSkill_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Update Skill",
+        "tags": ["ai-v1"]
+      }
+    },
+    "/auth/connections": {
+      "get": {
+        "operationId": "list_account_connections_auth_connections_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AccountConnections_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "List Account Connections",
+        "tags": ["identity"]
+      }
+    },
+    "/auth/connections/verification/complete": {
+      "post": {
+        "operationId": "complete_connection_verification_auth_connections_verification_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCompleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AccountConnections_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Complete Connection Verification",
+        "tags": ["identity"]
+      }
+    },
+    "/auth/connections/verification/request": {
+      "post": {
+        "operationId": "request_connection_verification_auth_connections_verification_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_VerificationChallenge_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Request Connection Verification",
+        "tags": ["identity"]
       }
     },
     "/auth/login": {
@@ -5143,25 +7294,147 @@
         "tags": ["auth"]
       }
     },
-    "/auth/qq": {
-      "post": {
-        "operationId": "qq_auth_qq_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/QQModel"
-              }
-            }
-          },
-          "required": true
-        },
+    "/auth/methods": {
+      "get": {
+        "operationId": "list_auth_methods_auth_methods_get",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                  "$ref": "#/components/schemas/ApiResponse_list_AuthMethodDescriptor__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Auth Methods",
+        "tags": ["identity"]
+      }
+    },
+    "/auth/oauth/{provider}/callback": {
+      "get": {
+        "operationId": "complete_oauth_callback_auth_oauth__provider__callback_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": true,
+            "schema": {
+              "title": "State",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "error",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Redirect to the browser OAuth callback page"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {},
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Complete Oauth Callback",
+        "tags": ["identity"]
+      }
+    },
+    "/auth/oauth/{provider}/start": {
+      "get": {
+        "operationId": "start_oauth_auth_oauth__provider__start_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "return_to",
+            "required": false,
+            "schema": {
+              "default": "/aigc",
+              "maxLength": 2048,
+              "title": "Return To",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "flow",
+            "required": false,
+            "schema": {
+              "default": "login",
+              "enum": ["login", "connect"],
+              "title": "Flow",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OAuthStart_"
                 }
               }
             },
@@ -5178,8 +7451,14 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Qq",
-        "tags": ["auth"]
+        "security": [
+          {},
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Start Oauth",
+        "tags": ["identity"]
       }
     },
     "/auth/refresh_token": {
@@ -5346,6 +7625,108 @@
         "tags": ["auth"]
       }
     },
+    "/auth/session": {
+      "get": {
+        "operationId": "session_status_auth_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AuthSession_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Session Status",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/verification/complete": {
+      "post": {
+        "operationId": "complete_verification_login_auth_verification_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCompleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IdentitySession_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Complete Verification Login",
+        "tags": ["identity"]
+      }
+    },
+    "/auth/verification/request": {
+      "post": {
+        "operationId": "request_verification_code_auth_verification_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_VerificationChallenge_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Verification Code",
+        "tags": ["identity"]
+      }
+    },
     "/base/": {
       "get": {
         "description": "获取博客的统计信息，包括文章数、种类数、标签数和总浏览量。",
@@ -5417,6 +7798,7 @@
             "required": false,
             "schema": {
               "default": 1,
+              "minimum": 1,
               "title": "Page",
               "type": "integer"
             }
@@ -5427,6 +7809,8 @@
             "required": false,
             "schema": {
               "default": 10,
+              "maximum": 100,
+              "minimum": 1,
               "title": "Pagesize",
               "type": "integer"
             }
@@ -5438,6 +7822,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 200,
                   "type": "string"
                 },
                 {
@@ -5453,6 +7838,7 @@
             "required": false,
             "schema": {
               "default": "updated_at",
+              "enum": ["created_at", "updated_at", "view_num"],
               "title": "Sortby",
               "type": "string"
             }
@@ -5463,6 +7849,7 @@
             "required": false,
             "schema": {
               "default": "desc",
+              "enum": ["asc", "desc"],
               "title": "Sortorder",
               "type": "string"
             }
@@ -5528,6 +7915,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Blog",
         "tags": ["blog"]
       }
@@ -5569,6 +7961,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Blog",
         "tags": ["blog"]
       },
@@ -5656,6 +8053,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Blog",
         "tags": ["blog"]
       }
@@ -5732,8 +8134,13 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Upload Image",
-        "tags": ["文件"]
+        "tags": ["files"]
       }
     },
     "/file/video/upload": {
@@ -5769,8 +8176,13 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Upload Video",
-        "tags": ["文件"]
+        "tags": ["files"]
       }
     },
     "/healthz": {
@@ -5831,6 +8243,7 @@
             "required": false,
             "schema": {
               "default": 1,
+              "minimum": 1,
               "title": "Page",
               "type": "integer"
             }
@@ -5841,6 +8254,8 @@
             "required": false,
             "schema": {
               "default": 10,
+              "maximum": 100,
+              "minimum": 1,
               "title": "Page Size",
               "type": "integer"
             }
@@ -5866,6 +8281,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Resources",
         "tags": ["resource"]
       },
@@ -5901,6 +8321,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Resource",
         "tags": ["resource"]
       }
@@ -5939,6 +8364,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Resource",
         "tags": ["resource"]
       },
@@ -5975,6 +8405,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Resource",
         "tags": ["resource"]
       },
@@ -6021,6 +8456,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Resource",
         "tags": ["resource"]
       }
@@ -6035,6 +8475,7 @@
             "required": false,
             "schema": {
               "default": 1,
+              "minimum": 1,
               "title": "Page",
               "type": "integer"
             }
@@ -6045,6 +8486,8 @@
             "required": false,
             "schema": {
               "default": 10,
+              "maximum": 100,
+              "minimum": 1,
               "title": "Page Size",
               "type": "integer"
             }
@@ -6070,6 +8513,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "List Roles",
         "tags": ["role"]
       },
@@ -6105,6 +8553,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create Role",
         "tags": ["role"]
       }
@@ -6143,6 +8596,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete Role",
         "tags": ["role"]
       },
@@ -6179,6 +8637,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Role",
         "tags": ["role"]
       },
@@ -6225,6 +8688,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Update Role",
         "tags": ["role"]
       }
@@ -6273,6 +8741,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Bind Resources",
         "tags": ["role"]
       }
@@ -6328,6 +8801,7 @@
             "required": false,
             "schema": {
               "default": 1,
+              "minimum": 1,
               "title": "Page",
               "type": "integer"
             }
@@ -6338,6 +8812,8 @@
             "required": false,
             "schema": {
               "default": 10,
+              "maximum": 100,
+              "minimum": 1,
               "title": "Page Size",
               "type": "integer"
             }
@@ -6365,6 +8841,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Users Paginated",
         "tags": ["user"]
       },
@@ -6403,6 +8884,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Create User",
         "tags": ["user"]
       }
@@ -6423,6 +8909,11 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Current User Info",
         "tags": ["user"]
       }
@@ -6464,6 +8955,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Delete User",
         "tags": ["user"]
       },
@@ -6503,6 +8999,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get User",
         "tags": ["user"]
       }

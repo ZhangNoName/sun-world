@@ -15,15 +15,33 @@ import {
 import { useAuthStore } from '@/store/auth'
 
 import {
+  createAiPersona,
+  createAiSkill,
+  deleteAiPersona,
+  deleteAiSkill,
   fetchAiConversation,
   fetchAiConversations,
+  fetchAiPersonas,
   fetchAiProviderProfiles,
   fetchAiProviders,
+  fetchAiSkills,
   saveAiProviderProfile,
   streamAiRun,
   updateAiFeedback,
   updateAiMessage,
+  updateAiPersona,
+  updateAiSkill,
+  type AiPersona,
+  type AiPersonaPayload,
+  type AiSkill,
+  type AiSkillPayload,
 } from '../api'
+
+export const MAX_SELECTED_AI_SKILLS = 8
+
+export type AiCapabilityStatus = 'guest' | 'loading' | 'ready' | 'error'
+export type AiPersonaDraft = AiPersonaPayload & { id?: string }
+export type AiSkillDraft = AiSkillPayload & { id?: string }
 
 const now = () => new Date().toISOString()
 const localId = (prefix: string) =>
@@ -50,8 +68,18 @@ export function useAiChat() {
   const [providerProfiles, setProviderProfiles] = useState<
     AiUiProviderProfile[]
   >([])
+  const [personas, setPersonas] = useState<AiPersona[]>([])
+  const [skills, setSkills] = useState<AiSkill[]>([])
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(
+    null
+  )
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([])
+  const [capabilityStatus, setCapabilityStatus] =
+    useState<AiCapabilityStatus>('guest')
+  const [capabilityError, setCapabilityError] = useState<string | null>(null)
   const controller = useRef<AbortController | null>(null)
   const workspaceGeneration = useRef(0)
+  const capabilityGeneration = useRef(0)
   const userId = user?.id ?? null
 
   useEffect(() => () => controller.current?.abort(), [])
@@ -106,6 +134,54 @@ export function useAiChat() {
       }
     }
   }, [userId])
+
+  const refreshCapabilities = useCallback(async () => {
+    if (!userId) return
+    const generation = ++capabilityGeneration.current
+    setCapabilityStatus('loading')
+    setCapabilityError(null)
+    try {
+      const [personaItems, skillItems] = await Promise.all([
+        fetchAiPersonas(),
+        fetchAiSkills(),
+      ])
+      if (capabilityGeneration.current !== generation) return
+      const nextPersonas = personaItems ?? []
+      const nextSkills = skillItems ?? []
+      setPersonas(nextPersonas)
+      setSkills(nextSkills)
+      setSelectedPersonaId((current) =>
+        current && nextPersonas.some((item) => item.id === current)
+          ? current
+          : null
+      )
+      setSelectedSkillIds((current) =>
+        current.filter((id) => nextSkills.some((item) => item.id === id))
+      )
+      setCapabilityStatus('ready')
+    } catch (error) {
+      if (capabilityGeneration.current !== generation) return
+      setCapabilityStatus('error')
+      setCapabilityError(errorMessage(error))
+    }
+  }, [userId])
+
+  useEffect(() => {
+    ++capabilityGeneration.current
+    setPersonas([])
+    setSkills([])
+    setSelectedPersonaId(null)
+    setSelectedSkillIds([])
+    setCapabilityError(null)
+    if (!userId) {
+      setCapabilityStatus('guest')
+      return
+    }
+    void refreshCapabilities()
+    return () => {
+      ++capabilityGeneration.current
+    }
+  }, [refreshCapabilities, userId])
 
   const startConversation = useCallback(() => {
     const conversation = newConversation()
@@ -318,6 +394,8 @@ export function useAiChat() {
                 : (providerProfiles.find((profile) => profile.isDefault)?.id ??
                   null),
             parent_message_id: options?.parentMessageId ?? null,
+            persona_id: userId ? selectedPersonaId : null,
+            skill_ids: userId ? selectedSkillIds : [],
           },
           {
             signal: requestController.signal,
@@ -381,7 +459,15 @@ export function useAiChat() {
         if (controller.current === requestController) controller.current = null
       }
     },
-    [activeConversationId, providerProfiles, runState.status, updateMessage]
+    [
+      activeConversationId,
+      providerProfiles,
+      runState.status,
+      selectedPersonaId,
+      selectedSkillIds,
+      updateMessage,
+      userId,
+    ]
   )
 
   const sendMessage = useCallback(
@@ -511,6 +597,89 @@ export function useAiChat() {
     [user]
   )
 
+  const selectPersona = useCallback(
+    (personaId: string | null) => {
+      if (!userId) return
+      if (
+        personaId !== null &&
+        !personas.some((persona) => persona.id === personaId)
+      )
+        return
+      setSelectedPersonaId(personaId)
+    },
+    [personas, userId]
+  )
+
+  const toggleSkill = useCallback(
+    (skillId: string) => {
+      if (!userId || !skills.some((skill) => skill.id === skillId)) return
+      setSelectedSkillIds((current) => {
+        if (current.includes(skillId)) {
+          return current.filter((id) => id !== skillId)
+        }
+        if (current.length >= MAX_SELECTED_AI_SKILLS) return current
+        return [...current, skillId]
+      })
+    },
+    [skills, userId]
+  )
+
+  const savePersona = useCallback(
+    async ({ id, ...payload }: AiPersonaDraft) => {
+      if (!userId) throw new Error('登录后可以管理自己的角色。')
+      const saved = id
+        ? await updateAiPersona(id, payload)
+        : await createAiPersona(payload)
+      if (!saved) throw new Error('角色保存失败，请重试。')
+      setPersonas((items) => [
+        saved,
+        ...items.filter((item) => item.id !== saved.id),
+      ])
+      setCapabilityStatus('ready')
+      return saved
+    },
+    [userId]
+  )
+
+  const removePersona = useCallback(
+    async (personaId: string) => {
+      if (!userId) throw new Error('登录后可以管理自己的角色。')
+      await deleteAiPersona(personaId)
+      setPersonas((items) => items.filter((item) => item.id !== personaId))
+      setSelectedPersonaId((current) =>
+        current === personaId ? null : current
+      )
+    },
+    [userId]
+  )
+
+  const saveSkill = useCallback(
+    async ({ id, ...payload }: AiSkillDraft) => {
+      if (!userId) throw new Error('登录后可以管理自己的 Skills。')
+      const saved = id
+        ? await updateAiSkill(id, payload)
+        : await createAiSkill(payload)
+      if (!saved) throw new Error('Skill 保存失败，请重试。')
+      setSkills((items) => [
+        saved,
+        ...items.filter((item) => item.id !== saved.id),
+      ])
+      setCapabilityStatus('ready')
+      return saved
+    },
+    [userId]
+  )
+
+  const removeSkill = useCallback(
+    async (skillId: string) => {
+      if (!userId) throw new Error('登录后可以管理自己的 Skills。')
+      await deleteAiSkill(skillId)
+      setSkills((items) => items.filter((item) => item.id !== skillId))
+      setSelectedSkillIds((current) => current.filter((id) => id !== skillId))
+    },
+    [userId]
+  )
+
   return {
     conversations,
     activeConversationId,
@@ -518,6 +687,14 @@ export function useAiChat() {
     runState,
     providers,
     providerProfiles,
+    personas,
+    skills,
+    selectedPersonaId,
+    selectedSkillIds,
+    capabilityStatus,
+    capabilityError,
+    isAuthenticated: Boolean(userId),
+    accountKey: userId,
     startConversation,
     selectConversation,
     sendMessage,
@@ -527,6 +704,13 @@ export function useAiChat() {
     retryLast,
     setFeedback,
     saveProvider,
+    selectPersona,
+    toggleSkill,
+    refreshCapabilities,
+    savePersona,
+    removePersona,
+    saveSkill,
+    removeSkill,
   }
 }
 

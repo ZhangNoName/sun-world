@@ -6,9 +6,11 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from loguru import logger
 from src.core.audit_log import audit_log
+from src.core.csrf import CookieCsrfMiddleware
 from src.core.logging import configure_logging
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.observability import ObservabilityMiddleware
+from src.core.runtime_env import is_local_runtime
 from fastapi.staticfiles import StaticFiles
 from src.controller.ai_manager import AiManager
 from src.controller.auth_manager import AuthManager
@@ -66,6 +68,32 @@ def get_credential_encryption_key(config: dict) -> str | None:
     return configured_key or os.getenv("AI_CREDENTIAL_ENCRYPTION_KEY")
 
 
+def get_mcp_allowed_hosts(config: dict) -> list[str]:
+    raw_environment = os.getenv("AI_MCP_ALLOWED_HOSTS")
+    if raw_environment is not None:
+        return [host.strip() for host in raw_environment.split(",") if host.strip()]
+    ai_config = config.get("ai", {})
+    configured_hosts = ai_config.get("mcp_allowed_hosts", []) if isinstance(ai_config, dict) else []
+    if isinstance(configured_hosts, str):
+        configured_hosts = configured_hosts.split(",")
+    if not isinstance(configured_hosts, list):
+        raise RuntimeError("ai.mcp_allowed_hosts must be a list or comma-separated string")
+    return [str(host).strip() for host in configured_hosts if str(host).strip()]
+
+
+def _parse_origin_environment(variable_name: str) -> list[str] | None:
+    """Return an explicit origin list and reject credentialed wildcards."""
+    raw = os.getenv(variable_name)
+    if not raw:
+        return None
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+    if "*" in origins:
+        raise RuntimeError(
+            f"{variable_name} must not contain '*' when browser credentials are enabled"
+        )
+    return origins
+
+
 class Application(FastAPI):
     def __init__(self, **args):
         super(Application, self).__init__(**args)
@@ -77,23 +105,64 @@ class Application(FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+        self.add_middleware(
+            CookieCsrfMiddleware,
+            allowed_origins=self.__get_csrf_allowed_origins(),
+        )
         # Added after CORS so Starlette builds observability as the outer
         # project middleware and records CORS/preflight outcomes too.
         self.add_middleware(ObservabilityMiddleware)
 
     @staticmethod
     def __get_allowed_origins():
-        raw = os.getenv("BLOG_CORS_ORIGINS")
-        if raw:
-            return [origin.strip() for origin in raw.split(",") if origin.strip()]
-        return [
+        configured_origins = _parse_origin_environment("BLOG_CORS_ORIGINS")
+        if configured_origins is not None:
+            return configured_origins
+        origins = [
             "https://sunworld.site",
             "https://www.sunworld.site",
             "https://zsf.shopping",
             "https://www.zsf.shopping",
-            "http://localhost:3030",
-            "http://127.0.0.1:3030",
         ]
+        if is_local_runtime():
+            origins.extend(
+                [
+                    "http://localhost:3030",
+                    "http://127.0.0.1:3030",
+                ]
+            )
+        return origins
+
+    @staticmethod
+    def __get_csrf_allowed_origins():
+        configured_origins = _parse_origin_environment(
+            "AUTH_CSRF_ALLOWED_ORIGINS"
+        )
+        if configured_origins is not None:
+            return configured_origins
+
+        # This write-authority allowlist is intentionally narrower than CORS:
+        # compatibility frontends may read the API without receiving implicit
+        # permission to submit cookie-authenticated mutations.
+        origins = [
+            "https://sunworld.site",
+            "https://www.sunworld.site",
+            "https://api.sunworld.site",
+        ]
+        if is_local_runtime():
+            origins.extend(
+                [
+                    "http://localhost:3030",
+                    "http://127.0.0.1:3030",
+                    "http://localhost:8000",
+                    "http://127.0.0.1:8000",
+                ]
+            )
+
+        public_api_origin = os.getenv("AUTH_PUBLIC_API_ORIGIN")
+        if public_api_origin and public_api_origin not in origins:
+            origins.append(public_api_origin)
+        return origins
 
     async def init(self, env='dev'):
         self.load_config(env=env)
@@ -110,6 +179,7 @@ class Application(FastAPI):
         self.__init_role_manager()
         self.__init_reousrce_manager()
         self.__init_auth_manager()
+        self.__init_identity_service()
         self.__init_ai_workspace_service()
         self.__init_dictionary_service()
         self.__init_file_manager()
@@ -263,17 +333,75 @@ class Application(FastAPI):
             secret_key=jwt_secret
         )
 
+    def __init_identity_service(self):
+        from src.modules.identity.providers import OAuthProviderRegistry
+        from src.modules.identity.repository import MySqlIdentityRepository
+        from src.modules.identity.service import IdentityService
+        from src.modules.identity.verification import (
+            VerificationDeliveryRegistry,
+            VerificationService,
+        )
+
+        env = os.getenv("ENV", "local")
+        local_runtime = is_local_runtime()
+        default_api_origin = (
+            "http://localhost:8000"
+            if local_runtime
+            else "https://api.sunworld.site"
+        )
+        default_web_origin = (
+            "http://localhost:3030"
+            if local_runtime
+            else "https://sunworld.site"
+        )
+        verification = VerificationService(
+            self.redis,
+            VerificationDeliveryRegistry.from_env(),
+            pepper=(
+                os.getenv("AUTH_VERIFICATION_PEPPER")
+                or self.auth.secret_key
+            ),
+        )
+        self.identity_service = IdentityService(
+            repository=MySqlIdentityRepository(self.mysql),
+            auth_manager=self.auth,
+            redis=self.redis,
+            providers=OAuthProviderRegistry.from_env(),
+            verification=verification,
+            public_api_origin=os.getenv(
+                "AUTH_PUBLIC_API_ORIGIN", default_api_origin
+            ),
+            public_web_origin=os.getenv(
+                "AUTH_PUBLIC_WEB_ORIGIN", default_web_origin
+            ),
+        )
+
     def __init_ai_workspace_service(self):
         from src.modules.ai.credentials import CredentialCipher
+        from src.modules.ai.mcp_gateway import McpGateway
+        from src.modules.ai.mcp_repository import MySqlAiMcpRepository
+        from src.modules.ai.mcp_service import AiMcpService
         from src.modules.ai.providers import ProviderRegistry
         from src.modules.ai.repositories import MySqlAiRepository
         from src.modules.ai.service import AiService
 
+        cipher = CredentialCipher(get_credential_encryption_key(self.config))
         self.ai_service = AiService(
             repository=MySqlAiRepository(self.mysql),
             providers=ProviderRegistry(),
-            cipher=CredentialCipher(get_credential_encryption_key(self.config)),
+            cipher=cipher,
         )
+        allowed_hosts = get_mcp_allowed_hosts(self.config)
+        if not allowed_hosts:
+            self.ai_mcp_service = None
+            logger.info("MCP workspace is disabled because no allowed hosts are configured")
+            return
+        self.ai_mcp_service = AiMcpService(
+            repository=MySqlAiMcpRepository(self.mysql),
+            gateway=McpGateway(allowed_hosts=allowed_hosts),
+            cipher=cipher,
+        )
+        logger.info("MCP workspace initialized with {} allowed host rule(s)", len(allowed_hosts))
 
     def __init_dictionary_service(self):
         from src.modules.dictionaries.repository import MySqlDictionaryRepository

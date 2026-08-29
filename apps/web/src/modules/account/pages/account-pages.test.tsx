@@ -22,12 +22,21 @@ describe('account pages', () => {
 
   it('validates password confirmation before registration', async () => {
     renderApp(<RegisterPage />, { route: '/register' })
-    await userEvent.type(screen.getByLabelText('昵称'), 'Tester')
-    await userEvent.type(screen.getByLabelText('手机号'), '13800138000')
-    await userEvent.type(screen.getByLabelText('邮箱'), 'test@example.com')
-    await userEvent.type(screen.getByLabelText('密码'), 'secret1')
-    await userEvent.type(screen.getByLabelText('确认密码'), 'secret2')
+    await userEvent.type(screen.getByLabelText('用户名'), 'Tester')
+    await userEvent.type(screen.getByLabelText('密码'), 'secret11')
+    await userEvent.type(screen.getByLabelText('确认密码'), 'secret22')
     await userEvent.click(screen.getByRole('button', { name: '注册' }))
     expect(screen.getByRole('alert')).toHaveTextContent('两次输入的密码不一致')
+  })
+
+  it('keeps usernames separate from verified contact identifiers', async () => {
+    renderApp(<RegisterPage />, { route: '/register' })
+    await userEvent.type(screen.getByLabelText('用户名'), 'user@example.com')
+    await userEvent.type(screen.getByLabelText('密码'), 'secret123')
+    await userEvent.type(screen.getByLabelText('确认密码'), 'secret123')
+    await userEvent.click(screen.getByRole('button', { name: '注册' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      '用户名不能是邮箱或手机号'
+    )
   })
 })

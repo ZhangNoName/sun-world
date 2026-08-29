@@ -80,6 +80,12 @@ def export_openapi(output: Path) -> None:
         dictionary_router = importlib.import_module(
             "src.modules.dictionaries.router"
         ).router
+        identity_router = importlib.import_module(
+            "src.modules.identity.router"
+        ).router
+        ai_mcp_router = importlib.import_module(
+            "src.modules.ai.mcp_router"
+        ).router
         routers = [
             routers_module.blog_router,
             routers_module.base_router,
@@ -87,7 +93,9 @@ def export_openapi(output: Path) -> None:
             routers_module.role_router,
             routers_module.resource_router,
             routers_module.auth_router,
+            identity_router,
             routers_module.ai_router,
+            ai_mcp_router,
             routers_module.file_router,
             routers_module.telemetry_router,
             routers_module.admin_router,

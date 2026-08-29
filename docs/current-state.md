@@ -1,5 +1,54 @@
 # Current State
 
+## Optional Identity And Personal AIGC (2026-08-29, local main)
+
+- Optional authentication is implemented for password, purpose-bound
+  phone/email OTP, Google OIDC, QQ, and WeChat. Public browsing and temporary
+  AIGC remain available without login; authenticated users gain durable
+  conversations, provider profiles, personas, prompt-only skills, verified
+  contacts, identity connections, and MCP configuration.
+- Identity resolution uses provider subject first and only an explicitly
+  provider-verified phone second. Verified email never auto-merges accounts.
+  WeChat is keyed by appid/OpenID with transactional legacy UnionID migration.
+  Explicit connection requires recent authentication and a user/session-bound
+  one-time state or OTP.
+- Sessions are HttpOnly-cookie based with access/refresh token typing, atomic
+  rotation, production-enforced strict refresh-reuse handling, an independent
+  narrow CSRF write-origin list, wildcard-free credentialed CORS, and
+  Redis-backed request limits. OTP cooldowns and quotas are reserved in one
+  atomic operation; failed deliveries roll back their owned reservation.
+- The `/aigc` workspace now provides guest chat plus signed-in persistence,
+  role/persona selection, up to eight prompt-only skills, provider profiles,
+  and an explicit-confirmation MCP control plane. Provider/MCP egress is HTTPS
+  allowlisted with public-DNS validation, IP pinning, SNI/Host preservation,
+  no redirects/environment proxy, bounded payloads/deadlines, rate limits,
+  daily guest/site circuit breakers, and distributed concurrency leases.
+- Conversation writes/edits are owner-scoped transactions with row locks and a
+  server-resolved per-conversation run lease. MCP configuration/catalog calls
+  are revision-bound; call audit uses pending/succeeded/failed/unknown and does
+  not replay unknown side effects.
+- The schema checker now validates exact column/index/foreign-key/default/
+  `ON UPDATE`/collation contracts and blocks incompatible historical usernames.
+  It intentionally does not rewrite an existing non-unique username index.
+- This work is local only. No database migration, real OAuth/OTP/MCP credential,
+  push, deploy, provider-account mutation, or production smoke test has been
+  performed. Before cutover, run the controlled username unique-index migration,
+  apply the remaining schema, configure protected service secrets and narrow
+  allowlists, set provider hard spending caps, then run the documented
+  auth/AIGC/MCP smoke matrix in
+  `docs/deployment/2026-08-29-identity-ai-cutover.md`.
+- Route-level gzip budgets were remeasured for the expanded login, account,
+  and QQ callback chunks (3/4/2 KiB respectively); global JS, CSS, entry, and
+  largest-asset ceilings remain unchanged.
+- Final verification passed: `corepack pnpm check` completed all 19 repository
+  gates, including 283 API tests, 155 Web React tests, 38 shared UI tests,
+  14 AI UI tests, 39 AI composer tests, and 6 contract tests. Desktop
+  (1440x900) and mobile (390x844) browser QA covered login, registration, and
+  the guest AIGC workspace; the tested routes had no horizontal overflow or
+  unexpected global error toast. The final security assessment and remaining
+  P2/product follow-ups are recorded in
+  `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
+
 ## Frontend Browser Cache Policy (2026-08-29)
 
 - Frontend Nginx now serves Vite's content-hashed `/assets/` files with a

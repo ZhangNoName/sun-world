@@ -105,6 +105,12 @@ workflow logs.
 
 ## MySQL Schema Guard
 
+Before the first optional-identity deployment, follow
+`docs/deployment/2026-08-29-identity-ai-cutover.md`. In particular, the
+historical non-unique `idx_users_username` requires the separate, explicitly
+acknowledged `username_index_migration`; the generic deploy-time schema apply
+will intentionally stop on that mismatch and will not replace the index.
+
 The API image contains a conservative MySQL schema migration module:
 
 ```bash
@@ -141,8 +147,10 @@ sudo docker run --rm --network host \
   /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
 
 API_ENV=(
+  -e BLOG_RUNTIME_ENV=production
   -e BLOG_SECRET_ENV_FILE=/home/lighthouse/.config/blog_end/auth.env
   -e BLOG_CORS_ORIGINS=https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping
+  -e AUTH_CSRF_ALLOWED_ORIGINS=https://sunworld.site,https://www.sunworld.site,https://api.sunworld.site
   -e BLOG_AUDIT_LOG_DIR=/data/blog/audit-logs
 )
 
@@ -169,6 +177,11 @@ curl -fsS https://api.sunworld.site/healthz
 
 Do not print the secret file contents. The `--network host` flag preserves
 current production database host assumptions such as `localhost`.
+The CORS list may keep compatibility frontend domains, but the independent
+CSRF list grants cookie-authenticated write authority only to the primary,
+WWW, and API origins. Credentialed CORS rejects `*`, and production startup
+requires `AUTH_REFRESH_REUSE_GRACE_SECONDS=0` (or the variable to be absent,
+which has the same strict default).
 
 ## 验证 / Verification
 

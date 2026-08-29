@@ -12,8 +12,6 @@ export function RegisterPage() {
   const register = useAuthStore((state) => state.register)
   const [form, setForm] = useState({
     name: '',
-    phone: '',
-    email: '',
     password: '',
     confirm: '',
   })
@@ -24,13 +22,20 @@ export function RegisterPage() {
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     setError('')
-    if (
-      !form.name.trim() ||
-      !/^1[3-9]\d{9}$/.test(form.phone) ||
-      !/^\S+@\S+\.\S+$/.test(form.email) ||
-      form.password.length < 6
-    ) {
+    const username = form.name.trim()
+    const phoneLike = /^(?:1[3-9]\d{9}|\+[1-9]\d{7,14})$/.test(
+      username.replace(/[\s().-]/g, '')
+    )
+    if (!username || form.password.length < 8) {
       setError('请完整填写有效的注册信息')
+      return
+    }
+    if (
+      username.includes('@') ||
+      !/^[A-Za-z0-9_.\-\u4e00-\u9fff]+$/.test(username) ||
+      phoneLike
+    ) {
+      setError('用户名不能是邮箱或手机号，仅支持中英文、数字及 . _ -')
       return
     }
     if (form.password !== form.confirm) {
@@ -40,9 +45,7 @@ export function RegisterPage() {
     setLoading(true)
     try {
       await register({
-        name: form.name.trim(),
-        phone: form.phone,
-        email: form.email,
+        name: username,
         password: form.password,
       })
       toast.success('注册成功')
@@ -57,34 +60,33 @@ export function RegisterPage() {
     <AuthPageShell
       eyebrow="Sun World"
       headline="加入 Sun World"
-      description="创建账号，开始记录、分享和探索。"
+      description="创建用户名凭据；手机号和邮箱需登录后通过验证码安全关联。"
       formTitle="注册"
-      formDescription="填写基础信息，即可创建新账号。"
+      formDescription="联系方式不会在未验证时成为登录凭据。"
     >
       <form className="auth-form" onSubmit={submit}>
-        <SwInput label="昵称" value={form.name} onValueChange={field('name')} />
         <SwInput
-          label="手机号"
-          value={form.phone}
-          onValueChange={field('phone')}
-        />
-        <SwInput
-          label="邮箱"
-          type="email"
-          value={form.email}
-          onValueChange={field('email')}
+          label="用户名"
+          value={form.name}
+          onValueChange={field('name')}
+          autoComplete="username"
+          maxLength={64}
         />
         <SwInput
           label="密码"
           type="password"
           value={form.password}
           onValueChange={field('password')}
+          autoComplete="new-password"
+          maxLength={128}
         />
         <SwInput
           label="确认密码"
           type="password"
           value={form.confirm}
           onValueChange={field('confirm')}
+          autoComplete="new-password"
+          maxLength={128}
         />
         {error ? (
           <p role="alert" className="auth-error">

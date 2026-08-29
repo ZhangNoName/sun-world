@@ -332,6 +332,93 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/ai/v1/mcp/connections': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Connections */
+    get: operations['list_connections_ai_v1_mcp_connections_get']
+    put?: never
+    /** Create Connection */
+    post: operations['create_connection_ai_v1_mcp_connections_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/mcp/connections/{connection_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Connection */
+    put: operations['update_connection_ai_v1_mcp_connections__connection_id__put']
+    post?: never
+    /** Delete Connection */
+    delete: operations['delete_connection_ai_v1_mcp_connections__connection_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/mcp/connections/{connection_id}/discover': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Discover Tools */
+    post: operations['discover_tools_ai_v1_mcp_connections__connection_id__discover_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/mcp/connections/{connection_id}/tools': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Tools */
+    get: operations['list_tools_ai_v1_mcp_connections__connection_id__tools_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/mcp/connections/{connection_id}/tools/{tool_name}/call': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Call Tool */
+    post: operations['call_tool_ai_v1_mcp_connections__connection_id__tools__tool_name__call_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/ai/v1/messages/{message_id}': {
     parameters: {
       query?: never
@@ -361,6 +448,43 @@ export interface paths {
     put: operations['set_message_feedback_ai_v1_messages__message_id__feedback_put']
     post?: never
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/personas': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Personas */
+    get: operations['list_personas_ai_v1_personas_get']
+    put?: never
+    /** Create Persona */
+    post: operations['create_persona_ai_v1_personas_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/personas/{persona_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Persona */
+    get: operations['get_persona_ai_v1_personas__persona_id__get']
+    /** Update Persona */
+    put: operations['update_persona_ai_v1_personas__persona_id__put']
+    post?: never
+    /** Delete Persona */
+    delete: operations['delete_persona_ai_v1_personas__persona_id__delete']
     options?: never
     head?: never
     patch?: never
@@ -418,6 +542,94 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/ai/v1/skills': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Skills */
+    get: operations['list_skills_ai_v1_skills_get']
+    put?: never
+    /** Create Skill */
+    post: operations['create_skill_ai_v1_skills_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/skills/{skill_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Skill */
+    get: operations['get_skill_ai_v1_skills__skill_id__get']
+    /** Update Skill */
+    put: operations['update_skill_ai_v1_skills__skill_id__put']
+    post?: never
+    /** Delete Skill */
+    delete: operations['delete_skill_ai_v1_skills__skill_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/connections': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Account Connections */
+    get: operations['list_account_connections_auth_connections_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/connections/verification/complete': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Complete Connection Verification */
+    post: operations['complete_connection_verification_auth_connections_verification_complete_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/connections/verification/request': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Request Connection Verification */
+    post: operations['request_connection_verification_auth_connections_verification_request_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/auth/login': {
     parameters: {
       query?: never
@@ -452,17 +664,51 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/auth/qq': {
+  '/auth/methods': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    get?: never
+    /** List Auth Methods */
+    get: operations['list_auth_methods_auth_methods_get']
     put?: never
-    /** Qq */
-    post: operations['qq_auth_qq_post']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/oauth/{provider}/callback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Complete Oauth Callback */
+    get: operations['complete_oauth_callback_auth_oauth__provider__callback_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/oauth/{provider}/start': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Start Oauth */
+    get: operations['start_oauth_auth_oauth__provider__start_get']
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never
@@ -531,6 +777,57 @@ export interface paths {
     put?: never
     /** Request Reset Password */
     post: operations['request_reset_password_auth_reset_password_request_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/session': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Session Status */
+    get: operations['session_status_auth_session_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/verification/complete': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Complete Verification Login */
+    post: operations['complete_verification_login_auth_verification_complete_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/verification/request': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Request Verification Code */
+    post: operations['request_verification_code_auth_verification_request_post']
     delete?: never
     options?: never
     head?: never
@@ -972,6 +1269,13 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** AccountConnections */
+    AccountConnections: {
+      /** Contacts */
+      contacts?: components['schemas']['VerifiedContact'][]
+      /** Identities */
+      identities?: components['schemas']['LinkedIdentity'][]
+    }
     /** AdminAlertsSnapshot */
     AdminAlertsSnapshot: {
       /**
@@ -1141,6 +1445,139 @@ export interface components {
       /** Url */
       url: string
     }
+    /** AiMcpConnection */
+    AiMcpConnection: {
+      /** Bearer Token Hint */
+      bearer_token_hint?: string | null
+      /** Catalog Revision */
+      catalog_revision?: number | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Enabled */
+      enabled: boolean
+      /** Endpoint */
+      endpoint: string
+      /** Has Bearer Token */
+      has_bearer_token: boolean
+      /** Id */
+      id: string
+      /** Last Discovered At */
+      last_discovered_at?: string | null
+      /** Name */
+      name: string
+      /**
+       * Revision
+       * @default 1
+       */
+      revision: number
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiMcpConnectionCreate */
+    AiMcpConnectionCreate: {
+      /** Bearer Token */
+      bearer_token?: string | null
+      /**
+       * Enabled
+       * @default true
+       */
+      enabled: boolean
+      /** Endpoint */
+      endpoint: string
+      /** Name */
+      name: string
+    }
+    /** AiMcpConnectionUpdate */
+    AiMcpConnectionUpdate: {
+      /** Bearer Token */
+      bearer_token?: string | null
+      /**
+       * Clear Bearer Token
+       * @default false
+       */
+      clear_bearer_token: boolean
+      /**
+       * Enabled
+       * @default true
+       */
+      enabled: boolean
+      /** Endpoint */
+      endpoint: string
+      /** Name */
+      name: string
+    }
+    /** AiMcpDiscoveryResult */
+    AiMcpDiscoveryResult: {
+      connection: components['schemas']['AiMcpConnection']
+      /** Tools */
+      tools: components['schemas']['AiMcpTool'][]
+    }
+    /** AiMcpTool */
+    AiMcpTool: {
+      /** Annotations */
+      annotations?: {
+        [key: string]: unknown
+      }
+      /** Connection Id */
+      connection_id: string
+      /** Description */
+      description?: string | null
+      /**
+       * Discovered At
+       * Format: date-time
+       */
+      discovered_at?: string
+      /** Input Schema */
+      input_schema?: {
+        [key: string]: unknown
+      }
+      /** Name */
+      name: string
+    }
+    /** AiMcpToolCallRequest */
+    AiMcpToolCallRequest: {
+      /** Arguments */
+      arguments?: {
+        [key: string]: unknown
+      }
+      /**
+       * Confirmed
+       * @default false
+       */
+      confirmed: boolean
+    }
+    /** AiMcpToolCallResult */
+    AiMcpToolCallResult: {
+      /** Call Id */
+      call_id: string
+      /**
+       * Completed At
+       * Format: date-time
+       */
+      completed_at?: string
+      /** Connection Id */
+      connection_id: string
+      /** Result */
+      result: unknown
+      /** Result Metadata */
+      result_metadata: {
+        [key: string]: unknown
+      }
+      /**
+       * Status
+       * @default succeeded
+       * @constant
+       */
+      status: 'succeeded'
+      /** Tool Name */
+      tool_name: string
+    }
     /** AiMessage */
     AiMessage: {
       /** Blocks */
@@ -1186,6 +1623,42 @@ export interface components {
     AiMessageEditRequest: {
       /** Content */
       content: string
+    }
+    /** AiPersona */
+    AiPersona: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Description */
+      description?: string | null
+      /** Id */
+      id: string
+      /**
+       * Instructions
+       * @description Declarative Markdown instructions for this persona.
+       */
+      instructions: string
+      /** Name */
+      name: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /** AiPersonaInput */
+    AiPersonaInput: {
+      /** Description */
+      description?: string | null
+      /**
+       * Instructions
+       * @description Declarative Markdown instructions for this persona.
+       */
+      instructions: string
+      /** Name */
+      name: string
     }
     /** AiProviderCatalog */
     AiProviderCatalog: {
@@ -1325,8 +1798,63 @@ export interface components {
       message: string
       /** Parent Message Id */
       parent_message_id?: string | null
+      /** Persona Id */
+      persona_id?: string | null
       /** Provider Profile Id */
       provider_profile_id?: string | null
+      /** Skill Ids */
+      skill_ids?: string[]
+    }
+    /** AiSkill */
+    AiSkill: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at?: string
+      /** Description */
+      description?: string | null
+      /** Id */
+      id: string
+      /**
+       * Instructions
+       * @description Prompt-only Markdown instructions; never executable code or tool configuration.
+       */
+      instructions: string
+      /**
+       * Kind
+       * @default prompt
+       * @constant
+       */
+      kind: 'prompt'
+      /** Name */
+      name: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at?: string
+    }
+    /**
+     * AiSkillInput
+     * @description A declarative Markdown prompt. It is never loaded or executed as code.
+     */
+    AiSkillInput: {
+      /** Description */
+      description?: string | null
+      /**
+       * Instructions
+       * @description Prompt-only Markdown instructions; never executable code or tool configuration.
+       */
+      instructions: string
+      /**
+       * Kind
+       * @default prompt
+       * @constant
+       */
+      kind: 'prompt'
+      /** Name */
+      name: string
     }
     /** AiTableBlock */
     AiTableBlock: {
@@ -1367,6 +1895,14 @@ export interface components {
        */
       type: 'text'
     }
+    /** ApiResponse[AccountConnections] */
+    ApiResponse_AccountConnections_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AccountConnections'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[AdminAlertsSnapshot] */
     ApiResponse_AdminAlertsSnapshot_: {
       /** Code */
@@ -1391,11 +1927,43 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[AiMcpConnection] */
+    ApiResponse_AiMcpConnection_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiMcpConnection'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiMcpDiscoveryResult] */
+    ApiResponse_AiMcpDiscoveryResult_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiMcpDiscoveryResult'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiMcpToolCallResult] */
+    ApiResponse_AiMcpToolCallResult_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiMcpToolCallResult'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[AiMessage] */
     ApiResponse_AiMessage_: {
       /** Code */
       code: number | string
       data?: components['schemas']['AiMessage'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiPersona] */
+    ApiResponse_AiPersona_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiPersona'] | null
       /** Msg */
       msg: string
     }
@@ -1412,6 +1980,14 @@ export interface components {
       /** Code */
       code: number | string
       data?: components['schemas']['AiProviderProfile'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[AiSkill] */
+    ApiResponse_AiSkill_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiSkill'] | null
       /** Msg */
       msg: string
     }
@@ -1487,6 +2063,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[IdentitySession] */
+    ApiResponse_IdentitySession_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['IdentitySession'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[List[Category]] */
     ApiResponse_List_Category__: {
       /** Code */
@@ -1519,6 +2103,14 @@ export interface components {
       code: number | string
       /** Data */
       data?: null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[OAuthStart] */
+    ApiResponse_OAuthStart_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['OAuthStart'] | null
       /** Msg */
       msg: string
     }
@@ -1570,6 +2162,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[VerificationChallenge] */
+    ApiResponse_VerificationChallenge_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['VerificationChallenge'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[bool] */
     ApiResponse_bool_: {
       /** Code */
@@ -1585,6 +2185,33 @@ export interface components {
       code: number | string
       /** Data */
       data?: components['schemas']['AiConversationSummary'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiMcpConnection]] */
+    ApiResponse_list_AiMcpConnection__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiMcpConnection'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiMcpTool]] */
+    ApiResponse_list_AiMcpTool__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiMcpTool'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AiPersona]] */
+    ApiResponse_list_AiPersona__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiPersona'][] | null
       /** Msg */
       msg: string
     }
@@ -1615,6 +2242,24 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[list[AiSkill]] */
+    ApiResponse_list_AiSkill__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AiSkill'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[AuthMethodDescriptor]] */
+    ApiResponse_list_AuthMethodDescriptor__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['AuthMethodDescriptor'][] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[list[DictionaryItemPublic]] */
     ApiResponse_list_DictionaryItemPublic__: {
       /** Code */
@@ -1633,23 +2278,35 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** AuthMethodDescriptor */
+    AuthMethodDescriptor: {
+      /** Enabled */
+      enabled: boolean
+      /** Id */
+      id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'password' | 'verification_code' | 'oauth'
+      /** Label */
+      label: string
+      /** Reason */
+      reason?: string | null
+    }
     /** AuthSession */
     AuthSession: {
-      /** Access Token */
-      access_token?: string | null
       /** Access Token Expire */
       access_token_expire?: string | null
       /** Id */
       id?: number | null
-      /** Refresh Token */
-      refresh_token?: string | null
       /** Refresh Token Expire */
       refresh_token_expire?: string | null
     }
     /** BindResourcesModel */
     BindResourcesModel: {
       /** Resource Ids */
-      resource_ids: number[]
+      resource_ids?: number[]
     }
     /** BlogBase */
     BlogBase: {
@@ -1689,9 +2346,8 @@ export interface components {
       /**
        * Tag
        * @description 标签
-       * @default []
        */
-      tag: number[] | null
+      tag?: number[] | null
       /**
        * Title
        * @description 博客标题
@@ -1818,9 +2474,8 @@ export interface components {
       /**
        * Tag
        * @description 标签
-       * @default []
        */
-      tag: number[] | null
+      tag?: number[] | null
       /**
        * Title
        * @description 博客标题
@@ -1892,18 +2547,12 @@ export interface components {
     }
     /** Body_upload_image_file_image_upload_post */
     Body_upload_image_file_image_upload_post: {
-      /**
-       * File
-       * Format: binary
-       */
+      /** File */
       file: string
     }
     /** Body_upload_video_file_video_upload_post */
     Body_upload_video_file_video_upload_post: {
-      /**
-       * File
-       * Format: binary
-       */
+      /** File */
       file: string
     }
     /** Category */
@@ -2100,12 +2749,61 @@ export interface components {
        */
       status: 'ok'
     }
+    /** IdentitySession */
+    IdentitySession: {
+      /**
+       * Access Token Expire
+       * Format: date-time
+       */
+      access_token_expire: string
+      /** Account Created */
+      account_created: boolean
+      /**
+       * Linked By
+       * @enum {string}
+       */
+      linked_by:
+        | 'identity'
+        | 'verified_phone'
+        | 'verified_email'
+        | 'new_account'
+      /** Provider */
+      provider: string
+      /**
+       * Refresh Token Expire
+       * Format: date-time
+       */
+      refresh_token_expire: string
+      /** User Id */
+      user_id: number
+    }
+    /** LinkedIdentity */
+    LinkedIdentity: {
+      /** Avatar Url */
+      avatar_url?: string | null
+      /** Display Name */
+      display_name?: string | null
+      /** Id */
+      id: string
+      /**
+       * Last Authenticated At
+       * Format: date-time
+       */
+      last_authenticated_at: string
+      /**
+       * Linked At
+       * Format: date-time
+       */
+      linked_at: string
+      /** Provider */
+      provider: string
+    }
     /** LoginModel */
     LoginModel: {
       /** Password */
       password: string
       /** Username */
-      username: string | null
+      username: string
     }
     /** MetricAlert */
     MetricAlert: {
@@ -2164,12 +2862,21 @@ export interface components {
         [key: string]: unknown
       }[]
     }
-    /** QQModel */
-    QQModel: {
-      /** Access Token */
-      access_token: string
-      /** Expires In */
-      expires_in: number
+    /** OAuthStart */
+    OAuthStart: {
+      /** Authorization Url */
+      authorization_url: string
+      /**
+       * Flow
+       * @default login
+       * @enum {string}
+       */
+      flow: 'login' | 'connect'
+      /**
+       * Provider
+       * @enum {string}
+       */
+      provider: 'google' | 'qq' | 'wechat'
     }
     /** ReadinessSnapshot */
     ReadinessSnapshot: {
@@ -2190,17 +2897,10 @@ export interface components {
     }
     /** RegisterModel */
     RegisterModel: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string
       /** Name */
       name: string
       /** Password */
       password: string
-      /** Phone */
-      phone: string | null
     }
     /** RequestMetricsSnapshot */
     RequestMetricsSnapshot: {
@@ -2273,29 +2973,29 @@ export interface components {
        * Description
        * @default
        */
-      description: string | null
+      description: string
       /** Name */
       name: string
       /**
        * Path
        * @default
        */
-      path: string | null
+      path: string
       /** Type */
       type: string
     }
     /** ResourceUpdateModel */
     ResourceUpdateModel: {
       /** Code */
-      code: string | null
+      code?: string | null
       /** Description */
-      description: string | null
+      description?: string | null
       /** Name */
-      name: string | null
+      name?: string | null
       /** Path */
-      path: string | null
+      path?: string | null
       /** Type */
-      type: string | null
+      type?: string | null
     }
     /** RoleCreateModel */
     RoleCreateModel: {
@@ -2305,18 +3005,18 @@ export interface components {
        * Description
        * @default
        */
-      description: string | null
+      description: string
       /** Name */
       name: string
     }
     /** RoleUpdateModel */
     RoleUpdateModel: {
       /** Code */
-      code: string | null
+      code?: string | null
       /** Description */
-      description: string | null
+      description?: string | null
       /** Name */
-      name: string | null
+      name?: string | null
     }
     /** RouteMetric */
     RouteMetric: {
@@ -2686,12 +3386,68 @@ export interface components {
     }
     /** ValidationError */
     ValidationError: {
+      /** Context */
+      ctx?: Record<string, never>
+      /** Input */
+      input?: unknown
       /** Location */
       loc: (string | number)[]
       /** Message */
       msg: string
       /** Error Type */
       type: string
+    }
+    /** VerificationChallenge */
+    VerificationChallenge: {
+      /** Challenge Id */
+      challenge_id: string
+      /**
+       * Channel
+       * @enum {string}
+       */
+      channel: 'phone' | 'email'
+      /** Expires In */
+      expires_in: number
+      /** Resend After */
+      resend_after: number
+      /** Target Hint */
+      target_hint: string
+    }
+    /** VerificationCompleteRequest */
+    VerificationCompleteRequest: {
+      /** Challenge Id */
+      challenge_id: string
+      /** Code */
+      code: string
+    }
+    /** VerificationRequest */
+    VerificationRequest: {
+      /**
+       * Channel
+       * @enum {string}
+       */
+      channel: 'phone' | 'email'
+      /** Target */
+      target: string
+    }
+    /** VerifiedContact */
+    VerifiedContact: {
+      /** Id */
+      id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'phone' | 'email'
+      /** Value Hint */
+      value_hint: string
+      /** Verification Source */
+      verification_source: string
+      /**
+       * Verified At
+       * Format: date-time
+       */
+      verified_at: string
     }
   }
   responses: never
@@ -3450,6 +4206,223 @@ export interface operations {
       }
     }
   }
+  list_connections_ai_v1_mcp_connections_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiMcpConnection__']
+        }
+      }
+    }
+  }
+  create_connection_ai_v1_mcp_connections_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiMcpConnectionCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiMcpConnection_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_connection_ai_v1_mcp_connections__connection_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        connection_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiMcpConnectionUpdate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiMcpConnection_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_connection_ai_v1_mcp_connections__connection_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        connection_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  discover_tools_ai_v1_mcp_connections__connection_id__discover_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        connection_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiMcpDiscoveryResult_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_tools_ai_v1_mcp_connections__connection_id__tools_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        connection_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiMcpTool__']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  call_tool_ai_v1_mcp_connections__connection_id__tools__tool_name__call_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        connection_id: string
+        tool_name: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiMcpToolCallRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiMcpToolCallResult_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   edit_message_ai_v1_messages__message_id__patch: {
     parameters: {
       query?: never
@@ -3499,6 +4472,156 @@ export interface operations {
         'application/json': components['schemas']['AiFeedbackRequest']
       }
     }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_personas_ai_v1_personas_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_AiPersona__']
+        }
+      }
+    }
+  }
+  create_persona_ai_v1_personas_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiPersonaInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiPersona_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_persona_ai_v1_personas__persona_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        persona_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiPersona_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_persona_ai_v1_personas__persona_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        persona_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiPersonaInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiPersona_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_persona_ai_v1_personas__persona_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        persona_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
     responses: {
       /** @description Successful Response */
       200: {
@@ -3606,13 +4729,249 @@ export interface operations {
       }
     }
     responses: {
+      /** @description Versioned server-sent event stream */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'text/event-stream': string
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_skills_ai_v1_skills_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
       /** @description Successful Response */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          'application/json': components['schemas']['ApiResponse_list_AiSkill__']
+        }
+      }
+    }
+  }
+  create_skill_ai_v1_skills_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiSkillInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiSkill_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_skill_ai_v1_skills__skill_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        skill_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiSkill_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_skill_ai_v1_skills__skill_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        skill_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiSkillInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiSkill_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_skill_ai_v1_skills__skill_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        skill_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_account_connections_auth_connections_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AccountConnections_']
+        }
+      }
+    }
+  }
+  complete_connection_verification_auth_connections_verification_complete_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerificationCompleteRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AccountConnections_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  request_connection_verification_auth_connections_verification_request_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerificationRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_VerificationChallenge_']
         }
       }
       /** @description Validation Error */
@@ -3679,18 +5038,14 @@ export interface operations {
       }
     }
   }
-  qq_auth_qq_post: {
+  list_auth_methods_auth_methods_get: {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['QQModel']
-      }
-    }
+    requestBody?: never
     responses: {
       /** @description Successful Response */
       200: {
@@ -3698,7 +5053,65 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ApiResponse_NoneType_']
+          'application/json': components['schemas']['ApiResponse_list_AuthMethodDescriptor__']
+        }
+      }
+    }
+  }
+  complete_oauth_callback_auth_oauth__provider__callback_get: {
+    parameters: {
+      query: {
+        state: string
+        code?: string | null
+        error?: string | null
+      }
+      header?: never
+      path: {
+        provider: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Redirect to the browser OAuth callback page */
+      303: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  start_oauth_auth_oauth__provider__start_get: {
+    parameters: {
+      query?: {
+        return_to?: string
+        flow?: 'login' | 'connect'
+      }
+      header?: never
+      path: {
+        provider: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_OAuthStart_']
         }
       }
       /** @description Validation Error */
@@ -3842,6 +5255,92 @@ export interface operations {
       }
     }
   }
+  session_status_auth_session_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AuthSession_']
+        }
+      }
+    }
+  }
+  complete_verification_login_auth_verification_complete_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerificationCompleteRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_IdentitySession_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  request_verification_code_auth_verification_request_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerificationRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_VerificationChallenge_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   base_info_base__get: {
     parameters: {
       query?: never
@@ -3908,8 +5407,8 @@ export interface operations {
         page?: number
         pageSize?: number
         keyword?: string | null
-        sortBy?: string
-        sortOrder?: string
+        sortBy?: 'created_at' | 'updated_at' | 'view_num'
+        sortOrder?: 'asc' | 'desc'
       }
       header?: never
       path?: never
