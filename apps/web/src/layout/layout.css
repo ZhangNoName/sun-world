@@ -11,6 +11,25 @@
     background-color var(--motion-duration) var(--motion-ease-standard);
 }
 
+.route-loading-indicator {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 2px;
+  background: var(--color-brand);
+  animation: sw-motion-pulse var(--motion-duration-loop)
+    var(--motion-ease-standard) infinite;
+}
+
+.route-loading-fallback {
+  width: min(42rem, calc(100% - 2rem));
+  min-height: min(26rem, 50vh);
+  margin: auto;
+  padding-block: var(--space-8);
+  display: grid;
+  align-content: center;
+}
+
 .desk-layout {
   min-height: 100vh;
   display: flex;

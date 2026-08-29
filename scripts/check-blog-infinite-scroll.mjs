@@ -21,7 +21,8 @@ for (const snippet of [
 for (const snippet of [
   "document.querySelector<HTMLElement>('.app-container')",
   'root.scrollTop > SHOW_AFTER_PX',
-  "behavior: reduceMotion ? 'auto' : 'smooth'",
+  'const prefersReducedMotion = useReducedMotion()',
+  "behavior: prefersReducedMotion ? 'auto' : 'smooth'",
   'aria-label="返回顶部"',
   "removeEventListener('scroll'",
 ])

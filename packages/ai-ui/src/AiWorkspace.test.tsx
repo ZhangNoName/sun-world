@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -221,7 +222,16 @@ describe('AiWorkspace', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('resizes the conversation sidebar with pointer and keyboard input', () => {
+  it('resizes the conversation sidebar once per frame and with keyboard input', () => {
+    let runFrame: FrameRequestCallback | undefined
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      vi.fn((callback: FrameRequestCallback) => {
+        runFrame = callback
+        return 17
+      })
+    )
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
     const onSidebarWidthChange = vi.fn()
     render(
       <AiWorkspace
@@ -245,11 +255,47 @@ describe('AiWorkspace', () => {
     })
     fireEvent.pointerDown(resizeHandle, { clientX: 288, pointerId: 1 })
     fireEvent.pointerMove(resizeHandle, { clientX: 340, pointerId: 1 })
+    fireEvent.pointerMove(resizeHandle, { clientX: 348, pointerId: 1 })
+    expect(requestAnimationFrame).toHaveBeenCalledTimes(1)
+    expect(onSidebarWidthChange).not.toHaveBeenCalled()
+    act(() => runFrame?.(0))
     fireEvent.pointerUp(resizeHandle, { pointerId: 1 })
-    expect(onSidebarWidthChange).toHaveBeenLastCalledWith(340)
+    expect(onSidebarWidthChange).toHaveBeenLastCalledWith(348)
 
     fireEvent.keyDown(resizeHandle, { key: 'ArrowLeft' })
-    expect(onSidebarWidthChange).toHaveBeenLastCalledWith(324)
+    expect(onSidebarWidthChange).toHaveBeenLastCalledWith(332)
+  })
+
+  it('cancels a pending sidebar resize frame when it unmounts', () => {
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      vi.fn(() => 23)
+    )
+    const cancelAnimationFrame = vi.fn()
+    vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrame)
+    const view = render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+    const resizeHandle = screen.getByRole('separator', {
+      name: '调整对话列表宽度',
+    })
+    fireEvent.pointerDown(resizeHandle, { clientX: 288, pointerId: 1 })
+    fireEvent.pointerMove(resizeHandle, { clientX: 340, pointerId: 1 })
+
+    view.unmount()
+
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(23)
   })
 
   it('uses an explicit retry action and shows saved provider profiles', async () => {

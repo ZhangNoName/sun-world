@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -8,10 +8,17 @@ import {
   subscribeWeather,
 } from '@/util'
 
+import { ensureWeatherIconStyles } from '../data/weather-icon-styles'
+
 export function WeatherCard() {
   const { t } = useTranslation()
   useSyncExternalStore(subscribeWeather, getWeatherVersion, getWeatherVersion)
   const weather = HeFengWeatherData.now
+
+  useEffect(() => {
+    if (weather.icon) ensureWeatherIconStyles()
+  }, [weather.icon])
+
   return (
     <section className="weather-card" aria-label="当前天气">
       <a href={HeFengWeatherData.fxLink} target="_blank" rel="noreferrer">

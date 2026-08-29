@@ -428,6 +428,6 @@
   .sw-ai-composer *::before,
   .sw-ai-composer *::after {
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: var(--motion-duration-reduced) !important;
   }
 }

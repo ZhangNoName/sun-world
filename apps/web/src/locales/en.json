@@ -21,6 +21,10 @@
   "exitFullScreen": "Exit Full Screen",
   "theme": "Theme",
 
+  "status": {
+    "loadingPage": "Loading page…"
+  },
+
   "info": {
     "paper": "paper",
     "classification": "classification",

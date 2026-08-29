@@ -87,8 +87,21 @@ export function AiWorkspace({
     startX: number
     startWidth: number
   } | null>(null)
+  const pendingSidebarWidth = useRef<number | null>(null)
+  const resizeFrame = useRef<number | null>(null)
 
   useEffect(() => setCurrentSidebarWidth(sidebarWidth), [sidebarWidth])
+
+  useEffect(
+    () => () => {
+      if (resizeFrame.current !== null) {
+        cancelAnimationFrame(resizeFrame.current)
+      }
+      resizeFrame.current = null
+      pendingSidebarWidth.current = null
+    },
+    []
+  )
 
   const composerModels = useMemo(
     () => [
@@ -141,7 +154,15 @@ export function AiWorkspace({
 
   const continueResize = (event: PointerEvent<HTMLDivElement>) => {
     if (!drag.current || drag.current.pointerId !== event.pointerId) return
-    resizeSidebar(drag.current.startWidth + event.clientX - drag.current.startX)
+    pendingSidebarWidth.current =
+      drag.current.startWidth + event.clientX - drag.current.startX
+    if (resizeFrame.current !== null) return
+    resizeFrame.current = requestAnimationFrame(() => {
+      resizeFrame.current = null
+      const width = pendingSidebarWidth.current
+      pendingSidebarWidth.current = null
+      if (width !== null) resizeSidebar(width)
+    })
   }
 
   const finishResize = (event: PointerEvent<HTMLDivElement>) => {

@@ -113,6 +113,7 @@ bash scripts/check-all.sh   # 完整检查 / Full verification
 - [项目架构 / Project Architecture](docs/architecture/project-architecture.md)
 - [前端平台基础 / Frontend Platform Foundation](docs/architecture/frontend-platform-foundation.md)
 - [前端主题系统 / Frontend Theme System](docs/architecture/frontend-theme-system.md)
+- [前端动效系统 / Frontend Motion System](docs/architecture/frontend-motion-system.md)
 - [商业平台蓝图 / Commercial Platform Blueprint](docs/architecture/commercial-platform-blueprint.md)
 - [可观测性与分析 / Observability and Analytics](docs/architecture/observability-and-analytics.md)
 - [API 契约 / API Contracts](docs/architecture/api-contracts.md)
