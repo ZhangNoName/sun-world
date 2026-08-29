@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -119,7 +119,7 @@ describe('@sun-world/ui React contracts', () => {
     )
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Provider' }))
-    await userEvent.click(screen.getByRole('option', { name: 'OpenAI' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'OpenAI' }))
 
     expect(onValueChange).toHaveBeenCalledWith('openai')
   })
@@ -258,6 +258,7 @@ describe('@sun-world/ui React contracts', () => {
 
   it('selects an option using the keyboard', async () => {
     const onValueChange = vi.fn()
+    const user = userEvent.setup()
     render(
       <SunSelect
         label="Category"
@@ -271,8 +272,10 @@ describe('@sun-world/ui React contracts', () => {
     )
     const trigger = screen.getByRole('combobox', { name: 'Category' })
     trigger.focus()
-    await userEvent.keyboard('{Enter}{ArrowDown}{Enter}')
-    expect(onValueChange).toHaveBeenCalled()
+    await user.keyboard('{Enter}')
+    await screen.findByRole('option', { name: 'Tech' })
+    await user.keyboard('{ArrowDown}{Enter}')
+    await waitFor(() => expect(onValueChange).toHaveBeenCalled())
   })
 
   it('changes checkbox and tabs through accessible controls', async () => {
