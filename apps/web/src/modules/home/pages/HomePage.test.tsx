@@ -40,12 +40,10 @@ describe('HomePage', () => {
     expect(metrics.children).toHaveLength(4)
   })
 
-  it('exposes the weather metrics as a named four-column definition list', () => {
+  it('asks for consent before requesting location-based weather', () => {
     render(<HomePage />)
 
-    const metrics = screen.getByLabelText('天气详情')
-    expect(metrics).toHaveClass('weather-metrics')
-    expect(metrics.tagName).toBe('DL')
-    expect(metrics.children).toHaveLength(4)
+    expect(screen.getByRole('button', { name: 'weather.load' })).toBeVisible()
+    expect(screen.queryByLabelText('weather.details')).not.toBeInTheDocument()
   })
 })

@@ -58,8 +58,6 @@ export class InputBindingManager {
     Object.values(mergedConfig.bindings).forEach((binding) =>
       this.addBinding(binding)
     )
-
-    console.log('InputBindingManager 初始化完成，平台:', this.platform)
   }
 
   /**
@@ -256,7 +254,6 @@ export class InputBindingManager {
       for (const binding of bindings) {
         const condition = this.getPlatformCondition(binding)
         if (condition && this.matchesCondition(condition, event)) {
-          console.log('匹配到绑定: ', binding)
           return binding
         }
       }

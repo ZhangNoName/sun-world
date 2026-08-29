@@ -208,10 +208,8 @@ export abstract class BaseElement {
   }
   private _calcMatrix(oldParent: BaseElement | null) {
     if (this.parent === null) {
-      console.log('计算变换矩阵- 父元素为空', this.id, this.matrix)
       return
     }
-    console.log('计算变换矩阵- 父元素不为空', this.id)
     let oldPM = identity()
     if (!oldParent) {
       oldPM = identity()
@@ -263,7 +261,6 @@ export abstract class BaseElement {
     const textX = this.box.minX - nameConfig.offsetX / scale
 
     const textY = this.box.minY - nameConfig.offsetY / scale
-    console.log('绘制名称', textX, textY)
     ctx.fillText(this.attrs.name, textX, textY)
     // ctx.restore()
   }

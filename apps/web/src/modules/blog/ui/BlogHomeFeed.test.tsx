@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 
@@ -17,6 +17,10 @@ vi.mock('../composables/useBlogBaseData')
 vi.mock('../composables/useBlogList')
 
 describe('BlogHomeFeed', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   beforeEach(() => {
     vi.mocked(useBlogBaseData).mockReturnValue({
       tagList: [],
@@ -138,6 +142,85 @@ describe('BlogHomeFeed', () => {
     expect(card).toHaveClass('z-blog-card')
     expect(card).toHaveAttribute('href', '/blog/10')
     expect(screen.queryByText('阅读更多')).toBeNull()
+  })
+
+  it('loads the next page automatically near the scroll-container bottom', async () => {
+    const loadMore = vi.fn().mockResolvedValue(undefined)
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+    let callback: IntersectionObserverCallback | undefined
+    let options: IntersectionObserverInit | undefined
+
+    class IntersectionObserverMock implements IntersectionObserver {
+      readonly root: Element | Document | null = null
+      readonly rootMargin = '0px'
+      readonly thresholds = [0]
+
+      constructor(
+        nextCallback: IntersectionObserverCallback,
+        nextOptions?: IntersectionObserverInit
+      ) {
+        callback = nextCallback
+        options = nextOptions
+      }
+
+      observe = observe
+      unobserve = vi.fn()
+      disconnect = disconnect
+      takeRecords = () => []
+    }
+
+    vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
+    vi.mocked(useBlogList).mockReturnValue({
+      items: [
+        {
+          id: 10,
+          title: '图搜索入门',
+          abstract: '图搜索训练可达性与层次关系。',
+          publishTime: '2026-07-20',
+          lastUpdateTime: '2026-07-20',
+          tags: ['算法基础'],
+          byteNum: 1024,
+          commentNum: 2,
+        },
+      ],
+      loading: false,
+      total: 24,
+      hasMore: true,
+      keyword: '',
+      sortBy: 'updated_at',
+      sortOrder: 'desc',
+      loadFirstPage: vi.fn().mockResolvedValue(undefined),
+      loadMore,
+      updateQuery: vi.fn().mockResolvedValue(undefined),
+    })
+
+    const { container, unmount } = render(
+      <MemoryRouter>
+        <div className="app-container">
+          <BlogHomeFeed />
+        </div>
+      </MemoryRouter>
+    )
+    const scrollRoot = container.querySelector('.app-container')
+
+    expect(screen.queryByRole('button', { name: '加载更多' })).toBeNull()
+    expect(options).toMatchObject({ root: scrollRoot, rootMargin: '480px 0px' })
+    expect(observe).toHaveBeenCalledWith(
+      container.querySelector('.blog-feed__load-sentinel')
+    )
+
+    await act(async () => {
+      callback?.(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver
+      )
+      await Promise.resolve()
+    })
+
+    expect(loadMore).toHaveBeenCalledTimes(1)
+    unmount()
+    expect(disconnect).toHaveBeenCalledTimes(1)
   })
 })
 

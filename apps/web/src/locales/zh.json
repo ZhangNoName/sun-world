@@ -21,6 +21,20 @@
   "exitFullScreen": "退出全屏",
   "theme": "主题",
 
+  "navigation": {
+    "menu": "导航菜单",
+    "openMenu": "打开导航菜单",
+    "mobile": "移动导航",
+    "preferences": "显示偏好",
+    "home": "首页",
+    "blog": "博客",
+    "canvas": "画布",
+    "ai": "AI 助手",
+    "tools": "工具",
+    "video": "视频",
+    "account": "我的"
+  },
+
   "info": {
     "paper": "文章",
     "classification": "分类",
@@ -28,10 +42,16 @@
     "views": "浏览量"
   },
   "weather": {
+    "current": "当前天气",
+    "details": "天气详情",
     "temp": "温度",
     "feelsLike": "体感温度",
     "humidity": "湿度",
-    "windSpeed": "风速"
+    "windSpeed": "风速",
+    "load": "查看本地天气",
+    "loading": "正在获取天气…",
+    "permissionHint": "需要你的许可才能读取位置并获取本地天气。",
+    "unavailable": "暂时无法获取本地天气，请检查定位权限后重试。"
   },
   "aigc": {
     "title": "AIGC",

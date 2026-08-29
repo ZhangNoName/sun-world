@@ -21,6 +21,20 @@
   "exitFullScreen": "Exit Full Screen",
   "theme": "Theme",
 
+  "navigation": {
+    "menu": "Navigation menu",
+    "openMenu": "Open navigation menu",
+    "mobile": "Mobile navigation",
+    "preferences": "Display preferences",
+    "home": "Home",
+    "blog": "Blog",
+    "canvas": "Canvas",
+    "ai": "AI assistant",
+    "tools": "Tools",
+    "video": "Video",
+    "account": "Account"
+  },
+
   "info": {
     "paper": "paper",
     "classification": "classification",
@@ -28,10 +42,16 @@
     "views": "views"
   },
   "weather": {
-    "temp": "Tempure",
-    "feelsLike": "FeelsLike",
+    "current": "Current weather",
+    "details": "Weather details",
+    "temp": "Temperature",
+    "feelsLike": "Feels like",
     "humidity": "Humidity",
-    "windSpeed": "WindSpeed"
+    "windSpeed": "Wind speed",
+    "load": "Show local weather",
+    "loading": "Getting weather…",
+    "permissionHint": "Allow location access to load your local weather.",
+    "unavailable": "Local weather is unavailable. Check location access and try again."
   },
 
   "aigc": {

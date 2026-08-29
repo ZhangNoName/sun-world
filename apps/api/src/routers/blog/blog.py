@@ -1,8 +1,6 @@
-from typing import Union
-import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Literal
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
-from pydantic import BaseModel
 from src.controller.blog_manage import BlogManager
 from app_instance import app
 from src.type.blog_type import BlogCreate, BlogCreateResult, BlogDetail, BlogPage
@@ -37,7 +35,12 @@ async def create_blog(
     Returns:
         dict: 包含新博客 ID 的字典
     """
-    logger.info(f'接收到的参数：{blog}')
+    logger.info(
+        "Creating blog title_length={} tag_count={} category={}",
+        len(blog.title),
+        len(blog.tag),
+        blog.category,
+    )
 
     res = blog_manager.add_blog(blog)
 
@@ -59,7 +62,7 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
         Blog: 博客对象，如果不存在则抛出 404 错误
     """
     blog = blog_manager.get_blog(blog_id)
-    logger.info(f'查找的结果-----{blog}')
+    logger.debug("Blog lookup completed blog_id={} found={}", blog_id, bool(blog))
 
     if not blog:
         return fail(msg="博客不存在", code=BLOG_NOT_FOUND)
@@ -71,11 +74,11 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
 # 分页获取博客
 @router.get("/", response_model=ApiResponse[BlogPage])
 async def get_blogs_paginated(
-    page: int = 1,
-    pageSize: int = 10,
-    keyword: str | None = None,
-    sortBy: str = "updated_at",
-    sortOrder: str = "desc",
+    page: int = Query(default=1, ge=1),
+    pageSize: int = Query(default=10, ge=1, le=100),
+    keyword: str | None = Query(default=None, max_length=200),
+    sortBy: Literal["created_at", "updated_at", "view_num"] = "updated_at",
+    sortOrder: Literal["asc", "desc"] = "desc",
     blog_manager: BlogManager = Depends(get_blog_manager)
 ):
     """

@@ -6,13 +6,14 @@ import { spawnSync } from 'node:child_process'
 const repoRoot = resolve(import.meta.dirname, '..')
 const apiDir = join(repoRoot, 'apps', 'api')
 const venvDir = join(apiDir, '.venv')
-const venvPython = process.platform === 'win32'
-  ? join(venvDir, 'Scripts', 'python.exe')
-  : join(venvDir, 'bin', 'python')
+const venvPython =
+  process.platform === 'win32'
+    ? join(venvDir, 'Scripts', 'python.exe')
+    : join(venvDir, 'bin', 'python')
 
 const options = {
   host: '127.0.0.1',
-  port: '8000',
+  port: '8030',
   envName: 'local',
   reload: false,
   installOnly: false,
@@ -25,9 +26,12 @@ for (let index = 2; index < process.argv.length; index += 1) {
   if (arg === '--reload') options.reload = true
   else if (arg === '--install-only') options.installOnly = true
   else if (arg === '--no-install') options.noInstall = true
-  else if (arg === '--host') options.host = process.argv[++index] ?? options.host
-  else if (arg === '--port') options.port = process.argv[++index] ?? options.port
-  else if (arg === '--env') options.envName = process.argv[++index] ?? options.envName
+  else if (arg === '--host')
+    options.host = process.argv[++index] ?? options.host
+  else if (arg === '--port')
+    options.port = process.argv[++index] ?? options.port
+  else if (arg === '--env')
+    options.envName = process.argv[++index] ?? options.envName
   else {
     console.error(`Unknown option: ${arg}`)
     process.exit(1)
@@ -70,7 +74,9 @@ function findBasePython() {
     }
   }
 
-  console.error('Unable to find Python. Install Python 3.11+ or set SUN_WORLD_API_PYTHON.')
+  console.error(
+    'Unable to find Python. Install Python 3.11+ or set SUN_WORLD_API_PYTHON.'
+  )
   process.exit(1)
 }
 
@@ -85,13 +91,17 @@ if (!existsSync(venvPython)) {
 }
 
 if (!options.noInstall) {
-  const depsCheck = spawnSync(venvPython, [
-    '-c',
-    'import fastapi, uvicorn, yaml, pymongo, redis, pymysql, psycopg2, langchain, langgraph, socksio',
-  ], {
-    cwd: repoRoot,
-    stdio: 'ignore',
-  })
+  const depsCheck = spawnSync(
+    venvPython,
+    [
+      '-c',
+      'import fastapi, uvicorn, yaml, pymongo, redis, pymysql, psycopg2, langchain, langgraph, socksio',
+    ],
+    {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    }
+  )
 
   if (depsCheck.error || (depsCheck.status ?? 1) !== 0) {
     console.log('==> Installing API dependencies from apps/api/pyproject.toml')
@@ -109,26 +119,30 @@ const env = {
   ...process.env,
   ENV: options.envName,
   PORT: options.port,
-  PYTHONPATH: [
-    apiDir,
-    join(apiDir, 'src'),
-    process.env.PYTHONPATH,
-  ].filter(Boolean).join(process.platform === 'win32' ? ';' : ':'),
+  PYTHONPATH: [apiDir, join(apiDir, 'src'), process.env.PYTHONPATH]
+    .filter(Boolean)
+    .join(process.platform === 'win32' ? ';' : ':'),
 }
 
 if (!env.BLOG_JWT_SECRET) {
   env.BLOG_JWT_SECRET = 'local-dev-only-change-me'
-  console.log('==> BLOG_JWT_SECRET was not set; using a local development-only value.')
+  console.log(
+    '==> BLOG_JWT_SECRET was not set; using a local development-only value.'
+  )
 }
 
 if (!env.OPENAI_API_KEY) {
   env.OPENAI_API_KEY = 'local-dev-only-change-me'
-  console.log('==> OPENAI_API_KEY was not set; using a local development-only placeholder.')
+  console.log(
+    '==> OPENAI_API_KEY was not set; using a local development-only placeholder.'
+  )
 }
 
 if (!env.OPENROUTER_API_KEY) {
   env.OPENROUTER_API_KEY = env.OPENAI_API_KEY
-  console.log('==> OPENROUTER_API_KEY was not set; using the local development placeholder.')
+  console.log(
+    '==> OPENROUTER_API_KEY was not set; using the local development placeholder.'
+  )
 }
 
 if (!env.AI_URL) {

@@ -41,6 +41,37 @@ older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
 
+- 2026-08-29: completed a repository-wide architecture, security, performance,
+  functional, structure, and UI consistency review. Fixed production dependency
+  vulnerabilities (72 known issues to 0), API pagination totals and N+1 queries,
+  management update allowlists/transactions, blog query/logging boundaries,
+  opt-in weather geolocation, mobile navigation localization/accessibility,
+  Compose profile validation, build-summary enforcement, and Web entry chunking.
+  Removed two editor source artifacts, cleaned high-frequency production logs,
+  and refreshed current architecture documentation. Browser QA covered home,
+  login, mobile navigation, and the AI workspace in desktop/mobile and light/dark
+  states. `corepack pnpm check` passed 19/19; Web passed 119 tests, API passed 77
+  tests, production dependency audit reported no known vulnerabilities, and all
+  performance budgets passed (entry 161.9/180 KiB). Full report:
+  `docs/reviews/2026-08-29-architecture-review.md`. No commit, push, MR, deploy,
+  container mutation, or database migration was performed. Remaining design
+  work is cross-MySQL/Mongo consistency, audited DB constraints/indexes, large
+  module extraction, and global error-toast deduplication.
+
+- 2026-08-24: fixed homepage blog pagination feedback and infinite scrolling.
+  `BlogHomeFeed` now uses a non-interactive sentinel tied to its nearest
+  `.app-container`, preloads near the bottom, and re-arms observation whenever
+  the item count grows; the visible load-more button was replaced by compact
+  loading/end status text. Card-level backdrop blur and hover translation were
+  also removed to prevent delayed card painting while scrolling, while keeping
+  border and shadow hover feedback. Updated the blog styles, reduced-motion
+  handling, static infinite-scroll contract, style-ownership assertion, and
+  component regression coverage. Focused tests, the static contract, Web
+  typecheck, shared package builds, production Web build, formatting, and
+  whitespace checks passed. No commit, push, or deploy was performed; existing
+  unrelated changes in `apps/api/app_instance.py` and
+  `apps/web/vite.config.ts` were left untouched.
+
 - 2026-08-02: tightened the development React source inspector behavior. The
   existing `react-dev-inspector` replacement for the removed
   `click-to-react-component` now remains active across inspector click

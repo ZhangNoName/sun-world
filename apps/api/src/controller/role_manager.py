@@ -13,6 +13,7 @@ class RoleManager:
     table_name = "roles"
     role_resource_table = "role_resources"
     all_attr = ["id", "name", "code", "description", "create_time"]
+    writable_attr = {"name", "code", "description"}
 
     def __init__(self, db: MySQLManager):
         self.db = db
@@ -43,6 +44,11 @@ class RoleManager:
 
     def update_role(self, role_id: int, **kwargs) -> int:
         """更新角色"""
+        if not kwargs:
+            raise ValueError("At least one role field is required")
+        invalid = set(kwargs) - self.writable_attr
+        if invalid:
+            raise ValueError(f"Unsupported role fields: {sorted(invalid)}")
         set_clause = ", ".join(f"{k}=%s" for k in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id=%s"
         params = tuple(kwargs.values()) + (role_id,)
@@ -110,6 +116,18 @@ class RoleManager:
             List[Dict]: 每个元素包含角色信息和对应资源ID列表
         """
         roles = self.list_roles(page=page, per_page=per_page)
+        role_ids = [role["id"] for role in roles]
+        if not role_ids:
+            return []
+        placeholders = ", ".join(["%s"] * len(role_ids))
+        rows = self.db.fetch_all(
+            f"SELECT role_id, resource_id FROM {self.role_resource_table} "
+            f"WHERE role_id IN ({placeholders})",
+            tuple(role_ids),
+        ) or []
+        resources_by_role = {role_id: [] for role_id in role_ids}
+        for row in rows:
+            resources_by_role.setdefault(row["role_id"], []).append(row["resource_id"])
         for role in roles:
-            role["resource_ids"] = self.get_resources_by_role(role["id"])
+            role["resource_ids"] = resources_by_role.get(role["id"], [])
         return roles

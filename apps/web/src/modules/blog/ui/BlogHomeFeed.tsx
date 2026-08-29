@@ -48,19 +48,20 @@ export function BlogHomeFeed() {
 
   useEffect(() => {
     if (!loaderRef.current || !blog.hasMore) return
+    const loader = loaderRef.current
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting)
           void blog.loadMore().catch(() => toast.error('加载更多失败'))
       },
       {
-        root: document.querySelector('.app-container'),
-        rootMargin: '1600px 0px',
+        root: loader.closest('.app-container'),
+        rootMargin: '480px 0px',
       }
     )
-    observer.observe(loaderRef.current)
+    observer.observe(loader)
     return () => observer.disconnect()
-  }, [blog.hasMore, blog.loadMore])
+  }, [blog.hasMore, blog.items.length, blog.loadMore])
 
   const apply = () => {
     const [sortBy, sortOrder] = sort.split(':') as [BlogSortBy, BlogSortOrder]
@@ -178,14 +179,18 @@ export function BlogHomeFeed() {
           ))}
         </section>
       )}
-      <div ref={loaderRef} className="loader-btn">
-        <Button
-          loading={blog.loading && blog.items.length > 0}
-          disabled={!blog.hasMore}
-          onClick={() => void blog.loadMore()}
-        >
-          {blog.hasMore ? '加载更多' : '没有更多了'}
-        </Button>
+      <div
+        ref={loaderRef}
+        className="blog-feed__load-sentinel"
+        role="status"
+        aria-live="polite"
+      >
+        {blog.loading && blog.items.length > 0 ? (
+          <span className="blog-feed__loading-more">正在加载更多…</span>
+        ) : null}
+        {!blog.hasMore && blog.items.length > 0 ? (
+          <span>已经到底了</span>
+        ) : null}
       </div>
     </main>
   )

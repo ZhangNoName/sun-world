@@ -15,6 +15,10 @@ class UserManager:
         'birth_day', 'create_time', 'status', "sex"
     ]
     credential_attr = [*public_attr, 'password']
+    writable_attr = {
+        'username', 'name', 'sex', 'age', 'phone', 'email', 'password',
+        'birth_day', 'status',
+    }
 
     def __init__(self, db: MySQLManager):
         """
@@ -113,7 +117,7 @@ class UserManager:
 
         return user_data
 
-    def get_user_by_name(self, name: str, page: int = 1, per_page: int = 10) -> List[User]:
+    def get_user_by_name(self, name: str, page: int = 1, per_page: int = 10) -> List[dict]:
         """
         根据用户名模糊查询用户信息，支持分页，同时获取每个用户的角色和资源列表
 
@@ -134,38 +138,64 @@ class UserManager:
         LIMIT %s OFFSET %s
         """
         params = (f"%{name}%", per_page, offset)
-        result = self.db.execute(sql, params)
-        return result
-        users = []
-        for row in result:
-            # 构造用户基本信息字典
-            user_data = dict(zip(self.public_attr, row))
-            user_id = user_data['id']
+        rows = self.db.fetch_all(sql, params) or []
+        users = [
+            dict(row)
+            if isinstance(row, dict)
+            else dict(zip(self.public_attr, row))
+            for row in rows
+        ]
+        user_ids = [user['id'] for user in users]
+        if not user_ids:
+            return []
 
-            # 查询用户角色
-            role_sql = """
-            SELECT r.id, r.name, r.code
+        placeholders = ", ".join(["%s"] * len(user_ids))
+        roles = self.db.fetch_all(
+            f"""
+            SELECT ur.user_id, r.id, r.name, r.code
             FROM roles r
             INNER JOIN user_roles ur ON r.id = ur.role_id
-            WHERE ur.user_id = %s
-            """
-            roles = self.db.fetch_all(role_sql, user_id)
-            user_data['roles'] = roles or []
-
-            # 查询用户资源权限
-            resource_sql = """
-            SELECT DISTINCT res.id, res.name, res.code, res.type, res.path
+            WHERE ur.user_id IN ({placeholders})
+            """,
+            tuple(user_ids),
+        ) or []
+        resources = self.db.fetch_all(
+            f"""
+            SELECT DISTINCT ur.user_id, res.id, res.name, res.code, res.type, res.path
             FROM resources res
             INNER JOIN role_resources rr ON res.id = rr.resource_id
             INNER JOIN user_roles ur ON rr.role_id = ur.role_id
-            WHERE ur.user_id = %s
-            """
-            resources = self.db.fetch_all(resource_sql, user_id)
-            user_data['resources'] = resources or []
+            WHERE ur.user_id IN ({placeholders})
+            """,
+            tuple(user_ids),
+        ) or []
 
-            users.append(user_data)
+        roles_by_user = {user_id: [] for user_id in user_ids}
+        for role in roles:
+            role_data = dict(role)
+            user_id = role_data.pop('user_id')
+            roles_by_user.setdefault(user_id, []).append(role_data)
+
+        resources_by_user = {user_id: [] for user_id in user_ids}
+        for resource in resources:
+            resource_data = dict(resource)
+            user_id = resource_data.pop('user_id')
+            resources_by_user.setdefault(user_id, []).append(resource_data)
+
+        for user in users:
+            user_id = user['id']
+            user['roles'] = roles_by_user.get(user_id, [])
+            user['resources'] = resources_by_user.get(user_id, [])
 
         return users
+
+    def count_users_by_name(self, name: str) -> int:
+        """Return the total number of users matching the list filter."""
+        row = self.db.fetch_one(
+            f"SELECT COUNT(*) AS total FROM {self.table_name} WHERE name LIKE %s",
+            (f"%{name}%",),
+        )
+        return int(row.get('total', 0)) if row else 0
 
     def get_user_by_login_identifier(self, identifier: str) -> List[User]:
         """Return active users matching username, email, or phone exactly."""
@@ -280,6 +310,11 @@ class UserManager:
         Returns:
             int: 受影响的行数
         """
+        if not kwargs:
+            raise ValueError("At least one user field is required")
+        invalid = set(kwargs) - self.writable_attr
+        if invalid:
+            raise ValueError(f"Unsupported user fields: {sorted(invalid)}")
         set_clause = ', '.join(f"{key} = %s" for key in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id = %s"
         values = tuple(kwargs.values()) + (user_id,)

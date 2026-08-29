@@ -33,7 +33,9 @@ if (!existsSync(summaryPath)) {
     violations.push('build summary app must be @sun-world/blog')
   }
   if (summary.sourceManifest !== 'apps/web/dist/build-manifest.json') {
-    violations.push('build summary sourceManifest must point to build-manifest.json')
+    violations.push(
+      'build summary sourceManifest must point to build-manifest.json'
+    )
   }
   if (!Number.isInteger(Date.parse(String(summary.generatedAt)))) {
     violations.push('build summary generatedAt must be an ISO timestamp')
@@ -87,6 +89,11 @@ if (!existsSync(summaryPath)) {
     if (typeof result.ok !== 'boolean') {
       violations.push('each budget result must include ok boolean')
       break
+    }
+    if (!result.ok) {
+      violations.push(
+        `build summary budget failed: ${result.name} (${result.detail ?? 'no detail'})`
+      )
     }
   }
 }

@@ -222,7 +222,6 @@ export class CanvasRenderer {
     this.resizeObserver.disconnect()
     // 移除 canvasElement
     this.containerElement.removeChild(this.canvasElement)
-    console.log('Renderer destroyed and cleanup complete.')
   }
   private transform() {
     const { a, b, c, d, e, f } = this.viewport.transform

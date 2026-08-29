@@ -39,7 +39,7 @@ expect(
   'apps/web/components.json must register the @base-ui namespace'
 )
 expect(
-  Boolean(basePackage.dependencies?.shadcn),
+  Boolean(basePackage.devDependencies?.shadcn),
   'packages/base-ui must own the shadcn build-time styles'
 )
 expect(

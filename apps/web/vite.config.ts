@@ -50,7 +50,8 @@ export default defineConfig(({ mode }) => {
     esbuild: { drop: production ? ['console', 'debugger'] : [] },
     server: {
       host: '0.0.0.0',
-      port: 3000,
+      port: 3030,
+      strictPort: true,
       open: false,
       watch: { usePolling: true },
       allowedHosts: [
@@ -60,7 +61,7 @@ export default defineConfig(({ mode }) => {
       ],
       proxy: {
         '/api': {
-          target: env.VITE_DEV_API_TARGET || 'http://127.0.0.1:8000',
+          target: env.VITE_DEV_API_TARGET || 'http://127.0.0.1:8030',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
@@ -121,6 +122,11 @@ export default defineConfig(({ mode }) => {
           entryFileNames: `assets/[name].v${version}.[hash].js`,
           chunkFileNames: `assets/[name].v${version}.[hash].js`,
           assetFileNames: `assets/[name].v${version}.[hash].[ext]`,
+          manualChunks(id) {
+            if (id.includes('/node_modules/.pnpm/axios@')) {
+              return 'vendor-http'
+            }
+          },
         },
       },
     },

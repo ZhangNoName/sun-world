@@ -217,7 +217,11 @@ class BlogManager:
             return None
 
         blog_data = self.contentDB.find_one("blogs", {"blogId": blog_id})
-        logger.info(f'查询到的结果{blog_id}{blog_data}')
+        logger.debug(
+            "Blog content lookup completed blog_id={} found={}",
+            blog_id,
+            bool(blog_data),
+        )
         if blog_data:
             tag_rows = self.db.fetch_all(
                 "SELECT tag_id FROM blog_tag WHERE blog_id = %s",

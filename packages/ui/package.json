@@ -119,7 +119,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
-    "shadcn": "^4.13.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0"
   },
@@ -138,7 +137,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0",
+    "shadcn": "^4.19.0",
+    "vite": "^6.4.3",
     "vite-plugin-dts": "^4.4.0",
     "vitest": "^2.1.9"
   },

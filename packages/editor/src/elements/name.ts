@@ -1,4 +1,4 @@
-import { ElementType } from "./element.config";
+import { ElementType } from './element.config'
 
 export class EleName {
   private eleCount: Map<ElementType, string[]> = new Map()
@@ -10,7 +10,6 @@ export class EleName {
     const nextId = Number(q[q.length - 1]?.split(' ')?.at(-1) ?? 0)
     const newName = `${type} ${nextId + 1}`
     q.push(newName)
-    console.log('生成新元素名称：', newName)
     return newName
   }
 }

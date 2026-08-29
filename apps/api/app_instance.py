@@ -91,8 +91,8 @@ class Application(FastAPI):
             "https://www.sunworld.site",
             "https://zsf.shopping",
             "https://www.zsf.shopping",
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
+            "http://localhost:3030",
+            "http://127.0.0.1:3030",
         ]
 
     async def init(self, env='dev'):

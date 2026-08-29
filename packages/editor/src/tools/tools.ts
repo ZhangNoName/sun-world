@@ -22,7 +22,6 @@ export class ToolManager {
   }
 
   activateTool(name: ToolName) {
-    console.log('Activating tool:', name)
     const tool = this.tools.get(name)
     if (!tool) return
 

@@ -1,27 +1,89 @@
-import { useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@sun-world/base-ui/button'
 
 import {
-  CurrentLocationArea,
-  HeFengWeatherData,
-  getWeatherVersion,
-  subscribeWeather,
-} from '@/util'
+  fetchLocalWeather,
+  readCachedLocalWeather,
+  type LocalWeatherSnapshot,
+} from '../data/local-weather'
 
-export function WeatherCard() {
+type WeatherState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'loaded'; snapshot: LocalWeatherSnapshot }
+  | { status: 'error' }
+
+interface WeatherCardProps {
+  loadWeather?: typeof fetchLocalWeather
+}
+
+export function WeatherCard({
+  loadWeather = fetchLocalWeather,
+}: WeatherCardProps) {
   const { t } = useTranslation()
-  useSyncExternalStore(subscribeWeather, getWeatherVersion, getWeatherVersion)
-  const weather = HeFengWeatherData.now
+  const requestRef = useRef<AbortController | null>(null)
+  const [state, setState] = useState<WeatherState>(() => {
+    const cached = readCachedLocalWeather()
+    return cached ? { status: 'loaded', snapshot: cached } : { status: 'idle' }
+  })
+
+  useEffect(
+    () => () => {
+      requestRef.current?.abort()
+    },
+    []
+  )
+
+  const handleLoadWeather = () => {
+    requestRef.current?.abort()
+    const request = new AbortController()
+    requestRef.current = request
+    setState({ status: 'loading' })
+    void loadWeather(request.signal).then(
+      (snapshot) => {
+        if (!request.signal.aborted) setState({ status: 'loaded', snapshot })
+      },
+      () => {
+        if (!request.signal.aborted) setState({ status: 'error' })
+      }
+    )
+  }
+
+  if (state.status !== 'loaded') {
+    return (
+      <section
+        className="weather-card weather-card-status"
+        aria-label={t('weather.current')}
+      >
+        <p role={state.status === 'error' ? 'alert' : 'status'}>
+          {state.status === 'error'
+            ? t('weather.unavailable')
+            : t('weather.permissionHint')}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={state.status === 'loading'}
+          onClick={handleLoadWeather}
+        >
+          {state.status === 'loading'
+            ? t('weather.loading')
+            : t('weather.load')}
+        </Button>
+      </section>
+    )
+  }
+
+  const { snapshot } = state
+  const { weather } = snapshot
   return (
-    <section className="weather-card" aria-label="当前天气">
-      <a href={HeFengWeatherData.fxLink} target="_blank" rel="noreferrer">
+    <section className="weather-card" aria-label={t('weather.current')}>
+      <a href={snapshot.fxLink} target="_blank" rel="noreferrer">
         <i className={`qi qi-${weather.icon}`} title={weather.text} />
       </a>
-      <p>
-        {CurrentLocationArea.addressComponent.country}{' '}
-        {CurrentLocationArea.addressComponent.province}
-      </p>
-      <dl className="weather-metrics" aria-label="天气详情">
+      <p>{snapshot.locationLabel}</p>
+      <dl className="weather-metrics" aria-label={t('weather.details')}>
         <div>
           <dt>{t('weather.temp')}</dt>
           <dd>{weather.temp} °C</dd>

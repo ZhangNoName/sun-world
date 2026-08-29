@@ -1,5 +1,5 @@
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
-import ViewportState from "../viewport/viewport"
+import ViewportState from '../viewport/viewport'
 
 export default class CommentTool extends BaseTool {
   name: ToolName = 'comment'
@@ -11,9 +11,7 @@ export default class CommentTool extends BaseTool {
     super(ctx)
     this.viewport = ctx.viewport
   }
-  onWheel(e: WheelEvent): void {
-    console.log('DragTool.onWheel', e)
-  }
+  onWheel(_e: WheelEvent): void {}
   onMouseDown(e: MouseEvent): void {
     // 只在左键按下时开始
     if (e.button !== 0) return
@@ -23,8 +21,6 @@ export default class CommentTool extends BaseTool {
     // 记录鼠标初始位置 (屏幕坐标)
     this.lastX = e.clientX
     this.lastY = e.clientY
-
-    console.log('DragTool.onMouseDown', e)
   }
   onMouseMove(e: MouseEvent): void {
     if (!this.isPanning) return
@@ -41,13 +37,8 @@ export default class CommentTool extends BaseTool {
     // console.log('DragTool.onMouseMove', dx, dy)
   }
   onMouseUp(): void {
-    console.log('DragTool.onMouseUp')
     this.isPanning = false
   }
-  activate(): void {
-    console.log('DragTool.activate')
-  }
-  deactivate(): void {
-    console.log('DragTool.deactivate')
-  }
+  activate(): void {}
+  deactivate(): void {}
 }

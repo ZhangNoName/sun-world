@@ -1,5 +1,9 @@
 # Frontend Shared UI Classification (P1.20)
 
+> Historical note: this is a Vue-era migration inventory. Current component
+> ownership is defined by `frontend-platform-foundation.md`,
+> `docs/react-development-guidelines.md`, `packages/base-ui`, and `packages/ui`.
+
 This document records a durable ownership baseline before further `apps/web/src/components` moves.
 It is used to prevent `shared/ui` from becoming an uncontrolled catch-all.
 

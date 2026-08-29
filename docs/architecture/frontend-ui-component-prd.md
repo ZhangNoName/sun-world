@@ -1,5 +1,9 @@
 # Frontend UI Component PRD
 
+> Historical note: Vue component paths in this PRD predate the React migration.
+> Current UI ownership lives in `packages/base-ui`, `packages/ui`, and
+> `docs/react-development-guidelines.md`.
+
 Last updated: 2026-06-19
 
 ## Goal

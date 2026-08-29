@@ -2,6 +2,14 @@
 
 This file explains how to start Sun World for local development.
 
+Default local addresses:
+
+- Web: `http://127.0.0.1:3030`
+- API: `http://127.0.0.1:8030`
+
+The production API continues to use port `8000`; these local defaults do not
+change Docker, systemd, or production routing.
+
 ## Quick Start
 
 ### VSCode

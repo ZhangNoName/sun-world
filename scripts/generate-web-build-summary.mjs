@@ -7,6 +7,7 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const manifestPath = join(repoRoot, 'apps/web/dist/build-manifest.json')
 const summaryPath = join(repoRoot, 'apps/web/dist/build-summary.json')
 const budgetPath = join(repoRoot, 'apps/web/performance-budgets.json')
+const indexPath = join(repoRoot, 'apps/web/dist/index.html')
 
 function normalizePath(path) {
   return path.split(sep).join('/')
@@ -33,7 +34,10 @@ function filterByExtensions(assets, extensions = ['.js', '.css']) {
 
 function checkTotalBudget(budget, assets) {
   const matched = filterByExtensions(assets, budget.extensions)
-  const actualGzipBytes = matched.reduce((sum, asset) => sum + asset.gzipBytes, 0)
+  const actualGzipBytes = matched.reduce(
+    (sum, asset) => sum + asset.gzipBytes,
+    0
+  )
   return {
     name: budget.name,
     type: budget.type,
@@ -72,15 +76,31 @@ function checkPatternBudget(budget, assets) {
     type: budget.type,
     actualGzipBytes: largest.gzipBytes,
     limitGzipBytes: bytesFromKiB(budget.maxGzipKiB),
-    ok: matched.length > 0 && largest.gzipBytes <= bytesFromKiB(budget.maxGzipKiB),
+    ok:
+      matched.length > 0 &&
+      largest.gzipBytes <= bytesFromKiB(budget.maxGzipKiB),
     detail: largest.path,
   }
 }
 
-function checkBudget(budget, assets) {
+function checkEntryBudget(budget, assets, entryPath) {
+  const entry = assets.find((asset) => asset.path === entryPath)
+  return {
+    name: budget.name,
+    type: budget.type,
+    actualGzipBytes: entry?.gzipBytes ?? 0,
+    limitGzipBytes: bytesFromKiB(budget.maxGzipKiB),
+    ok: Boolean(entry) && entry.gzipBytes <= bytesFromKiB(budget.maxGzipKiB),
+    detail: entry?.path ?? 'entry module missing from index.html',
+  }
+}
+
+function checkBudget(budget, assets, entryPath) {
   if (budget.type === 'total') return checkTotalBudget(budget, assets)
   if (budget.type === 'largest') return checkLargestBudget(budget, assets)
   if (budget.type === 'pattern') return checkPatternBudget(budget, assets)
+  if (budget.type === 'entry')
+    return checkEntryBudget(budget, assets, entryPath)
   return {
     name: budget.name,
     type: String(budget.type ?? 'unknown'),
@@ -93,15 +113,21 @@ function checkBudget(budget, assets) {
 
 function buildSummary() {
   if (!existsSync(manifestPath)) {
-    console.error('apps/web/dist/build-manifest.json is missing; run manifest generation first')
+    console.error(
+      'apps/web/dist/build-manifest.json is missing; run manifest generation first'
+    )
     process.exit(1)
   }
 
   const manifest = readJson(manifestPath)
   const budgetConfig = readJson(budgetPath)
   const assets = Array.isArray(manifest.assets) ? manifest.assets : []
+  const indexHtml = readFileSync(indexPath, 'utf8')
+  const entryPath = indexHtml.match(
+    /<script[^>]+type="module"[^>]+src="\/?(assets\/[^"]+\.js)"/
+  )?.[1]
   const budgetResults = budgetConfig.budgets.map((budget) =>
-    checkBudget(budget, assets)
+    checkBudget(budget, assets, entryPath)
   )
 
   return {

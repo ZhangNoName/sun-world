@@ -1,5 +1,10 @@
 # Observability and Analytics
 
+> Migration note: the observability goals remain relevant, but Vue-specific
+> paths are historical. Current frontend implementation paths use React/TSX;
+> verify them against `apps/web/src/shared/telemetry` and
+> `frontend-platform-foundation.md`.
+
 This document describes the observability strategy for Sun World, covering both frontend and backend.
 
 ## Design Principles

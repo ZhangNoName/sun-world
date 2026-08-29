@@ -28,7 +28,7 @@ Current intended request path:
 
 ```mermaid
 flowchart LR
-  UI["Vue modules"] --> SharedApi["shared/api typed wrappers"]
+  UI["React modules"] --> SharedApi["shared/api typed wrappers"]
   SharedApi --> Http["service/http Axios boundary"]
   Http --> Contracts["@sun-world/contracts routes/types"]
   Contracts --> Api["FastAPI routers"]
@@ -175,7 +175,7 @@ Near-term optimizations:
    - `pnpm check:contracts:usage`
    - `pnpm -F @sun-world/ui test`
    - `pnpm -F @sun-world/contracts test`
-   - `pnpm -C apps/web exec vue-tsc --noEmit`
+   - `pnpm -C apps/web typecheck`
    - `pnpm -C apps/web build`
    - `pnpm check:api`
    - `pnpm check:compose`

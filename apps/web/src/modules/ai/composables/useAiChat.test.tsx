@@ -63,8 +63,10 @@ describe('useAiChat', () => {
     stream.mockReset()
   })
 
-  it('does not synthesize a provider before the API returns one', () => {
+  it('does not synthesize a provider before the API returns one', async () => {
     const { result } = renderHook(() => useAiChat())
+
+    await act(async () => undefined)
 
     expect(result.current.providers).toEqual([])
   })

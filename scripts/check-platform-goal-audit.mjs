@@ -164,7 +164,7 @@ requireText(
 requireText(
   'platform roadmap',
   roadmap,
-  /Vue modules[\s\S]*@sun-world\/contracts[\s\S]*FastAPI routers/,
+  /React modules[\s\S]*@sun-world\/contracts[\s\S]*FastAPI routers/,
   'the frontend-backend request chain'
 )
 requireText(

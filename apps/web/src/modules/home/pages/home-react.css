@@ -65,6 +65,13 @@
 .self-card > [data-slot='button'] {
   justify-self: center;
 }
+.weather-card-status {
+  min-height: 10rem;
+  align-content: center;
+}
+.weather-card-status > [data-slot='button'] {
+  justify-self: center;
+}
 .profile-metrics,
 .weather-metrics {
   width: 100%;
