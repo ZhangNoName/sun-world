@@ -1,5 +1,18 @@
 # Current State
 
+## Frontend Browser Cache Policy (2026-08-29)
+
+- Frontend Nginx now serves Vite's content-hashed `/assets/` files with a
+  one-year public immutable cache policy.
+- HTML, extensionless routes, SSG pages, and unhashed public files use
+  `no-cache, must-revalidate`, so entry documents are validated before reuse
+  and cannot pin an older asset graph across deployments.
+- Missing hashed assets return `404` instead of the SPA `index.html` fallback.
+  The static frontend deployment guard verifies all three contracts.
+- `nginx:alpine` syntax validation passed. A temporary local container verified
+  the expected headers for `/`, `/home`, and a current hashed JavaScript file,
+  plus an uncached `404` for a missing hashed JavaScript file.
+
 ## Security and Integrity Baseline (2026-08-09, feature branch)
 
 - Administrative routes enforce admin access; uploads use bounded UUID storage and byte-based image validation.

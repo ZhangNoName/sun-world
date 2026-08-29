@@ -46,6 +46,37 @@ if (nginxConfig) {
       violations.push(`frontend nginx SPA fallback must contain: ${fragment}`)
     }
   }
+
+  const assetsLocation =
+    nginxConfig.match(/location\s+\^~\s+\/assets\/\s*\{([^}]*)\}/)?.[1] ?? ''
+  const fallbackLocation =
+    nginxConfig.match(/location\s+\/\s*\{([^}]*)\}/)?.[1] ?? ''
+
+  if (!assetsLocation.includes('try_files $uri =404;')) {
+    violations.push(
+      'frontend nginx assets location must return 404 when missing'
+    )
+  }
+
+  if (
+    !assetsLocation.includes(
+      'add_header Cache-Control "public, max-age=31536000, immutable";'
+    )
+  ) {
+    violations.push(
+      'frontend nginx hashed assets must use one-year immutable caching without caching error responses'
+    )
+  }
+
+  if (
+    !fallbackLocation.includes(
+      'add_header Cache-Control "no-cache, must-revalidate" always;'
+    )
+  ) {
+    violations.push(
+      'frontend nginx HTML and route entries must revalidate before reuse'
+    )
+  }
 }
 
 if (violations.length) {

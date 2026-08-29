@@ -194,6 +194,21 @@ curl -I https://sunworld.site
 curl -I https://www.sunworld.site
 ```
 
+## Browser Cache Policy
+
+- Vite-generated files under `/assets/` include content hashes and are served
+  with `Cache-Control: public, max-age=31536000, immutable`.
+- HTML, extensionless routes, SSG pages, and unhashed public files are served
+  with `Cache-Control: no-cache, must-revalidate`, so a browser validates the
+  entry document before using it again.
+- Missing `/assets/` files return `404` instead of falling back to
+  `index.html`. This prevents an old lazy chunk URL from receiving HTML after
+  a deployment.
+
+After deployment, verify one entry URL, one current hashed asset, and one
+missing hashed asset. The expected results are revalidation, immutable cache,
+and `404`, respectively.
+
 ## Dockerfile
 
 The root `Dockerfile` is the frontend image build source.
