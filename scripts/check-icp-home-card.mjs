@@ -8,9 +8,12 @@ const home = read('apps/web/src/modules/home/pages/HomePage.tsx')
 const card = read('apps/web/src/modules/home/ui/IcpFilingCard.tsx')
 if (
   !card.includes('豫ICP备2024081960号') ||
-  !card.includes('https://beian.miit.gov.cn/')
+  !card.includes('https://beian.miit.gov.cn/') ||
+  !card.includes('href="/privacy"')
 )
-  throw new Error('ICP card must contain the official filing text and URL.')
+  throw new Error(
+    'Homepage compliance card must contain the privacy entry and official filing text and URL.'
+  )
 if (
   (home.match(/<IcpFilingCard/g) ?? []).length !== 2 ||
   !home.includes('desktop-icp-card') ||

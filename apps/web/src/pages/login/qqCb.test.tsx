@@ -71,3 +71,27 @@ describe('AuthCallbackPage connect flow', () => {
     expect(screen.getByRole('button', { name: '返回账户设置' })).toBeVisible()
   })
 })
+
+describe('AuthCallbackPage login recovery', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    useAuthStore.setState({
+      status: 'anonymous',
+      user: null,
+      logout: defaultLogout,
+    })
+  })
+
+  it('explains how a legacy account owner can connect Google safely', async () => {
+    renderApp(<AuthCallbackPage />, {
+      route:
+        '/auth/callback?status=error&flow=login&provider=google' +
+        '&return_to=%2F&code=AUTH_LEGACY_CONTACT_REQUIRES_VERIFICATION',
+    })
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '请先使用原账号的用户名和密码登录，再到“账户中心”连接 Google。'
+    )
+    expect(screen.getByRole('button', { name: '返回登录页' })).toBeVisible()
+  })
+})

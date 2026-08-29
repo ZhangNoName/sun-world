@@ -1,0 +1,110 @@
+.privacy-policy-page {
+  width: min(100% - 2rem, 54rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 0 clamp(3rem, 8vw, 6rem);
+}
+
+.privacy-policy-card {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 2.5rem);
+  padding: clamp(1.25rem, 4vw, 3rem);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.privacy-policy-hero {
+  display: grid;
+  gap: 0.65rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.privacy-policy-hero > span {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.privacy-policy-hero h1,
+.privacy-policy-card h2,
+.privacy-policy-card p,
+.privacy-policy-card ul {
+  margin: 0;
+}
+
+.privacy-policy-hero h1 {
+  color: var(--card-foreground);
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.privacy-policy-hero p,
+.privacy-policy-card section p,
+.privacy-policy-card li {
+  line-height: 1.75;
+}
+
+.privacy-policy-hero p,
+.privacy-policy-card section p,
+.privacy-policy-card li,
+.privacy-policy-updated {
+  color: var(--muted-foreground);
+}
+
+.privacy-policy-updated {
+  font-size: 0.8125rem;
+}
+
+.privacy-policy-card section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.privacy-policy-card h2 {
+  color: var(--card-foreground);
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.privacy-policy-card ul {
+  padding-left: 1.25rem;
+}
+
+.privacy-policy-card a {
+  color: var(--primary);
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+
+.privacy-policy-card code {
+  padding: 0.1em 0.35em;
+  color: var(--card-foreground);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-size: 0.9em;
+}
+
+.privacy-policy-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 695px) {
+  .privacy-policy-page {
+    width: min(100% - 1rem, 54rem);
+    padding-top: 0.75rem;
+  }
+
+  .privacy-policy-card {
+    border-radius: var(--radius-lg);
+  }
+}

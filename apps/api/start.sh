@@ -20,7 +20,10 @@ export ENV="${ENV:-local}"
 export BLOG_RUNTIME_ENV="${BLOG_RUNTIME_ENV:-production}"
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
-UVICORN_ARGS=(main:app --host 0.0.0.0 --port "${PORT:-8000}" --log-level "${LOG_LEVEL:-info}")
+# Uvicorn's access logger includes the raw query string. OAuth providers return
+# one-time authorization codes on the callback URL, so rely on the application's
+# query-free observability middleware instead of persisting raw request targets.
+UVICORN_ARGS=(main:app --host 0.0.0.0 --port "${PORT:-8000}" --log-level "${LOG_LEVEL:-info}" --no-access-log)
 if [ "${BLOG_RELOAD:-0}" = "1" ]; then
   UVICORN_ARGS+=(--reload)
 fi

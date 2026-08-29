@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import hmac
+import ipaddress
 import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Callable
-from urllib.parse import parse_qs, urlencode
+from typing import Any, Callable
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import httpx
 from jose import jwt
@@ -25,11 +26,122 @@ TOKEN_RESPONSE_MAX_BYTES = 64 * 1024
 JWKS_RESPONSE_MAX_BYTES = 512 * 1024
 USERINFO_RESPONSE_MAX_BYTES = 256 * 1024
 
+GOOGLE_OUTBOUND_PROXY_ENV = "AUTH_GOOGLE_OUTBOUND_PROXY_URL"
+GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo"
+GOOGLE_JWKS_ENDPOINT = "https://www.googleapis.com/oauth2/v3/certs"
+SHELL_PORTABLE_PROXY_URL = re.compile(r"[A-Za-z0-9:/@%._~\-\[\]]+\Z")
+INVALID_PERCENT_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
 
 @dataclass(frozen=True)
 class OAuthClientConfig:
     client_id: str
     client_secret: str
+
+
+def _valid_proxy_hostname(hostname: str) -> bool:
+    try:
+        ipaddress.ip_address(hostname)
+        return True
+    except ValueError:
+        pass
+
+    try:
+        ascii_hostname = hostname.rstrip(".").encode("idna").decode("ascii")
+    except UnicodeError:
+        return False
+    if not ascii_hostname or len(ascii_hostname) > 253:
+        return False
+    return all(
+        1 <= len(label) <= 63
+        and re.fullmatch(r"[A-Za-z0-9-]+", label) is not None
+        and not label.startswith("-")
+        and not label.endswith("-")
+        for label in ascii_hostname.split(".")
+    )
+
+
+def _validate_google_outbound_proxy_url(raw_value: str) -> str | None:
+    """Validate the explicit Google-only forward proxy without exposing it."""
+
+    if not raw_value:
+        return None
+    if (
+        raw_value != raw_value.strip()
+        or any(
+            character.isspace() or not character.isprintable()
+            for character in raw_value
+        )
+        or SHELL_PORTABLE_PROXY_URL.fullmatch(raw_value) is None
+        or INVALID_PERCENT_ESCAPE.search(raw_value)
+    ):
+        raise ValueError(f"{GOOGLE_OUTBOUND_PROXY_ENV} is invalid")
+
+    try:
+        parsed = urlsplit(raw_value)
+        port = parsed.port
+        httpx.URL(raw_value)
+    except (TypeError, ValueError, httpx.InvalidURL):
+        raise ValueError(f"{GOOGLE_OUTBOUND_PROXY_ENV} is invalid") from None
+
+    if (
+        parsed.scheme.lower() not in {"http", "https"}
+        or not parsed.hostname
+        or not _valid_proxy_hostname(parsed.hostname)
+        or port is None
+        or port < 1
+        or (
+            parsed.scheme.lower() == "http"
+            and (parsed.username is not None or parsed.password is not None)
+        )
+        or parsed.path not in {"", "/"}
+        or parsed.query
+        or parsed.fragment
+        or "?" in raw_value
+        or "#" in raw_value
+    ):
+        raise ValueError(f"{GOOGLE_OUTBOUND_PROXY_ENV} is invalid")
+    return raw_value
+
+
+def _oauth_http_client(*, proxy_url: str | None = None) -> httpx.AsyncClient:
+    client_kwargs: dict[str, Any] = {
+        "timeout": httpx.Timeout(
+            connect=HTTP_CONNECT_TIMEOUT_SECONDS,
+            read=HTTP_READ_TIMEOUT_SECONDS,
+            write=HTTP_WRITE_TIMEOUT_SECONDS,
+            pool=HTTP_POOL_TIMEOUT_SECONDS,
+        ),
+        "follow_redirects": False,
+        "trust_env": False,
+        "verify": True,
+    }
+    if proxy_url is not None:
+        client_kwargs["proxy"] = proxy_url
+    return httpx.AsyncClient(**client_kwargs)
+
+
+def _google_client_claims_match(
+    claims: dict[str, Any],
+    client_id: str,
+) -> bool:
+    """Require this exact OAuth client as both audience and presenter."""
+
+    audience = claims.get("aud")
+    if not isinstance(audience, str) or not hmac.compare_digest(
+        audience,
+        client_id,
+    ):
+        return False
+    authorized_party = claims.get("azp")
+    if authorized_party is None:
+        return True
+    return isinstance(authorized_party, str) and hmac.compare_digest(
+        authorized_party,
+        client_id,
+    )
 
 
 class OAuthProvider:
@@ -41,18 +153,7 @@ class OAuthProvider:
         client_factory: Callable[[], httpx.AsyncClient] | None = None,
     ):
         self.config = config
-        self._client_factory = client_factory or (
-            lambda: httpx.AsyncClient(
-                timeout=httpx.Timeout(
-                    connect=HTTP_CONNECT_TIMEOUT_SECONDS,
-                    read=HTTP_READ_TIMEOUT_SECONDS,
-                    write=HTTP_WRITE_TIMEOUT_SECONDS,
-                    pool=HTTP_POOL_TIMEOUT_SECONDS,
-                ),
-                follow_redirects=False,
-                trust_env=False,
-            )
-        )
+        self._client_factory = client_factory or _oauth_http_client
 
     def authorization_url(
         self,
@@ -120,9 +221,27 @@ async def _request_with_limited_body(
 
 class GoogleOAuthProvider(OAuthProvider):
     name: OAuthProviderName = "google"
-    authorization_endpoint = "https://accounts.google.com/o/oauth2/v2/auth"
-    token_endpoint = "https://oauth2.googleapis.com/token"
-    userinfo_endpoint = "https://openidconnect.googleapis.com/v1/userinfo"
+    authorization_endpoint = GOOGLE_AUTHORIZATION_ENDPOINT
+    token_endpoint = GOOGLE_TOKEN_ENDPOINT
+    userinfo_endpoint = GOOGLE_USERINFO_ENDPOINT
+
+    def __init__(
+        self,
+        config: OAuthClientConfig,
+        client_factory: Callable[[], httpx.AsyncClient] | None = None,
+        *,
+        outbound_proxy_url: str | None = None,
+    ):
+        validated_proxy_url = (
+            _validate_google_outbound_proxy_url(outbound_proxy_url)
+            if outbound_proxy_url is not None
+            else None
+        )
+        if client_factory is not None and validated_proxy_url is not None:
+            raise ValueError("Google OAuth client factory and proxy cannot both be set")
+        if client_factory is None and validated_proxy_url is not None:
+            client_factory = lambda: _oauth_http_client(proxy_url=validated_proxy_url)
+        super().__init__(config, client_factory)
 
     def authorization_url(self, *, redirect_uri, state, code_challenge, nonce) -> str:
         params = {
@@ -163,7 +282,7 @@ class GoogleOAuthProvider(OAuthProvider):
                 jwks_response = await _request_with_limited_body(
                     client,
                     "GET",
-                    "https://www.googleapis.com/oauth2/v3/certs",
+                    GOOGLE_JWKS_ENDPOINT,
                     max_bytes=JWKS_RESPONSE_MAX_BYTES,
                 )
                 jwks = jwks_response.json().get("keys", [])
@@ -186,7 +305,12 @@ class GoogleOAuthProvider(OAuthProvider):
                 if claims.get("iss") not in {
                     "https://accounts.google.com",
                     "accounts.google.com",
-                } or not hmac.compare_digest(str(claims.get("nonce") or ""), nonce):
+                } or not hmac.compare_digest(
+                    str(claims.get("nonce") or ""), nonce
+                ) or not _google_client_claims_match(
+                    claims,
+                    self.config.client_id,
+                ):
                     raise self._provider_error()
                 profile_response = await _request_with_limited_body(
                     client,
@@ -401,6 +525,9 @@ class OAuthProviderRegistry:
 
     @classmethod
     def from_env(cls) -> "OAuthProviderRegistry":
+        google_proxy_url = _validate_google_outbound_proxy_url(
+            os.getenv(GOOGLE_OUTBOUND_PROXY_ENV, "")
+        )
         provider_types = {
             "google": ("AUTH_GOOGLE_CLIENT_ID", "AUTH_GOOGLE_CLIENT_SECRET", GoogleOAuthProvider),
             "qq": ("AUTH_QQ_CLIENT_ID", "AUTH_QQ_CLIENT_SECRET", QQOAuthProvider),
@@ -411,9 +538,14 @@ class OAuthProviderRegistry:
             client_id = os.getenv(id_key, "").strip()
             client_secret = os.getenv(secret_key, "").strip()
             if client_id and client_secret:
-                providers[name] = provider_type(
-                    OAuthClientConfig(client_id=client_id, client_secret=client_secret)
-                )
+                config = OAuthClientConfig(client_id=client_id, client_secret=client_secret)
+                if name == "google":
+                    providers[name] = provider_type(
+                        config,
+                        outbound_proxy_url=google_proxy_url,
+                    )
+                else:
+                    providers[name] = provider_type(config)
         return cls(providers)
 
     def get(self, name: str) -> OAuthProvider:

@@ -181,6 +181,49 @@ describe('MePage', () => {
     expect(screen.getByRole('button', { name: '正在跳转…' })).toBeDisabled()
   })
 
+  it('uses the complete official Google button artwork for the connect flow', async () => {
+    vi.mocked(getAccountConnections).mockResolvedValue({
+      contacts: [],
+      identities: [],
+    })
+    vi.mocked(startOAuthConnect).mockReturnValue(
+      new Promise<never>(() => undefined)
+    )
+    useAuthStore.setState({
+      status: 'authenticated',
+      user: { name: 'Tester' } as never,
+    })
+    renderApp(<MePage />, { route: '/me' })
+
+    const googleButton = await screen.findByRole('button', {
+      name: '连接 Google',
+    })
+    const googleArtwork = googleButton.querySelector<HTMLImageElement>(
+      'img.me-provider-connect__google-button-image'
+    )
+
+    expect(googleButton).toHaveClass('me-provider-connect__google-button')
+    expect(googleButton).toHaveAttribute('aria-label', '连接 Google')
+    expect(googleButton.querySelector('span')).toBeNull()
+    expect(googleArtwork).toHaveAttribute(
+      'src',
+      '/brands/google-sign-in-light-square.svg'
+    )
+    expect(googleArtwork).toHaveAttribute('alt', '')
+    expect(googleArtwork).toHaveAttribute('aria-hidden', 'true')
+    expect(googleArtwork).toHaveAttribute('width', '180')
+    expect(googleArtwork).toHaveAttribute('height', '40')
+
+    await userEvent.click(googleButton)
+
+    expect(startOAuthConnect).toHaveBeenCalledWith(
+      'google',
+      '/me?panel=connections'
+    )
+    expect(googleButton).toHaveAttribute('aria-busy', 'true')
+    expect(googleButton).toBeDisabled()
+  })
+
   it('requires logout and fresh authentication when connect needs step-up', async () => {
     vi.mocked(getAccountConnections).mockResolvedValue({
       contacts: [],

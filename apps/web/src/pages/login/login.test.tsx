@@ -58,6 +58,10 @@ describe('LoginPage', () => {
       screen.getByText('选择适合你的登录方式，或直接以访客身份继续。')
     ).toBeVisible()
     expect(document.querySelector('[data-slot="card"]')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '隐私政策' })).toHaveAttribute(
+      'href',
+      '/privacy'
+    )
   })
 
   it('shows validation feedback before calling the auth service', () => {
@@ -67,6 +71,34 @@ describe('LoginPage', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('请输入账号和密码')
     expect(mocks.login).not.toHaveBeenCalled()
+  })
+
+  it('uses the complete official Google button artwork with a Chinese accessible label', () => {
+    renderLogin()
+
+    const googleButton = screen.getByRole('button', {
+      name: '使用 Google 登录',
+    })
+    const googleMark = googleButton.querySelector<HTMLImageElement>(
+      'img.auth-google-provider-button__image'
+    )
+
+    expect(googleButton).toHaveClass('auth-google-provider-button')
+    expect(googleButton).toHaveAttribute('aria-label', '使用 Google 登录')
+    expect(googleButton.querySelector('span')).toBeNull()
+    expect(googleMark).toHaveAttribute(
+      'src',
+      '/brands/google-sign-in-light-square.svg'
+    )
+    expect(googleMark).toHaveAttribute('alt', '')
+    expect(googleMark).toHaveAttribute('aria-hidden', 'true')
+    expect(googleMark).toHaveAttribute('width', '180')
+    expect(googleMark).toHaveAttribute('height', '40')
+    expect(
+      screen.getByText(
+        '已有 Sun World 账号？请先用原方式登录，再到个人中心连接 Google；不会按同名邮箱自动合并。'
+      )
+    ).toBeVisible()
   })
 
   it('submits credentials and navigates after login', async () => {

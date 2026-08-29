@@ -361,9 +361,52 @@
 
 .me-provider-connect__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: var(--space-3);
   gap: var(--space-2);
+}
+
+.me-provider-connect__google-button {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: block;
+  width: 180px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent !important;
+  line-height: 0;
+}
+
+.me-provider-connect__google-button:hover {
+  background: transparent !important;
+}
+
+.me-provider-connect__google-button:active {
+  transform: none !important;
+}
+
+.me-provider-connect__google-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.me-provider-connect__google-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.me-provider-connect__google-button:focus-visible {
+  box-shadow: none;
+  outline: 3px solid var(--border-active);
+  outline-offset: 3px;
+}
+
+.me-provider-connect__google-button-image {
+  display: block;
+  width: 180px;
+  height: 40px;
 }
 
 .me-provider-connect__button {
@@ -383,12 +426,6 @@
   border-radius: var(--radius-sm);
   font-size: 0.68rem;
   font-weight: 800;
-}
-
-.me-provider-connect__mark--google {
-  color: #1a73e8;
-  background: white;
-  border: 1px solid color-mix(in srgb, #1a73e8 35%, transparent);
 }
 
 .me-provider-connect__mark--qq {

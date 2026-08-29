@@ -17,7 +17,7 @@ Type=simple
 User=lighthouse
 WorkingDirectory=/home/lighthouse/blog/sun-world/apps/api
 EnvironmentFile=/home/lighthouse/.config/blog_end/auth.env
-ExecStart=/home/lighthouse/blog/sun-world/apps/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStart=/home/lighthouse/blog/sun-world/apps/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --no-access-log
 Restart=on-failure
 RestartSec=5
 
@@ -26,4 +26,4 @@ WantedBy=multi-user.target
 
 # 当前生产配置 / Current production config (for reference):
 # WorkingDirectory=/home/lighthouse/blog/blog_end
-# ExecStart=/home/lighthouse/blog/blog_end/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+# ExecStart=/home/lighthouse/blog/blog_end/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --no-access-log

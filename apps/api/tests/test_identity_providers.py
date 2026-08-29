@@ -1,10 +1,12 @@
 import asyncio
 import base64
 import json
+import os
 import sys
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -26,6 +28,41 @@ def base64url_uint(value: int) -> str:
 
 
 class IdentityProviderTests(unittest.TestCase):
+    def test_google_requires_the_exact_audience_and_authorized_presenter(self):
+        from src.modules.identity.providers import _google_client_claims_match
+
+        self.assertFalse(_google_client_claims_match({}, "google-client"))
+        self.assertTrue(
+            _google_client_claims_match(
+                {"aud": "google-client"},
+                "google-client",
+            )
+        )
+        self.assertTrue(
+            _google_client_claims_match(
+                {"aud": "google-client", "azp": "google-client"},
+                "google-client",
+            )
+        )
+        self.assertFalse(
+            _google_client_claims_match(
+                {"aud": ["google-client", "different-client"]},
+                "google-client",
+            )
+        )
+        self.assertFalse(
+            _google_client_claims_match(
+                {"aud": "google-client", "azp": "different-client"},
+                "google-client",
+            )
+        )
+        self.assertFalse(
+            _google_client_claims_match(
+                {"aud": "google-client", "azp": ["google-client"]},
+                "google-client",
+            )
+        )
+
     def test_default_client_disables_environment_and_uses_fixed_timeouts(self):
         from src.modules.identity.providers import (
             HTTP_CONNECT_TIMEOUT_SECONDS,
@@ -47,6 +84,108 @@ class IdentityProviderTests(unittest.TestCase):
             self.assertEqual(client.timeout.pool, HTTP_POOL_TIMEOUT_SECONDS)
         finally:
             asyncio.run(client.aclose())
+
+        with patch("src.modules.identity.providers.httpx.AsyncClient") as client_type:
+            provider._client_factory()
+            self.assertNotIn("proxy", client_type.call_args.kwargs)
+            self.assertTrue(client_type.call_args.kwargs["verify"])
+
+    def test_google_registry_applies_only_the_explicit_proxy(self):
+        from src.modules.identity.providers import OAuthProviderRegistry
+
+        environment = {
+            "AUTH_GOOGLE_CLIENT_ID": "google-client",
+            "AUTH_GOOGLE_CLIENT_SECRET": "google-secret",
+            "AUTH_GOOGLE_OUTBOUND_PROXY_URL": (
+                "https://test-user:test-password@proxy.example:8443/"
+            ),
+            "AUTH_QQ_CLIENT_ID": "qq-client",
+            "AUTH_QQ_CLIENT_SECRET": "qq-secret",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            registry = OAuthProviderRegistry.from_env()
+
+        with patch("src.modules.identity.providers.httpx.AsyncClient") as client_type:
+            registry.get("google")._client_factory()
+            google_kwargs = client_type.call_args.kwargs
+            self.assertEqual(
+                google_kwargs["proxy"],
+                environment["AUTH_GOOGLE_OUTBOUND_PROXY_URL"],
+            )
+            self.assertFalse(google_kwargs["trust_env"])
+            self.assertFalse(google_kwargs["follow_redirects"])
+            self.assertTrue(google_kwargs["verify"])
+
+            client_type.reset_mock()
+            registry.get("qq")._client_factory()
+            qq_kwargs = client_type.call_args.kwargs
+            self.assertNotIn("proxy", qq_kwargs)
+            self.assertFalse(qq_kwargs["trust_env"])
+
+    def test_google_registry_rejects_invalid_explicit_proxy_without_credentials(self):
+        from src.modules.identity.providers import OAuthProviderRegistry
+
+        invalid_values = (
+            "socks5://proxy.example:1080",
+            "http://proxy.example",
+            "http://proxy.example:0",
+            "http://test-user:test-password@proxy.example:8080",
+            "http://proxy.example:8080/tunnel",
+            "http://proxy.example:8080?mode=tunnel",
+            "http://proxy.example:8080#fragment",
+            "http://proxy.example:99999",
+            "http://pro%xy:8080",
+            "http://proxy..example:8080",
+            "http://proxy.example:8080\n",
+            "https://user:$(id)@proxy.example:8443",
+            "https://user:`id`@proxy.example:8443",
+            "https://user:secret;id@proxy.example:8443",
+            "https://user:secret&more@proxy.example:8443",
+            "https://user:secret'quote@proxy.example:8443",
+            'https://user:secret"quote@proxy.example:8443',
+            "https://user:secret=padding@proxy.example:8443",
+            "https://user:bad%escape@proxy.example:8443",
+        )
+        for value in invalid_values:
+            with self.subTest(value=value), patch.dict(
+                os.environ,
+                {"AUTH_GOOGLE_OUTBOUND_PROXY_URL": value},
+                clear=True,
+            ):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "^AUTH_GOOGLE_OUTBOUND_PROXY_URL is invalid$",
+                ):
+                    OAuthProviderRegistry.from_env()
+
+    def test_google_proxy_does_not_enable_missing_client_credentials(self):
+        from src.modules.identity.providers import OAuthProviderRegistry
+
+        with patch.dict(
+            os.environ,
+            {"AUTH_GOOGLE_OUTBOUND_PROXY_URL": "http://proxy.example:8080"},
+            clear=True,
+        ):
+            registry = OAuthProviderRegistry.from_env()
+
+        self.assertFalse(registry.is_enabled("google"))
+
+    def test_google_provider_constructor_rejects_unvalidated_proxy(self):
+        from src.modules.identity.providers import (
+            GoogleOAuthProvider,
+            OAuthClientConfig,
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "^AUTH_GOOGLE_OUTBOUND_PROXY_URL is invalid$",
+        ):
+            GoogleOAuthProvider(
+                OAuthClientConfig("google-client", "google-secret"),
+                outbound_proxy_url=(
+                    "http://test-user:test-password@proxy.example:8080"
+                ),
+            )
 
     def test_response_limit_rejects_declared_size_without_reading_body(self):
         from src.modules.identity.providers import _request_with_limited_body

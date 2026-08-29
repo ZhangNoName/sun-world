@@ -6,6 +6,7 @@ import {
   extractApiData,
   renderArticlePageHtml,
   renderHomePageHtml,
+  renderPrivacyPolicyPageHtml,
   renderSitemapXml,
   routeToSsgOutputPath,
   safeArticleId,
@@ -30,11 +31,12 @@ async function main() {
   })
 
   await writeHomepage(indexHtml)
+  await writePrivacyPolicy(indexHtml)
   await writeArticlePages(indexHtml, articles)
   await writeSitemap(articles)
 
   console.log(
-    `[ssg] Generated public pages: home, /home, ${articles.length} article page(s), sitemap.xml`
+    `[ssg] Generated public pages: home, /home, /privacy, ${articles.length} article page(s), sitemap.xml`
   )
 }
 
@@ -42,6 +44,13 @@ async function writeHomepage(indexHtml) {
   const homeHtml = renderHomePageHtml(indexHtml)
   await writeFile(distIndexPath, homeHtml)
   await writeNestedFile(join(distDir, routeToSsgOutputPath('/home')), homeHtml)
+}
+
+async function writePrivacyPolicy(indexHtml) {
+  await writeNestedFile(
+    join(distDir, routeToSsgOutputPath('/privacy')),
+    renderPrivacyPolicyPageHtml(indexHtml)
+  )
 }
 
 async function writeArticlePages(indexHtml, articles) {

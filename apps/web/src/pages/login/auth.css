@@ -139,6 +139,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   min-height: 100dvh;
   padding: clamp(1.25rem, 5vw, 5rem);
   background: var(--muted);
@@ -146,6 +147,8 @@
 
 .auth-form-card {
   width: min(100%, 32rem);
+  min-width: 0;
+  max-width: 100%;
   border-color: var(--border);
   background: var(--card);
   box-shadow: 0 1.5rem 4rem
@@ -153,6 +156,7 @@
 }
 
 .auth-card-header {
+  min-width: 0;
   gap: 0.625rem;
 }
 
@@ -169,6 +173,7 @@
 
 .auth-card-content {
   display: grid;
+  min-width: 0;
   gap: 1rem;
 }
 
@@ -216,8 +221,60 @@
 
 .auth-provider-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.625rem;
+}
+
+.auth-google-provider-button {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: block;
+  width: 180px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent !important;
+  line-height: 0;
+}
+
+.auth-google-provider-button:hover {
+  background: transparent !important;
+}
+
+.auth-google-provider-button:active {
+  transform: none !important;
+}
+
+.auth-google-provider-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.auth-google-provider-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.auth-google-provider-button:focus-visible {
+  box-shadow: none;
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.auth-google-provider-button__image {
+  display: block;
+  width: 180px;
+  height: 40px;
+}
+
+.auth-google-account-note {
+  grid-column: 1 / -1;
+  margin: -0.125rem 0 0.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .auth-provider-button {
@@ -239,12 +296,6 @@
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: -0.04em;
-}
-
-.auth-provider-mark--google {
-  color: #1a73e8;
-  border: 1px solid color-mix(in srgb, #1a73e8 35%, transparent);
-  background: white;
 }
 
 .auth-provider-mark--qq {
@@ -269,6 +320,13 @@
   color: var(--muted-foreground);
   font-size: 0.75rem;
   line-height: 1.55;
+}
+
+.auth-privacy-note a {
+  margin-left: 0.35rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-underline-offset: 0.15em;
 }
 
 .auth-callback-status {

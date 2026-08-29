@@ -314,10 +314,32 @@ export function LoginPage() {
         <span>或使用第三方账号</span>
       </div>
       <div className="auth-provider-grid">
-        {(['google', 'qq', 'wechat'] as const).map((provider) => {
+        <Button
+          type="button"
+          variant="ghost"
+          className="auth-google-provider-button"
+          disabled={!methodById.get('google')?.enabled || oauthLoading !== null}
+          aria-label="使用 Google 登录"
+          aria-busy={oauthLoading === 'google'}
+          title={methodById.get('google')?.reason || undefined}
+          onClick={() => startOAuth('google')}
+        >
+          <img
+            src="/brands/google-sign-in-light-square.svg"
+            alt=""
+            aria-hidden="true"
+            className="auth-google-provider-button__image"
+            width={180}
+            height={40}
+          />
+        </Button>
+        <p className="auth-google-account-note">
+          已有 Sun World 账号？请先用原方式登录，再到个人中心连接
+          Google；不会按同名邮箱自动合并。
+        </p>
+        {(['qq', 'wechat'] as const).map((provider) => {
           const method = methodById.get(provider)
-          const brand =
-            provider === 'google' ? 'G' : provider === 'qq' ? 'QQ' : '微'
+          const brand = provider === 'qq' ? 'QQ' : '微'
           return (
             <Button
               key={provider}
@@ -343,6 +365,7 @@ export function LoginPage() {
 
       <p className="auth-privacy-note">
         只有登录方明确验证过的手机号，才会用于安全关联已有账户；不会按昵称或未验证资料自动合并。
+        <Link to="/privacy">隐私政策</Link>
       </p>
       <Button
         type="button"

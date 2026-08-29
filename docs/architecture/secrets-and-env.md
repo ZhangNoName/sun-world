@@ -87,6 +87,7 @@ storage.
 | `BLOG_CORS_ORIGINS` | Comma-separated browser origins allowed to call the credentialed API; `*` is rejected | No; production/local defaults exist |
 | `AUTH_CSRF_ALLOWED_ORIGINS` | Narrow comma-separated origins allowed to make cookie-authenticated writes; independent from CORS | No; defaults to the Sun World main/WWW/API origins plus local development origins in local mode |
 | `AUTH_GOOGLE_CLIENT_ID` / `AUTH_GOOGLE_CLIENT_SECRET` | Google OIDC application | Both required to enable Google |
+| `AUTH_GOOGLE_OUTBOUND_PROXY_URL` | Optional Google-only HTTP(S) forward proxy for token, JWKS, and userinfo calls | Required only where the API cannot reach Google directly |
 | `AUTH_QQ_CLIENT_ID` / `AUTH_QQ_CLIENT_SECRET` | QQ Connect application | Both required to enable QQ |
 | `AUTH_WECHAT_CLIENT_ID` / `AUTH_WECHAT_CLIENT_SECRET` | WeChat Open Platform application | Both required to enable WeChat |
 | `AUTH_EMAIL_SMTP_HOST` / `AUTH_EMAIL_SMTP_PORT` / `AUTH_EMAIL_FROM` | SMTP delivery endpoint and sender | Host and sender required to enable email OTP |
@@ -120,6 +121,38 @@ Web application client rather than an API key, and is enabled only when both
 `openid profile email` scope does not provide a verified phone, and verified
 email is not an automatic account-merge key; users can explicitly attach a
 phone through Sun World's OTP flow after login.
+
+`AUTH_GOOGLE_OUTBOUND_PROXY_URL` is an explicit Google-only escape hatch for a
+production API host that cannot reach Google's HTTPS services directly. It
+accepts only an `http` or `https` URL with an explicit valid host and TCP port;
+the path must be empty or `/`, and query/fragment/control characters are
+rejected. Because production loads `auth.env` through a shell, the raw URL also
+uses a strict shell-portable ASCII allowlist. Percent-encode credential
+characters outside `A-Z`, `a-z`, `0-9`, `.`, `_`, `~`, and `-`; raw shell
+metacharacters such as `$`, backticks, quotes, semicolons, `&`, and `#` are
+rejected before provider startup. Authority credentials are allowed only with
+an `https` proxy because
+an `http` proxy would send `Proxy-Authorization` over a plaintext hop. Treat
+the entire configured URL as a server-side secret even when the selected proxy
+currently uses no credentials. An invalid non-empty value fails
+provider-registry construction even when the Google client credentials are
+absent. Missing client ID or client secret still leaves Google login disabled.
+
+When set, only the Google token, signed-key, and userinfo requests use this
+proxy. They retain fixed HTTPS destinations, normal public-CA certificate and
+hostname verification, disabled redirects, bounded deadlines/bodies, and
+`trust_env=False`; a proxy failure never falls back to a direct connection.
+QQ, WeChat, AI providers, and MCP do not inherit the setting. The forward proxy
+must rate-limit callers and either authenticate them over HTTPS or, only on the
+trusted HTTP transports described below, enforce an IP allowlist. It must
+permit `CONNECT` only to the four documented Google hostnames on port `443`
+and pass TLS through without interception or a private/self-signed CA.
+
+An unauthenticated `http` proxy is acceptable only across a trusted private
+network, WireGuard link, or operator-owned SSH tunnel and must restrict clients
+with an IP allowlist. Any authenticated proxy reachable across a public or
+otherwise untrusted network must use `https`; never put credentials in an
+`http` proxy URL.
 
 Keep CORS compatibility separate from cookie-write authority. Production CORS
 may retain `zsf.shopping` and `www.zsf.shopping` for read compatibility, while
@@ -182,11 +215,16 @@ sends both values over the existing SSH channel through standard input and
 `/home/lighthouse/.config/blog_end/auth.env`. The helper preserves every other
 server-side variable, writes mode `0600`, and never prints secret values.
 
-The new OAuth, OTP, and MCP variables are not automatically provisioned by the
-existing AI-only secret synchronization helper. Production operators must add
-them to the protected service environment, and should update deployment secret
-automation explicitly before enabling the corresponding method. Never work
-around this by committing a populated configuration file.
+The OAuth, OTP, and MCP variables are not automatically provisioned by the
+AI secret synchronization workflow. Production operators must add them to the
+protected service environment, and should update deployment secret automation
+explicitly before enabling the corresponding method. A downloaded Google Web
+client can be streamed from the operator machine to
+`deploy/backend/import_google_oauth_client.py`; the JSON stays on standard
+input, must belong to project `sun-world-507015`, and the helper atomically
+updates only the two Google variables under a shared lock. See
+`deploy/backend/README.md` for the no-echo import and rollback commands. Never
+work around this by committing a populated configuration file.
 
 ### 切换后 / After Cutover
 

@@ -47,14 +47,41 @@ Manual runs support three modes:
   frontend and API this means an existing local Lighthouse image tag.
 
 Manual runs also accept `target` as `all`, `web`, or `api`. The `image_tag`
-input is required only for `deploy-existing`.
+input is required only for `deploy-existing`. `schema_mode` defaults to `full`,
+which keeps the strict full-application schema apply. The reviewed
+`identity-20260829` exception is available only when the target includes API
+and `mode=deploy-existing` runs from `refs/heads/main`; the workflow rejects it
+for `web`, `build-only`, `build-and-deploy`, or any other ref. It additionally
+requires the current workflow SHA, selected image tag, and temporary repository
+variable `IDENTITY_CUTOVER_ALLOWED_SHA` to be the same 40-character lowercase
+SHA, plus exact manually typed `identity_schema_ack`,
+`identity_maintenance_ack`, and `identity_timer_ack` values. Push and
+pull-request events cannot select the scoped schema mode.
+
+For the reviewed cutover, set `IDENTITY_CUTOVER_ALLOWED_SHA` to the exact
+reviewed API commit before pushing it to `main`. A matching main/API push keeps
+`schema_mode=full`, runs quality/build, and forces `deploy_needed=false`, so it
+stages the reviewed server checkout and image without entering deploy. A
+mismatched or unset variable leaves normal full/fail-closed push deployment
+unchanged. Before exposing that commit on `main`, freeze pushes and record,
+stop, disable, and `mask --runtime` the independent
+`sun-world-auto-deploy.timer`; its service must also be inactive. After secret
+import and candidate-image
+preflight, use `deploy-existing` with the same SHA and the three exact
+acknowledgement values. Clear the temporary variable immediately after success
+or abandonment and restore the timer's recorded enabled/active states; see
+`docs/deployment/2026-08-29-identity-ai-cutover.md` for the complete order.
 
 The workflow uses one production concurrency group with
-`cancel-in-progress: true`, so if multiple `main` or manual production runs
-overlap, the older in-progress run is canceled and the newest run wins. The
-quality and deploy jobs each have a 15-minute timeout. The frontend and API
-image build jobs have 30-minute timeouts because they build Docker images on
-Lighthouse.
+`cancel-in-progress: false`, so overlapping `main` or manual production runs
+queue rather than interrupting an SSH deployment or schema maintenance window.
+Keep `main` frozen during the reviewed identity cutover. The quality jobs each
+have their normal 10/15-minute limits, while deploy reserves
+60 minutes for scoped DDL, both API health phases, and rollback. The frontend
+and API image build jobs have 30-minute timeouts because they build Docker
+images on Lighthouse. The remote deploy holds the same server lock for the
+whole cutover; normal SSH HUP/INT/TERM invokes rollback, while a process kill or
+host reboot requires the runbook's manual fixed-container inspection.
 
 The pipeline is split by changed deploy target:
 
@@ -62,6 +89,8 @@ Build frontend image on Lighthouse and Build API image on Lighthouse are the
 two production image build jobs.
 
 1. `detect-changes` checks the pushed or pull-request file list.
+   For the exact reviewed main/API SHA only, it can select the no-deploy staging
+   path described above.
 2. `quality-common` checks formatting and GitHub Actions workflow protocols.
 3. `quality-web` runs frontend, UI package, and contracts checks only when
    frontend-related files changed.
@@ -78,12 +107,21 @@ two production image build jobs.
 8. `deploy` waits for the required server-side image build(s).
 9. If only frontend changed, deploy verifies the local frontend image and
    recreates `my-frontend` only.
-10. If only API changed, deploy uses the local API image, runs the MySQL schema
-   migration command, verifies a candidate container on port `18000`, then
-   switches the persistent `sun-world-api` container onto port `8000`.
+10. If only API changed, deploy uses the local API image, runs the selected
+   MySQL schema migration command, verifies a candidate container on port
+   `18000`, then switches the persistent `sun-world-api` container onto port
+   `8000`. The default is the strict full apply; the explicitly selected
+   `identity-20260829` manual path runs only its acknowledged scoped apply and
+   post-apply validate.
 11. If both changed, both local images are built before the deploy job performs
-   the frontend switch and persistent API
-   container switch in one server session.
+   both switches in one server session. Full mode retains the normal order. In
+   the scoped identity path, the workflow preserves and stops the active
+   `sun-world-api` Docker container under a failure-restoring trap, finishes
+   schema apply/validate, candidate/public Google-enable assertions, and local/
+   public API health, and only then switches the frontend. The old frontend
+   container is recorded and renamed as a rollback container; a new-container
+   start, direct local port-8081 health, or public-frontend-health failure
+   restores it while leaving the already healthy new API in place.
 12. If no deployable files changed, the workflow exits through the `no-deploy`
    job. This includes changes limited to GitHub Actions workflow files,
    deployment docs, or local verification scripts.
@@ -103,13 +141,38 @@ The API image is built and tagged locally on Lighthouse:
 sun-world-api:<git-sha>
 ```
 
-The API image is started by this workflow after
-`python -m src.database.mysql.schema_migration --mode apply` succeeds. The
-deploy job first starts `sun-world-api-candidate` on port `18000` and checks
-`/healthz`; after that passes, it stops/disables `blog-api.service`, starts the
-persistent `sun-world-api` container on host-network port `8000`, and verifies
-both local and public health. Existing incompatible MySQL columns make the
-workflow fail rather than rewriting data.
+The API image is normally started by this workflow after
+`python -m src.database.mysql.schema_migration --mode apply` succeeds. A
+reviewed manual identity cutover may instead use
+`schema_mode=identity-20260829`; that branch runs the exact acknowledged
+identity migration and validates it without executing the generic apply. It
+verifies the reviewed image, a live checkout clean across staged, unstaged,
+and non-ignored untracked files, masked frontend
+timer, root-owned callback snippet and effective OAuth callback log-safety,
+Redis capability, effective production runtime, exact production API/Web
+origins, configured Google registry, and Google egress. It then renames and stops the
+existing `sun-world-api` container and
+arms a restore trap before DDL, eliminating the online username-write race. The
+deploy job starts `sun-world-api-candidate` on port `18000`, silently checks
+that Google is enabled in `/auth/methods`, starts the persistent
+`sun-world-api` container on host-network port `8000`, and verifies local/public
+health plus the public Google method. Failure before public Google enablement
+restores the recorded Docker API container without starting disabled
+`blog-api.service` and without touching the frontend. Existing incompatible
+columns in the selected schema scope make the workflow fail rather than
+rewriting data.
+
+An API-only scoped run skips unrelated frontend-domain health checks. If an
+`all` run reaches the frontend and its new container start, local port-8081
+health, or public health fails, the old frontend is restored and the run fails,
+but the already-healthy new API remains. Retry only the web image with
+`mode=deploy-existing`, `target=web`, the
+same 40-character image tag, `schema_mode=full`, and all identity-only
+acknowledgements empty; do not rerun the scoped DDL. That exact manual Web-only
+path records and renames the current healthy frontend before replacement, then
+keeps it as `my-frontend-identity-backup` and restores it on a start, direct
+port-8081, or public-domain failure. Do not use
+`build-and-deploy` or a full `target=all` run for this retry.
 
 The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the

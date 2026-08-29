@@ -13,6 +13,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   AUTH_IDENTITY_CONFLICT: '该第三方身份已关联其他账户，请使用原账户登录。',
   AUTH_CONTACT_CONFLICT:
     '第三方返回的已验证联系方式已关联其他账户，未执行关联。',
+  AUTH_LEGACY_CONTACT_REQUIRES_VERIFICATION:
+    '这个邮箱属于已有 Sun World 账号。请先使用原账号的用户名和密码登录，再到“账户中心”连接 Google。',
   AUTH_IDENTITY_DISABLED: '该第三方登录身份已停用，无法自行重新启用。',
   AUTH_OAUTH_CONNECT_SESSION_CHANGED:
     '当前账号与发起关联时不一致，请重新登录后再关联。',

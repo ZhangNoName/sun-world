@@ -32,9 +32,9 @@ const providerLabels: Record<string, string> = {
 const oauthProviders: Array<{
   id: OAuthProvider
   label: string
-  mark: string
+  mark?: string
 }> = [
-  { id: 'google', label: 'Google', mark: 'G' },
+  { id: 'google', label: 'Google' },
   { id: 'qq', label: 'QQ', mark: 'QQ' },
   { id: 'wechat', label: '微信', mark: '微' },
 ]
@@ -286,18 +286,42 @@ export function MePage() {
                 const unavailableReason =
                   method?.reason ||
                   (!method ? '正在检查第三方登录可用性' : undefined)
+                const disabled =
+                  isLoadingConnections ||
+                  connected ||
+                  !method?.enabled ||
+                  oauthLoading !== null
+                if (provider.id === 'google') {
+                  return (
+                    <Button
+                      key={provider.id}
+                      type="button"
+                      variant="ghost"
+                      className="me-provider-connect__google-button"
+                      disabled={disabled}
+                      aria-label={connected ? 'Google 已连接' : '连接 Google'}
+                      aria-busy={oauthLoading === provider.id}
+                      title={connected ? '已连接到当前账号' : unavailableReason}
+                      onClick={() => void startProviderConnect(provider.id)}
+                    >
+                      <img
+                        src="/brands/google-sign-in-light-square.svg"
+                        alt=""
+                        aria-hidden="true"
+                        className="me-provider-connect__google-button-image"
+                        width={180}
+                        height={40}
+                      />
+                    </Button>
+                  )
+                }
                 return (
                   <Button
                     key={provider.id}
                     type="button"
                     variant="outline"
                     className="me-provider-connect__button"
-                    disabled={
-                      isLoadingConnections ||
-                      connected ||
-                      !method?.enabled ||
-                      oauthLoading !== null
-                    }
+                    disabled={disabled}
                     title={connected ? '已连接到当前账号' : unavailableReason}
                     onClick={() => void startProviderConnect(provider.id)}
                   >

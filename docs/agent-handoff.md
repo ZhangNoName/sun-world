@@ -7,8 +7,11 @@
   durable conversations, and an explicit MCP control plane without gating the
   public site.
 - Status: implementation, attack-oriented review, full repository validation,
-  and desktop/mobile browser QA are complete locally on `main`; no push, deploy,
-  database migration, credential provisioning, or production mutation.
+  and desktop/mobile browser QA are complete locally on `main`. Google Cloud
+  project `sun-world-507015` and a production Web OAuth client have been
+  created; its downloaded JSON is outside the repository with mode `0600` and
+  has not been imported into Lighthouse. No push, deploy, database migration,
+  API restart, or production smoke test has been performed.
   Detailed boundaries and cutover checklist are in
   `docs/architecture/identity-and-ai-capabilities.md`,
   `docs/architecture/ai-platform.md`, and
@@ -17,8 +20,11 @@
   `docs/deployment/2026-08-29-identity-ai-cutover.md`.
 - Important areas: `apps/api/src/modules/identity/`,
   `apps/api/src/modules/ai/`, `apps/api/src/routers/auth/auth.py`,
-  `apps/api/src/database/{mysql,redis}/`, `apps/web/src/modules/{account,ai}/`,
-  `apps/web/src/pages/{login,me}/`, `packages/ai-ui/`, and
+  `apps/api/src/database/{mysql,redis}/`, including the scoped
+  `mysql/identity_schema_migration.py`, `apps/web/src/modules/{account,ai}/`,
+  `apps/web/src/pages/{login,me,privacy}/`,
+  `deploy/backend/import_google_oauth_client.py`, the manual deployment schema
+  mode in `.github/workflows/deploy.yml`, `packages/ai-ui/`, and
   `packages/contracts/`.
 - Security decisions: identity first then provider-verified phone only; no
   email auto-merge; explicit connect requires recent auth and same session;
@@ -27,17 +33,45 @@
   reservations; canonical login throttling; SSRF-safe provider/MCP egress;
   daily AI cost breakers; revision-bound MCP catalog/audit; transactional
   conversation writes and one run per real conversation.
-- Cutover blockers: run a controlled migration from the historical non-unique
-  `idx_users_username` to the required unique index, then run schema apply;
-  provision OAuth applications, SMTP/SMS, encryption/JWT secrets, narrow host
-  allowlists, and provider spending caps. The generic conservative migrator
-  deliberately fails instead of dropping/replacing the old index.
-- Verification: `corepack pnpm check` passed all 19/19 repository gates: 283 API
-  tests, 155 Web React tests, 38 shared UI tests, 14 AI UI tests, 39 AI composer
+- Cutover blockers: the production host currently times out against all four
+  fixed Google HTTPS endpoints, so first provide an operator-controlled overseas
+  forward proxy and pass the candidate-image egress preflight. Install the
+  root-owned exact callback no-log Nginx snippet and pass the live plus
+  historical/rotated-log audits; then run the exact-allowlisted identity
+  migration for the historical username index and three `auth_*` tables, import
+  the protected Google client with the reviewed stdin-only helper, publish the
+  privacy page, and verify the Google Auth Platform branding/audience state and
+  real browser callback. SMTP/SMS, the other OAuth providers, and remaining
+  AIGC provider secrets stay separate optional capabilities. No production
+  database or server-secret action has been run. The generic conservative
+  migrator remains
+  unchanged and strict. The one-time workflow path is now bound to a temporary
+  reviewed `IDENTITY_CUTOVER_ALLOWED_SHA`: its matching main/API push only
+  stages quality/build without deploying, then the manual `deploy-existing`
+  run must come from `refs/heads/main`, have workflow/image/repository-variable
+  SHA equality, include API, and type the exact schema, Docker-maintenance, and
+  masked-timer acknowledgements. Before DDL it requires the reviewed checkout
+  to be clean across staged, unstaged, and non-ignored untracked content, the
+  frontend timer to be masked/inactive, the fixed callback snippet to be
+  root-owned and effective in Nginx, Redis 6.2+, an effective production
+  runtime, exact production API/Web origins, Google registry enablement, and
+  Google egress. Scoped execution
+  preserves and stops the active `sun-world-api` Docker container under a
+  restore trap; candidate and public health plus Google `/auth/methods`
+  enablement complete before an optional rollback-protected frontend switch.
+  Production runs queue rather than cancel an in-flight maintenance window.
+  Clear the temporary variable and restore the timer's recorded state after the
+  final attempt; unrelated full-schema drift still must be resolved before
+  later normal API deployment. A real browser Google callback smoke remains a
+  required post-cutover check.
+- Verification: `corepack pnpm check` passed all 19/19 repository gates: 331 API
+  tests, 160 Web React tests, 38 shared UI tests, 14 AI UI tests, 39 AI composer
   tests, and 6 contract tests, plus typechecks, builds, SSG, UI boundaries,
   performance budgets, and static Compose validation. Browser QA passed for
   login, registration, and guest AIGC at 1440x900 and 390x844 with no
-  horizontal overflow or unexpected global error toast. The final assessment
+  horizontal overflow or unexpected global error toast. No real Google callback
+  was exercised; the callback-log checker passed 27 adversarial tests and the
+  Google credential importer passed 8 tests. The final assessment
   and residual P2/product follow-ups are in
   `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
 

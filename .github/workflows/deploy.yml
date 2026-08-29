@@ -31,6 +31,26 @@ name: Deploy Sun World
           - all
           - web
           - api
+      schema_mode:
+        description: API schema migration scope
+        required: true
+        default: full
+        type: choice
+        options:
+          - full
+          - identity-20260829
+      identity_schema_ack:
+        description: Type 20260829_identity_schema for the reviewed identity cutover only
+        required: false
+        type: string
+      identity_maintenance_ack:
+        description: Type STOP_CURRENT_API_FOR_IDENTITY_CUTOVER to accept API downtime
+        required: false
+        type: string
+      identity_timer_ack:
+        description: Type AUTO_DEPLOY_TIMER_STOPPED_FOR_IDENTITY_CUTOVER after stopping and masking the timer
+        required: false
+        type: string
       image_tag:
         description: Existing local image tag for deploy-existing, usually a commit SHA
         required: false
@@ -38,7 +58,7 @@ name: Deploy Sun World
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('deploy-sun-world-pr-{0}', github.event.pull_request.number) || 'deploy-sun-world-production' }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -58,6 +78,7 @@ jobs:
       build_needed: ${{ steps.detect.outputs.build_needed }}
       deploy_needed: ${{ steps.detect.outputs.deploy_needed }}
       image_tag: ${{ steps.detect.outputs.image_tag }}
+      schema_mode: ${{ steps.detect.outputs.schema_mode }}
 
     steps:
       - name: Checkout
@@ -67,6 +88,12 @@ jobs:
 
       - name: Detect changed deploy targets
         id: detect
+        env:
+          IDENTITY_CUTOVER_ALLOWED_SHA: ${{ vars.IDENTITY_CUTOVER_ALLOWED_SHA }}
+          DISPATCH_IMAGE_TAG: ${{ inputs.image_tag }}
+          IDENTITY_SCHEMA_ACK: ${{ inputs.identity_schema_ack }}
+          IDENTITY_MAINTENANCE_ACK: ${{ inputs.identity_maintenance_ack }}
+          IDENTITY_TIMER_ACK: ${{ inputs.identity_timer_ack }}
         shell: bash
         run: |
           set -euo pipefail
@@ -76,11 +103,14 @@ jobs:
           build_needed=true
           deploy_needed=true
           image_tag=""
+          schema_mode=full
+          mode=automatic
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             mode="${{ inputs.mode }}"
             target="${{ inputs.target }}"
-            image_tag="${{ inputs.image_tag }}"
+            image_tag="$DISPATCH_IMAGE_TAG"
+            schema_mode="${{ inputs.schema_mode }}"
 
             case "$target" in
               all)
@@ -113,6 +143,7 @@ jobs:
                   echo "image_tag is required when mode=deploy-existing." >&2
                   exit 1
                 fi
+                node scripts/identity-cutover-gate.mjs validate-image-tag "$image_tag"
                 ;;
               *)
                 echo "Unsupported mode: $mode" >&2
@@ -144,6 +175,20 @@ jobs:
             fi
           fi
 
+          node scripts/identity-cutover-gate.mjs validate \
+            "$GITHUB_EVENT_NAME" \
+            "$GITHUB_REF" \
+            "$GITHUB_SHA" \
+            "$mode" \
+            "$schema_mode" \
+            "$api_changed" \
+            "$deploy_needed" \
+            "$image_tag" \
+            "$IDENTITY_CUTOVER_ALLOWED_SHA" \
+            "$IDENTITY_SCHEMA_ACK" \
+            "$IDENTITY_MAINTENANCE_ACK" \
+            "$IDENTITY_TIMER_ACK"
+
           while IFS= read -r file; do
             [ -n "$file" ] || continue
             case "$file" in
@@ -172,6 +217,19 @@ jobs:
             esac
           done <<< "$changed_files"
 
+          stage_identity_cutover="$(
+            node scripts/identity-cutover-gate.mjs should-stage-push \
+              "$GITHUB_EVENT_NAME" \
+              "$GITHUB_REF" \
+              "$api_changed" \
+              "$image_tag" \
+              "$IDENTITY_CUTOVER_ALLOWED_SHA"
+          )"
+          if [ "$stage_identity_cutover" = "true" ]; then
+            deploy_needed=false
+            echo "Reviewed identity cutover SHA will be built without an automatic production deploy."
+          fi
+
           if [ "$web_changed" = "true" ] || [ "$api_changed" = "true" ]; then
             any_changed=true
           else
@@ -185,11 +243,12 @@ jobs:
             echo "build_needed=$build_needed"
             echo "deploy_needed=$deploy_needed"
             echo "image_tag=$image_tag"
+            echo "schema_mode=$schema_mode"
           } >> "$GITHUB_OUTPUT"
 
           printf 'Changed files:\n%s\n' "$changed_files"
-          printf 'web_changed=%s api_changed=%s any_changed=%s build_needed=%s deploy_needed=%s image_tag=%s\n' \
-            "$web_changed" "$api_changed" "$any_changed" "$build_needed" "$deploy_needed" "$image_tag"
+          printf 'web_changed=%s api_changed=%s any_changed=%s build_needed=%s deploy_needed=%s image_tag=%s schema_mode=%s\n' \
+            "$web_changed" "$api_changed" "$any_changed" "$build_needed" "$deploy_needed" "$image_tag" "$schema_mode"
 
   quality-common:
     name: Format and workflow checks
@@ -394,9 +453,9 @@ jobs:
           flock 9
 
           cd "$REPO_DIR"
-          if ! git diff --quiet || ! git diff --cached --quiet; then
-            echo "Server repository has uncommitted changes; refusing to build frontend image." >&2
-            git status --short >&2
+          if ! git diff --quiet -- || ! git diff --cached --quiet -- || \
+            [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "Server repository is not completely clean; refusing to build frontend image." >&2
             exit 1
           fi
 
@@ -407,6 +466,11 @@ jobs:
           current_sha="$(git rev-parse HEAD)"
           if [ "$current_sha" != "$IMAGE_TAG" ]; then
             echo "Server main is at $current_sha, expected $IMAGE_TAG." >&2
+            exit 1
+          fi
+          if ! git diff --quiet -- || ! git diff --cached --quiet -- || \
+            [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "Server repository changed while preparing the frontend build." >&2
             exit 1
           fi
 
@@ -493,9 +557,9 @@ jobs:
           flock 9
 
           cd "$REPO_DIR"
-          if ! git diff --quiet || ! git diff --cached --quiet; then
-            echo "Server repository has uncommitted changes; refusing to build API image." >&2
-            git status --short >&2
+          if ! git diff --quiet -- || ! git diff --cached --quiet -- || \
+            [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "Server repository is not completely clean; refusing to build API image." >&2
             exit 1
           fi
 
@@ -506,6 +570,11 @@ jobs:
           current_sha="$(git rev-parse HEAD)"
           if [ "$current_sha" != "$IMAGE_TAG" ]; then
             echo "Server main is at $current_sha, expected $IMAGE_TAG." >&2
+            exit 1
+          fi
+          if ! git diff --quiet -- || ! git diff --cached --quiet -- || \
+            [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "Server repository changed while preparing the API build." >&2
             exit 1
           fi
 
@@ -531,7 +600,7 @@ jobs:
         )
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
 
     steps:
       - name: Prepare SSH
@@ -574,44 +643,341 @@ jobs:
           API_CHANGED: ${{ needs.detect-changes.outputs.api_changed }}
           FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
           API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}
+          IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          SCHEMA_MODE: ${{ needs.detect-changes.outputs.schema_mode }}
+          DEPLOYMENT_MODE: ${{ inputs.mode }}
+          IDENTITY_CUTOVER_ALLOWED_SHA: ${{ vars.IDENTITY_CUTOVER_ALLOWED_SHA }}
+          IDENTITY_SCHEMA_ACK: ${{ inputs.identity_schema_ack }}
+          IDENTITY_MAINTENANCE_ACK: ${{ inputs.identity_maintenance_ack }}
+          IDENTITY_TIMER_ACK: ${{ inputs.identity_timer_ack }}
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
           LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
           LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
         shell: bash
         run: |
           set -euo pipefail
+          case "$SCHEMA_MODE" in
+            full)
+              IDENTITY_CUTOVER_ALLOWED_SHA=""
+              IDENTITY_SCHEMA_ACK=""
+              IDENTITY_MAINTENANCE_ACK=""
+              IDENTITY_TIMER_ACK=""
+              ;;
+            identity-20260829)
+              if [ "$DEPLOYMENT_MODE" != "deploy-existing" ] || \
+                ! [[ "$IDENTITY_CUTOVER_ALLOWED_SHA" =~ ^[0-9a-f]{40}$ ]] || \
+                [ "$IDENTITY_CUTOVER_ALLOWED_SHA" != "$IMAGE_TAG" ] || \
+                [ "$IDENTITY_SCHEMA_ACK" != "20260829_identity_schema" ] || \
+                [ "$IDENTITY_MAINTENANCE_ACK" != "STOP_CURRENT_API_FOR_IDENTITY_CUTOVER" ] || \
+                [ "$IDENTITY_TIMER_ACK" != "AUTO_DEPLOY_TIMER_STOPPED_FOR_IDENTITY_CUTOVER" ]; then
+                echo "Scoped identity authorization changed after detect; refusing SSH." >&2
+                exit 1
+              fi
+              ;;
+            *)
+              echo "Unsupported schema mode before SSH." >&2
+              exit 1
+              ;;
+          esac
           ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
             -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
-            "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" <<'REMOTE'
+            "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" "$SCHEMA_MODE" \
+            "$IMAGE_TAG" "$IDENTITY_CUTOVER_ALLOWED_SHA" "$IDENTITY_SCHEMA_ACK" \
+            "$IDENTITY_MAINTENANCE_ACK" "$IDENTITY_TIMER_ACK" "$DEPLOYMENT_MODE" <<'REMOTE'
           set -euo pipefail
           WEB_CHANGED="$1"
           API_CHANGED="$2"
           FRONTEND_IMAGE="$3"
           API_IMAGE="$4"
+          SCHEMA_MODE="$5"
+          IMAGE_TAG="$6"
+          IDENTITY_CUTOVER_ALLOWED_SHA="$7"
+          IDENTITY_SCHEMA_ACK="$8"
+          IDENTITY_MAINTENANCE_ACK="$9"
+          IDENTITY_TIMER_ACK="${10}"
+          DEPLOYMENT_MODE="${11}"
+          LOCK_FILE="/tmp/sun-world-docker-build.lock"
 
-          if [ "$WEB_CHANGED" = "true" ]; then
+          exec 9>"$LOCK_FILE"
+          flock 9
+
+          IDENTITY_MAINTENANCE_ACTIVE=false
+          IDENTITY_FRONTEND_ROLLBACK_ACTIVE=false
+          PREVIOUS_API_CONTAINER_ID=""
+          PREVIOUS_API_IMAGE=""
+          LEGACY_FRONTEND_CONTAINER_ID=""
+          LEGACY_FRONTEND_IMAGE=""
+
+          restore_identity_api() {
+            set +e
+            echo "Identity cutover failed; restoring the previous API container." >&2
+            if ! sudo docker container inspect sun-world-api-identity-backup >/dev/null 2>&1; then
+              echo "Identity API rollback container is missing." >&2
+              return 1
+            fi
+            backup_id="$(sudo docker inspect --format '{{.Id}}' sun-world-api-identity-backup)"
+            backup_image="$(sudo docker inspect --format '{{.Config.Image}}' sun-world-api-identity-backup)"
+            if [ "$backup_id" != "$PREVIOUS_API_CONTAINER_ID" ] || [ "$backup_image" != "$PREVIOUS_API_IMAGE" ]; then
+              echo "Identity API rollback container no longer matches the recorded container." >&2
+              return 1
+            fi
+            sudo docker rm -f sun-world-api-candidate >/dev/null 2>&1 || true
+            sudo docker rm -f sun-world-api >/dev/null 2>&1 || true
+            sudo systemctl stop blog-api.service >/dev/null 2>&1 || true
+            sudo systemctl disable blog-api.service >/dev/null 2>&1 || true
+            sudo docker rename sun-world-api-identity-backup sun-world-api
+            sudo docker start sun-world-api >/dev/null
+            api_restored=false
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:8000/healthz >/dev/null; then
+                api_restored=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$api_restored" != "true" ]; then
+              echo "Previous API container was restarted but did not pass local health." >&2
+              return 1
+            fi
+          }
+
+          identity_exit_trap() {
+            status="$?"
+            if [ "$status" -ne 0 ] && [ "$IDENTITY_MAINTENANCE_ACTIVE" = "true" ]; then
+              restore_identity_api
+            elif [ "$status" -ne 0 ] && sudo docker container inspect sun-world-api-identity-backup >/dev/null 2>&1; then
+              # Cover a signal delivered after rename succeeds but before the
+              # next shell assignment marks recovery active.
+              restore_identity_api
+            fi
+            exit "$status"
+          }
+
+          restore_identity_frontend() {
+            set +e
+            echo "Identity frontend cutover failed; restoring the previous frontend container." >&2
+            if ! sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
+              echo "Identity frontend rollback container is missing." >&2
+              return 1
+            fi
+            backup_id="$(sudo docker inspect --format '{{.Id}}' my-frontend-identity-backup)"
+            backup_image="$(sudo docker inspect --format '{{.Config.Image}}' my-frontend-identity-backup)"
+            if [ "$backup_id" != "$LEGACY_FRONTEND_CONTAINER_ID" ] || [ "$backup_image" != "$LEGACY_FRONTEND_IMAGE" ]; then
+              echo "Identity frontend rollback container no longer matches the recorded container." >&2
+              return 1
+            fi
+            sudo docker rm -f my-frontend >/dev/null 2>&1 || true
+            sudo docker rename my-frontend-identity-backup my-frontend
+            sudo docker start my-frontend >/dev/null
+            frontend_restored=false
+            for attempt in $(seq 1 20); do
+              if curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+                frontend_restored=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$frontend_restored" != "true" ]; then
+              echo "Previous frontend container was restarted but did not pass local health." >&2
+              return 1
+            fi
+          }
+
+          identity_frontend_exit_trap() {
+            status="$?"
+            if [ "$status" -ne 0 ] && [ "$IDENTITY_FRONTEND_ROLLBACK_ACTIVE" = "true" ]; then
+              restore_identity_frontend
+            elif [ "$status" -ne 0 ] && sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
+              # Cover a signal delivered in the rename/activation boundary.
+              restore_identity_frontend
+            fi
+            exit "$status"
+          }
+
+          check_google_auth_method() {
+            python3 -c 'import json, sys; payload = json.load(sys.stdin); methods = payload.get("data", []) if isinstance(payload, dict) else []; raise SystemExit(0 if any(isinstance(item, dict) and item.get("id") == "google" and item.get("enabled") is True for item in methods) else 1)' 2>/dev/null
+          }
+
+          API_MOUNTS=(
+            -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
+            -v /data/blog:/data/blog
+          )
+          if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
+            API_MOUNTS+=(
+              -v /home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro
+            )
+          fi
+
+          case "$SCHEMA_MODE" in
+            full)
+              ;;
+            identity-20260829)
+              if [ "$DEPLOYMENT_MODE" != "deploy-existing" ]; then
+                echo "Scoped identity migration requires mode=deploy-existing." >&2
+                exit 1
+              fi
+              if [ "$API_CHANGED" != "true" ]; then
+                echo "Scoped identity migration requires an API deployment." >&2
+                exit 1
+              fi
+              if ! [[ "$IDENTITY_CUTOVER_ALLOWED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+                echo "Scoped identity migration requires a reviewed 40-character lowercase SHA." >&2
+                exit 1
+              fi
+              if [ "$IDENTITY_CUTOVER_ALLOWED_SHA" != "$IMAGE_TAG" ]; then
+                echo "Scoped identity migration is not authorized for this image tag." >&2
+                exit 1
+              fi
+              server_checkout_sha="$(git -C /home/lighthouse/blog/sun-world rev-parse HEAD)"
+              if [ "$server_checkout_sha" != "$IMAGE_TAG" ]; then
+                echo "Scoped identity migration requires the server checkout to match the reviewed image tag." >&2
+                exit 1
+              fi
+              if ! git -C /home/lighthouse/blog/sun-world diff --quiet -- || \
+                ! git -C /home/lighthouse/blog/sun-world diff --cached --quiet -- || \
+                [ -n "$(git -C /home/lighthouse/blog/sun-world status --porcelain --untracked-files=all)" ]; then
+                echo "Scoped identity migration requires a completely clean server checkout." >&2
+                exit 1
+              fi
+              if [ "$API_IMAGE" != "sun-world-api:$IMAGE_TAG" ]; then
+                echo "Scoped identity migration requires the API image bound to the reviewed tag." >&2
+                exit 1
+              fi
+              if [ "$IDENTITY_SCHEMA_ACK" != "20260829_identity_schema" ]; then
+                echo "Scoped identity migration acknowledgement is missing or invalid." >&2
+                exit 1
+              fi
+              if [ "$IDENTITY_MAINTENANCE_ACK" != "STOP_CURRENT_API_FOR_IDENTITY_CUTOVER" ]; then
+                echo "Scoped identity maintenance acknowledgement is missing or invalid." >&2
+                exit 1
+              fi
+              if [ "$IDENTITY_TIMER_ACK" != "AUTO_DEPLOY_TIMER_STOPPED_FOR_IDENTITY_CUTOVER" ]; then
+                echo "Scoped identity timer acknowledgement is missing or invalid." >&2
+                exit 1
+              fi
+              timer_enabled_state="$(sudo systemctl is-enabled sun-world-auto-deploy.timer 2>/dev/null || true)"
+              if sudo systemctl is-active --quiet sun-world-auto-deploy.timer || sudo systemctl is-active --quiet sun-world-auto-deploy.service || { [ "$timer_enabled_state" != "masked" ] && [ "$timer_enabled_state" != "masked-runtime" ]; }; then
+                echo "Scoped identity cutover requires the frontend auto-deploy timer to be stopped and masked, with its service inactive." >&2
+                exit 1
+              fi
+              callback_snippet_meta="$(sudo stat -c '%U:%G:%a' /etc/nginx/snippets/sun-world-oauth-callback-no-log.conf 2>/dev/null || true)"
+              if [ "$callback_snippet_meta" != "root:root:644" ]; then
+                echo "Scoped identity cutover requires the fixed callback-log snippet to be root-owned and mode 0644." >&2
+                exit 1
+              fi
+              sudo nginx -T 2>&1 |
+                python3 /home/lighthouse/blog/sun-world/scripts/check-oauth-callback-log-safety.py --nginx-dump
+              sudo docker image inspect "$API_IMAGE" >/dev/null
+              sudo docker run --rm --network host \
+                -e BLOG_RUNTIME_ENV=production \
+                "${API_MOUNTS[@]}" \
+                "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.modules.identity.redis_capability_preflight; python -m src.database.mysql.identity_schema_migration --mode plan; python -m src.modules.identity.google_outbound_preflight'
+              if [ "$WEB_CHANGED" = "true" ]; then
+                sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
+                if sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
+                  echo "Scoped identity cutover found a stale frontend rollback container." >&2
+                  exit 1
+                fi
+                if ! sudo docker container inspect my-frontend >/dev/null 2>&1; then
+                  echo "Scoped identity cutover requires the current frontend container." >&2
+                  exit 1
+                fi
+                if [ "$(sudo docker inspect --format '{{.State.Running}}' my-frontend)" != "true" ]; then
+                  echo "Scoped identity cutover requires the current frontend container to be running." >&2
+                  exit 1
+                fi
+                LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect --format '{{.Id}}' my-frontend)"
+                LEGACY_FRONTEND_IMAGE="$(sudo docker inspect --format '{{.Config.Image}}' my-frontend)"
+              fi
+              if sudo docker container inspect sun-world-api-identity-backup >/dev/null 2>&1; then
+                echo "Scoped identity cutover found a stale API rollback container." >&2
+                exit 1
+              fi
+              if ! sudo docker container inspect sun-world-api >/dev/null 2>&1; then
+                echo "Scoped identity cutover requires the current API container." >&2
+                exit 1
+              fi
+              if [ "$(sudo docker inspect --format '{{.State.Running}}' sun-world-api)" != "true" ]; then
+                echo "Scoped identity cutover requires the current API container to be running." >&2
+                exit 1
+              fi
+              if [ "$(sudo docker inspect --format '{{.HostConfig.NetworkMode}}' sun-world-api)" != "host" ] || \
+                [ "$(sudo docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' sun-world-api)" != "unless-stopped" ]; then
+                echo "Scoped identity cutover supports only the verified host-network, unless-stopped API topology." >&2
+                exit 1
+              fi
+              if ! curl -fsS http://127.0.0.1:8000/healthz >/dev/null; then
+                echo "Scoped identity cutover requires the current API container to pass local port-8000 health." >&2
+                exit 1
+              fi
+              PREVIOUS_API_CONTAINER_ID="$(sudo docker inspect --format '{{.Id}}' sun-world-api)"
+              PREVIOUS_API_IMAGE="$(sudo docker inspect --format '{{.Config.Image}}' sun-world-api)"
+              if [ "$PREVIOUS_API_IMAGE" = "$API_IMAGE" ]; then
+                echo "Scoped identity cutover refuses to reapply the reviewed API image." >&2
+                exit 1
+              fi
+              if sudo systemctl is-active --quiet blog-api.service || sudo systemctl is-enabled --quiet blog-api.service; then
+                echo "Scoped identity cutover requires the legacy systemd API to remain inactive and disabled." >&2
+                exit 1
+              fi
+              trap identity_exit_trap EXIT
+              trap 'exit 130' HUP INT TERM
+              sudo docker rename sun-world-api sun-world-api-identity-backup
+              IDENTITY_MAINTENANCE_ACTIVE=true
+              sudo docker stop sun-world-api-identity-backup >/dev/null
+              ;;
+            *)
+              echo "Unsupported schema mode at deploy boundary: $SCHEMA_MODE" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ "$WEB_CHANGED" = "true" ] && [ "$SCHEMA_MODE" = "full" ]; then
             sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
-            sudo docker rm -f my-frontend || true
+            if [ "$DEPLOYMENT_MODE" = "deploy-existing" ] && [ "$API_CHANGED" != "true" ]; then
+              if sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
+                echo "Web-only deploy found a stale frontend rollback container." >&2
+                exit 1
+              fi
+              if ! sudo docker container inspect my-frontend >/dev/null 2>&1 || \
+                [ "$(sudo docker inspect --format '{{.State.Running}}' my-frontend 2>/dev/null || true)" != "true" ] || \
+                ! curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+                echo "Web-only deploy requires the current frontend container to be running and healthy." >&2
+                exit 1
+              fi
+              LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect --format '{{.Id}}' my-frontend)"
+              LEGACY_FRONTEND_IMAGE="$(sudo docker inspect --format '{{.Config.Image}}' my-frontend)"
+              trap identity_frontend_exit_trap EXIT
+              trap 'exit 130' HUP INT TERM
+              sudo docker rename my-frontend my-frontend-identity-backup
+              IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true
+              sudo docker stop my-frontend-identity-backup >/dev/null
+            else
+              sudo docker rm -f my-frontend || true
+            fi
             sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
+          elif [ "$WEB_CHANGED" = "true" ]; then
+            echo "Deferring frontend cutover until the scoped API cutover is healthy."
           else
             echo "No frontend deploy needed."
           fi
 
           if [ "$API_CHANGED" = "true" ]; then
             sudo docker image inspect "$API_IMAGE" >/dev/null
-            API_MOUNTS=(
-              -v /home/lighthouse/.config/blog_end:/home/lighthouse/.config/blog_end:ro
-              -v /data/blog:/data/blog
-            )
-            if [ -d /home/lighthouse/blog/blog_end/src/conf ]; then
-              API_MOUNTS+=(
-                -v /home/lighthouse/blog/blog_end/src/conf:/app/src/conf:ro
-              )
-            fi
-            sudo docker run --rm --network host \
-              "${API_MOUNTS[@]}" \
-              "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+            case "$SCHEMA_MODE" in
+              full)
+                sudo docker run --rm --network host \
+                  "${API_MOUNTS[@]}" \
+                  "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+                ;;
+              identity-20260829)
+                sudo docker run --rm --network host \
+                  "${API_MOUNTS[@]}" \
+                  "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.identity_schema_migration --mode apply --acknowledge "$1"; python -m src.database.mysql.identity_schema_migration --mode validate' \
+                  identity-migration "$IDENTITY_SCHEMA_ACK"
+                ;;
+            esac
 
             API_CORS_ORIGINS="https://sunworld.site,https://www.sunworld.site,https://zsf.shopping,https://www.zsf.shopping"
             API_CSRF_ALLOWED_ORIGINS="https://sunworld.site,https://www.sunworld.site,https://api.sunworld.site"
@@ -644,6 +1010,11 @@ jobs:
               fi
               sleep 2
             done
+            if [ "$SCHEMA_MODE" = "identity-20260829" ] && \
+              ! curl -fsS http://127.0.0.1:18000/auth/methods | check_google_auth_method; then
+              echo "Candidate API does not report Google login as enabled." >&2
+              exit 1
+            fi
             sudo docker rm -f sun-world-api-candidate
 
             sudo systemctl stop blog-api.service || true
@@ -668,9 +1039,13 @@ jobs:
               sudo docker inspect --format 'api status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' sun-world-api >&2 || true
               sudo docker logs --tail 120 sun-world-api >&2 || true
               sudo docker rm -f sun-world-api || true
-              sudo systemctl enable blog-api.service || true
-              sudo systemctl start blog-api.service || true
-              echo "Docker API container failed production health check; rolled back to blog-api.service." >&2
+              if [ "$SCHEMA_MODE" = "full" ]; then
+                sudo systemctl enable blog-api.service || true
+                sudo systemctl start blog-api.service || true
+                echo "Docker API container failed production health check; rolled back to blog-api.service." >&2
+              else
+                echo "Docker API container failed production health check; the maintenance trap will restore the previous API container." >&2
+              fi
               exit 1
             fi
             for attempt in $(seq 1 10); do
@@ -683,23 +1058,74 @@ jobs:
               fi
               sleep 2
             done
+            if [ "$SCHEMA_MODE" = "identity-20260829" ] && \
+              ! curl -fsS https://api.sunworld.site/auth/methods | check_google_auth_method; then
+              echo "Public API does not report Google login as enabled." >&2
+              exit 1
+            fi
+            if [ "$SCHEMA_MODE" = "identity-20260829" ]; then
+              IDENTITY_MAINTENANCE_ACTIVE=false
+              trap - EXIT HUP INT TERM
+              sudo systemctl stop blog-api.service >/dev/null 2>&1 || true
+              sudo systemctl disable blog-api.service >/dev/null 2>&1 || true
+              if ! sudo docker rm sun-world-api-identity-backup >/dev/null; then
+                echo "New API is healthy, but the stopped rollback container requires manual cleanup." >&2
+              fi
+              if [ "$WEB_CHANGED" = "true" ]; then
+                trap identity_frontend_exit_trap EXIT
+                trap 'exit 130' HUP INT TERM
+                sudo docker rename my-frontend my-frontend-identity-backup
+                IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true
+                sudo docker stop my-frontend-identity-backup >/dev/null
+                sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
+                IDENTITY_FRONTEND_LOCAL_READY=false
+                for attempt in $(seq 1 20); do
+                  if curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+                    IDENTITY_FRONTEND_LOCAL_READY=true
+                    break
+                  fi
+                  sleep 2
+                done
+                if [ "$IDENTITY_FRONTEND_LOCAL_READY" != "true" ]; then
+                  sudo docker ps -a --filter name=my-frontend >&2 || true
+                  sudo docker inspect --format 'frontend status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' my-frontend >&2 || true
+                  sudo docker logs --tail 120 my-frontend >&2 || true
+                  echo "New frontend container failed local port-8081 health." >&2
+                  exit 1
+                fi
+              fi
+            fi
           else
             echo "No API schema apply needed."
           fi
 
           sudo docker image prune -f
-          FRONTEND_READY=false
-          for attempt in $(seq 1 10); do
-            if curl -fsSI https://sunworld.site >/dev/null && curl -fsSI https://www.sunworld.site >/dev/null; then
-              FRONTEND_READY=true
-              break
+          if [ "$WEB_CHANGED" = "true" ] || [ "$SCHEMA_MODE" = "full" ]; then
+            FRONTEND_READY=false
+            for attempt in $(seq 1 10); do
+              if curl -fsSI http://127.0.0.1:8081 >/dev/null && \
+                curl -fsSI https://sunworld.site >/dev/null && \
+                curl -fsSI https://www.sunworld.site >/dev/null; then
+                FRONTEND_READY=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$FRONTEND_READY" != "true" ]; then
+              curl -fsSI http://127.0.0.1:8081
+              curl -fsSI https://sunworld.site
+              curl -fsSI https://www.sunworld.site
+              exit 1
             fi
-            sleep 2
-          done
-          if [ "$FRONTEND_READY" != "true" ]; then
-            curl -fsSI https://sunworld.site
-            curl -fsSI https://www.sunworld.site
-            exit 1
+            if [ "$IDENTITY_FRONTEND_ROLLBACK_ACTIVE" = "true" ]; then
+              IDENTITY_FRONTEND_ROLLBACK_ACTIVE=false
+              trap - EXIT HUP INT TERM
+              if ! sudo docker rm my-frontend-identity-backup >/dev/null; then
+                echo "New frontend is healthy, but the stopped rollback container requires manual cleanup." >&2
+              fi
+            fi
+          else
+            echo "No frontend post-deploy health check needed for API-only scoped cutover."
           fi
           REMOTE
 

@@ -1,8 +1,9 @@
 # Optional Identity And Personal AIGC Review
 
 Date: 2026-08-29
-Scope: local `main` working tree; no production migration, credentials, deploy,
-or account mutation
+Scope: local `main` working tree plus the newly created Google Cloud project and
+production Web OAuth client; no production migration, server credential import,
+deploy, or Sun World account mutation
 
 ## Verdict
 
@@ -25,7 +26,9 @@ secret, provider, allowlist, spending-cap, and smoke-test steps in
   stolen refresh token therefore revokes its session family by default.
 - Fixed-provider OAuth HTTP clients ignore environment proxies, reject
   redirects, use separate connect/read/write/pool timeouts, and limit token,
-  JWKS, and user-info response bytes before parsing.
+  JWKS, and user-info response bytes before parsing. Google alone supports an
+  explicitly configured, operator-controlled outbound proxy because the
+  production host cannot currently reach Google's fixed endpoints directly.
 - MCP endpoint URLs reject query strings, keeping credentials out of stored and
   logged URLs; encrypted bearer-token storage is the credential channel.
 - Default user-provider replacement now locks the owner row and clears/writes
@@ -82,13 +85,14 @@ they should stay visible rather than being mistaken for completed capabilities.
 
 - Attack-oriented auth/identity/CSRF/Redis/schema/AI/MCP review: 232 focused
   tests passed before the final hardening changes, with no P0/P1 finding.
-- CORS/CSRF and production refresh-grace hardening: the API gate passed 283
+- CORS/CSRF and production refresh-grace hardening: the API gate passed 331
   tests.
-- OAuth provider hardening: 48 identity tests passed.
+- Final focused OAuth hardening: 13 provider tests, 27 callback log-safety
+  tests, and 8 Google credential-import tests passed.
 - AI repository transaction follow-up and MCP endpoint validation have focused
   regression coverage.
-- Final `corepack pnpm check`: all 19/19 repository gates passed, including 283
-  API tests, 155 Web React tests, 38 shared UI tests, 14 AI UI tests, 39 AI
+- Final `corepack pnpm check`: all 19/19 repository gates passed, including 331
+  API tests, 160 Web React tests, 38 shared UI tests, 14 AI UI tests, 39 AI
   composer tests, and 6 contract tests, plus typechecks, builds, SSG, UI
   boundaries, performance budgets, and static Compose validation.
 - Desktop (1440x900) and mobile (390x844) browser QA passed for login,
