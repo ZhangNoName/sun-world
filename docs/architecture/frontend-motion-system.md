@@ -1,9 +1,9 @@
 # Frontend Motion System
 
 This document is the source of truth for motion and route-loading behavior in
-the React frontend. The implementation described here is the verified
-2026-08-30 frontend-only release candidate. Deployment status and production
-verification are tracked in `docs/current-state.md` and
+the React frontend. The implementation described here is deployed from `main`
+at `63f1b918` as the verified 2026-08-30 frontend-only release. Deployment and
+production verification details are tracked in `docs/current-state.md` and
 `docs/agent-handoff.md`.
 
 ## Goals And Boundaries

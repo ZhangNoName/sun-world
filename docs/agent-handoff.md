@@ -5,12 +5,13 @@
 - Goal: add restrained, centrally managed frontend motion while improving warm
   navigation feedback and cold-load structure without increasing runtime
   dependencies or the CSS budget.
-- Status: the isolated frontend-only release candidate contains the motion tokens, reduced-
-  motion JavaScript contract, delayed route indicator, immediate cold-route
-  skeleton fallback, neutral SPA shell, pre-paint theme bootstrap, shared
-  keyframes, component migrations, high-frequency `requestAnimationFrame`
-  updates, and the Web-package `check:motion` gate. It is ready for the release
-  commit; push and deployment have not yet been performed.
+- Status: deployed to production from `main` at `63f1b918`. The isolated
+  frontend-only release contains the motion tokens, reduced-motion JavaScript
+  contract, delayed route indicator, immediate cold-route skeleton fallback,
+  neutral SPA shell, pre-paint theme bootstrap, shared keyframes, component
+  migrations, high-frequency `requestAnimationFrame` updates, and the
+  Web-package `check:motion` gate. GitHub Actions run `33268004016` completed
+  successfully; Web checks/build/deploy ran and API checks/build were skipped.
 - Important files: `apps/web/src/styles/design-tokens.css`,
   `apps/web/src/shared/design/motion.ts`,
   `apps/web/src/app/router/RouteLoadingIndicator.tsx`,
@@ -33,11 +34,22 @@
   and `corepack pnpm -C apps/web typecheck` passed. The final
   `corepack pnpm check:web` passed 127 Web tests, 15 AI UI tests, 6 contract
   tests, production build, SSG/SPA contracts, UI/chunk gates, and all
-  performance budgets; 38 shared UI tests also passed. CSS totals
-  `45,955 / 51,200` gzip bytes. Desktop
+  performance budgets; three consecutive 38-test shared UI runs also passed.
+  CSS totals `45,955 / 51,200` gzip bytes. Desktop
   `1440x900` and mobile `390x844` browser QA covered route/loading states,
   search entrance, navigation drawer, the AI route, and light/dark theme
   persistence with no console warnings or errors. `git diff --check` passed.
+- Production verification: main, WWW, direct `/aigc`, and API `/healthz`
+  returned HTTP 200. Headless browser rendering confirmed the ICP filing link,
+  desktop light/dark home surfaces, and the mobile AI workspace with no fatal
+  browser errors. The deployed frontend revision and frontend image resolve to
+  `63f1b918`; the API container ID and image are unchanged from before release.
+  `sun-world-auto-deploy.timer` is enabled and active, with the next run at
+  `2026-08-30 03:30 CST`. The prior frontend image is retained under the
+  `133ca878` rollback tag.
+- Local containment: the unrelated identity/API history remains preserved on
+  local branch `zxy/identity-ai-motion-integration` at `d4e4cd0`; it was not
+  included in this frontend-only release.
 
 ### Previous checkpoint: 2026-08-09 security and integrity baseline
 

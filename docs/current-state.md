@@ -1,9 +1,9 @@
 # Current State
 
-## Frontend Motion System (2026-08-30, release candidate)
+## Frontend Motion System (2026-08-30, deployed main)
 
-- A dependency-free frontend motion system is implemented in the local working
-  tree. `apps/web/src/styles/design-tokens.css` is the sole source of CSS
+- A dependency-free frontend motion system is implemented and deployed.
+  `apps/web/src/styles/design-tokens.css` is the sole source of CSS
   duration, delay, and easing values for the app and Sun World-owned packages;
   shared entrance, spin, and pulse keyframes are consolidated in
   `apps/web/src/style.css`. The frozen upstream `packages/base-ui` source is
@@ -31,14 +31,25 @@
   rejects product-level hard-coded timing, local keyframes, and
   `transition: all`; it is wired into `check:web`. The total CSS gzip budget
   remains unchanged at `51,200` bytes (`50 KiB`).
-- The implementation and this documentation are prepared as an isolated
-  frontend-only release candidate; they have not yet been pushed or deployed.
-  Final local verification passed: 11 focused regression tests, Web typecheck,
+- The frontend-only release is deployed from `main` at `63f1b918` (motion
+  implementation `1d2d1cd4`, UI async-test stabilization `63f1b918`) by
+  successful GitHub Actions run `33268004016`. The workflow ran the Web checks,
+  image build, and frontend deployment while correctly skipping API checks and
+  the API image build. Production uses
+  `sun-world-frontend:63f1b918394068b9025b7d147c8d337adc25c393`; the API
+  container and image remained unchanged at
+  `sun-world-api:188a16ddc134062d803786ac7d58fe1885290ea6`. The pre-release
+  frontend remains tagged as
+  `sun-world-frontend:133ca878289007e6f48e034353e67fa5684319ba` for rollback.
+- Final local verification passed: 11 focused regression tests, Web typecheck,
   the complete `check:web` gate with 127 Web tests, 15 AI UI tests, 6 contract
-  tests, 38 shared UI tests, production build, SSG/SPA contracts, chunk checks,
-  and all budgets. Total CSS is `45,955 / 51,200` gzip bytes. Desktop `1440x900` and
-  mobile `390x844` browser QA covered light/dark loading, navigation, search,
-  the AI route, and theme persistence with no console warnings or errors.
+  tests, three consecutive 38-test shared UI runs, production build, SSG/SPA
+  contracts, chunk checks, and all budgets. Total CSS is
+  `45,955 / 51,200` gzip bytes. Production smoke checks returned HTTP 200 for
+  the main site, WWW site, direct `/aigc` route, and API `/healthz`; desktop
+  light/dark and mobile AI rendering plus the ICP filing link were confirmed,
+  and no fatal browser errors were observed. The automatic deploy timer is
+  enabled and active again.
 
 ## Security and Integrity Baseline (2026-08-09, feature branch)
 
