@@ -796,8 +796,8 @@ jobs:
             exit "$status"
           }
 
-          check_google_auth_method() {
-            python3 -c 'import json, sys; payload = json.load(sys.stdin); methods = payload.get("data", []) if isinstance(payload, dict) else []; raise SystemExit(0 if any(isinstance(item, dict) and item.get("id") == "google" and item.get("enabled") is True for item in methods) else 1)' 2>/dev/null
+          check_qq_only_auth_methods() {
+            python3 -c 'import json, sys; payload = json.load(sys.stdin); methods = payload.get("data", []) if isinstance(payload, dict) else []; oauth = [item for item in methods if isinstance(item, dict) and item.get("id") in {"google", "qq", "wechat"}]; actual = {item.get("id"): item.get("enabled") for item in oauth}; expected = {"google": False, "qq": True, "wechat": False}; valid = len(oauth) == len(expected) and all(actual.get(provider) is enabled for provider, enabled in expected.items()); raise SystemExit(0 if valid else 1)' 2>/dev/null
           }
 
           API_MOUNTS=(
@@ -873,7 +873,7 @@ jobs:
               sudo docker run --rm --network host \
                 -e BLOG_RUNTIME_ENV=production \
                 "${API_MOUNTS[@]}" \
-                "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.modules.identity.redis_capability_preflight; python -m src.database.mysql.identity_schema_migration --mode plan; python -m src.modules.identity.google_outbound_preflight'
+                "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.modules.identity.redis_capability_preflight; python -m src.database.mysql.identity_schema_migration --mode plan; python -m src.modules.identity.qq_outbound_preflight'
               if [ "$WEB_CHANGED" = "true" ]; then
                 sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
                 if sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
@@ -1012,8 +1012,8 @@ jobs:
               sleep 2
             done
             if [ "$SCHEMA_MODE" = "identity-20260829" ] && \
-              ! curl -fsS http://127.0.0.1:18000/auth/methods | check_google_auth_method; then
-              echo "Candidate API does not report Google login as enabled." >&2
+              ! curl -fsS http://127.0.0.1:18000/auth/methods | check_qq_only_auth_methods; then
+              echo "Candidate API does not report the reviewed QQ-only OAuth matrix." >&2
               exit 1
             fi
             sudo docker rm -f sun-world-api-candidate
@@ -1060,8 +1060,8 @@ jobs:
               sleep 2
             done
             if [ "$SCHEMA_MODE" = "identity-20260829" ] && \
-              ! curl -fsS https://api.sunworld.site/auth/methods | check_google_auth_method; then
-              echo "Public API does not report Google login as enabled." >&2
+              ! curl -fsS https://api.sunworld.site/auth/methods | check_qq_only_auth_methods; then
+              echo "Public API does not report the reviewed QQ-only OAuth matrix." >&2
               exit 1
             fi
             if [ "$SCHEMA_MODE" = "identity-20260829" ]; then

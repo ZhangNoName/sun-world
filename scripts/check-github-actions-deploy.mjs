@@ -440,14 +440,16 @@ if (workflow) {
     'scripts/check-oauth-callback-log-safety.py --nginx-dump',
     'python -m src.modules.identity.redis_capability_preflight',
     'python -m src.database.mysql.identity_schema_migration --mode plan',
-    'python -m src.modules.identity.google_outbound_preflight',
+    'python -m src.modules.identity.qq_outbound_preflight',
     '-e BLOG_RUNTIME_ENV=production',
-    'check_google_auth_method',
-    'item.get("id") == "google" and item.get("enabled") is True',
+    'check_qq_only_auth_methods',
+    'expected = {"google": False, "qq": True, "wechat": False}',
+    'len(oauth) == len(expected)',
+    'all(actual.get(provider) is enabled for provider, enabled in expected.items())',
     'http://127.0.0.1:18000/auth/methods',
     'https://api.sunworld.site/auth/methods',
-    'Candidate API does not report Google login as enabled.',
-    'Public API does not report Google login as enabled.',
+    'Candidate API does not report the reviewed QQ-only OAuth matrix.',
+    'Public API does not report the reviewed QQ-only OAuth matrix.',
     'Scoped identity cutover requires the current API container.',
     'Scoped identity cutover requires the current API container to be running.',
     '{{.HostConfig.NetworkMode}}',
@@ -574,7 +576,7 @@ if (workflow) {
   ]) {
     if (countOccurrences(workflow, endpoint) !== 1) {
       violations.push(
-        `scoped Google enablement endpoint must be checked exactly once: ${endpoint}`
+        `scoped QQ enablement endpoint must be checked exactly once: ${endpoint}`
       )
     }
   }
@@ -891,16 +893,16 @@ if (workflow) {
   const scopedPlanIndex = remoteDeploy.indexOf(
     'python -m src.database.mysql.identity_schema_migration --mode plan'
   )
-  const googlePreflightIndex = remoteDeploy.indexOf(
-    'python -m src.modules.identity.google_outbound_preflight'
+  const qqPreflightIndex = remoteDeploy.indexOf(
+    'python -m src.modules.identity.qq_outbound_preflight'
   )
   const scopedPreflightRunIndex = remoteDeploy.lastIndexOf(
     'sudo docker run --rm --network host',
-    googlePreflightIndex
+    qqPreflightIndex
   )
   const scopedPreflightRuntimeIndex = remoteDeploy.lastIndexOf(
     '-e BLOG_RUNTIME_ENV=production',
-    googlePreflightIndex
+    qqPreflightIndex
   )
   const currentApiStopIndex = remoteDeploy.indexOf(
     'sudo docker stop sun-world-api-identity-backup'
@@ -915,13 +917,13 @@ if (workflow) {
   const publicApiHealthIndex = remoteDeploy.indexOf(
     'curl -fsS https://api.sunworld.site/healthz'
   )
-  const candidateGoogleMethodIndex = remoteDeploy.indexOf(
+  const candidateQqMethodIndex = remoteDeploy.indexOf(
     'http://127.0.0.1:18000/auth/methods'
   )
   const productionApiStartIndex = remoteDeploy.indexOf(
     'sudo docker run -d --restart unless-stopped --name sun-world-api --network host'
   )
-  const publicGoogleMethodIndex = remoteDeploy.indexOf(
+  const publicQqMethodIndex = remoteDeploy.indexOf(
     'https://api.sunworld.site/auth/methods'
   )
   const maintenanceCompleteIndex = remoteDeploy.lastIndexOf(
@@ -955,20 +957,20 @@ if (workflow) {
     nginxLogSafetyIndex < remoteShaCheckIndex ||
     redisPreflightIndex < nginxLogSafetyIndex ||
     scopedPlanIndex < redisPreflightIndex ||
-    googlePreflightIndex < scopedPlanIndex ||
+    qqPreflightIndex < scopedPlanIndex ||
     scopedPreflightRunIndex < nginxLogSafetyIndex ||
     scopedPreflightRuntimeIndex < scopedPreflightRunIndex ||
     maintenanceTrapIndex < remoteShaCheckIndex ||
-    currentApiStopIndex < googlePreflightIndex ||
+    currentApiStopIndex < qqPreflightIndex ||
     currentApiStopIndex < maintenanceTrapIndex ||
     apiRollbackActivationIndex < currentApiRenameIndex ||
     currentApiStopIndex < apiRollbackActivationIndex ||
     scopedApplyIndex < currentApiStopIndex ||
-    candidateGoogleMethodIndex < scopedApplyIndex ||
-    productionApiStartIndex < candidateGoogleMethodIndex ||
+    candidateQqMethodIndex < scopedApplyIndex ||
+    productionApiStartIndex < candidateQqMethodIndex ||
     publicApiHealthIndex < scopedApplyIndex ||
-    publicGoogleMethodIndex < publicApiHealthIndex ||
-    maintenanceCompleteIndex < publicGoogleMethodIndex ||
+    publicQqMethodIndex < publicApiHealthIndex ||
+    maintenanceCompleteIndex < publicQqMethodIndex ||
     deferredFrontendIndex < maintenanceCompleteIndex ||
     frontendLocalHealthIndex < deferredFrontendIndex ||
     frontendPublicHealthIndex < deferredFrontendIndex ||

@@ -4,6 +4,13 @@ This runbook is required before deploying the 2026-08-29 optional identity and
 personal AIGC implementation. Repository changes alone do not migrate the
 database or provision any external account.
 
+The reviewed first-production profile is intentionally QQ-only: QQ must be
+enabled, while Google and WeChat must remain disabled. The scoped workflow
+checks that exact three-provider matrix in the protected environment, the
+candidate API, and the public API. Google remains deferred until its outbound
+route is available; WeChat remains deferred until a separate approved website
+application supplies its own AppID and AppSecret.
+
 ## 1. Prepare And Back Up
 
 - Schedule a database maintenance window and take a tested backup/snapshot.
@@ -24,7 +31,12 @@ database or provision any external account.
   non-zero value outside local runtime instead of weakening token-family reuse
   detection.
 
-### Google production client
+### Deferred Google production client
+
+The details below are retained for a later Google rollout. Do not import the
+Google client or set `AUTH_GOOGLE_OUTBOUND_PROXY_URL` during the reviewed
+QQ-only cutover, because doing so intentionally fails its exact provider
+matrix.
 
 - Google Cloud project: `sun-world-507015`.
 - Client type: Web application.
@@ -68,9 +80,9 @@ enforce the trusted-transport IP rule below. Allow `CONNECT` only to
 TLS without decryption. Do not install a private proxy CA or disable certificate
 verification. An unauthenticated `http` proxy is allowed only over a trusted
 private network, WireGuard link, or operator-owned SSH tunnel and must enforce
-an IP allowlist. Before database changes or API cutover, run the repository's
-read-only probe from the reviewed candidate image exactly as described in
-section 3. The probe prints only each fixed Google hostname and its HTTP status;
+an IP allowlist. Before a later Google enablement, run the repository's
+read-only `google_outbound_preflight` from that rollout's reviewed candidate
+image. The probe prints only each fixed Google hostname and its HTTP status;
 it never prints the proxy URL or response bodies. The public discovery and JWKS
 targets must return HTTP `200`. The intentionally unauthenticated token and
 userinfo requests are expected to return a non-proxy-authentication `4xx`, so
@@ -100,10 +112,11 @@ sudo systemctl is-enabled sun-world-auto-deploy.timer
 ```
 
 Do not proceed unless the service and timer are inactive and the timer reports
-`masked-runtime`. A runtime mask is preferred for this custom `/etc` unit's
-one-time maintenance window because it does not leave a persistent mask symlink
-after reboot; use a persistent mask only when it is separately approved. The
-scoped workflow rechecks those states and holds the shared
+`masked-runtime` or an explicitly approved `masked`. A runtime mask is
+preferred for a one-time maintenance window because it does not leave a
+persistent mask symlink after reboot; this host's custom `/etc` unit may prevent
+that runtime state, so use a persistent mask only when it is separately
+approved. The scoped workflow rechecks those states and holds the shared
 `/tmp/sun-world-docker-build.lock` for the complete preflight, maintenance, API,
 and optional frontend cutover. Stopping the timer before the push prevents the
 reviewed frontend from being published ahead of its API.
@@ -140,12 +153,14 @@ Keep `IDENTITY_CUTOVER_ALLOWED_SHA` set to that same value through the final
 cutover is abandoned, clear it immediately unless an approved retry will use
 the exact same reviewed image.
 
-## 3. Import Google And Preflight The Candidate Image
+## 3. Preflight The QQ-only Candidate Image
 
-Only after the staging workflow succeeds does the Lighthouse checkout contain
-the reviewed stdin-only importer. Stream the protected Google Web client JSON
-using the fixed command in `deploy/backend/README.md`; never copy the JSON to
-the server or expose either value on a command line.
+The protected `/home/lighthouse/.config/blog_end/auth.env` must contain exactly
+one non-empty QQ client ID/secret pair for the reviewed OAuth profile. Leave
+both Google and both WeChat credential fields absent or empty. Never print the
+file or expose a credential on a command line. The cutover preflight loads this
+file inside the exact staged image and fails unless the resulting registry is
+QQ-only.
 
 Install the reviewed repository snippet as a fixed root-owned file. Do not
 include the deploy-user-writable checkout directly from Nginx. These are future
@@ -186,7 +201,7 @@ bypass the exact callback locations; it fails closed when include expansion or
 virtual-host scope cannot be proved. The candidate API image starts Uvicorn
 with access logging disabled.
 
-No real Google authorization callback has been initiated in this rollout and
+No real OAuth authorization callback has been initiated in this rollout and
 the feature is not live, but that is not sufficient evidence that historical
 logs are clear. Before cutover, audit current, rotated, and compressed Nginx
 access/error logs. The audit must print only each filename and its matching-line
@@ -244,7 +259,7 @@ do not override that result.
 The real OAuth browser smoke in Section 5 may begin only after this historical
 audit and the live no-log checker both pass.
 
-Then run the scoped plan and Google outbound preflight from the exact staged
+Then run the scoped plan and QQ-only outbound preflight from the exact staged
 image. These commands do not apply DDL or start/replace the production API:
 
 ```bash
@@ -270,24 +285,25 @@ sudo docker run --rm --network host \
   -e BLOG_RUNTIME_ENV=production \
   "${API_MOUNTS[@]}" \
   "$API_IMAGE" /bin/sh -lc \
-  'set -euo pipefail; set +x; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.modules.identity.redis_capability_preflight; python -m src.database.mysql.identity_schema_migration --mode plan; python -m src.modules.identity.google_outbound_preflight'
+  'set -euo pipefail; set +x; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.modules.identity.redis_capability_preflight; python -m src.database.mysql.identity_schema_migration --mode plan; python -m src.modules.identity.qq_outbound_preflight'
 ```
 
 The schema plan is read-only and reports counts rather than usernames. The
 Redis preflight executes only `INFO server`, prints no connection configuration,
 and requires Redis 6.2 or newer for atomic `GETDEL`. Production was read-only
 verified at Redis `7.0.15`, but every cutover still repeats this candidate-image
-gate before DDL. The Google preflight first requires the protected client ID
-and secret to make Google enabled in the provider registry. Because
+gate before DDL. The QQ-only preflight requires the protected QQ client ID and
+secret, and rejects enabled Google or WeChat credentials. Because
 `auth.env` is sourced inside the candidate command and may override Docker
 environment values, the preflight also requires the resulting effective
 `BLOG_RUNTIME_ENV` to remain exactly `production`; this prevents a cutover with
 local cookie, CORS, or CSRF semantics. It also silently
 requires the effective `AUTH_PUBLIC_API_ORIGIN=https://api.sunworld.site` and
 `AUTH_PUBLIC_WEB_ORIGIN=https://sunworld.site`, preventing a green egress check
-from hiding a callback `redirect_uri_mismatch`. It then prints only fixed
-hostnames and HTTP status codes. Stop if the image, checkout, plan, Redis
-capability, public origins, Google enablement, or outbound checks do not match
+from hiding a callback `redirect_uri_mismatch`. It then prints only fixed QQ
+hostnames and HTTP status codes; no credential is included in those probes.
+Stop if the image, checkout, plan, Redis capability, public origins, exact
+QQ-only provider matrix, or outbound checks do not match
 the reviewed expectation; do not proceed by changing the allowed SHA.
 
 The clean-checkout assertions cover staged, unstaged, and non-ignored untracked
@@ -351,8 +367,8 @@ new workflow revision to operate on an older reviewed image.
 At the execution boundary the workflow rechecks the reviewed SHA, image tag,
 acknowledgements, clean server checkout, timer mask, fixed callback-snippet
 ownership/mode, live Nginx callback log safety, Redis capability, effective
-production runtime, exact production public origins, Google registry
-enablement, and outbound connectivity. This
+production runtime, exact production public origins, the QQ-only registry, and
+QQ outbound connectivity. This
 one-time path supports the verified production topology only: `sun-world-api`
 must exist and be running, no stale
 `sun-world-api-identity-backup` may exist, and `blog-api.service` must remain
@@ -371,15 +387,16 @@ container, verifies the backup container ID/image, renames it back to
 `sun-world-api`, starts it, and checks local health. It never starts the disabled
 legacy systemd service. Candidate health is insufficient on its own: before
 production replacement the workflow silently parses candidate `/auth/methods`
-and requires `google.enabled=true`. After the new API passes public health it
-repeats the same assertion through `https://api.sunworld.site/auth/methods`;
+and requires exactly `qq.enabled=true`, `google.enabled=false`, and
+`wechat.enabled=false`. After the new API passes public health it repeats the
+same assertion through `https://api.sunworld.site/auth/methods`;
 only then is the stopped API backup removed, with systemd still disabled. These
-checks prove that the imported credentials reach both runtimes but do not prove
-that Google's real authorization-code exchange succeeds.
+checks prove that the reviewed credential matrix reaches both runtimes but do
+not prove that QQ's real authorization-code exchange succeeds.
 
 With `target=all`, the frontend is left untouched until the scoped migration,
-validate, candidate Google enablement/health, production API start, and public
-API Google enablement/health have all succeeded; only then is the frontend
+validate, candidate QQ-only matrix/health, production API start, and public API
+QQ-only matrix/health have all succeeded; only then is the frontend
 switched. The new container must pass direct local port-8081 health before the
 two public-domain checks, so a cached or stale upstream response cannot release
 the rollback trap. Its previous container is likewise preserved and restored
@@ -441,12 +458,13 @@ leave the timer stopped/masked until that retry ends. Never start
 ## 5. Smoke Matrix
 
 - `/auth/methods` accurately enables only configured methods.
-- A real browser starts Google login, returns through the exact production
+- A real browser starts QQ login, returns through the exact production
   callback, creates a session, and reaches the signed-in page without placing
   an authorization code, state, or session token in Nginx/application logs.
 - Guest home/blog/AIGC work without a session.
-- Username, verified phone, verified email, Google, QQ, and WeChat login each
-  set HttpOnly session cookies without tokens in URLs or JSON.
+- Username and QQ login set HttpOnly session cookies without tokens in URLs or
+  JSON. Verified phone/email, Google, and WeChat are tested only when their
+  delivery service or reviewed application credentials are configured later.
 - OAuth login and explicit account connection remain distinct; connection
   requires recent authentication and the same session.
 - Provider profiles, one persona, up to eight prompt-only skills, saved

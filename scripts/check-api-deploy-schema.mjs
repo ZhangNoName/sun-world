@@ -62,6 +62,22 @@ const googleOutboundPreflightTestPath = join(
   'tests',
   'test_google_outbound_preflight.py'
 )
+const qqOutboundPreflightPath = join(
+  repoRoot,
+  'apps',
+  'api',
+  'src',
+  'modules',
+  'identity',
+  'qq_outbound_preflight.py'
+)
+const qqOutboundPreflightTestPath = join(
+  repoRoot,
+  'apps',
+  'api',
+  'tests',
+  'test_qq_outbound_preflight.py'
+)
 const identityCutoverGatePath = join(
   repoRoot,
   'scripts',
@@ -91,6 +107,7 @@ const migration = readIfExists(migrationPath)
 const identityMigration = readIfExists(identityMigrationPath)
 const redisCutoverPreflight = readIfExists(redisCutoverPreflightPath)
 const googleOutboundPreflight = readIfExists(googleOutboundPreflightPath)
+const qqOutboundPreflight = readIfExists(qqOutboundPreflightPath)
 const identityCutoverGate = readIfExists(identityCutoverGatePath)
 const runApiCheck = readIfExists(runApiCheckPath)
 const backendDoc = readIfExists(backendDocPath)
@@ -138,6 +155,18 @@ if (!googleOutboundPreflight) {
 if (!existsSync(googleOutboundPreflightTestPath)) {
   violations.push(
     'apps/api/tests/test_google_outbound_preflight.py must test the Google preflight gate'
+  )
+}
+
+if (!qqOutboundPreflight) {
+  violations.push(
+    'apps/api/src/modules/identity/qq_outbound_preflight.py must protect the reviewed QQ-only cutover profile and egress'
+  )
+}
+
+if (!existsSync(qqOutboundPreflightTestPath)) {
+  violations.push(
+    'apps/api/tests/test_qq_outbound_preflight.py must test the reviewed QQ-only preflight gate'
   )
 }
 
@@ -203,14 +232,16 @@ if (workflow) {
     'scripts/check-oauth-callback-log-safety.py --nginx-dump',
     'python -m src.modules.identity.redis_capability_preflight',
     'python -m src.database.mysql.identity_schema_migration --mode plan',
-    'python -m src.modules.identity.google_outbound_preflight',
+    'python -m src.modules.identity.qq_outbound_preflight',
     '-e BLOG_RUNTIME_ENV=production',
-    'check_google_auth_method',
-    'item.get("id") == "google" and item.get("enabled") is True',
+    'check_qq_only_auth_methods',
+    'expected = {"google": False, "qq": True, "wechat": False}',
+    'len(oauth) == len(expected)',
+    'all(actual.get(provider) is enabled for provider, enabled in expected.items())',
     'http://127.0.0.1:18000/auth/methods',
     'https://api.sunworld.site/auth/methods',
-    'Candidate API does not report Google login as enabled.',
-    'Public API does not report Google login as enabled.',
+    'Candidate API does not report the reviewed QQ-only OAuth matrix.',
+    'Public API does not report the reviewed QQ-only OAuth matrix.',
     'trap identity_exit_trap EXIT',
     'elif [ "$status" -ne 0 ] && sudo docker container inspect sun-world-api-identity-backup',
     'PREVIOUS_API_CONTAINER_ID=',
@@ -317,7 +348,7 @@ if (workflow) {
   ]) {
     if (countOccurrences(workflow, endpoint) !== 1) {
       violations.push(
-        `scoped Google enablement endpoint must be checked exactly once: ${endpoint}`
+        `scoped QQ-only enablement endpoint must be checked exactly once: ${endpoint}`
       )
     }
   }
@@ -420,28 +451,28 @@ if (workflow) {
   const scopedPlanIndex = remoteDeploy.indexOf(
     'python -m src.database.mysql.identity_schema_migration --mode plan'
   )
-  const googlePreflightIndex = remoteDeploy.indexOf(
-    'python -m src.modules.identity.google_outbound_preflight'
+  const qqPreflightIndex = remoteDeploy.indexOf(
+    'python -m src.modules.identity.qq_outbound_preflight'
   )
   const scopedPreflightRunIndex = remoteDeploy.lastIndexOf(
     'sudo docker run --rm --network host',
-    googlePreflightIndex
+    qqPreflightIndex
   )
   const scopedPreflightRuntimeIndex = remoteDeploy.lastIndexOf(
     '-e BLOG_RUNTIME_ENV=production',
-    googlePreflightIndex
+    qqPreflightIndex
   )
   const identityApplyIndex = remoteDeploy.indexOf(identityApplyCommand)
   const publicApiHealthIndex = remoteDeploy.indexOf(
     'curl -fsS https://api.sunworld.site/healthz'
   )
-  const candidateGoogleMethodIndex = remoteDeploy.indexOf(
+  const candidateQqMethodIndex = remoteDeploy.indexOf(
     'http://127.0.0.1:18000/auth/methods'
   )
   const productionApiStartIndex = remoteDeploy.indexOf(
     'sudo docker run -d --restart unless-stopped --name sun-world-api --network host'
   )
-  const publicGoogleMethodIndex = remoteDeploy.indexOf(
+  const publicQqMethodIndex = remoteDeploy.indexOf(
     'https://api.sunworld.site/auth/methods'
   )
   const maintenanceCompleteIndex = remoteDeploy.lastIndexOf(
@@ -467,20 +498,20 @@ if (workflow) {
     nginxLogSafetyIndex < callbackSnippetMetadataIndex ||
     redisPreflightIndex < nginxLogSafetyIndex ||
     scopedPlanIndex < redisPreflightIndex ||
-    googlePreflightIndex < scopedPlanIndex ||
+    qqPreflightIndex < scopedPlanIndex ||
     scopedPreflightRunIndex < nginxLogSafetyIndex ||
     scopedPreflightRuntimeIndex < scopedPreflightRunIndex ||
-    currentApiStopIndex < googlePreflightIndex ||
+    currentApiStopIndex < qqPreflightIndex ||
     apiRollbackActivationIndex < currentApiRenameIndex ||
     currentApiStopIndex < apiRollbackActivationIndex ||
     identityApplyIndex < 0 ||
     currentApiStopIndex > identityApplyIndex ||
-    candidateGoogleMethodIndex < identityApplyIndex ||
-    productionApiStartIndex < candidateGoogleMethodIndex ||
+    candidateQqMethodIndex < identityApplyIndex ||
+    productionApiStartIndex < candidateQqMethodIndex ||
     publicApiHealthIndex < identityApplyIndex ||
-    publicGoogleMethodIndex < publicApiHealthIndex ||
-    maintenanceCompleteIndex < publicGoogleMethodIndex ||
-    deferredFrontendIndex < publicGoogleMethodIndex ||
+    publicQqMethodIndex < publicApiHealthIndex ||
+    maintenanceCompleteIndex < publicQqMethodIndex ||
+    deferredFrontendIndex < publicQqMethodIndex ||
     frontendLocalHealthIndex < deferredFrontendIndex ||
     frontendPublicHealthIndex < frontendLocalHealthIndex ||
     !remoteDeploy.includes('trap identity_exit_trap EXIT') ||
@@ -697,6 +728,51 @@ if (googleOutboundPreflight) {
   ) {
     violations.push(
       'Google outbound preflight must not print credentials, proxy configuration, passwords, or exception details'
+    )
+  }
+}
+
+if (qqOutboundPreflight) {
+  const requiredFragments = [
+    'EXPECTED_RUNTIME_ENV = "production"',
+    'os.getenv("BLOG_RUNTIME_ENV") != EXPECTED_RUNTIME_ENV',
+    'QQ login runtime is not production-safe.',
+    'EXPECTED_PUBLIC_ORIGINS',
+    '"AUTH_PUBLIC_API_ORIGIN": "https://api.sunworld.site"',
+    '"AUTH_PUBLIC_WEB_ORIGIN": "https://sunworld.site"',
+    '_public_origins_are_production_safe()',
+    'QQ login public origins are not production-safe.',
+    'OAuthProviderRegistry.from_env()',
+    'registry.is_enabled("qq")',
+    'QQ login is not enabled.',
+    'DISABLED_PROVIDER_CONFIGURATION',
+    '"AUTH_GOOGLE_CLIENT_ID"',
+    '"AUTH_GOOGLE_CLIENT_SECRET"',
+    '"AUTH_GOOGLE_OUTBOUND_PROXY_URL"',
+    '"wechat": ("AUTH_WECHAT_CLIENT_ID", "AUTH_WECHAT_CLIENT_SECRET")',
+    '_environment_values_are_empty(environment_names)',
+    'not registry.is_enabled(provider_name)',
+    '"wechat": ("AUTH_WECHAT_CLIENT_ID", "AUTH_WECHAT_CLIENT_SECRET")',
+    'OAuth provider matrix is not QQ-only.',
+    'QQOAuthProvider.authorization_endpoint',
+    'QQOAuthProvider.token_endpoint',
+    'QQOAuthProvider.openid_endpoint',
+    'QQOAuthProvider.userinfo_endpoint',
+    '_oauth_http_client()',
+    '200 <= status_code < 500 and status_code != 407',
+  ]
+  for (const fragment of requiredFragments) {
+    if (!qqOutboundPreflight.includes(fragment)) {
+      violations.push(`QQ outbound preflight must contain: ${fragment}`)
+    }
+  }
+  if (
+    /print\([^\n]*(client[_ -]?id|client[_ -]?secret|password|exception|exc)/i.test(
+      qqOutboundPreflight
+    )
+  ) {
+    violations.push(
+      'QQ outbound preflight must not print credentials, passwords, or exception details'
     )
   }
 }

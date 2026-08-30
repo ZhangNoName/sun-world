@@ -195,8 +195,10 @@ they never put provider or Sun World tokens in the URL.
 
 1. Generate stable `BLOG_JWT_SECRET`, `AUTH_VERIFICATION_PEPPER`, and
    `AI_CREDENTIAL_ENCRYPTION_KEY` values outside Git.
-2. Configure the required Google/QQ/WeChat applications and exact callback
-   URLs. Disabled providers remain visible with an unavailable reason.
+2. Configure only the OAuth applications enabled for the reviewed rollout and
+   their exact callback URLs. Disabled Google/QQ/WeChat providers remain
+   visible with an unavailable reason; the first production profile is
+   QQ-only.
 3. Configure SMTP and/or the HTTPS SMS adapter. An unconfigured channel remains
    disabled rather than pretending to send a code.
 4. Set the smallest practical `AI_MCP_ALLOWED_HOSTS` list; never use a global

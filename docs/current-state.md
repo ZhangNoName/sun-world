@@ -59,7 +59,7 @@
   deployed frontend motion system, route-loading behavior, reduced-motion
   contracts, blog infinite scroll, and shared AI workspace motion. The merged
   tree passed the focused 50-test identity/home/layout suite, `check:motion`,
-  and all 19/19 repository gates: 174 Web tests, 331 API tests, 38 shared UI
+  and all 19/19 repository gates: 174 Web tests, 338 API tests, 38 shared UI
   tests, 15 AI UI tests, 39 AI composer tests, and 6 contract tests, plus the
   production builds, budgets, workflow/deployment guards, and static Compose
   validation. This local merge has not been pushed or deployed, and it did not
@@ -105,14 +105,15 @@
   `deploy-existing` API/all deploy whose workflow SHA and image tag both exactly
   match the temporary 40-character lowercase
   `IDENTITY_CUTOVER_ALLOWED_SHA`, with schema, Docker-maintenance, and masked
-  frontend-timer acknowledgements typed exactly. The workflow verifies live
-  OAuth callback log safety, Redis 6.2+, Google credential enablement/egress,
-  effective `BLOG_RUNTIME_ENV=production`, exact production API/Web origins,
-  and a fully clean reviewed server checkout before it preserves and stops the
-  current Docker API under a restore trap. The clean check rejects staged,
-  unstaged, and non-ignored untracked content even when `HEAD` matches. Candidate
-  and public `/auth/methods` must
-  both report Google enabled before recovery coverage ends. A matching reviewed
+  frontend-timer acknowledgements typed exactly. The reviewed first-production
+  profile is QQ-only. The workflow verifies live OAuth callback log safety,
+  Redis 6.2+, exact QQ-only credential enablement/egress, effective
+  `BLOG_RUNTIME_ENV=production`, exact production API/Web origins, and a fully
+  clean reviewed server checkout before it preserves and stops the current
+  Docker API under a restore trap. The clean check rejects staged, unstaged,
+  and non-ignored untracked content even when `HEAD` matches. Candidate and
+  public `/auth/methods` must both report QQ enabled and Google/WeChat disabled
+  before recovery coverage ends. A matching reviewed
   main/API push remains schema mode `full` but stages quality/build with
   `deploy_needed=false`; all other pushes retain the normal full/fail-closed
   deploy. Clear the temporary variable immediately after success or
@@ -133,22 +134,30 @@
   The callback no-log Nginx snippet and its root-owned include are also not yet
   installed; the live checker and historical/rotated-log audit must pass before
   the first real authorization-code smoke test.
-- No database migration, server credential import, push, deploy, API restart, or
-  production smoke test has been performed. Before cutover, review and run the
-  controlled identity schema migration, import the protected Google client,
-  verify the Google Auth Platform branding/audience settings, and run the
-  documented login smoke matrix. Resolve the separate full-schema drift before
-  the next automatic API deployment. The runbook is
+- The QQ Connect application is configured in the protected production
+  `auth.env` with App ID `102822211` and a non-empty secret supplied through
+  local clipboard/SSH standard input; the secret value was never logged. The
+  secret file remains mode `0600`, and its containing configuration directory
+  was hardened from mode `0775` to `0700`. Google and WeChat credentials remain
+  absent, so the reviewed cutover requires the exact QQ-only provider matrix.
+  A read-only production probe reached all four fixed `graph.qq.com` paths
+  without credentials or response bodies: authorize returned HTTP `302`, while
+  token, OpenID, and user-info returned HTTP `200`.
+- No database migration, push, deploy, API restart, or production smoke test
+  has been performed. Before cutover, review and run the controlled identity
+  schema migration, install and audit the callback no-log configuration, and
+  run the documented QQ login smoke matrix. Resolve the separate full-schema
+  drift before the next automatic API deployment. The runbook is
   `docs/deployment/2026-08-29-identity-ai-cutover.md`.
 - Route-level gzip budgets were remeasured for the expanded login, account,
   and QQ callback chunks (3/4/2 KiB respectively); global JS, CSS, entry, and
   largest-asset ceilings remain unchanged.
-- Pre-merge branch verification passed: `corepack pnpm check` completed all 19
-  repository gates, including 331 API tests, 160 Web React tests, 38 shared UI
-  tests, 14 AI UI tests, 39 AI composer tests, and 6 contract tests. Desktop
+- Integrated-tree verification passed: `corepack pnpm check` completed all 19
+  repository gates, including 338 API tests, 174 Web React tests, 38 shared UI
+  tests, 15 AI UI tests, 39 AI composer tests, and 6 contract tests. Desktop
   (1440x900) and mobile (390x844) browser QA covered login, registration, and
   the guest AIGC workspace; the tested routes had no horizontal overflow or
-  unexpected global error toast. No real Google callback was exercised. The
+  unexpected global error toast. No real QQ/OAuth callback was exercised. The
   callback-log checker passed 27 adversarial tests and the credential importer
   passed 8 tests. The final security assessment and remaining
   P2/product follow-ups are recorded in
@@ -634,17 +643,21 @@ to the monorepo Docker image by the deploy workflow:
   and disabled. It records and renames that container before stopping it, then
   validates the backup ID/image before any rollback removes a replacement. It
   never starts the legacy systemd unit. The frontend is switched only after
-  candidate/public API health and Google enablement pass; frontend failure
+  candidate/public API health and the exact QQ-only provider matrix pass;
+  frontend failure
   at start, direct local port-8081 health, or public health restores the old
   `my-frontend` while leaving the healthy new API active.
 - `sun-world-auto-deploy.timer` is outside GitHub Actions concurrency and is
   frontend-only. The identity runbook requires recording, stopping, disabling,
-  and runtime-masking it before staging/cutover, while freezing `main`; the
-  scoped
+  and masking it before staging/cutover, while freezing `main`; the scoped
   workflow refuses an active or unmasked timer/service and holds the shared
   server lock through the whole cutover. Operators restore its recorded states
-  after the final attempt. Production Redis was read-only verified at `7.0.15`,
-  but every cutover repeats the candidate image's read-only `INFO server` gate.
+  after the final attempt. A read-only preflight found that this host's custom
+  `/etc` timer unit takes precedence over a runtime mask, so the timer was
+  restored to its original enabled/active state; a persistent mask still needs
+  the separate approval required by the runbook. Production Redis was
+  read-only verified at `7.0.15`, but every cutover repeats the candidate
+  image's read-only `INFO server` gate.
 - Identity cutover also requires the three exact Google/QQ/WeChat callback
   locations from the reviewed repository file to be installed at the fixed
   root-owned, mode-`0644`

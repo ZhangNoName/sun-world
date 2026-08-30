@@ -117,8 +117,8 @@ two production image build jobs.
    both switches in one server session. Full mode retains the normal order. In
    the scoped identity path, the workflow preserves and stops the active
    `sun-world-api` Docker container under a failure-restoring trap, finishes
-   schema apply/validate, candidate/public Google-enable assertions, and local/
-   public API health, and only then switches the frontend. The old frontend
+   schema apply/validate, candidate/public QQ-only assertions, and local/public
+   API health, and only then switches the frontend. The old frontend
    container is recorded and renamed as a rollback container; a new-container
    start, direct local port-8081 health, or public-frontend-health failure
    restores it while leaving the already healthy new API in place.
@@ -150,13 +150,13 @@ verifies the reviewed image, a live checkout clean across staged, unstaged,
 and non-ignored untracked files, masked frontend
 timer, root-owned callback snippet and effective OAuth callback log-safety,
 Redis capability, effective production runtime, exact production API/Web
-origins, configured Google registry, and Google egress. It then renames and stops the
-existing `sun-world-api` container and
+origins, the exact QQ-only registry, and QQ egress. It then renames and stops
+the existing `sun-world-api` container and
 arms a restore trap before DDL, eliminating the online username-write race. The
 deploy job starts `sun-world-api-candidate` on port `18000`, silently checks
-that Google is enabled in `/auth/methods`, starts the persistent
-`sun-world-api` container on host-network port `8000`, and verifies local/public
-health plus the public Google method. Failure before public Google enablement
+that QQ is enabled while Google and WeChat are disabled in `/auth/methods`,
+starts the persistent `sun-world-api` container on host-network port `8000`, and verifies local/public
+health plus the public QQ-only method matrix. Failure before that public matrix
 restores the recorded Docker API container without starting disabled
 `blog-api.service` and without touching the frontend. Existing incompatible
 columns in the selected schema scope make the workflow fail rather than

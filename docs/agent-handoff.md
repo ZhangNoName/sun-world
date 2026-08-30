@@ -11,7 +11,7 @@
   changes were reconciled, and no unmerged paths remain.
 - Verification: the focused identity/home/layout suite passed 50 tests across
   10 files, `check:motion` passed, and `corepack pnpm check` passed all 19/19
-  repository gates. The full run included 174 Web tests, 331 API tests, 38
+  repository gates. The full run included 174 Web tests, 338 API tests, 38
   shared UI tests, 15 AI UI tests, 39 AI composer tests, and 6 contract tests,
   plus formatting, typechecks, production builds, SSG/SPA contracts,
   performance budgets, workflow/deployment guards, and static Compose
@@ -78,11 +78,18 @@
   durable conversations, and an explicit MCP control plane without gating the
   public site.
 - Status: implementation, attack-oriented review, full repository validation,
-  and desktop/mobile browser QA are complete locally on `main`. Google Cloud
+  and desktop/mobile browser QA are complete locally on `main`. The feature
+  branch has been merged locally; GitHub `main` and production have not yet
+  advanced. Google Cloud
   project `sun-world-507015` and a production Web OAuth client have been
   created; its downloaded JSON is outside the repository with mode `0600` and
-  has not been imported into Lighthouse. No push, deploy, database migration,
-  API restart, or production smoke test has been performed.
+  has not been imported into Lighthouse and is deferred. QQ App ID `102822211`
+  and its non-empty secret are now present in the protected production
+  `auth.env`; the secret was transferred without output, the file is mode
+  `0600`, and the containing directory is mode `0700`. WeChat is not
+  configured. A no-credential production egress probe reached all four fixed
+  QQ endpoints (authorize `302`; token/OpenID/user-info `200`). No push, deploy,
+  database migration, API restart, or production smoke test has been performed.
   Detailed boundaries and cutover checklist are in
   `docs/architecture/identity-and-ai-capabilities.md`,
   `docs/architecture/ai-platform.md`, and
@@ -104,17 +111,16 @@
   reservations; canonical login throttling; SSRF-safe provider/MCP egress;
   daily AI cost breakers; revision-bound MCP catalog/audit; transactional
   conversation writes and one run per real conversation.
-- Cutover blockers: the production host currently times out against all four
-  fixed Google HTTPS endpoints, so first provide an operator-controlled overseas
-  forward proxy and pass the candidate-image egress preflight. Install the
-  root-owned exact callback no-log Nginx snippet and pass the live plus
-  historical/rotated-log audits; then run the exact-allowlisted identity
-  migration for the historical username index and three `auth_*` tables, import
-  the protected Google client with the reviewed stdin-only helper, publish the
-  privacy page, and verify the Google Auth Platform branding/audience state and
-  real browser callback. SMTP/SMS, the other OAuth providers, and remaining
-  AIGC provider secrets stay separate optional capabilities. No production
-  database or server-secret action has been run. The generic conservative
+- Cutover profile and blockers: the first production rollout is QQ-only;
+  Google remains disabled until a separately reviewed outbound route exists,
+  and WeChat remains disabled until an approved website application is
+  configured. Install the root-owned exact callback no-log Nginx snippet and
+  pass the live plus historical/rotated-log audits; then run the
+  exact-allowlisted identity migration for the historical username index and
+  three `auth_*` tables and complete a real browser QQ callback. SMTP/SMS, the
+  other OAuth providers, and remaining AIGC provider secrets stay separate
+  optional capabilities. No production database migration has been run. The
+  generic conservative
   migrator remains
   unchanged and strict. The one-time workflow path is now bound to a temporary
   reviewed `IDENTITY_CUTOVER_ALLOWED_SHA`: its matching main/API push only
@@ -125,24 +131,27 @@
   to be clean across staged, unstaged, and non-ignored untracked content, the
   frontend timer to be masked/inactive, the fixed callback snippet to be
   root-owned and effective in Nginx, Redis 6.2+, an effective production
-  runtime, exact production API/Web origins, Google registry enablement, and
-  Google egress. Scoped execution
-  preserves and stops the active `sun-world-api` Docker container under a
-  restore trap; candidate and public health plus Google `/auth/methods`
-  enablement complete before an optional rollback-protected frontend switch.
+  runtime, exact production API/Web origins, QQ enabled with Google/WeChat
+  disabled, and QQ egress. The host's custom `/etc` timer unit prevented the
+  preferred runtime mask; its original enabled/active state was restored, so a
+  persistent mask still requires the runbook's separate approval. Scoped
+  execution preserves and stops the active `sun-world-api` Docker container under a
+  restore trap; candidate and public health plus the exact QQ-only
+  `/auth/methods` matrix complete before an optional rollback-protected
+  frontend switch.
   Production runs queue rather than cancel an in-flight maintenance window.
   Clear the temporary variable and restore the timer's recorded state after the
   final attempt; unrelated full-schema drift still must be resolved before
-  later normal API deployment. A real browser Google callback smoke remains a
+  later normal API deployment. A real browser QQ callback smoke remains a
   required post-cutover check.
-- Verification: the pre-merge branch run of `corepack pnpm check` passed all
-  19/19 repository gates: 331 API tests, 160 Web React tests, 38 shared UI
-  tests, 14 AI UI tests, 39 AI composer
+- Verification: the integrated-tree run of `corepack pnpm check` passed all
+  19/19 repository gates: 338 API tests, 174 Web React tests, 38 shared UI
+  tests, 15 AI UI tests, 39 AI composer
   tests, and 6 contract tests, plus typechecks, builds, SSG, UI boundaries,
   performance budgets, and static Compose validation. Browser QA passed for
   login, registration, and guest AIGC at 1440x900 and 390x844 with no
-  horizontal overflow or unexpected global error toast. No real Google callback
-  was exercised; the callback-log checker passed 27 adversarial tests and the
+  horizontal overflow or unexpected global error toast. No real QQ/OAuth
+  callback was exercised; the callback-log checker passed 27 adversarial tests and the
   Google credential importer passed 8 tests. The final assessment
   and residual P2/product follow-ups are in
   `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
