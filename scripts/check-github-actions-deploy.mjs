@@ -472,6 +472,12 @@ if (workflow) {
     'needs.detect-changes.outputs.image_tag',
     'SCHEMA_MODE: ${{ needs.detect-changes.outputs.schema_mode }}',
     'DEPLOYMENT_MODE: ${{ inputs.mode }}',
+    'SSH_EMPTY_ARGUMENT="__SUN_WORLD_EMPTY_ARGUMENT_V1__"',
+    'encode_optional_ssh_argument()',
+    'decode_optional_ssh_argument()',
+    'SSH_DEPLOYMENT_MODE="$(encode_optional_ssh_argument "$DEPLOYMENT_MODE")"',
+    'if [ "$#" -ne 11 ]; then',
+    'DEPLOYMENT_MODE="$(decode_optional_ssh_argument "${11}")"',
     'IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}',
     'Scoped identity migration requires an API deployment.',
     'if [ "$DEPLOYMENT_MODE" != "deploy-existing" ]; then',
@@ -1179,7 +1185,7 @@ if (workflow) {
     )?.[0] ?? ''
   const localSshBoundary = remoteDeploy.slice(
     0,
-    remoteDeploy.indexOf('ssh -o ServerAliveInterval=30')
+    remoteDeploy.indexOf('ssh -o StrictHostKeyChecking=yes')
   )
   const localAuthorizationCase =
     localSshBoundary.match(
@@ -1227,6 +1233,206 @@ if (workflow) {
     if (!localAuthorizationCase.includes(fragment)) {
       violations.push(
         `local SSH boundary must normalize or validate identity-only input: ${fragment}`
+      )
+    }
+  }
+  const sshEmptyArgument = '__SUN_WORLD_EMPTY_ARGUMENT_V1__'
+  const sshArgumentEncoding = localSshBoundary.match(
+    /SSH_EMPTY_ARGUMENT="__SUN_WORLD_EMPTY_ARGUMENT_V1__"[\s\S]*?SSH_DEPLOYMENT_MODE="\$\(encode_optional_ssh_argument "\$DEPLOYMENT_MODE"\)"/
+  )?.[0]
+  const fullSshArgumentProbe = spawnSync(
+    'bash',
+    [
+      '-c',
+      `set -euo pipefail\n${localAuthorizationCase}\n${sshArgumentEncoding ?? ''}\nprintf '%s\\0%s\\0%s\\0%s\\0%s\\0' "$SSH_IDENTITY_CUTOVER_ALLOWED_SHA" "$SSH_IDENTITY_SCHEMA_ACK" "$SSH_IDENTITY_MAINTENANCE_ACK" "$SSH_IDENTITY_TIMER_ACK" "$SSH_DEPLOYMENT_MODE"`,
+    ],
+    {
+      env: {
+        ...process.env,
+        SCHEMA_MODE: 'full',
+        DEPLOYMENT_MODE: '',
+        IMAGE_TAG: reviewedShaA,
+        IDENTITY_CUTOVER_ALLOWED_SHA: hostileAck,
+        IDENTITY_SCHEMA_ACK: hostileAck,
+        IDENTITY_MAINTENANCE_ACK: hostileAck,
+        IDENTITY_TIMER_ACK: hostileAck,
+      },
+    }
+  )
+  const expectedEmptySshArguments = Buffer.from(
+    Array(5).fill(sshEmptyArgument).join('\0') + '\0'
+  )
+  if (
+    !sshArgumentEncoding ||
+    fullSshArgumentProbe.status !== 0 ||
+    !fullSshArgumentProbe.stdout.equals(expectedEmptySshArguments) ||
+    fullSshArgumentProbe.stderr.length !== 0
+  ) {
+    violations.push(
+      'optional deploy values must be encoded as non-empty SSH arguments after full-mode normalization'
+    )
+  }
+  const manualFullSshArgumentProbe = spawnSync(
+    'bash',
+    [
+      '-c',
+      `set -euo pipefail\n${localAuthorizationCase}\n${sshArgumentEncoding ?? ''}\nprintf '%s\\0%s\\0%s\\0%s\\0%s\\0' "$SSH_IDENTITY_CUTOVER_ALLOWED_SHA" "$SSH_IDENTITY_SCHEMA_ACK" "$SSH_IDENTITY_MAINTENANCE_ACK" "$SSH_IDENTITY_TIMER_ACK" "$SSH_DEPLOYMENT_MODE"`,
+    ],
+    {
+      env: {
+        ...process.env,
+        SCHEMA_MODE: 'full',
+        DEPLOYMENT_MODE: 'build-and-deploy',
+        IMAGE_TAG: reviewedShaA,
+        IDENTITY_CUTOVER_ALLOWED_SHA: hostileAck,
+        IDENTITY_SCHEMA_ACK: hostileAck,
+        IDENTITY_MAINTENANCE_ACK: hostileAck,
+        IDENTITY_TIMER_ACK: hostileAck,
+      },
+    }
+  )
+  const expectedManualFullSshArguments = Buffer.from(
+    [...Array(4).fill(sshEmptyArgument), 'build-and-deploy'].join('\0') + '\0'
+  )
+  if (
+    manualFullSshArgumentProbe.status !== 0 ||
+    !manualFullSshArgumentProbe.stdout.equals(expectedManualFullSshArguments) ||
+    manualFullSshArgumentProbe.stderr.length !== 0
+  ) {
+    violations.push(
+      'manual full deploy must preserve deployment mode after four empty identity arguments'
+    )
+  }
+  const identitySshArgumentProbe = spawnSync(
+    'bash',
+    [
+      '-c',
+      `set -euo pipefail\n${localAuthorizationCase}\n${sshArgumentEncoding ?? ''}\nprintf '%s\\0%s\\0%s\\0%s\\0%s\\0' "$SSH_IDENTITY_CUTOVER_ALLOWED_SHA" "$SSH_IDENTITY_SCHEMA_ACK" "$SSH_IDENTITY_MAINTENANCE_ACK" "$SSH_IDENTITY_TIMER_ACK" "$SSH_DEPLOYMENT_MODE"`,
+    ],
+    {
+      env: {
+        ...process.env,
+        SCHEMA_MODE: 'identity-20260829',
+        DEPLOYMENT_MODE: 'deploy-existing',
+        IMAGE_TAG: reviewedShaA,
+        IDENTITY_CUTOVER_ALLOWED_SHA: reviewedShaA,
+        IDENTITY_SCHEMA_ACK: REQUIRED_IDENTITY_SCHEMA_ACK,
+        IDENTITY_MAINTENANCE_ACK: REQUIRED_IDENTITY_MAINTENANCE_ACK,
+        IDENTITY_TIMER_ACK: REQUIRED_IDENTITY_TIMER_ACK,
+      },
+    }
+  )
+  const expectedIdentitySshArguments = Buffer.from(
+    [
+      reviewedShaA,
+      REQUIRED_IDENTITY_SCHEMA_ACK,
+      REQUIRED_IDENTITY_MAINTENANCE_ACK,
+      REQUIRED_IDENTITY_TIMER_ACK,
+      'deploy-existing',
+    ].join('\0') + '\0'
+  )
+  if (
+    identitySshArgumentProbe.status !== 0 ||
+    !identitySshArgumentProbe.stdout.equals(expectedIdentitySshArguments) ||
+    identitySshArgumentProbe.stderr.length !== 0
+  ) {
+    violations.push(
+      'reviewed identity deploy authorization must pass through SSH encoding unchanged'
+    )
+  }
+  const sentinelCollisionProbe = spawnSync(
+    'bash',
+    [
+      '-c',
+      `set -euo pipefail\n${localAuthorizationCase}\n${sshArgumentEncoding ?? ''}`,
+    ],
+    {
+      env: {
+        ...process.env,
+        SCHEMA_MODE: 'full',
+        DEPLOYMENT_MODE: sshEmptyArgument,
+        IMAGE_TAG: reviewedShaA,
+        IDENTITY_CUTOVER_ALLOWED_SHA: '',
+        IDENTITY_SCHEMA_ACK: '',
+        IDENTITY_MAINTENANCE_ACK: '',
+        IDENTITY_TIMER_ACK: '',
+      },
+    }
+  )
+  if (
+    sentinelCollisionProbe.status === 0 ||
+    !sentinelCollisionProbe.stderr
+      .toString()
+      .includes('Reserved SSH argument sentinel is not allowed.')
+  ) {
+    violations.push(
+      'reserved SSH argument sentinel collisions must fail closed'
+    )
+  }
+  const sshInvocationStart = remoteDeploy.indexOf(
+    'ssh -o StrictHostKeyChecking=yes'
+  )
+  const sshInvocationEnd = remoteDeploy.indexOf("<<'REMOTE'")
+  const sshInvocation = remoteDeploy.slice(
+    sshInvocationStart,
+    sshInvocationEnd + "<<'REMOTE'".length
+  )
+  const normalizedSshInvocation = sshInvocation.replace(/\\\r?\n\s*/g, ' ')
+  if (
+    !/"\$IMAGE_TAG"\s+"\$SSH_IDENTITY_CUTOVER_ALLOWED_SHA"\s+"\$SSH_IDENTITY_SCHEMA_ACK"\s+"\$SSH_IDENTITY_MAINTENANCE_ACK"\s+"\$SSH_IDENTITY_TIMER_ACK"\s+"\$SSH_DEPLOYMENT_MODE"\s+<<'REMOTE'/.test(
+      normalizedSshInvocation
+    )
+  ) {
+    violations.push(
+      'SSH invocation must keep image tag, four identity slots, and deployment mode in their fixed order'
+    )
+  }
+  for (const rawVariable of [
+    '"$IDENTITY_CUTOVER_ALLOWED_SHA"',
+    '"$IDENTITY_SCHEMA_ACK"',
+    '"$IDENTITY_MAINTENANCE_ACK"',
+    '"$IDENTITY_TIMER_ACK"',
+    '"$DEPLOYMENT_MODE"',
+  ]) {
+    if (sshInvocation.includes(rawVariable)) {
+      violations.push(
+        `SSH invocation must not pass an unencoded optional value: ${rawVariable}`
+      )
+    }
+  }
+  if (countOccurrences(remoteDeploy, sshEmptyArgument) !== 2) {
+    violations.push(
+      'the local encoder and remote decoder must define the same SSH empty sentinel exactly once each'
+    )
+  }
+  const remoteArgumentCountGuardIndex = remoteDeploy.indexOf(
+    'if [ "$#" -ne 11 ]; then'
+  )
+  const firstRemoteArgumentReadIndex = remoteDeploy.indexOf('WEB_CHANGED="$1"')
+  if (
+    remoteArgumentCountGuardIndex < 0 ||
+    firstRemoteArgumentReadIndex < remoteArgumentCountGuardIndex
+  ) {
+    violations.push(
+      'remote deploy must require exactly 11 arguments before decoding positional values'
+    )
+  }
+  for (const fragment of [
+    '"$SSH_IDENTITY_CUTOVER_ALLOWED_SHA"',
+    '"$SSH_IDENTITY_SCHEMA_ACK"',
+    '"$SSH_IDENTITY_MAINTENANCE_ACK"',
+    '"$SSH_IDENTITY_TIMER_ACK"',
+    '"$SSH_DEPLOYMENT_MODE"',
+    'if [ "$#" -ne 11 ]; then',
+    'IDENTITY_CUTOVER_ALLOWED_SHA="$(decode_optional_ssh_argument "$7")"',
+    'IDENTITY_SCHEMA_ACK="$(decode_optional_ssh_argument "$8")"',
+    'IDENTITY_MAINTENANCE_ACK="$(decode_optional_ssh_argument "$9")"',
+    'IDENTITY_TIMER_ACK="$(decode_optional_ssh_argument "${10}")"',
+    'DEPLOYMENT_MODE="$(decode_optional_ssh_argument "${11}")"',
+  ]) {
+    if (!remoteDeploy.includes(fragment)) {
+      violations.push(
+        `SSH deploy boundary must preserve optional positional arguments: ${fragment}`
       )
     }
   }

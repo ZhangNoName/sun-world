@@ -212,6 +212,12 @@ if (workflow) {
     'API_IMAGE: ${{ env.API_IMAGE_NAME }}:${{ needs.detect-changes.outputs.image_tag }}',
     'SCHEMA_MODE: ${{ needs.detect-changes.outputs.schema_mode }}',
     'DEPLOYMENT_MODE: ${{ inputs.mode }}',
+    'SSH_EMPTY_ARGUMENT="__SUN_WORLD_EMPTY_ARGUMENT_V1__"',
+    'encode_optional_ssh_argument()',
+    'decode_optional_ssh_argument()',
+    'SSH_DEPLOYMENT_MODE="$(encode_optional_ssh_argument "$DEPLOYMENT_MODE")"',
+    'if [ "$#" -ne 11 ]; then',
+    'DEPLOYMENT_MODE="$(decode_optional_ssh_argument "${11}")"',
     'timeout-minutes: 60',
     'IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}',
     'if ! [[ "$IDENTITY_CUTOVER_ALLOWED_SHA" =~ ^[0-9a-f]{40}$ ]]; then',
@@ -420,6 +426,47 @@ if (workflow) {
     workflow.match(
       /- name: Deploy local images on Lighthouse[\s\S]*?\r?\n\s+REMOTE/
     )?.[0] ?? ''
+  for (const fragment of [
+    'SSH_IDENTITY_CUTOVER_ALLOWED_SHA="$(encode_optional_ssh_argument "$IDENTITY_CUTOVER_ALLOWED_SHA")"',
+    'SSH_IDENTITY_SCHEMA_ACK="$(encode_optional_ssh_argument "$IDENTITY_SCHEMA_ACK")"',
+    'SSH_IDENTITY_MAINTENANCE_ACK="$(encode_optional_ssh_argument "$IDENTITY_MAINTENANCE_ACK")"',
+    'SSH_IDENTITY_TIMER_ACK="$(encode_optional_ssh_argument "$IDENTITY_TIMER_ACK")"',
+    'SSH_DEPLOYMENT_MODE="$(encode_optional_ssh_argument "$DEPLOYMENT_MODE")"',
+    'if [ "$#" -ne 11 ]; then',
+    'IDENTITY_CUTOVER_ALLOWED_SHA="$(decode_optional_ssh_argument "$7")"',
+    'IDENTITY_SCHEMA_ACK="$(decode_optional_ssh_argument "$8")"',
+    'IDENTITY_MAINTENANCE_ACK="$(decode_optional_ssh_argument "$9")"',
+    'IDENTITY_TIMER_ACK="$(decode_optional_ssh_argument "${10}")"',
+    'DEPLOYMENT_MODE="$(decode_optional_ssh_argument "${11}")"',
+  ]) {
+    if (!remoteDeploy.includes(fragment)) {
+      violations.push(
+        `API deploy SSH boundary must preserve fixed authorization slots: ${fragment}`
+      )
+    }
+  }
+  const normalizedRemoteDeploy = remoteDeploy.replace(/\\\r?\n\s*/g, ' ')
+  if (
+    !/"\$IMAGE_TAG"\s+"\$SSH_IDENTITY_CUTOVER_ALLOWED_SHA"\s+"\$SSH_IDENTITY_SCHEMA_ACK"\s+"\$SSH_IDENTITY_MAINTENANCE_ACK"\s+"\$SSH_IDENTITY_TIMER_ACK"\s+"\$SSH_DEPLOYMENT_MODE"\s+<<'REMOTE'/.test(
+      normalizedRemoteDeploy
+    )
+  ) {
+    violations.push(
+      'API deploy SSH boundary must retain the exact image, authorization, and mode argument order'
+    )
+  }
+  const sshArgumentCountGuardIndex = remoteDeploy.indexOf(
+    'if [ "$#" -ne 11 ]; then'
+  )
+  const sshFirstArgumentReadIndex = remoteDeploy.indexOf('WEB_CHANGED="$1"')
+  if (
+    sshArgumentCountGuardIndex < 0 ||
+    sshFirstArgumentReadIndex < sshArgumentCountGuardIndex
+  ) {
+    violations.push(
+      'API deploy SSH boundary must fail closed on argument count before decoding authorization'
+    )
+  }
   const currentApiStopIndex = remoteDeploy.indexOf(
     'sudo docker stop sun-world-api-identity-backup'
   )

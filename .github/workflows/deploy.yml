@@ -1104,25 +1104,60 @@ jobs:
               exit 1
               ;;
           esac
+
+          SSH_EMPTY_ARGUMENT="__SUN_WORLD_EMPTY_ARGUMENT_V1__"
+          encode_optional_ssh_argument() {
+            value="$1"
+            if [ "$value" = "$SSH_EMPTY_ARGUMENT" ]; then
+              echo "Reserved SSH argument sentinel is not allowed." >&2
+              exit 1
+            fi
+            if [ -z "$value" ]; then
+              printf '%s' "$SSH_EMPTY_ARGUMENT"
+            else
+              printf '%s' "$value"
+            fi
+          }
+
+          SSH_IDENTITY_CUTOVER_ALLOWED_SHA="$(encode_optional_ssh_argument "$IDENTITY_CUTOVER_ALLOWED_SHA")"
+          SSH_IDENTITY_SCHEMA_ACK="$(encode_optional_ssh_argument "$IDENTITY_SCHEMA_ACK")"
+          SSH_IDENTITY_MAINTENANCE_ACK="$(encode_optional_ssh_argument "$IDENTITY_MAINTENANCE_ACK")"
+          SSH_IDENTITY_TIMER_ACK="$(encode_optional_ssh_argument "$IDENTITY_TIMER_ACK")"
+          SSH_DEPLOYMENT_MODE="$(encode_optional_ssh_argument "$DEPLOYMENT_MODE")"
+
           ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
             -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
             "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" "$SCHEMA_MODE" \
-            "$IMAGE_TAG" "$IDENTITY_CUTOVER_ALLOWED_SHA" "$IDENTITY_SCHEMA_ACK" \
-            "$IDENTITY_MAINTENANCE_ACK" "$IDENTITY_TIMER_ACK" "$DEPLOYMENT_MODE" <<'REMOTE'
+            "$IMAGE_TAG" "$SSH_IDENTITY_CUTOVER_ALLOWED_SHA" "$SSH_IDENTITY_SCHEMA_ACK" \
+            "$SSH_IDENTITY_MAINTENANCE_ACK" "$SSH_IDENTITY_TIMER_ACK" "$SSH_DEPLOYMENT_MODE" <<'REMOTE'
           set -euo pipefail
+          if [ "$#" -ne 11 ]; then
+            echo "Expected 11 deployment arguments over SSH; received $#." >&2
+            exit 1
+          fi
+
+          SSH_EMPTY_ARGUMENT="__SUN_WORLD_EMPTY_ARGUMENT_V1__"
+          decode_optional_ssh_argument() {
+            if [ "$1" = "$SSH_EMPTY_ARGUMENT" ]; then
+              printf ''
+            else
+              printf '%s' "$1"
+            fi
+          }
+
           WEB_CHANGED="$1"
           API_CHANGED="$2"
           FRONTEND_IMAGE="$3"
           API_IMAGE="$4"
           SCHEMA_MODE="$5"
           IMAGE_TAG="$6"
-          IDENTITY_CUTOVER_ALLOWED_SHA="$7"
-          IDENTITY_SCHEMA_ACK="$8"
-          IDENTITY_MAINTENANCE_ACK="$9"
-          IDENTITY_TIMER_ACK="${10}"
-          DEPLOYMENT_MODE="${11}"
+          IDENTITY_CUTOVER_ALLOWED_SHA="$(decode_optional_ssh_argument "$7")"
+          IDENTITY_SCHEMA_ACK="$(decode_optional_ssh_argument "$8")"
+          IDENTITY_MAINTENANCE_ACK="$(decode_optional_ssh_argument "$9")"
+          IDENTITY_TIMER_ACK="$(decode_optional_ssh_argument "${10}")"
+          DEPLOYMENT_MODE="$(decode_optional_ssh_argument "${11}")"
           LOCK_FILE="/tmp/sun-world-docker-build.lock"
 
           exec 9>"$LOCK_FILE"
