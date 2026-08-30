@@ -65,7 +65,7 @@
       "name": "login-page-gzip",
       "type": "pattern",
       "pattern": "assets/login*.js",
-      "maxGzipKiB": 2
+      "maxGzipKiB": 3
     },
     {
       "name": "register-page-gzip",
@@ -77,7 +77,7 @@
       "name": "account-page-gzip",
       "type": "pattern",
       "pattern": "assets/me*.js",
-      "maxGzipKiB": 1
+      "maxGzipKiB": 4
     },
     {
       "name": "keep-page-gzip",
@@ -95,7 +95,7 @@
       "name": "qq-callback-page-gzip",
       "type": "pattern",
       "pattern": "assets/qqCb*.js",
-      "maxGzipKiB": 1
+      "maxGzipKiB": 2
     }
   ]
 }

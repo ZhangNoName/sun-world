@@ -1,5 +1,7 @@
 import { AiWorkspace } from '@sun-world/ai-ui'
 
+import { AiCapabilitySettings } from '../components/AiCapabilitySettings'
+import { AiMcpSettings } from '../components/AiMcpSettings'
 import { useAiChat } from '../composables/useAiChat'
 import './ai.css'
 
@@ -42,6 +44,30 @@ export function AigcPage() {
       providers={chat.providers}
       providerProfiles={chat.providerProfiles}
       commands={composerCommands}
+      toolbarActions={
+        <>
+          <AiCapabilitySettings
+            isAuthenticated={chat.isAuthenticated}
+            status={chat.capabilityStatus}
+            error={chat.capabilityError}
+            personas={chat.personas}
+            skills={chat.skills}
+            selectedPersonaId={chat.selectedPersonaId}
+            selectedSkillIds={chat.selectedSkillIds}
+            onSelectPersona={chat.selectPersona}
+            onToggleSkill={chat.toggleSkill}
+            onRefresh={chat.refreshCapabilities}
+            onSavePersona={chat.savePersona}
+            onDeletePersona={chat.removePersona}
+            onSaveSkill={chat.saveSkill}
+            onDeleteSkill={chat.removeSkill}
+          />
+          <AiMcpSettings
+            isAuthenticated={chat.isAuthenticated}
+            accountKey={chat.accountKey}
+          />
+        </>
+      }
       onNewConversation={chat.startConversation}
       onSelectConversation={chat.selectConversation}
       onSend={chat.sendMessage}

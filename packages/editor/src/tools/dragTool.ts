@@ -1,6 +1,6 @@
 import { SystemCursor } from '../cursor/cursorManager'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
-import ViewportState from "../viewport/viewport"
+import ViewportState from '../viewport/viewport'
 
 export default class DragTool extends BaseTool {
   name: ToolName = 'drag'
@@ -12,9 +12,7 @@ export default class DragTool extends BaseTool {
     super(ctx)
     this.viewport = ctx.viewport
   }
-  onWheel(e: WheelEvent): void {
-    console.log('DragTool.onWheel', e)
-  }
+  onWheel(_e: WheelEvent): void {}
   onMouseDown(e: MouseEvent): void {
     // 只在左键按下时开始
     if (e.button !== 0) return
@@ -24,8 +22,6 @@ export default class DragTool extends BaseTool {
     // 记录鼠标初始位置 (屏幕坐标)
     this.lastX = e.clientX
     this.lastY = e.clientY
-
-    console.log('DragTool.onMouseDown', e)
     this.ctx.cursor.setCursor(SystemCursor.Grabbing)
   }
   onMouseMove(e: MouseEvent): void {
@@ -43,17 +39,13 @@ export default class DragTool extends BaseTool {
     // console.log('DragTool.onMouseMove', dx, dy)
   }
   onMouseUp(): void {
-    console.log('DragTool.onMouseUp')
     this.isPanning = false
     this.ctx.cursor.setCursor(SystemCursor.Grab)
   }
   activate(): void {
-    console.log('DragTool.activate')
     this.ctx.cursor.setCursor(SystemCursor.Grab)
-
   }
   deactivate(): void {
-    console.log('DragTool.deactivate')
     this.ctx.cursor.setCursor(SystemCursor.Default)
   }
   onKeyDown(e: KeyboardEvent): void {

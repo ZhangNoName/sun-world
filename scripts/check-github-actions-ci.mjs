@@ -52,7 +52,7 @@ if (workflow) {
     'workflow_dispatch:',
     'concurrency:',
     'deploy-sun-world-production',
-    'cancel-in-progress: true',
+    'cancel-in-progress: false',
     'permissions:',
     'contents: read',
     'detect-changes:',
@@ -95,6 +95,12 @@ if (workflow) {
     if (!workflow.includes(fragment)) {
       violations.push(`Deploy pipeline quality job must contain: ${fragment}`)
     }
+  }
+
+  if (workflow.includes('cancel-in-progress: true')) {
+    violations.push(
+      'Production deployment concurrency must not cancel an in-flight SSH or schema maintenance window'
+    )
   }
 }
 

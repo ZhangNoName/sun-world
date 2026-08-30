@@ -10,6 +10,8 @@ from src.core.observability import safe_log_value
 from src.core.request_context import get_request_id
 from src.core.response import fail
 from src.modules.dictionaries.router import router as dictionary_router
+from src.modules.ai.mcp_router import router as ai_mcp_router
+from src.modules.identity.router import router as identity_router
 from src.routers import (
     admin_router,
     ai_router,
@@ -52,6 +54,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content=fail(msg=msg, code=code).model_dump(),
+        headers=exc.headers,
     )
 
 
@@ -116,7 +119,9 @@ routers = [
     role_router,
     resource_router,
     auth_router,
+    identity_router,
     ai_router,
+    ai_mcp_router,
     file_router,
     telemetry_router,
     admin_router,

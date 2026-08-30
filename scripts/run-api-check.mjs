@@ -42,7 +42,15 @@ const scripts = [
   },
   { script: resolve(repoRoot, 'scripts/check-request-metrics.py'), args: [] },
   { script: resolve(repoRoot, 'scripts/check-rum-metrics.py'), args: [] },
+  {
+    script: resolve(repoRoot, 'scripts/check-oauth-callback-log-safety.py'),
+    args: [],
+  },
   { script: resolve(repoRoot, 'scripts/check-ai-secret-sync.py'), args: [] },
+  {
+    script: resolve(repoRoot, 'scripts/check-google-oauth-import.py'),
+    args: [],
+  },
 ]
 
 const candidates = [

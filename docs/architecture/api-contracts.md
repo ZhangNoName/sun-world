@@ -4,7 +4,7 @@ Sun World uses API contracts, not shared database models, as the boundary betwee
 
 ## Why API Contracts
 
-The backend is FastAPI/Python, while the frontend is Vue/TypeScript. Prisma is a Node/TypeScript database toolkit, so it is not the right source of truth for the current backend.
+The backend is FastAPI/Python, while the frontend is React/TypeScript. Prisma is a Node/TypeScript database toolkit, so it is not the right source of truth for the current backend.
 
 The stable shared boundary is:
 

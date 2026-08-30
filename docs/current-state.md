@@ -51,6 +51,122 @@
   and no fatal browser errors were observed. The automatic deploy timer is
   enabled and active again.
 
+## Optional Identity And Personal AIGC (2026-08-29, local main)
+
+- Integration status (2026-08-30): `zxy/identity-ai-motion-integration` has
+  been merged into local `main`, including all recent architecture, security,
+  performance, UI, identity, and personal-AIGC work. The merge preserves the
+  deployed frontend motion system, route-loading behavior, reduced-motion
+  contracts, blog infinite scroll, and shared AI workspace motion. The merged
+  tree passed the focused 50-test identity/home/layout suite, `check:motion`,
+  and all 19/19 repository gates: 174 Web tests, 331 API tests, 38 shared UI
+  tests, 15 AI UI tests, 39 AI composer tests, and 6 contract tests, plus the
+  production builds, budgets, workflow/deployment guards, and static Compose
+  validation. This local merge has not been pushed or deployed, and it did not
+  run database migrations, import production credentials, restart the API, or
+  exercise a real OAuth callback.
+
+- Optional authentication is implemented for password, purpose-bound
+  phone/email OTP, Google OIDC, QQ, and WeChat. Public browsing and temporary
+  AIGC remain available without login; authenticated users gain durable
+  conversations, provider profiles, personas, prompt-only skills, verified
+  contacts, identity connections, and MCP configuration.
+- Identity resolution uses provider subject first and only an explicitly
+  provider-verified phone second. Verified email never auto-merges accounts.
+  WeChat is keyed by appid/OpenID with transactional legacy UnionID migration.
+  Explicit connection requires recent authentication and a user/session-bound
+  one-time state or OTP.
+- Sessions are HttpOnly-cookie based with access/refresh token typing, atomic
+  rotation, production-enforced strict refresh-reuse handling, an independent
+  narrow CSRF write-origin list, wildcard-free credentialed CORS, and
+  Redis-backed request limits. OTP cooldowns and quotas are reserved in one
+  atomic operation; failed deliveries roll back their owned reservation.
+- The `/aigc` workspace now provides guest chat plus signed-in persistence,
+  role/persona selection, up to eight prompt-only skills, provider profiles,
+  and an explicit-confirmation MCP control plane. Provider/MCP egress is HTTPS
+  allowlisted with public-DNS validation, IP pinning, SNI/Host preservation,
+  no redirects/environment proxy, bounded payloads/deadlines, rate limits,
+  daily guest/site circuit breakers, and distributed concurrency leases.
+- Conversation writes/edits are owner-scoped transactions with row locks and a
+  server-resolved per-conversation run lease. MCP configuration/catalog calls
+  are revision-bound; call audit uses pending/succeeded/failed/unknown and does
+  not replay unknown side effects.
+- The schema checker now validates exact column/index/foreign-key/default/
+  `ON UPDATE`/collation contracts and blocks incompatible historical usernames.
+  It intentionally does not rewrite an existing non-unique username index.
+- A separate identity cutover migrator has an exact DDL allowlist covering only
+  the `users.username` unique index and the three identity `auth_*` tables. Its
+  default check has no database access, plan/validate are read-only, and apply
+  requires the exact migration ID. Unrelated legacy-table drift stays outside
+  this scoped path; the generic full-schema checker remains unchanged and
+  strict.
+- Manual GitHub Actions deploys now expose a default-`full` `schema_mode`.
+  `identity-20260829` is accepted only from `refs/heads/main` for an actual
+  `deploy-existing` API/all deploy whose workflow SHA and image tag both exactly
+  match the temporary 40-character lowercase
+  `IDENTITY_CUTOVER_ALLOWED_SHA`, with schema, Docker-maintenance, and masked
+  frontend-timer acknowledgements typed exactly. The workflow verifies live
+  OAuth callback log safety, Redis 6.2+, Google credential enablement/egress,
+  effective `BLOG_RUNTIME_ENV=production`, exact production API/Web origins,
+  and a fully clean reviewed server checkout before it preserves and stops the
+  current Docker API under a restore trap. The clean check rejects staged,
+  unstaged, and non-ignored untracked content even when `HEAD` matches. Candidate
+  and public `/auth/methods` must
+  both report Google enabled before recovery coverage ends. A matching reviewed
+  main/API push remains schema mode `full` but stages quality/build with
+  `deploy_needed=false`; all other pushes retain the normal full/fail-closed
+  deploy. Clear the temporary variable immediately after success or
+  abandonment.
+- Google Cloud project `sun-world-507015` and its production Web OAuth client
+  now exist. The downloaded client JSON was validated for the exact production
+  callback and tightened to local mode `0600`; it remains outside the repository
+  and has not been imported into Lighthouse. A stdin-only, project-bound helper
+  rejects additional redirect URIs and is ready to update just the two Google
+  variables under a shared lock after the server checkout contains the reviewed
+  code. Its rollback file retains only prior Google assignments, not the full
+  secret environment. The public `/privacy` page and an unchanged official
+  Google sign-in brand asset are also ready locally.
+- The production Lighthouse host currently times out when reaching all four
+  fixed Google HTTPS endpoints. Google login must not be enabled until an
+  operator-controlled overseas forward proxy is provided, stored only as
+  `AUTH_GOOGLE_OUTBOUND_PROXY_URL`, and passes the candidate-image preflight.
+  The callback no-log Nginx snippet and its root-owned include are also not yet
+  installed; the live checker and historical/rotated-log audit must pass before
+  the first real authorization-code smoke test.
+- No database migration, server credential import, push, deploy, API restart, or
+  production smoke test has been performed. Before cutover, review and run the
+  controlled identity schema migration, import the protected Google client,
+  verify the Google Auth Platform branding/audience settings, and run the
+  documented login smoke matrix. Resolve the separate full-schema drift before
+  the next automatic API deployment. The runbook is
+  `docs/deployment/2026-08-29-identity-ai-cutover.md`.
+- Route-level gzip budgets were remeasured for the expanded login, account,
+  and QQ callback chunks (3/4/2 KiB respectively); global JS, CSS, entry, and
+  largest-asset ceilings remain unchanged.
+- Pre-merge branch verification passed: `corepack pnpm check` completed all 19
+  repository gates, including 331 API tests, 160 Web React tests, 38 shared UI
+  tests, 14 AI UI tests, 39 AI composer tests, and 6 contract tests. Desktop
+  (1440x900) and mobile (390x844) browser QA covered login, registration, and
+  the guest AIGC workspace; the tested routes had no horizontal overflow or
+  unexpected global error toast. No real Google callback was exercised. The
+  callback-log checker passed 27 adversarial tests and the credential importer
+  passed 8 tests. The final security assessment and remaining
+  P2/product follow-ups are recorded in
+  `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
+
+## Frontend Browser Cache Policy (2026-08-29)
+
+- Frontend Nginx now serves Vite's content-hashed `/assets/` files with a
+  one-year public immutable cache policy.
+- HTML, extensionless routes, SSG pages, and unhashed public files use
+  `no-cache, must-revalidate`, so entry documents are validated before reuse
+  and cannot pin an older asset graph across deployments.
+- Missing hashed assets return `404` instead of the SPA `index.html` fallback.
+  The static frontend deployment guard verifies all three contracts.
+- `nginx:alpine` syntax validation passed. A temporary local container verified
+  the expected headers for `/`, `/home`, and a current hashed JavaScript file,
+  plus an uncached `404` for a missing hashed JavaScript file.
+
 ## Security and Integrity Baseline (2026-08-09, feature branch)
 
 - Administrative routes enforce admin access; uploads use bounded UUID storage and byte-based image validation.
@@ -480,16 +596,16 @@ to the monorepo Docker image by the deploy workflow:
   frontend/API changes do not race on the same checkout. The final deploy job
   SSHes to Lighthouse and uses the local images for changed services.
   Production runs share one fixed concurrency group with
-  `cancel-in-progress: true`, so newer main/manual runs cancel older
-  in-progress production runs. Common/web/API quality jobs are capped at
-  10/15/15 minutes, server-side build jobs at 30 minutes, and deploy at 15
-  minutes.
+  `cancel-in-progress: false`, so overlapping main/manual runs queue instead of
+  interrupting an in-progress SSH deployment or schema maintenance window.
+  Common/web/API quality jobs are capped at 10/15/15 minutes, server-side build
+  jobs at 30 minutes, and deploy at 60 minutes.
   Workflow-only, deploy-doc, and local verification script changes validate
   the workflow but are not deployment targets, so they exit through the
   `no-deploy` job.
 - Manual deployment supports `build-and-deploy`, `build-only`, and
   `deploy-existing` modes. `deploy-existing` skips builds and redeploys a
-  previous image tag, usually a known-good commit SHA. For frontend and API,
+  previous image tag, which must be a 40-character lowercase commit SHA. For frontend and API,
   this is a local `sun-world-frontend:<commit>` or `sun-world-api:<commit>`
   image that already exists on Lighthouse.
 - The deploy workflow intentionally avoids GHCR, GitHub-to-server image archive
@@ -512,6 +628,30 @@ to the monorepo Docker image by the deploy workflow:
   job mounts `/home/lighthouse/.config/blog_end` read-only and, when it exists,
   the legacy backend `src/conf` directory read-only into `/app/src/conf` so the
   container can read the same production config without printing secrets.
+- The one-time scoped identity path supports the verified production topology
+  only: the existing `sun-world-api` Docker container is running on host
+  network with restart `unless-stopped`, while `blog-api.service` is inactive
+  and disabled. It records and renames that container before stopping it, then
+  validates the backup ID/image before any rollback removes a replacement. It
+  never starts the legacy systemd unit. The frontend is switched only after
+  candidate/public API health and Google enablement pass; frontend failure
+  at start, direct local port-8081 health, or public health restores the old
+  `my-frontend` while leaving the healthy new API active.
+- `sun-world-auto-deploy.timer` is outside GitHub Actions concurrency and is
+  frontend-only. The identity runbook requires recording, stopping, disabling,
+  and runtime-masking it before staging/cutover, while freezing `main`; the
+  scoped
+  workflow refuses an active or unmasked timer/service and holds the shared
+  server lock through the whole cutover. Operators restore its recorded states
+  after the final attempt. Production Redis was read-only verified at `7.0.15`,
+  but every cutover repeats the candidate image's read-only `INFO server` gate.
+- Identity cutover also requires the three exact Google/QQ/WeChat callback
+  locations from the reviewed repository file to be installed at the fixed
+  root-owned, mode-`0644`
+  `/etc/nginx/snippets/sun-world-oauth-callback-no-log.conf` and included inside
+  the API HTTPS server. They disable callback access/error persistence, and the
+  workflow checks both file metadata and the effective `nginx -T` output before
+  maintenance.
 - The API MySQL schema guard is declared in
   `apps/api/src/database/mysql/schema_migration.py`. `pnpm check:api` runs the
   static `--mode check` path. Database modes (`plan`, `validate`, `apply`) use
@@ -557,7 +697,11 @@ to the monorepo Docker image by the deploy workflow:
   `certbot.timer` is enabled and active, running renewal checks twice daily.
   Current certificates:
   - `sunworld.site`: covers `sunworld.site`, `www.sunworld.site`, and
-    `api.sunworld.site`; expires on 2026-08-29.
+    `api.sunworld.site` with the same Let's Encrypt YE2 certificate; valid from
+    `2026-07-30 07:34:56Z` through `2026-10-28 07:34:55Z`. A 2026-08-30
+    read-only check returned TLS verify code `0` for all three names, HTTP `200`
+    for the two site hosts, and HTTP `200` for API `GET /healthz` (`HEAD` is not
+    supported and correctly returned `405`).
   - `shop.sunworld.site`: covers `shop.sunworld.site`; expires on 2026-08-28.
   - `zsf.shopping`: uploaded manually to `/etc/nginx/ssl`; covers
     `zsf.shopping` and `www.zsf.shopping`; expires on 2026-09-19.
@@ -688,8 +832,8 @@ the left-side weather card; mobile placement is inside
   `bash` is required by `apps/api/start.sh`, which is the API image default
   command. Prefer separate manual runs for web and API when only one target
   needs deployment. Frontend and API build timeouts are 30 minutes to allow
-  server-side Docker builds; quality and deploy jobs remain capped at 15
-  minutes. The deploy workflow keeps
+  server-side Docker builds; quality jobs remain capped at 10/15 minutes and
+  deploy is capped at 60 minutes. The deploy workflow keeps
   `sun-world-api-candidate` long enough to print `docker inspect` and
   `docker logs --tail 120` if candidate health checks fail, then removes the
   failed container before exiting.

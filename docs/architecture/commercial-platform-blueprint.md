@@ -1,5 +1,10 @@
 # Commercial Platform Blueprint
 
+> Status: target product vision with historical implementation examples. Vue,
+> Pinia and `@unhead/vue` references are not the current stack; see
+> `project-architecture.md` and `frontend-platform-foundation.md` for current
+> implementation contracts.
+
 This document defines the target architecture for Sun World as a commercial-grade, extensible content and creation platform.
 
 The current product starts as a blog, but the architecture must support AI, a canvas/graphics editor, admin analytics, performance monitoring, log investigation, and future product modules without turning into a tightly coupled page collection.

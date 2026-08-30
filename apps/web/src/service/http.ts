@@ -25,11 +25,13 @@ declare module 'axios' {
   interface AxiosRequestConfig {
     suppressErrorToast?: boolean
     _authRetry?: boolean
+    skipAuthPreflight?: boolean
   }
 
   interface InternalAxiosRequestConfig {
     suppressErrorToast?: boolean
     _authRetry?: boolean
+    skipAuthPreflight?: boolean
   }
 }
 //基础URL，axios将会自动拼接在url前
@@ -113,7 +115,11 @@ service.interceptors.request.use(
       createRequestId()
 
     const session = getSessionPort()
-    if (!isAuthRoute(config.url) && session.snapshot().hasUser) {
+    if (
+      !config.skipAuthPreflight &&
+      !isAuthRoute(config.url) &&
+      session.snapshot().hasUser
+    ) {
       await session.preflight()
     }
 

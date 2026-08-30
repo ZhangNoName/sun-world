@@ -139,19 +139,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   min-height: 100dvh;
   padding: clamp(1.25rem, 5vw, 5rem);
   background: var(--muted);
 }
 
 .auth-form-card {
-  width: min(100%, 29rem);
+  width: min(100%, 32rem);
+  min-width: 0;
+  max-width: 100%;
   border-color: var(--border);
   background: var(--card);
-  box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--foreground) 10%, transparent);
+  box-shadow: 0 1.5rem 4rem
+    color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
 .auth-card-header {
+  min-width: 0;
   gap: 0.625rem;
 }
 
@@ -168,12 +173,184 @@
 
 .auth-card-content {
   display: grid;
+  min-width: 0;
   gap: 1rem;
 }
 
 .auth-form {
   display: grid;
   gap: 1rem;
+}
+
+.auth-login-tabs,
+.auth-login-tabs [data-slot='tabs-content'] {
+  width: 100%;
+}
+
+.auth-tabs-list {
+  width: 100%;
+  height: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.auth-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.auth-divider::before {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+  content: '';
+}
+
+.auth-divider span {
+  position: relative;
+  padding: 0 0.75rem;
+  background: var(--card);
+}
+
+.auth-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.auth-google-provider-button {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: block;
+  width: 180px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent !important;
+  line-height: 0;
+}
+
+.auth-google-provider-button:hover {
+  background: transparent !important;
+}
+
+.auth-google-provider-button:active {
+  transform: none !important;
+}
+
+.auth-google-provider-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.auth-google-provider-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.auth-google-provider-button:focus-visible {
+  box-shadow: none;
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.auth-google-provider-button__image {
+  display: block;
+  width: 180px;
+  height: 40px;
+}
+
+.auth-google-account-note {
+  grid-column: 1 / -1;
+  margin: -0.125rem 0 0.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.auth-provider-button {
+  min-width: 0;
+  height: auto;
+  min-height: 3.25rem;
+  padding: 0.625rem;
+  white-space: normal;
+}
+
+.auth-provider-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  border-radius: 0.45rem;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.auth-provider-mark--qq {
+  background: #12b7f5;
+}
+
+.auth-provider-mark--wechat {
+  background: #07c160;
+}
+
+.auth-notice {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+}
+
+.auth-privacy-note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.auth-privacy-note a {
+  margin-left: 0.35rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-underline-offset: 0.15em;
+}
+
+.auth-callback-status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+}
+
+.auth-callback-status p {
+  margin: 0;
+}
+
+.auth-callback-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 999px;
+  animation: sw-motion-spin var(--motion-duration-loop) linear infinite;
 }
 
 .auth-form .sun-ui-field,
@@ -219,10 +396,19 @@
   .auth-form-card {
     width: min(100%, 30rem);
   }
+
+  .auth-provider-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .auth-brand-art {
     transform: none;
+  }
+
+  .auth-callback-indicator {
+    animation: none;
+    border-top-color: var(--primary);
   }
 }

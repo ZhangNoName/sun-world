@@ -1,5 +1,9 @@
 # Frontend Module Extraction Strategy
 
+> Historical note: completed Vue extraction checkpoints in this document are a
+> migration record. Use `frontend-platform-foundation.md` and
+> `docs/react-development-guidelines.md` for current React module boundaries.
+
 This document defines the long-term frontend modularization target for Sun
 World. It complements `frontend-platform-foundation.md` and is the working
 guide for turning the current blog-first app into reusable feature modules.

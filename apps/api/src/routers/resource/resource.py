@@ -1,45 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from loguru import logger
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from src.controller.role_manager import RoleManager
 from src.controller.resource_manager import ResourceManager
-
 from app_instance import app
 from src.core.response import ok, fail
 from src.routers.auth.auth import require_admin
-
-# ------------------------------
-# Pydantic 模型
-# ------------------------------
-
-class RoleCreateModel(BaseModel):
-    name: str
-    code: str
-    description: Optional[str] = ""
-
-class RoleUpdateModel(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    description: Optional[str]
-
-class BindResourcesModel(BaseModel):
-    resource_ids: List[int]
-
-class ResourceCreateModel(BaseModel):
-    name: str
-    code: str
-    type: str
-    path: Optional[str] = ""
-    description: Optional[str] = ""
-
-class ResourceUpdateModel(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    type: Optional[str]
-    path: Optional[str]
-    description: Optional[str]
+from src.type.management_type import ResourceCreateModel, ResourceUpdateModel
 
 # ------------------------------
 # 路由对象
@@ -65,7 +30,7 @@ def get_resource_manager() -> ResourceManager:
 
 @resource_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_resource(resource: ResourceCreateModel, manager: ResourceManager = Depends(get_resource_manager)):
-    resource_id = manager.create_resource(resource.dict())
+    resource_id = manager.create_resource(resource.model_dump())
     return ok(data={"id": resource_id}, msg="创建成功")
 
 @resource_router.get("/{resource_id}")
@@ -76,13 +41,20 @@ async def get_resource(resource_id: int, manager: ResourceManager = Depends(get_
     return ok(data=res, msg="获取成功")
 
 @resource_router.get("/")
-async def list_resources(page: int = 1, page_size: int = 10, manager: ResourceManager = Depends(get_resource_manager)):
+async def list_resources(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
+    manager: ResourceManager = Depends(get_resource_manager),
+):
     res_list = manager.list_resources(page=page, per_page=page_size)
     return ok(data=res_list, msg="获取成功")
 
 @resource_router.put("/{resource_id}")
 async def update_resource(resource_id: int, data: ResourceUpdateModel, manager: ResourceManager = Depends(get_resource_manager)):
-    res = manager.update_resource(resource_id, **data.dict(exclude_none=True))
+    changes = data.model_dump(exclude_none=True)
+    if not changes:
+        raise HTTPException(status_code=422, detail="At least one field is required")
+    res = manager.update_resource(resource_id, **changes)
     return ok(data=res, msg="更新成功")
 
 @resource_router.delete("/{resource_id}")

@@ -64,6 +64,13 @@
 .self-card > [data-slot='button'] {
   justify-self: center;
 }
+.weather-card-status {
+  min-height: 10rem;
+  align-content: center;
+}
+.weather-card-status > [data-slot='button'] {
+  justify-self: center;
+}
 .profile-metrics,
 .weather-metrics {
   width: 100%;
@@ -106,12 +113,27 @@
   text-decoration: none;
 }
 .icp-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   justify-content: space-between;
   gap: 1rem;
 }
 .icp-card a {
   color: inherit;
+}
+.icp-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem 1rem;
+  text-align: right;
+}
+.icp-card__google-disclosure {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 .mobile-icp-card {
   display: none;
@@ -131,7 +153,7 @@
     display: none;
   }
   .mobile-icp-card {
-    display: flex;
+    display: grid;
   }
 }
 @media (max-width: 695px) {

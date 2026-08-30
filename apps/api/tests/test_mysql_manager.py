@@ -34,6 +34,7 @@ class BrokenConnection:
         self.cursor_obj = BrokenCursor(execute_error)
         self.ping_error = ping_error
         self.closed = False
+        self.rollbacks = 0
 
     def ping(self, reconnect=False):
         if self.ping_error:
@@ -46,11 +47,35 @@ class BrokenConnection:
     def commit(self):
         return None
 
+    def rollback(self):
+        self.rollbacks += 1
+
     def close(self):
         self.closed = True
 
 
 class MySQLManagerTests(unittest.TestCase):
+    def test_connections_have_bounded_connect_read_and_write_timeouts(self):
+        from src.database.mysql.mysql_manage import MySQLManager
+
+        connection = BrokenConnection()
+        with patch("pymysql.connect", return_value=connection) as connect:
+            manager = MySQLManager(
+                "localhost",
+                3306,
+                "test",
+                pool_size=1,
+                connect_timeout=2,
+                read_timeout=4,
+                write_timeout=6,
+            )
+
+        kwargs = connect.call_args.kwargs
+        self.assertEqual(kwargs["connect_timeout"], 2)
+        self.assertEqual(kwargs["read_timeout"], 4)
+        self.assertEqual(kwargs["write_timeout"], 6)
+        manager.close()
+
     def test_fetch_all_propagates_database_errors_instead_of_returning_empty(self):
         import pymysql
         from src.database.mysql.mysql_manage import MySQLManager
@@ -79,6 +104,26 @@ class MySQLManagerTests(unittest.TestCase):
                 )
             self.assertEqual(len(results), 8)
             self.assertEqual(manager._pool.qsize(), 2)
+            self.assertEqual(sum(item.rollbacks for item in connections), 8)
+            manager.close()
+
+    def test_read_transaction_is_ended_before_connection_returns_to_pool(self):
+        from src.database.mysql.mysql_manage import MySQLManager
+
+        connection = BrokenConnection()
+        with patch("pymysql.connect", return_value=connection):
+            manager = MySQLManager(
+                "localhost",
+                3306,
+                "test",
+                pool_size=1,
+                retry_interval=1,
+            )
+
+            manager.fetch_one("SELECT status FROM users WHERE id = %s", (7,))
+            manager.fetch_all("SELECT id FROM users")
+
+            self.assertEqual(connection.rollbacks, 2)
             manager.close()
 
     def test_unhealthy_connection_is_discarded_and_replaced(self):

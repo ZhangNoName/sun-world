@@ -1,5 +1,28 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-30 identity/AIGC integration into local main
+
+- Goal: merge the complete `zxy/identity-ai-motion-integration` work into
+  `main` while preserving the already deployed frontend motion and async-test
+  stabilization changes from `main`.
+- Status: the branch is integrated and verified in the local `main` merge
+  commit. All merge conflicts were resolved, the shared layout, blog infinite
+  scroll, AI toolbar, weather, locale, SSG, Nginx cache/fallback, and handoff
+  changes were reconciled, and no unmerged paths remain.
+- Verification: the focused identity/home/layout suite passed 50 tests across
+  10 files, `check:motion` passed, and `corepack pnpm check` passed all 19/19
+  repository gates. The full run included 174 Web tests, 331 API tests, 38
+  shared UI tests, 15 AI UI tests, 39 AI composer tests, and 6 contract tests,
+  plus formatting, typechecks, production builds, SSG/SPA contracts,
+  performance budgets, workflow/deployment guards, and static Compose
+  validation. `git diff --cached --check` also passed before commit.
+- Release boundary: this is a local source integration only. Nothing was pushed
+  or deployed, and no database migration, server credential import, API
+  restart, OAuth callback smoke, or production-state mutation was performed.
+  Production therefore remains on the previously recorded motion frontend and
+  API baseline. The identity cutover blockers and exact operator sequence below
+  still apply before any third-party login can be enabled in production.
+
 ### Active checkpoint: 2026-08-30 frontend motion system
 
 - Goal: add restrained, centrally managed frontend motion while improving warm
@@ -47,9 +70,82 @@
   `sun-world-auto-deploy.timer` is enabled and active, with the next run at
   `2026-08-30 03:30 CST`. The prior frontend image is retained under the
   `133ca878` rollback tag.
-- Local containment: the unrelated identity/API history remains preserved on
-  local branch `zxy/identity-ai-motion-integration` at `d4e4cd0`; it was not
-  included in this frontend-only release.
+
+### Active checkpoint: 2026-08-29 optional identity and personal AIGC
+
+- Goal: optional QQ/WeChat/phone/email/Google login with verified-phone account
+  association, plus signed-in AIGC roles, prompt-only skills, provider profiles,
+  durable conversations, and an explicit MCP control plane without gating the
+  public site.
+- Status: implementation, attack-oriented review, full repository validation,
+  and desktop/mobile browser QA are complete locally on `main`. Google Cloud
+  project `sun-world-507015` and a production Web OAuth client have been
+  created; its downloaded JSON is outside the repository with mode `0600` and
+  has not been imported into Lighthouse. No push, deploy, database migration,
+  API restart, or production smoke test has been performed.
+  Detailed boundaries and cutover checklist are in
+  `docs/architecture/identity-and-ai-capabilities.md`,
+  `docs/architecture/ai-platform.md`, and
+  `docs/architecture/secrets-and-env.md`; the final review and operator runbook
+  are `docs/reviews/2026-08-29-optional-identity-aigc-review.md` and
+  `docs/deployment/2026-08-29-identity-ai-cutover.md`.
+- Important areas: `apps/api/src/modules/identity/`,
+  `apps/api/src/modules/ai/`, `apps/api/src/routers/auth/auth.py`,
+  `apps/api/src/database/{mysql,redis}/`, including the scoped
+  `mysql/identity_schema_migration.py`, `apps/web/src/modules/{account,ai}/`,
+  `apps/web/src/pages/{login,me,privacy}/`,
+  `deploy/backend/import_google_oauth_client.py`, the manual deployment schema
+  mode in `.github/workflows/deploy.yml`, `packages/ai-ui/`, and
+  `packages/contracts/`.
+- Security decisions: identity first then provider-verified phone only; no
+  email auto-merge; explicit connect requires recent auth and same session;
+  production-enforced strict refresh reuse; independent narrow CSRF write
+  origins and wildcard-free credentialed CORS; purpose-bound atomic OTP
+  reservations; canonical login throttling; SSRF-safe provider/MCP egress;
+  daily AI cost breakers; revision-bound MCP catalog/audit; transactional
+  conversation writes and one run per real conversation.
+- Cutover blockers: the production host currently times out against all four
+  fixed Google HTTPS endpoints, so first provide an operator-controlled overseas
+  forward proxy and pass the candidate-image egress preflight. Install the
+  root-owned exact callback no-log Nginx snippet and pass the live plus
+  historical/rotated-log audits; then run the exact-allowlisted identity
+  migration for the historical username index and three `auth_*` tables, import
+  the protected Google client with the reviewed stdin-only helper, publish the
+  privacy page, and verify the Google Auth Platform branding/audience state and
+  real browser callback. SMTP/SMS, the other OAuth providers, and remaining
+  AIGC provider secrets stay separate optional capabilities. No production
+  database or server-secret action has been run. The generic conservative
+  migrator remains
+  unchanged and strict. The one-time workflow path is now bound to a temporary
+  reviewed `IDENTITY_CUTOVER_ALLOWED_SHA`: its matching main/API push only
+  stages quality/build without deploying, then the manual `deploy-existing`
+  run must come from `refs/heads/main`, have workflow/image/repository-variable
+  SHA equality, include API, and type the exact schema, Docker-maintenance, and
+  masked-timer acknowledgements. Before DDL it requires the reviewed checkout
+  to be clean across staged, unstaged, and non-ignored untracked content, the
+  frontend timer to be masked/inactive, the fixed callback snippet to be
+  root-owned and effective in Nginx, Redis 6.2+, an effective production
+  runtime, exact production API/Web origins, Google registry enablement, and
+  Google egress. Scoped execution
+  preserves and stops the active `sun-world-api` Docker container under a
+  restore trap; candidate and public health plus Google `/auth/methods`
+  enablement complete before an optional rollback-protected frontend switch.
+  Production runs queue rather than cancel an in-flight maintenance window.
+  Clear the temporary variable and restore the timer's recorded state after the
+  final attempt; unrelated full-schema drift still must be resolved before
+  later normal API deployment. A real browser Google callback smoke remains a
+  required post-cutover check.
+- Verification: the pre-merge branch run of `corepack pnpm check` passed all
+  19/19 repository gates: 331 API tests, 160 Web React tests, 38 shared UI
+  tests, 14 AI UI tests, 39 AI composer
+  tests, and 6 contract tests, plus typechecks, builds, SSG, UI boundaries,
+  performance budgets, and static Compose validation. Browser QA passed for
+  login, registration, and guest AIGC at 1440x900 and 390x844 with no
+  horizontal overflow or unexpected global error toast. No real Google callback
+  was exercised; the callback-log checker passed 27 adversarial tests and the
+  Google credential importer passed 8 tests. The final assessment
+  and residual P2/product follow-ups are in
+  `docs/reviews/2026-08-29-optional-identity-aigc-review.md`.
 
 ### Previous checkpoint: 2026-08-09 security and integrity baseline
 
@@ -91,6 +187,37 @@ merges stay easy. Put branch-specific work in docs/handoff/branches/ and move
 older completed checkpoints to docs/handoff/archive/.
 
 ## Current Local Work
+
+- 2026-08-29: completed a repository-wide architecture, security, performance,
+  functional, structure, and UI consistency review. Fixed production dependency
+  vulnerabilities (72 known issues to 0), API pagination totals and N+1 queries,
+  management update allowlists/transactions, blog query/logging boundaries,
+  opt-in weather geolocation, mobile navigation localization/accessibility,
+  Compose profile validation, build-summary enforcement, and Web entry chunking.
+  Removed two editor source artifacts, cleaned high-frequency production logs,
+  and refreshed current architecture documentation. Browser QA covered home,
+  login, mobile navigation, and the AI workspace in desktop/mobile and light/dark
+  states. `corepack pnpm check` passed 19/19; Web passed 119 tests, API passed 77
+  tests, production dependency audit reported no known vulnerabilities, and all
+  performance budgets passed (entry 161.9/180 KiB). Full report:
+  `docs/reviews/2026-08-29-architecture-review.md`. No commit, push, MR, deploy,
+  container mutation, or database migration was performed. Remaining design
+  work is cross-MySQL/Mongo consistency, audited DB constraints/indexes, large
+  module extraction, and global error-toast deduplication.
+
+- 2026-08-24: fixed homepage blog pagination feedback and infinite scrolling.
+  `BlogHomeFeed` now uses a non-interactive sentinel tied to its nearest
+  `.app-container`, preloads near the bottom, and re-arms observation whenever
+  the item count grows; the visible load-more button was replaced by compact
+  loading/end status text. Card-level backdrop blur and hover translation were
+  also removed to prevent delayed card painting while scrolling, while keeping
+  border and shadow hover feedback. Updated the blog styles, reduced-motion
+  handling, static infinite-scroll contract, style-ownership assertion, and
+  component regression coverage. Focused tests, the static contract, Web
+  typecheck, shared package builds, production Web build, formatting, and
+  whitespace checks passed. No commit, push, or deploy was performed; existing
+  unrelated changes in `apps/api/app_instance.py` and
+  `apps/web/vite.config.ts` were left untouched.
 
 - 2026-08-02: tightened the development React source inspector behavior. The
   existing `react-dev-inspector` replacement for the removed

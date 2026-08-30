@@ -52,13 +52,7 @@ export default class DragTool extends BaseTool {
   onKeyDown(e: KeyboardEvent): void {
     // console.log('DragTool.onKeyDown')
   }
-  onWheel(e: WheelEvent): void {
-    console.log('DragTool.onWheel')
-  }
-  activate(): void {
-    console.log('DragTool.activate')
-  }
-  deactivate(): void {
-    console.log('DragTool.deactivate')
-  }
+  onWheel(_e: WheelEvent): void {}
+  activate(): void {}
+  deactivate(): void {}
 }

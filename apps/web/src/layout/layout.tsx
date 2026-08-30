@@ -24,11 +24,21 @@ const ManageLayout = lazy(
   () => import('@/modules/admin/components/ManageLayout')
 )
 
+const navigationLinks = [
+  ['/home', 'navigation.home'],
+  ['/blog', 'navigation.blog'],
+  ['/canvas', 'navigation.canvas'],
+  ['/aigc', 'navigation.ai'],
+  ['/tools', 'navigation.tools'],
+  ['/video', 'navigation.video'],
+  ['/me', 'navigation.account'],
+] as const
+
 const mobileLinks = [
-  ['home', '/home', '首页'],
-  ['canvas', '/canvas', '画布'],
-  ['message-circle', '/aigc', 'AI'],
-  ['user', '/me', '我的'],
+  ['home', '/home', 'navigation.home'],
+  ['canvas', '/canvas', 'navigation.canvas'],
+  ['message-circle', '/aigc', 'navigation.ai'],
+  ['user', '/me', 'navigation.account'],
 ] as const
 
 export function AppLayout() {
@@ -102,27 +112,23 @@ export function AppLayout() {
               <img src="/logo.svg" alt="Sun World" />
             </Link>
             <DialogPanel
-              title="导航菜单"
+              title={t('navigation.menu')}
               open={drawer}
               onOpenChange={setDrawer}
               overlayClassName="drawer-overlay"
               contentClassName="mob-drawer"
               trigger={
-                <Button variant="ghost" size="icon" aria-label="菜单">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('navigation.openMenu')}
+                >
                   <SunIcon name="menu" />
                 </Button>
               }
             >
               <nav>
-                {[
-                  '/home',
-                  '/blog',
-                  '/canvas',
-                  '/aigc',
-                  '/tools',
-                  '/video',
-                  '/me',
-                ].map((path) => (
+                {navigationLinks.map(([path, labelKey]) => (
                   <Link
                     key={path}
                     to={path}
@@ -130,12 +136,17 @@ export function AppLayout() {
                       location.pathname === path ? 'page' : undefined
                     }
                   >
-                    {path.slice(1) || 'home'}
+                    {t(labelKey)}
                   </Link>
                 ))}
               </nav>
-              <ThemeSwitch />
-              <LanguageSwitch />
+              <div
+                className="mob-drawer-preferences"
+                aria-label={t('navigation.preferences')}
+              >
+                <ThemeSwitch />
+                <LanguageSwitch />
+              </div>
             </DialogPanel>
           </header>
         )}
@@ -148,15 +159,19 @@ export function AppLayout() {
           </Suspense>
         </div>
         {meta.hideFooter ? null : (
-          <nav className="mob-footer theme-chrome" aria-label="移动导航">
-            {mobileLinks.map(([icon, path, label]) => (
+          <nav
+            className="mob-footer theme-chrome"
+            aria-label={t('navigation.mobile')}
+          >
+            {mobileLinks.map(([icon, path, labelKey]) => (
               <Link
                 key={path}
                 to={path}
+                aria-label={t(labelKey)}
                 aria-current={location.pathname === path ? 'page' : undefined}
               >
                 <SunIcon name={icon} />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </Link>
             ))}
           </nav>

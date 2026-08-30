@@ -38,7 +38,6 @@ function assertComposeShape(rendered) {
     'target: /home/lighthouse/.config/blog_end',
     'target: /app/src/conf',
     'read_only: true',
-    '8081:80',
   ]
 
   for (const snippet of requiredSnippets) {
@@ -47,13 +46,24 @@ function assertComposeShape(rendered) {
     }
   }
 
-  const apiPortSnippets = [
-    '127.0.0.1:${BLOG_API_HOST_PORT:-18000}:8000',
-    '127.0.0.1:18000:8000',
+  const apiPortPatterns = [
+    /127\.0\.0\.1:\$\{BLOG_API_HOST_PORT:-18000\}:8000/,
+    /127\.0\.0\.1:18000:8000/,
+    /host_ip:\s*127\.0\.0\.1[\s\S]{0,120}target:\s*8000[\s\S]{0,120}published:\s*["']?18000/,
   ]
-  if (!apiPortSnippets.some((snippet) => rendered.includes(snippet))) {
+  if (!apiPortPatterns.some((pattern) => pattern.test(rendered))) {
     throw new Error(
-      `compose file is missing required API staging port binding: ${apiPortSnippets.join(' or ')}`
+      'compose file is missing required API staging port binding on 127.0.0.1:18000'
+    )
+  }
+
+  const frontendPortPatterns = [
+    /8081:80/,
+    /target:\s*80[\s\S]{0,120}published:\s*["']?8081/,
+  ]
+  if (!frontendPortPatterns.some((pattern) => pattern.test(rendered))) {
+    throw new Error(
+      'compose file is missing required frontend port binding on 8081:80'
     )
   }
 
@@ -93,15 +103,17 @@ try {
   process.exit(0)
 }
 
-run(['compose', '-f', composeFile, 'config', '--quiet'])
+const apiProfileArgs = ['compose', '-f', composeFile, '--profile', 'api']
 
-const services = run(['compose', '-f', composeFile, 'config', '--services'])
+run([...apiProfileArgs, 'config', '--quiet'])
+
+const services = run([...apiProfileArgs, 'config', '--services'])
   .split(/\r?\n/)
   .filter(Boolean)
 const profiles = run(['compose', '-f', composeFile, 'config', '--profiles'])
   .split(/\r?\n/)
   .filter(Boolean)
-const rendered = run(['compose', '-f', composeFile, 'config'])
+const rendered = run([...apiProfileArgs, 'config'])
 
 for (const service of ['frontend', 'api']) {
   if (!services.includes(service)) {

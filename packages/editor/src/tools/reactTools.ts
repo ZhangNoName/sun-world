@@ -8,11 +8,11 @@
  *
  * Copyright (c) 2025 by ZhangNoName, All Rights Reserved.
  */
-import type { ElementManager } from "../elements/elementManager"
+import type { ElementManager } from '../elements/elementManager'
 import { RectElement } from '../elements/react'
 import { BaseTool, ToolContext, ToolName } from '../types/tools.type'
 import { getUUID } from '../utils/common'
-import ViewportState from "../viewport/viewport"
+import ViewportState from '../viewport/viewport'
 import { ElementType } from '../elements/element.config'
 import { composeTRS, setTranslation, translate } from '../utils/matrix'
 
@@ -33,9 +33,7 @@ export class RectTool extends BaseTool {
     this.viewport = ctx.viewport
   }
 
-  activate() {
-    console.log('RectTool activated')
-  }
+  activate() {}
   deactivate() {
     this.drawing = false
     this.currentRect = null
@@ -44,7 +42,6 @@ export class RectTool extends BaseTool {
   onMouseDown(e: MouseEvent) {
     // 如果正在绘制中，忽略新的点击
     if (this.drawing) {
-      console.log('[RectTool] Already drawing, ignoring')
       return
     }
 
@@ -95,7 +92,6 @@ export class RectTool extends BaseTool {
   }
 
   onMouseUp() {
-    console.log('RectTool onMouseUp')
     // 如果已经创建但最终宽度仍不够，则移除（保证“宽度>5才加入”语义）
     if (this.currentRect && this.currentRect.width <= this.minWidthToAdd) {
       this.elementManager.remove(this.currentRect.id)
@@ -103,10 +99,6 @@ export class RectTool extends BaseTool {
     this.drawing = false
     this.currentRect = null
   }
-  onKeyDown(e: KeyboardEvent) {
-    // console.log('RectTool onKeyDown', e)
-  }
-  onWheel(e: WheelEvent) {
-    // console.log('RectTool onWheel', e)
-  }
+  onKeyDown(_e: KeyboardEvent) {}
+  onWheel(_e: WheelEvent) {}
 }

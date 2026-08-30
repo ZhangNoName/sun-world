@@ -10,9 +10,9 @@ const register = () =>
   }))
 const me = () =>
   import('@/pages/me/me').then((module) => ({ Component: module.MePage }))
-const qq = () =>
+const authCallback = () =>
   import('@/pages/login/qqCb').then((module) => ({
-    Component: module.QqCallbackPage,
+    Component: module.AuthCallbackPage,
   }))
 
 const authMeta = {
@@ -41,9 +41,18 @@ export const accountModule: AppModule = {
       meta: { module: 'account', title: '个人中心 - Sun World' },
     },
     {
+      path: '/auth/callback',
+      lazy: authCallback,
+      meta: { module: 'account', title: '完成登录 - Sun World', ...authMeta },
+    },
+    {
       path: '/qq',
-      lazy: qq,
-      meta: { module: 'account', title: 'QQ 登录 - Sun World' },
+      lazy: authCallback,
+      meta: {
+        module: 'account',
+        title: '登录回调已升级 - Sun World',
+        ...authMeta,
+      },
     },
   ],
   nav: [{ label: 'nav.account', path: '/me', icon: 'me' }],

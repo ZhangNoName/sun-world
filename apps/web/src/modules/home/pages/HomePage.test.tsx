@@ -29,6 +29,18 @@ describe('HomePage', () => {
     links.forEach((link) =>
       expect(link).toHaveAttribute('href', 'https://beian.miit.gov.cn/')
     )
+
+    const privacyLinks = screen.getAllByRole('link', { name: '隐私政策' })
+    expect(privacyLinks).toHaveLength(2)
+    privacyLinks.forEach((link) =>
+      expect(link).toHaveAttribute('href', '/privacy')
+    )
+
+    expect(
+      screen.getAllByText(
+        /Google 登录仅使用姓名、头像、已验证邮箱和账号标识来创建或登录 Sun World 账号，不用于广告或 AI 训练。/
+      )
+    ).toHaveLength(2)
   })
 
   it('exposes the profile metrics as a named four-column definition list', () => {
@@ -40,12 +52,10 @@ describe('HomePage', () => {
     expect(metrics.children).toHaveLength(4)
   })
 
-  it('exposes the weather metrics as a named four-column definition list', () => {
+  it('asks for consent before requesting location-based weather', () => {
     render(<HomePage />)
 
-    const metrics = screen.getByLabelText('天气详情')
-    expect(metrics).toHaveClass('weather-metrics')
-    expect(metrics.tagName).toBe('DL')
-    expect(metrics.children).toHaveLength(4)
+    expect(screen.getByRole('button', { name: 'weather.load' })).toBeVisible()
+    expect(screen.queryByLabelText('weather.details')).not.toBeInTheDocument()
   })
 })

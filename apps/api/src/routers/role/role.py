@@ -1,45 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from loguru import logger
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from src.controller.role_manager import RoleManager
-from src.controller.resource_manager import ResourceManager
-
 from app_instance import app
 from src.core.response import ok, fail
 from src.routers.auth.auth import require_admin
-
-# ------------------------------
-# Pydantic 模型
-# ------------------------------
-
-class RoleCreateModel(BaseModel):
-    name: str
-    code: str
-    description: Optional[str] = ""
-
-class RoleUpdateModel(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    description: Optional[str]
-
-class BindResourcesModel(BaseModel):
-    resource_ids: List[int]
-
-class ResourceCreateModel(BaseModel):
-    name: str
-    code: str
-    type: str
-    path: Optional[str] = ""
-    description: Optional[str] = ""
-
-class ResourceUpdateModel(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    type: Optional[str]
-    path: Optional[str]
-    description: Optional[str]
+from src.type.management_type import BindResourcesModel, RoleCreateModel, RoleUpdateModel
 
 # ------------------------------
 # 路由对象
@@ -65,7 +30,7 @@ def get_role_manager() -> RoleManager:
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_role(role: RoleCreateModel, manager: RoleManager = Depends(get_role_manager)):
-    role_id = manager.create_role(role.dict())
+    role_id = manager.create_role(role.model_dump())
     return ok(data={"id": role_id}, msg="创建成功")
 
 @router.get("/{role_id}")
@@ -77,13 +42,20 @@ async def get_role(role_id: int, manager: RoleManager = Depends(get_role_manager
     return ok(data=role, msg="获取成功")
 
 @router.get("/")
-async def list_roles(page: int = 1, page_size: int = 10, manager: RoleManager = Depends(get_role_manager)):
+async def list_roles(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
+    manager: RoleManager = Depends(get_role_manager),
+):
     roles = manager.get_roles_with_resources(page, page_size)
     return ok(data=roles, msg="获取成功")
 
 @router.put("/{role_id}")
 async def update_role(role_id: int, data: RoleUpdateModel, manager: RoleManager = Depends(get_role_manager)):
-    res = manager.update_role(role_id, **data.dict(exclude_none=True))
+    changes = data.model_dump(exclude_none=True)
+    if not changes:
+        raise HTTPException(status_code=422, detail="At least one field is required")
+    res = manager.update_role(role_id, **changes)
     return ok(data=res, msg="更新成功")
 
 @router.delete("/{role_id}")

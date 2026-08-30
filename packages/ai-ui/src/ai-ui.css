@@ -29,10 +29,18 @@
   mask-image: linear-gradient(to bottom, black 72%, transparent);
 }
 
-.sw-ai-toolbar > div {
+.sw-ai-toolbar-brand,
+.sw-ai-toolbar-actions {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.55rem;
+}
+.sw-ai-toolbar-brand {
+  align-items: baseline;
+}
+.sw-ai-toolbar-actions {
+  min-width: 0;
+  justify-content: flex-end;
 }
 .sw-ai-toolbar span {
   color: var(--text-secondary);

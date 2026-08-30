@@ -35,6 +35,9 @@ class MySQLManager:
         max_retry_times: int = 3,
         retry_interval: int = 5,
         pool_size: int | None = None,
+        connect_timeout: int | None = None,
+        read_timeout: int | None = None,
+        write_timeout: int | None = None,
     ):
         self.host = host
         self.port = port
@@ -44,6 +47,21 @@ class MySQLManager:
         self.charset = charset
         self.max_retry_times = max_retry_times
         self.retry_interval = retry_interval
+        self.connect_timeout = self._bounded_timeout(
+            "MYSQL_CONNECT_TIMEOUT_SECONDS",
+            connect_timeout,
+            3,
+        )
+        self.read_timeout = self._bounded_timeout(
+            "MYSQL_READ_TIMEOUT_SECONDS",
+            read_timeout,
+            5,
+        )
+        self.write_timeout = self._bounded_timeout(
+            "MYSQL_WRITE_TIMEOUT_SECONDS",
+            write_timeout,
+            5,
+        )
         configured_size = pool_size or int(os.getenv("MYSQL_POOL_SIZE", "2"))
         self.pool_size = max(1, min(configured_size, 4))
         self._pool: queue.Queue[Any] = queue.Queue(maxsize=self.pool_size)
@@ -52,6 +70,16 @@ class MySQLManager:
         self.cnx = None
         self.cursor = None
         self.connect()
+
+    @staticmethod
+    def _bounded_timeout(name: str, explicit: int | None, default: int) -> int:
+        try:
+            value = int(explicit if explicit is not None else os.getenv(name, str(default)))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{name} must be an integer") from exc
+        if value < 1 or value > 60:
+            raise ValueError(f"{name} must be between 1 and 60")
+        return value
 
     def _create_connection(self):
         connection = pymysql.connect(
@@ -63,6 +91,9 @@ class MySQLManager:
             charset=self.charset,
             autocommit=False,
             cursorclass=DictCursor,
+            connect_timeout=self.connect_timeout,
+            read_timeout=self.read_timeout,
+            write_timeout=self.write_timeout,
         )
         self._connections.add(connection)
         return connection
@@ -103,6 +134,15 @@ class MySQLManager:
                 self._discard_connection(connection)
             raise
         finally:
+            # Connections use autocommit=False. Always end any implicit read
+            # transaction before returning a pooled connection so Repeatable
+            # Read snapshots and locks never leak across requests/UoWs.
+            if healthy:
+                try:
+                    connection.rollback()
+                except pymysql.Error:
+                    healthy = False
+                    self._discard_connection(connection)
             if cursor is not None:
                 try:
                     cursor.close()

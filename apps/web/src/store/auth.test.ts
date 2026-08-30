@@ -2,6 +2,7 @@ import { useAuthStore } from './auth'
 import {
   logout as accountLogout,
   getCurrentUser,
+  getSessionStatus,
   refreshToken,
 } from '@/modules/account/api'
 import { vi } from 'vitest'
@@ -11,11 +12,13 @@ vi.mock('@/modules/account/api', () => ({
   register: vi.fn(),
   logout: vi.fn(),
   getCurrentUser: vi.fn(),
+  getSessionStatus: vi.fn(),
   refreshToken: vi.fn(),
 }))
 
 describe('useAuthStore', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     useAuthStore.getState().clearTokens()
   })
 
@@ -80,27 +83,47 @@ describe('useAuthStore', () => {
     })
   })
 
-  it('refreshes the cookie session and restores the current user', async () => {
+  it('uses the explicit POST refresh endpoint before restoring an expired access session', async () => {
+    const user = { id: 6, name: 'restored-after-refresh' } as never
+    useAuthStore.setState({
+      accessTokenExpire: Date.now() - 1_000,
+      refreshTokenExpire: Date.now() + 60_000,
+    })
     vi.mocked(refreshToken).mockResolvedValue({
+      access_token_expire: new Date(Date.now() + 60_000).toISOString(),
       refresh_token_expire: new Date(Date.now() + 86_400_000).toISOString(),
     } as never)
-    vi.mocked(getCurrentUser).mockResolvedValue({ id: 4 } as never)
+    vi.mocked(getSessionStatus).mockRejectedValue(new Error('access expired'))
+    vi.mocked(getCurrentUser).mockResolvedValue(user)
+
+    const restored = await useAuthStore.getState().restoreSession()
+
+    expect(restored).toBe(user)
+    expect(refreshToken).toHaveBeenCalledOnce()
+    expect(getCurrentUser).toHaveBeenCalledOnce()
+  })
+
+  it('refreshes the cookie session and restores the current user', async () => {
+    vi.mocked(refreshToken).mockResolvedValue({
+      access_token_expire: new Date(Date.now() + 60_000).toISOString(),
+      refresh_token_expire: new Date(Date.now() + 86_400_000).toISOString(),
+    } as never)
+    vi.mocked(getSessionStatus).mockRejectedValue(new Error('access expired'))
 
     await useAuthStore.getState().refreshSession()
 
     expect(refreshToken).toHaveBeenCalledOnce()
-    expect(getCurrentUser).toHaveBeenCalledOnce()
-    expect(useAuthStore.getState()).toMatchObject({
-      status: 'authenticated',
-      user: { id: 4 },
-    })
+    expect(getSessionStatus).toHaveBeenCalledOnce()
+    expect(useAuthStore.getState().status).toBe('anonymous')
   })
 
   it('clears the session when refresh fails', async () => {
     vi.mocked(refreshToken).mockRejectedValue(new Error('expired'))
     useAuthStore.setState({ user: { id: 5 } as never, status: 'authenticated' })
 
-    await expect(useAuthStore.getState().refreshSession()).rejects.toThrow('expired')
+    await expect(useAuthStore.getState().refreshSession()).rejects.toThrow(
+      'expired'
+    )
 
     expect(useAuthStore.getState()).toMatchObject({
       status: 'anonymous',

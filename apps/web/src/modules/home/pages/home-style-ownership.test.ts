@@ -20,7 +20,7 @@ const BLOG_OWNED_SELECTORS = [
   '.blog-tags',
   '.blog-toolbar__action',
   '.z-blog-card',
-  '.loader-btn',
+  '.blog-feed__load-sentinel',
   '.empty-state',
   '.waterfall-grid',
   '.waterfall-item',
@@ -80,6 +80,13 @@ describe('homepage style ownership', () => {
     )
     expect(blogStyles).toMatch(
       /\.blog-toolbar__search \[data-slot='input'\]:focus-visible\s*\{[^}]*box-shadow:\s*none/
+    )
+  })
+
+  it('keeps article cards stable and inexpensive while scrolling', () => {
+    expect(blogStyles).not.toMatch(/\.z-blog-card:hover\s*\{[^}]*transform\s*:/)
+    expect(blogStyles).not.toMatch(
+      /[^{}]*\.z-blog-card[^{}]*\{[^}]*backdrop-filter\s*:/
     )
   })
 })

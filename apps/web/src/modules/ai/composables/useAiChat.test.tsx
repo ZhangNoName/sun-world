@@ -2,17 +2,33 @@ import { act, renderHook } from '@testing-library/react'
 import type { AiJsonValue } from '@sun-world/contracts'
 
 import {
+  createAiPersona,
+  createAiSkill,
+  deleteAiPersona,
+  deleteAiSkill,
   fetchAiConversations,
+  fetchAiPersonas,
   fetchAiProviderProfiles,
   fetchAiProviders,
+  fetchAiSkills,
   streamAiRun,
+  updateAiPersona,
+  updateAiSkill,
 } from '../api'
 import { useAiChat } from './useAiChat'
 
 vi.mock('../api', () => ({
   fetchAiConversations: vi.fn().mockResolvedValue([]),
+  fetchAiPersonas: vi.fn().mockResolvedValue([]),
   fetchAiProviderProfiles: vi.fn().mockResolvedValue([]),
   fetchAiProviders: vi.fn().mockResolvedValue([]),
+  fetchAiSkills: vi.fn().mockResolvedValue([]),
+  createAiPersona: vi.fn(),
+  updateAiPersona: vi.fn(),
+  deleteAiPersona: vi.fn().mockResolvedValue(undefined),
+  createAiSkill: vi.fn(),
+  updateAiSkill: vi.fn(),
+  deleteAiSkill: vi.fn().mockResolvedValue(undefined),
   streamAiRun: vi.fn(),
   updateAiFeedback: vi.fn().mockResolvedValue(undefined),
   updateAiMessage: vi.fn(),
@@ -30,6 +46,14 @@ const stream = vi.mocked(streamAiRun)
 const providers = vi.mocked(fetchAiProviders)
 const profiles = vi.mocked(fetchAiProviderProfiles)
 const conversations = vi.mocked(fetchAiConversations)
+const personas = vi.mocked(fetchAiPersonas)
+const skills = vi.mocked(fetchAiSkills)
+const createPersona = vi.mocked(createAiPersona)
+const updatePersona = vi.mocked(updateAiPersona)
+const deletePersona = vi.mocked(deleteAiPersona)
+const createSkill = vi.mocked(createAiSkill)
+const updateSkill = vi.mocked(updateAiSkill)
+const deleteSkill = vi.mocked(deleteAiSkill)
 
 const payload = (markdown: string) => ({
   markdown,
@@ -60,11 +84,21 @@ describe('useAiChat', () => {
     providers.mockResolvedValue([])
     profiles.mockResolvedValue([])
     conversations.mockResolvedValue([])
+    personas.mockResolvedValue([])
+    skills.mockResolvedValue([])
+    createPersona.mockReset()
+    updatePersona.mockReset()
+    deletePersona.mockReset().mockResolvedValue(null)
+    createSkill.mockReset()
+    updateSkill.mockReset()
+    deleteSkill.mockReset().mockResolvedValue(null)
     stream.mockReset()
   })
 
-  it('does not synthesize a provider before the API returns one', () => {
+  it('does not synthesize a provider before the API returns one', async () => {
     const { result } = renderHook(() => useAiChat())
+
+    await act(async () => undefined)
 
     expect(result.current.providers).toEqual([])
   })
@@ -229,6 +263,155 @@ describe('useAiChat', () => {
       })
     )
     expect(stream.mock.calls[0]?.[0].provider_profile_id).toBe('profile-7')
+  })
+
+  it('loads authenticated capabilities and sends the selected persona and skills', async () => {
+    authState.user = { id: 7 }
+    personas.mockResolvedValue([
+      {
+        id: 'persona-editor',
+        name: '编辑教练',
+        description: '先给结论',
+        instructions: '先给结论，再解释原因。',
+      },
+    ])
+    skills.mockResolvedValue([
+      {
+        id: 'skill-brief',
+        name: '简洁回答',
+        description: null,
+        instructions: '控制在三点以内。',
+        kind: 'prompt',
+      },
+      {
+        id: 'skill-checklist',
+        name: '检查清单',
+        description: null,
+        instructions: '最后给出检查清单。',
+        kind: 'prompt',
+      },
+    ])
+    stream.mockImplementation(async (_payload, options) => {
+      options.onEvent(aiEvent('run.started', 0, {}))
+      options.onEvent(
+        aiEvent('message.completed', 1, {
+          blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
+        })
+      )
+    })
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+
+    act(() => result.current.selectPersona('persona-editor'))
+    act(() => result.current.toggleSkill('skill-brief'))
+    act(() => result.current.toggleSkill('skill-checklist'))
+    await act(() => result.current.sendMessage(payload('使用我的配置')))
+
+    expect(stream.mock.calls[0]?.[0]).toMatchObject({
+      persona_id: 'persona-editor',
+      skill_ids: ['skill-brief', 'skill-checklist'],
+    })
+  })
+
+  it('keeps capabilities guest-only and does not load private CRUD for anonymous chat', async () => {
+    stream.mockImplementation(async (_payload, options) => {
+      options.onEvent(aiEvent('run.started', 0, {}))
+      options.onEvent(
+        aiEvent('message.completed', 1, {
+          blocks: [{ type: 'text', text: 'guest answer', format: 'markdown' }],
+        })
+      )
+    })
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+
+    expect(result.current.capabilityStatus).toBe('guest')
+    expect(personas).not.toHaveBeenCalled()
+    expect(skills).not.toHaveBeenCalled()
+
+    await act(() => result.current.sendMessage(payload('游客继续聊天')))
+    expect(stream.mock.calls[0]?.[0]).toMatchObject({
+      persona_id: null,
+      skill_ids: [],
+    })
+  })
+
+  it('creates, updates, and deletes prompt-only persona and skill records', async () => {
+    authState.user = { id: 7 }
+    createPersona.mockResolvedValue({
+      id: 'persona-1',
+      name: '研究员',
+      description: null,
+      instructions: '列出证据。',
+    })
+    updatePersona.mockResolvedValue({
+      id: 'persona-1',
+      name: '高级研究员',
+      description: null,
+      instructions: '列出证据与限制。',
+    })
+    createSkill.mockResolvedValue({
+      id: 'skill-1',
+      name: '风险提示',
+      description: null,
+      instructions: '说明主要风险。',
+      kind: 'prompt',
+    })
+    updateSkill.mockResolvedValue({
+      id: 'skill-1',
+      name: '风险清单',
+      description: null,
+      instructions: '用清单说明主要风险。',
+      kind: 'prompt',
+    })
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+
+    await act(() =>
+      result.current.savePersona({
+        name: '研究员',
+        description: null,
+        instructions: '列出证据。',
+      })
+    )
+    await act(() =>
+      result.current.savePersona({
+        id: 'persona-1',
+        name: '高级研究员',
+        description: null,
+        instructions: '列出证据与限制。',
+      })
+    )
+    expect(updatePersona).toHaveBeenCalledWith(
+      'persona-1',
+      expect.objectContaining({ name: '高级研究员' })
+    )
+    await act(() => result.current.removePersona('persona-1'))
+    expect(deletePersona).toHaveBeenCalledWith('persona-1')
+
+    await act(() =>
+      result.current.saveSkill({
+        name: '风险提示',
+        description: null,
+        instructions: '说明主要风险。',
+        kind: 'prompt',
+      })
+    )
+    await act(() =>
+      result.current.saveSkill({
+        id: 'skill-1',
+        name: '风险清单',
+        description: null,
+        instructions: '用清单说明主要风险。',
+        kind: 'prompt',
+      })
+    )
+    expect(updateSkill).toHaveBeenCalledWith(
+      'skill-1',
+      expect.objectContaining({ kind: 'prompt', name: '风险清单' })
+    )
+    await act(() => result.current.removeSkill('skill-1'))
+    expect(deleteSkill).toHaveBeenCalledWith('skill-1')
   })
 
   it('rejects unsupported files and commands before starting a stream', async () => {

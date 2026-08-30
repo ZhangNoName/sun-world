@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel
 from src.controller.auth_manager import AuthManager
@@ -87,8 +87,8 @@ async def get_user(user_id: str, user_manager: UserManager = Depends(get_user_ma
 
 @router.get("/", response_model=ApiResponse[UserPage], dependencies=[Depends(require_admin)])
 async def get_users_paginated(
-    page: int = 1,
-    page_size: int = 10,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
     user_manager: UserManager = Depends(get_user_manager)
 ):
     """
@@ -104,12 +104,13 @@ async def get_users_paginated(
     """
 
     users = user_manager.get_user_by_name('', page, page_size)
+    total = user_manager.count_users_by_name('')
     return ok(
         data={
             "list": users,
             "page": page,
             "page_size": page_size,
-            "total": len(users),
+            "total": total,
         },
         msg="获取成功",
     )

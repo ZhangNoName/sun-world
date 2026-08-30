@@ -26,7 +26,7 @@ describe('AppLayout navigation', () => {
   it('opens the mobile menu as a modal dialog and restores focus', async () => {
     useDeviceStore.setState({ isMobile: true })
     renderLayout()
-    const trigger = screen.getByRole('button', { name: '菜单' })
+    const trigger = screen.getByRole('button', { name: '打开导航菜单' })
     trigger.focus()
 
     await userEvent.click(trigger)
@@ -43,6 +43,32 @@ describe('AppLayout navigation', () => {
 
     expect(screen.getByRole('navigation', { name: '快捷导航' })).toBeVisible()
     expect(screen.getByRole('banner')).toHaveClass('theme-chrome')
+  })
+
+  it('gives icon-only mobile shortcuts accessible names', () => {
+    useDeviceStore.setState({ isMobile: true })
+    renderLayout()
+
+    const navigation = screen.getByRole('navigation', { name: '移动导航' })
+    expect(navigation).toBeVisible()
+    expect(screen.getByRole('link', { name: '首页' })).toBeVisible()
+    expect(screen.getByRole('link', { name: '画布' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'AI 助手' })).toBeVisible()
+    expect(screen.getByRole('link', { name: '我的' })).toBeVisible()
+  })
+
+  it('uses localized product labels in the mobile drawer', async () => {
+    useDeviceStore.setState({ isMobile: true })
+    renderLayout()
+
+    await userEvent.click(screen.getByRole('button', { name: '打开导航菜单' }))
+
+    const dialog = screen.getByRole('dialog', { name: '导航菜单' })
+    expect(dialog).toHaveTextContent('首页')
+    expect(dialog).toHaveTextContent('博客')
+    expect(dialog).toHaveTextContent('AI 助手')
+    expect(dialog).not.toHaveTextContent(/^home$/)
+    expect(screen.getByLabelText('显示偏好')).toBeVisible()
   })
 
   it('offers a global back-to-top action after meaningful scrolling', async () => {

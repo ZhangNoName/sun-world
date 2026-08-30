@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+import fcntl
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import tempfile
+from typing import Iterator
 
 
 SECRET_NAMES = (
@@ -68,6 +72,21 @@ def atomic_write(target: Path, content: str) -> None:
         raise
 
 
+@contextmanager
+def target_lock(target: Path) -> Iterator[None]:
+    lock_path = target.with_name(f".{target.name}.lock")
+    flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(lock_path, flags, 0o600)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError("invalid lock file")
+        os.fchmod(descriptor, 0o600)
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("AI secret sync failed: target path is required.", file=sys.stderr)
@@ -76,8 +95,9 @@ def main() -> int:
     target = Path(sys.argv[1])
     try:
         updates = read_updates(sys.stdin.buffer.read())
-        existing = target.read_text(encoding="utf-8") if target.exists() else ""
-        atomic_write(target, merge_env(existing, updates))
+        with target_lock(target):
+            existing = target.read_text(encoding="utf-8") if target.exists() else ""
+            atomic_write(target, merge_env(existing, updates))
     except (OSError, UnicodeError, ValueError):
         print("AI secret sync failed.", file=sys.stderr)
         return 2

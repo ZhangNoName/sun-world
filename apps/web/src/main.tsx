@@ -21,14 +21,6 @@ import {
   installGlobalErrorCapture,
   installRouteTiming,
 } from './shared/telemetry'
-import {
-  getAdressByLocation,
-  getCurrentLocation,
-  getWeatherByHeFeng,
-  InterceptLocalStorage,
-} from './util'
-
-InterceptLocalStorage()
 installSeoResourceHints()
 
 installSessionPort(
@@ -71,11 +63,6 @@ createRoot(document.getElementById('app')!).render(
     {import.meta.env.DEV && <ReactSourceInspector />}
   </StrictMode>
 )
-
-void getCurrentLocation()
-  .then(() => getAdressByLocation())
-  .then(() => getWeatherByHeFeng())
-  .catch(() => undefined)
 
 void initWebVitals()
 installGlobalErrorCapture()

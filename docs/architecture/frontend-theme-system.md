@@ -1,5 +1,10 @@
 # Frontend Theme System
 
+> Historical note: implementation paths and Vue-specific instructions in this
+> document describe the pre-React system. For the current `light` / `dark` /
+> `system` contract, use `frontend-platform-foundation.md` and the code under
+> `apps/web/src/shared/design`.
+
 本文档说明 Sun World 前端主题系统的架构、设计令牌（design tokens）命名规范以及如何添加新主题。
 
 This document describes the Sun World frontend theme system architecture, design token naming conventions, and how to add a new theme.

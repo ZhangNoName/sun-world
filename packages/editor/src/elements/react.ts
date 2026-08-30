@@ -2,9 +2,10 @@ import { BaseElement } from './baseElement.class'
 import { EleAttrs, EleCreateAttrs } from './ele.type'
 import { ElementType, FillType, getRandomColor } from './element.config'
 
-
 export class RectElement extends BaseElement {
-  get type(): ElementType { return ElementType.Rect }
+  get type(): ElementType {
+    return ElementType.Rect
+  }
   private imageCache: HTMLImageElement | null = null
 
   constructor(params: Omit<EleCreateAttrs, 'type'>) {
@@ -15,7 +16,6 @@ export class RectElement extends BaseElement {
 
     // 如果没有提供 fill，则从预设色彩集合中随机获取
     if (!params.fill) {
-      console.log('RectElement fill is not provided, using random color')
       this.attrs.fill = { type: FillType.Solid, color: getRandomColor() }
     } else {
       this.attrs.fill = params.fill
@@ -40,7 +40,6 @@ export class RectElement extends BaseElement {
       // }
     }
     img.onerror = () => {
-      console.error(`Failed to load image: ${imageUrl}`)
       // 加载失败时回退到随机颜色
       this.attrs.fill = { type: FillType.Solid, color: getRandomColor() }
     }
@@ -57,7 +56,6 @@ export class RectElement extends BaseElement {
     ctx.fillStyle = fill?.color || getRandomColor()
     // console.log('draw', this.width, this.height)
     ctx.fillRect(0, 0, this.width, this.height)
-
   }
 
   toJSON() {
@@ -66,6 +64,5 @@ export class RectElement extends BaseElement {
 
   updateAttrs(attr: any) {
     super.updateAttrs(attr)
-
   }
 }

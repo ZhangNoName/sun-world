@@ -20,8 +20,17 @@ export const API_ROUTES = {
     register: '/auth/register',
     logout: '/auth/logout',
     refreshToken: '/auth/refresh_token',
+    session: '/auth/session',
     resetPasswordRequest: '/auth/reset_password/request',
     resetPassword: '/auth/reset_password',
+    methods: '/auth/methods',
+    verificationRequest: '/auth/verification/request',
+    verificationComplete: '/auth/verification/complete',
+    oauthStart: '/auth/oauth/{provider}/start',
+    oauthCallback: '/auth/oauth/{provider}/callback',
+    connections: '/auth/connections',
+    connectionVerificationRequest: '/auth/connections/verification/request',
+    connectionVerificationComplete: '/auth/connections/verification/complete',
   },
   user: {
     me: '/user/me',
@@ -50,11 +59,21 @@ export const API_ROUTES = {
     readImage: '/ai/read-image',
     providers: '/ai/v1/providers',
     providerProfiles: '/ai/v1/provider-profiles',
+    personas: '/ai/v1/personas',
+    persona: '/ai/v1/personas/{persona_id}',
+    skills: '/ai/v1/skills',
+    skill: '/ai/v1/skills/{skill_id}',
     conversations: '/ai/v1/conversations',
     conversation: '/ai/v1/conversations/{conversation_id}',
     message: '/ai/v1/messages/{message_id}',
     messageFeedback: '/ai/v1/messages/{message_id}/feedback',
     runStream: '/ai/v1/runs/stream',
+    mcpConnections: '/ai/v1/mcp/connections',
+    mcpConnection: '/ai/v1/mcp/connections/{connection_id}',
+    mcpDiscover: '/ai/v1/mcp/connections/{connection_id}/discover',
+    mcpTools: '/ai/v1/mcp/connections/{connection_id}/tools',
+    mcpToolCall:
+      '/ai/v1/mcp/connections/{connection_id}/tools/{tool_name}/call',
   },
   telemetry: {
     events: '/telemetry/events',
@@ -70,6 +89,11 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.base.tags,
     API_ROUTES.blog.list,
     API_ROUTES.blog.detail,
+    API_ROUTES.auth.methods,
+    API_ROUTES.auth.verificationRequest,
+    API_ROUTES.auth.verificationComplete,
+    API_ROUTES.auth.oauthStart,
+    API_ROUTES.auth.oauthCallback,
     API_ROUTES.ai.chat,
     API_ROUTES.ai.chatStream,
     API_ROUTES.ai.chatChunkStream,
@@ -81,6 +105,10 @@ export const API_ROUTE_GROUPS = {
   authRequired: [
     API_ROUTES.auth.logout,
     API_ROUTES.auth.refreshToken,
+    API_ROUTES.auth.session,
+    API_ROUTES.auth.connections,
+    API_ROUTES.auth.connectionVerificationRequest,
+    API_ROUTES.auth.connectionVerificationComplete,
     API_ROUTES.user.me,
     API_ROUTES.admin.metrics,
     API_ROUTES.admin.metricsHistory,
@@ -96,10 +124,19 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.blog.delete,
     API_ROUTES.blog.update,
     API_ROUTES.ai.providerProfiles,
+    API_ROUTES.ai.personas,
+    API_ROUTES.ai.persona,
+    API_ROUTES.ai.skills,
+    API_ROUTES.ai.skill,
     API_ROUTES.ai.conversations,
     API_ROUTES.ai.conversation,
     API_ROUTES.ai.message,
     API_ROUTES.ai.messageFeedback,
+    API_ROUTES.ai.mcpConnections,
+    API_ROUTES.ai.mcpConnection,
+    API_ROUTES.ai.mcpDiscover,
+    API_ROUTES.ai.mcpTools,
+    API_ROUTES.ai.mcpToolCall,
   ],
 } as const
 
@@ -166,6 +203,42 @@ export const API_ROUTE_METHODS = {
   },
   'auth.resetPassword': {
     path: API_ROUTES.auth.resetPassword,
+    method: 'POST',
+  },
+  'auth.methods': {
+    path: API_ROUTES.auth.methods,
+    method: 'GET',
+  },
+  'auth.verificationRequest': {
+    path: API_ROUTES.auth.verificationRequest,
+    method: 'POST',
+  },
+  'auth.verificationComplete': {
+    path: API_ROUTES.auth.verificationComplete,
+    method: 'POST',
+  },
+  'auth.oauthStart': {
+    path: API_ROUTES.auth.oauthStart,
+    method: 'GET',
+  },
+  'auth.oauthCallback': {
+    path: API_ROUTES.auth.oauthCallback,
+    method: 'GET',
+  },
+  'auth.session': {
+    path: API_ROUTES.auth.session,
+    method: 'GET',
+  },
+  'auth.connections': {
+    path: API_ROUTES.auth.connections,
+    method: 'GET',
+  },
+  'auth.connectionVerificationRequest': {
+    path: API_ROUTES.auth.connectionVerificationRequest,
+    method: 'POST',
+  },
+  'auth.connectionVerificationComplete': {
+    path: API_ROUTES.auth.connectionVerificationComplete,
     method: 'POST',
   },
   'user.me': {
@@ -276,6 +349,46 @@ export const API_ROUTE_METHODS = {
     path: API_ROUTES.ai.providerProfiles,
     method: 'POST',
   },
+  'ai.personas.list': {
+    path: API_ROUTES.ai.personas,
+    method: 'GET',
+  },
+  'ai.personas.create': {
+    path: API_ROUTES.ai.personas,
+    method: 'POST',
+  },
+  'ai.persona.get': {
+    path: API_ROUTES.ai.persona,
+    method: 'GET',
+  },
+  'ai.persona.update': {
+    path: API_ROUTES.ai.persona,
+    method: 'PUT',
+  },
+  'ai.persona.delete': {
+    path: API_ROUTES.ai.persona,
+    method: 'DELETE',
+  },
+  'ai.skills.list': {
+    path: API_ROUTES.ai.skills,
+    method: 'GET',
+  },
+  'ai.skills.create': {
+    path: API_ROUTES.ai.skills,
+    method: 'POST',
+  },
+  'ai.skill.get': {
+    path: API_ROUTES.ai.skill,
+    method: 'GET',
+  },
+  'ai.skill.update': {
+    path: API_ROUTES.ai.skill,
+    method: 'PUT',
+  },
+  'ai.skill.delete': {
+    path: API_ROUTES.ai.skill,
+    method: 'DELETE',
+  },
   'ai.conversations.list': {
     path: API_ROUTES.ai.conversations,
     method: 'GET',
@@ -298,6 +411,34 @@ export const API_ROUTE_METHODS = {
   },
   'ai.runStream': {
     path: API_ROUTES.ai.runStream,
+    method: 'POST',
+  },
+  'ai.mcpConnections.list': {
+    path: API_ROUTES.ai.mcpConnections,
+    method: 'GET',
+  },
+  'ai.mcpConnections.create': {
+    path: API_ROUTES.ai.mcpConnections,
+    method: 'POST',
+  },
+  'ai.mcpConnection.update': {
+    path: API_ROUTES.ai.mcpConnection,
+    method: 'PUT',
+  },
+  'ai.mcpConnection.delete': {
+    path: API_ROUTES.ai.mcpConnection,
+    method: 'DELETE',
+  },
+  'ai.mcpDiscover': {
+    path: API_ROUTES.ai.mcpDiscover,
+    method: 'POST',
+  },
+  'ai.mcpTools': {
+    path: API_ROUTES.ai.mcpTools,
+    method: 'GET',
+  },
+  'ai.mcpToolCall': {
+    path: API_ROUTES.ai.mcpToolCall,
     method: 'POST',
   },
   'telemetry.events': {

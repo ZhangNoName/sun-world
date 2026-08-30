@@ -1,240 +1,141 @@
 # Project Architecture
 
-本文说明 Sun World 的当前 monorepo 架构、运行边界和后续演进方向。
+本文档描述 Sun World 当前架构。历史迁移记录不应覆盖这里、
+`docs/current-state.md` 或 `docs/engineering-conventions.md` 中的现状。
 
-This document describes the current Sun World monorepo architecture, runtime boundaries, and planned evolution.
+## Runtime overview
 
-## Overview
-
-Sun World is organized as a full-stack monorepo:
-
-- `apps/web` is the public blog frontend.
-- `apps/api` is the backend API imported from the previous `blog_end` repository.
-- `packages/editor` and `packages/icons` are reusable frontend libraries.
-- `packages/contracts` owns shared API contracts and generated frontend types.
-- `packages/db` is reserved for a future database/data-access package, but it is not active today.
-- `deploy` stores deployment documentation and examples only.
-- `docs` stores project context, architecture decisions, and handoff records.
-
-The backend code has been migrated into the monorepo under `apps/api`.
-Production has not yet been cut over to run the backend from that path.
-
-## High-Level Diagram
+Sun World 是一个 pnpm monorepo，生产分支为 `main`：
 
 ```mermaid
 flowchart TB
-  User["Browser / User"] --> Nginx["Nginx HTTPS Proxy"]
-  Nginx --> Web["apps/web\nVue 3 + Vite"]
-  Nginx --> Api["apps/api\nFastAPI"]
-
-  Web --> Contracts["packages/contracts\nAPI contract types"]
-  Web --> Editor["packages/editor\nRich text editor"]
-  Web --> Icons["packages/icons\nIcon library"]
+  Browser --> Nginx
+  Nginx --> Web[apps/web\nReact 19 + Vite]
+  Nginx --> Api[apps/api\nFastAPI]
+  Web --> Contracts[packages/contracts]
+  Web --> UI[packages/base-ui + packages/ui]
+  Web --> FeaturePackages[editor + icons + ai-composer + ai-ui]
   Web --> Api
-
-  Api --> MySQL["MySQL"]
-  Api --> MongoDB["MongoDB"]
-  Api --> Redis["Redis"]
-  Api --> PostgreSQL["PostgreSQL"]
-  Api --> LLM["External AI / LLM Providers"]
-
-  Deploy["deploy/\nDocs and examples"] -. "describes" .-> Web
-  Deploy -. "describes" .-> Api
+  Api --> MySQL
+  Api --> MongoDB
+  Api --> Redis
+  Api --> PostgreSQL
+  Api --> Providers[External AI providers]
 ```
 
-## Repository Layers
+- `sunworld.site` 与 `www.sunworld.site` 由 Nginx 代理到前端容器
+  `my-frontend` 的宿主机 `8081` 端口。
+- `api.sunworld.site` 由 Nginx 代理到 `sun-world-api` 容器。
+- 后端生产镜像由本仓库 `apps/api` 构建；旧的“尚未切换到 monorepo”描述
+  已失效。
+- 精确的生产状态、服务名和回滚路径以 `docs/current-state.md` 为准。
 
-### Applications
-
-Applications are independently deployable runtime units.
+## Repository responsibilities
 
 ```text
 apps/
-  web/      # frontend application
-  api/      # backend API application
-```
-
-`apps/web` owns the browser experience, page routing, UI composition, assets, and frontend service calls.
-
-`apps/api` owns HTTP API routes, authentication, file handling, AI integrations, and database access.
-
-### Packages
-
-Packages are reusable building blocks. They should not own production runtime entrypoints.
-
-```text
+  web/                 Browser application and public/static rendering
+  api/                 FastAPI application and server-owned integrations
 packages/
-  editor/       # reusable editor package
-  icons/        # reusable icon package
-  contracts/    # future OpenAPI/types contract package
-  db/           # future database package placeholder
+  base-ui/             Upstream-style shadcn/Base UI primitives
+  ui/                  Sun World protocols and composed controls
+  icons/               Canonical icon data and React icon components
+  editor/              Canvas/editor domain library
+  ai-composer/         Reusable AI input composer
+  ai-ui/               Reusable AI response and workspace UI
+  contracts/           OpenAPI artifact, generated types and route constants
+deploy/                Deployment documentation and examples
+scripts/               Repository quality, generation and operations checks
+docs/                  Durable architecture, operations and handoff context
 ```
 
-`packages/contracts` is the shared API boundary because the backend is Python
-and the frontend is TypeScript. It holds OpenAPI specs, generated TypeScript
-types, route constants, and small protocol types. It must not contain business
-runtime code.
+Applications own runtime entrypoints. Packages expose reusable contracts or
+libraries and must not become hidden application shells. `packages/db` is not an
+active runtime boundary and should not be introduced unless a TypeScript data
+service creates a real need.
 
-`packages/db` is intentionally inactive. Prisma should only be introduced if a real TypeScript data service or TypeScript backend is added.
+## Frontend dependency direction
 
-### Deployment Docs
+`apps/web/src` follows this direction:
 
 ```text
-deploy/
-  frontend/
-  backend/
+main.tsx
+  -> app/ (providers, router assembly, top-level errors)
+  -> modules/ (business capabilities and route manifests)
+  -> shared/ (domain-neutral browser/API/SEO/telemetry infrastructure)
+  -> service/ (legacy-compatible HTTP boundary)
+  -> store/ (established cross-route client state)
 ```
 
-The `deploy` directory documents production deployment and future cutover steps. Files under `deploy` are examples and instructions; they are not automatically applied to the server.
+- `app` may assemble modules, layouts and shared infrastructure.
+- `shared` must not import a business module.
+- Modules own their pages, UI, hooks/composables, data adapters and tests.
+- Route pages remain lazy-loaded through module manifests.
+- Workspace packages are consumed through declared exports, never by reaching
+  into another package's `src` directory.
+- Generic primitives belong to `@sun-world/base-ui`; product protocols and
+  compositions belong to `@sun-world/ui`.
+- Icons come from `@sun-world/icons/react`.
 
-## Runtime Architecture
+The canonical React rules are in `docs/react-development-guidelines.md`.
 
-### Current Production
+## Backend boundaries
 
-Current production still uses the pre-cutover runtime paths:
+`apps/api` separates transport, application/domain coordination and storage:
 
-- Frontend: Docker container `my-frontend`, built from the production `main` branch.
-- Backend: `blog-api.service`, still running from `/home/lighthouse/blog/blog_end`.
-- Public domains:
-  - `https://sunworld.site` and `https://www.sunworld.site` route to the frontend.
-  - `https://api.sunworld.site` routes to the backend API.
-
-### Monorepo Source Layout
-
-The repository contains the intended source layout:
-
-- Frontend source: `/home/lighthouse/blog/sun-world/apps/web`
-- Backend source: `/home/lighthouse/blog/sun-world/apps/api`
-- Future backend cutover target: `blog-api.service` working directory moves to `apps/api`
-
-The backend service should only be cut over after following `docs/architecture/deployment-cutover.md`.
-
-## Frontend Architecture
-
-`apps/web` is a Vue 3 + Vite application.
-
-Responsibilities:
-
-- Render desktop and mobile layouts.
-- Render the blog homepage, blog cards, article pages, auth screens, and AI-related screens.
-- Call backend API endpoints through frontend service modules.
-- Use shared libraries from `packages/editor` and `packages/icons`.
-- Keep public filing footer links visible for ICP compliance.
-
-Key boundaries:
-
-- Browser-only secrets must not live in frontend code.
-- Public runtime config should use `VITE_` variables and placeholder examples in `.env.example`.
-- API response types should eventually come from `packages/contracts`.
-
-Common commands:
-
-```bash
-pnpm dev:web
-pnpm build:web
-pnpm check:web
+```text
+routers/       HTTP validation, auth dependencies and response mapping
+controller/    Legacy application managers; migrate cohesive domains gradually
+modules/       Newer vertical modules with schemas/repository/service/router
+database/      MySQL, MongoDB, Redis and PostgreSQL infrastructure
+core/          Cross-cutting errors, auth support, metrics and audit logging
+type/          Shared transport schemas still used by legacy managers
 ```
 
-## Backend Architecture
+Rules:
 
-`apps/api` is a FastAPI backend imported from the previous backend repository.
+- Routers validate bounded inputs and never construct SQL.
+- Dynamic SQL identifiers require a manager-owned allowlist.
+- Multi-statement writes use `MySQLUnitOfWork`.
+- Secrets and provider credentials remain server-side.
+- API request/response types flow through the reviewed OpenAPI artifact in
+  `packages/contracts`.
+- Cross-store Blog writes (MySQL metadata plus MongoDB content) are not truly
+  atomic. A durable outbox or reconciliation job remains the target design.
 
-Responsibilities:
+## Build and quality gates
 
-- Expose API routes under FastAPI.
-- Manage authentication and user-related flows.
-- Handle file and media workflows.
-- Integrate with AI/LLM providers.
-- Encapsulate database access through Python modules.
+The root `corepack pnpm check` gate covers formatting, package boundaries,
+package tests/builds, Web typecheck/tests/build/SSG/budgets/chunks, API checks
+and Compose validation. Frontend bundle budgets live in
+`apps/web/performance-budgets.json`.
 
-Current backend data integrations include MySQL, MongoDB, Redis, and PostgreSQL managers.
+Use the repository-declared Node and pnpm versions through Corepack. Generated
+artifacts must be produced by their checked-in generators rather than edited by
+hand.
 
-Key boundaries:
+## Current architectural debt
 
-- Secrets stay outside Git and are loaded from server-managed env files.
-- Database access should remain behind backend managers or a future data-access layer.
-- Runtime cutover must not happen through documentation changes alone.
+The following items are deliberately tracked rather than hidden by this
+document:
 
-Common checks:
+1. `useAiChat.ts`, `ManageLayout.tsx`, `ManageDictionariesPage.tsx` and
+   `manageCopy.ts` still have natural extraction boundaries.
+2. Some legacy route pages remain under `apps/web/src/pages`; move them only
+   when a business module can own the complete vertical slice.
+3. Blog metadata/content consistency needs an outbox or reconciliation design
+   before production data behavior is changed.
+4. Database foreign keys, indexes and normalized unique constraints require an
+   audited migration, backup and rollback plan.
+5. Historical Vue-era architecture documents remain useful as migration
+   records, but they are not current implementation contracts.
 
-```bash
-pnpm check:api
-bash scripts/check-api.sh
-```
-
-## Shared Contracts
-
-The recommended near-term shared boundary is API contracts, not a shared database package.
-
-Target direction:
-
-1. Export or generate OpenAPI from FastAPI.
-2. Store the reviewed OpenAPI artifact under `packages/contracts`.
-3. Generate TypeScript types or a small typed client for `apps/web`.
-4. Keep backend implementation details private to `apps/api`.
-
-This creates a clear frontend/backend interface without forcing the Python backend into a TypeScript database stack.
-
-## Data And Configuration Boundaries
-
-Secrets and environment-specific config follow these rules:
-
-- Real `.env` files are ignored by Git.
-- `.env.example` files may be committed with placeholders only.
-- Server secret paths may be documented, but secret values must not be recorded.
-- API keys, passwords, private keys, certificates, cookies, and tokens must never be printed in agent logs or docs.
-
-See `docs/architecture/secrets-and-env.md` for the detailed policy.
-
-## Deployment Boundary
-
-Deployment is deliberately separate from source layout migration.
-
-Safe repository changes:
-
-- Documentation updates
-- Build/check scripts
-- Monorepo package layout
-- Placeholder packages
-- Example service files
-
-Production-changing actions:
-
-- Docker rebuilds or container restarts
-- `blog-api.service` changes or restarts
-- Nginx reloads
-- Database migrations or data edits
-- Certificate changes
-
-Production-changing actions require a separate deployment/cutover task and verification plan.
-
-## Agent Workflow
-
-Persistent context belongs in repository docs:
-
-- Stable rules: `AGENTS.md`, `CLAUDE.md`, `docs/engineering-conventions.md`
-- Environment state: `docs/current-state.md`
-- Active handoff: `docs/agent-handoff.md`
-- Architecture decisions: `docs/architecture/`
-
-For server-side implementation work, Codex should plan and review while Claude Code can execute routine repository edits through the documented handoff process.
-
-## Evolution Path
-
-Recommended order:
-
-1. Finish review of `monorepo-api-import`.
-2. Merge the monorepo source layout to `main`.
-3. Keep frontend deployment unchanged until the build path is proven from `apps/web`.
-4. Cut over backend runtime to `apps/api` using `docs/architecture/deployment-cutover.md`.
-5. Add OpenAPI/type generation in `packages/contracts`.
-6. Revisit `packages/db` only if the backend architecture actually needs a TypeScript data layer.
-
-## Related Docs
+## Related documents
 
 - `docs/current-state.md`
-- `docs/architecture/monorepo-migration.md`
-- `docs/architecture/frontend-module-extraction-strategy.md`
-- `docs/architecture/deployment-cutover.md`
+- `docs/engineering-conventions.md`
+- `docs/react-development-guidelines.md`
+- `docs/architecture/frontend-platform-foundation.md`
+- `docs/architecture/ai-platform.md`
 - `docs/architecture/secrets-and-env.md`
-- `deploy/README.md`
+- `docs/agent-handoff.md`

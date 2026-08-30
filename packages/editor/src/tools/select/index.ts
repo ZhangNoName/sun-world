@@ -29,9 +29,7 @@ export default class SelectTool extends BaseTool {
     this.ResizeMode = new ResizeTool(ctx)
     this.RotateMode = new RotateTool(ctx)
   }
-  onWheel(e: WheelEvent): void {
-    console.log('Select.onWheel', e)
-  }
+  onWheel(e: WheelEvent): void {}
   onMouseDown(e: MouseEvent): void {
     // 只在左键按下时开始
     if (e.button !== 0) return
@@ -66,7 +64,6 @@ export default class SelectTool extends BaseTool {
     } else {
       this.currentMode = this.AreaMode
     }
-    console.log('当前模式', this.currentMode?.name)
     this.currentMode.onMouseDown(e)
   }
   onMouseMove(e: MouseEvent): void {
@@ -85,12 +82,8 @@ export default class SelectTool extends BaseTool {
     this.currentMode.onMouseUp()
     this.currentMode = null
   }
-  activate(): void {
-    console.log('选择工具 激活')
-  }
-  deactivate(): void {
-    console.log('选择工具 取消')
-  }
+  activate(): void {}
+  deactivate(): void {}
   onKeyDown(e: KeyboardEvent): void {
     this.currentMode?.onKeyDown(e)
   }
