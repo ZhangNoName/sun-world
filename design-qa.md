@@ -1,57 +1,81 @@
-# Manage admin redesign design QA
+# ChatGPT-style AIGC shell design QA
 
-Date: 2026-08-02
+Date: 2026-08-30
 
-## 2026-08-02 shadcn visual refresh
+## Scope and reference
 
-- Replaced the custom Manage shell composition with a local shadcn-style
-  `SidebarProvider` / `Sidebar` / `SidebarInset` contract. The desktop browser
-  pass showed the sidebar rail, compact active states, inset content area,
-  sticky topbar, lower-left language switch, and upward account menu without
-  public navigation leaking into `/manage/*`.
-- Reworked the generic data surface around the existing shadcn Card and Table
-  primitives: page heading, one table card, left-side create/action slot,
-  right-side search/reset slot, bounded two-axis table scrolling, sticky header,
-  and a separate pagination footer with page-size selection.
-- Desktop visual pass: passed at the available 1280px browser viewport. The
-  local session had no administrator token, so the guarded data page itself was
-  not bypassed; its table/card structure remains covered by the focused tests.
-- Mobile behavior remains on the existing 760px drawer breakpoint and was
-  preserved in the responsive CSS and shell tests; the earlier 390x844 drawer
-  pass remains valid for the unchanged route/guard interaction.
+- Rebuilt the `/aigc` shell against the supplied ChatGPT expanded and collapsed
+  sidebar references, while retaining Sun World's real routes, account state,
+  model selection, conversation history, streaming, attachments, and message
+  actions.
+- Reference captures:
+  `docs/design-qa/chatgpt-shell/reference-expanded-1800x868@2x.png` and
+  `docs/design-qa/chatgpt-shell/reference-collapsed-1800x868@2x.png`.
+- Final implementation captures:
+  `docs/design-qa/chatgpt-shell/implementation-expanded-final-1800x868.jpg` and
+  `docs/design-qa/chatgpt-shell/implementation-collapsed-final-1800x868.jpg`.
+- Final combined comparison inputs, with the reference on the left and the
+  implementation on the right:
+  `docs/design-qa/chatgpt-shell/comparison-expanded-final-reference-left.jpg`
+  and
+  `docs/design-qa/chatgpt-shell/comparison-collapsed-final-reference-left.jpg`.
 
-No P0, P1, or P2 visual findings remain for this refresh.
+The source geometry was measured at a 1800 × 868 CSS viewport with device pixel
+ratio 2. The final implementation capture used a 1800 × 924 viewport and was
+top-cropped to the same 1800 × 868 comparison area; all measured vertical shell
+coordinates are unchanged.
 
-Source of truth: `docs/superpowers/specs/2026-08-01-manage-admin-shell-data-page-design.md`, approved design commit `43b1c888`, and the two approved user screenshot references from the design context.
+## Visual fidelity
 
-## Browser evidence
+| Element | Expanded | Collapsed | Result |
+| --- | ---: | ---: | --- |
+| Sidebar / rail | 260 px | 52 px | Exact reference widths |
+| Main content shift | — | 104 px left | Exact |
+| Chat / Work switch | x 922, y 8, 216 × 36 | x 818, y 8, 216 × 36 | Exact |
+| Empty-state heading | y 300, h 42 | y 300, h 42 | Exact |
+| Composer | x 646, y 364, 768 × 52 | x 542, y 364, 768 × 52 | Exact |
+| First suggestion | x 646, y 440, 768 × 52 | x 542, y 440, 768 × 52 | Exact |
 
-- Desktop viewport: 1280 × 900.
-  - Independent Manage shell rendered without public header, footer, or mobile navigation.
-  - Expanded and icon-rail sidebar states verified, including recursive navigation and active route highlighting.
-  - Sidebar hide/restore verified.
-  - Bottom user card and upward account menu verified with Personal profile, Account settings, Return to public site, and Sign out.
-  - Legacy `/manage/logs` was found to retain the legacy URL on direct load; the ManageLayout compatibility redirect was added and rechecked to `/manage/system/logs`.
-- Mobile viewport: 390 × 844.
-  - Mobile management drawer and close action verified.
-  - Blog route breadcrumb and nested navigation verified.
-  - `document.documentElement.scrollWidth`, `document.body.scrollWidth`, and `window.innerWidth` were all 390; no document-level horizontal overflow.
-- Guarded content state was verified in the browser. The local browser session had no administrator token, so data-page content states were exercised by the focused component tests rather than by bypassing authentication.
-- The screenshot layout correction is covered by the ManageDataPage and ManageTable regression tests: search and create share one toolbar, create actions stay on the left, pagination is outside the table viewport, and the table viewport supports both axes.
-- The table header is sticky within the bounded vertical scroll viewport, and pagination exposes a keyboard-accessible page-size selector that reloads from page 1.
+- Expanded sidebar structure matches the reference hierarchy: brand and top
+  controls, primary navigation, collapsible recent conversations, and account
+  footer. The collapsed rail retains the same core actions and account entry.
+- Sidebar and main content animate with tokenized transform and opacity motion.
+  Intermediate samples showed continuous movement, and both endpoints match
+  the reference geometry without a layout-width transition.
+- The visible product differences are intentional and truthful: Sun World
+  branding replaces ChatGPT branding, the logged-out local state shows no
+  fabricated conversation history, and the send action remains unavailable
+  until a real model is selected. The requested heading copy remains
+  `今天有什么计划？`.
+- Desktop expanded, desktop collapsed, and mobile drawer states were reviewed.
+  No P0, P1, or P2 visual finding remains.
 
-## Fidelity and interaction checklist
+## Function and accessibility
 
-- Shell geometry and spacing: passed at 1280 and 390.
-- Recursive sidebar, collapse/hide/restore, drawer, and account menu: passed.
-- Canonical routes and legacy redirects: passed after the direct-load redirect fix.
-- Loading, empty, initial error, stale refresh error, request race, selection/ref API, and page correction: covered by focused Vitest tests.
-- Dictionary label mapping, raw-value fallback, cache deduplication, and targeted invalidation: covered by focused Vitest tests and API checks.
-- Drawer create/edit forms, confirmation, and duplicate-submit guards: implemented in canonical management pages; blog edit now uses the administrator PUT endpoint and right-side SchemaForm drawer.
-- Accessibility semantics: passed for named controls, navigation landmarks, alerts, form labels, menu items, and expanded states.
-- Theme and responsive CSS: implementation reviewed; no P0/P1/P2 visual issue remained.
-- Table layout correction: passed in component interaction tests; direct browser data-page inspection remains guarded by the missing local administrator session.
+- New chat, title search, recent-conversation expand/sort/select, model and MCP
+  settings, real product navigation, account entry, suggestions, composer,
+  attachment handling, streaming, retry, edit, and feedback behavior are wired
+  to existing application capabilities.
+- Expanding from the collapsed search action, Escape-to-close on mobile, focus
+  trapping, focus restoration, inert hidden navigation, landmarks, accessible
+  names, and expanded-state semantics are covered.
+- Starting a blank conversation now reuses that local draft, preserves it when
+  authenticated history arrives, and aborts an active stream only when a truly
+  new conversation is created.
+- Fresh Chrome console inspection reported no warnings or errors.
 
-No P0, P1, or P2 findings remain. Existing unauthenticated telemetry/API 401 logs are expected guard behavior, not a Manage shell rendering error.
+## Verification
+
+- Focused Web, AI UI, AI Composer, shared UI, and chat-state tests passed.
+- Web, UI, AI UI, and AI Composer typechecks passed.
+- Production Web build passed.
+- AI interface, public-entry, UI package boundary, icon boundary, theme, and
+  motion guards passed.
+- Performance budgets passed, including total CSS at `50.0 KiB / 50.0 KiB`.
+- Formatting and diff-integrity checks passed after the final documentation
+  update.
+
+The previous Manage redesign QA was preserved at
+`docs/design-qa/manage/manage-admin-redesign-2026-08-02.md`.
 
 final result: passed

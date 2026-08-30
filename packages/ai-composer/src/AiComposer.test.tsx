@@ -30,6 +30,7 @@ function ComposerHarness({
   maxFiles,
   maxFileSize,
   speechAdapter,
+  variant,
 }: {
   onSubmit?: AiComposerProps['onSubmit']
   onCancel?: AiComposerProps['onCancel']
@@ -42,12 +43,14 @@ function ComposerHarness({
   maxFiles?: number
   maxFileSize?: number
   speechAdapter?: SpeechInputAdapter
+  variant?: AiComposerProps['variant']
 }) {
   const [value, setValue] = useState('')
   const [selectedModelId, setSelectedModelId] = useState(modelId)
   return (
     <AiComposer
       ref={composerRef}
+      variant={variant}
       value={value}
       onValueChange={setValue}
       models={models}
@@ -68,6 +71,18 @@ function ComposerHarness({
 }
 
 describe('AiComposer core', () => {
+  it('keeps work as the default and exposes the compact chat variant', () => {
+    const view = render(<ComposerHarness />)
+    expect(view.container.querySelector('form')).toHaveClass(
+      'sw-ai-composer--work'
+    )
+
+    view.rerender(<ComposerHarness variant="chat" />)
+    expect(view.container.querySelector('form')).toHaveClass(
+      'sw-ai-composer--chat'
+    )
+  })
+
   it('renders interactive controls through the owned UI primitives', () => {
     render(<ComposerHarness />)
 

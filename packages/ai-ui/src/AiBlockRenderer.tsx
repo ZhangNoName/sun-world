@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@sun-world/base-ui/table'
-
 import type { AiRendererRegistry } from './types'
 
 const AiChart = lazy(() => import('./AiChart'))

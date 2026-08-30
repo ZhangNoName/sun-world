@@ -121,11 +121,7 @@ export function useAiChat() {
       .then(([conversationItems, profileItems]) => {
         if (workspaceGeneration.current !== generation) return
         const mapped = (conversationItems ?? []).map(mapConversation)
-        if (mapped.length) {
-          setConversations(mapped)
-          setActiveConversationId(mapped[0]!.id)
-          setMessagesByConversation({})
-        }
+        if (mapped.length) setConversations([emptyConversation, ...mapped])
         setProviderProfiles((profileItems ?? []).map(mapProviderProfile))
       })
       .catch(() => undefined)
@@ -185,6 +181,23 @@ export function useAiChat() {
   }, [refreshCapabilities, userId])
 
   const startConversation = useCallback(() => {
+    const currentConversation = conversations.find(
+      (conversation) => conversation.id === activeConversationId
+    )
+    const currentMessages = messagesByConversation[activeConversationId] ?? []
+    const isBlankLocalConversation =
+      runState.status !== 'running' &&
+      currentConversation?.id.includes('-local-') === true &&
+      currentConversation.title === '新对话' &&
+      currentMessages.length === 0
+
+    if (isBlankLocalConversation) {
+      setActiveConversationId(currentConversation.id)
+      setRunState({ status: 'idle' })
+      return currentConversation
+    }
+
+    if (runState.status === 'running') controller.current?.abort()
     const conversation = newConversation()
     setConversations((items) => [conversation, ...items])
     setMessagesByConversation((items) => ({
@@ -193,7 +206,13 @@ export function useAiChat() {
     }))
     setActiveConversationId(conversation.id)
     setRunState({ status: 'idle' })
-  }, [])
+    return conversation
+  }, [
+    activeConversationId,
+    conversations,
+    messagesByConversation,
+    runState.status,
+  ])
 
   const selectConversation = useCallback(
     (conversationId: string) => {

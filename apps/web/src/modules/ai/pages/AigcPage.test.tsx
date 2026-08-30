@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { useAiChat } from '../composables/useAiChat'
 import { AigcPage } from './AigcPage'
@@ -6,7 +7,8 @@ import { AigcPage } from './AigcPage'
 vi.mock('../composables/useAiChat')
 
 describe('AigcPage', () => {
-  it('renders the package-owned AI workspace', () => {
+  it('renders the package-owned AI workspace', async () => {
+    const user = userEvent.setup()
     vi.mocked(useAiChat).mockReturnValue({
       conversations: [],
       activeConversationId: 'chat-local-test',
@@ -45,7 +47,12 @@ describe('AigcPage', () => {
     expect(
       screen.getByRole('region', { name: 'Sun World AI 工作区' })
     ).toBeInTheDocument()
-    expect(screen.getByText('今天想一起完成什么？')).toBeInTheDocument()
+    expect(screen.getByText('今天有什么计划？')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /登录/ })).toHaveAttribute(
+      'href',
+      '/login'
+    )
+    await user.click(screen.getByRole('button', { name: '插件' }))
     expect(screen.getByRole('button', { name: '模型设置' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /角色与 Skills 设置/ })

@@ -100,6 +100,7 @@ describe('AiWorkspace', () => {
       />
     )
 
+    await user.click(screen.getByRole('button', { name: '插件' }))
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     const key = screen.getByLabelText('API Key')
     await user.type(key, 'sk-browser-only')
@@ -139,6 +140,7 @@ describe('AiWorkspace', () => {
       />
     )
 
+    await user.click(screen.getByRole('button', { name: '插件' }))
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     await user.click(screen.getByRole('combobox', { name: '服务商' }))
     expect(screen.getByRole('dialog')).not.toContainElement(
@@ -180,7 +182,8 @@ describe('AiWorkspace', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: /设置/ }))
+    await user.click(screen.getByRole('button', { name: '插件' }))
+    await user.click(screen.getByRole('button', { name: '模型设置' }))
     await user.click(screen.getByRole('button', { name: /保存配置/ }))
 
     await waitFor(() => expect(onSaveProvider).toHaveBeenCalledTimes(1))
@@ -215,7 +218,8 @@ describe('AiWorkspace', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: /设置/ }))
+    await user.click(screen.getByRole('button', { name: '插件' }))
+    await user.click(screen.getByRole('button', { name: '模型设置' }))
     await user.click(screen.getByRole('button', { name: /保存配置/ }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('保存请求失败')
@@ -336,6 +340,7 @@ describe('AiWorkspace', () => {
 
     await user.click(screen.getByRole('button', { name: '重试' }))
     expect(onRetry).toHaveBeenCalledTimes(1)
+    await user.click(screen.getByRole('button', { name: '插件' }))
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     expect(screen.getByText('我的 DeepSeek')).toBeInTheDocument()
     expect(screen.getAllByText('deepseek-chat')).toHaveLength(2)
@@ -374,6 +379,127 @@ describe('AiWorkspace', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps the wide sidebar mounted while switching to the compact rail', async () => {
+    const user = userEvent.setup()
+    const view = render(
+      <AiWorkspace
+        conversations={[{ id: 'conv-1', title: '项目讨论' }]}
+        activeConversationId="conv-1"
+        messages={[]}
+        runState={{ status: 'idle' }}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    const sidebar = view.container.querySelector('.sun-chat-shell__sidebar')
+    expect(sidebar).toHaveAttribute('aria-hidden', 'false')
+    await user.click(screen.getByRole('button', { name: '收起对话列表' }))
+    expect(sidebar).toHaveAttribute('aria-hidden', 'true')
+
+    const open = screen.getByRole('button', { name: '打开对话列表' })
+    expect(open).toBeInTheDocument()
+    await user.click(open)
+    expect(sidebar).toHaveAttribute('aria-hidden', 'false')
+  })
+
+  it('filters recent conversations from the sidebar search', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[
+          { id: 'conv-1', title: '项目周报' },
+          { id: 'conv-2', title: '旅行计划' },
+        ]}
+        activeConversationId="conv-1"
+        messages={[]}
+        runState={{ status: 'idle' }}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: '搜索聊天' }))
+    await user.type(screen.getByRole('searchbox', { name: '搜索聊天' }), '旅行')
+
+    expect(screen.getByRole('button', { name: '旅行计划' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '项目周报' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('moves a suggested prompt into the composer and focuses it', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          { id: 'deepseek', name: 'DeepSeek', defaultModel: 'deepseek-chat' },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', {
+        name: '总结最近的 Sun World 项目进展',
+      })
+    )
+    const composer = screen.getByRole('textbox', { name: '询问 Sun World AI' })
+    expect(composer).toHaveValue('总结最近的 Sun World 项目进展')
+    expect(composer).toHaveFocus()
+  })
+
+  it('closes the mobile drawer with Escape and restores the rail trigger', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockReturnValue({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })
+    )
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    const open = await screen.findByRole('button', { name: '打开对话列表' })
+    await user.click(open)
+    expect(screen.getByRole('button', { name: '收起对话列表' })).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('button', { name: '打开对话列表' })).toHaveFocus()
+  })
+
   it('controls and clears the composer after sending', async () => {
     const user = userEvent.setup()
     const onSend = vi.fn()
@@ -401,7 +527,7 @@ describe('AiWorkspace', () => {
     )
 
     const composer = screen.getByRole('textbox', {
-      name: '给 Sun World AI 发消息',
+      name: '询问 Sun World AI',
     })
     await user.type(composer, '  生成一张表  ')
     await user.click(screen.getByRole('button', { name: '发送消息' }))
@@ -463,7 +589,7 @@ describe('AiWorkspace', () => {
     ).not.toBeInTheDocument()
     await user.keyboard('{Escape}')
     await user.type(
-      screen.getByRole('textbox', { name: '给 Sun World AI 发消息' }),
+      screen.getByRole('textbox', { name: '询问 Sun World AI' }),
       'hello qwen'
     )
     await user.click(screen.getByRole('button', { name: '发送消息' }))
@@ -508,7 +634,7 @@ describe('AiWorkspace', () => {
       screen.getByRole('button', { name: '选择模型，当前 deepseek-reasoner' })
     ).toBeInTheDocument()
     await user.type(
-      screen.getByRole('textbox', { name: '给 Sun World AI 发消息' }),
+      screen.getByRole('textbox', { name: '询问 Sun World AI' }),
       'reason'
     )
     await user.click(screen.getByRole('button', { name: '发送消息' }))

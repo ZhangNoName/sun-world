@@ -38,6 +38,7 @@ import './styles/ai-composer.css'
 export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
   function AiComposer(
     {
+      variant = 'work',
       value,
       onValueChange,
       models,
@@ -272,7 +273,10 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       Boolean(submissionError)
 
     return (
-      <form className="sw-ai-composer" onSubmit={handleSubmit}>
+      <form
+        className={`sw-ai-composer sw-ai-composer--${variant}`}
+        onSubmit={handleSubmit}
+      >
         {commandPaletteOpen ? (
           <CommandPalette
             commands={visibleCommands}
@@ -408,10 +412,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
           </div>
         </div>
         {!canSubmit ? (
-          <span
-            id="sw-ai-composer-disabled-reason"
-            className="sw-ai-composer__sr-only"
-          >
+          <span id="sw-ai-composer-disabled-reason" className="sr-only">
             {disabledReason}
           </span>
         ) : null}

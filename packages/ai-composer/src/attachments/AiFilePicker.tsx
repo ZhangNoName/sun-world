@@ -21,7 +21,7 @@ export function AiFilePicker({
       title="添加附件"
     >
       <SunIcon name="plus" />
-      <span className="sw-ai-composer__sr-only">添加附件</span>
+      <span className="sr-only">添加附件</span>
       <input
         type="file"
         aria-label="添加附件"

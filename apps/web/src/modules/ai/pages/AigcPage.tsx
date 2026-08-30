@@ -44,6 +44,9 @@ export function AigcPage() {
       providers={chat.providers}
       providerProfiles={chat.providerProfiles}
       commands={composerCommands}
+      isAuthenticated={chat.isAuthenticated}
+      accountHref={chat.isAuthenticated ? '/me' : '/login'}
+      accountLabel={chat.isAuthenticated ? '个人中心' : '登录'}
       toolbarActions={
         <>
           <AiCapabilitySettings

@@ -1,5 +1,31 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-30 ChatGPT-aligned AIGC shell
+
+- Goal: align `/aigc` with the supplied ChatGPT expanded and collapsed shell,
+  including a smooth sidebar transition and functional parity where Sun World
+  already has a real capability.
+- Status: implemented and visually verified. The desktop shell now has a
+  260 px expanded sidebar and 52 px collapsed rail, exact 104 px content shift,
+  reference-aligned top switch, heading, 768 × 52 composer, and suggestion
+  geometry. Mobile uses the same sidebar as an accessible drawer. The sidebar
+  provides real new-chat, search, history, route, model/MCP, and account actions;
+  no unsupported ChatGPT state or history is fabricated.
+- Important files: `packages/ui/src/patterns/chat-shell/`,
+  `packages/ai-ui/src/AiWorkspace.tsx`, `packages/ai-ui/src/ai-ui.css`,
+  `packages/ai-composer/src/`, `apps/web/src/modules/ai/`, `design-qa.md`, and
+  `docs/design-qa/chatgpt-shell/`.
+- Verification: focused Web, shared UI, AI UI, AI Composer, and chat-state tests
+  pass; package typechecks and the production Web build pass; AI interface,
+  public-entry, package-boundary, icon, theme, motion, and performance-budget
+  guards pass. Chrome comparison QA used combined reference/implementation
+  images at the reference 1800 × 868 area, and a fresh console check found no
+  warnings or errors. `design-qa.md` records `final result: passed`.
+- Release boundary: no commit, push, deployment, or production-state change was
+  requested or performed.
+- Blockers: none. Next optional step is user review, followed by commit/push only
+  if explicitly requested.
+
 ### Active checkpoint: 2026-08-30 frontend runtime artifact deployment
 
 - Goal: replace the Lighthouse frontend Node/Vite Docker build with a small,

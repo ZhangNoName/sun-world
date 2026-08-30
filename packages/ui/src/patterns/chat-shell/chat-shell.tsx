@@ -6,6 +6,7 @@ import './chat-shell.css'
 
 export interface SunChatShellProps {
   sidebarWidth?: number
+  railWidth?: number
   sidebarCollapsed?: boolean
   ariaLabel?: string
   rail?: ReactNode
@@ -16,6 +17,7 @@ export interface SunChatShellProps {
 
 export function SunChatShell({
   sidebarWidth = 280,
+  railWidth = 52,
   sidebarCollapsed = false,
   ariaLabel = 'Chat workspace',
   rail,
@@ -25,6 +27,7 @@ export function SunChatShell({
 }: SunChatShellProps) {
   const style = {
     '--sun-chat-sidebar-width': `${sidebarWidth}px`,
+    '--sun-chat-rail-width': `${railWidth}px`,
   } as CSSProperties
   return (
     <section
@@ -36,9 +39,23 @@ export function SunChatShell({
       style={style}
       aria-label={ariaLabel}
     >
-      {rail ? <div className="sun-chat-shell__rail">{rail}</div> : null}
-      {!sidebarCollapsed && sidebar ? (
-        <aside className="sun-chat-shell__sidebar">{sidebar}</aside>
+      {rail ? (
+        <div
+          className="sun-chat-shell__rail"
+          aria-hidden={!sidebarCollapsed}
+          inert={!sidebarCollapsed ? true : undefined}
+        >
+          {rail}
+        </div>
+      ) : null}
+      {sidebar ? (
+        <aside
+          className="sun-chat-shell__sidebar"
+          aria-hidden={sidebarCollapsed}
+          inert={sidebarCollapsed ? true : undefined}
+        >
+          {sidebar}
+        </aside>
       ) : null}
       <div className="sun-chat-shell__main">{children}</div>
       {floating ? (

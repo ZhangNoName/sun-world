@@ -103,7 +103,7 @@ describe('useAiChat', () => {
     expect(result.current.providers).toEqual([])
   })
 
-  it('clears the previous user workspace when identity changes', async () => {
+  it('keeps a blank local conversation active while appending authenticated history', async () => {
     authState.user = { id: 7 }
     conversations.mockResolvedValueOnce([
       {
@@ -115,7 +115,14 @@ describe('useAiChat', () => {
     ])
     const { result, rerender } = renderHook(() => useAiChat())
     await act(async () => undefined)
-    expect(result.current.conversations[0]?.id).toBe('user-7-chat')
+    const user7LocalId = result.current.activeConversationId
+
+    expect(user7LocalId).toContain('-local-')
+    expect(result.current.conversations.map((item) => item.id)).toEqual([
+      user7LocalId,
+      'user-7-chat',
+    ])
+    expect(result.current.messages).toEqual([])
 
     authState.user = { id: 8 }
     conversations.mockResolvedValueOnce([])
@@ -123,8 +130,53 @@ describe('useAiChat', () => {
     await act(async () => undefined)
 
     expect(result.current.conversations).toHaveLength(1)
-    expect(result.current.conversations[0]?.id).not.toBe('user-7-chat')
+    expect(result.current.activeConversationId).not.toBe(user7LocalId)
+    expect(result.current.conversations[0]?.id).toBe(
+      result.current.activeConversationId
+    )
     expect(result.current.messages).toEqual([])
+  })
+
+  it('reuses the active blank local conversation instead of inserting another', async () => {
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+    const existingId = result.current.activeConversationId
+    let returnedId: string | undefined
+
+    act(() => {
+      returnedId = result.current.startConversation()?.id
+    })
+
+    expect(returnedId).toBe(existingId)
+    expect(result.current.activeConversationId).toBe(existingId)
+    expect(result.current.conversations).toHaveLength(1)
+  })
+
+  it('aborts a running stream before starting a new conversation', async () => {
+    let signal: AbortSignal | undefined
+    stream.mockImplementation(
+      async (_payload, options) =>
+        new Promise<void>((resolve) => {
+          signal = options.signal
+          options.signal?.addEventListener('abort', () => resolve())
+        })
+    )
+    const { result } = renderHook(() => useAiChat())
+    const previousId = result.current.activeConversationId
+    let pending!: Promise<void>
+
+    act(() => {
+      pending = result.current.sendMessage(payload('继续生成'))
+    })
+    act(() => {
+      result.current.startConversation()
+    })
+
+    expect(signal?.aborted).toBe(true)
+    expect(result.current.activeConversationId).not.toBe(previousId)
+    expect(result.current.messages).toEqual([])
+
+    await act(async () => pending)
   })
 
   it('sends the local conversation id for an anonymous run', async () => {
