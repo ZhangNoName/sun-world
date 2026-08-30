@@ -15,16 +15,22 @@
   `packages/ai-ui/src/AiWorkspace.tsx`, `packages/ai-ui/src/ai-ui.css`,
   `packages/ai-composer/src/`, `apps/web/src/modules/ai/`, `design-qa.md`, and
   `docs/design-qa/chatgpt-shell/`.
-- Verification: focused Web, shared UI, AI UI, AI Composer, and chat-state tests
-  pass; package typechecks and the production Web build pass; AI interface,
-  public-entry, package-boundary, icon, theme, motion, and performance-budget
-  guards pass. Chrome comparison QA used combined reference/implementation
-  images at the reference 1800 × 868 area, and a fresh console check found no
-  warnings or errors. `design-qa.md` records `final result: passed`.
-- Release boundary: no commit, push, deployment, or production-state change was
-  requested or performed.
-- Blockers: none. Next optional step is user review, followed by commit/push only
-  if explicitly requested.
+- Verification: `corepack pnpm check` passed all 20/20 repository gates,
+  including 182 Web tests, 357 API tests, package tests and builds, production
+  Web build, UI-library boundaries, and performance budgets. Chrome comparison
+  QA used combined reference/implementation images at the reference 1800 × 868
+  area, and a fresh console check found no warnings or errors. `design-qa.md`
+  records `final result: passed`.
+- Deployment: frontend commit `84cc33c` was pushed to GitHub `main` and deployed
+  successfully by GitHub Actions run `33318526644`. The workflow verified and
+  uploaded the static runtime artifact, built the offline Lighthouse frontend
+  image, and completed the safe container cutover; API build and secret sync
+  were correctly skipped because this was a Web-only change. Independent probes
+  returned HTTP 200 for `sunworld.site`, `www.sunworld.site`, and `/aigc`, while
+  `api.sunworld.site/healthz` returned `{"status":"ok"}`. The deployed manifest
+  was generated during this run and contains the new AIGC assets.
+- Blockers: none. Next optional step is user review of the production `/aigc`
+  experience.
 
 ### Active checkpoint: 2026-08-30 frontend runtime artifact deployment
 
