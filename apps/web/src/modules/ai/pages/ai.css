@@ -574,21 +574,6 @@
 }
 
 @media (max-width: 720px) {
-  .sw-ai-capability-trigger {
-    width: 2rem;
-    padding: 0;
-  }
-
-  .sw-ai-capability-trigger > span,
-  .sw-ai-capability-trigger > small {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
   .sw-ai-capability-dialog {
     width: calc(100vw - 1rem);
     max-width: calc(100vw - 1rem);

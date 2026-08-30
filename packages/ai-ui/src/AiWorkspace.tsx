@@ -5,6 +5,7 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent,
+  type CSSProperties,
   type ReactNode,
 } from 'react'
 import {
@@ -52,7 +53,7 @@ const sidebarRowLinkClass = buttonVariants({
 })
 const sidebarPanelLinkClass = buttonVariants({
   variant: 'ghost',
-  className: 'sw-ai-sidebar-panel-link',
+  className: 'sw-ai-sidebar-flyout-item',
 })
 
 export interface AiWorkspaceProps {
@@ -65,6 +66,8 @@ export interface AiWorkspaceProps {
   commands?: AiComposerCommand[]
   renderers?: AiRendererRegistry
   toolbarActions?: ReactNode
+  railBrand?: ReactNode
+  railFooter?: ReactNode
   sidebarWidth?: number
   onSidebarWidthChange?: (width: number) => void
   isAuthenticated?: boolean
@@ -91,6 +94,8 @@ export function AiWorkspace({
   commands = [],
   renderers,
   toolbarActions,
+  railBrand,
+  railFooter,
   sidebarWidth = 260,
   onSidebarWidthChange,
   isAuthenticated = false,
@@ -118,6 +123,9 @@ export function AiWorkspace({
   const [draft, setDraft] = useState('')
   const composerRef = useRef<AiComposerHandle>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
+  const flyoutRef = useRef<HTMLDivElement>(null)
+  const pluginsTriggerRef = useRef<HTMLButtonElement>(null)
+  const moreTriggerRef = useRef<HTMLButtonElement>(null)
   const railOpenRef = useRef<HTMLButtonElement>(null)
   const closeSidebarRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -241,6 +249,41 @@ export function AiWorkspace({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isMobile, sidebarOpen])
 
+  useEffect(() => {
+    if (!pluginsOpen && !moreOpen) return
+    const closeFlyout = (event: globalThis.PointerEvent) => {
+      const target = event.target as Node
+      if (target instanceof Element && target.closest('[role="dialog"]')) {
+        return
+      }
+      if (
+        flyoutRef.current?.contains(target) ||
+        pluginsTriggerRef.current?.contains(target) ||
+        moreTriggerRef.current?.contains(target)
+      ) {
+        return
+      }
+      setPluginsOpen(false)
+      setMoreOpen(false)
+    }
+    const closeWithEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      const trigger = pluginsOpen
+        ? pluginsTriggerRef.current
+        : moreTriggerRef.current
+      setPluginsOpen(false)
+      setMoreOpen(false)
+      queueMicrotask(() => trigger?.focus())
+    }
+    document.addEventListener('pointerdown', closeFlyout)
+    document.addEventListener('keydown', closeWithEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeFlyout)
+      document.removeEventListener('keydown', closeWithEscape)
+    }
+  }, [moreOpen, pluginsOpen])
+
   const visibleConversations = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase()
     const conversationsWithContent = conversations.filter(
@@ -306,6 +349,8 @@ export function AiWorkspace({
   }
 
   const closeSidebar = () => {
+    setPluginsOpen(false)
+    setMoreOpen(false)
     setSidebarOpen(false)
     queueMicrotask(() => railOpenRef.current?.focus())
   }
@@ -378,14 +423,97 @@ export function AiWorkspace({
       sidebarCollapsed={!sidebarOpen}
       floating={
         sidebarOpen ? (
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="sw-ai-sidebar-scrim"
-            aria-label="关闭对话列表遮罩"
-            onClick={closeSidebar}
-          />
+          <>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="sw-ai-sidebar-scrim"
+              aria-label="关闭对话列表遮罩"
+              onClick={closeSidebar}
+            />
+            {pluginsOpen || moreOpen ? (
+              <div
+                ref={flyoutRef}
+                id="sw-ai-sidebar-flyout"
+                className="sw-ai-sidebar-flyout"
+                style={
+                  {
+                    '--sw-ai-flyout-top': `${pluginsOpen ? 184 : 220}px`,
+                  } as CSSProperties
+                }
+                role="menu"
+                aria-label={pluginsOpen ? '插件设置' : '更多功能'}
+              >
+                {pluginsOpen ? (
+                  <>
+                    {toolbarActions}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="sw-ai-sidebar-flyout-item"
+                      aria-label="模型设置"
+                      onClick={() => {
+                        setSettingsOpen(true)
+                      }}
+                    >
+                      <SunIcon name="settings" />
+                      <span>模型与服务商</span>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      className={sidebarPanelLinkClass}
+                      href="/canvas"
+                      role="menuitem"
+                    >
+                      <SunIcon name="image" />
+                      <span>图片</span>
+                    </a>
+                    <a
+                      className={sidebarPanelLinkClass}
+                      href="/tools?category=map"
+                      role="menuitem"
+                    >
+                      <SunIcon name="map-pin" />
+                      <span>地图</span>
+                      <small>新</small>
+                    </a>
+                    <a
+                      className={sidebarPanelLinkClass}
+                      href="/tools?category=finance"
+                      role="menuitem"
+                    >
+                      <SunIcon name="badge-dollar-sign" />
+                      <span>财务</span>
+                    </a>
+                    <a
+                      className={sidebarPanelLinkClass}
+                      href="/home"
+                      role="menuitem"
+                    >
+                      <SunIcon name="group" />
+                      <span>站点</span>
+                      <small>新</small>
+                    </a>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="sw-ai-sidebar-flyout-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setSettingsOpen(true)
+                      }}
+                    >
+                      <SunIcon name="box" />
+                      <span>GPT</span>
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : null}
+          </>
         ) : null
       }
       rail={
@@ -402,7 +530,7 @@ export function AiWorkspace({
             title="打开侧边栏"
             onClick={openSidebar}
           >
-            <SunIcon name="sun" />
+            {railBrand ?? <SunIcon name="panel-left-open" />}
           </Button>
           <Button
             type="button"
@@ -434,14 +562,18 @@ export function AiWorkspace({
           >
             <SunIcon name="message-circle" />
           </Button>
-          <a
-            className="sw-ai-rail-account"
-            href={accountHref}
-            aria-label={accountLabel}
-            title={accountLabel}
-          >
-            <SunIcon name="user" />
-          </a>
+          <div className="sw-ai-rail-footer">
+            {railFooter ?? (
+              <a
+                className="sw-ai-rail-account"
+                href={accountHref}
+                aria-label={accountLabel}
+                title={accountLabel}
+              >
+                <SunIcon name="user" />
+              </a>
+            )}
+          </div>
         </div>
       }
       sidebar={
@@ -451,6 +583,7 @@ export function AiWorkspace({
               Sun World
             </a>
             <Button
+              ref={pluginsTriggerRef}
               type="button"
               size="icon-lg"
               variant="ghost"
@@ -532,61 +665,30 @@ export function AiWorkspace({
               variant="ghost"
               className="sw-ai-sidebar-row"
               aria-expanded={pluginsOpen}
-              onClick={() => setPluginsOpen((value) => !value)}
+              aria-controls="sw-ai-sidebar-flyout"
+              onClick={() => {
+                setMoreOpen(false)
+                setPluginsOpen((value) => !value)
+              }}
             >
               <SunIcon name="settings" />
               <span>插件</span>
-              <SunIcon
-                className="sw-ai-sidebar-chevron"
-                name={pluginsOpen ? 'chevron-down' : 'chevron-right'}
-                size="xs"
-              />
             </Button>
-            {pluginsOpen ? (
-              <div className="sw-ai-sidebar-panel sw-ai-plugin-panel">
-                {toolbarActions}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  aria-label="模型设置"
-                  onClick={() => setSettingsOpen(true)}
-                >
-                  <SunIcon name="settings" />
-                  模型与服务商
-                </Button>
-              </div>
-            ) : null}
             <Button
+              ref={moreTriggerRef}
               type="button"
               variant="ghost"
               className="sw-ai-sidebar-row"
               aria-expanded={moreOpen}
-              onClick={() => setMoreOpen((value) => !value)}
+              aria-controls="sw-ai-sidebar-flyout"
+              onClick={() => {
+                setPluginsOpen(false)
+                setMoreOpen((value) => !value)
+              }}
             >
               <SunIcon name="more-horizontal" />
               <span>更多</span>
-              <SunIcon
-                className="sw-ai-sidebar-chevron"
-                name={moreOpen ? 'chevron-down' : 'chevron-right'}
-                size="xs"
-              />
             </Button>
-            {moreOpen ? (
-              <div className="sw-ai-sidebar-panel">
-                <a className={sidebarPanelLinkClass} href="/home">
-                  首页
-                </a>
-                <a className={sidebarPanelLinkClass} href="/tools">
-                  工具
-                </a>
-                <a className={sidebarPanelLinkClass} href="/video">
-                  视频
-                </a>
-                <a className={sidebarPanelLinkClass} href="/me">
-                  个人中心
-                </a>
-              </div>
-            ) : null}
           </nav>
 
           <section className="sw-ai-sidebar-recents" aria-label="对话历史">

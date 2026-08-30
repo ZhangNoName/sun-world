@@ -89,7 +89,7 @@ export function AiCapabilitySettings({
   )
   const summary = isAuthenticated
     ? `${selectedPersona?.name ?? '默认角色'} · ${selectedSkillIds.length} 个 Skill`
-    : '登录后可用'
+    : '默认角色 · 0 个 Skill'
 
   useEffect(() => {
     if (open) return
@@ -424,17 +424,17 @@ export function AiCapabilitySettings({
 function GuestCapabilityState({ onClose }: { onClose: () => void }) {
   return (
     <div className="sw-ai-capability-state sw-ai-capability-state--guest">
-      <SunIcon name="user" aria-hidden="true" />
+      <SunIcon name="settings" aria-hidden="true" />
       <div>
-        <strong>登录后保存你的角色与 Skills</strong>
-        <p>当前仍可直接聊天；登录只用于跨设备同步这些个人配置。</p>
+        <strong>默认角色</strong>
+        <p>当前没有启用 Skills。你可以直接使用默认配置开始聊天。</p>
       </div>
       <a
         className="sw-ai-capability-login"
         href="/login?return_to=%2Faigc"
         onClick={onClose}
       >
-        去登录
+        登录后自定义
       </a>
     </div>
   )

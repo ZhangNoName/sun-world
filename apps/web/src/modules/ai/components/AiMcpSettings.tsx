@@ -310,7 +310,7 @@ export function AiMcpSettings({
     (connection) => connection.id === activeConnectionId
   )
   const summary = !isAuthenticated
-    ? '登录后可用'
+    ? '0 个连接'
     : connectionStatus === 'ready'
       ? `${connections.length} 个连接`
       : '远程工具'
@@ -495,17 +495,15 @@ function GuestMcpState({ onClose }: { onClose: () => void }) {
     <div className="sw-ai-capability-state sw-ai-capability-state--guest">
       <SunIcon name="settings" aria-hidden="true" />
       <div>
-        <strong>登录后管理 MCP 远程工具</strong>
-        <p>
-          无需登录也能继续聊天；连接、访问令牌和调用记录只保存在你的账户下。
-        </p>
+        <strong>当前没有 MCP 连接</strong>
+        <p>远程工具会显示在这里；登录后可添加并同步你的连接。</p>
       </div>
       <a
         className="sw-ai-capability-login"
         href="/login?return_to=%2Faigc"
         onClick={onClose}
       >
-        去登录
+        登录后添加
       </a>
     </div>
   )

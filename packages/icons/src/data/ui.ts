@@ -250,7 +250,10 @@ export const uiIcons = {
     name: 'file-pdf',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'M8 18v-6h2a2 2 0 0 1 0 4H8' }],
       ['path', { d: 'M14 18v-6h1.5a2.5 2.5 0 0 1 0 5H14' }],
@@ -260,7 +263,10 @@ export const uiIcons = {
     name: 'file-code',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'm10 13-2 2 2 2' }],
       ['path', { d: 'm14 13 2 2-2 2' }],
@@ -270,7 +276,10 @@ export const uiIcons = {
     name: 'file-spreadsheet',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'M8 13h8' }],
       ['path', { d: 'M8 17h8' }],
@@ -281,7 +290,10 @@ export const uiIcons = {
     name: 'file-archive',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'M8 13h8' }],
       ['path', { d: 'M10 17h4' }],
@@ -291,7 +303,10 @@ export const uiIcons = {
     name: 'file-audio',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'M15 12v5' }],
       ['path', { d: 'M15 13l-4 1v4' }],
@@ -303,7 +318,10 @@ export const uiIcons = {
     name: 'file-video',
     viewBox: '0 0 24 24',
     nodes: [
-      ['path', { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' }],
+      [
+        'path',
+        { d: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' },
+      ],
       ['path', { d: 'M14 2v4a2 2 0 0 0 2 2h4' }],
       ['path', { d: 'm10 13 5 3-5 3Z' }],
     ],
@@ -452,6 +470,47 @@ export const uiIcons = {
       ['rect', { width: 7, height: 7, x: 14, y: 3, rx: 1 }],
       ['rect', { width: 7, height: 7, x: 14, y: 14, rx: 1 }],
       ['rect', { width: 7, height: 7, x: 3, y: 14, rx: 1 }],
+    ],
+  },
+  'map-pin': {
+    name: 'map-pin',
+    viewBox: '0 0 24 24',
+    nodes: [
+      [
+        'path',
+        {
+          d: 'M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0',
+        },
+      ],
+      ['circle', { cx: 12, cy: 10, r: 3 }],
+    ],
+  },
+  'badge-dollar-sign': {
+    name: 'badge-dollar-sign',
+    viewBox: '0 0 24 24',
+    nodes: [
+      [
+        'path',
+        {
+          d: 'M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1 0-6.76Z',
+        },
+      ],
+      ['path', { d: 'M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8' }],
+      ['path', { d: 'M12 18V6' }],
+    ],
+  },
+  box: {
+    name: 'box',
+    viewBox: '0 0 24 24',
+    nodes: [
+      [
+        'path',
+        {
+          d: 'M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z',
+        },
+      ],
+      ['path', { d: 'm3.3 7 8.7 5 8.7-5' }],
+      ['path', { d: 'M12 22V12' }],
     ],
   },
   loader: {

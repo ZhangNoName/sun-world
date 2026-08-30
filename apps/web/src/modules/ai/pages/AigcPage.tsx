@@ -1,5 +1,6 @@
 import { AiWorkspace } from '@sun-world/ai-ui'
 
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { AiCapabilitySettings } from '../components/AiCapabilitySettings'
 import { AiMcpSettings } from '../components/AiMcpSettings'
 import { useAiChat } from '../composables/useAiChat'
@@ -47,6 +48,10 @@ export function AigcPage() {
       isAuthenticated={chat.isAuthenticated}
       accountHref={chat.isAuthenticated ? '/me' : '/login'}
       accountLabel={chat.isAuthenticated ? '个人中心' : '登录'}
+      railBrand={
+        <img src="/logo.svg" alt="" width={22} height={22} aria-hidden="true" />
+      }
+      railFooter={<ThemeSwitch />}
       toolbarActions={
         <>
           <AiCapabilitySettings

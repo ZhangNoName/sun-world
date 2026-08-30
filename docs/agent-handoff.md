@@ -1,5 +1,32 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-30 AIGC sidebar refinement
+
+- Goal: match the supplied ChatGPT sidebar crop more closely, keep capability
+  settings visible to guests, and replace the collapsed-rail account control
+  with the working theme toggle.
+- Status: implemented and locally verified. Plugins and More now open as
+  mutually exclusive right-side flyouts without shifting recent chats; More
+  contains the reference-aligned 图片、地图、财务、站点、GPT rows. Guest role,
+  Skills, and MCP triggers show truthful default/empty states instead of
+  “登录后可用”. The collapsed rail now uses the existing Sun World vector brand
+  mark for its top expand action and exposes the real light/dark theme switch
+  only at the bottom, avoiding the previous duplicate sun metaphor.
+- Important files: `packages/ai-ui/src/AiWorkspace.tsx`,
+  `packages/ai-ui/src/ai-ui.css`, `packages/icons/src/data/ui.ts`,
+  `apps/web/src/modules/ai/`, `design-qa.md`, and
+  `docs/design-qa/chatgpt-shell/sidebar-refinement/`.
+- Verification: 21 AI UI tests, 182 Web tests, icon tests/boundary, AI UI and
+  Web typechecks, production Web build, motion contract, formatting, and all
+  frontend performance budgets passed. Browser QA covered More, Escape,
+  plugins, guest settings, collapse/expand, the branded expand control, and the
+  theme toggle in both themes. The combined icon comparison resolved the
+  user-marked semantic mismatch, and console inspection returned no warnings
+  or errors. `design-qa.md` ends with `final result: passed`.
+- Deployment: not performed for this refinement. Production remains on the
+  previously deployed ChatGPT-aligned shell until the user asks to deploy.
+- Blockers: none. Next step is user review, then commit/push/deploy if requested.
+
 ### Active checkpoint: 2026-08-30 ChatGPT-aligned AIGC shell
 
 - Goal: align `/aigc` with the supplied ChatGPT expanded and collapsed shell,

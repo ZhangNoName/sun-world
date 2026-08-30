@@ -44,7 +44,7 @@ function renderSettings(overrides: Partial<AiCapabilitySettingsProps> = {}) {
 }
 
 describe('AiCapabilitySettings', () => {
-  it('explains that capabilities require login while guest chat remains available', async () => {
+  it('shows the guest defaults before offering account sync', async () => {
     const user = userEvent.setup()
     renderSettings({
       isAuthenticated: false,
@@ -55,9 +55,9 @@ describe('AiCapabilitySettings', () => {
 
     await user.click(screen.getByRole('button', { name: /角色与 Skills 设置/ }))
 
-    expect(screen.getByText('登录后保存你的角色与 Skills')).toBeInTheDocument()
-    expect(screen.getByText(/当前仍可直接聊天/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '去登录' })).toHaveAttribute(
+    expect(screen.getByText('默认角色')).toBeInTheDocument()
+    expect(screen.getByText(/当前没有启用 Skills/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '登录后自定义' })).toHaveAttribute(
       'href',
       '/login?return_to=%2Faigc'
     )

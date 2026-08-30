@@ -695,4 +695,47 @@ describe('AiWorkspace', () => {
     await user.click(screen.getByRole('button', { name: '停止生成' }))
     expect(onStop).toHaveBeenCalledTimes(1)
   })
+
+  it('opens the ChatGPT-style More flyout and restores focus on Escape', async () => {
+    const user = userEvent.setup()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        railBrand={<span data-testid="rail-brand">SW</span>}
+        railFooter={<button type="button">切换主题</button>}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    const more = screen.getByRole('button', { name: '更多' })
+    await user.click(more)
+    const menu = screen.getByRole('menu', { name: '更多功能' })
+    expect(
+      within(menu).getByRole('menuitem', { name: '图片' })
+    ).toHaveAttribute('href', '/canvas')
+    expect(within(menu).getByRole('menuitem', { name: /地图/ })).toBeVisible()
+    expect(within(menu).getByRole('menuitem', { name: '财务' })).toBeVisible()
+    expect(within(menu).getByRole('menuitem', { name: /站点/ })).toBeVisible()
+    expect(within(menu).getByRole('menuitem', { name: 'GPT' })).toBeVisible()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('menu', { name: '更多功能' })).toBeNull()
+    expect(more).toHaveFocus()
+
+    await user.click(screen.getByRole('button', { name: '收起对话列表' }))
+    expect(
+      within(screen.getByRole('button', { name: '打开对话列表' })).getByTestId(
+        'rail-brand'
+      )
+    ).toBeVisible()
+    expect(screen.getByRole('button', { name: '切换主题' })).toBeVisible()
+  })
 })

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { ThemeProvider } from '@/shared/design/theme'
 import { useAiChat } from '../composables/useAiChat'
 import { AigcPage } from './AigcPage'
 
@@ -42,7 +43,11 @@ describe('AigcPage', () => {
       removeSkill: vi.fn(),
     })
 
-    render(<AigcPage />)
+    render(
+      <ThemeProvider>
+        <AigcPage />
+      </ThemeProvider>
+    )
 
     expect(
       screen.getByRole('region', { name: 'Sun World AI 工作区' })
@@ -56,6 +61,16 @@ describe('AigcPage', () => {
     expect(screen.getByRole('button', { name: '模型设置' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /角色与 Skills 设置/ })
+    ).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: '收起对话列表' }))
+    expect(
+      screen
+        .getByRole('button', { name: '打开对话列表' })
+        .querySelector('img[src="/logo.svg"]')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /切换到(深色|浅色)模式/ })
     ).toBeInTheDocument()
   })
 })

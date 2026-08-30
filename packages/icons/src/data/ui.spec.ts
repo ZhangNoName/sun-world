@@ -30,6 +30,9 @@ describe('ui icon data', () => {
         'file-archive',
         'file-audio',
         'file-video',
+        'map-pin',
+        'badge-dollar-sign',
+        'box',
       ])
     )
     expect(Object.keys(uiIcons)).toEqual([...uiIconNames])

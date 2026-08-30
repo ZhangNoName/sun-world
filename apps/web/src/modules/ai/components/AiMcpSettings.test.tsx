@@ -78,15 +78,15 @@ describe('AiMcpSettings', () => {
     })
   })
 
-  it('keeps guest chat available and never loads private connections', async () => {
+  it('shows the empty guest state and never loads private connections', async () => {
     const user = userEvent.setup()
     render(<AiMcpSettings isAuthenticated={false} />)
 
     await user.click(screen.getByRole('button', { name: /MCP 设置/ }))
 
-    expect(screen.getByText('登录后管理 MCP 远程工具')).toBeInTheDocument()
-    expect(screen.getByText(/无需登录也能继续聊天/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '去登录' })).toHaveAttribute(
+    expect(screen.getByText('当前没有 MCP 连接')).toBeInTheDocument()
+    expect(screen.getByText(/远程工具会显示在这里/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '登录后添加' })).toHaveAttribute(
       'href',
       '/login?return_to=%2Faigc'
     )
