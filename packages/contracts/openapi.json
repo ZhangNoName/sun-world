@@ -818,6 +818,23 @@
       },
       "AiProviderCatalog": {
         "properties": {
+          "api_key_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Hint"
+          },
+          "auth_mode": {
+            "default": "bearer",
+            "enum": ["none", "bearer"],
+            "title": "Auth Mode",
+            "type": "string"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -826,7 +843,6 @@
           "default_base_url": {
             "anyOf": [
               {
-                "maxLength": 2048,
                 "type": "string"
               },
               {
@@ -838,7 +854,6 @@
           "default_model": {
             "anyOf": [
               {
-                "maxLength": 200,
                 "type": "string"
               },
               {
@@ -847,6 +862,11 @@
             ],
             "title": "Default Model"
           },
+          "has_api_key": {
+            "default": false,
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
           "id": {
             "maxLength": 64,
             "minLength": 2,
@@ -854,14 +874,17 @@
             "title": "Id",
             "type": "string"
           },
+          "is_default": {
+            "default": false,
+            "title": "Is Default",
+            "type": "boolean"
+          },
           "is_enabled": {
             "default": true,
             "title": "Is Enabled",
             "type": "boolean"
           },
           "name": {
-            "maxLength": 120,
-            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
@@ -883,7 +906,32 @@
         "type": "object"
       },
       "AiProviderCatalogInput": {
+        "additionalProperties": false,
         "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "auth_mode": {
+            "default": "bearer",
+            "enum": ["none", "bearer"],
+            "title": "Auth Mode",
+            "type": "string"
+          },
+          "clear_api_key": {
+            "default": false,
+            "title": "Clear Api Key",
+            "type": "boolean"
+          },
           "default_base_url": {
             "anyOf": [
               {
@@ -914,6 +962,11 @@
             "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
             "title": "Id",
             "type": "string"
+          },
+          "is_default": {
+            "default": false,
+            "title": "Is Default",
+            "type": "boolean"
           },
           "is_enabled": {
             "default": true,
@@ -968,6 +1021,11 @@
             "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
             "title": "Id",
             "type": "string"
+          },
+          "is_default": {
+            "default": false,
+            "title": "Is Default",
+            "type": "boolean"
           },
           "name": {
             "title": "Name",
@@ -1140,6 +1198,7 @@
         "type": "object"
       },
       "AiRunRequest": {
+        "additionalProperties": false,
         "properties": {
           "conversation_id": {
             "anyOf": [
@@ -1157,6 +1216,20 @@
             "minLength": 1,
             "title": "Message",
             "type": "string"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 2,
+                "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
           },
           "parent_message_id": {
             "anyOf": [
@@ -2084,6 +2157,38 @@
         "title": "ApiResponse[IdentitySession]",
         "type": "object"
       },
+      "ApiResponse_IntegrationConnector_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationConnector"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[IntegrationConnector]",
+        "type": "object"
+      },
       "ApiResponse_List_Category__": {
         "properties": {
           "code": {
@@ -2861,6 +2966,42 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[list[DictionaryItemPublic]]",
+        "type": "object"
+      },
+      "ApiResponse_list_IntegrationConnector__": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/IntegrationConnector"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[list[IntegrationConnector]]",
         "type": "object"
       },
       "ApiResponse_str_": {
@@ -3769,6 +3910,100 @@
           "refresh_token_expire"
         ],
         "title": "IdentitySession",
+        "type": "object"
+      },
+      "IntegrationCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation": {
+            "default": "write",
+            "enum": ["never", "write", "always"],
+            "title": "Confirmation",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "effect": {
+            "enum": ["read", "write", "delete"],
+            "title": "Effect",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+$",
+            "title": "Id",
+            "type": "string"
+          },
+          "required_fields": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Required Fields",
+            "type": "array"
+          }
+        },
+        "required": ["id", "description", "effect"],
+        "title": "IntegrationCapability",
+        "type": "object"
+      },
+      "IntegrationConnector": {
+        "additionalProperties": false,
+        "properties": {
+          "adapter_id": {
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "title": "Adapter Id",
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrationCapability"
+            },
+            "maxItems": 128,
+            "minItems": 1,
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "execution": {
+            "enum": ["local_cli", "server_worker"],
+            "title": "Execution",
+            "type": "string"
+          },
+          "official_source": {
+            "pattern": "^https://",
+            "title": "Official Source",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1",
+            "default": "1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "transport": {
+            "enum": ["cli", "http", "sdk", "mcp"],
+            "title": "Transport",
+            "type": "string"
+          }
+        },
+        "required": [
+          "adapter_id",
+          "display_name",
+          "transport",
+          "execution",
+          "official_source",
+          "capabilities"
+        ],
+        "title": "IntegrationConnector",
         "type": "object"
       },
       "LinkedIdentity": {
@@ -8202,6 +8437,65 @@
         },
         "summary": "Healthz",
         "tags": ["health"]
+      }
+    },
+    "/integrations/v1/connectors": {
+      "get": {
+        "operationId": "list_integration_connectors_integrations_v1_connectors_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_IntegrationConnector__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Integration Connectors",
+        "tags": ["integrations"]
+      }
+    },
+    "/integrations/v1/connectors/{adapter_id}": {
+      "get": {
+        "operationId": "get_integration_connector_integrations_v1_connectors__adapter_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "adapter_id",
+            "required": true,
+            "schema": {
+              "title": "Adapter Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_IntegrationConnector_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Integration Connector",
+        "tags": ["integrations"]
       }
     },
     "/readyz": {

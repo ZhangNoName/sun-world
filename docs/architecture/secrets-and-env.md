@@ -174,7 +174,8 @@ testing.
 | `OPENAI_BASE_URL` / `OPENAI_MODEL` | OpenAI endpoint/model override | No |
 | `AI_URL` / `AI_CHAT_MODEL` | Legacy compatible endpoint/model fallback | No |
 | `AI_CREDENTIAL_ENCRYPTION_KEY` | Fernet key used to encrypt per-user provider keys in MySQL | Required before personal keys can be saved |
-| `AI_PROVIDER_ALLOWED_HOSTS` | Exact hosts or explicit `*.suffix` rules for built-in and user AI provider endpoints | Required to run AI; empty fails closed |
+| `AI_PROVIDER_ALLOWED_HOSTS` | Exact hosts or explicit `*.suffix` rules for HTTPS AI provider endpoints | Required to run AI; empty fails closed |
+| `AI_PROVIDER_ALLOWED_INSECURE_ORIGINS` | Exact reviewed HTTP origins for keyless managed catalog models only | No; empty disables every HTTP provider |
 | `AI_PROVIDER_MAX_OUTPUT_TOKENS` | Maximum output tokens sent to compatible providers (default `4096`, max `16384`) | No |
 | `AI_GUEST_RUN_RATE_LIMIT` / `AI_AUTHENTICATED_RUN_RATE_LIMIT` | Per-window AI run ceilings for guest IPs and signed-in accounts | No; defaults `20` / `60` |
 | `AI_GLOBAL_RUN_RATE_LIMIT` / `AI_RUN_RATE_WINDOW_SECONDS` | Site short-window ceiling and window, defaults `200` / `600` seconds | No |
@@ -204,6 +205,13 @@ AI provider traffic is also fail-closed unless its hostname matches
 suffixes. Calls use fresh public-address DNS validation, IP pinning with the
 original TLS SNI/Host, no redirects or environment proxy, and bounded time,
 response bytes, emitted characters, output tokens, and request rate.
+`AI_PROVIDER_ALLOWED_INSECURE_ORIGINS` is a narrower exceptional policy: each
+entry must be an exact `http://host:port` origin, and it is accepted only for a
+managed `auth_mode=none` model. Bearer-authenticated catalog models and all
+personal provider profiles remain HTTPS-only; runtime transport validation
+also refuses to attach an Authorization header to HTTP. Prefer placing any
+currently keyless HTTP upstream behind a first-party TLS reverse proxy and then
+removing the exception.
 The Redis 24-hour budgets are abuse circuit breakers, not financial ledgers.
 Set a hard spending cap and alerts in every upstream provider account before
 enabling anonymous AIGC in production.

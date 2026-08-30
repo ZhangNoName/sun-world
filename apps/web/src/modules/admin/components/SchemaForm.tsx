@@ -219,11 +219,18 @@ export function SchemaForm<TValues extends Record<string, unknown>>({
                     ? 'number'
                     : field.type === 'date'
                       ? 'date'
-                      : 'text'
+                      : field.type === 'url'
+                        ? 'url'
+                        : field.type === 'password'
+                          ? 'password'
+                          : 'text'
                 }
                 value={value == null ? '' : String(value)}
                 placeholder={field.placeholder}
                 disabled={field.disabled}
+                autoComplete={
+                  field.type === 'password' ? 'new-password' : undefined
+                }
                 onValueChange={setValue}
                 error={error}
               />

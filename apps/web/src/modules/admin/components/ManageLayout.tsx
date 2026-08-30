@@ -80,9 +80,9 @@ export const manageNavTree: ManageNavItem[] = [
     icon: 'message-circle',
     children: [
       {
-        labelKey: 'providers',
-        icon: 'message-circle',
-        route: '/manage/ai/providers',
+        labelKey: 'models',
+        icon: 'list',
+        route: '/manage/ai/models',
       },
     ],
   },
@@ -104,7 +104,8 @@ const COLLAPSED_STORAGE_KEY = 'sun-world.manage.sidebar.collapsed'
 const HIDDEN_STORAGE_KEY = 'sun-world.manage.sidebar.hidden'
 const LEGACY_MANAGE_REDIRECTS: Record<string, string> = {
   '/manage/blog': '/manage/content/blog',
-  '/manage/aigc': '/manage/ai/providers',
+  '/manage/aigc': '/manage/ai/models',
+  '/manage/ai/providers': '/manage/ai/models',
   '/manage/logs': '/manage/system/logs',
 }
 

@@ -1037,6 +1037,40 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/integrations/v1/connectors': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Integration Connectors */
+    get: operations['list_integration_connectors_integrations_v1_connectors_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/integrations/v1/connectors/{adapter_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Integration Connector */
+    get: operations['get_integration_connector_integrations_v1_connectors__adapter_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/readyz': {
     parameters: {
       query?: never
@@ -1662,6 +1696,14 @@ export interface components {
     }
     /** AiProviderCatalog */
     AiProviderCatalog: {
+      /** Api Key Hint */
+      api_key_hint?: string | null
+      /**
+       * Auth Mode
+       * @default bearer
+       * @enum {string}
+       */
+      auth_mode: 'none' | 'bearer'
       /**
        * Created At
        * Format: date-time
@@ -1671,8 +1713,18 @@ export interface components {
       default_base_url?: string | null
       /** Default Model */
       default_model?: string | null
+      /**
+       * Has Api Key
+       * @default false
+       */
+      has_api_key: boolean
       /** Id */
       id: string
+      /**
+       * Is Default
+       * @default false
+       */
+      is_default: boolean
       /**
        * Is Enabled
        * @default true
@@ -1693,12 +1745,30 @@ export interface components {
     }
     /** AiProviderCatalogInput */
     AiProviderCatalogInput: {
+      /** Api Key */
+      api_key?: string | null
+      /**
+       * Auth Mode
+       * @default bearer
+       * @enum {string}
+       */
+      auth_mode: 'none' | 'bearer'
+      /**
+       * Clear Api Key
+       * @default false
+       */
+      clear_api_key: boolean
       /** Default Base Url */
       default_base_url?: string | null
       /** Default Model */
       default_model?: string | null
       /** Id */
       id: string
+      /**
+       * Is Default
+       * @default false
+       */
+      is_default: boolean
       /**
        * Is Enabled
        * @default true
@@ -1720,6 +1790,11 @@ export interface components {
       default_model?: string | null
       /** Id */
       id: string
+      /**
+       * Is Default
+       * @default false
+       */
+      is_default: boolean
       /** Name */
       name: string
     }
@@ -1796,6 +1871,8 @@ export interface components {
       conversation_id?: string | null
       /** Message */
       message: string
+      /** Model Id */
+      model_id?: string | null
       /** Parent Message Id */
       parent_message_id?: string | null
       /** Persona Id */
@@ -2071,6 +2148,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[IntegrationConnector] */
+    ApiResponse_IntegrationConnector_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['IntegrationConnector'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[List[Category]] */
     ApiResponse_List_Category__: {
       /** Code */
@@ -2266,6 +2351,15 @@ export interface components {
       code: number | string
       /** Data */
       data?: components['schemas']['DictionaryItemPublic'][] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[list[IntegrationConnector]] */
+    ApiResponse_list_IntegrationConnector__: {
+      /** Code */
+      code: number | string
+      /** Data */
+      data?: components['schemas']['IntegrationConnector'][] | null
       /** Msg */
       msg: string
     }
@@ -2776,6 +2870,53 @@ export interface components {
       refresh_token_expire: string
       /** User Id */
       user_id: number
+    }
+    /** IntegrationCapability */
+    IntegrationCapability: {
+      /**
+       * Confirmation
+       * @default write
+       * @enum {string}
+       */
+      confirmation: 'never' | 'write' | 'always'
+      /** Description */
+      description: string
+      /**
+       * Effect
+       * @enum {string}
+       */
+      effect: 'read' | 'write' | 'delete'
+      /** Id */
+      id: string
+      /** Required Fields */
+      required_fields?: string[]
+    }
+    /** IntegrationConnector */
+    IntegrationConnector: {
+      /** Adapter Id */
+      adapter_id: string
+      /** Capabilities */
+      capabilities: components['schemas']['IntegrationCapability'][]
+      /** Display Name */
+      display_name: string
+      /**
+       * Execution
+       * @enum {string}
+       */
+      execution: 'local_cli' | 'server_worker'
+      /** Official Source */
+      official_source: string
+      /**
+       * Schema Version
+       * @default 1
+       * @constant
+       */
+      schema_version: '1'
+      /**
+       * Transport
+       * @enum {string}
+       */
+      transport: 'cli' | 'http' | 'sdk' | 'mcp'
     }
     /** LinkedIdentity */
     LinkedIdentity: {
@@ -5679,6 +5820,57 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['HealthSnapshot']
+        }
+      }
+    }
+  }
+  list_integration_connectors_integrations_v1_connectors_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_list_IntegrationConnector__']
+        }
+      }
+    }
+  }
+  get_integration_connector_integrations_v1_connectors__adapter_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        adapter_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_IntegrationConnector_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }

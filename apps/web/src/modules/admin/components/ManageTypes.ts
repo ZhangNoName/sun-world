@@ -32,6 +32,8 @@ export interface ManageColumn<T> {
 
 export type SchemaFieldType =
   | 'input'
+  | 'url'
+  | 'password'
   | 'number'
   | 'select'
   | 'textarea'

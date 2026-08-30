@@ -409,10 +409,67 @@ describe('AiWorkspace', () => {
     expect(onSend).toHaveBeenCalledWith({
       markdown: '生成一张表',
       files: [],
-      modelId: 'provider:deepseek',
+      modelId: 'model:deepseek',
       commandId: undefined,
     })
     expect(composer).toHaveValue('')
+  })
+
+  it('prefers the explicit public default and hides disabled models', async () => {
+    const user = userEvent.setup()
+    const onSend = vi.fn()
+    render(
+      <AiWorkspace
+        conversations={[]}
+        messages={[]}
+        runState={{ status: 'idle' }}
+        providers={[
+          {
+            id: 'legacy-chat',
+            name: 'Legacy Chat',
+            defaultModel: 'legacy-chat',
+          },
+          {
+            id: 'qwen38-27b',
+            name: 'Qwen',
+            defaultModel: 'qwen38_27b',
+            isDefault: true,
+          },
+          {
+            id: 'disabled-chat',
+            name: 'Disabled',
+            defaultModel: 'disabled-chat',
+            isEnabled: false,
+          },
+        ]}
+        onNewConversation={vi.fn()}
+        onSelectConversation={vi.fn()}
+        onSend={onSend}
+        onStop={vi.fn()}
+        onEditMessage={vi.fn()}
+        onRegenerate={vi.fn()}
+        onFeedback={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByRole('button', { name: '选择模型，当前 qwen38_27b' })
+    ).toBeInTheDocument()
+    await user.click(
+      screen.getByRole('button', { name: '选择模型，当前 qwen38_27b' })
+    )
+    expect(
+      screen.queryByRole('option', { name: /disabled-chat/i })
+    ).not.toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await user.type(
+      screen.getByRole('textbox', { name: '给 Sun World AI 发消息' }),
+      'hello qwen'
+    )
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({ modelId: 'model:qwen38-27b' })
+    )
   })
 
   it('maps provider profiles into selectable composer models', async () => {

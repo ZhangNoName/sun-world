@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import json
 import math
 import os
@@ -14,15 +15,17 @@ from .mcp_gateway import (
     MIN_OUTPUT_BYTES,
     McpGateway,
     McpSdkDependencies,
-    OfficialMcpConnector,
+    SystemMcpDnsResolver,
+    _address_is_blocked,
     _exception_tree_contains,
     _exception_tree_is_timeout,
+    _host_header,
     _load_mcp_sdk_dependencies,
     _McpEndpointPolicyViolation,
     _McpProtocolViolation,
     _McpResponseTooLarge,
-    _validate_endpoint,
 )
+from .schemas import _allowed_insecure_provider_origins, _normalize_provider_base_url
 
 
 DEFAULT_CONNECT_TIMEOUT_SECONDS = 5.0
@@ -42,7 +45,23 @@ class ProviderConfig:
     provider: str
     model: str
     base_url: str
+    auth_mode: str = "bearer"
     api_key: str | None = field(default=None, repr=False)
+
+
+@dataclass(frozen=True)
+class ProviderConnectionOptions:
+    endpoint: str = field(repr=False)
+    scheme: str
+    host: str = field(repr=False)
+    port: int
+    resolved_addresses: tuple[str, ...] = field(repr=False)
+    bearer_token: str | None = field(default=None, repr=False)
+    connect_timeout_seconds: float = DEFAULT_CONNECT_TIMEOUT_SECONDS
+    read_timeout_seconds: float = DEFAULT_READ_TIMEOUT_SECONDS
+    write_timeout_seconds: float = DEFAULT_WRITE_TIMEOUT_SECONDS
+    pool_timeout_seconds: float = DEFAULT_POOL_TIMEOUT_SECONDS
+    max_response_bytes: int = DEFAULT_MAX_STREAM_BYTES
 
 
 class AiProvider(Protocol):
@@ -195,6 +214,16 @@ class OpenAiCompatibleProvider:
             )
 
     async def _connection_options(self, endpoint: str):
+        parsed = urlsplit(endpoint)
+        bearer_token = self.config.api_key if self.config.auth_mode == "bearer" else None
+        if parsed.scheme.lower() == "http":
+            if self.config.auth_mode != "none" or bearer_token is not None:
+                raise AiDomainError(
+                    "AI_PROVIDER_CONFIGURATION_INVALID",
+                    "Bearer-authenticated providers require HTTPS.",
+                    status_code=503,
+                )
+            return await self._insecure_connection_options(endpoint, None)
         if not self._allowed_hosts:
             raise AiDomainError(
                 "AI_PROVIDER_HOST_POLICY_NOT_CONFIGURED",
@@ -213,9 +242,113 @@ class OpenAiCompatibleProvider:
                 max_discovery_bytes=MIN_OUTPUT_BYTES,
                 max_response_bytes=self._max_stream_bytes,
             )
-            return await gateway._validated_options(endpoint, self.config.api_key)
+            options = await gateway._validated_options(endpoint, bearer_token)
+            return ProviderConnectionOptions(
+                endpoint=options.endpoint,
+                scheme="https",
+                host=options.host,
+                port=443,
+                resolved_addresses=options.resolved_addresses,
+                bearer_token=options.bearer_token,
+                connect_timeout_seconds=options.connect_timeout_seconds,
+                read_timeout_seconds=options.read_timeout_seconds,
+                write_timeout_seconds=options.write_timeout_seconds,
+                pool_timeout_seconds=options.pool_timeout_seconds,
+                max_response_bytes=options.max_response_bytes,
+            )
         except AiDomainError as error:
             raise _policy_error(error) from None
+
+    async def _insecure_connection_options(
+        self,
+        endpoint: str,
+        bearer_token: str | None,
+    ) -> ProviderConnectionOptions:
+        try:
+            parsed = urlsplit(endpoint)
+            port = parsed.port or 80
+            base_origin = f"http://{parsed.netloc}"
+            canonical_origins = _allowed_insecure_provider_origins()
+        except (TypeError, ValueError):
+            raise AiDomainError(
+                "AI_PROVIDER_ENDPOINT_INVALID",
+                "The AI provider endpoint is invalid.",
+                status_code=400,
+            ) from None
+        if (
+            parsed.scheme.lower() != "http"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or base_origin not in canonical_origins
+        ):
+            raise AiDomainError(
+                "AI_PROVIDER_HOST_NOT_ALLOWED",
+                "The AI provider endpoint is not permitted.",
+                status_code=403,
+            )
+        try:
+            host = parsed.hostname.encode("idna").decode("ascii").lower()
+            resolver = self._resolver or SystemMcpDnsResolver()
+            outcome = resolver.resolve(host, port)
+            if hasattr(outcome, "__await__"):
+                outcome = await asyncio.wait_for(
+                    outcome,
+                    timeout=self._connect_timeout_seconds,
+                )
+            if isinstance(outcome, str):
+                outcome = [outcome]
+            addresses = tuple(
+                dict.fromkeys(str(address).split("%", 1)[0] for address in outcome)
+            )
+        except TimeoutError:
+            raise AiDomainError(
+                "AI_PROVIDER_TIMEOUT",
+                "The AI provider did not respond in time.",
+                status_code=504,
+            ) from None
+        except AiDomainError:
+            raise
+        except Exception:
+            raise AiDomainError(
+                "AI_PROVIDER_UNAVAILABLE",
+                "The AI provider is temporarily unavailable.",
+                status_code=502,
+            ) from None
+        if not addresses:
+            raise AiDomainError(
+                "AI_PROVIDER_UNAVAILABLE",
+                "The AI provider is temporarily unavailable.",
+                status_code=502,
+            )
+        for address in addresses:
+            try:
+                ipaddress.ip_address(address)
+            except ValueError:
+                raise AiDomainError(
+                    "AI_PROVIDER_UNAVAILABLE",
+                    "The AI provider is temporarily unavailable.",
+                    status_code=502,
+                ) from None
+            if _address_is_blocked(address):
+                raise AiDomainError(
+                    "AI_PROVIDER_HOST_NOT_ALLOWED",
+                    "The AI provider endpoint is not permitted.",
+                    status_code=403,
+                )
+        return ProviderConnectionOptions(
+            endpoint=endpoint,
+            scheme="http",
+            host=host,
+            port=port,
+            resolved_addresses=addresses,
+            bearer_token=bearer_token,
+            connect_timeout_seconds=self._connect_timeout_seconds,
+            read_timeout_seconds=self._read_timeout_seconds,
+            write_timeout_seconds=self._write_timeout_seconds,
+            pool_timeout_seconds=self._pool_timeout_seconds,
+            max_response_bytes=self._max_stream_bytes,
+        )
 
     def _load_dependencies(self) -> McpSdkDependencies:
         try:
@@ -236,9 +369,13 @@ class OpenAiCompatibleProvider:
 
     def _endpoint(self) -> str:
         try:
-            _host, canonical_base_url = _validate_endpoint(self.config.base_url)
-        except AiDomainError as error:
-            raise _policy_error(error) from None
+            canonical_base_url = _normalize_provider_base_url(self.config.base_url)
+        except (AiDomainError, ValueError):
+            raise AiDomainError(
+                "AI_PROVIDER_ENDPOINT_INVALID",
+                "The AI provider endpoint is invalid.",
+                status_code=400,
+            ) from None
         if urlsplit(canonical_base_url).query:
             raise AiDomainError(
                 "AI_PROVIDER_ENDPOINT_INVALID",
@@ -248,7 +385,13 @@ class OpenAiCompatibleProvider:
         return f"{canonical_base_url.rstrip('/')}/chat/completions"
 
     async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]:
-        if not self.config.api_key:
+        if self.config.auth_mode not in {"none", "bearer"}:
+            raise AiDomainError(
+                "AI_PROVIDER_CONFIGURATION_INVALID",
+                "The AI provider authentication mode is invalid.",
+                status_code=503,
+            )
+        if self.config.auth_mode == "bearer" and not self.config.api_key:
             raise AiDomainError(
                 "AI_PROVIDER_NOT_CONFIGURED",
                 "The selected AI provider does not have an API key.",
@@ -265,10 +408,7 @@ class OpenAiCompatibleProvider:
         }
         emitted_characters = 0
         try:
-            http_client = OfficialMcpConnector._build_http_client(
-                dependencies,
-                options,
-            )
+            http_client = self._build_http_client(dependencies, options)
             async with asyncio.timeout(self._total_timeout_seconds):
                 async with http_client:
                     async with http_client.stream(
@@ -341,6 +481,81 @@ class OpenAiCompatibleProvider:
                 "The AI provider is temporarily unavailable.",
                 status_code=502,
             ) from None
+
+    @staticmethod
+    def _build_http_client(
+        dependencies: McpSdkDependencies,
+        options: ProviderConnectionOptions,
+    ) -> object:
+        timeout = dependencies.httpx2.Timeout(
+            connect=options.connect_timeout_seconds,
+            read=options.read_timeout_seconds,
+            write=options.write_timeout_seconds,
+            pool=options.pool_timeout_seconds,
+        )
+        headers = None
+        if options.bearer_token is not None:
+            headers = {"Authorization": f"Bearer {options.bearer_token}"}
+
+        pinned_address = options.resolved_addresses[0]
+        default_port = 443 if options.scheme == "https" else 80
+        host_header = _host_header(options.host)
+        if options.port != default_port:
+            host_header = f"{host_header}:{options.port}"
+
+        async def pin_validated_address(request: object) -> None:
+            try:
+                request_host = request.url.raw_host.decode("ascii").lower()
+            except (AttributeError, UnicodeError):
+                raise _McpEndpointPolicyViolation from None
+            if request_host != options.host:
+                raise _McpEndpointPolicyViolation
+            request.headers["Host"] = host_header
+            request.headers["Accept-Encoding"] = "identity"
+            if options.scheme == "https":
+                request.extensions["sni_hostname"] = options.host
+            request.url = request.url.copy_with(host=pinned_address)
+
+        stream_base = dependencies.httpx2.AsyncByteStream
+
+        class LimitedResponseStream(stream_base):
+            def __init__(self, stream: object):
+                self._stream = stream
+
+            async def __aiter__(self):
+                received = 0
+                async for chunk in self._stream:
+                    received += len(chunk)
+                    if received > options.max_response_bytes:
+                        raise _McpResponseTooLarge
+                    yield chunk
+
+            async def aclose(self) -> None:
+                await self._stream.aclose()
+
+        async def limit_response(response: object) -> None:
+            content_encoding = response.headers.get("content-encoding", "identity")
+            if content_encoding.strip().lower() not in ("", "identity"):
+                raise _McpProtocolViolation
+            content_length = response.headers.get("content-length")
+            if content_length is not None:
+                try:
+                    if int(content_length) > options.max_response_bytes:
+                        raise _McpResponseTooLarge
+                except ValueError:
+                    pass
+            response.stream = LimitedResponseStream(response.stream)
+
+        return dependencies.httpx2.AsyncClient(
+            headers=headers,
+            timeout=timeout,
+            follow_redirects=False,
+            trust_env=False,
+            event_hooks={
+                "request": [pin_validated_address],
+                "response": [limit_response],
+            },
+        )
 
 
 class ProviderRegistry:

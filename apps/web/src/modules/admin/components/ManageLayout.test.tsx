@@ -20,13 +20,14 @@ describe('ManageLayout', () => {
     window.localStorage.clear()
   })
 
-  function renderLayout() {
+  function renderLayout(initialEntry = '/manage/system/logs') {
     return render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={['/manage/system/logs']}>
+        <MemoryRouter initialEntries={[initialEntry]}>
           <Routes>
             <Route path="/manage/*" element={<ManageLayout />}>
               <Route path="system/logs" element={<div>Audit page</div>} />
+              <Route path="ai/models" element={<div>Model page</div>} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -58,6 +59,8 @@ describe('ManageLayout', () => {
     expect(screen.getByRole('link', { name: '审计日志' })).toHaveClass(
       'is-active'
     )
+    fireEvent.click(screen.getByRole('button', { name: 'AI 管理' }))
+    expect(screen.getByRole('link', { name: '模型管理' })).toBeInTheDocument()
     expect(
       screen.queryByRole('navigation', { name: '绉诲姩瀵艰埅' })
     ).not.toBeInTheDocument()
@@ -98,6 +101,10 @@ describe('ManageLayout', () => {
         screen.getByRole('button', { name: 'Language: English' })
       ).toBeInTheDocument()
     })
+    fireEvent.click(screen.getByRole('button', { name: 'AI management' }))
+    expect(
+      screen.getByRole('link', { name: 'Model management' })
+    ).toBeInTheDocument()
   })
 
   it('redirects legacy management paths to canonical routes', async () => {
@@ -115,6 +122,17 @@ describe('ManageLayout', () => {
 
     await waitFor(() =>
       expect(screen.getByText('Audit page')).toBeInTheDocument()
+    )
+  })
+
+  it('redirects the provider catalog path to model management', async () => {
+    renderLayout('/manage/ai/providers')
+
+    await waitFor(() =>
+      expect(screen.getByText('Model page')).toBeInTheDocument()
+    )
+    expect(screen.getByRole('link', { name: '模型管理' })).toHaveClass(
+      'is-active'
     )
   })
 })

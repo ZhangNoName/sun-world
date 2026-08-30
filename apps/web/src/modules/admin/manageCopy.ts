@@ -20,7 +20,7 @@ export interface ManageCopy {
     content: string
     blog: string
     ai: string
-    providers: string
+    models: string
     system: string
     dictionaries: string
     auditLogs: string
@@ -162,32 +162,51 @@ export interface ManageCopy {
     tagsPlaceholder: string
     untitled: string
   }
-  providers: {
-    provider: string
+  models: {
+    service: string
     name: string
-    searchProvider: string
+    searchModel: string
     id: string
-    defaultModel: string
+    model: string
     baseUrl: string
+    authMode: string
+    noAuth: string
+    bearerAuth: string
+    credential: string
+    credentialNotRequired: string
+    credentialConfigured: string
+    credentialMissing: string
     status: string
+    enabledStatus: string
+    disabledStatus: string
+    defaultStatus: string
+    defaultLabel: string
+    notDefaultLabel: string
     order: string
     updated: string
     actions: string
     edit: string
     delete: string
-    providerId: string
+    enable: string
+    disable: string
+    setDefault: string
+    modelId: string
     displayName: string
-    defaultBaseUrl: string
     sortOrder: string
     enabled: string
+    isDefault: string
+    apiKey: string
+    apiKeyPlaceholder: string
+    apiKeyKeepHint: string
     title: string
     description: string
-    newProvider: string
+    newModel: string
     editorTitle: (editing: boolean) => string
     editorDescription: string
     saveChanges: string
-    createProvider: string
+    createModel: string
     confirmDelete: (name: string) => string
+    defaultProtected: string
   }
   logs: {
     eyebrow: string
@@ -263,7 +282,7 @@ const manageCopies: Record<ManageLocale, ManageCopy> = {
       content: '内容管理',
       blog: '博客管理',
       ai: 'AI 管理',
-      providers: '供应商管理',
+      models: '模型管理',
       system: '系统管理',
       dictionaries: '字典管理',
       auditLogs: '审计日志',
@@ -404,32 +423,53 @@ const manageCopies: Record<ManageLocale, ManageCopy> = {
       tagsPlaceholder: '标签一, 标签二',
       untitled: '无标题',
     },
-    providers: {
-      provider: '供应商',
+    models: {
+      service: '模型服务',
       name: '名称',
-      searchProvider: '搜索供应商',
+      searchModel: '搜索模型服务',
       id: 'ID',
-      defaultModel: '默认模型',
+      model: '模型',
       baseUrl: '基础 URL',
+      authMode: '认证方式',
+      noAuth: '无需认证',
+      bearerAuth: 'Bearer Token',
+      credential: '凭据',
+      credentialNotRequired: '无需密钥',
+      credentialConfigured: '已配置',
+      credentialMissing: '未配置',
       status: '状态',
+      enabledStatus: '已启用',
+      disabledStatus: '已停用',
+      defaultStatus: '默认',
+      defaultLabel: '默认模型',
+      notDefaultLabel: '非默认',
       order: '排序',
       updated: '更新时间',
       actions: '操作',
       edit: '编辑',
       delete: '删除',
-      providerId: '供应商 ID',
+      enable: '启用',
+      disable: '停用',
+      setDefault: '设为默认',
+      modelId: '模型 ID',
       displayName: '显示名称',
-      defaultBaseUrl: '默认基础 URL',
       sortOrder: '排序值',
       enabled: '启用',
-      title: 'AI 供应商',
-      description: '维护 AI 工作流使用的供应商目录，密钥始终保留在服务端。',
-      newProvider: '新建供应商',
-      editorTitle: (editing) => (editing ? '编辑供应商' : '新建供应商'),
-      editorDescription: '供应商凭据不会在此目录表单中填写。',
+      isDefault: '设为默认模型',
+      apiKey: 'API Key',
+      apiKeyPlaceholder: '仅在新增或替换凭据时填写',
+      apiKeyKeepHint: '留空将保留当前服务端凭据。',
+      title: 'AI 模型管理',
+      description:
+        '维护公共 AI 模型、认证方式、启用状态和默认模型。密钥只保存在服务端。',
+      newModel: '新建模型',
+      editorTitle: (editing) => (editing ? '编辑模型' : '新建模型'),
+      editorDescription:
+        '公共模型由 Sun World 服务端调用，浏览器不会直连模型地址。',
       saveChanges: '保存修改',
-      createProvider: '创建供应商',
-      confirmDelete: (name) => `确定删除供应商“${name}”？`,
+      createModel: '创建模型',
+      confirmDelete: (name) => `确定删除模型“${name}”？`,
+      defaultProtected: '默认模型不能停用或删除，请先设置另一个默认模型。',
     },
     logs: {
       eyebrow: '安全',
@@ -510,7 +550,7 @@ const manageCopies: Record<ManageLocale, ManageCopy> = {
       content: 'Content management',
       blog: 'Blog management',
       ai: 'AI management',
-      providers: 'Provider management',
+      models: 'Model management',
       system: 'System management',
       dictionaries: 'Dictionaries',
       auditLogs: 'Audit logs',
@@ -655,34 +695,54 @@ const manageCopies: Record<ManageLocale, ManageCopy> = {
       tagsPlaceholder: 'tag-a, tag-b',
       untitled: 'Untitled',
     },
-    providers: {
-      provider: 'Provider',
+    models: {
+      service: 'Model service',
       name: 'Name',
-      searchProvider: 'Search provider',
+      searchModel: 'Search model services',
       id: 'ID',
-      defaultModel: 'Default model',
+      model: 'Model',
       baseUrl: 'Base URL',
+      authMode: 'Authentication',
+      noAuth: 'No authentication',
+      bearerAuth: 'Bearer token',
+      credential: 'Credential',
+      credentialNotRequired: 'Not required',
+      credentialConfigured: 'Configured',
+      credentialMissing: 'Missing',
       status: 'Status',
+      enabledStatus: 'Enabled',
+      disabledStatus: 'Disabled',
+      defaultStatus: 'Default',
+      defaultLabel: 'Default model',
+      notDefaultLabel: 'Not default',
       order: 'Order',
       updated: 'Updated',
       actions: 'Actions',
       edit: 'Edit',
       delete: 'Delete',
-      providerId: 'Provider ID',
+      enable: 'Enable',
+      disable: 'Disable',
+      setDefault: 'Set default',
+      modelId: 'Model ID',
       displayName: 'Display name',
-      defaultBaseUrl: 'Default base URL',
       sortOrder: 'Sort order',
       enabled: 'Enabled',
-      title: 'AI providers',
+      isDefault: 'Use as default model',
+      apiKey: 'API Key',
+      apiKeyPlaceholder: 'Enter only when creating or replacing a credential',
+      apiKeyKeepHint: 'Leave blank to keep the current server-side credential.',
+      title: 'AI model management',
       description:
-        'Maintain the provider catalog used by AI workflows. Secrets remain server-side.',
-      newProvider: 'New provider',
-      editorTitle: (editing) => (editing ? 'Edit provider' : 'New provider'),
+        'Manage public AI models, authentication, availability, and the default model. Keys remain server-side.',
+      newModel: 'New model',
+      editorTitle: (editing) => (editing ? 'Edit model' : 'New model'),
       editorDescription:
-        'Provider credentials are never entered in this catalog form.',
+        'Public models are called by the Sun World server; browsers never connect to model endpoints directly.',
       saveChanges: 'Save changes',
-      createProvider: 'Create provider',
-      confirmDelete: (name) => `Delete provider “${name}”?`,
+      createModel: 'Create model',
+      confirmDelete: (name) => `Delete model “${name}”?`,
+      defaultProtected:
+        'The default model cannot be disabled or deleted. Set another default model first.',
     },
     logs: {
       eyebrow: 'Security',

@@ -1077,3 +1077,51 @@ the left-side weather card; mobile placement is inside
   Independent probes returned 200 for the main, WWW, and `/aigc` pages,
   `{"status":"ok"}` for the API health endpoint, and the rendered homepage
   exposed `豫ICP备2024081960号` with the required MIIT link.
+
+## 2026-08-30 P1.81 model catalog and modular external CLI
+
+- Added the publishable `@sun-world/cli` package. `sun-world ai models` lists
+  enabled managed models and `sun-world ai ask` consumes the versioned AI V1
+  SSE protocol; omitting `--model-id` exercises the server-selected default.
+- Added a reviewed integration adapter contract and registries for Feishu/Lark
+  and Zhihu. The public API exposes only secret-free connector manifests at
+  `/integrations/v1/connectors`; third-party CLI execution stays on the caller's
+  machine and is never spawned by the API container. Fixed argv construction,
+  absolute executable paths, JSON/NDJSON output, bounded processes, preview
+  redaction, per-platform credential environments, and explicit mutation
+  confirmation form the local execution boundary.
+- The managed model catalog now supports `auth_mode`, encrypted credential
+  status, explicit `is_default`, atomic default switching, and direct selection
+  by `model_id`. Public responses never expose plaintext or ciphertext.
+- `qwen-public` points to the keyless OpenAI-compatible model
+  `qwen38_27b` at `http://211.141.18.165:6195/v1`. A full schema deployment
+  idempotently inserts it and selects it when there is no enabled default; the
+  first migration leaves existing rows non-default, so the initial rollout
+  selects Qwen. Later deployments preserve an enabled administrator-selected
+  default.
+- The HTTP upstream is an exact-origin exception, not a general downgrade:
+  only `http://211.141.18.165:6195` is allowed, only for managed
+  `auth_mode=none` models. Bearer catalog models and every personal provider
+  profile remain HTTPS-only, with a second runtime rejection before DNS or HTTP
+  client creation. The transport validates public DNS/IP results per request,
+  pins the validated IP, preserves the Host port, disables redirects and
+  environment proxies, and applies time/output bounds. MCP remains HTTPS-only.
+- `/manage/ai/models` is the canonical administrator UI for adding, editing,
+  enabling, disabling, deleting, and selecting the default model, including
+  add/replace API-key flows and default-model protection. Legacy provider and
+  AIGC management paths redirect to it. The public model selector distinguishes
+  `model:<catalog-id>` from `profile:<profile-id>`.
+- A real end-to-end local API smoke used the current provider transport and
+  `pnpm sun ai ask` without `--model-id`. For monthly values
+  `100, 130, 169, 160`, the default Qwen model returned:
+  `2月环比增长30%，3月增长30%，4月约下降5.33%；总体先升后微降，整体仍呈上行。`
+- Final verification passed: `corepack pnpm check` completed all 20/20 gates,
+  including 61 Web test files/180 tests, 357 API tests, 17 CLI tests, production
+  builds and budgets, contract/CI/deploy guards, and Compose static validation.
+  The connector catalog parity test also compares the API catalog with the CLI
+  safe projection. `npm pack --dry-run` for `@sun-world/cli` passed with 20
+  published files (15.6 kB tarball, 53.2 kB unpacked).
+- No production deployment, database mutation, npm publish, commit, push, or
+  staging was performed. The upstream can emit reasoning tokens before visible
+  content; very small experimental output budgets may therefore produce no
+  visible answer, while the configured default budget of 4096 returned content.

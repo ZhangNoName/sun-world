@@ -78,10 +78,17 @@ export function AiWorkspace({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const defaultProfile = providerProfiles.find((profile) => profile.isDefault)
+  const enabledProviders = useMemo(
+    () => providers.filter((provider) => provider.isEnabled !== false),
+    [providers]
+  )
+  const defaultProvider =
+    enabledProviders.find((provider) => provider.isDefault) ??
+    enabledProviders[0]
   const defaultModelId = defaultProfile
     ? `profile:${defaultProfile.id}`
-    : providers[0]?.id
-      ? `provider:${providers[0].id}`
+    : defaultProvider?.id
+      ? `model:${defaultProvider.id}`
       : ''
   const [selectedModelId, setSelectedModelId] = useState(defaultModelId)
   const [currentSidebarWidth, setCurrentSidebarWidth] = useState(sidebarWidth)
@@ -114,19 +121,23 @@ export function AiWorkspace({
         description: profile.name,
         group: '已保存模型',
       })),
-      ...providers.map((provider) => ({
-        id: `provider:${provider.id}`,
+      ...enabledProviders.map((provider) => ({
+        id: `model:${provider.id}`,
         label: provider.defaultModel ?? provider.name,
         description: provider.name,
         group: '服务默认模型',
       })),
     ],
-    [providerProfiles, providers]
+    [enabledProviders, providerProfiles]
   )
 
   useEffect(() => {
-    if (defaultProfile) setSelectedModelId(`profile:${defaultProfile.id}`)
-  }, [defaultProfile?.id])
+    if (defaultProfile) {
+      setSelectedModelId(`profile:${defaultProfile.id}`)
+      return
+    }
+    if (defaultProvider) setSelectedModelId(`model:${defaultProvider.id}`)
+  }, [defaultProfile?.id, defaultProvider?.id])
 
   useEffect(() => {
     if (!composerModels.some((model) => model.id === selectedModelId)) {
@@ -338,7 +349,7 @@ export function AiWorkspace({
       </main>
       <AiProviderSettings
         open={settingsOpen}
-        providers={providers}
+        providers={enabledProviders}
         profiles={providerProfiles}
         onOpenChange={setSettingsOpen}
         onSave={onSaveProvider}

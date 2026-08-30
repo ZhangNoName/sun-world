@@ -90,6 +90,99 @@ class ProviderRegistryTests(unittest.TestCase):
                 default_model="chat-model",
             )
 
+    def test_provider_catalog_accepts_only_explicit_insecure_origins(self):
+        from pydantic import ValidationError
+
+        from src.modules.ai.schemas import (
+            AiProviderCatalogInput,
+            AiProviderProfileInput,
+        )
+
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER_ALLOWED_INSECURE_ORIGINS": (
+                    "http://211.141.18.165:6195"
+                )
+            },
+        ):
+            provider = AiProviderCatalogInput(
+                id="qwen-public",
+                name="Qwen Public",
+                default_base_url="http://211.141.18.165:6195/v1/",
+                default_model="qwen38_27b",
+                auth_mode="none",
+                is_default=True,
+            )
+            self.assertEqual(
+                provider.default_base_url,
+                "http://211.141.18.165:6195/v1",
+            )
+            with self.assertRaises(ValidationError):
+                AiProviderCatalogInput(
+                    id="insecure-bearer",
+                    name="Insecure Bearer",
+                    default_base_url="http://211.141.18.165:6195/v1",
+                    default_model="qwen38_27b",
+                    auth_mode="bearer",
+                    api_key="must-not-cross-http",
+                )
+            with self.assertRaises(ValidationError):
+                AiProviderProfileInput(
+                    provider="qwen-public",
+                    name="Insecure Personal Profile",
+                    base_url="http://211.141.18.165:6195/v1",
+                    model="qwen38_27b",
+                    api_key="must-not-cross-http",
+                )
+
+            for base_url in (
+                "http://211.141.18.165:6196/v1",
+                "http://models.example.com/v1",
+                "http://127.0.0.1:6195/v1",
+            ):
+                with self.subTest(base_url=base_url):
+                    with self.assertRaises(ValidationError):
+                        AiProviderCatalogInput(
+                            id="blocked-provider",
+                            name="Blocked Provider",
+                            default_base_url=base_url,
+                            default_model="chat-model",
+                            auth_mode="none",
+                        )
+
+    def test_provider_catalog_rejects_ambiguous_credentials_and_disabled_default(self):
+        from pydantic import ValidationError
+
+        from src.modules.ai.schemas import AiProviderCatalogInput
+
+        invalid_values = (
+            {
+                "auth_mode": "none",
+                "api_key": "should-not-be-stored",
+            },
+            {
+                "auth_mode": "bearer",
+                "api_key": "secret",
+                "clear_api_key": True,
+            },
+            {
+                "auth_mode": "none",
+                "is_enabled": False,
+                "is_default": True,
+            },
+        )
+        for overrides in invalid_values:
+            with self.subTest(overrides=overrides):
+                with self.assertRaises(ValidationError):
+                    AiProviderCatalogInput(
+                        id="invalid-provider",
+                        name="Invalid Provider",
+                        default_base_url="https://models.example.com/v1",
+                        default_model="chat-model",
+                        **overrides,
+                    )
+
 
 class FakeResolver:
     def __init__(self, *answers):
@@ -270,6 +363,115 @@ class ProviderOutboundSecurityTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(captured["request_call"][2]["json"]["max_tokens"], 4_096)
         self.assertNotIn("secret-token", repr(provider.config))
+
+    async def test_keyless_http_provider_requires_exact_origin_and_pins_the_public_ip(self):
+        from src.modules.ai.providers import OpenAiCompatibleProvider, ProviderConfig
+
+        captured = {}
+        dependencies = fake_http_dependencies(captured)
+        resolver = FakeResolver(("211.141.18.165",))
+        config = ProviderConfig(
+            provider="qwen-public",
+            model="qwen38_27b",
+            base_url="http://211.141.18.165:6195/v1",
+            auth_mode="none",
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER_ALLOWED_INSECURE_ORIGINS": (
+                    "http://211.141.18.165:6195"
+                )
+            },
+        ):
+            provider = OpenAiCompatibleProvider(
+                config,
+                allowed_hosts=[],
+                resolver=resolver,
+                dependency_loader=lambda: dependencies,
+            )
+            self.assertEqual(await self._collect(provider), ["hello"])
+            self.assertEqual(await self._collect(provider), ["hello"])
+
+        self.assertEqual(
+            resolver.calls,
+            [
+                ("211.141.18.165", 6195),
+                ("211.141.18.165", 6195),
+            ],
+        )
+        self.assertEqual(
+            captured["request_call"][:2],
+            ("POST", "http://211.141.18.165:6195/v1/chat/completions"),
+        )
+        self.assertIsNone(captured["clients"][0].kwargs["headers"])
+        self.assertFalse(captured["clients"][0].kwargs["follow_redirects"])
+        self.assertFalse(captured["clients"][0].kwargs["trust_env"])
+        self.assertEqual(
+            captured["request"].headers["Host"],
+            "211.141.18.165:6195",
+        )
+        self.assertNotIn("sni_hostname", captured["request"].extensions)
+
+    async def test_bearer_provider_without_a_key_fails_before_network_access(self):
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.providers import OpenAiCompatibleProvider, ProviderConfig
+
+        resolver = FakeResolver(("1.1.1.1",))
+        provider = OpenAiCompatibleProvider(
+            ProviderConfig(
+                provider="bearer-provider",
+                model="chat-model",
+                base_url="https://models.example.com/v1",
+                auth_mode="bearer",
+            ),
+            allowed_hosts=["models.example.com"],
+            resolver=resolver,
+            dependency_loader=lambda: self.fail("HTTP client must not be loaded"),
+        )
+
+        with self.assertRaises(AiDomainError) as caught:
+            await self._collect(provider)
+
+        self.assertEqual(caught.exception.code, "AI_PROVIDER_NOT_CONFIGURED")
+        self.assertEqual(resolver.calls, [])
+
+    async def test_bearer_provider_never_sends_a_key_over_allowlisted_http(self):
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.providers import OpenAiCompatibleProvider, ProviderConfig
+
+        resolver = FakeResolver(("211.141.18.165",))
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER_ALLOWED_INSECURE_ORIGINS": (
+                    "http://211.141.18.165:6195"
+                )
+            },
+        ):
+            provider = OpenAiCompatibleProvider(
+                ProviderConfig(
+                    provider="insecure-bearer",
+                    model="qwen38_27b",
+                    base_url="http://211.141.18.165:6195/v1",
+                    auth_mode="bearer",
+                    api_key="must-not-cross-http",
+                ),
+                allowed_hosts=[],
+                resolver=resolver,
+                dependency_loader=lambda: self.fail(
+                    "HTTP client must not be loaded"
+                ),
+            )
+
+            with self.assertRaises(AiDomainError) as caught:
+                await self._collect(provider)
+
+        self.assertEqual(
+            caught.exception.code,
+            "AI_PROVIDER_CONFIGURATION_INVALID",
+        )
+        self.assertEqual(resolver.calls, [])
 
     async def test_rejects_suffix_confusion_and_any_non_global_dns_answer(self):
         from src.modules.ai.errors import AiDomainError

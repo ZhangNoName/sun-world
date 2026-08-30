@@ -33,3 +33,4 @@ export type AdminLogEvent = components['schemas']['AdminLogEvent']
 export type AdminAiProvider = components['schemas']['AiProviderCatalog']
 export type AdminAiProviderInput =
   components['schemas']['AiProviderCatalogInput']
+export type AdminAiProviderAuthMode = AdminAiProviderInput['auth_mode']

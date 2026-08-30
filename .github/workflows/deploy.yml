@@ -288,6 +288,9 @@ jobs:
           pnpm check:github-actions:ci
           pnpm check:github-actions:deploy
 
+      - name: Run Sun World CLI tests
+        run: pnpm test:cli
+
   quality-web:
     name: Frontend checks
     needs: detect-changes
@@ -970,7 +973,7 @@ jobs:
               full)
                 sudo docker run --rm --network host \
                   "${API_MOUNTS[@]}" \
-                  "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply'
+                  "$API_IMAGE" /bin/sh -lc 'set -euo pipefail; set -a; . /home/lighthouse/.config/blog_end/auth.env; set +a; python -m src.database.mysql.schema_migration --mode apply; python -m src.database.mysql.default_ai_provider_seed --apply'
                 ;;
               identity-20260829)
                 sudo docker run --rm --network host \
@@ -989,6 +992,7 @@ jobs:
               -e AUTH_CSRF_ALLOWED_ORIGINS="$API_CSRF_ALLOWED_ORIGINS"
               -e BLOG_AUDIT_LOG_DIR=/data/blog/audit-logs
               -e AI_PROVIDER_ALLOWED_HOSTS=api.deepseek.com,openrouter.ai,api.openai.com
+              -e AI_PROVIDER_ALLOWED_INSECURE_ORIGINS=http://211.141.18.165:6195
             )
 
             sudo docker rm -f sun-world-api-candidate || true

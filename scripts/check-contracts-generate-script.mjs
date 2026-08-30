@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const contractsPackagePath = join(repoRoot, 'packages/contracts/package.json')
 const generateScriptPath = join(repoRoot, 'scripts/generate-openapi.mjs')
+const exportScriptPath = join(repoRoot, 'scripts/export-openapi.py')
 const packageJson = JSON.parse(readFileSync(contractsPackagePath, 'utf8'))
 const scripts = packageJson.scripts ?? {}
 const violations = []
@@ -18,12 +19,26 @@ if (scripts['generate:openapi'] !== 'node ../../scripts/generate-openapi.mjs') {
 
 for (const [name, command] of Object.entries(scripts)) {
   if (name.startsWith('generate') && /\bbash\b/.test(String(command))) {
-    violations.push(`@sun-world/contracts ${name} script must not depend on bash`)
+    violations.push(
+      `@sun-world/contracts ${name} script must not depend on bash`
+    )
   }
 }
 
 if (!existsSync(generateScriptPath)) {
   violations.push('scripts/generate-openapi.mjs must exist')
+}
+
+if (!existsSync(exportScriptPath)) {
+  violations.push('scripts/export-openapi.py must exist')
+} else if (
+  !readFileSync(exportScriptPath, 'utf8').includes(
+    'src.modules.integrations.router'
+  )
+) {
+  violations.push(
+    'scripts/export-openapi.py must include the integrations router'
+  )
 }
 
 if (violations.length) {

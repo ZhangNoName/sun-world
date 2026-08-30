@@ -1,0 +1,31 @@
+{
+  "name": "@sun-world/cli",
+  "version": "0.1.0",
+  "description": "Official Sun World CLI for public AI and trusted platform adapters",
+  "license": "Apache-2.0",
+  "homepage": "https://sunworld.site",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZhangNoName/sun-world.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "bin": {
+    "sun-world": "./bin/sun-world.mjs"
+  },
+  "scripts": {
+    "test": "node --test ./test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -10,6 +10,20 @@ if str(API_ROOT) not in sys.path:
 
 
 class AiSchemaTests(unittest.TestCase):
+    def test_run_request_uses_one_model_selection_namespace(self):
+        from pydantic import ValidationError
+
+        from src.modules.ai.schemas import AiRunRequest
+
+        request = AiRunRequest(message="hello", model_id="qwen-public")
+        self.assertEqual(request.model_id, "qwen-public")
+        with self.assertRaises(ValidationError):
+            AiRunRequest(
+                message="hello",
+                model_id="qwen-public",
+                provider_profile_id="profile_123",
+            )
+
     def test_sse_encoder_emits_one_versioned_data_frame(self):
         from src.modules.ai.schemas import AiStreamEvent, encode_sse_event
 

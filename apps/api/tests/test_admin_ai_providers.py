@@ -55,13 +55,17 @@ class AdminAiProviderRouterTests(unittest.TestCase):
             "name": "Team Provider",
             "default_base_url": "https://team.example.test/v1",
             "default_model": "team-chat",
+            "auth_mode": "none",
             "is_enabled": True,
+            "is_default": True,
             "sort_order": 10,
         }
         created = self.client.post("/admin/ai/providers", json=payload)
         self.assertEqual(created.status_code, 200)
         self.assertEqual(created.json()["data"]["id"], "team-provider")
         self.assertNotIn("api_key", created.json()["data"])
+        self.assertTrue(created.json()["data"]["is_default"])
+        self.assertFalse(created.json()["data"]["has_api_key"])
 
         listed = self.client.get("/admin/ai/providers")
         self.assertEqual(listed.status_code, 200)

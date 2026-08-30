@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 import ipaddress
 from datetime import datetime, timezone
+import os
 from typing import Annotated, Any, Literal, Union
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .errors import AiDomainError
 from .mcp_gateway import _address_is_blocked, _validate_endpoint
@@ -17,12 +18,80 @@ AI_PERSONA_INSTRUCTIONS_MAX_LENGTH = 8_000
 AI_SKILL_INSTRUCTIONS_MAX_LENGTH = 8_000
 AI_MAX_SELECTED_SKILLS = 8
 AiJsonValue = Any
+AiProviderAuthMode = Literal["none", "bearer"]
+
+
+def _canonical_http_origin(value: str) -> str:
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+    except (TypeError, ValueError):
+        raise ValueError("provider insecure origin is invalid") from None
+    if (
+        parsed.scheme.lower() != "http"
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ValueError("provider insecure origin is invalid")
+    try:
+        host = parsed.hostname.encode("idna").decode("ascii").lower()
+    except (UnicodeError, ValueError):
+        raise ValueError("provider insecure origin is invalid") from None
+    effective_port = port or 80
+    authority = f"[{host}]" if ":" in host else host
+    if effective_port != 80:
+        authority = f"{authority}:{effective_port}"
+    return urlunsplit(("http", authority, "", "", ""))
+
+
+def _allowed_insecure_provider_origins() -> frozenset[str]:
+    raw = os.getenv("AI_PROVIDER_ALLOWED_INSECURE_ORIGINS", "")
+    origins: set[str] = set()
+    for value in raw.split(","):
+        value = value.strip()
+        if not value:
+            continue
+        origins.add(_canonical_http_origin(value))
+    return frozenset(origins)
 
 
 def _normalize_provider_base_url(value: str) -> str:
     normalized = value.strip().rstrip("/")
     if "\\" in normalized:
-        raise ValueError("provider base URL must be a safe HTTPS URL on port 443")
+        raise ValueError("provider base URL is invalid")
+    try:
+        parsed = urlsplit(normalized)
+    except (TypeError, ValueError):
+        raise ValueError("provider base URL is invalid") from None
+    if parsed.scheme.lower() == "http":
+        if (
+            not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("provider base URL is invalid")
+        origin = _canonical_http_origin(
+            urlunsplit(("http", parsed.netloc, "", "", ""))
+        )
+        if origin not in _allowed_insecure_provider_origins():
+            raise ValueError(
+                "provider HTTP origin is not explicitly allowed"
+            )
+        try:
+            address = ipaddress.ip_address(parsed.hostname)
+        except ValueError:
+            pass
+        else:
+            if _address_is_blocked(str(address)):
+                raise ValueError("provider base URL cannot use a non-public IP address")
+        authority = urlsplit(origin).netloc
+        return urlunsplit(("http", authority, parsed.path, "", "")).rstrip("/")
     try:
         host, canonical = _validate_endpoint(normalized)
     except AiDomainError:
@@ -143,12 +212,24 @@ class AiProviderDescriptor(BaseModel):
     name: str
     default_base_url: str | None = None
     default_model: str | None = None
+    is_default: bool = False
 
 
 class AiProviderCatalogInput(AiProviderDescriptor):
+    model_config = ConfigDict(extra="forbid")
+
     name: str = Field(min_length=1, max_length=120)
     default_base_url: str | None = Field(default=None, max_length=2048)
     default_model: str | None = Field(default=None, max_length=200)
+    auth_mode: AiProviderAuthMode = "bearer"
+    api_key: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4096,
+        exclude=True,
+        repr=False,
+    )
+    clear_api_key: bool = Field(default=False, exclude=True)
     is_enabled: bool = True
     sort_order: int = Field(default=0, ge=0, le=10_000)
 
@@ -159,8 +240,33 @@ class AiProviderCatalogInput(AiProviderDescriptor):
             return None
         return _normalize_provider_base_url(value)
 
+    @model_validator(mode="after")
+    def validate_provider_configuration(self):
+        if self.api_key is not None and self.clear_api_key:
+            raise ValueError("api_key and clear_api_key cannot be used together")
+        if self.auth_mode == "none" and self.api_key is not None:
+            raise ValueError("api_key is not valid when auth_mode is none")
+        if (
+            self.auth_mode == "bearer"
+            and self.default_base_url is not None
+            and urlsplit(self.default_base_url).scheme == "http"
+        ):
+            raise ValueError("bearer-authenticated providers require HTTPS")
+        if self.is_default and not self.is_enabled:
+            raise ValueError("the default provider must be enabled")
+        if self.is_enabled and (
+            not self.default_base_url or not self.default_model
+        ):
+            raise ValueError("enabled providers require a base URL and model")
+        return self
 
-class AiProviderCatalog(AiProviderCatalogInput):
+
+class AiProviderCatalog(AiProviderDescriptor):
+    auth_mode: AiProviderAuthMode = "bearer"
+    is_enabled: bool = True
+    sort_order: int = Field(default=0, ge=0, le=10_000)
+    has_api_key: bool = False
+    api_key_hint: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -181,7 +287,10 @@ class AiProviderProfileInput(BaseModel):
     @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, value: str) -> str:
-        return _normalize_provider_base_url(value)
+        normalized = _normalize_provider_base_url(value)
+        if urlsplit(normalized).scheme != "https":
+            raise ValueError("personal provider profiles require HTTPS")
+        return normalized
 
 
 class AiProviderProfile(BaseModel):
@@ -280,9 +389,17 @@ class AiSkill(AiSkillInput):
 
 
 class AiRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     conversation_id: str | None = None
     message: str = Field(min_length=1, max_length=20_000)
     provider_profile_id: str | None = None
+    model_id: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+    )
     parent_message_id: str | None = None
     persona_id: str | None = Field(default=None, min_length=1, max_length=64)
     skill_ids: list[str] = Field(default_factory=list, max_length=AI_MAX_SELECTED_SKILLS)
@@ -294,6 +411,14 @@ class AiRunRequest(BaseModel):
         if not normalized:
             raise ValueError("message cannot be blank")
         return normalized
+
+    @model_validator(mode="after")
+    def validate_provider_selection(self):
+        if self.provider_profile_id is not None and self.model_id is not None:
+            raise ValueError(
+                "provider_profile_id and model_id cannot be used together"
+            )
+        return self
 
     @field_validator("persona_id")
     @classmethod

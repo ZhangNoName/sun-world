@@ -75,6 +75,10 @@ export const API_ROUTES = {
     mcpToolCall:
       '/ai/v1/mcp/connections/{connection_id}/tools/{tool_name}/call',
   },
+  integrations: {
+    connectors: '/integrations/v1/connectors',
+    connector: '/integrations/v1/connectors/{adapter_id}',
+  },
   telemetry: {
     events: '/telemetry/events',
   },
@@ -99,6 +103,8 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.ai.chatChunkStream,
     API_ROUTES.ai.providers,
     API_ROUTES.ai.runStream,
+    API_ROUTES.integrations.connectors,
+    API_ROUTES.integrations.connector,
     API_ROUTES.telemetry.events,
     API_ROUTES.dictionaries.read,
   ],
@@ -440,6 +446,14 @@ export const API_ROUTE_METHODS = {
   'ai.mcpToolCall': {
     path: API_ROUTES.ai.mcpToolCall,
     method: 'POST',
+  },
+  'integrations.connectors': {
+    path: API_ROUTES.integrations.connectors,
+    method: 'GET',
+  },
+  'integrations.connector': {
+    path: API_ROUTES.integrations.connector,
+    method: 'GET',
   },
   'telemetry.events': {
     path: API_ROUTES.telemetry.events,

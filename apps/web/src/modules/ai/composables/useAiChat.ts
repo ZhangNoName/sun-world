@@ -95,6 +95,7 @@ export function useAiChat() {
               name: item.name,
               defaultBaseUrl: item.default_base_url,
               defaultModel: item.default_model,
+              isDefault: item.is_default === true,
             }))
           )
       })
@@ -238,6 +239,7 @@ export function useAiChat() {
         reuseUser?: boolean
         parentMessageId?: string
         providerProfileId?: string | null
+        modelId?: string | null
       }
     ) => {
       const text = raw.trim()
@@ -286,6 +288,19 @@ export function useAiChat() {
       let failed = false
       let terminal = false
       let resolvedConversationId = conversationId
+      const defaultProfileId =
+        providerProfiles.find((profile) => profile.isDefault)?.id ?? null
+      const selectedProfileId =
+        options?.providerProfileId !== undefined
+          ? options.providerProfileId
+          : defaultProfileId
+      const selectedModelId = selectedProfileId
+        ? null
+        : options?.modelId !== undefined
+          ? options.modelId
+          : (providers.find((provider) => provider.isDefault)?.id ??
+            providers[0]?.id ??
+            null)
 
       const adoptServerConversation = (serverConversationId: string) => {
         if (serverConversationId === resolvedConversationId) return
@@ -388,11 +403,8 @@ export function useAiChat() {
           {
             message: text,
             conversation_id: conversationId,
-            provider_profile_id:
-              options?.providerProfileId !== undefined
-                ? options.providerProfileId
-                : (providerProfiles.find((profile) => profile.isDefault)?.id ??
-                  null),
+            provider_profile_id: selectedProfileId,
+            model_id: selectedModelId,
             parent_message_id: options?.parentMessageId ?? null,
             persona_id: userId ? selectedPersonaId : null,
             skill_ids: userId ? selectedSkillIds : [],
@@ -462,6 +474,7 @@ export function useAiChat() {
     [
       activeConversationId,
       providerProfiles,
+      providers,
       runState.status,
       selectedPersonaId,
       selectedSkillIds,
@@ -484,6 +497,7 @@ export function useAiChat() {
       }
       await sendTextMessage(payload.markdown, {
         providerProfileId: providerProfileId(payload.modelId),
+        modelId: publicModelId(payload.modelId),
       })
     },
     [sendTextMessage]
@@ -801,6 +815,10 @@ function providerProfileId(modelId: string) {
   return modelId.startsWith('profile:')
     ? modelId.slice('profile:'.length)
     : null
+}
+
+function publicModelId(modelId: string) {
+  return modelId.startsWith('model:') ? modelId.slice('model:'.length) : null
 }
 
 function isRole(value: string): value is AiUiMessage['role'] {

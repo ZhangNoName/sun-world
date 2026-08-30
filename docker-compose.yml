@@ -31,6 +31,8 @@ services:
       PORT: '8000'
       BLOG_SECRET_ENV_FILE: /home/lighthouse/.config/blog_end/auth.env
       BLOG_AUDIT_LOG_DIR: /data/blog/audit-logs
+      AI_PROVIDER_ALLOWED_HOSTS: ${AI_PROVIDER_ALLOWED_HOSTS:-api.deepseek.com,openrouter.ai,api.openai.com}
+      AI_PROVIDER_ALLOWED_INSECURE_ORIGINS: ${AI_PROVIDER_ALLOWED_INSECURE_ORIGINS:-http://211.141.18.165:6195}
     volumes:
       - type: bind
         source: ${BLOG_API_SECRET_DIR:-/home/lighthouse/.config/blog_end}

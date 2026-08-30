@@ -86,6 +86,9 @@ def export_openapi(output: Path) -> None:
         ai_mcp_router = importlib.import_module(
             "src.modules.ai.mcp_router"
         ).router
+        integrations_router = importlib.import_module(
+            "src.modules.integrations.router"
+        ).router
         routers = [
             routers_module.blog_router,
             routers_module.base_router,
@@ -96,6 +99,7 @@ def export_openapi(output: Path) -> None:
             identity_router,
             routers_module.ai_router,
             ai_mcp_router,
+            integrations_router,
             routers_module.file_router,
             routers_module.telemetry_router,
             routers_module.admin_router,

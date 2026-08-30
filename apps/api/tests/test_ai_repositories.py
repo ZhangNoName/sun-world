@@ -1,10 +1,12 @@
 import asyncio
 import importlib.util
+import os
 import sys
 import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest.mock import patch
 
 
 API_ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +52,51 @@ class InMemoryRepositoryTests(unittest.IsolatedAsyncioTestCase):
 
         await repository.delete_provider_catalog_entry("custom-openai")
         self.assertEqual(await repository.list_provider_catalog(), [])
+
+    async def test_keyless_catalog_has_one_explicit_default(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+
+        repository = InMemoryAiRepository()
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER_ALLOWED_INSECURE_ORIGINS": (
+                    "http://211.141.18.165:6195"
+                )
+            },
+        ):
+            await repository.create_provider_catalog_entry(
+                AiProviderCatalogInput(
+                    id="qwen-public",
+                    name="Qwen Public",
+                    default_base_url="http://211.141.18.165:6195/v1",
+                    default_model="qwen38_27b",
+                    auth_mode="none",
+                    is_default=True,
+                )
+            )
+        await repository.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="second-public",
+                name="Second Public",
+                default_base_url="https://models.example.test/v1",
+                default_model="second-chat",
+                auth_mode="none",
+                is_default=True,
+            )
+        )
+
+        catalog = await repository.list_provider_catalog()
+        self.assertEqual(
+            [item.id for item in catalog if item.is_default],
+            ["second-public"],
+        )
+        default, encrypted_key = await repository.get_default_provider_record()
+        self.assertEqual(default.id, "second-public")
+        self.assertIsNone(encrypted_key)
+        self.assertFalse(default.has_api_key)
+        self.assertFalse(hasattr(default, "api_key"))
 
     async def test_orders_conversations_and_enforces_ownership(self):
         from src.modules.ai.errors import AiDomainError
@@ -114,6 +161,8 @@ class AiDatabaseSchemaTests(unittest.TestCase):
         )
         self.assertIn("api_key_ciphertext", catalog_sql)
         self.assertIn("api_key_hint", catalog_sql)
+        self.assertIn("auth_mode", catalog_sql)
+        self.assertIn("is_default", catalog_sql)
 
     def test_missing_provider_catalog_table_is_not_presented_as_empty(self):
         import pymysql
@@ -130,6 +179,156 @@ class AiDatabaseSchemaTests(unittest.TestCase):
 
 
 class MySqlAiRepositoryTransactionTests(unittest.TestCase):
+    def test_system_default_switch_locks_catalog_before_clearing_previous_default(self):
+        from src.modules.ai.repositories import MySqlAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+
+        class RecordingUnitOfWork:
+            def __init__(self):
+                self.calls = []
+                self.committed = False
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def fetch_all(self, statement, parameters=None):
+                self.calls.append(("fetch_all", statement, parameters))
+                return [{"id": "old-default"}, {"id": "new-default"}]
+
+            def fetch_one(self, statement, parameters=None):
+                self.calls.append(("fetch_one", statement, parameters))
+                return {"id": "new-default", "is_default": False}
+
+            def execute(self, statement, parameters=None):
+                self.calls.append(("execute", statement, parameters))
+                return 1
+
+            def commit(self):
+                self.calls.append(("commit", "COMMIT", None))
+                self.committed = True
+
+        class RecordingDb:
+            def __init__(self):
+                self.uow = RecordingUnitOfWork()
+
+            def unit_of_work(self):
+                return self.uow
+
+            def fetch_one(self, _statement, _parameters=None):
+                return {
+                    "id": "new-default",
+                    "name": "New Default",
+                    "default_base_url": "https://models.example.test/v1",
+                    "default_model": "new-chat",
+                    "auth_mode": "none",
+                    "is_enabled": True,
+                    "is_default": True,
+                    "sort_order": 0,
+                    "has_api_key": False,
+                    "api_key_hint": None,
+                }
+
+        database = RecordingDb()
+        updated = asyncio.run(
+            MySqlAiRepository(database).update_provider_catalog_entry(
+                "new-default",
+                AiProviderCatalogInput(
+                    id="new-default",
+                    name="New Default",
+                    default_base_url="https://models.example.test/v1",
+                    default_model="new-chat",
+                    auth_mode="none",
+                    is_default=True,
+                ),
+            )
+        )
+
+        statements = [call[1] for call in database.uow.calls]
+        self.assertIn("FOR UPDATE", statements[0])
+        self.assertIn("SET is_default = 0", statements[2])
+        self.assertIn("is_default = %s", statements[3])
+        self.assertEqual(statements[4], "COMMIT")
+        self.assertTrue(database.uow.committed)
+        self.assertTrue(updated.is_default)
+
+    def test_locked_default_cannot_be_unset_or_deleted_by_a_stale_request(self):
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.repositories import MySqlAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+
+        class LockedDefaultUnitOfWork:
+            def __init__(self):
+                self.calls = []
+                self.committed = False
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def fetch_all(self, statement, parameters=None):
+                self.calls.append(("fetch_all", statement, parameters))
+                return [{"id": "current-default"}]
+
+            def fetch_one(self, statement, parameters=None):
+                self.calls.append(("fetch_one", statement, parameters))
+                return {"id": "current-default", "is_default": True}
+
+            def execute(self, statement, parameters=None):
+                self.calls.append(("execute", statement, parameters))
+                return 1
+
+            def commit(self):
+                self.committed = True
+
+        class LockedDefaultDb:
+            def __init__(self):
+                self.uow = LockedDefaultUnitOfWork()
+
+            def unit_of_work(self):
+                return self.uow
+
+        value = AiProviderCatalogInput(
+            id="current-default",
+            name="Current Default",
+            default_base_url="https://models.example.test/v1",
+            default_model="chat-model",
+            auth_mode="none",
+        )
+
+        update_db = LockedDefaultDb()
+        with self.assertRaises(AiDomainError) as update_error:
+            asyncio.run(
+                MySqlAiRepository(update_db).update_provider_catalog_entry(
+                    value.id,
+                    value,
+                )
+            )
+        self.assertEqual(update_error.exception.code, "AI_PROVIDER_DEFAULT_REQUIRED")
+        self.assertIn("FOR UPDATE", update_db.uow.calls[0][1])
+        self.assertFalse(update_db.uow.committed)
+        self.assertFalse(
+            any(call[0] == "execute" for call in update_db.uow.calls)
+        )
+
+        delete_db = LockedDefaultDb()
+        with self.assertRaises(AiDomainError) as delete_error:
+            asyncio.run(
+                MySqlAiRepository(delete_db).delete_provider_catalog_entry(
+                    value.id
+                )
+            )
+        self.assertEqual(delete_error.exception.code, "AI_PROVIDER_DEFAULT_REQUIRED")
+        self.assertIn("FOR UPDATE", delete_db.uow.calls[0][1])
+        self.assertFalse(delete_db.uow.committed)
+        self.assertFalse(
+            any(call[0] == "execute" for call in delete_db.uow.calls)
+        )
+
     def test_default_provider_replacement_is_one_owner_locked_transaction(self):
         from src.modules.ai.repositories import MySqlAiRepository
         from src.modules.ai.schemas import AiProviderProfileInput
@@ -688,9 +887,7 @@ class MySqlAiRepositoryOffloadTests(unittest.IsolatedAsyncioTestCase):
 
 
 class AiProviderSeedTests(unittest.TestCase):
-    def test_seed_encrypts_the_key_after_clearing_provider_rows(self):
-        from cryptography.fernet import Fernet
-
+    def test_seed_defaults_qwen_only_when_enabled_default_is_absent(self):
         script_path = API_ROOT.parent.parent / "scripts" / "seed-ai-default-provider.py"
         spec = importlib.util.spec_from_file_location("seed_ai_default_provider", script_path)
         self.assertIsNotNone(spec)
@@ -699,8 +896,9 @@ class AiProviderSeedTests(unittest.TestCase):
         spec.loader.exec_module(module)
 
         class FakeCursor:
-            def __init__(self):
+            def __init__(self, current_default):
                 self.calls = []
+                self.current_default = current_default
 
             def __enter__(self):
                 return self
@@ -711,24 +909,91 @@ class AiProviderSeedTests(unittest.TestCase):
             def execute(self, statement, parameters=None):
                 self.calls.append((statement, parameters))
 
+            def fetchall(self):
+                return []
+
+            def fetchone(self):
+                return self.current_default
+
         class FakeConnection:
-            def __init__(self):
-                self.cursor_instance = FakeCursor()
+            def __init__(self, current_default):
+                self.cursor_instance = FakeCursor(current_default)
 
             def cursor(self):
                 return self.cursor_instance
 
-        connection = FakeConnection()
-        encryption_key = Fernet.generate_key().decode("ascii")
-        module.apply_seed(connection, "test-secret", encryption_key)
+        scenarios = (
+            ("empty catalog", None, True),
+            ("administrator default", {"id": "admin-selected"}, False),
+        )
+        for label, current_default, expected_default in scenarios:
+            with self.subTest(label=label):
+                connection = FakeConnection(current_default)
+                selected_as_default = module.apply_seed(connection)
 
-        calls = connection.cursor_instance.calls
-        self.assertIn("DELETE FROM ai_provider_profiles", calls[0][0])
-        self.assertIn("DELETE FROM ai_provider_catalog", calls[1][0])
-        self.assertIn("INSERT INTO ai_provider_catalog", calls[2][0])
-        self.assertNotIn("test-secret", repr(calls[2]))
-        encrypted_key = calls[2][1][4]
-        self.assertEqual(module.CredentialCipher(encryption_key).decrypt(encrypted_key), "test-secret")
+                calls = connection.cursor_instance.calls
+                self.assertIn("FOR UPDATE", calls[0][0])
+                self.assertIn("is_enabled = 1 AND is_default = 1", calls[1][0])
+                insert_index = 3 if expected_default else 2
+                self.assertEqual(len(calls), insert_index + 1)
+                if expected_default:
+                    self.assertIn(
+                        "UPDATE ai_provider_catalog SET is_default = 0",
+                        calls[2][0],
+                    )
+                else:
+                    self.assertNotIn("SET is_default = 0", repr(calls))
+                insert_sql, insert_parameters = calls[insert_index]
+                self.assertIn("INSERT INTO ai_provider_catalog", insert_sql)
+                self.assertIn("ON DUPLICATE KEY UPDATE", insert_sql)
+                self.assertIn(
+                    "is_default = VALUES(is_default)",
+                    insert_sql,
+                )
+                self.assertNotIn("is_default = 1,", insert_sql)
+                self.assertNotIn("DELETE FROM", repr(calls))
+                self.assertEqual(insert_parameters[0], "qwen-public")
+                self.assertEqual(
+                    insert_parameters[2],
+                    "http://211.141.18.165:6195/v1",
+                )
+                self.assertEqual(insert_parameters[3], "qwen38_27b")
+                self.assertIs(insert_parameters[4], expected_default)
+                self.assertIs(selected_as_default, expected_default)
+
+    def test_full_schema_deploy_seeds_qwen_before_api_cutover(self):
+        workflow = (
+            API_ROOT.parent.parent / ".github" / "workflows" / "deploy.yml"
+        ).read_text(encoding="utf-8")
+
+        migration = workflow.index(
+            "python -m src.database.mysql.schema_migration --mode apply"
+        )
+        seed = workflow.index(
+            "python -m src.database.mysql.default_ai_provider_seed --apply"
+        )
+        candidate = workflow.index(
+            "sudo docker run -d --name sun-world-api-candidate",
+            migration,
+        )
+
+        self.assertLess(migration, seed)
+        self.assertLess(seed, candidate)
+        self.assertIn(
+            "-e AI_PROVIDER_ALLOWED_HOSTS="
+            "api.deepseek.com,openrouter.ai,api.openai.com",
+            workflow,
+        )
+        self.assertNotIn(
+            "AI_PROVIDER_ALLOWED_HOSTS="
+            "api.deepseek.com,openrouter.ai,api.openai.com,211.141.18.165",
+            workflow,
+        )
+        self.assertIn(
+            "-e AI_PROVIDER_ALLOWED_INSECURE_ORIGINS="
+            "http://211.141.18.165:6195",
+            workflow,
+        )
 
 
 if __name__ == "__main__":

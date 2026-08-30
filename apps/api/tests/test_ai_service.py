@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 API_ROOT = Path(__file__).resolve().parents[1]
@@ -170,6 +171,215 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(registry.created_config.provider, "deepseek")
         self.assertEqual(registry.created_config.api_key, "sk-global-secret")
+
+    async def test_guest_run_uses_keyless_public_default(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput, AiRunRequest
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        registry = FakeRegistry()
+        service = AiService(repository, registry)
+        with patch.dict(
+            "os.environ",
+            {
+                "AI_PROVIDER_ALLOWED_INSECURE_ORIGINS": (
+                    "http://211.141.18.165:6195"
+                )
+            },
+        ):
+            created = await service.create_provider_catalog_entry(
+                AiProviderCatalogInput(
+                    id="qwen-public",
+                    name="Qwen Public",
+                    default_base_url="http://211.141.18.165:6195/v1",
+                    default_model="qwen38_27b",
+                    auth_mode="none",
+                    is_default=True,
+                )
+            )
+
+        events = [
+            event
+            async for event in service.stream_run(
+                user_id=None,
+                request=AiRunRequest(message="Use public Qwen"),
+            )
+        ]
+
+        self.assertTrue(created.is_default)
+        self.assertFalse(created.has_api_key)
+        self.assertFalse(hasattr(created, "api_key"))
+        self.assertEqual(registry.created_config.provider, "qwen-public")
+        self.assertEqual(registry.created_config.model, "qwen38_27b")
+        self.assertEqual(registry.created_config.auth_mode, "none")
+        self.assertIsNone(registry.created_config.api_key)
+        self.assertEqual(events[-1].type, "message.completed")
+
+    async def test_model_id_selects_an_enabled_system_model(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput, AiRunRequest
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        service = AiService(repository, FakeRegistry())
+        await service.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="default-public",
+                name="Default Public",
+                default_base_url="https://default.example.test/v1",
+                default_model="default-chat",
+                auth_mode="none",
+                is_default=True,
+            )
+        )
+        await service.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="selected-public",
+                name="Selected Public",
+                default_base_url="https://selected.example.test/v1",
+                default_model="selected-chat",
+                auth_mode="none",
+            )
+        )
+
+        _events = [
+            event
+            async for event in service.stream_run(
+                user_id=None,
+                request=AiRunRequest(
+                    message="Use selected model",
+                    model_id="selected-public",
+                ),
+            )
+        ]
+
+        self.assertEqual(service.providers.created_config.provider, "selected-public")
+        self.assertEqual(service.providers.created_config.model, "selected-chat")
+
+    async def test_model_id_rejects_a_disabled_system_model(self):
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput, AiRunRequest
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        service = AiService(repository, FakeRegistry())
+        await service.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="disabled-public",
+                name="Disabled Public",
+                default_base_url="https://disabled.example.test/v1",
+                default_model="disabled-chat",
+                auth_mode="none",
+                is_enabled=False,
+            )
+        )
+
+        events = [
+            event
+            async for event in service.stream_run(
+                user_id=None,
+                request=AiRunRequest(
+                    message="Do not run this model",
+                    model_id="disabled-public",
+                ),
+            )
+        ]
+
+        self.assertEqual(events[-1].type, "run.failed")
+        self.assertEqual(events[-1].data["code"], "AI_RESOURCE_NOT_FOUND")
+        self.assertFalse(hasattr(service.providers, "created_config"))
+
+    async def test_bearer_catalog_requires_a_write_only_key(self):
+        from cryptography.fernet import Fernet
+
+        from src.modules.ai.credentials import CredentialCipher
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        service = AiService(
+            repository,
+            FakeRegistry(),
+            CredentialCipher(Fernet.generate_key().decode("ascii")),
+        )
+        with self.assertRaises(AiDomainError) as caught:
+            await service.create_provider_catalog_entry(
+                AiProviderCatalogInput(
+                    id="bearer-provider",
+                    name="Bearer Provider",
+                    default_base_url="https://models.example.test/v1",
+                    default_model="chat-model",
+                    auth_mode="bearer",
+                )
+            )
+        self.assertEqual(caught.exception.code, "AI_PROVIDER_CREDENTIAL_REQUIRED")
+
+        created = await service.create_provider_catalog_entry(
+            AiProviderCatalogInput(
+                id="bearer-provider",
+                name="Bearer Provider",
+                default_base_url="https://models.example.test/v1",
+                default_model="chat-model",
+                auth_mode="bearer",
+                api_key="write-only-secret",
+                is_default=True,
+            )
+        )
+        self.assertTrue(created.has_api_key)
+        self.assertEqual(created.api_key_hint, "••••cret")
+        self.assertNotIn("write-only-secret", created.model_dump_json())
+
+    async def test_default_catalog_entry_requires_an_explicit_replacement(self):
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiProviderCatalogInput
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        service = AiService(repository, FakeRegistry())
+        default_value = AiProviderCatalogInput(
+            id="first-public",
+            name="First Public",
+            default_base_url="https://first.example.test/v1",
+            default_model="first-chat",
+            auth_mode="none",
+            is_default=True,
+        )
+        replacement_value = AiProviderCatalogInput(
+            id="second-public",
+            name="Second Public",
+            default_base_url="https://second.example.test/v1",
+            default_model="second-chat",
+            auth_mode="none",
+        )
+        await service.create_provider_catalog_entry(default_value)
+        await service.create_provider_catalog_entry(replacement_value)
+
+        with self.assertRaises(AiDomainError) as update_error:
+            await service.update_provider_catalog_entry(
+                default_value.id,
+                default_value.model_copy(update={"is_default": False}),
+            )
+        self.assertEqual(update_error.exception.code, "AI_PROVIDER_DEFAULT_REQUIRED")
+
+        with self.assertRaises(AiDomainError) as delete_error:
+            await service.delete_provider_catalog_entry(default_value.id)
+        self.assertEqual(delete_error.exception.code, "AI_PROVIDER_DEFAULT_REQUIRED")
+
+        switched = await service.update_provider_catalog_entry(
+            replacement_value.id,
+            replacement_value.model_copy(update={"is_default": True}),
+        )
+        await service.delete_provider_catalog_entry(default_value.id)
+
+        self.assertTrue(switched.is_default)
+        self.assertEqual(
+            [item.id for item in await service.list_provider_catalog()],
+            [replacement_value.id],
+        )
 
     async def test_guest_stream_emits_monotonic_events_and_one_terminal_event(self):
         from src.modules.ai.repositories import InMemoryAiRepository

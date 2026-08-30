@@ -85,6 +85,11 @@ const checks = [
     args: ['build:ai-ui'],
   },
   {
+    label: 'Sun World CLI test',
+    command: 'pnpm',
+    args: ['test:cli'],
+  },
+  {
     label: 'Frontend full check',
     command: 'pnpm',
     args: ['check:web'],

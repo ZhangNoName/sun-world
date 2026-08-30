@@ -911,6 +911,64 @@ older completed checkpoints to docs/handoff/archive/.
 - Next step: review the task-scoped diff and integrate when the surrounding
   dirty workspace is ready.
 
+## Active checkpoint: 2026-08-30 P1.81 model catalog and modular external CLI
+
+- Goal: publish a first-party Sun World CLI, modularize Feishu/Zhihu CLI
+  adapters for future reviewed platforms, make the keyless
+  `qwen38_27b` endpoint the initial default model, add model management, and
+  prove a real data-analysis request through the CLI.
+- Status: implemented and verified locally. No production deploy, database
+  mutation, npm publish, commit, push, or staging was performed.
+- Important files:
+  - `packages/cli/` for AI commands, adapter manifests/registries, fixed command
+    builders, process isolation, and package tests.
+  - `apps/api/src/modules/integrations/` and
+    `apps/api/tests/test_integrations_catalog.py` for the public secret-free
+    connector catalog.
+  - `apps/api/src/modules/ai/{schemas,providers,repositories,service}.py`,
+    `apps/api/src/database/mysql/{schema_migration,default_ai_provider_seed}.py`,
+    and AI tests for model management/default selection and restricted HTTP.
+  - `apps/web/src/modules/admin/`, `apps/web/src/modules/ai/`, and
+    `packages/ai-ui/` for `/manage/ai/models` and model selection.
+  - `packages/contracts/`, `.github/workflows/deploy.yml`,
+    `docker-compose.yml`, `README.md`, and
+    `docs/architecture/model-catalog-and-integrations.md` for contracts,
+    deployment policy, and durable architecture.
+- Behavior:
+  - `sun-world ai models|ask` calls the public AI V1 API; no model ID means the
+    server default. The external package is `@sun-world/cli`.
+  - `sun-world integrations list|inspect|doctor|preview|run` uses a versioned
+    adapter contract. Feishu and Zhihu execute only as explicit local binaries;
+    the API publishes metadata and never executes them.
+  - Integration mutations require a proven dry-run implementation or explicit
+    confirmation. Child processes use fixed argv, no shell, bounded output and
+    lifetime, machine-readable output, and a platform-specific minimal
+    environment.
+  - The initial full migration/seed selects `qwen-public/qwen38_27b` at
+    `http://211.141.18.165:6195/v1`; later idempotent seeds preserve any enabled
+    administrator-selected default.
+  - HTTP is allowed only for this exact origin and only with `auth_mode=none`.
+    Bearer and personal profiles stay HTTPS-only; runtime validation repeats the
+    check before any network access.
+- Verification completed:
+  - `corepack pnpm check` passed all 20/20 repository gates, including 61 Web
+    test files/180 tests, 357 API tests, 17 CLI tests, production builds and
+    budgets, contract/CI/deploy guards, and Compose static validation.
+  - The API connector catalog parity test compares every public adapter field
+    with the CLI safe projection, so catalog drift fails the backend suite.
+  - `npm pack --dry-run` for `@sun-world/cli` passed with 20 published files
+    (15.6 kB tarball, 53.2 kB unpacked).
+  - A real local API plus `pnpm sun ai models` exposed `qwen-public` as default.
+    `pnpm sun ai ask` omitted `--model-id` and returned a correct trend analysis
+    for `100, 130, 169, 160`: `2月环比增长30%，3月增长30%，4月约下降5.33%；总体先升后微降，整体仍呈上行。`
+- Blockers: none in implementation. Publishing requires access to the
+  `@sun-world` npm scope. Live Feishu/Zhihu business calls additionally require
+  the official CLI to be installed and authenticated on the caller's machine;
+  no credentials are stored in this repository.
+- Next step: review and commit the completed change, then publish/deploy only
+  when requested. Production rollout must supply the documented exact insecure
+  origin allowlist and run the normal migration/seed flow.
+
 ## Archives
 
 - docs/handoff/archive/2026-06-20-platform-checkpoints.md contains the prior

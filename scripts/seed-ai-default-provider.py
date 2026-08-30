@@ -1,8 +1,7 @@
-"""Seed the single public AI provider configuration.
+"""Upsert the public Qwen default without deleting other provider data.
 
-The provider API key is accepted only through DEEPSEEK_API_KEY, encrypted
-before it is stored, and never printed. Run without --apply to inspect the
-affected provider rows without changing the database.
+The upstream is an explicitly approved, keyless OpenAI-compatible endpoint.
+Run without --apply to inspect the intended change without mutating MySQL.
 """
 
 from __future__ import annotations
@@ -21,14 +20,13 @@ API_ROOT = REPO_ROOT / "apps" / "api"
 if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
 
-from app_instance import get_credential_encryption_key  # noqa: E402
-from src.modules.ai.credentials import CredentialCipher  # noqa: E402
-
-
-PROVIDER_ID = "deepseek"
-PROVIDER_NAME = "DeepSeek"
-PROVIDER_BASE_URL = "https://api.deepseek.com"
-PROVIDER_MODEL = "deepseek-chat"
+from src.database.mysql.default_ai_provider_seed import (  # noqa: E402
+    PROVIDER_BASE_URL,
+    PROVIDER_ID,
+    PROVIDER_MODEL,
+    PROVIDER_NAME,
+    upsert_default_provider,
+)
 
 
 def resolve_config_path(raw_path: str) -> Path:
@@ -88,7 +86,7 @@ def provider_row_count(connection, table: str) -> int:
         return int(cursor.fetchone()["count"])
 
 
-def ensure_secret_columns(connection) -> None:
+def ensure_provider_columns(connection) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
             """
@@ -96,13 +94,13 @@ def ensure_secret_columns(connection) -> None:
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE()
               AND TABLE_NAME = 'ai_provider_catalog'
-              AND COLUMN_NAME IN ('api_key_ciphertext', 'api_key_hint')
+              AND COLUMN_NAME IN ('auth_mode', 'is_default')
             """
         )
         found = {(row["TABLE_NAME"], row["COLUMN_NAME"]) for row in cursor.fetchall()}
     missing = {
-        ("ai_provider_catalog", "api_key_ciphertext"),
-        ("ai_provider_catalog", "api_key_hint"),
+        ("ai_provider_catalog", "auth_mode"),
+        ("ai_provider_catalog", "is_default"),
     } - found
     if missing:
         names = ", ".join(column for _table, column in sorted(missing))
@@ -112,29 +110,8 @@ def ensure_secret_columns(connection) -> None:
         )
 
 
-def apply_seed(connection, api_key: str, encryption_key: str) -> None:
-    cipher = CredentialCipher(encryption_key)
-    encrypted_key = cipher.encrypt(api_key)
-    key_hint = cipher.hint(api_key)
-    with connection.cursor() as cursor:
-        cursor.execute("DELETE FROM ai_provider_profiles")
-        cursor.execute("DELETE FROM ai_provider_catalog")
-        cursor.execute(
-            """
-            INSERT INTO ai_provider_catalog
-              (id, name, default_base_url, default_model,
-               api_key_ciphertext, api_key_hint, is_enabled, sort_order)
-            VALUES (%s, %s, %s, %s, %s, %s, 1, 0)
-            """,
-            (
-                PROVIDER_ID,
-                PROVIDER_NAME,
-                PROVIDER_BASE_URL,
-                PROVIDER_MODEL,
-                encrypted_key,
-                key_hint,
-            ),
-        )
+def apply_seed(connection) -> bool:
+    return upsert_default_provider(connection)
 
 
 def main() -> int:
@@ -142,34 +119,29 @@ def main() -> int:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Delete existing provider profiles/catalog entries and seed DeepSeek.",
+        help="Upsert and select the keyless public Qwen provider.",
     )
     args = parser.parse_args()
 
     config = load_config()
     connection = connect_mysql(config)
     try:
-        ensure_secret_columns(connection)
+        ensure_provider_columns(connection)
         profiles = provider_row_count(connection, "ai_provider_profiles")
         catalog = provider_row_count(connection, "ai_provider_catalog")
         if not args.apply:
             print(
-                "Dry run: would remove "
+                "Dry run: would preserve "
                 f"{profiles} provider profile(s) and {catalog} catalog entry(ies), "
-                "then seed one enabled DeepSeek provider."
+                f"then ensure {PROVIDER_ID} exists and select it only when no "
+                "enabled default exists."
             )
             return 0
 
-        api_key = os.getenv("DEEPSEEK_API_KEY")
-        if not api_key:
-            raise RuntimeError("DEEPSEEK_API_KEY is required with --apply.")
-        encryption_key = get_credential_encryption_key(config)
-        if not encryption_key:
-            raise RuntimeError("AI credential encryption is not configured.")
-
-        apply_seed(connection, api_key, encryption_key)
+        selected_as_default = apply_seed(connection)
         connection.commit()
-        print("Seeded one enabled DeepSeek provider; provider profiles were cleared.")
+        outcome = "the default" if selected_as_default else "an enabled model"
+        print(f"Upserted {PROVIDER_ID} as {outcome}.")
         return 0
     except Exception:
         connection.rollback()

@@ -45,10 +45,26 @@ class AiRepository(Protocol):
     async def set_feedback(self, user_id: int, message_id: str, value: str | None) -> None: ...
     async def get_feedback(self, user_id: int, message_id: str) -> str | None: ...
     async def list_provider_catalog(self) -> list[AiProviderCatalog]: ...
-    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog: ...
-    async def update_provider_catalog_entry(self, provider_id: str, value: AiProviderCatalogInput) -> AiProviderCatalog: ...
+    async def create_provider_catalog_entry(
+        self,
+        value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+    ) -> AiProviderCatalog: ...
+    async def update_provider_catalog_entry(
+        self,
+        provider_id: str,
+        value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+        replace_key: bool = False,
+    ) -> AiProviderCatalog: ...
     async def delete_provider_catalog_entry(self, provider_id: str) -> None: ...
-    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None: ...
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str | None] | None: ...
+    async def get_provider_catalog_record(
+        self,
+        provider_id: str,
+    ) -> tuple[AiProviderCatalog, str | None]: ...
     async def list_provider_profiles(self, user_id: int) -> list[AiProviderProfile]: ...
     async def save_provider_profile(
         self,
@@ -179,30 +195,65 @@ class InMemoryAiRepository:
     async def list_provider_catalog(self) -> list[AiProviderCatalog]:
         return sorted(self._provider_catalog.values(), key=lambda item: (item.sort_order, item.id))
 
-    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog:
+    async def create_provider_catalog_entry(
+        self,
+        value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+    ) -> AiProviderCatalog:
         if value.id in self._provider_catalog:
             raise AiDomainError("AI_PROVIDER_ALREADY_EXISTS", "Provider already exists.", status_code=409)
-        catalog_entry = AiProviderCatalog(**value.model_dump())
+        if value.is_default:
+            for provider_id, entry in list(self._provider_catalog.items()):
+                self._provider_catalog[provider_id] = entry.model_copy(
+                    update={"is_default": False}
+                )
+        catalog_entry = AiProviderCatalog(
+            **value.model_dump(),
+            has_api_key=encrypted_key is not None,
+            api_key_hint=key_hint,
+        )
         self._provider_catalog[catalog_entry.id] = catalog_entry
-        self._provider_catalog_secrets[catalog_entry.id] = None
+        self._provider_catalog_secrets[catalog_entry.id] = encrypted_key
         return catalog_entry
 
     async def update_provider_catalog_entry(
         self,
         provider_id: str,
         value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+        replace_key: bool = False,
     ) -> AiProviderCatalog:
         existing = self._provider_catalog.get(provider_id)
         if existing is None:
             raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
+        if value.is_default:
+            for current_id, entry in list(self._provider_catalog.items()):
+                if current_id != provider_id:
+                    self._provider_catalog[current_id] = entry.model_copy(
+                        update={"is_default": False}
+                    )
+        secret = (
+            encrypted_key
+            if replace_key
+            else self._provider_catalog_secrets.get(provider_id)
+        )
         catalog_entry = AiProviderCatalog(
             **value.model_dump(),
+            has_api_key=secret is not None,
+            api_key_hint=(
+                key_hint
+                if replace_key
+                else existing.api_key_hint
+            ),
             created_at=existing.created_at,
             updated_at=datetime.now(timezone.utc),
         )
         if catalog_entry.id != provider_id:
             raise AiDomainError("AI_PROVIDER_ID_IMMUTABLE", "Provider ID cannot be changed.", status_code=409)
         self._provider_catalog[provider_id] = catalog_entry
+        self._provider_catalog_secrets[provider_id] = secret
         return catalog_entry
 
     async def delete_provider_catalog_entry(self, provider_id: str) -> None:
@@ -211,12 +262,25 @@ class InMemoryAiRepository:
         del self._provider_catalog[provider_id]
         self._provider_catalog_secrets.pop(provider_id, None)
 
-    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None:
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str | None] | None:
         for catalog_entry in await self.list_provider_catalog():
             encrypted_key = self._provider_catalog_secrets.get(catalog_entry.id)
-            if catalog_entry.is_enabled and encrypted_key:
+            if catalog_entry.is_enabled and catalog_entry.is_default:
                 return catalog_entry, encrypted_key
         return None
+
+    async def get_provider_catalog_record(
+        self,
+        provider_id: str,
+    ) -> tuple[AiProviderCatalog, str | None]:
+        catalog_entry = self._provider_catalog.get(provider_id)
+        if catalog_entry is None:
+            raise AiDomainError(
+                "AI_RESOURCE_NOT_FOUND",
+                "Provider not found.",
+                status_code=404,
+            )
+        return catalog_entry, self._provider_catalog_secrets.get(provider_id)
 
     async def list_provider_profiles(self, user_id: int) -> list[AiProviderProfile]:
         return [profile for owner, profile, _secret in self._profiles.values() if owner == user_id]
@@ -561,94 +625,228 @@ class MySqlAiRepository:
 
     def _list_provider_catalog(self) -> list[AiProviderCatalog]:
         rows = self.db.fetch_all(
-            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, created_at, updated_at "
+            "SELECT id, name, default_base_url, default_model, auth_mode, "
+            "is_enabled, is_default, sort_order, "
+            "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
+            "created_at, updated_at "
             "FROM ai_provider_catalog ORDER BY sort_order ASC, id ASC"
         )
         return [AiProviderCatalog(**row) for row in rows]
 
-    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None:
+    async def get_default_provider_record(self) -> tuple[AiProviderCatalog, str | None] | None:
         return await asyncio.to_thread(self._get_default_provider_record)
 
-    def _get_default_provider_record(self) -> tuple[AiProviderCatalog, str] | None:
+    def _get_default_provider_record(self) -> tuple[AiProviderCatalog, str | None] | None:
         row = self.db.fetch_one(
-            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, "
+            "SELECT id, name, default_base_url, default_model, auth_mode, "
+            "is_enabled, is_default, sort_order, "
+            "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
             "created_at, updated_at, api_key_ciphertext "
             "FROM ai_provider_catalog "
-            "WHERE is_enabled = 1 AND api_key_ciphertext IS NOT NULL "
-            "ORDER BY sort_order ASC, id ASC LIMIT 1"
+            "WHERE is_enabled = 1 AND is_default = 1 LIMIT 1"
         )
         if not row:
             return None
         encrypted_key = row.pop("api_key_ciphertext")
-        if not encrypted_key:
-            return None
         return AiProviderCatalog(**row), encrypted_key
 
-    async def create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog:
-        return await asyncio.to_thread(self._create_provider_catalog_entry, value)
-
-    def _create_provider_catalog_entry(self, value: AiProviderCatalogInput) -> AiProviderCatalog:
-        existing = self.db.fetch_one("SELECT id FROM ai_provider_catalog WHERE id = %s", (value.id,))
-        if existing:
-            raise AiDomainError("AI_PROVIDER_ALREADY_EXISTS", "Provider already exists.", status_code=409)
-        self.db.execute(
-            "INSERT INTO ai_provider_catalog "
-            "(id, name, default_base_url, default_model, is_enabled, sort_order) VALUES (%s, %s, %s, %s, %s, %s)",
-            (
-                value.id,
-                value.name,
-                value.default_base_url,
-                value.default_model,
-                value.is_enabled,
-                value.sort_order,
-            ),
+    async def get_provider_catalog_record(
+        self,
+        provider_id: str,
+    ) -> tuple[AiProviderCatalog, str | None]:
+        return await asyncio.to_thread(
+            self._get_provider_catalog_record,
+            provider_id,
         )
+
+    def _get_provider_catalog_record(
+        self,
+        provider_id: str,
+    ) -> tuple[AiProviderCatalog, str | None]:
+        row = self.db.fetch_one(
+            "SELECT id, name, default_base_url, default_model, auth_mode, "
+            "is_enabled, is_default, sort_order, "
+            "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
+            "created_at, updated_at, api_key_ciphertext "
+            "FROM ai_provider_catalog WHERE id = %s",
+            (provider_id,),
+        )
+        if not row:
+            raise AiDomainError(
+                "AI_RESOURCE_NOT_FOUND",
+                "Provider not found.",
+                status_code=404,
+            )
+        encrypted_key = row.pop("api_key_ciphertext")
+        return AiProviderCatalog(**row), encrypted_key
+
+    async def create_provider_catalog_entry(
+        self,
+        value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+    ) -> AiProviderCatalog:
+        return await asyncio.to_thread(
+            self._create_provider_catalog_entry,
+            value,
+            encrypted_key,
+            key_hint,
+        )
+
+    def _create_provider_catalog_entry(
+        self,
+        value: AiProviderCatalogInput,
+        encrypted_key: str | None,
+        key_hint: str | None,
+    ) -> AiProviderCatalog:
+        with self.db.unit_of_work() as uow:
+            uow.fetch_all("SELECT id FROM ai_provider_catalog ORDER BY id FOR UPDATE")
+            existing = uow.fetch_one(
+                "SELECT id FROM ai_provider_catalog WHERE id = %s",
+                (value.id,),
+            )
+            if existing:
+                raise AiDomainError(
+                    "AI_PROVIDER_ALREADY_EXISTS",
+                    "Provider already exists.",
+                    status_code=409,
+                )
+            if value.is_default:
+                uow.execute(
+                    "UPDATE ai_provider_catalog SET is_default = 0 "
+                    "WHERE is_default = 1"
+                )
+            uow.execute(
+                "INSERT INTO ai_provider_catalog "
+                "(id, name, default_base_url, default_model, auth_mode, "
+                "api_key_ciphertext, api_key_hint, is_enabled, is_default, sort_order) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (
+                    value.id,
+                    value.name,
+                    value.default_base_url,
+                    value.default_model,
+                    value.auth_mode,
+                    encrypted_key,
+                    key_hint,
+                    value.is_enabled,
+                    value.is_default,
+                    value.sort_order,
+                ),
+            )
+            uow.commit()
         return self._get_provider_catalog_entry(value.id)
 
     async def update_provider_catalog_entry(
         self,
         provider_id: str,
         value: AiProviderCatalogInput,
+        encrypted_key: str | None = None,
+        key_hint: str | None = None,
+        replace_key: bool = False,
     ) -> AiProviderCatalog:
         return await asyncio.to_thread(
             self._update_provider_catalog_entry,
             provider_id,
             value,
+            encrypted_key,
+            key_hint,
+            replace_key,
         )
 
     def _update_provider_catalog_entry(
         self,
         provider_id: str,
         value: AiProviderCatalogInput,
+        encrypted_key: str | None,
+        key_hint: str | None,
+        replace_key: bool,
     ) -> AiProviderCatalog:
         if value.id != provider_id:
             raise AiDomainError("AI_PROVIDER_ID_IMMUTABLE", "Provider ID cannot be changed.", status_code=409)
-        self.db.execute(
-            "UPDATE ai_provider_catalog SET name = %s, default_base_url = %s, default_model = %s, "
-            "is_enabled = %s, sort_order = %s WHERE id = %s",
-            (
-                value.name,
-                value.default_base_url,
-                value.default_model,
-                value.is_enabled,
-                value.sort_order,
-                provider_id,
-            ),
-        )
+        with self.db.unit_of_work() as uow:
+            uow.fetch_all("SELECT id FROM ai_provider_catalog ORDER BY id FOR UPDATE")
+            existing = uow.fetch_one(
+                "SELECT id, is_default FROM ai_provider_catalog WHERE id = %s",
+                (provider_id,),
+            )
+            if not existing:
+                raise AiDomainError(
+                    "AI_RESOURCE_NOT_FOUND",
+                    "Provider not found.",
+                    status_code=404,
+                )
+            if existing.get("is_default") and not value.is_default:
+                raise AiDomainError(
+                    "AI_PROVIDER_DEFAULT_REQUIRED",
+                    "Select another default provider before changing this one.",
+                    status_code=409,
+                )
+            if value.is_default:
+                uow.execute(
+                    "UPDATE ai_provider_catalog SET is_default = 0 "
+                    "WHERE is_default = 1 AND id <> %s",
+                    (provider_id,),
+                )
+            credential_sql = ""
+            credential_values: tuple[str | None, ...] = ()
+            if replace_key:
+                credential_sql = ", api_key_ciphertext = %s, api_key_hint = %s"
+                credential_values = (encrypted_key, key_hint)
+            uow.execute(
+                "UPDATE ai_provider_catalog SET name = %s, default_base_url = %s, "
+                "default_model = %s, auth_mode = %s, is_enabled = %s, "
+                "is_default = %s, sort_order = %s"
+                f"{credential_sql} WHERE id = %s",
+                (
+                    value.name,
+                    value.default_base_url,
+                    value.default_model,
+                    value.auth_mode,
+                    value.is_enabled,
+                    value.is_default,
+                    value.sort_order,
+                    *credential_values,
+                    provider_id,
+                ),
+            )
+            uow.commit()
         return self._get_provider_catalog_entry(provider_id)
 
     async def delete_provider_catalog_entry(self, provider_id: str) -> None:
         await asyncio.to_thread(self._delete_provider_catalog_entry, provider_id)
 
     def _delete_provider_catalog_entry(self, provider_id: str) -> None:
-        existing = self.db.fetch_one("SELECT id FROM ai_provider_catalog WHERE id = %s", (provider_id,))
-        if not existing:
-            raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Provider not found.", status_code=404)
-        self.db.execute("DELETE FROM ai_provider_catalog WHERE id = %s", (provider_id,))
+        with self.db.unit_of_work() as uow:
+            uow.fetch_all("SELECT id FROM ai_provider_catalog ORDER BY id FOR UPDATE")
+            existing = uow.fetch_one(
+                "SELECT id, is_default FROM ai_provider_catalog WHERE id = %s",
+                (provider_id,),
+            )
+            if not existing:
+                raise AiDomainError(
+                    "AI_RESOURCE_NOT_FOUND",
+                    "Provider not found.",
+                    status_code=404,
+                )
+            if existing.get("is_default"):
+                raise AiDomainError(
+                    "AI_PROVIDER_DEFAULT_REQUIRED",
+                    "Select another default provider before deleting this one.",
+                    status_code=409,
+                )
+            uow.execute(
+                "DELETE FROM ai_provider_catalog WHERE id = %s",
+                (provider_id,),
+            )
+            uow.commit()
 
     def _get_provider_catalog_entry(self, provider_id: str) -> AiProviderCatalog:
         row = self.db.fetch_one(
-            "SELECT id, name, default_base_url, default_model, is_enabled, sort_order, created_at, updated_at "
+            "SELECT id, name, default_base_url, default_model, auth_mode, "
+            "is_enabled, is_default, sort_order, "
+            "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
+            "created_at, updated_at "
             "FROM ai_provider_catalog WHERE id = %s",
             (provider_id,),
         )

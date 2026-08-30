@@ -324,15 +324,20 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
             {"name": "name", "definition": "VARCHAR(120) NOT NULL", "type": "varchar"},
             {"name": "default_base_url", "definition": "VARCHAR(2048) NULL", "type": "varchar"},
             {"name": "default_model", "definition": "VARCHAR(200) NULL", "type": "varchar"},
+            {"name": "auth_mode", "definition": "VARCHAR(16) NOT NULL DEFAULT 'bearer'", "type": "varchar"},
             {"name": "api_key_ciphertext", "definition": "TEXT NULL", "type": "varchar"},
             {"name": "api_key_hint", "definition": "VARCHAR(32) NULL", "type": "varchar"},
             {"name": "is_enabled", "definition": "TINYINT(1) NOT NULL DEFAULT 1", "type": "tinyint"},
+            {"name": "is_default", "definition": "TINYINT(1) NOT NULL DEFAULT 0", "type": "tinyint"},
             {"name": "sort_order", "definition": "INT NOT NULL DEFAULT 0", "type": "int"},
             {"name": "created_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)", "type": "datetime"},
             {"name": "updated_at", "definition": "DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)", "type": "datetime"},
         ],
         "primary_key": ["id"],
-        "indexes": ["KEY `idx_ai_provider_catalog_enabled_sort` (`is_enabled`, `sort_order`)"],
+        "indexes": [
+            "KEY `idx_ai_provider_catalog_enabled_sort` (`is_enabled`, `sort_order`)",
+            "KEY `idx_ai_provider_catalog_default` (`is_default`, `is_enabled`)",
+        ],
     },
     "ai_conversations": {
         "columns": [

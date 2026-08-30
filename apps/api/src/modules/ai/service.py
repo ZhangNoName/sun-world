@@ -154,6 +154,7 @@ class AiService:
                 name=item.name,
                 default_base_url=item.default_base_url,
                 default_model=item.default_model,
+                is_default=item.is_default,
             )
             for item in catalog
             if item.is_enabled
@@ -167,18 +168,81 @@ class AiService:
         method = getattr(self.repository, "create_provider_catalog_entry", None)
         if method is None:
             raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
-        return await method(value)
+        if value.auth_mode == "bearer" and not value.api_key:
+            raise AiDomainError(
+                "AI_PROVIDER_CREDENTIAL_REQUIRED",
+                "Bearer-authenticated providers require an API key.",
+                status_code=400,
+            )
+        encrypted_key = self.cipher.encrypt(value.api_key) if value.api_key else None
+        key_hint = self.cipher.hint(value.api_key) if value.api_key else None
+        return await method(value, encrypted_key, key_hint)
 
     async def update_provider_catalog_entry(self, provider_id: str, value: AiProviderCatalogInput):
         method = getattr(self.repository, "update_provider_catalog_entry", None)
         if method is None:
             raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
-        return await method(provider_id, value)
+        record_method = getattr(self.repository, "get_provider_catalog_record", None)
+        if record_method is None:
+            raise AiDomainError(
+                "AI_PROVIDER_STORAGE_UNAVAILABLE",
+                "Provider catalog storage is unavailable.",
+                status_code=503,
+            )
+        existing, existing_key = await record_method(provider_id)
+        if existing.is_default and not value.is_default:
+            raise AiDomainError(
+                "AI_PROVIDER_DEFAULT_REQUIRED",
+                "Select another default provider before changing this one.",
+                status_code=409,
+            )
+        replace_key = False
+        encrypted_key: str | None = None
+        key_hint: str | None = None
+        if value.auth_mode == "none":
+            replace_key = True
+        elif value.api_key:
+            replace_key = True
+            encrypted_key = self.cipher.encrypt(value.api_key)
+            key_hint = self.cipher.hint(value.api_key)
+        elif value.clear_api_key:
+            raise AiDomainError(
+                "AI_PROVIDER_CREDENTIAL_REQUIRED",
+                "Bearer-authenticated providers require an API key.",
+                status_code=400,
+            )
+        elif existing_key is None:
+            raise AiDomainError(
+                "AI_PROVIDER_CREDENTIAL_REQUIRED",
+                "Bearer-authenticated providers require an API key.",
+                status_code=400,
+            )
+        return await method(
+            provider_id,
+            value,
+            encrypted_key,
+            key_hint,
+            replace_key,
+        )
 
     async def delete_provider_catalog_entry(self, provider_id: str) -> None:
         method = getattr(self.repository, "delete_provider_catalog_entry", None)
         if method is None:
             raise AiDomainError("AI_PROVIDER_STORAGE_UNAVAILABLE", "Provider catalog storage is unavailable.", status_code=503)
+        record_method = getattr(self.repository, "get_provider_catalog_record", None)
+        if record_method is None:
+            raise AiDomainError(
+                "AI_PROVIDER_STORAGE_UNAVAILABLE",
+                "Provider catalog storage is unavailable.",
+                status_code=503,
+            )
+        existing, _encrypted_key = await record_method(provider_id)
+        if existing.is_default:
+            raise AiDomainError(
+                "AI_PROVIDER_DEFAULT_REQUIRED",
+                "Select another default provider before deleting this one.",
+                status_code=409,
+            )
         await method(provider_id)
 
     async def list_provider_profiles(self, user_id: int):
@@ -278,7 +342,28 @@ class AiService:
         self,
         user_id: int | None,
         profile_id: str | None,
+        model_id: str | None = None,
     ) -> ProviderConfig:
+        if model_id is not None:
+            catalog_method = getattr(
+                self.repository,
+                "get_provider_catalog_record",
+                None,
+            )
+            if catalog_method is None:
+                raise AiDomainError(
+                    "AI_PROVIDER_STORAGE_UNAVAILABLE",
+                    "Provider catalog storage is unavailable.",
+                    status_code=503,
+                )
+            catalog, encrypted_key = await catalog_method(model_id)
+            if not catalog.is_enabled:
+                raise AiDomainError(
+                    "AI_RESOURCE_NOT_FOUND",
+                    "Provider not found.",
+                    status_code=404,
+                )
+            return self._catalog_provider_config(catalog, encrypted_key)
         method = getattr(self.repository, "get_provider_profile_record", None)
         if user_id is not None and method is not None:
             record = await method(user_id, profile_id)
@@ -288,6 +373,7 @@ class AiService:
                     provider=profile.provider,
                     model=profile.model,
                     base_url=profile.base_url,
+                    auth_mode="bearer",
                     api_key=(
                         self.cipher.decrypt(encrypted_key)
                         if encrypted_key
@@ -304,16 +390,46 @@ class AiService:
         default_record = await default_method() if default_method is not None else None
         if default_record:
             profile, encrypted_key = default_record
-            return ProviderConfig(
-                provider=profile.id,
-                model=profile.default_model or "",
-                base_url=profile.default_base_url or "",
-                api_key=self.cipher.decrypt(encrypted_key),
-            )
+            return self._catalog_provider_config(profile, encrypted_key)
         raise AiDomainError(
             "AI_PROVIDER_NOT_CONFIGURED",
             "No default AI provider is configured.",
             status_code=503,
+        )
+
+    def _catalog_provider_config(
+        self,
+        catalog,
+        encrypted_key: str | None,
+    ) -> ProviderConfig:
+        if not catalog.default_base_url or not catalog.default_model:
+            raise AiDomainError(
+                "AI_PROVIDER_NOT_CONFIGURED",
+                "The selected AI provider is incomplete.",
+                status_code=503,
+            )
+        if catalog.auth_mode == "bearer":
+            if not encrypted_key:
+                raise AiDomainError(
+                    "AI_PROVIDER_NOT_CONFIGURED",
+                    "The selected AI provider does not have an API key.",
+                    status_code=503,
+                )
+            api_key = self.cipher.decrypt(encrypted_key)
+        elif catalog.auth_mode == "none":
+            api_key = None
+        else:
+            raise AiDomainError(
+                "AI_PROVIDER_CONFIGURATION_INVALID",
+                "The AI provider authentication mode is invalid.",
+                status_code=503,
+            )
+        return ProviderConfig(
+            provider=catalog.id,
+            model=catalog.default_model,
+            base_url=catalog.default_base_url,
+            auth_mode=catalog.auth_mode,
+            api_key=api_key,
         )
 
     async def _resolve_custom_system_message(
@@ -440,6 +556,7 @@ class AiService:
             config = await self._resolve_provider_config(
                 user_id,
                 request.provider_profile_id,
+                request.model_id,
             )
         except AiDomainError as error:
             yield AiStreamEvent(

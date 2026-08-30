@@ -58,7 +58,7 @@ const deleteSkill = vi.mocked(deleteAiSkill)
 const payload = (markdown: string) => ({
   markdown,
   files: [],
-  modelId: 'provider:deepseek',
+  modelId: 'model:deepseek',
 })
 
 function aiEvent(
@@ -142,6 +142,40 @@ describe('useAiChat', () => {
     await act(() => result.current.sendMessage(payload('hello')))
 
     expect(stream.mock.calls[0]?.[0].conversation_id).toBe(localConversationId)
+  })
+
+  it('sends a public model id independently from personal profiles', async () => {
+    providers.mockResolvedValue([
+      {
+        id: 'legacy-chat',
+        name: 'Legacy Chat',
+        default_model: 'legacy-chat',
+        is_default: false,
+      },
+      {
+        id: 'qwen38-27b',
+        name: 'Qwen 38 27B',
+        default_model: 'qwen38_27b',
+        is_default: true,
+      },
+    ])
+    stream.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+
+    await act(() =>
+      result.current.sendMessage({
+        markdown: 'public model question',
+        files: [],
+        modelId: 'model:qwen38-27b',
+      })
+    )
+
+    expect(result.current.providers[1]?.isDefault).toBe(true)
+    expect(stream.mock.calls[0]?.[0]).toMatchObject({
+      model_id: 'qwen38-27b',
+      provider_profile_id: null,
+    })
   })
 
   it('ignores empty prompts and maps versioned stream events into blocks', async () => {
@@ -263,6 +297,7 @@ describe('useAiChat', () => {
       })
     )
     expect(stream.mock.calls[0]?.[0].provider_profile_id).toBe('profile-7')
+    expect(stream.mock.calls[0]?.[0].model_id).toBeNull()
   })
 
   it('loads authenticated capabilities and sends the selected persona and skills', async () => {
@@ -423,14 +458,14 @@ describe('useAiChat', () => {
         result.current.sendMessage({
           markdown: 'read',
           files: [attachment],
-          modelId: 'provider:deepseek',
+          modelId: 'model:deepseek',
         })
       ).rejects.toThrow('当前服务暂不支持附件')
       await expect(
         result.current.sendMessage({
           markdown: 'run command',
           files: [],
-          modelId: 'provider:deepseek',
+          modelId: 'model:deepseek',
           commandId: 'summarize',
         })
       ).rejects.toThrow('当前服务暂不支持命令')

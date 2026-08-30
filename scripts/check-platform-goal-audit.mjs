@@ -40,6 +40,8 @@ requireScript('check:platform', 'node scripts/check-platform-goal-audit.mjs')
 requireScript('check:web', 'node scripts/check-web.mjs')
 requireScript('check:api', 'node scripts/run-api-check.mjs')
 requireScript('sun-ai', 'node tools/sun-ai-cli/src/cli.mjs')
+requireScript('sun', 'node packages/cli/bin/sun-world.mjs')
+requireScript('test:cli', 'pnpm -F @sun-world/cli run test')
 requireScript(
   'check:sun-ai:contracts',
   'node scripts/check-sun-ai-contract-sync.mjs'
@@ -118,6 +120,16 @@ const requiredFiles = [
   ['scripts/run-api-check.mjs', 'cross-platform backend verification'],
   ['scripts/check-all.mjs', 'cross-platform root verification'],
   ['tools/sun-ai-cli/src/cli.mjs', 'Sun AI CLI entrypoint'],
+  ['packages/cli/package.json', 'publishable Sun World CLI package'],
+  ['packages/cli/src/cli.mjs', 'Sun World CLI command router'],
+  [
+    'packages/cli/src/integrations/manifests.mjs',
+    'reviewed integration capability catalog',
+  ],
+  [
+    'packages/cli/src/integrations/process-runner.mjs',
+    'isolated local integration CLI runner',
+  ],
   [
     'tools/sun-ai-cli/src/capabilities.mjs',
     'curated Sun AI capability metadata',

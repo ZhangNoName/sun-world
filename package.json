@@ -34,6 +34,8 @@
     "test:editor": "pnpm -F @sun-world/editor run test",
     "test:icons": "pnpm -F @sun-world/icons run test",
     "test:contracts": "pnpm -F @sun-world/contracts run test",
+    "test:cli": "pnpm -F @sun-world/cli run test",
+    "sun": "node packages/cli/bin/sun-world.mjs",
     "sun-ai": "node tools/sun-ai-cli/src/cli.mjs",
     "check:sun-ai:contracts": "node scripts/check-sun-ai-contract-sync.mjs",
     "check:sun-ai:cli": "node scripts/check-sun-ai-cli.mjs",

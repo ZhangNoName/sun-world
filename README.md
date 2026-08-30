@@ -16,6 +16,7 @@ sun-world/
 │   ├── icons/        # 图标组件库 / Icon component library (@sun-world/icons)
 │   ├── ai-ui/        # AI 工作区界面 / Reusable AI workspace UI (@sun-world/ai-ui)
 │   ├── ai-composer/  # AI 输入框 / Reusable AI composer (@sun-world/ai-composer)
+│   ├── cli/          # 第一方命令行 / Publishable Sun World CLI (@sun-world/cli)
 │   ├── contracts/    # 前后端契约 / Shared API contracts
 │   └── db/           # 数据库访问层 / Database access layer (planned, not active)
 ├── deploy/           # 部署文档与示例 / Deployment docs and examples
@@ -84,6 +85,20 @@ Reusable AI workspace shell, message actions, provider settings, and structured-
 
 ChatGPT 工作模式风格的独立受控输入框，支持 Markdown 源文本提交、提交时附件交付、模型切换、斜杠命令、浏览器语音权限流程与命令式 API。使用说明见 `packages/ai-composer/README.md`。
 
+### @sun-world/cli — 第一方命令行 / Sun World CLI
+
+可发布的外部 CLI，支持发现公共模型、调用 AI V1 流协议，以及通过受审查的本地 adapter 调用官方飞书和知乎 CLI。平台写操作必须显式预演或确认，且不接受任意 shell 命令透传。
+
+```bash
+pnpm sun inspect
+pnpm sun ai models
+pnpm sun ai ask --message "分析这组数据的趋势"
+pnpm sun integrations list
+pnpm sun integrations inspect zhihu
+```
+
+详细说明见 `packages/cli/README.md`。
+
 ### db（规划中 / Planned）
 
 数据库访问层预留。当前后端使用 Python/FastAPI 直接访问数据库，因此 Prisma/TypeScript 数据库层暂不激活。
@@ -97,6 +112,8 @@ pnpm build            # 构建所有项目 / Build all projects
 pnpm build:web        # 构建前端 / Build frontend
 pnpm build:ai-ui      # 构建 AI 界面包 / Build AI UI package
 pnpm build:ai-composer # 构建 AI 输入框包 / Build AI composer package
+pnpm test:cli         # 检查第一方 CLI / Test the Sun World CLI
+pnpm sun inspect      # 检查第一方 CLI 能力 / Inspect CLI capabilities
 pnpm build:blog       # build:web 的兼容别名 / Compatibility alias for build:web
 pnpm check:web        # 检查前端 / Check frontend
 pnpm check:api        # 检查后端 / Check backend
@@ -118,6 +135,7 @@ bash scripts/check-all.sh   # 完整检查 / Full verification
 - [可观测性与分析 / Observability and Analytics](docs/architecture/observability-and-analytics.md)
 - [API 契约 / API Contracts](docs/architecture/api-contracts.md)
 - [AI 平台架构 / AI Platform Architecture](docs/architecture/ai-platform.md)
+- [模型目录与平台接入 / Model Catalog and Integrations](docs/architecture/model-catalog-and-integrations.md)
 - [单体仓库迁移计划 / Monorepo Migration Plan](docs/architecture/monorepo-migration.md)
 - [部署切换指南 / Deployment Cutover Guide](docs/architecture/deployment-cutover.md)
 - [环境变量与密钥管理 / Secrets and Env Management](docs/architecture/secrets-and-env.md)

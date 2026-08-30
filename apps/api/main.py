@@ -12,6 +12,7 @@ from src.core.response import fail
 from src.modules.dictionaries.router import router as dictionary_router
 from src.modules.ai.mcp_router import router as ai_mcp_router
 from src.modules.identity.router import router as identity_router
+from src.modules.integrations.router import router as integrations_router
 from src.routers import (
     admin_router,
     ai_router,
@@ -122,6 +123,7 @@ routers = [
     identity_router,
     ai_router,
     ai_mcp_router,
+    integrations_router,
     file_router,
     telemetry_router,
     admin_router,

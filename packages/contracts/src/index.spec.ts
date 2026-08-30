@@ -7,12 +7,7 @@ import {
   API_SUCCESS_CODE,
   DEFAULT_PAGE_SIZE,
 } from './index'
-import type {
-  ApiError,
-  ApiResponse,
-  PageRequest,
-  PageResult,
-} from './index'
+import type { ApiError, ApiResponse, PageRequest, PageResult } from './index'
 
 describe('@sun-world/contracts public protocol', () => {
   it('exports stable API route constants for current frontend consumers', () => {
@@ -25,6 +20,9 @@ describe('@sun-world/contracts public protocol', () => {
     expect(API_ROUTES.ai.chat).toBe('/ai/chat')
     expect(API_ROUTES.ai.chatStream).toBe('/ai/chat_stream')
     expect(API_ROUTES.ai.chatChunkStream).toBe('/ai/chat-chunk-stream')
+    expect(API_ROUTES.integrations.connectors).toBe(
+      '/integrations/v1/connectors'
+    )
     expect(API_ROUTE_GROUPS.public).toContain('/base/')
   })
 

@@ -7,7 +7,7 @@ const AdminChartsPage = lazy(() => import('./pages/AdminChartsPage'))
 const AdminMetricsPage = lazy(() => import('./pages/AdminMetricsPage'))
 const ManageLogsDataPage = lazy(() => import('./pages/ManageLogsDataPage'))
 const ManageBlogPage = lazy(() => import('./pages/ManageBlogDataPage'))
-const ManageAigcPage = lazy(() => import('./pages/ManageProvidersDataPage'))
+const ManageModelsPage = lazy(() => import('./pages/ManageProvidersDataPage'))
 const ManageDictionariesPage = lazy(
   () => import('./pages/ManageDictionariesPage')
 )
@@ -44,13 +44,18 @@ export const adminModule: AppModule = {
       },
     },
     {
-      path: '/manage/ai/providers',
-      Component: ManageAigcPage,
+      path: '/manage/ai/models',
+      Component: ManageModelsPage,
       meta: {
         module: 'admin',
-        title: 'AI 供应商 - Sun World',
+        title: 'AI 模型管理 - Sun World',
         noIndex: true,
       },
+    },
+    {
+      path: '/manage/ai/providers',
+      Component: () => redirect('/manage/ai/models'),
+      meta: { noIndex: true },
     },
     {
       path: '/manage/system/dictionaries',
@@ -73,7 +78,7 @@ export const adminModule: AppModule = {
     },
     {
       path: '/manage/aigc',
-      Component: () => redirect('/manage/ai/providers'),
+      Component: () => redirect('/manage/ai/models'),
       meta: { noIndex: true },
     },
     {

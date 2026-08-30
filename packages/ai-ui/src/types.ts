@@ -21,6 +21,8 @@ export interface AiUiProvider {
   name: string
   defaultBaseUrl?: string | null
   defaultModel?: string | null
+  isDefault?: boolean
+  isEnabled?: boolean
 }
 
 export interface AiUiProviderProfile {
