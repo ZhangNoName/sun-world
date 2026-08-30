@@ -147,10 +147,11 @@ sun-world-frontend:<git-sha>
 ```
 
 The server deploy step uses the `<git-sha>` tag so a specific deployment can be
-audited or rolled back from an already-built local image. A missing cached
-runtime base, checkout mismatch, artifact mismatch, unsafe archive, or image
-packaging failure stops before the deploy job can switch `my-frontend`; the
-currently running container remains in service.
+audited or rolled back from an already-built local image. An unavailable local
+runtime base and unhealthy bootstrap container, checkout mismatch, artifact
+mismatch, unsafe archive, or image packaging failure stops before the deploy
+job can switch `my-frontend`; the currently running container remains in
+service.
 
 The API image is built and tagged locally on Lighthouse:
 
@@ -201,9 +202,12 @@ GitHub Actions does not push production images through a remote registry. The
 frontend job builds and validates `apps/web/dist` on the GitHub-hosted runner,
 downloads only the exact artifact created by the current workflow run, and
 transfers that small compressed payload over SSH. Lighthouse uses the already
-cached `nginx:alpine` image and `deploy/frontend/Dockerfile.runtime` to package
-the static files with `docker build --pull=false --network=none`; it does not run
-Node, pnpm, or Vite for the production frontend image.
+local `sun-world-frontend-runtime-base:bootstrap-v1` image and
+`deploy/frontend/Dockerfile.runtime` to package the static files with
+`docker build --pull=false --network=none`; it does not run Node, pnpm, or Vite
+for the production frontend image. If that runtime-base tag does not exist yet,
+the job creates it from the exact image ID behind the currently running and
+healthy `my-frontend` container. It never pulls a base during deployment.
 
 The SSH connection is pinned to the reviewed public ED25519 host key in
 `deploy/lighthouse_known_hosts`. The workflow does not use `ssh-keyscan` to
@@ -222,9 +226,10 @@ building Docker images. When only one side changed, prefer manual runs with
 `target=web` or `target=api` instead of `target=all`.
 
 Frontend packaging fails closed. If the current-run artifact, manifest, file
-hashes, commit/run binding, checked-out runtime files, or cached `nginx:alpine`
-base cannot be verified, the workflow does not create a deployable frontend
-image and does not replace the existing `my-frontend` container.
+hashes, commit/run binding, checked-out runtime files, current healthy bootstrap
+container, or fixed local runtime base cannot be verified, the workflow does
+not create a deployable frontend image and does not replace the existing
+`my-frontend` container.
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer. The
@@ -321,15 +326,17 @@ and `404`, respectively.
 
 The root `Dockerfile` remains the manual and Compose source-build path. The
 GitHub Actions production path uses `deploy/frontend/Dockerfile.runtime`, which
-contains only the Nginx runtime layer and copies the already-built `dist`
-payload plus `deploy/frontend/nginx.conf` from the verified server checkout.
+uses the fixed local Nginx runtime base, clears only its previous static root,
+and copies the already-built `dist` payload plus `deploy/frontend/nginx.conf`
+from the verified server checkout.
 
 Production workflow flow:
 
 1. The GitHub-hosted runner builds and validates `apps/web/dist`.
 2. The exact current-run artifact is transferred over host-key-pinned SSH.
-3. Lighthouse verifies the artifact and checkout, confirms that `nginx:alpine`
-   is already cached, and packages with `--pull=false --network=none`.
+3. Lighthouse verifies the artifact and checkout, bootstraps the fixed local
+   runtime-base tag from the healthy current frontend when necessary, and
+   packages with `--pull=false --network=none`.
 4. Nginx serves the static files on port 80.
 
 ## Compose

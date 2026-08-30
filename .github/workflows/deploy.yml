@@ -731,6 +731,7 @@ jobs:
           EXPECTED_MANIFEST_PART="$EXPECTED_PREFIX.manifest.json.part"
           EXPECTED_ARCHIVE="$EXPECTED_PREFIX.tar.gz"
           EXPECTED_MANIFEST="$EXPECTED_PREFIX.manifest.json"
+          RUNTIME_BASE_IMAGE="sun-world-frontend-runtime-base:bootstrap-v1"
           WORK_ROOT=""
           WORK_DIR=""
 
@@ -842,10 +843,31 @@ jobs:
           test -f "$WORK_DIR/dist/spa.html"
           test -d "$WORK_DIR/dist/assets"
           cp deploy/frontend/nginx.conf "$WORK_DIR/nginx.conf"
-          sudo docker image inspect nginx:alpine >/dev/null
+          if ! sudo docker image inspect "$RUNTIME_BASE_IMAGE" >/dev/null 2>&1; then
+            if ! sudo docker container inspect my-frontend >/dev/null 2>&1 || \
+              [ "$(sudo docker inspect --format '{{.State.Running}}' my-frontend)" != "true" ] || \
+              ! curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+              echo "A healthy current frontend is required to bootstrap the local runtime base." >&2
+              exit 1
+            fi
+            current_frontend_image_id="$(sudo docker inspect --format '{{.Image}}' my-frontend)"
+            if ! [[ "$current_frontend_image_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "Current frontend image ID is invalid." >&2
+              exit 1
+            fi
+            sudo docker image inspect "$current_frontend_image_id" >/dev/null
+            sudo docker image tag "$current_frontend_image_id" "$RUNTIME_BASE_IMAGE"
+          fi
+          runtime_base_image_id="$(sudo docker image inspect --format '{{.Id}}' "$RUNTIME_BASE_IMAGE")"
+          if ! [[ "$runtime_base_image_id" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Local frontend runtime base image ID is invalid." >&2
+            exit 1
+          fi
           sudo docker build --pull=false --network=none --progress=plain \
+            --build-arg "RUNTIME_BASE_IMAGE=$RUNTIME_BASE_IMAGE" \
             --label "org.opencontainers.image.revision=$IMAGE_TAG" \
             --label "site.sunworld.frontend.dist-archive-sha256=$EXPECTED_ARCHIVE_SHA256" \
+            --label "site.sunworld.frontend.runtime-base-id=$runtime_base_image_id" \
             -t "$FRONTEND_IMAGE" \
             -f deploy/frontend/Dockerfile.runtime "$WORK_DIR"
           sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null

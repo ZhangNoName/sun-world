@@ -451,8 +451,10 @@ if (workflow) {
     'secrets.LIGHTHOUSE_SSH_KEY',
     'LOCK_FILE="/tmp/sun-world-docker-build.lock"',
     'flock 9',
-    'sudo docker image inspect nginx:alpine',
+    'RUNTIME_BASE_IMAGE="sun-world-frontend-runtime-base:bootstrap-v1"',
+    'sudo docker image tag "$current_frontend_image_id" "$RUNTIME_BASE_IMAGE"',
     'sudo docker build --pull=false --network=none --progress=plain',
+    '--build-arg "RUNTIME_BASE_IMAGE=$RUNTIME_BASE_IMAGE"',
     '-t "$FRONTEND_IMAGE"',
     '-f deploy/frontend/Dockerfile.runtime "$WORK_DIR"',
     'Build API image on Lighthouse',
@@ -854,8 +856,8 @@ if (workflow) {
   const remoteVerifierIndex = remoteFrontendBuild.indexOf(
     'python3 deploy/frontend/verify_runtime_artifact.py'
   )
-  const nginxCacheIndex = remoteFrontendBuild.indexOf(
-    'sudo docker image inspect nginx:alpine'
+  const runtimeBaseBootstrapIndex = remoteFrontendBuild.indexOf(
+    'sudo docker image tag "$current_frontend_image_id" "$RUNTIME_BASE_IMAGE"'
   )
   const runtimeBuildIndex = remoteFrontendBuild.indexOf(
     'sudo docker build --pull=false --network=none --progress=plain'
@@ -868,14 +870,14 @@ if (workflow) {
     frontendShaIndex < frontendPullIndex ||
     secondFrontendCleanIndex < frontendShaIndex ||
     remoteVerifierIndex < secondFrontendCleanIndex ||
-    nginxCacheIndex < remoteVerifierIndex ||
-    runtimeBuildIndex < nginxCacheIndex ||
+    runtimeBaseBootstrapIndex < remoteVerifierIndex ||
+    runtimeBuildIndex < runtimeBaseBootstrapIndex ||
     !remoteFrontendBuild.includes(
       '-f deploy/frontend/Dockerfile.runtime "$WORK_DIR"'
     )
   ) {
     violations.push(
-      'frontend packaging must hold the shared lock, pass both clean/SHA gates, safely verify dist, preflight cached nginx, then build the runtime-only context without pulls or network'
+      'frontend packaging must hold the shared lock, pass both clean/SHA gates, safely verify dist, bootstrap the fixed local runtime base from the healthy current container, then build without pulls or network'
     )
   }
 

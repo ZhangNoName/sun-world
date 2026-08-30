@@ -92,14 +92,16 @@ const runtimeInstructions = runtimeDockerfile
 
 if (
   runtimeInstructions.filter((line) => /^FROM\s+/i.test(line)).length !== 1 ||
-  runtimeInstructions[0] !== 'FROM nginx:alpine'
+  runtimeInstructions[0] !== 'ARG RUNTIME_BASE_IMAGE=nginx:alpine' ||
+  runtimeInstructions[1] !== 'FROM ${RUNTIME_BASE_IMAGE}'
 ) {
   throw new Error(
-    'deploy/frontend/Dockerfile.runtime must have exactly one nginx:alpine runtime stage'
+    'deploy/frontend/Dockerfile.runtime must have exactly one parameterized local Nginx runtime stage'
   )
 }
 
 for (const requiredInstruction of [
+  'RUN find /usr/share/nginx/html -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +',
   'COPY dist/ /usr/share/nginx/html/',
   'COPY nginx.conf /etc/nginx/conf.d/default.conf',
   'EXPOSE 80',
@@ -112,7 +114,7 @@ for (const requiredInstruction of [
   }
 }
 
-const allowedRuntimeInstruction = /^(?:FROM|COPY|EXPOSE|CMD)\s+/i
+const allowedRuntimeInstruction = /^(?:ARG|FROM|RUN|COPY|EXPOSE|CMD)\s+/i
 const unsupportedRuntimeInstructions = runtimeInstructions.filter(
   (line) => !allowedRuntimeInstruction.test(line)
 )
@@ -123,11 +125,12 @@ if (unsupportedRuntimeInstructions.length) {
 }
 
 if (
-  /(?:^|\n)\s*(?:RUN|ADD)\b/i.test(runtimeDockerfile) ||
+  runtimeInstructions.filter((line) => /^RUN\s+/i.test(line)).length !== 1 ||
+  /(?:^|\n)\s*ADD\b/i.test(runtimeDockerfile) ||
   /\b(?:node(?:js)?|npm|pnpm|vite)\b/i.test(runtimeDockerfile)
 ) {
   throw new Error(
-    'deploy/frontend/Dockerfile.runtime must remain a network-free Nginx/COPY image with no RUN, ADD, Node, npm, pnpm, or Vite build logic'
+    'deploy/frontend/Dockerfile.runtime must contain only the fixed static-file cleanup RUN and no ADD, Node, npm, pnpm, or Vite build logic'
   )
 }
 

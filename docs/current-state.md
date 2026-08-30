@@ -603,10 +603,14 @@ to the monorepo Docker image by the deploy workflow:
   verifies its manifest/hash/size, transfers it over host-key-pinned SSH, then
   repeats those checks on Lighthouse. The server syncs
   `/home/lighthouse/blog/sun-world` to the exact `origin/main` commit and uses
-  only the reviewed runtime Dockerfile/Nginx config plus its cached
-  `nginx:alpine` image to package `sun-world-frontend:<commit>` with
-  `--pull=false --network=none`; it no longer runs Node, pnpm, or Vite for the
-  production frontend image. `build-api` still builds
+  only the reviewed runtime Dockerfile/Nginx config plus the fixed local
+  `sun-world-frontend-runtime-base:bootstrap-v1` image to package
+  `sun-world-frontend:<commit>` with `--pull=false --network=none`; it no longer
+  runs Node, pnpm, or Vite for the production frontend image. The first artifact
+  deployment creates that fixed base tag from the exact image ID behind the
+  currently healthy `my-frontend` container, so the workflow does not pull a
+  base image and later deployments do not accumulate prior release layers.
+  `build-api` still builds
   `sun-world-api:<commit>` from source on Lighthouse. Both jobs share
   `/tmp/sun-world-docker-build.lock` while syncing and packaging/building so
   simultaneous frontend/API changes do not race on the same checkout. The
@@ -648,6 +652,13 @@ to the monorepo Docker image by the deploy workflow:
   prepared. Do not infer a successful deployment of `f55a34ee` from its pushed
   Git commit; production remained on the prior healthy frontend until a later
   run proves the new path end to end.
+- Artifact trial run `33313986708` for `5a357935` proved the runner build,
+  exact-run upload/download, local and Lighthouse manifest/hash verification,
+  host-key-pinned SSH transfer, server Git fast-forward, and safe extraction.
+  It stopped before image creation because the server had no `nginx:alpine`
+  tag, and the deploy job was skipped. The runtime-base bootstrap described
+  above removes that remaining Docker pull/cache dependency while still using
+  the currently healthy frontend image as the trusted local runtime source.
 - API deployment runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image first, so missing MySQL application tables/columns can be created

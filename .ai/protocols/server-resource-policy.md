@@ -24,7 +24,7 @@ Lighthouse.
   and broad repo search.
 - Keep production frontend Node, pnpm, and Vite builds on the GitHub-hosted
   runner. Lighthouse may package the verified current-run `dist` artifact only
-  with the already cached `nginx:alpine` base and
+  with the fixed local `sun-world-frontend-runtime-base:bootstrap-v1` image and
   `docker build --pull=false --network=none`.
 - Use the server for:
   - GitHub push when local GitHub credentials are unavailable,
@@ -57,8 +57,11 @@ offline: Lighthouse still runs `git fetch --prune` and `git pull --ff-only` and
 must match the reviewed commit before it uses the runtime Dockerfile and Nginx
 configuration. API Docker builds also remain server-side.
 
-Frontend packaging is fail-closed. A missing cached `nginx:alpine` image, host
-key mismatch, checkout mismatch, current-run artifact mismatch, manifest/hash
+Frontend packaging is fail-closed. On the first artifact deployment,
+Lighthouse creates the fixed local runtime-base tag from the exact image behind
+the currently healthy `my-frontend` container; later builds reuse that tag and
+never pull a base image. A missing healthy bootstrap container, host-key
+mismatch, checkout mismatch, current-run artifact mismatch, manifest/hash
 failure, or unsafe archive stops the build before any production container
 switch. The existing `my-frontend` container must remain untouched in those
 cases.
