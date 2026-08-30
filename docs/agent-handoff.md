@@ -5,9 +5,9 @@
 - Goal: replace the Lighthouse frontend Node/Vite Docker build with a small,
   current-run static artifact so production deployment does not depend on
   GitHub pushing an image to TCR/GHCR or Lighthouse pulling one.
-- Status: implementation and local verification are complete. The GitHub-hosted
-  runner now builds `apps/web/dist`, binds a strict manifest to commit/run/
-  attempt, and uploads only `frontend-dist.tar.gz` plus `manifest.json`.
+- Status: implemented, pushed, and deployed successfully. The GitHub-hosted
+  runner builds `apps/web/dist`, binds a strict manifest to commit/run/attempt,
+  and uploads only `frontend-dist.tar.gz` plus `manifest.json`.
   `build-web` verifies it locally and on Lighthouse, where the server uses its
   fixed local `sun-world-frontend-runtime-base:bootstrap-v1` image with
   `--pull=false --network=none`. If missing, that base tag is created from the
@@ -15,18 +15,26 @@
   attempted. Production SSH is pinned to `deploy/lighthouse_known_hosts`, and
   all full-schema frontend cutovers retain and trap-restore the current healthy
   container until the new container passes local and public health.
-- Incident context: deploy run `33300288083` for commit `f55a34ee` completed
+- Incident history: deploy run `33300288083` for commit `f55a34ee` completed
   quality checks and the API image build, then the old server-side Vite build
   stalled at `rendering chunks...`; the SSH connection timed out. No ENOSPC or
-  OOM record was present. Public frontend and API health still return HTTP 200,
-  but new SSH sessions currently time out during banner exchange, so no cleanup,
-  restart, or production cutover has been attempted.
+  OOM record was present, and the last recorded root filesystem state had about
+  8.3 GiB free.
 - Trial result: run `33313986708` for `5a357935` passed the runner build and
   artifact upload/download, both verifier passes, pinned SSH transfer, slow but
   successful server Git sync, and safe extraction. It then failed closed before
   image creation because `nginx:alpine` was not tagged locally; deploy was
-  skipped and production stayed untouched. The fixed runtime-base bootstrap is
-  the follow-up for that exact failure.
+  skipped and production stayed untouched. Run `33314484092` for `5fe79d7b`
+  proved the local runtime-base bootstrap and offline image build, then failed
+  before container inspection because empty SSH arguments collapsed before
+  `$7`. Commit `46a24856` encodes all optional positions, requires exactly 11
+  remote arguments, and adds push/full, dispatch/full, identity, ordering, and
+  sentinel-collision regression checks.
+- Production result: manual Web run `33315007998` for `46a24856` passed every
+  quality, artifact, pinned-transfer, local-image-build, safe-cutover, and
+  health step. Independent probes returned HTTP 200 for both site hosts and
+  `{"status":"ok"}` for API `/healthz`. The final dangling-image prune reclaimed
+  `0B`; no disk cleanup was required.
 - Important files: `.github/workflows/deploy.yml`,
   `deploy/frontend/Dockerfile.runtime`,
   `deploy/frontend/verify_runtime_artifact.py`,
@@ -35,12 +43,12 @@
 - Verification: deploy/CI/API-schema protocol checks, Docker/Compose checks,
   YAML parsing, every workflow run block through `bash -n`, Python compilation,
   and 15 adversarial artifact tests pass. The focused Prettier check and
-  `git diff --check` pass for this change.
-- Next: push the implementation, observe the real GitHub Actions artifact build,
-  and allow remote packaging/deploy only if Lighthouse accepts a strictly
-  pinned SSH session. If SSH remains unavailable, the workflow should fail
-  before it can touch `my-frontend`; recovery through the Tencent console needs
-  separate operator authorization.
+  `git diff --check` pass. The successful production run is the end-to-end
+  verification for the new path.
+- Next: keep the fixed runtime-base tag and exact-run artifact contract. Future
+  Web deploys can use the normal workflow; investigate server storage only when
+  the guarded free-space threshold reports pressure rather than pruning healthy
+  images preemptively.
 
 ### Active checkpoint: 2026-08-30 identity/AIGC integration into local main
 

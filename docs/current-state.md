@@ -659,6 +659,23 @@ to the monorepo Docker image by the deploy workflow:
   tag, and the deploy job was skipped. The runtime-base bootstrap described
   above removes that remaining Docker pull/cache dependency while still using
   the currently healthy frontend image as the trusted local runtime source.
+- Bootstrap follow-up run `33314484092` for `5fe79d7b` then proved the
+  Lighthouse-local base bootstrap and offline frontend image build. It failed
+  before inspecting or replacing a production container because OpenSSH had
+  collapsed the empty optional shell arguments and the remote script reached
+  an unset `$7`. The deploy boundary now encodes optional values as explicit
+  non-empty arguments, restores them remotely, requires exactly 11 positional
+  arguments, and has regression probes for push/full, dispatch/full, and
+  reviewed identity argument layouts.
+- Manual Web run `33315007998` successfully deployed commit `46a24856` on
+  2026-08-30. Runner checks and exact-run artifact verification passed,
+  Lighthouse packaged
+  `sun-world-frontend:46a248562cf81978a31d9b5934ea6343f800c894` with the local
+  runtime base and no registry or Docker pull, and the rollback-protected
+  `my-frontend` cutover passed local port 8081 plus both public site health
+  checks. Independent probes returned HTTP 200 for `sunworld.site` and
+  `www.sunworld.site`, and `{"status":"ok"}` for API `/healthz`. The final
+  dangling-image prune reclaimed `0B`; no low-space cleanup was needed.
 - API deployment runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image first, so missing MySQL application tables/columns can be created
