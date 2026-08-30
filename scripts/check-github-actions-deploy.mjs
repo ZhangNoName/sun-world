@@ -376,6 +376,7 @@ if (workflow) {
     'deploy:',
     'FRONTEND_IMAGE_NAME: sun-world-frontend',
     'API_IMAGE_NAME: sun-world-api',
+    'NPM_CONFIG_REGISTRY: https://registry.npmjs.org/',
     'actions/setup-python@v5',
     "python-version: '3.11'",
     'Install API dependencies',

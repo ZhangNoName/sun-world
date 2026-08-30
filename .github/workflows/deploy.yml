@@ -66,6 +66,7 @@ permissions:
 env:
   FRONTEND_IMAGE_NAME: sun-world-frontend
   API_IMAGE_NAME: sun-world-api
+  NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
 
 jobs:
   detect-changes:
