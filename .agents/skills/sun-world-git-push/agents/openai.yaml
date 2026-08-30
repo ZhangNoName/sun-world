@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Sun World Git Push'
+  short_description: 'Commit and push Sun World changes with macOS Apple Git.'
+  default_prompt: 'Use $sun-world-git-push to commit and push the current Sun World changes to GitHub.'
