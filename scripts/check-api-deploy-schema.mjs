@@ -603,44 +603,49 @@ if (workflow) {
     )
   }
 
-  const webOnlyRollbackStart = remoteDeploy.indexOf(
-    'if [ "$DEPLOYMENT_MODE" = "deploy-existing" ] && [ "$API_CHANGED" != "true" ]; then'
+  const frontendRollbackStart = remoteDeploy.indexOf(
+    'if [ "$WEB_CHANGED" = "true" ] && [ "$SCHEMA_MODE" = "full" ]; then'
   )
-  const webOnlyRecordIndex = remoteDeploy.indexOf(
+  const frontendRecordIndex = remoteDeploy.indexOf(
     'LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect',
-    webOnlyRollbackStart
+    frontendRollbackStart
   )
-  const webOnlyTrapIndex = remoteDeploy.indexOf(
+  const frontendTrapIndex = remoteDeploy.indexOf(
     'trap identity_frontend_exit_trap EXIT',
-    webOnlyRollbackStart
+    frontendRollbackStart
   )
-  const webOnlyRenameIndex = remoteDeploy.indexOf(
+  const frontendRenameIndex = remoteDeploy.indexOf(
     'sudo docker rename my-frontend my-frontend-identity-backup',
-    webOnlyRollbackStart
+    frontendRollbackStart
   )
-  const webOnlyActivationIndex = remoteDeploy.indexOf(
+  const frontendActivationIndex = remoteDeploy.indexOf(
     'IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true',
-    webOnlyRollbackStart
+    frontendRollbackStart
   )
-  const webOnlyStopIndex = remoteDeploy.indexOf(
+  const frontendStopIndex = remoteDeploy.indexOf(
     'sudo docker stop my-frontend-identity-backup',
-    webOnlyRollbackStart
+    frontendRollbackStart
   )
-  const webOnlyStartIndex = remoteDeploy.indexOf(
+  const frontendStartIndex = remoteDeploy.indexOf(
     'sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"',
-    webOnlyRollbackStart
+    frontendRollbackStart
+  )
+  const fullFrontendLocalHealthIndex = remoteDeploy.indexOf(
+    'FRONTEND_LOCAL_READY=false',
+    frontendStartIndex
   )
   if (
-    webOnlyRollbackStart < 0 ||
-    webOnlyRecordIndex < webOnlyRollbackStart ||
-    webOnlyTrapIndex < webOnlyRecordIndex ||
-    webOnlyRenameIndex < webOnlyTrapIndex ||
-    webOnlyActivationIndex < webOnlyRenameIndex ||
-    webOnlyStopIndex < webOnlyActivationIndex ||
-    webOnlyStartIndex < webOnlyStopIndex
+    frontendRollbackStart < 0 ||
+    frontendRecordIndex < frontendRollbackStart ||
+    frontendTrapIndex < frontendRecordIndex ||
+    frontendRenameIndex < frontendTrapIndex ||
+    frontendActivationIndex < frontendRenameIndex ||
+    frontendStopIndex < frontendActivationIndex ||
+    frontendStartIndex < frontendStopIndex ||
+    fullFrontendLocalHealthIndex < frontendStartIndex
   ) {
     violations.push(
-      'manual deploy-existing web-only retries must preserve and trap-restore the current frontend before replacement'
+      'all full-schema frontend cutovers must preserve, trap-restore, and locally verify the current frontend replacement'
     )
   }
 

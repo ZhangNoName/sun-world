@@ -39,7 +39,9 @@ instead of rebuilding production images.
 Manual runs support three modes:
 
 - `build-and-deploy`: build the selected target, then deploy it. Frontend
-  and API images are built locally on Lighthouse.
+  `dist` is built and validated on the GitHub-hosted runner, then Lighthouse
+  packages that exact current-run artifact into the frontend image. The API
+  image is still built locally on Lighthouse.
 - `build-only`: build the selected target without touching production. This
   leaves `sun-world-frontend:<git-sha>` and/or `sun-world-api:<git-sha>` on
   Lighthouse.
@@ -77,33 +79,44 @@ The workflow uses one production concurrency group with
 queue rather than interrupting an SSH deployment or schema maintenance window.
 Keep `main` frozen during the reviewed identity cutover. The quality jobs each
 have their normal 10/15-minute limits, while deploy reserves
-60 minutes for scoped DDL, both API health phases, and rollback. The frontend
-and API image build jobs have 30-minute timeouts because they build Docker
-images on Lighthouse. The remote deploy holds the same server lock for the
-whole cutover; normal SSH HUP/INT/TERM invokes rollback, while a process kill or
-host reboot requires the runbook's manual fixed-container inspection.
+60 minutes for scoped DDL, both API health phases, and rollback. Frontend Node,
+pnpm, and Vite work runs on the GitHub-hosted runner; Lighthouse only performs a
+lightweight Docker packaging step. The API image still builds on Lighthouse.
+The remote deploy holds the same server lock for the whole cutover; normal SSH
+HUP/INT/TERM invokes rollback, while a process kill or host reboot requires the
+runbook's manual fixed-container inspection.
 
 The pipeline is split by changed deploy target:
 
-Build frontend image on Lighthouse and Build API image on Lighthouse are the
-two production image build jobs.
+Build frontend image on Lighthouse and Build API image on Lighthouse remain the
+two production image jobs, but only the API job performs a source build on the
+server.
 
 1. `detect-changes` checks the pushed or pull-request file list.
    For the exact reviewed main/API SHA only, it can select the no-deploy staging
    path described above.
 2. `quality-common` checks formatting and GitHub Actions workflow protocols.
 3. `quality-web` runs frontend, UI package, and contracts checks only when
-   frontend-related files changed.
+   frontend-related files changed. For a build run, it also builds and validates
+   `apps/web/dist`, writes a commit/run-bound manifest with file hashes and size
+   totals, and uploads the compressed `dist` payload as
+   `frontend-runtime-<git-sha>-<run-id>-<run-attempt>`.
 4. `quality-api` runs API checks only when API-related files changed.
-5. `build-web` runs only when frontend-related files changed, SSHes to
-   Lighthouse, syncs `/home/lighthouse/blog/sun-world` to `origin/main`, and
-   builds `sun-world-frontend:<git-sha>` locally on the server.
+5. `build-web` runs only when frontend-related files changed. It downloads the
+   exact named frontend artifact from the current workflow run, verifies its
+   commit, run identity, manifest, hashes, counts, and byte totals, and transfers
+   the compressed payload over SSH. SSH trusts only the reviewed ED25519 host
+   key in `deploy/lighthouse_known_hosts`; it does not learn a host key from the
+   live network. Lighthouse syncs `/home/lighthouse/blog/sun-world` to
+   `origin/main`, repeats the checkout and artifact checks, and packages
+   `sun-world-frontend:<git-sha>` with the reviewed runtime Dockerfile and Nginx
+   config from that checkout.
 6. `build-api` runs only when API-related files changed, SSHes to Lighthouse,
    syncs `/home/lighthouse/blog/sun-world` to `origin/main`, and builds
    `sun-world-api:<git-sha>` locally on the server with SSH keepalive enabled.
 7. `build-web` and `build-api` use the same server-side lock while syncing the
-   repo and building images, so simultaneous frontend/API changes do not race
-   on the same checkout.
+   repo and packaging or building images, so simultaneous frontend/API changes
+   do not race on the same checkout.
 8. `deploy` waits for the required server-side image build(s).
 9. If only frontend changed, deploy verifies the local frontend image and
    recreates `my-frontend` only.
@@ -126,14 +139,18 @@ two production image build jobs.
    job. This includes changes limited to GitHub Actions workflow files,
    deployment docs, or local verification scripts.
 
-Frontend images are built and tagged locally on Lighthouse:
+Frontend images are tagged locally on Lighthouse from the runner-built,
+current-run `dist` artifact:
 
 ```text
 sun-world-frontend:<git-sha>
 ```
 
 The server deploy step uses the `<git-sha>` tag so a specific deployment can be
-audited or rolled back from an already-built local image.
+audited or rolled back from an already-built local image. A missing cached
+runtime base, checkout mismatch, artifact mismatch, unsafe archive, or image
+packaging failure stops before the deploy job can switch `my-frontend`; the
+currently running container remains in service.
 
 The API image is built and tagged locally on Lighthouse:
 
@@ -178,18 +195,36 @@ The Lighthouse deploy user currently runs Docker through passwordless
 `sudo docker`, so the workflow does not require the SSH user to be in the
 `docker` group.
 
-## Server-Side Image Builds
+## Runner Artifact And Server Image Builds
 
 GitHub Actions does not push production images through a remote registry. The
-workflow SSHes to Lighthouse and runs Docker builds in
-`/home/lighthouse/blog/sun-world` for both frontend and API changes. This avoids
-the GitHub-to-registry export path that repeatedly timed out during frontend
-BuildKit cache export.
+frontend job builds and validates `apps/web/dist` on the GitHub-hosted runner,
+downloads only the exact artifact created by the current workflow run, and
+transfers that small compressed payload over SSH. Lighthouse uses the already
+cached `nginx:alpine` image and `deploy/frontend/Dockerfile.runtime` to package
+the static files with `docker build --pull=false --network=none`; it does not run
+Node, pnpm, or Vite for the production frontend image.
+
+The SSH connection is pinned to the reviewed public ED25519 host key in
+`deploy/lighthouse_known_hosts`. The workflow does not use `ssh-keyscan` to
+trust whatever key the live connection presents.
+
+This path does not require GitHub to push an image to Tencent TCR, and it does
+not require Lighthouse to pull an image from GHCR. Lighthouse still needs Git
+access: both image jobs retain `git fetch --prune origin main`,
+`git pull --ff-only origin main`, a commit-SHA equality check, and clean-checkout
+checks before using repository deployment files. The API image continues to be
+built from source on Lighthouse.
 
 The frontend and API build jobs share a server-side lock file at
-`/tmp/sun-world-docker-build.lock` while syncing the repo and building Docker
-images. When only one side changed, prefer manual runs with `target=web` or
-`target=api` instead of `target=all`.
+`/tmp/sun-world-docker-build.lock` while syncing the repo and packaging or
+building Docker images. When only one side changed, prefer manual runs with
+`target=web` or `target=api` instead of `target=all`.
+
+Frontend packaging fails closed. If the current-run artifact, manifest, file
+hashes, commit/run binding, checked-out runtime files, or cached `nginx:alpine`
+base cannot be verified, the workflow does not create a deployable frontend
+image and does not replace the existing `my-frontend` container.
 
 The first API build after a Dockerfile or dependency change may still be slow,
 but later API source-only builds should reuse the Python dependency layer. The
@@ -231,16 +266,26 @@ Configure this under GitHub repository settings as a Secret:
 LIGHTHOUSE_SSH_KEY
 ```
 
-Do not commit SSH keys, `.env` values, or server secrets to the
-repository.
+The corresponding public ED25519 host-key record is committed at
+`deploy/lighthouse_known_hosts` after out-of-band verification. Do not replace
+it from live `ssh-keyscan` output during a deployment. Do not commit private SSH
+keys, `.env` values, or server secrets to the repository.
 
-Artifacts are retained for 30 days:
+The frontend runtime artifact is short-lived:
 
-- `frontend-deploy-metadata-<git-sha>` keeps the frontend image tag and commit.
+- `frontend-runtime-<git-sha>-<run-id>-<run-attempt>` is retained for three
+  days and contains only the compressed, runner-built `dist` payload and its
+  strict manifest. `build-web` downloads it by exact name from the same workflow
+  run; artifacts from another run or attempt are not accepted.
+
+Deployment metadata artifacts are retained for 30 days:
+
+- `frontend-deploy-metadata-<git-sha>` keeps the frontend image tag, commit,
+  dist archive hash/size, and manifest hash.
 - `api-deploy-metadata-<git-sha>` keeps the API image tag and commit.
 
-Each retained artifact is tied to the commit-specific image tag written by the
-job that actually ran.
+Each retained metadata artifact is tied to the commit-specific image tag written
+by the job that actually ran.
 
 Rollback example:
 
@@ -272,15 +317,20 @@ After deployment, verify one entry URL, one current hashed asset, and one
 missing hashed asset. The expected results are revalidation, immutable cache,
 and `404`, respectively.
 
-## Dockerfile
+## Dockerfiles
 
-The root `Dockerfile` is the frontend image build source.
+The root `Dockerfile` remains the manual and Compose source-build path. The
+GitHub Actions production path uses `deploy/frontend/Dockerfile.runtime`, which
+contains only the Nginx runtime layer and copies the already-built `dist`
+payload plus `deploy/frontend/nginx.conf` from the verified server checkout.
 
-Build flow:
+Production workflow flow:
 
-1. Node 22 image installs pnpm and builds `apps/web`.
-2. `apps/web/dist` is copied into the Nginx Alpine image.
-3. Nginx serves static files on port 80.
+1. The GitHub-hosted runner builds and validates `apps/web/dist`.
+2. The exact current-run artifact is transferred over host-key-pinned SSH.
+3. Lighthouse verifies the artifact and checkout, confirms that `nginx:alpine`
+   is already cached, and packages with `--pull=false --network=none`.
+4. Nginx serves the static files on port 80.
 
 ## Compose
 

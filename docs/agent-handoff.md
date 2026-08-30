@@ -1,5 +1,39 @@
 ﻿## Current Handoff
 
+### Active checkpoint: 2026-08-30 frontend runtime artifact deployment
+
+- Goal: replace the Lighthouse frontend Node/Vite Docker build with a small,
+  current-run static artifact so production deployment does not depend on
+  GitHub pushing an image to TCR/GHCR or Lighthouse pulling one.
+- Status: implementation and local verification are complete. The GitHub-hosted
+  runner now builds `apps/web/dist`, binds a strict manifest to commit/run/
+  attempt, and uploads only `frontend-dist.tar.gz` plus `manifest.json`.
+  `build-web` verifies it locally and on Lighthouse, where the server uses its
+  cached `nginx:alpine` base with `--pull=false --network=none`. Production SSH
+  is pinned to `deploy/lighthouse_known_hosts`, and all full-schema frontend
+  cutovers retain and trap-restore the current healthy container until the new
+  container passes local and public health.
+- Incident context: deploy run `33300288083` for commit `f55a34ee` completed
+  quality checks and the API image build, then the old server-side Vite build
+  stalled at `rendering chunks...`; the SSH connection timed out. No ENOSPC or
+  OOM record was present. Public frontend and API health still return HTTP 200,
+  but new SSH sessions currently time out during banner exchange, so no cleanup,
+  restart, or production cutover has been attempted.
+- Important files: `.github/workflows/deploy.yml`,
+  `deploy/frontend/Dockerfile.runtime`,
+  `deploy/frontend/verify_runtime_artifact.py`,
+  `deploy/lighthouse_known_hosts`, `tests/deploy/`, deployment validators, and
+  the frontend/server resource policy docs.
+- Verification: deploy/CI/API-schema protocol checks, Docker/Compose checks,
+  YAML parsing, every workflow run block through `bash -n`, Python compilation,
+  and 15 adversarial artifact tests pass. The focused Prettier check and
+  `git diff --check` pass for this change.
+- Next: push the implementation, observe the real GitHub Actions artifact build,
+  and allow remote packaging/deploy only if Lighthouse accepts a strictly
+  pinned SSH session. If SSH remains unavailable, the workflow should fail
+  before it can touch `my-frontend`; recovery through the Tencent console needs
+  separate operator authorization.
+
 ### Active checkpoint: 2026-08-30 identity/AIGC integration into local main
 
 - Goal: merge the complete `zxy/identity-ai-motion-integration` work into

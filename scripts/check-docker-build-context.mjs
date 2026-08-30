@@ -5,11 +5,19 @@ import { spawnSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 const dockerfilePath = resolve(repoRoot, 'Dockerfile')
+const runtimeDockerfilePath = resolve(
+  repoRoot,
+  'deploy/frontend/Dockerfile.runtime'
+)
 const NODE_VERSION = '24.17.0'
 const PNPM_VERSION = '10.15.1'
 
 if (!existsSync(dockerfilePath)) {
   throw new Error(`Dockerfile not found at ${dockerfilePath}`)
+}
+
+if (!existsSync(runtimeDockerfilePath)) {
+  throw new Error(`Runtime Dockerfile not found at ${runtimeDockerfilePath}`)
 }
 
 const dockerfile = readFileSync(dockerfilePath, 'utf8').replace(/\r\n/g, '\n')
@@ -73,7 +81,57 @@ if (installIndex > copySourceIndex) {
   throw new Error('Dockerfile must install dependencies before COPY . .')
 }
 
-console.log('Docker build context check passed.')
+const runtimeDockerfile = readFileSync(runtimeDockerfilePath, 'utf8').replace(
+  /\r\n/g,
+  '\n'
+)
+const runtimeInstructions = runtimeDockerfile
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'))
+
+if (
+  runtimeInstructions.filter((line) => /^FROM\s+/i.test(line)).length !== 1 ||
+  runtimeInstructions[0] !== 'FROM nginx:alpine'
+) {
+  throw new Error(
+    'deploy/frontend/Dockerfile.runtime must have exactly one nginx:alpine runtime stage'
+  )
+}
+
+for (const requiredInstruction of [
+  'COPY dist/ /usr/share/nginx/html/',
+  'COPY nginx.conf /etc/nginx/conf.d/default.conf',
+  'EXPOSE 80',
+  'CMD ["nginx", "-g", "daemon off;"]',
+]) {
+  if (!runtimeInstructions.includes(requiredInstruction)) {
+    throw new Error(
+      `deploy/frontend/Dockerfile.runtime must contain: ${requiredInstruction}`
+    )
+  }
+}
+
+const allowedRuntimeInstruction = /^(?:FROM|COPY|EXPOSE|CMD)\s+/i
+const unsupportedRuntimeInstructions = runtimeInstructions.filter(
+  (line) => !allowedRuntimeInstruction.test(line)
+)
+if (unsupportedRuntimeInstructions.length) {
+  throw new Error(
+    `deploy/frontend/Dockerfile.runtime contains unsupported instructions:\n- ${unsupportedRuntimeInstructions.join('\n- ')}`
+  )
+}
+
+if (
+  /(?:^|\n)\s*(?:RUN|ADD)\b/i.test(runtimeDockerfile) ||
+  /\b(?:node(?:js)?|npm|pnpm|vite)\b/i.test(runtimeDockerfile)
+) {
+  throw new Error(
+    'deploy/frontend/Dockerfile.runtime must remain a network-free Nginx/COPY image with no RUN, ADD, Node, npm, pnpm, or Vite build logic'
+  )
+}
+
+console.log('Docker source and runtime build context checks passed.')
 
 const spaFallbackCheck = spawnSync(
   process.execPath,

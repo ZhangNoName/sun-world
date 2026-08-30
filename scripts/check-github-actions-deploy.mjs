@@ -18,6 +18,13 @@ import {
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const workflowPath = join(repoRoot, '.github', 'workflows', 'deploy.yml')
 const deployDocPath = join(repoRoot, 'deploy', 'frontend', 'README.md')
+const runtimeVerifierPath = join(
+  repoRoot,
+  'deploy',
+  'frontend',
+  'verify_runtime_artifact.py'
+)
+const knownHostsPath = join(repoRoot, 'deploy', 'lighthouse_known_hosts')
 const checkAllPath = join(repoRoot, 'scripts', 'check-all.mjs')
 const packageJsonPath = join(repoRoot, 'package.json')
 const violations = []
@@ -26,11 +33,25 @@ if (!existsSync(workflowPath)) {
   violations.push('.github/workflows/deploy.yml must exist')
 }
 
+if (!existsSync(runtimeVerifierPath)) {
+  violations.push('deploy/frontend/verify_runtime_artifact.py must exist')
+}
+
+if (!existsSync(knownHostsPath)) {
+  violations.push('deploy/lighthouse_known_hosts must exist')
+}
+
 const workflow = existsSync(workflowPath)
   ? readFileSync(workflowPath, 'utf8')
   : ''
 const deployDoc = existsSync(deployDocPath)
   ? readFileSync(deployDocPath, 'utf8')
+  : ''
+const runtimeVerifier = existsSync(runtimeVerifierPath)
+  ? readFileSync(runtimeVerifierPath, 'utf8')
+  : ''
+const knownHosts = existsSync(knownHostsPath)
+  ? readFileSync(knownHostsPath, 'utf8')
   : ''
 const checkAll = existsSync(checkAllPath)
   ? readFileSync(checkAllPath, 'utf8')
@@ -368,7 +389,9 @@ if (workflow) {
     '.github/workflows/deploy.yml)',
     'Workflow-only changes should validate the pipeline shape but',
     'should not redeploy production images.',
-    'deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)',
+    'packages/ai-composer/*|packages/ai-composer/**|packages/ai-ui/*|packages/ai-ui/**|packages/base-ui/*|packages/base-ui/**',
+    'deploy/frontend/Dockerfile.runtime|deploy/frontend/nginx.conf|deploy/frontend/verify_runtime_artifact.py)',
+    'deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*.md|deploy/frontend/**/*.md|scripts/*|scripts/**)',
     'Deployment docs and local verification scripts do not enter',
     'the production images.',
     'build-web:',
@@ -383,6 +406,33 @@ if (workflow) {
     'python -m pip install ./apps/api',
     'pnpm check:web',
     'pnpm check:api',
+    'frontend_archive_sha256: ${{ steps.frontend_runtime.outputs.archive_sha256 }}',
+    'frontend_archive_bytes: ${{ steps.frontend_runtime.outputs.archive_bytes }}',
+    'frontend_file_count: ${{ steps.frontend_runtime.outputs.file_count }}',
+    'frontend_uncompressed_bytes: ${{ steps.frontend_runtime.outputs.uncompressed_bytes }}',
+    'frontend_manifest_sha256: ${{ steps.frontend_runtime.outputs.manifest_sha256 }}',
+    'Prepare frontend runtime artifact',
+    "github.ref == 'refs/heads/main'",
+    'WORKFLOW_RUN_ID: ${{ github.run_id }}',
+    'WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}',
+    'frontend-dist.tar.gz',
+    'manifest.json',
+    'Upload frontend runtime artifact',
+    'frontend-runtime-${{ needs.detect-changes.outputs.image_tag }}-${{ github.run_id }}-${{ github.run_attempt }}',
+    'actions/download-artifact@v4',
+    'Verify frontend runtime artifact',
+    'EXPECTED_ARCHIVE_SHA256: ${{ needs.quality-web.outputs.frontend_archive_sha256 }}',
+    'EXPECTED_ARCHIVE_BYTES: ${{ needs.quality-web.outputs.frontend_archive_bytes }}',
+    'EXPECTED_FILE_COUNT: ${{ needs.quality-web.outputs.frontend_file_count }}',
+    'EXPECTED_UNCOMPRESSED_BYTES: ${{ needs.quality-web.outputs.frontend_uncompressed_bytes }}',
+    'EXPECTED_MANIFEST_SHA256: ${{ needs.quality-web.outputs.frontend_manifest_sha256 }}',
+    'python3 deploy/frontend/verify_runtime_artifact.py',
+    '--expected-run-id "$WORKFLOW_RUN_ID"',
+    '--expected-run-attempt "$WORKFLOW_RUN_ATTEMPT"',
+    '--expected-sha256 "$EXPECTED_ARCHIVE_SHA256"',
+    '--expected-bytes "$EXPECTED_ARCHIVE_BYTES"',
+    '--expected-file-count "$EXPECTED_FILE_COUNT"',
+    '--expected-uncompressed-bytes "$EXPECTED_UNCOMPRESSED_BYTES"',
     "needs.detect-changes.outputs.web_changed == 'true'",
     "needs.detect-changes.outputs.api_changed == 'true'",
     "needs.quality-web.result == 'success'",
@@ -393,17 +443,18 @@ if (workflow) {
     'timeout-minutes: 30',
     'actions/upload-artifact@v4',
     'retention-days: 30',
-    'ssh-keyscan',
+    'deploy/lighthouse_known_hosts',
+    'StrictHostKeyChecking=yes',
+    'UserKnownHostsFile="$HOME/.ssh/known_hosts"',
     'vars.LIGHTHOUSE_HOST',
     'vars.LIGHTHOUSE_USER',
     'secrets.LIGHTHOUSE_SSH_KEY',
     'LOCK_FILE="/tmp/sun-world-docker-build.lock"',
     'flock 9',
-    'sudo docker build --progress=plain',
+    'sudo docker image inspect nginx:alpine',
+    'sudo docker build --pull=false --network=none --progress=plain',
     '-t "$FRONTEND_IMAGE"',
-    '--build-arg VITE_BASE_URL="$VITE_BASE_URL"',
-    '--build-arg VITE_TELEMETRY_ENDPOINT="$VITE_TELEMETRY_ENDPOINT"',
-    '-f Dockerfile .',
+    '-f deploy/frontend/Dockerfile.runtime "$WORK_DIR"',
     'Build API image on Lighthouse',
     'ServerAliveInterval=30',
     'ServerAliveCountMax=10',
@@ -520,13 +571,13 @@ if (workflow) {
     [
       'frontend',
       workflow.match(
-        /- name: Build frontend image on Lighthouse[\s\S]*?\r?\n\s+REMOTE/
+        /- name: Build frontend image on Lighthouse[\s\S]*?\r?\n\s+REMOTE(?=\r?\n|$)/
       )?.[0] ?? '',
     ],
     [
       'API',
       workflow.match(
-        /- name: Build API image on Lighthouse[\s\S]*?\r?\n\s+REMOTE/
+        /- name: Build API image on Lighthouse[\s\S]*?\r?\n\s+REMOTE(?=\r?\n|$)/
       )?.[0] ?? '',
     ],
   ]) {
@@ -541,6 +592,323 @@ if (workflow) {
     ) {
       violations.push(
         `${buildName} image build must reject staged, unstaged, and untracked dirty checkout cases before and after selecting the reviewed SHA`
+      )
+    }
+  }
+
+  const qualityWebBlock =
+    workflow.match(/\r?\n  quality-web:[\s\S]*?\r?\n  quality-api:/)?.[0] ?? ''
+  const frontendBuildJob =
+    workflow.match(/\r?\n  build-web:[\s\S]*?\r?\n  build-api:/)?.[0] ?? ''
+  const apiBuildJob =
+    workflow.match(/\r?\n  build-api:[\s\S]*?\r?\n  deploy:/)?.[0] ?? ''
+  const artifactPrepareBlock =
+    qualityWebBlock.match(
+      /- name: Prepare frontend runtime artifact[\s\S]*?(?=\r?\n\s+- name: Upload frontend runtime artifact)/
+    )?.[0] ?? ''
+  const artifactUploadBlock =
+    qualityWebBlock.match(
+      /- name: Upload frontend runtime artifact[\s\S]*?(?=\r?\n  quality-api:)/
+    )?.[0] ?? ''
+  const artifactDownloadBlock =
+    frontendBuildJob.match(
+      /- name: Download frontend runtime artifact[\s\S]*?(?=\r?\n\s+- name: Verify frontend runtime artifact)/
+    )?.[0] ?? ''
+  const runnerArtifactVerifyBlock =
+    frontendBuildJob.match(
+      /- name: Verify frontend runtime artifact[\s\S]*?(?=\r?\n\s+- name: Prepare frontend deploy metadata)/
+    )?.[0] ?? ''
+  const frontendBuildBlock =
+    workflow.match(
+      /- name: Build frontend image on Lighthouse[\s\S]*?\r?\n\s+REMOTE(?=\r?\n|$)/
+    )?.[0] ?? ''
+  const remoteMarkerIndex = frontendBuildBlock.indexOf("<<'REMOTE'")
+  const remoteFrontendBuild =
+    remoteMarkerIndex >= 0 ? frontendBuildBlock.slice(remoteMarkerIndex) : ''
+  const exactFrontendArtifactName =
+    'frontend-runtime-${{ needs.detect-changes.outputs.image_tag }}-${{ github.run_id }}-${{ github.run_attempt }}'
+
+  if (
+    !artifactUploadBlock.includes(`name: ${exactFrontendArtifactName}`) ||
+    !artifactDownloadBlock.includes(`name: ${exactFrontendArtifactName}`) ||
+    countOccurrences(workflow, exactFrontendArtifactName) !== 2 ||
+    artifactDownloadBlock.includes('run-id:') ||
+    artifactDownloadBlock.includes('repository:')
+  ) {
+    violations.push(
+      'frontend dist producer and consumer must use the exact SHA/run_id/run_attempt artifact from the current workflow run'
+    )
+  }
+
+  if (
+    !artifactPrepareBlock.includes(
+      "if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.build_needed == 'true'"
+    ) ||
+    !artifactUploadBlock.includes(
+      "if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.build_needed == 'true'"
+    ) ||
+    !frontendBuildJob.includes("github.ref == 'refs/heads/main'") ||
+    !apiBuildJob.includes("github.ref == 'refs/heads/main'")
+  ) {
+    violations.push(
+      'artifact production and all production image builds must be gated to refs/heads/main'
+    )
+  }
+
+  const frontendProducerOutputs = [
+    [
+      'frontend_archive_sha256: ${{ steps.frontend_runtime.outputs.archive_sha256 }}',
+      'echo "archive_sha256=$archive_sha256"',
+      'EXPECTED_ARCHIVE_SHA256: ${{ needs.quality-web.outputs.frontend_archive_sha256 }}',
+    ],
+    [
+      'frontend_archive_bytes: ${{ steps.frontend_runtime.outputs.archive_bytes }}',
+      'echo "archive_bytes=$archive_bytes"',
+      'EXPECTED_ARCHIVE_BYTES: ${{ needs.quality-web.outputs.frontend_archive_bytes }}',
+    ],
+    [
+      'frontend_file_count: ${{ steps.frontend_runtime.outputs.file_count }}',
+      'echo "file_count=$file_count"',
+      'EXPECTED_FILE_COUNT: ${{ needs.quality-web.outputs.frontend_file_count }}',
+    ],
+    [
+      'frontend_uncompressed_bytes: ${{ steps.frontend_runtime.outputs.uncompressed_bytes }}',
+      'echo "uncompressed_bytes=$uncompressed_bytes"',
+      'EXPECTED_UNCOMPRESSED_BYTES: ${{ needs.quality-web.outputs.frontend_uncompressed_bytes }}',
+    ],
+    [
+      'frontend_manifest_sha256: ${{ steps.frontend_runtime.outputs.manifest_sha256 }}',
+      'echo "manifest_sha256=$manifest_sha256"',
+      'EXPECTED_MANIFEST_SHA256: ${{ needs.quality-web.outputs.frontend_manifest_sha256 }}',
+    ],
+  ]
+  for (const [jobOutput, stepOutput, consumerEnv] of frontendProducerOutputs) {
+    if (
+      !qualityWebBlock.includes(jobOutput) ||
+      !artifactPrepareBlock.includes(stepOutput) ||
+      countOccurrences(frontendBuildJob, consumerEnv) < 2
+    ) {
+      violations.push(
+        `frontend artifact producer outputs must feed both runner verification and Lighthouse packaging: ${jobOutput}`
+      )
+    }
+  }
+
+  for (const fragment of [
+    '"commit": os.environ["IMAGE_TAG"]',
+    '"run_id": int(os.environ["WORKFLOW_RUN_ID"])',
+    '"run_attempt": int(os.environ["WORKFLOW_RUN_ATTEMPT"])',
+    '"sha256": archive_sha256',
+    '"bytes": archive_path.stat().st_size',
+    '"file_count": len(files)',
+    '"uncompressed_bytes": total_bytes',
+    '"files": files',
+    "tar --sort=name --mtime='UTC 1970-01-01'",
+    'gzip -n -9',
+  ]) {
+    if (!artifactPrepareBlock.includes(fragment)) {
+      violations.push(
+        `frontend artifact producer must create deterministic, provenance-bound dist metadata: ${fragment}`
+      )
+    }
+  }
+  if (
+    artifactPrepareBlock.includes('Dockerfile.runtime') ||
+    artifactPrepareBlock.includes('nginx.conf') ||
+    artifactPrepareBlock.includes('docker save') ||
+    artifactPrepareBlock.includes('docker load')
+  ) {
+    violations.push(
+      'frontend runtime artifact must contain only the static dist archive and manifest, not image or server runtime files'
+    )
+  }
+
+  const verifierArguments = [
+    '--archive',
+    '--manifest',
+    '--output',
+    '--expected-commit',
+    '--expected-run-id',
+    '--expected-run-attempt',
+    '--expected-sha256',
+    '--expected-bytes',
+    '--expected-file-count',
+    '--expected-uncompressed-bytes',
+  ]
+  for (const verificationBlock of [
+    runnerArtifactVerifyBlock,
+    remoteFrontendBuild,
+  ]) {
+    if (
+      !verificationBlock.includes(
+        'python3 deploy/frontend/verify_runtime_artifact.py'
+      ) ||
+      verifierArguments.some(
+        (argument) => !verificationBlock.includes(argument)
+      )
+    ) {
+      violations.push(
+        'frontend artifacts must use the safe Python verifier with complete provenance and size expectations on both runner and Lighthouse'
+      )
+    }
+  }
+
+  for (const fragment of [
+    '[ "$(sha256sum "$archive" | awk \'{print $1}\')" = "$EXPECTED_ARCHIVE_SHA256" ]',
+    '[ "$(stat -c \'%s\' "$archive")" = "$EXPECTED_ARCHIVE_BYTES" ]',
+    '[ "$(sha256sum "$manifest" | awk \'{print $1}\')" = "$EXPECTED_MANIFEST_SHA256" ]',
+  ]) {
+    if (!runnerArtifactVerifyBlock.includes(fragment)) {
+      violations.push(
+        `runner must independently verify downloaded frontend artifact bytes before safe extraction: ${fragment}`
+      )
+    }
+  }
+  for (const fragment of [
+    '[ "$(stat -c \'%s\' "$EXPECTED_ARCHIVE_PART")" = "$EXPECTED_ARCHIVE_BYTES" ]',
+    '[ "$(sha256sum "$EXPECTED_ARCHIVE_PART" | awk \'{print $1}\')" = "$EXPECTED_ARCHIVE_SHA256" ]',
+    '[ "$(sha256sum "$EXPECTED_MANIFEST_PART" | awk \'{print $1}\')" = "$EXPECTED_MANIFEST_SHA256" ]',
+  ]) {
+    if (!remoteFrontendBuild.includes(fragment)) {
+      violations.push(
+        `Lighthouse must independently verify uploaded frontend artifact bytes before rename/extraction: ${fragment}`
+      )
+    }
+  }
+
+  if (
+    !knownHosts
+      .trim()
+      .match(/^81\.70\.43\.189 ssh-ed25519 [A-Za-z0-9+/]+={0,2}$/) ||
+    knownHosts.trim().split(/\r?\n/).length !== 1 ||
+    workflow.includes('ssh-keyscan') ||
+    countOccurrences(
+      workflow,
+      'install -m 600 deploy/lighthouse_known_hosts ~/.ssh/known_hosts'
+    ) !== 3
+  ) {
+    violations.push(
+      'all SSH jobs must install the single reviewed Lighthouse ED25519 known_hosts record without dynamic keyscan'
+    )
+  }
+  const transportCommandLines = workflow
+    .split(/\r?\n/)
+    .filter((line) => /^\s*(?:if\s+)?(?:ssh|scp)\s+-o\b/.test(line))
+  if (
+    transportCommandLines.length < 1 ||
+    transportCommandLines.some(
+      (line) =>
+        !line.includes('StrictHostKeyChecking=yes') ||
+        !line.includes('UserKnownHostsFile="$HOME/.ssh/known_hosts"')
+    ) ||
+    /StrictHostKeyChecking=(?:no|accept-new)|UserKnownHostsFile=\/dev\/null/.test(
+      workflow
+    )
+  ) {
+    violations.push(
+      'every SSH/SCP transport command must enforce the pinned known_hosts file with StrictHostKeyChecking=yes'
+    )
+  }
+
+  if (
+    countOccurrences(frontendBuildBlock, 'scp -o StrictHostKeyChecking=yes') !==
+      2 ||
+    !frontendBuildBlock.includes(
+      'remote_prefix="$remote_dir/frontend-runtime-$IMAGE_TAG-$WORKFLOW_RUN_ID-$WORKFLOW_RUN_ATTEMPT"'
+    ) ||
+    !frontendBuildBlock.includes('"$archive"') ||
+    !frontendBuildBlock.includes('"$manifest"')
+  ) {
+    violations.push(
+      'frontend transfer must upload only the current-run dist archive and manifest to run-bound staging names'
+    )
+  }
+
+  if (
+    /\bpnpm\b|\bnpm\b|\bnode(?:js)?\b|\bvite\b|--build-arg\s+VITE_|-f\s+Dockerfile\s+\./i.test(
+      remoteFrontendBuild
+    )
+  ) {
+    violations.push(
+      'Lighthouse frontend packaging must not run Node, npm, pnpm, Vite, or the source-build Dockerfile'
+    )
+  }
+
+  const frontendLockIndex = remoteFrontendBuild.indexOf(
+    'LOCK_FILE="/tmp/sun-world-docker-build.lock"'
+  )
+  const frontendFlockIndex = remoteFrontendBuild.indexOf('flock 9')
+  const firstFrontendCleanIndex = remoteFrontendBuild.indexOf(
+    'git status --porcelain --untracked-files=all'
+  )
+  const frontendPullIndex = remoteFrontendBuild.indexOf(
+    'git pull --ff-only origin main'
+  )
+  const frontendShaIndex = remoteFrontendBuild.indexOf(
+    'if [ "$current_sha" != "$IMAGE_TAG" ]; then'
+  )
+  const secondFrontendCleanIndex = remoteFrontendBuild.indexOf(
+    'git status --porcelain --untracked-files=all',
+    firstFrontendCleanIndex + 1
+  )
+  const remoteVerifierIndex = remoteFrontendBuild.indexOf(
+    'python3 deploy/frontend/verify_runtime_artifact.py'
+  )
+  const nginxCacheIndex = remoteFrontendBuild.indexOf(
+    'sudo docker image inspect nginx:alpine'
+  )
+  const runtimeBuildIndex = remoteFrontendBuild.indexOf(
+    'sudo docker build --pull=false --network=none --progress=plain'
+  )
+  if (
+    frontendLockIndex < 0 ||
+    frontendFlockIndex < frontendLockIndex ||
+    firstFrontendCleanIndex < frontendFlockIndex ||
+    frontendPullIndex < firstFrontendCleanIndex ||
+    frontendShaIndex < frontendPullIndex ||
+    secondFrontendCleanIndex < frontendShaIndex ||
+    remoteVerifierIndex < secondFrontendCleanIndex ||
+    nginxCacheIndex < remoteVerifierIndex ||
+    runtimeBuildIndex < nginxCacheIndex ||
+    !remoteFrontendBuild.includes(
+      '-f deploy/frontend/Dockerfile.runtime "$WORK_DIR"'
+    )
+  ) {
+    violations.push(
+      'frontend packaging must hold the shared lock, pass both clean/SHA gates, safely verify dist, preflight cached nginx, then build the runtime-only context without pulls or network'
+    )
+  }
+
+  if (runtimeVerifier) {
+    for (const fragment of [
+      'getattr(os, "O_NOFOLLOW", 0)',
+      '_require_exact_keys(',
+      'PurePosixPath',
+      'tarfile.REGTYPE',
+      'os.path.commonpath',
+      'os.O_EXCL',
+      'archive.extractfile(member)',
+      'os.rename(staging_path, output_path)',
+      'expected_run_id',
+      'expected_run_attempt',
+      'expected_sha256',
+      'expected_bytes',
+      'expected_file_count',
+      'expected_uncompressed_bytes',
+    ]) {
+      if (!runtimeVerifier.includes(fragment)) {
+        violations.push(
+          `frontend runtime verifier must preserve fail-closed archive handling: ${fragment}`
+        )
+      }
+    }
+    if (
+      /\.extractall\s*\(|(?<!extract)\.extract\s*\(|subprocess\.|os\.system\s*\(/.test(
+        runtimeVerifier
+      )
+    ) {
+      violations.push(
+        'frontend runtime verifier must not use unsafe tar extraction or shell execution'
       )
     }
   }
@@ -805,7 +1173,7 @@ if (workflow) {
 
   const remoteDeploy =
     workflow.match(
-      /- name: Deploy local images on Lighthouse[\s\S]*?\r?\n\s+REMOTE/
+      /- name: Deploy local images on Lighthouse[\s\S]*?\r?\n\s+REMOTE(?=\r?\n|$)/
     )?.[0] ?? ''
   const localSshBoundary = remoteDeploy.slice(
     0,
@@ -1103,44 +1471,44 @@ if (workflow) {
     )
   }
 
-  const webOnlyRollbackStart = remoteDeploy.indexOf(
-    'if [ "$DEPLOYMENT_MODE" = "deploy-existing" ] && [ "$API_CHANGED" != "true" ]; then'
+  const fullFrontendRollbackStart = remoteDeploy.indexOf(
+    'if [ "$WEB_CHANGED" = "true" ] && [ "$SCHEMA_MODE" = "full" ]; then'
   )
-  const webOnlyRecordIndex = remoteDeploy.indexOf(
+  const fullFrontendRecordIndex = remoteDeploy.indexOf(
     'LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
-  const webOnlyTrapIndex = remoteDeploy.indexOf(
+  const fullFrontendTrapIndex = remoteDeploy.indexOf(
     'trap identity_frontend_exit_trap EXIT',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
-  const webOnlyRenameIndex = remoteDeploy.indexOf(
+  const fullFrontendRenameIndex = remoteDeploy.indexOf(
     'sudo docker rename my-frontend my-frontend-identity-backup',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
-  const webOnlyActivationIndex = remoteDeploy.indexOf(
+  const fullFrontendActivationIndex = remoteDeploy.indexOf(
     'IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
-  const webOnlyStopIndex = remoteDeploy.indexOf(
+  const fullFrontendStopIndex = remoteDeploy.indexOf(
     'sudo docker stop my-frontend-identity-backup',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
-  const webOnlyStartIndex = remoteDeploy.indexOf(
+  const fullFrontendStartIndex = remoteDeploy.indexOf(
     'sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"',
-    webOnlyRollbackStart
+    fullFrontendRollbackStart
   )
   if (
-    webOnlyRollbackStart < 0 ||
-    webOnlyRecordIndex < webOnlyRollbackStart ||
-    webOnlyTrapIndex < webOnlyRecordIndex ||
-    webOnlyRenameIndex < webOnlyTrapIndex ||
-    webOnlyActivationIndex < webOnlyRenameIndex ||
-    webOnlyStopIndex < webOnlyActivationIndex ||
-    webOnlyStartIndex < webOnlyStopIndex
+    fullFrontendRollbackStart < 0 ||
+    fullFrontendRecordIndex < fullFrontendRollbackStart ||
+    fullFrontendTrapIndex < fullFrontendRecordIndex ||
+    fullFrontendRenameIndex < fullFrontendTrapIndex ||
+    fullFrontendActivationIndex < fullFrontendRenameIndex ||
+    fullFrontendStopIndex < fullFrontendActivationIndex ||
+    fullFrontendStartIndex < fullFrontendStopIndex
   ) {
     violations.push(
-      'manual deploy-existing web-only retries must preserve and trap-restore the current frontend before replacement'
+      'all full-schema frontend cutovers, including manual deploy-existing web-only retries, must preserve and trap-restore the current frontend before replacement'
     )
   }
 
@@ -1214,7 +1582,7 @@ if (workflow) {
     )
   ) {
     violations.push(
-      'frontend and API images must be built on Lighthouse, not pushed from GitHub Buildx'
+      'production images must be packaged or built on Lighthouse, not pushed from GitHub Buildx'
     )
   }
 
@@ -1225,12 +1593,12 @@ if (workflow) {
   }
 
   if (
-    /ghcr\.io|ccr\.ccs\.tencentyun\.com|TENCENT_CCR|docker pull|docker save|docker load|frontend-image\.tar\.gz|api-image\.tar\.gz|actions\/download-artifact@v4|scp -i ~\/\.ssh\/sun_world_deploy_key|appleboy\/ssh-action|packages:\s*write/.test(
+    /ghcr\.io|ccr\.ccs\.tencentyun\.com|TENCENT_CCR|docker\s+(?:login|pull|save|load)\b|frontend-image\.tar\.gz|api-image\.tar\.gz|appleboy\/ssh-action|packages:\s*write/.test(
       workflow
     )
   ) {
     violations.push(
-      'deploy workflow must use Lighthouse-local Docker images, not registry push/pull or archive transfer'
+      'deploy workflow may transfer static dist artifacts only; registry access and Docker image save/load remain forbidden'
     )
   }
 
@@ -1314,6 +1682,14 @@ if (deployDoc) {
     'my-frontend-identity-backup',
     'non-ignored untracked',
     'artifact',
+    'current workflow run',
+    'deploy/lighthouse_known_hosts',
+    'frontend-runtime-<git-sha>',
+    '--pull=false --network=none',
+    'Tencent TCR',
+    'GHCR',
+    'git fetch --prune',
+    'git pull --ff-only',
   ]
 
   for (const fragment of requiredFragments) {
@@ -1323,12 +1699,12 @@ if (deployDoc) {
   }
 
   if (
-    /GHCR|ghcr\.io|ccr\.ccs\.tencentyun\.com|Tencent CCR|docker login ghcr\.io|docker pull|docker load|scp/.test(
+    /ghcr\.io|ccr\.ccs\.tencentyun\.com|Tencent CCR|docker\s+(?:login|pull|save|load)\b/.test(
       deployDoc
     )
   ) {
     violations.push(
-      'frontend deploy doc must describe the Lighthouse-local image deploy path, not registry push/pull or archive transfer'
+      'frontend deploy doc must describe static dist transfer and Lighthouse-local packaging without registry or Docker image archive commands'
     )
   }
 }

@@ -108,6 +108,10 @@ jobs:
           mode=automatic
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+              echo "Manual production workflows must run from refs/heads/main." >&2
+              exit 1
+            fi
             mode="${{ inputs.mode }}"
             target="${{ inputs.target }}"
             image_tag="$DISPATCH_IMAGE_TAG"
@@ -205,10 +209,13 @@ jobs:
                 web_changed=true
                 api_changed=true
                 ;;
-              Dockerfile|apps/web/*|apps/web/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
+              Dockerfile|apps/web/*|apps/web/**|packages/ai-composer/*|packages/ai-composer/**|packages/ai-ui/*|packages/ai-ui/**|packages/base-ui/*|packages/base-ui/**|packages/editor/*|packages/editor/**|packages/icons/*|packages/icons/**|packages/ui/*|packages/ui/**)
                 web_changed=true
                 ;;
-              deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*|deploy/frontend/**|scripts/*|scripts/**)
+              deploy/frontend/Dockerfile.runtime|deploy/frontend/nginx.conf|deploy/frontend/verify_runtime_artifact.py)
+                web_changed=true
+                ;;
+              deploy/backend/*.md|deploy/backend/**/*.md|deploy/frontend/*.md|deploy/frontend/**/*.md|scripts/*|scripts/**)
                 # Deployment docs and local verification scripts do not enter
                 # the production images.
                 ;;
@@ -291,6 +298,9 @@ jobs:
       - name: Run Sun World CLI tests
         run: pnpm test:cli
 
+      - name: Test frontend runtime artifact verifier
+        run: python3 -m unittest discover -s tests/deploy -p 'test_frontend_runtime_artifact.py' -v
+
   quality-web:
     name: Frontend checks
     needs: detect-changes
@@ -299,6 +309,12 @@ jobs:
       needs.detect-changes.outputs.web_changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      frontend_archive_sha256: ${{ steps.frontend_runtime.outputs.archive_sha256 }}
+      frontend_archive_bytes: ${{ steps.frontend_runtime.outputs.archive_bytes }}
+      frontend_file_count: ${{ steps.frontend_runtime.outputs.file_count }}
+      frontend_uncompressed_bytes: ${{ steps.frontend_runtime.outputs.uncompressed_bytes }}
+      frontend_manifest_sha256: ${{ steps.frontend_runtime.outputs.manifest_sha256 }}
 
     steps:
       - name: Checkout
@@ -327,6 +343,9 @@ jobs:
           pnpm -F @sun-world/ai-composer run build
 
       - name: Run frontend checks
+        env:
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
+          VITE_TELEMETRY_ENDPOINT: ${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
         run: pnpm check:web
 
       - name: Run UI package tests
@@ -334,6 +353,130 @@ jobs:
 
       - name: Run contracts tests
         run: pnpm test:contracts
+
+      - name: Prepare frontend runtime artifact
+        id: frontend_runtime
+        if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.build_needed == 'true'
+        env:
+          IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
+          VITE_TELEMETRY_ENDPOINT: ${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Frontend runtime artifact requires a commit SHA image tag." >&2
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$IMAGE_TAG" ] || \
+            ! [[ "$WORKFLOW_RUN_ID" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Frontend runtime artifact provenance is invalid." >&2
+            exit 1
+          fi
+          test -f apps/web/dist/index.html
+          test -f apps/web/dist/spa.html
+          test -d apps/web/dist/assets
+          unsupported_entry="$(find apps/web/dist -mindepth 1 ! -type f ! -type d -print -quit)"
+          if [ -n "$unsupported_entry" ]; then
+            echo "Frontend dist contains an unsupported entry: $unsupported_entry" >&2
+            exit 1
+          fi
+          rm -rf frontend-runtime-artifact
+          mkdir -p frontend-runtime-artifact
+
+          archive="frontend-runtime-artifact/frontend-dist.tar.gz"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 \
+            --numeric-owner --mode='u+rwX,go+rX,go-w' -C apps/web -cf - dist |
+            gzip -n -9 > "$archive"
+          archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
+          archive_bytes="$(stat -c '%s' "$archive")"
+          if [ "$archive_bytes" -le 0 ] || [ "$archive_bytes" -gt 67108864 ]; then
+            echo "Frontend archive must be between 1 byte and 64 MiB." >&2
+            exit 1
+          fi
+
+          python3 - "$archive" frontend-runtime-artifact/manifest.json <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import sys
+
+          archive_path = pathlib.Path(sys.argv[1])
+          manifest_path = pathlib.Path(sys.argv[2])
+          dist_root = pathlib.Path("apps/web/dist")
+          files = []
+          total_bytes = 0
+          for path in sorted(dist_root.rglob("*")):
+              if path.is_dir():
+                  continue
+              if not path.is_file() or path.is_symlink():
+                  raise SystemExit(f"Unsupported frontend dist entry: {path}")
+              relative = path.relative_to(dist_root).as_posix()
+              size = path.stat().st_size
+              if size > 50 * 1024 * 1024:
+                  raise SystemExit(f"Frontend dist file exceeds 50 MiB: {relative}")
+              digest = hashlib.sha256()
+              with path.open("rb") as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                      digest.update(chunk)
+              files.append({"path": f"dist/{relative}", "size": size, "sha256": digest.hexdigest()})
+              total_bytes += size
+
+          if not files or len(files) > 5000 or total_bytes > 200 * 1024 * 1024:
+              raise SystemExit("Frontend dist exceeds the runtime artifact limits")
+          base_url = os.environ["VITE_BASE_URL"]
+          telemetry_endpoint = os.environ["VITE_TELEMETRY_ENDPOINT"]
+          if not base_url.startswith("https://") or not telemetry_endpoint.startswith("https://"):
+              raise SystemExit("Production Vite endpoints must use HTTPS")
+
+          archive_sha256 = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+          manifest = {
+              "schema_version": 1,
+              "commit": os.environ["IMAGE_TAG"],
+              "run_id": int(os.environ["WORKFLOW_RUN_ID"]),
+              "run_attempt": int(os.environ["WORKFLOW_RUN_ATTEMPT"]),
+              "build": {
+                  "vite_base_url": base_url,
+                  "vite_telemetry_endpoint": telemetry_endpoint,
+              },
+              "archive": {
+                  "sha256": archive_sha256,
+                  "bytes": archive_path.stat().st_size,
+                  "file_count": len(files),
+                  "uncompressed_bytes": total_bytes,
+              },
+              "files": files,
+          }
+          manifest_path.write_text(
+              json.dumps(manifest, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          file_count="$(jq -er '.archive.file_count' frontend-runtime-artifact/manifest.json)"
+          uncompressed_bytes="$(jq -er '.archive.uncompressed_bytes' frontend-runtime-artifact/manifest.json)"
+          manifest_sha256="$(sha256sum frontend-runtime-artifact/manifest.json | awk '{print $1}')"
+          {
+            echo "archive_sha256=$archive_sha256"
+            echo "archive_bytes=$archive_bytes"
+            echo "file_count=$file_count"
+            echo "uncompressed_bytes=$uncompressed_bytes"
+            echo "manifest_sha256=$manifest_sha256"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload frontend runtime artifact
+        if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.build_needed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-runtime-${{ needs.detect-changes.outputs.image_tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: frontend-runtime-artifact
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
 
   quality-api:
     name: API checks
@@ -387,6 +530,7 @@ jobs:
       - quality-api
     if: |
       always() &&
+      github.ref == 'refs/heads/main' &&
       needs.detect-changes.outputs.web_changed == 'true' &&
       needs.detect-changes.outputs.build_needed == 'true' &&
       (needs.quality-common.result == 'success' || needs.quality-common.result == 'skipped') &&
@@ -398,6 +542,64 @@ jobs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
     steps:
+      - name: Checkout deployment configuration
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download frontend runtime artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-runtime-${{ needs.detect-changes.outputs.image_tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: frontend-runtime-artifact
+
+      - name: Verify frontend runtime artifact
+        env:
+          IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+          EXPECTED_ARCHIVE_SHA256: ${{ needs.quality-web.outputs.frontend_archive_sha256 }}
+          EXPECTED_ARCHIVE_BYTES: ${{ needs.quality-web.outputs.frontend_archive_bytes }}
+          EXPECTED_FILE_COUNT: ${{ needs.quality-web.outputs.frontend_file_count }}
+          EXPECTED_UNCOMPRESSED_BYTES: ${{ needs.quality-web.outputs.frontend_uncompressed_bytes }}
+          EXPECTED_MANIFEST_SHA256: ${{ needs.quality-web.outputs.frontend_manifest_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="frontend-runtime-artifact/frontend-dist.tar.gz"
+          manifest="frontend-runtime-artifact/manifest.json"
+          test -f "$archive"
+          test -f "$manifest"
+          if ! [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ID" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]] || \
+            ! [[ "$EXPECTED_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]] || \
+            ! [[ "$EXPECTED_ARCHIVE_BYTES" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_FILE_COUNT" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_UNCOMPRESSED_BYTES" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Frontend runtime artifact outputs are invalid." >&2
+            exit 1
+          fi
+          [ "$(sha256sum "$archive" | awk '{print $1}')" = "$EXPECTED_ARCHIVE_SHA256" ]
+          [ "$(stat -c '%s' "$archive")" = "$EXPECTED_ARCHIVE_BYTES" ]
+          [ "$(sha256sum "$manifest" | awk '{print $1}')" = "$EXPECTED_MANIFEST_SHA256" ]
+
+          verify_root="$(mktemp -d "$RUNNER_TEMP/frontend-runtime-verify.XXXXXX")"
+          verify_dir="$verify_root/output"
+          trap 'rm -rf -- "$verify_root"' EXIT
+          python3 deploy/frontend/verify_runtime_artifact.py \
+            --archive "$archive" \
+            --manifest "$manifest" \
+            --output "$verify_dir" \
+            --expected-commit "$IMAGE_TAG" \
+            --expected-run-id "$WORKFLOW_RUN_ID" \
+            --expected-run-attempt "$WORKFLOW_RUN_ATTEMPT" \
+            --expected-sha256 "$EXPECTED_ARCHIVE_SHA256" \
+            --expected-bytes "$EXPECTED_ARCHIVE_BYTES" \
+            --expected-file-count "$EXPECTED_FILE_COUNT" \
+            --expected-uncompressed-bytes "$EXPECTED_UNCOMPRESSED_BYTES"
+
       - name: Prepare frontend deploy metadata
         id: image-meta
         shell: bash
@@ -407,6 +609,9 @@ jobs:
           mkdir -p deploy-artifacts
           printf '%s\n' "${{ needs.detect-changes.outputs.image_tag }}" > deploy-artifacts/commit.txt
           printf '%s\n' "$deploy_image" > deploy-artifacts/image.txt
+          printf '%s\n' "${{ needs.quality-web.outputs.frontend_archive_sha256 }}" > deploy-artifacts/dist-archive.sha256
+          printf '%s\n' "${{ needs.quality-web.outputs.frontend_archive_bytes }}" > deploy-artifacts/dist-archive.bytes
+          printf '%s\n' "${{ needs.quality-web.outputs.frontend_manifest_sha256 }}" > deploy-artifacts/dist-manifest.sha256
           echo "deploy_image=$deploy_image" >> "$GITHUB_OUTPUT"
 
       - name: Upload frontend deployment metadata artifact
@@ -424,37 +629,168 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p ~/.ssh
+          if [ "$LIGHTHOUSE_HOST" != "81.70.43.189" ] || [ "$LIGHTHOUSE_PORT" != "22" ]; then
+            echo "Lighthouse host or port does not match the pinned deployment host." >&2
+            exit 1
+          fi
+          if [ "$(wc -l < deploy/lighthouse_known_hosts)" -ne 1 ] || \
+            ! ssh-keygen -F "$LIGHTHOUSE_HOST" -f deploy/lighthouse_known_hosts >/dev/null; then
+            echo "Pinned Lighthouse SSH host key is missing or malformed." >&2
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
           printf '%s\n' "$LIGHTHOUSE_SSH_KEY" > ~/.ssh/sun_world_deploy_key
           chmod 600 ~/.ssh/sun_world_deploy_key
-          ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
+          install -m 600 deploy/lighthouse_known_hosts ~/.ssh/known_hosts
 
       - name: Build frontend image on Lighthouse
         env:
           FRONTEND_IMAGE: ${{ steps.image-meta.outputs.deploy_image }}
           IMAGE_TAG: ${{ needs.detect-changes.outputs.image_tag }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+          EXPECTED_ARCHIVE_SHA256: ${{ needs.quality-web.outputs.frontend_archive_sha256 }}
+          EXPECTED_ARCHIVE_BYTES: ${{ needs.quality-web.outputs.frontend_archive_bytes }}
+          EXPECTED_FILE_COUNT: ${{ needs.quality-web.outputs.frontend_file_count }}
+          EXPECTED_UNCOMPRESSED_BYTES: ${{ needs.quality-web.outputs.frontend_uncompressed_bytes }}
+          EXPECTED_MANIFEST_SHA256: ${{ needs.quality-web.outputs.frontend_manifest_sha256 }}
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
           LIGHTHOUSE_USER: ${{ vars.LIGHTHOUSE_USER }}
           LIGHTHOUSE_PORT: ${{ vars.LIGHTHOUSE_PORT || '22' }}
-          VITE_BASE_URL: ${{ vars.VITE_BASE_URL || 'https://api.sunworld.site' }}
-          VITE_TELEMETRY_ENDPOINT: ${{ vars.VITE_TELEMETRY_ENDPOINT || 'https://api.sunworld.site/telemetry/events' }}
         shell: bash
         run: |
           set -euo pipefail
-          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+          if ! [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ID" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$LIGHTHOUSE_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
+            echo "Frontend image packaging metadata is invalid." >&2
+            exit 1
+          fi
+          archive="frontend-runtime-artifact/frontend-dist.tar.gz"
+          manifest="frontend-runtime-artifact/manifest.json"
+          remote_dir="/home/lighthouse/.cache/sun-world-deploy"
+          remote_prefix="$remote_dir/frontend-runtime-$IMAGE_TAG-$WORKFLOW_RUN_ID-$WORKFLOW_RUN_ATTEMPT"
+          remote_archive_part="$remote_prefix.tar.gz.part"
+          remote_manifest_part="$remote_prefix.manifest.json.part"
+
+          ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
+            "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" \
+            'install -d -m 700 /home/lighthouse/.cache/sun-world-deploy'
+
+          upload_complete=false
+          for upload_attempt in 1 2 3; do
+            if scp -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+              -i ~/.ssh/sun_world_deploy_key -P "$LIGHTHOUSE_PORT" \
+              "$archive" "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST:$remote_archive_part" && \
+              scp -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+              -i ~/.ssh/sun_world_deploy_key -P "$LIGHTHOUSE_PORT" \
+              "$manifest" "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST:$remote_manifest_part"; then
+              upload_complete=true
+              break
+            fi
+            echo "Frontend artifact upload attempt $upload_attempt failed." >&2
+            sleep 5
+          done
+          if [ "$upload_complete" != "true" ]; then
+            echo "Frontend artifact upload failed after three attempts." >&2
+            exit 1
+          fi
+
+          ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
             -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
-            "$IMAGE_TAG" "$FRONTEND_IMAGE" "$VITE_BASE_URL" "$VITE_TELEMETRY_ENDPOINT" <<'REMOTE'
+            "$IMAGE_TAG" "$FRONTEND_IMAGE" "$WORKFLOW_RUN_ID" "$WORKFLOW_RUN_ATTEMPT" \
+            "$remote_archive_part" "$remote_manifest_part" "$EXPECTED_ARCHIVE_SHA256" \
+            "$EXPECTED_ARCHIVE_BYTES" "$EXPECTED_FILE_COUNT" "$EXPECTED_UNCOMPRESSED_BYTES" \
+            "$EXPECTED_MANIFEST_SHA256" <<'REMOTE'
           set -euo pipefail
+          umask 077
           IMAGE_TAG="$1"
           FRONTEND_IMAGE="$2"
-          VITE_BASE_URL="$3"
-          VITE_TELEMETRY_ENDPOINT="$4"
+          WORKFLOW_RUN_ID="$3"
+          WORKFLOW_RUN_ATTEMPT="$4"
+          REMOTE_ARCHIVE_PART="$5"
+          REMOTE_MANIFEST_PART="$6"
+          EXPECTED_ARCHIVE_SHA256="$7"
+          EXPECTED_ARCHIVE_BYTES="$8"
+          EXPECTED_FILE_COUNT="$9"
+          EXPECTED_UNCOMPRESSED_BYTES="${10}"
+          EXPECTED_MANIFEST_SHA256="${11}"
           REPO_DIR="/home/lighthouse/blog/sun-world"
           LOCK_FILE="/tmp/sun-world-docker-build.lock"
+          CACHE_DIR="/home/lighthouse/.cache/sun-world-deploy"
+          STAGING_ROOT="$CACHE_DIR/staging"
+          EXPECTED_PREFIX="$CACHE_DIR/frontend-runtime-$IMAGE_TAG-$WORKFLOW_RUN_ID-$WORKFLOW_RUN_ATTEMPT"
+          EXPECTED_ARCHIVE_PART="$EXPECTED_PREFIX.tar.gz.part"
+          EXPECTED_MANIFEST_PART="$EXPECTED_PREFIX.manifest.json.part"
+          EXPECTED_ARCHIVE="$EXPECTED_PREFIX.tar.gz"
+          EXPECTED_MANIFEST="$EXPECTED_PREFIX.manifest.json"
+          WORK_ROOT=""
+          WORK_DIR=""
+
+          if ! [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]] || \
+            [ "$FRONTEND_IMAGE" != "sun-world-frontend:$IMAGE_TAG" ] || \
+            ! [[ "$WORKFLOW_RUN_ID" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$WORKFLOW_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]] || \
+            ! [[ "$EXPECTED_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]] || \
+            ! [[ "$EXPECTED_ARCHIVE_BYTES" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_FILE_COUNT" =~ ^[1-9][0-9]*$ ]] || \
+            ! [[ "$EXPECTED_UNCOMPRESSED_BYTES" =~ ^[1-9][0-9]*$ ]] || \
+            [ "$EXPECTED_ARCHIVE_BYTES" -gt 67108864 ] || \
+            [ "$EXPECTED_FILE_COUNT" -gt 5000 ] || \
+            [ "$EXPECTED_UNCOMPRESSED_BYTES" -gt 209715200 ] || \
+            [ "$REMOTE_ARCHIVE_PART" != "$EXPECTED_ARCHIVE_PART" ] || \
+            [ "$REMOTE_MANIFEST_PART" != "$EXPECTED_MANIFEST_PART" ]; then
+            echo "Frontend runtime artifact metadata is invalid." >&2
+            exit 1
+          fi
+
+          cleanup_frontend_artifact() {
+            status="$?"
+            set +e
+            if [ -n "$WORK_ROOT" ] && [[ "$WORK_ROOT" == "$STAGING_ROOT"/frontend-"$IMAGE_TAG"-* ]]; then
+              rm -rf -- "$WORK_ROOT"
+            fi
+            rm -f -- "$EXPECTED_ARCHIVE_PART" "$EXPECTED_MANIFEST_PART" \
+              "$EXPECTED_ARCHIVE" "$EXPECTED_MANIFEST"
+            exit "$status"
+          }
+          trap cleanup_frontend_artifact EXIT
+          trap 'exit 129' HUP
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
 
           exec 9>"$LOCK_FILE"
           flock 9
+
+          test -f "$EXPECTED_ARCHIVE_PART"
+          test ! -L "$EXPECTED_ARCHIVE_PART"
+          test -f "$EXPECTED_MANIFEST_PART"
+          test ! -L "$EXPECTED_MANIFEST_PART"
+          [ "$(stat -c '%s' "$EXPECTED_ARCHIVE_PART")" = "$EXPECTED_ARCHIVE_BYTES" ]
+          [ "$(sha256sum "$EXPECTED_ARCHIVE_PART" | awk '{print $1}')" = "$EXPECTED_ARCHIVE_SHA256" ]
+          [ "$(sha256sum "$EXPECTED_MANIFEST_PART" | awk '{print $1}')" = "$EXPECTED_MANIFEST_SHA256" ]
+          mv -- "$EXPECTED_ARCHIVE_PART" "$EXPECTED_ARCHIVE"
+          mv -- "$EXPECTED_MANIFEST_PART" "$EXPECTED_MANIFEST"
+
+          available_kb="$(df -Pk "$CACHE_DIR" | awk 'NR == 2 { print $4 }')"
+          if [ "$available_kb" -lt 2097152 ]; then
+            echo "Less than 2 GiB is free; pruning only unused Docker data before packaging." >&2
+            sudo docker image prune -f
+            sudo docker builder prune -f --filter until=168h
+            available_kb="$(df -Pk "$CACHE_DIR" | awk 'NR == 2 { print $4 }')"
+          fi
+          if [ "$available_kb" -lt 1048576 ]; then
+            echo "Less than 1 GiB remains after safe cleanup; refusing to package the frontend image." >&2
+            exit 1
+          fi
 
           cd "$REPO_DIR"
           if ! git diff --quiet -- || ! git diff --cached --quiet -- || \
@@ -477,12 +813,43 @@ jobs:
             echo "Server repository changed while preparing the frontend build." >&2
             exit 1
           fi
+          for release_file in \
+            deploy/frontend/Dockerfile.runtime \
+            deploy/frontend/nginx.conf \
+            deploy/frontend/verify_runtime_artifact.py; do
+            test -f "$release_file"
+            if ! git cat-file blob "$IMAGE_TAG:$release_file" | cmp -s - "$release_file"; then
+              echo "Server deployment file does not match $IMAGE_TAG: $release_file" >&2
+              exit 1
+            fi
+          done
 
-          sudo docker build --progress=plain \
+          install -d -m 700 "$STAGING_ROOT"
+          WORK_ROOT="$(mktemp -d "$STAGING_ROOT/frontend-$IMAGE_TAG-$WORKFLOW_RUN_ID-$WORKFLOW_RUN_ATTEMPT.XXXXXX")"
+          WORK_DIR="$WORK_ROOT/context"
+          python3 deploy/frontend/verify_runtime_artifact.py \
+            --archive "$EXPECTED_ARCHIVE" \
+            --manifest "$EXPECTED_MANIFEST" \
+            --output "$WORK_DIR" \
+            --expected-commit "$IMAGE_TAG" \
+            --expected-run-id "$WORKFLOW_RUN_ID" \
+            --expected-run-attempt "$WORKFLOW_RUN_ATTEMPT" \
+            --expected-sha256 "$EXPECTED_ARCHIVE_SHA256" \
+            --expected-bytes "$EXPECTED_ARCHIVE_BYTES" \
+            --expected-file-count "$EXPECTED_FILE_COUNT" \
+            --expected-uncompressed-bytes "$EXPECTED_UNCOMPRESSED_BYTES"
+          test -f "$WORK_DIR/dist/index.html"
+          test -f "$WORK_DIR/dist/spa.html"
+          test -d "$WORK_DIR/dist/assets"
+          cp deploy/frontend/nginx.conf "$WORK_DIR/nginx.conf"
+          sudo docker image inspect nginx:alpine >/dev/null
+          sudo docker build --pull=false --network=none --progress=plain \
+            --label "org.opencontainers.image.revision=$IMAGE_TAG" \
+            --label "site.sunworld.frontend.dist-archive-sha256=$EXPECTED_ARCHIVE_SHA256" \
             -t "$FRONTEND_IMAGE" \
-            --build-arg VITE_BASE_URL="$VITE_BASE_URL" \
-            --build-arg VITE_TELEMETRY_ENDPOINT="$VITE_TELEMETRY_ENDPOINT" \
-            -f Dockerfile .
+            -f deploy/frontend/Dockerfile.runtime "$WORK_DIR"
+          sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
+          [ "$(sudo docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$FRONTEND_IMAGE")" = "$IMAGE_TAG" ]
           sudo docker image prune -f
           REMOTE
 
@@ -495,6 +862,7 @@ jobs:
       - quality-api
     if: |
       always() &&
+      github.ref == 'refs/heads/main' &&
       needs.detect-changes.outputs.api_changed == 'true' &&
       needs.detect-changes.outputs.build_needed == 'true' &&
       (needs.quality-common.result == 'success' || needs.quality-common.result == 'skipped') &&
@@ -506,6 +874,11 @@ jobs:
       deploy_image: ${{ steps.image-meta.outputs.deploy_image }}
 
     steps:
+      - name: Checkout deployment configuration
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Prepare API deploy artifacts
         id: image-meta
         shell: bash
@@ -532,10 +905,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p ~/.ssh
+          if [ "$LIGHTHOUSE_HOST" != "81.70.43.189" ] || [ "$LIGHTHOUSE_PORT" != "22" ]; then
+            echo "Lighthouse host or port does not match the pinned deployment host." >&2
+            exit 1
+          fi
+          if [ "$(wc -l < deploy/lighthouse_known_hosts)" -ne 1 ] || \
+            ! ssh-keygen -F "$LIGHTHOUSE_HOST" -f deploy/lighthouse_known_hosts >/dev/null; then
+            echo "Pinned Lighthouse SSH host key is missing or malformed." >&2
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
           printf '%s\n' "$LIGHTHOUSE_SSH_KEY" > ~/.ssh/sun_world_deploy_key
           chmod 600 ~/.ssh/sun_world_deploy_key
-          ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
+          install -m 600 deploy/lighthouse_known_hosts ~/.ssh/known_hosts
 
       - name: Build API image on Lighthouse
         env:
@@ -547,7 +929,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+          ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
             -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
             "$IMAGE_TAG" "$API_IMAGE" <<'REMOTE'
@@ -594,6 +977,7 @@ jobs:
       - build-api
     if: |
       always() &&
+      github.ref == 'refs/heads/main' &&
       needs.detect-changes.outputs.any_changed == 'true' &&
       needs.detect-changes.outputs.deploy_needed == 'true' &&
       (
@@ -607,6 +991,11 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Checkout deployment configuration
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Prepare SSH
         env:
           LIGHTHOUSE_HOST: ${{ vars.LIGHTHOUSE_HOST }}
@@ -615,10 +1004,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p ~/.ssh
+          if [ "$LIGHTHOUSE_HOST" != "81.70.43.189" ] || [ "$LIGHTHOUSE_PORT" != "22" ]; then
+            echo "Lighthouse host or port does not match the pinned deployment host." >&2
+            exit 1
+          fi
+          if [ "$(wc -l < deploy/lighthouse_known_hosts)" -ne 1 ] || \
+            ! ssh-keygen -F "$LIGHTHOUSE_HOST" -f deploy/lighthouse_known_hosts >/dev/null; then
+            echo "Pinned Lighthouse SSH host key is missing or malformed." >&2
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
           printf '%s\n' "$LIGHTHOUSE_SSH_KEY" > ~/.ssh/sun_world_deploy_key
           chmod 600 ~/.ssh/sun_world_deploy_key
-          ssh-keyscan -p "$LIGHTHOUSE_PORT" "$LIGHTHOUSE_HOST" >> ~/.ssh/known_hosts
+          install -m 600 deploy/lighthouse_known_hosts ~/.ssh/known_hosts
 
       - name: Sync AI secrets on Lighthouse
         if: needs.detect-changes.outputs.api_changed == 'true'
@@ -636,7 +1034,8 @@ jobs:
             exit 1
           fi
           printf '%s\0%s\0' "$AI_CREDENTIAL_ENCRYPTION_KEY" "$DEEPSEEK_API_KEY" |
-            ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+            ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
               -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
               "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" \
               'python3 /home/lighthouse/blog/sun-world/deploy/backend/sync_ai_secrets.py /home/lighthouse/.config/blog_end/auth.env'
@@ -683,7 +1082,8 @@ jobs:
               exit 1
               ;;
           esac
-          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+          ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
             -i ~/.ssh/sun_world_deploy_key -p "$LIGHTHOUSE_PORT" \
             "$LIGHTHOUSE_USER@$LIGHTHOUSE_HOST" 'bash -s' -- \
             "$WEB_CHANGED" "$API_CHANGED" "$FRONTEND_IMAGE" "$API_IMAGE" "$SCHEMA_MODE" \
@@ -939,28 +1339,39 @@ jobs:
 
           if [ "$WEB_CHANGED" = "true" ] && [ "$SCHEMA_MODE" = "full" ]; then
             sudo docker image inspect "$FRONTEND_IMAGE" >/dev/null
-            if [ "$DEPLOYMENT_MODE" = "deploy-existing" ] && [ "$API_CHANGED" != "true" ]; then
-              if sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
-                echo "Web-only deploy found a stale frontend rollback container." >&2
-                exit 1
-              fi
-              if ! sudo docker container inspect my-frontend >/dev/null 2>&1 || \
-                [ "$(sudo docker inspect --format '{{.State.Running}}' my-frontend 2>/dev/null || true)" != "true" ] || \
-                ! curl -fsSI http://127.0.0.1:8081 >/dev/null; then
-                echo "Web-only deploy requires the current frontend container to be running and healthy." >&2
-                exit 1
-              fi
-              LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect --format '{{.Id}}' my-frontend)"
-              LEGACY_FRONTEND_IMAGE="$(sudo docker inspect --format '{{.Config.Image}}' my-frontend)"
-              trap identity_frontend_exit_trap EXIT
-              trap 'exit 130' HUP INT TERM
-              sudo docker rename my-frontend my-frontend-identity-backup
-              IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true
-              sudo docker stop my-frontend-identity-backup >/dev/null
-            else
-              sudo docker rm -f my-frontend || true
+            if sudo docker container inspect my-frontend-identity-backup >/dev/null 2>&1; then
+              echo "Frontend deploy found a stale rollback container." >&2
+              exit 1
             fi
+            if ! sudo docker container inspect my-frontend >/dev/null 2>&1 || \
+              [ "$(sudo docker inspect --format '{{.State.Running}}' my-frontend 2>/dev/null || true)" != "true" ] || \
+              ! curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+              echo "Frontend deploy requires the current container to be running and healthy." >&2
+              exit 1
+            fi
+            LEGACY_FRONTEND_CONTAINER_ID="$(sudo docker inspect --format '{{.Id}}' my-frontend)"
+            LEGACY_FRONTEND_IMAGE="$(sudo docker inspect --format '{{.Config.Image}}' my-frontend)"
+            trap identity_frontend_exit_trap EXIT
+            trap 'exit 130' HUP INT TERM
+            sudo docker rename my-frontend my-frontend-identity-backup
+            IDENTITY_FRONTEND_ROLLBACK_ACTIVE=true
+            sudo docker stop my-frontend-identity-backup >/dev/null
             sudo docker run -d --restart unless-stopped --name my-frontend -p 8081:80 "$FRONTEND_IMAGE"
+            FRONTEND_LOCAL_READY=false
+            for attempt in $(seq 1 20); do
+              if curl -fsSI http://127.0.0.1:8081 >/dev/null; then
+                FRONTEND_LOCAL_READY=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$FRONTEND_LOCAL_READY" != "true" ]; then
+              sudo docker ps -a --filter name=my-frontend >&2 || true
+              sudo docker inspect --format 'frontend status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' my-frontend >&2 || true
+              sudo docker logs --tail 120 my-frontend >&2 || true
+              echo "New frontend container failed local port-8081 health." >&2
+              exit 1
+            fi
           elif [ "$WEB_CHANGED" = "true" ]; then
             echo "Deferring frontend cutover until the scoped API cutover is healthy."
           else

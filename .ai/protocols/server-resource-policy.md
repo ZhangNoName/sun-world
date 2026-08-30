@@ -11,10 +11,21 @@ compete with system services, Git operations, and Node/Python tooling. If pnpm,
 Vite, OpenAPI generation, or Docker builds run at the same time, the server may
 become slow or start using swap heavily.
 
+The production frontend pipeline therefore builds and validates
+`apps/web/dist` on the GitHub-hosted runner. The frontend image job downloads the
+exact artifact from the current workflow run, transfers it over SSH pinned to
+`deploy/lighthouse_known_hosts`, and lets Lighthouse perform only a lightweight
+Nginx image packaging step. The API image is still built from source on
+Lighthouse.
+
 ## Default Decision
 
 - Prefer local Codex for planning, editing, TypeScript checks, frontend builds,
   and broad repo search.
+- Keep production frontend Node, pnpm, and Vite builds on the GitHub-hosted
+  runner. Lighthouse may package the verified current-run `dist` artifact only
+  with the already cached `nginx:alpine` base and
+  `docker build --pull=false --network=none`.
 - Use the server for:
   - GitHub push when local GitHub credentials are unavailable,
   - server-only Python venv checks,
@@ -40,6 +51,18 @@ SUN_WORLD_API_PYTHON=/home/lighthouse/blog/blog_end/.venv/bin/python pnpm -F @su
 Use care with `pnpm check:web`, Vite builds, Docker builds, and cc sessions on
 the server. Prefer running those locally.
 
+The frontend artifact path does not depend on GitHub pushing an image to Tencent
+TCR or Lighthouse pulling an image from GHCR. It does not make the server fully
+offline: Lighthouse still runs `git fetch --prune` and `git pull --ff-only` and
+must match the reviewed commit before it uses the runtime Dockerfile and Nginx
+configuration. API Docker builds also remain server-side.
+
+Frontend packaging is fail-closed. A missing cached `nginx:alpine` image, host
+key mismatch, checkout mismatch, current-run artifact mismatch, manifest/hash
+failure, or unsafe archive stops the build before any production container
+switch. The existing `my-frontend` container must remain untouched in those
+cases.
+
 ## When Claude Code Is Still Useful
 
 Use server-side cc only when:
@@ -59,7 +82,7 @@ Consider upgrading the server if any of these become normal:
 
 - cc/DeepSeek is expected to run interactively every day,
 - Docker builds are done on the server often,
-- frontend and backend are both built on the server,
+- API builds and frontend runtime packaging together still pressure the server,
 - swap usage stays high during ordinary development,
 - production latency is affected by agent/tooling work.
 

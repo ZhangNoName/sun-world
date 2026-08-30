@@ -597,13 +597,21 @@ to the monorepo Docker image by the deploy workflow:
   `quality-common` always validates formatting and workflow protocols,
   `quality-web` runs only for frontend/shared web changes, and `quality-api`
   runs only for API/shared contract changes.
-  `build-web` and `build-api` run only for their changed targets, SSH to
-  Lighthouse, sync `/home/lighthouse/blog/sun-world` to `origin/main`, and
-  build `sun-world-frontend:<commit>` / `sun-world-api:<commit>` locally on the
-  server. Both server-side build jobs share
-  `/tmp/sun-world-docker-build.lock` while syncing and building so simultaneous
-  frontend/API changes do not race on the same checkout. The final deploy job
-  SSHes to Lighthouse and uses the local images for changed services.
+  `quality-web` also builds the production `apps/web/dist` on the
+  GitHub-hosted runner. `build-web` downloads only the exact
+  `frontend-runtime-<commit>-<run-id>-<run-attempt>` artifact from that run,
+  verifies its manifest/hash/size, transfers it over host-key-pinned SSH, then
+  repeats those checks on Lighthouse. The server syncs
+  `/home/lighthouse/blog/sun-world` to the exact `origin/main` commit and uses
+  only the reviewed runtime Dockerfile/Nginx config plus its cached
+  `nginx:alpine` image to package `sun-world-frontend:<commit>` with
+  `--pull=false --network=none`; it no longer runs Node, pnpm, or Vite for the
+  production frontend image. `build-api` still builds
+  `sun-world-api:<commit>` from source on Lighthouse. Both jobs share
+  `/tmp/sun-world-docker-build.lock` while syncing and packaging/building so
+  simultaneous frontend/API changes do not race on the same checkout. The
+  final deploy job SSHes to Lighthouse and uses the local images for changed
+  services.
   Production runs share one fixed concurrency group with
   `cancel-in-progress: false`, so overlapping main/manual runs queue instead of
   interrupting an in-progress SSH deployment or schema maintenance window.
@@ -617,11 +625,29 @@ to the monorepo Docker image by the deploy workflow:
   previous image tag, which must be a 40-character lowercase commit SHA. For frontend and API,
   this is a local `sun-world-frontend:<commit>` or `sun-world-api:<commit>`
   image that already exists on Lighthouse.
-- The deploy workflow intentionally avoids GHCR, GitHub-to-server image archive
-  uploads, and GitHub-to-registry image pushes because registry cache export and
-  image push paths repeatedly stalled. Retained metadata artifacts and local
-  Lighthouse commit-SHA image tags are the current rollback/audit source for
-  built images.
+- The deploy workflow intentionally avoids GHCR/TCR image pulls and pushes, and
+  never transports a Docker image archive. GitHub transfers only the small,
+  short-lived static `dist` archive and strict manifest. Lighthouse still needs
+  outbound Git access for the clean exact-SHA checkout and API source build.
+  Retained deployment metadata and local Lighthouse commit-SHA image tags are
+  the rollback/audit source for built images.
+- Every production SSH job trusts the reviewed ED25519 record in
+  `deploy/lighthouse_known_hosts` with strict host-key checking; the workflow no
+  longer learns a key from live `ssh-keyscan` output. Frontend archives are
+  limited, bound to the current run/attempt, verified before and after transfer,
+  and safely unpacked by `deploy/frontend/verify_runtime_artifact.py`. Frontend
+  cutover now preserves the healthy current container until the replacement
+  passes local and public health; failure or an interrupt restores the recorded
+  prior container.
+- On 2026-08-30, deploy run `33300288083` for `f55a34ee` failed in the retired
+  server-side frontend build path after Vite reached `rendering chunks...` and
+  the SSH keepalive timed out. The log did not report ENOSPC or OOM; the last
+  recorded root filesystem state had about 8.3 GiB free, so no disk cleanup was
+  justified. The public frontend and API remained healthy, but new SSH sessions
+  continued to time out during banner exchange while this artifact pipeline was
+  prepared. Do not infer a successful deployment of `f55a34ee` from its pushed
+  Git commit; production remained on the prior healthy frontend until a later
+  run proves the new path end to end.
 - API deployment runs
   `python -m src.database.mysql.schema_migration --mode apply` from the new API
   image first, so missing MySQL application tables/columns can be created
