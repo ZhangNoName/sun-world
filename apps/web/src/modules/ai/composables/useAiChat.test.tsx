@@ -6,18 +6,21 @@ import {
   createAiSkill,
   deleteAiPersona,
   deleteAiSkill,
+  fetchAiConversation,
   fetchAiConversations,
   fetchAiPersonas,
   fetchAiProviderProfiles,
   fetchAiProviders,
   fetchAiSkills,
   streamAiRun,
+  updateAiMessage,
   updateAiPersona,
   updateAiSkill,
 } from '../api'
 import { useAiChat } from './useAiChat'
 
 vi.mock('../api', () => ({
+  fetchAiConversation: vi.fn().mockResolvedValue(null),
   fetchAiConversations: vi.fn().mockResolvedValue([]),
   fetchAiPersonas: vi.fn().mockResolvedValue([]),
   fetchAiProviderProfiles: vi.fn().mockResolvedValue([]),
@@ -62,7 +65,11 @@ const payload = (markdown: string) => ({
 })
 
 function aiEvent(
-  type: 'run.started' | 'content.delta' | 'message.completed',
+  type:
+    | 'run.started'
+    | 'content.delta'
+    | 'component.upsert'
+    | 'message.completed',
   sequence: number,
   data: Record<string, AiJsonValue>
 ) {
@@ -276,6 +283,125 @@ describe('useAiChat', () => {
     expect(signal?.aborted).toBe(true)
     await act(async () => pending)
     expect(result.current.runState).toEqual({ status: 'idle' })
+    expect(result.current.messages.at(-1)?.status).toBe('interrupted')
+  })
+
+  it('rejects duplicate sends in the same render and ignores late events after stop', async () => {
+    let finish!: () => void
+    let callbacks!: Parameters<typeof streamAiRun>[1]
+    stream.mockImplementation((_payload, options) => {
+      callbacks = options
+      return new Promise<void>((resolve) => {
+        finish = resolve
+      })
+    })
+    const { result } = renderHook(() => useAiChat())
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current.sendMessage(payload('first'))
+      void result.current.sendMessage(payload('duplicate'))
+    })
+    expect(stream).toHaveBeenCalledTimes(1)
+    act(() => result.current.stop())
+    expect(result.current.runState.status).toBe('idle')
+    expect(result.current.messages.at(-1)?.status).toBe('interrupted')
+    act(() =>
+      callbacks.onEvent(aiEvent('content.delta', 1, { delta: 'too late' }))
+    )
+    expect(result.current.messages.at(-1)?.blocks).toEqual([])
+    await act(async () => {
+      finish()
+      await pending
+    })
+  })
+
+  it('does not let a cancelled request clear the next run state', async () => {
+    const finishes: Array<() => void> = []
+    stream.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishes.push(resolve)
+        })
+    )
+    const { result } = renderHook(() => useAiChat())
+    let first!: Promise<void>
+    let second!: Promise<void>
+    act(() => {
+      first = result.current.sendMessage(payload('first'))
+    })
+    act(() => {
+      result.current.startConversation()
+    })
+    act(() => {
+      second = result.current.sendMessage(payload('second'))
+    })
+    await act(async () => {
+      finishes[0]()
+      await first
+    })
+    expect(result.current.runState.status).toBe('running')
+    expect(result.current.messages[0]?.blocks).toMatchObject([
+      { text: 'second' },
+    ])
+    act(() => result.current.stop())
+    await act(async () => {
+      finishes[1]()
+      await second
+    })
+  })
+
+  it('preserves structured blocks when more text arrives', async () => {
+    const link = {
+      type: 'link',
+      url: 'https://sunworld.site',
+      label: 'Sun World',
+    }
+    stream.mockImplementation(async (_payload, options) => {
+      options.onEvent(aiEvent('content.delta', 0, { delta: 'hello' }))
+      options.onEvent(aiEvent('component.upsert', 1, { block: link }))
+      options.onEvent(aiEvent('content.delta', 2, { delta: ' world' }))
+      options.onEvent(aiEvent('message.completed', 3, {}))
+    })
+    const { result } = renderHook(() => useAiChat())
+    await act(() => result.current.sendMessage(payload('question')))
+    expect(result.current.messages.at(-1)?.blocks).toEqual([
+      { type: 'text', text: 'hello world', format: 'markdown' },
+      link,
+    ])
+  })
+
+  it('keeps protocol errors terminal instead of replacing them with interruption', async () => {
+    stream.mockImplementation(async (_payload, options) => {
+      options.onProtocolError?.(new Error('协议无效'))
+      options.onEvent(aiEvent('message.completed', 1, {}))
+    })
+    const { result } = renderHook(() => useAiChat())
+    await act(() => result.current.sendMessage(payload('question')))
+    expect(result.current.runState).toMatchObject({
+      status: 'error',
+      code: 'AI_PROTOCOL_UNSUPPORTED',
+    })
+    expect(result.current.messages.at(-1)?.status).toBe('failed')
+  })
+
+  it('ignores history errors after switching away', async () => {
+    authState.user = { id: 7 }
+    let fail!: (error: Error) => void
+    vi.mocked(fetchAiConversation).mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          fail = reject
+        })
+    )
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+    act(() => result.current.selectConversation('saved-chat'))
+    act(() => result.current.startConversation())
+    await act(async () => {
+      fail(new Error('old request failed'))
+    })
+    expect(result.current.runState.status).toBe('idle')
+    expect(result.current.messages).toEqual([])
   })
 
   it('regenerates an answer without duplicating the source user message', async () => {
@@ -501,6 +627,63 @@ describe('useAiChat', () => {
     expect(deleteSkill).toHaveBeenCalledWith('skill-1')
   })
 
+  it.each(['summarize', 'explain', 'visualize', 'rewrite'])(
+    'submits the %s command as a text request',
+    async (commandId) => {
+      stream.mockResolvedValue(undefined)
+      const { result } = renderHook(() => useAiChat())
+      await act(() =>
+        result.current.sendMessage({ ...payload('原始材料'), commandId })
+      )
+      expect(stream).toHaveBeenCalledTimes(1)
+      expect(stream.mock.calls[0][0].message).toContain('原始材料')
+      expect(stream.mock.calls[0][0].message).not.toBe('原始材料')
+    }
+  )
+
+  it('keeps saved history intact if editing fails', async () => {
+    authState.user = { id: 7 }
+    vi.mocked(fetchAiConversation).mockResolvedValueOnce({
+      id: 'saved-chat',
+      title: 'Saved',
+      created_at: '',
+      updated_at: '',
+      messages: [
+        {
+          id: 'saved-user',
+          sequence: 0,
+          conversation_id: 'saved-chat',
+          role: 'user',
+          blocks: [{ type: 'text', text: 'original', format: 'markdown' }],
+          status: 'completed',
+          created_at: '',
+          updated_at: '',
+        },
+        {
+          id: 'saved-answer',
+          sequence: 1,
+          conversation_id: 'saved-chat',
+          role: 'assistant',
+          blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
+          status: 'completed',
+          created_at: '',
+          updated_at: '',
+        },
+      ],
+    })
+    vi.mocked(updateAiMessage).mockRejectedValueOnce(new Error('保存失败'))
+    const { result } = renderHook(() => useAiChat())
+    await act(async () => result.current.selectConversation('saved-chat'))
+    const original = result.current.messages
+    await act(() => result.current.editMessage('saved-user', 'edited'))
+    expect(result.current.messages).toEqual(original)
+    expect(result.current.runState).toMatchObject({
+      status: 'error',
+      message: '保存失败',
+    })
+    expect(stream).not.toHaveBeenCalled()
+  })
+
   it('rejects unsupported files and commands before starting a stream', async () => {
     const { result } = renderHook(() => useAiChat())
     const attachment = new File(['content'], 'notes.md')
@@ -518,9 +701,9 @@ describe('useAiChat', () => {
           markdown: 'run command',
           files: [],
           modelId: 'model:deepseek',
-          commandId: 'summarize',
+          commandId: 'unknown',
         })
-      ).rejects.toThrow('当前服务暂不支持命令')
+      ).rejects.toThrow('当前服务暂不支持此命令')
     })
     expect(stream).not.toHaveBeenCalled()
   })

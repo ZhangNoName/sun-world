@@ -409,7 +409,7 @@
 
 .sw-ai-home-composer,
 .sw-ai-home-composer .sw-ai-composer {
-  height: 52px;
+  min-height: 52px;
 }
 
 .sw-ai-suggestions {

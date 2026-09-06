@@ -71,6 +71,25 @@ function ComposerHarness({
 }
 
 describe('AiComposer core', () => {
+  it('expands compact chat controls while a command is selected', async () => {
+    const user = userEvent.setup()
+    const view = render(
+      <ComposerHarness
+        variant="chat"
+        commands={[{ id: 'summarize', label: '总结内容' }]}
+      />
+    )
+    await user.type(screen.getByRole('textbox'), '/')
+    await user.click(screen.getByRole('option', { name: /总结内容/ }))
+    expect(view.container.querySelector('form')).toHaveClass(
+      'sw-ai-composer--work'
+    )
+    await user.click(screen.getByRole('button', { name: '移除命令 总结内容' }))
+    expect(view.container.querySelector('form')).toHaveClass(
+      'sw-ai-composer--chat'
+    )
+  })
+
   it('keeps work as the default and exposes the compact chat variant', () => {
     const view = render(<ComposerHarness />)
     expect(view.container.querySelector('form')).toHaveClass(

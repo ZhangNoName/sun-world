@@ -77,16 +77,24 @@ export async function readAiSseStream(
   const reader = stream.getReader()
   const decoder = new TextDecoder()
   const parser = parseAiSseChunks(callbacks)
+  const cancelRead = () => {
+    // Cancelling the reader also settles an in-flight read on a stalled stream.
+    void reader.cancel().catch(() => undefined)
+  }
+  signal?.addEventListener('abort', cancelRead, { once: true })
   try {
     while (true) {
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
       const { done, value } = await reader.read()
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
       if (done) break
       parser.push(decoder.decode(value, { stream: true }))
     }
     parser.push(decoder.decode())
     parser.finish()
   } finally {
+    signal?.removeEventListener('abort', cancelRead)
+    if (signal?.aborted) await reader.cancel().catch(() => undefined)
     reader.releaseLock()
   }
 }

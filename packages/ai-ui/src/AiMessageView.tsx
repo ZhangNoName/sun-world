@@ -9,12 +9,14 @@ import type { AiRendererRegistry, AiUiMessage } from './types'
 
 export function AiMessageView({
   message,
+  busy = false,
   renderers,
   onEdit,
   onRegenerate,
   onFeedback,
 }: {
   message: AiUiMessage
+  busy?: boolean
   renderers?: AiRendererRegistry
   onEdit: (messageId: string, content: string) => void
   onRegenerate: (messageId: string) => void
@@ -46,6 +48,10 @@ export function AiMessageView({
         </strong>
         {message.status === 'streaming' ? (
           <span role="status">正在生成</span>
+        ) : message.status === 'interrupted' ? (
+          <span role="status">已停止 · 可重新生成</span>
+        ) : message.status === 'failed' ? (
+          <span role="status">生成失败 · 可重试</span>
         ) : null}
       </header>
       {editing ? (
@@ -60,6 +66,7 @@ export function AiMessageView({
             <Button
               size="sm"
               aria-label="保存编辑"
+              disabled={busy || !draft.trim()}
               onClick={() => {
                 const value = draft.trim()
                 if (!value) return
@@ -107,7 +114,11 @@ export function AiMessageView({
             <ActionButton
               label="编辑消息"
               icon="edit"
-              onClick={() => setEditing(true)}
+              disabled={busy}
+              onClick={() => {
+                setDraft(messageText(message))
+                setEditing(true)
+              }}
             />
           ) : null}
           {assistant ? (
@@ -115,6 +126,7 @@ export function AiMessageView({
               <ActionButton
                 label="重新生成"
                 icon="refresh-cw"
+                disabled={busy}
                 onClick={() => onRegenerate(message.id)}
               />
               <ActionButton
@@ -159,11 +171,13 @@ function ActionButton({
   icon,
   onClick,
   pressed,
+  disabled,
 }: {
   label: string
   icon: 'check' | 'copy' | 'edit' | 'refresh-cw' | 'thumbs-up' | 'thumbs-down'
   onClick: () => void | Promise<void>
   pressed?: boolean
+  disabled?: boolean
 }) {
   return (
     <Button
@@ -172,6 +186,7 @@ function ActionButton({
       variant="ghost"
       aria-label={label}
       aria-pressed={pressed}
+      disabled={disabled}
       onClick={() => void onClick()}
     >
       <SunIcon name={icon} size="sm" />

@@ -13,6 +13,7 @@ import {
   type AiComposerSubmitPayload,
 } from '@sun-world/ai-composer'
 import { useAuthStore } from '@/store/auth'
+import { buildAiCommandPrompt } from '../composer-commands'
 
 import {
   createAiPersona,
@@ -80,9 +81,9 @@ export function useAiChat() {
   const controller = useRef<AbortController | null>(null)
   const workspaceGeneration = useRef(0)
   const capabilityGeneration = useRef(0)
+  const historyGeneration = useRef(0)
+  const pendingEdit = useRef<object | null>(null)
   const userId = user?.id ?? null
-
-  useEffect(() => () => controller.current?.abort(), [])
 
   useEffect(() => {
     let cancelled = false
@@ -107,6 +108,8 @@ export function useAiChat() {
 
   useEffect(() => {
     const generation = ++workspaceGeneration.current
+    ++historyGeneration.current
+    pendingEdit.current = null
     controller.current?.abort()
     controller.current = null
     const emptyConversation = newConversation()
@@ -116,18 +119,28 @@ export function useAiChat() {
     setProviderProfiles([])
     setRunState({ status: 'idle' })
 
-    if (!userId) return
-    void Promise.all([fetchAiConversations(), fetchAiProviderProfiles()])
-      .then(([conversationItems, profileItems]) => {
-        if (workspaceGeneration.current !== generation) return
-        const mapped = (conversationItems ?? []).map(mapConversation)
-        if (mapped.length) setConversations([emptyConversation, ...mapped])
-        setProviderProfiles((profileItems ?? []).map(mapProviderProfile))
-      })
-      .catch(() => undefined)
+    if (userId)
+      void Promise.all([fetchAiConversations(), fetchAiProviderProfiles()])
+        .then(([conversationItems, profileItems]) => {
+          if (workspaceGeneration.current !== generation) return
+          const mapped = (conversationItems ?? []).map(mapConversation)
+          if (mapped.length)
+            setConversations((current) => [
+              ...current,
+              ...mapped.filter(
+                (item) => !current.some((existing) => existing.id === item.id)
+              ),
+            ])
+          setProviderProfiles((profileItems ?? []).map(mapProviderProfile))
+        })
+        .catch(() => undefined)
     return () => {
       if (workspaceGeneration.current === generation) {
+        ++workspaceGeneration.current
+        ++historyGeneration.current
+        pendingEdit.current = null
         controller.current?.abort()
+        controller.current = null
       }
     }
   }, [userId])
@@ -181,6 +194,8 @@ export function useAiChat() {
   }, [refreshCapabilities, userId])
 
   const startConversation = useCallback(() => {
+    ++historyGeneration.current
+    pendingEdit.current = null
     const currentConversation = conversations.find(
       (conversation) => conversation.id === activeConversationId
     )
@@ -197,7 +212,7 @@ export function useAiChat() {
       return currentConversation
     }
 
-    if (runState.status === 'running') controller.current?.abort()
+    controller.current?.abort()
     const conversation = newConversation()
     setConversations((items) => [conversation, ...items])
     setMessagesByConversation((items) => ({
@@ -216,21 +231,34 @@ export function useAiChat() {
 
   const selectConversation = useCallback(
     (conversationId: string) => {
+      pendingEdit.current = null
+      const generation = ++historyGeneration.current
+      const workspace = workspaceGeneration.current
       controller.current?.abort()
       setActiveConversationId(conversationId)
       setRunState({ status: 'idle' })
       if (!user || conversationId.includes('-local-')) return
       void fetchAiConversation(conversationId)
         .then((conversation) => {
-          if (!conversation) return
+          if (
+            !conversation ||
+            historyGeneration.current !== generation ||
+            workspaceGeneration.current !== workspace
+          )
+            return
           setMessagesByConversation((current) => ({
             ...current,
             [conversationId]: (conversation.messages ?? []).map(mapMessage),
           }))
         })
-        .catch((error: unknown) =>
+        .catch((error: unknown) => {
+          if (
+            historyGeneration.current !== generation ||
+            workspaceGeneration.current !== workspace
+          )
+            return
           setRunState({ status: 'error', message: errorMessage(error) })
-        )
+        })
     },
     [user]
   )
@@ -262,7 +290,9 @@ export function useAiChat() {
       }
     ) => {
       const text = raw.trim()
-      if (!text || runState.status === 'running') return
+      if (!text || controller.current || pendingEdit.current) return
+      ++historyGeneration.current
+      const generation = workspaceGeneration.current
       const conversationId = activeConversationId
       const userMessageId = localId('user')
       const assistantMessageId = localId('assistant')
@@ -307,6 +337,27 @@ export function useAiChat() {
       let failed = false
       let terminal = false
       let resolvedConversationId = conversationId
+      const isCurrentRun = () =>
+        workspaceGeneration.current === generation &&
+        controller.current === requestController
+      const handleAbort = () => {
+        if (!isCurrentRun()) return
+        if (!terminal) {
+          updateMessage(
+            resolvedConversationId,
+            assistantMessageId,
+            (message) => ({
+              ...message,
+              status: 'interrupted',
+            })
+          )
+        }
+        controller.current = null
+        if (!failed) setRunState({ status: 'idle' })
+      }
+      requestController.signal.addEventListener('abort', handleAbort, {
+        once: true,
+      })
       const defaultProfileId =
         providerProfiles.find((profile) => profile.isDefault)?.id ?? null
       const selectedProfileId =
@@ -347,6 +398,8 @@ export function useAiChat() {
       }
 
       const handleEvent = (event: AiStreamEvent) => {
+        if (!isCurrentRun() || requestController.signal.aborted || terminal)
+          return
         if (event.type === 'run.started') {
           adoptServerConversation(event.conversation_id)
           return
@@ -359,13 +412,7 @@ export function useAiChat() {
             assistantMessageId,
             (message) => ({
               ...message,
-              blocks: [
-                {
-                  type: 'text',
-                  text: `${firstText(message.blocks)}${delta}`,
-                  format: 'markdown',
-                },
-              ],
+              blocks: appendTextDelta(message.blocks, delta),
             })
           )
           return
@@ -432,16 +479,33 @@ export function useAiChat() {
             signal: requestController.signal,
             onEvent: handleEvent,
             onProtocolError: (error) => {
+              if (
+                !isCurrentRun() ||
+                requestController.signal.aborted ||
+                terminal
+              )
+                return
               failed = true
+              terminal = true
+              updateMessage(
+                resolvedConversationId,
+                assistantMessageId,
+                (message) => ({
+                  ...message,
+                  status: 'failed',
+                })
+              )
               setRunState({
                 status: 'error',
                 code: 'AI_PROTOCOL_UNSUPPORTED',
                 message: error.message,
                 retryable: true,
               })
+              requestController.abort()
             },
           }
         )
+        if (!isCurrentRun()) return
         if (!terminal && !requestController.signal.aborted) {
           failed = true
           updateMessage(
@@ -460,6 +524,7 @@ export function useAiChat() {
           })
         }
       } catch (error) {
+        if (!isCurrentRun() || terminal) return
         if (requestController.signal.aborted) {
           updateMessage(
             resolvedConversationId,
@@ -486,15 +551,17 @@ export function useAiChat() {
           })
         }
       } finally {
-        if (!failed) setRunState({ status: 'idle' })
-        if (controller.current === requestController) controller.current = null
+        requestController.signal.removeEventListener('abort', handleAbort)
+        if (isCurrentRun()) {
+          if (!failed) setRunState({ status: 'idle' })
+          controller.current = null
+        }
       }
     },
     [
       activeConversationId,
       providerProfiles,
       providers,
-      runState.status,
       selectedPersonaId,
       selectedSkillIds,
       updateMessage,
@@ -504,17 +571,16 @@ export function useAiChat() {
 
   const sendMessage = useCallback(
     async (payload: AiComposerSubmitPayload) => {
+      if (pendingEdit.current) {
+        throw new AiComposerSubmitError('正在保存编辑，请稍后再发送。')
+      }
       if (payload.files.length) {
         throw new AiComposerSubmitError(
           '当前服务暂不支持附件，请移除附件后重试。'
         )
       }
-      if (payload.commandId) {
-        throw new AiComposerSubmitError(
-          '当前服务暂不支持命令，请移除命令后重试。'
-        )
-      }
-      await sendTextMessage(payload.markdown, {
+      const prompt = buildAiCommandPrompt(payload.markdown, payload.commandId)
+      await sendTextMessage(prompt, {
         providerProfileId: providerProfileId(payload.modelId),
         modelId: publicModelId(payload.modelId),
       })
@@ -526,9 +592,31 @@ export function useAiChat() {
 
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
+      if (controller.current || pendingEdit.current || !content.trim()) return
       const items = messagesByConversation[activeConversationId] ?? []
       const index = items.findIndex((message) => message.id === messageId)
-      if (index < 0) return
+      if (index < 0 || items[index].role !== 'user') return
+      const operation = {}
+      const generation = workspaceGeneration.current
+      const history = historyGeneration.current
+      const isCurrentEdit = () =>
+        pendingEdit.current === operation &&
+        workspaceGeneration.current === generation &&
+        historyGeneration.current === history
+      pendingEdit.current = operation
+      if (user && !messageId.includes('-local-')) {
+        try {
+          await updateAiMessage(messageId, content)
+        } catch (error) {
+          if (isCurrentEdit()) {
+            pendingEdit.current = null
+            setRunState({ status: 'error', message: errorMessage(error) })
+          }
+          return
+        }
+      }
+      if (!isCurrentEdit()) return
+      pendingEdit.current = null
       setMessagesByConversation((current) => ({
         ...current,
         [activeConversationId]: (current[activeConversationId] ?? [])
@@ -542,14 +630,6 @@ export function useAiChat() {
               : message
           ),
       }))
-      if (user && !messageId.includes('-local-')) {
-        try {
-          await updateAiMessage(messageId, content)
-        } catch (error) {
-          setRunState({ status: 'error', message: errorMessage(error) })
-          return
-        }
-      }
       await sendTextMessage(content, {
         reuseUser: true,
         parentMessageId: messageId,
@@ -560,6 +640,7 @@ export function useAiChat() {
 
   const regenerate = useCallback(
     async (messageId: string) => {
+      if (controller.current || pendingEdit.current) return
       const items = messagesByConversation[activeConversationId] ?? []
       const index = items.findIndex((message) => message.id === messageId)
       if (index < 0) return
@@ -816,6 +897,20 @@ function parseBlock(value: unknown): AiContentBlock | null {
   )
     return null
   return value as AiContentBlock
+}
+
+function appendTextDelta(
+  blocks: AiContentBlock[],
+  delta: string
+): AiContentBlock[] {
+  const index = blocks.findIndex((block) => block.type === 'text')
+  if (index < 0)
+    return [...blocks, { type: 'text', text: delta, format: 'markdown' }]
+  return blocks.map((block, position) =>
+    position === index && block.type === 'text'
+      ? { ...block, text: block.text + delta }
+      : block
+  )
 }
 
 function firstText(blocks: AiContentBlock[]) {

@@ -1,4 +1,4 @@
-import { parseAiSseChunks } from './sse'
+import { parseAiSseChunks, readAiSseStream } from './sse'
 
 const event = (overrides: Record<string, unknown> = {}) => ({
   version: '1',
@@ -40,5 +40,54 @@ describe('parseAiSseChunks', () => {
       '不支持的 AI 协议版本',
       'AI 流事件顺序不完整',
     ])
+  })
+})
+
+describe('readAiSseStream', () => {
+  it('cancels a stalled read promptly and releases the reader lock', async () => {
+    const cancel = vi.fn()
+    const stream = new ReadableStream<Uint8Array>({ cancel })
+    const controller = new AbortController()
+    const onEvent = vi.fn()
+    const pending = readAiSseStream(stream, { onEvent }, controller.signal)
+    controller.abort()
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(onEvent).not.toHaveBeenCalled()
+    expect(stream.locked).toBe(false)
+  })
+
+  it('does not deliver an already queued frame after cancellation', async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${JSON.stringify(event())}\n\n`)
+        )
+      },
+    })
+    const controller = new AbortController()
+    const onEvent = vi.fn()
+    const pending = readAiSseStream(stream, { onEvent }, controller.signal)
+    controller.abort()
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    expect(onEvent).not.toHaveBeenCalled()
+    expect(stream.locked).toBe(false)
+  })
+
+  it('decodes split UTF-8 characters and flushes a final frame without a delimiter', async () => {
+    const bytes = new TextEncoder().encode(
+      `data: ${JSON.stringify(event({ data: { delta: '你好' } }))}`
+    )
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const byte of bytes) controller.enqueue(new Uint8Array([byte]))
+        controller.close()
+      },
+    })
+    const onEvent = vi.fn()
+    await readAiSseStream(stream, { onEvent })
+    expect(onEvent).toHaveBeenCalledTimes(1)
+    expect(onEvent).toHaveBeenCalledWith(event({ data: { delta: '你好' } }))
+    expect(stream.locked).toBe(false)
   })
 })

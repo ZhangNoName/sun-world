@@ -1,5 +1,40 @@
 ﻿## Current Handoff
 
+## Active checkpoint: 2026-09-06 AIGC reliability and command usability
+
+- Goal: autonomously improve AIGC, with remaining Codex quota of 10% as the
+  stop threshold. Local `main` commit requested on 2026-09-07; no push or deployment.
+- Implemented: synchronous stream cancellation and duplicate-send protection;
+  stale stream/history isolation across conversation and account changes;
+  preservation of structured blocks alongside text deltas; terminal protocol
+  errors; saved-message edits preserve history on failure and cannot resume
+  generation in a different workspace.
+- The four existing composer commands now become bounded text prompts for
+  summarize/explain/chart-planning/rewrite. Unsupported commands and attachments
+  still fail before transport. Chart planning does not promise an actual chart.
+- Message actions show stopped/failed states and disable editing/regeneration
+  during a run. Compact composers use the existing expanded layout for commands,
+  attachments, speech interim text, or feedback; homepage height can grow so the
+  suggestion list no longer overlaps the input.
+- Important files: `apps/web/src/modules/ai/composables/useAiChat.ts`,
+  `composer-commands.ts`, `sse.ts`, `pages/AigcPage.tsx`,
+  `packages/ai-ui/src/{AiMessageView,AiWorkspace}.tsx`, `ai-ui.css`,
+  `packages/ai-composer/src/AiComposer.tsx`, and their regression tests.
+- Verification so far: AIGC tests (42), AI UI tests (25), composer tests (41),
+  Web typecheck, `corepack pnpm check:web`, subsequent package/Web builds,
+  chunk checks, performance budgets, format check, and `git diff --check`
+  passed. Final `corepack pnpm check` passed all 20/20 repository gates.
+- Browser QA: local guest `/aigc` renders; slash command selection/removal and
+  expanded composer spacing were checked visually. The local API supplied no
+  available model, so real generation and authenticated database writes were
+  not exercised in-browser; mocked transport tests cover those lifecycle paths.
+- Existing check output includes UMD external-global warnings and network-error
+  telemetry from account tests. No performance ceiling or dependency was changed.
+- Quota at completion: the tool reported 23% remaining; the 10% stop threshold
+  was not reached. This bounded batch is complete.
+- Next step: push/publish this local commit only when requested.
+
+
 ### Active checkpoint: 2026-08-30 AIGC sidebar refinement
 
 - Goal: match the supplied ChatGPT sidebar crop more closely, keep capability

@@ -830,6 +830,7 @@ export function AiWorkspace({
                   <AiMessageView
                     key={message.id}
                     message={message}
+                    busy={runState.status === 'running'}
                     renderers={renderers}
                     onEdit={onEditMessage}
                     onRegenerate={onRegenerate}

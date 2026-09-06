@@ -272,9 +272,19 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       speech.status === 'error' ||
       Boolean(submissionError)
 
+    const layoutVariant =
+      variant === 'chat' &&
+      (selectedCommand ||
+        files.length > 0 ||
+        hasFeedback ||
+        speech.interimTranscript ||
+        duplicateFiles.length > 0)
+        ? 'work'
+        : variant
+
     return (
       <form
-        className={`sw-ai-composer sw-ai-composer--${variant}`}
+        className={`sw-ai-composer sw-ai-composer--${layoutVariant}`}
         onSubmit={handleSubmit}
       >
         {commandPaletteOpen ? (
