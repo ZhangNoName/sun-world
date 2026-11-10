@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-sdk-client": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.1"
+  }
+}

@@ -16,6 +16,7 @@ This repository is the source of truth for the Sun World site.
 - Read this file, CLAUDE.md, .ai/README.md, README.md, docs/current-state.md, docs/engineering-conventions.md, and docs/agent-handoff.md before making changes.
 - Project-local instructions override the server-level /home/lighthouse/AGENTS.md contract.
 - Keep operational decisions, deploy notes, and gotchas in docs/current-state.md or focused docs under docs/.
+- For each substantive Sun World iteration, use [sun-world-blog](.agents/skills/sun-world-blog/SKILL.md) to prepare an illustrated update with a category and tags. Record its publication status in the relevant handoff.
 
 ## Collaboration Contract
 

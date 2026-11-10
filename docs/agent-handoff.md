@@ -1,5 +1,13 @@
 ﻿## Current Handoff
 
+## 2026-11-10 全栈业务模块与 Agent 插件架构
+
+- 目标：为博客模块定义 Web、API、数据迁移和 Agent 能力的共同边界。
+- 进度：[架构提案](architecture/agent-module-platform.md) 已通过 Astra 独立设计审查。dsh P0 本地模拟协议闭环已跑通，主链路为搜索、读取和校验引用。
+- 验证：`./tools/dsh-blog-p0/run-local.sh` 九个场景通过，包括空检索、未发布文章、未知工具、伪造引用、模型截断、超时及取消。外部网络和仓库文件读取探测均被拒绝。格式检查和 `git diff --check` 通过。
+- 下一步：用经批准的真实 Messages 兼容模型复测。当前本机未发现可用的兼容模型。P1 内测与发布能力分别等待各自验收。
+- 博客记录：按 [sun-world-blog](../.agents/skills/sun-world-blog/SKILL.md) 维护系列稿件。[架构笔记 01](blog/2026-11-10-agent-platform-identity-and-permissions.md) 归「后端」，拟用「架构笔记」「Agent」「认证与授权」。[架构笔记 02](blog/2026-11-10-dsh-readonly-blog-qa-p0.md) 已完成带流程图的本地稿，拟归「后端」，标签「架构笔记」「Agent」「DeepSeek Harness」。两篇均保留为本地稿件。
+
 ## Active checkpoint: 2026-09-06 AIGC reliability and command usability
 
 - Goal: autonomously improve AIGC, with remaining Codex quota of 10% as the
