@@ -49,8 +49,13 @@ These conventions capture the default coding habits for this repository. Prefer 
 - Use structured APIs/parsers for structured data instead of fragile string manipulation.
 - Add comments only for non-obvious behavior, browser quirks, production gotchas, or complex logic.
 - JavaScript, TypeScript, TSX, JSON, YAML, CSS, and SCSS formatting is defined
-  by `.prettierrc.json`. Run `pnpm format` to format changed supported files,
+  by the actually resolved Prettier configuration (currently `.prettierrc`). Run `pnpm format` to format changed supported files,
   or `pnpm format:check` to verify changed supported files without editing.
+- Both `.prettierrc` and `.prettierrc.json` currently exist with conflicting
+  settings. See [file, format and test conventions](repository-conventions.md)
+  for verified resolution, indentation, naming, test placement, and the deferred
+  configuration-consolidation plan. Do not change both files or bulk-format code
+  as part of a documentation task.
 - The first Prettier baseline intentionally excludes Markdown and Python.
   Python formatting should be introduced separately through a Python-native
   formatter such as Ruff.
@@ -109,6 +114,24 @@ This repository is frontend-heavy today, but use these defaults for any backend 
 - Make transactions explicit around multi-step writes.
 - Add indexes deliberately for new query patterns, especially filtering, sorting, and pagination paths.
 - Store timestamps consistently and document timezone assumptions.
+
+## Module and project extension rules
+
+New module routes, navigation, page slots, action contributions and external
+project adapters follow [the module extension contract](architecture/module-extension-contract.md).
+Capability checks belong to the owning backend service; frontend visibility
+is not authorization. Multiple projects require explicit resource isolation
+before activation. These are design rules; slot infrastructure is not yet implemented.
+
+## DSH implementation additions
+
+For new DSH module, auth, blog-tool, AI-runtime, or product-Skill work, follow
+[the DSH implementation standard](architecture/dsh-implementation-standard.md)
+and [the staged acceptance plan](plans/dsh-platform-implementation.md). These
+are scoped implementation rules, not claims that the proposed directories or
+CI guards already exist. Keep legacy behavior compatible until each entrypoint
+passes its migration checks. Product Skills must not load developer Skills or
+grant permissions.
 
 ## Verification
 

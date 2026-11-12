@@ -3,6 +3,10 @@
 本文档描述 Sun World 当前架构。历史迁移记录不应覆盖这里、
 `docs/current-state.md` 或 `docs/engineering-conventions.md` 中的现状。
 
+## 跨项目运行状态说明
+
+本文件下面的容器/主域映射为既有架构记录，不能覆盖 2026-11-10 Stars 发布记录；当前回源仍待核实，见 [current-state 冲突记录](../current-state.md)和[全项目对接方案](project-federation-plan.md)。Stars 作为首页的目标不要求把其他项目合入此 monorepo。
+
 ## Runtime overview
 
 Sun World 是一个 pnpm monorepo，生产分支为 `main`：
@@ -129,6 +133,12 @@ document:
    audited migration, backup and rollback plan.
 5. Historical Vue-era architecture documents remain useful as migration
    records, but they are not current implementation contracts.
+
+## DSH 目标架构（待实施）
+
+模块扩展参考[扩展契约](module-extension-contract.md)，文件与测试组织参考[工程文件规范](../repository-conventions.md)。页面 slot 与跨项目运行隔离均为目标设计，当前 `AppModule` 仍以 routes/nav/seo/preload 为主。
+
+现有实现与目标设计分开记录。新增 DSH 能力遵循[实现规范与目标目录](dsh-implementation-standard.md)，实施顺序和放行条件见[计划](../plans/dsh-platform-implementation.md)，缺口依据见[评审](../reviews/2026-11-12-dsh-architecture-review.md)。目前只有 `tools/dsh-blog-p0` 协议原型；本文的 Runtime overview 不表示私有 Worker 或统一权限中心已上线。
 
 ## Related documents
 

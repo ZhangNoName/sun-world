@@ -1,5 +1,12 @@
 # Current State
 
+## 2026-11-12 跨项目方案中的生产记录冲突（待核实）
+
+2026-11-10 的 Stars 发布记录（本地稿 `docs/blog/2026-11-10-stars-cold-start-brotli.md`，未随本次提交）与 handoff 记载主域名已由 Stars 服务，博客使用 `blog.sunworld.site`；本文较早段落、README 与部分部署脚本仍使用旧主域名/容器映射。此次只完成本地文档和源码核对，公网读取工具未成功，未连接服务器核对配置，因此不覆盖具体容器、端口与部署版本为新事实。
+
+后续部署先按[接入方案](architecture/project-federation-plan.md)核对域名→回源→产物→唯一发布任务→回滚版本，并检查博客 Origin/回调。不能据旧段落直接把 `my-frontend:8081` 认定为当前主域名的正确发布目标。
+
+
 ## Frontend Motion System (2026-08-30, deployed main)
 
 - A dependency-free frontend motion system is implemented and deployed.

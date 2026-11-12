@@ -49,6 +49,35 @@ without relying on chat history.
 - Protocol changes must update durable docs first, then be broadcast to active
   subagents and any Claude Code / `claude-ds` task prompt before work continues.
 
+## Cross-project Integration Design
+
+Identity and authorization work must read
+[the federated identity and isolation standard](../docs/architecture/federated-identity-and-isolation.md)
+and [the security review](../docs/reviews/2026-11-12-federation-security-review.md).
+Catalog product IDs are not tenant scopes; logout does not unlink accounts.
+SSO, delegation and data isolation remain design requirements, not live features.
+
+Read [the Stars federation plan](../docs/architecture/project-federation-plan.md)
+and [the project inventory](../docs/product/project-integration-inventory.md)
+for project integration work. Navigation does not grant identity or data access.
+Current scope remains design only; production routing has conflicting historical
+records and must be verified before any deployment.
+
+## DSH Implementation Entry
+
+Current scope: documentation/design only; do not start implementation without a
+new development instruction. File naming, indentation and test placement follow
+[repository conventions](../docs/repository-conventions.md). Module permissions,
+page slots and project integrations follow
+[the extension contract](../docs/architecture/module-extension-contract.md).
+
+For DSH architecture and implementation work, read
+[the implementation standard](../docs/architecture/dsh-implementation-standard.md),
+[the staged plan](../docs/plans/dsh-platform-implementation.md), and
+[the review findings](../docs/reviews/2026-11-12-dsh-architecture-review.md).
+The Node Worker, generated module contracts, and product-Skill packaging are
+planned boundaries, not deployed features.
+
 ## Current Branch Strategy
 
 - `main`: production deploy branch on the server.
