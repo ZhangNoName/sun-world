@@ -177,3 +177,17 @@
 - 从暂存tree `a332af9ca403cc5a2be1eb519653e0e81cae0b38` 导出独立临时快照，未拷贝.git、.tmp、data或本地override，运行 `node scripts/run-api-check.mjs`，完整API gate **438 tests通过**。使用项目venv作为依赖解释器，不借用工作区未暂存Python源码。
 - Worker协议3tests、前端AI模块及博客分页定向11文件62tests、Web typecheck、contracts6tests、deploy-schema静态检查通过。暂存JS/TS/CSS/JSON定向Prettier和私钥/token模式检查通过，未暂存本地配置/凭据/运行数据。
 - 共享工作区format素材与Web CSS预算问题仍是未完成项；没有声称root check全部通过。博客已补影子对照、动态遮挡与并发凭据机制；未做本次网页预览，不发布。
+
+
+## 2026-11-15 阶段A实际权限数据只读盘点
+
+- 当前版本基点：`4ec5d20`，此前DSH本地验证、管理员影子基线及并发/断流修复已提交。
+- 本轮新增 `core/auth/permissions_inventory.py` 与 `scripts/audit-local-permissions.py`：聚合角色/resource及绑定数量、Python一致归一化的空码/重复码、重复/失联绑定、DISTINCT启用管理员数。只读事务强制、同连接一致快照、五表InnoDB检查、定义数量硬上限、成功失败rollback、关闭连接、配置/驱动异常脱敏。只读local两份配置，不读AI凭据或任意override，不输出账号ID/联系/凭据/主机/资源路径。没有迁移、写库或新增业务授权。
+- 实际运行 `apps/api/.venv/bin/python scripts/audit-local-permissions.py --local` 返回0：users6、roles2、resources0、user_roles6、role_resources0、enabled_admin1；空/重复码与重复/失联绑定均0。保留单管理员提醒，恢复路径unverified。配置profile不等于物理本机或已核对生产环境。
+- `apps/api/tests/test_permissions_inventory.py` 新增8项：真实SQLite查询验证（含Tab/Unicode角色码）、重复与孤儿、禁用/无admin、事务rollback和拒绝非InnoDB、配置范围与production拒绝、错误脱敏、异常聚合与超量拒绝。定向通过；完整 `corepack pnpm check:api` 446tests通过。
+- 文档：[迁移说明](../../development/admin-policy-migration.md)补命令、退出码、汇总及边界；分阶段计划同步本地已核对，阶段A仍未宣称生产验收。博客按sun-world-blog→sun-world-write-design局部补架构笔记03的“只读盘点不直接授予权限”，后端分类/原三标签保留，不公开账号/角色目录细节，无新增图片、未网页预览或发布。
+- 下一步：review并保存本轮版本，然后推进C正式MySQL账本与事务接口；B的Linux隔离、恢复管理员/生产权限核对仍单独验收。原有其他dirty文件保留，不推送或部署。
+
+判官本轮独立审查与8项定向测试通过；另用Mock验证退出码0/2/1/1及rollback/close路径，未发现本轮范围阻塞。
+
+最终format:check仍仅报原有content-sources素材manifest格式；本轮Python/Markdown不受Prettier检查，文档链接与git diff --check通过。

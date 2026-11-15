@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-15 阶段A权限数据只读盘点
+
+- 新增数据库强制只读快照工具，实际核对配置local目标的角色/resource与绑定：单启用管理员、resource目录为空，未发现空/重复码或失联绑定；恢复管理员路径仍未验证，权限未变。详见[迁移说明](development/admin-policy-migration.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- API446tests通过，判官review通过；博客03已补盘点与授予权限的区别，未发布。代码继续中文提交保存；接下来推进正式账本，B的Linux隔离与生产放行未完成。原素材格式/CSS预算问题保留。
+
+
 ## 2026-11-15 DSH 本地验证与版本保存
 
 - 只读问答基础、真实站点本地适配与管理员40项影子基线已保存版本；范围/已知门槛见[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。生产仍关闭，SQLite只作本地验证，不代表A–D整体验收。

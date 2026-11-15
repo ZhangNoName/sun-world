@@ -39,3 +39,20 @@ corepack pnpm check:api
 检查复用 OpenAPI 的 schema-only 组合根，遍历有效路由依赖树，覆盖路由级、端点级和嵌套依赖及前缀。基线与实际集合双向比较：新增入口未登记、已有守卫移除或路由删除但基线未清理都会失败。包含管理员守卫的同 method/path 重复注册也会拒绝，避免无守卫版本优先匹配而集合检查仍通过。对前置公开动态路由与管理员路由的固定前缀重叠，按注册顺序保守拒绝；不尝试证明任意路径转换器的正则互斥，可将更具体的受保护路由放在前面。它验证守卫覆盖，不证明服务层归属或业务约束正确；人工调用守卫不代替依赖声明。
 
 下一步需在明确目标环境只读核对实际角色/resource 行、重复/失联绑定和恢复管理员，再逐入口定义最小能力、资源范围和迁移时点。本轮不执行 DDL、不改权限数据、不启用权限管理新后台或 Agent 写工具。
+
+
+## 实际数据的只读盘点
+
+```bash
+apps/api/.venv/bin/python scripts/audit-local-permissions.py --local
+```
+
+此命令只读取明确的 `local.yml` 和 `local.override.yml` 中MySQL配置，忽略任意覆盖路径、AI凭据和生产配置；运行模式非local/dev/test时拒绝。local配置可以指向远端数据库，因此这里的“local”只表示配置profile，不声称数据库位于本机。
+
+同一连接以REPEATABLE READ + WITH CONSISTENT SNAPSHOT + READ ONLY开启事务，确认五张授权表都是InnoDB后读取计数，成功/失败均rollback，不调用commit；连接始终关闭。角色/资源定义最多各10000条，超过上限拒绝报告；内部只取定义ID/代码，不查询账号身份或凭据列。角色代码采用Python的strip/lower与现有守卫一致，避免SQL TRIM漏掉Tab和Unicode空白。管理员按DISTINCT启用用户计数，不因重复角色绑定重复计人。
+
+标准输出只有版本、计数、问题代码与提醒，无用户ID、名称、联系方式、密码、主机、资源路径或驱动异常。退出码：0=本次聚合未发现结构问题（仍可能有提醒），2=有结构问题或无启用管理员，1=配置/读取/事务失败、未产出报告。`administrator_recovery`始终为unverified，不将“有admin角色”当作恢复路径已验证。
+
+2026-11-15配置local目标的只读快照结果：users6、roles2、resources0、user_roles6、role_resources0、enabled administrators1；空码、重复码、重复/失联绑定计数均0。存在single_enabled_administrator提醒，未修改任何表或角色。资源目录为空证明当前数据不足以直接生成细粒度capability映射，不以空目录推导放行或拒绝现有管理员操作。
+
+本次核对只代表读取时的配置目标，不证明生产环境数据一致，也不作为自动开写功能依据。下一步需确认恢复管理员的实际登录方式和运维恢复路径，逐入口定义/评审能力映射；旧管理员守卫继续生效。
