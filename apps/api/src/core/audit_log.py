@@ -116,6 +116,7 @@ class AuditLogService:
         limit: int = 50,
         severity: str | None = None,
         event_type: str | None = None,
+        request_id: str | None = None,
     ) -> dict[str, Any]:
         """Return newest-first events from the bounded retention set."""
         selected_limit = _bounded_int(limit, default=50, minimum=1, maximum=100)
@@ -128,7 +129,7 @@ class AuditLogService:
                 for path in self._ordered_log_paths():
                     events.extend(self._read_events_reverse(path))
                     if len(events) >= selected_limit and not (
-                        selected_severity or selected_event_type
+                        selected_severity or selected_event_type or request_id
                     ):
                         break
         except OSError as exc:
@@ -140,6 +141,7 @@ class AuditLogService:
             if _is_valid_event(event)
             and (not selected_severity or event.get("severity") == selected_severity)
             and (not selected_event_type or event.get("event_type") == selected_event_type)
+            and (not request_id or event.get("request_id") == request_id)
         ]
         filtered.sort(key=lambda event: str(event.get("timestamp", "")), reverse=True)
         selected_events = filtered[:selected_limit]
@@ -312,10 +314,12 @@ def get_audit_log_snapshot(
     limit: int = 50,
     severity: str | None = None,
     event_type: str | None = None,
+    request_id: str | None = None,
 ) -> dict[str, Any]:
     """Return the current audit log read model for the admin boundary."""
     return audit_log.list_events(
         limit=limit,
         severity=severity,
         event_type=event_type,
+        request_id=request_id,
     )

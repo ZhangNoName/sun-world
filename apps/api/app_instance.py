@@ -190,6 +190,9 @@ class Application(FastAPI):
             pass
 
     async def shut_down(self, env='dev'):
+        blog_qa_runtime = getattr(self.state, "blog_qa_runtime", None)
+        if blog_qa_runtime is not None:
+            await blog_qa_runtime.aclose()
         await self.__cleanup_ai_manager()
         if env == 'local':
             pass
@@ -275,7 +278,10 @@ class Application(FastAPI):
         # 创建 checkpointer 上下文管理器并手动进入
         checkpointer_context = AsyncPostgresSaver.from_conn_string(DB_URI)
         checkpointer = await checkpointer_context.__aenter__()
-        await checkpointer.setup()
+        # Existing-site local validation must not perform schema DDL against
+        # the configured database. The normal deployment setup is unchanged.
+        if not (is_local_runtime() and os.getenv("BLOG_CHECKPOINTER_SETUP") == "0"):
+            await checkpointer.setup()
 
         # 保存 checkpointer 和上下文管理器，以便在关闭时清理
         self._ai_checkpointer = checkpointer

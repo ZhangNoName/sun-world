@@ -12,6 +12,8 @@ from starlette.concurrency import run_in_threadpool
 
 from app_instance import app
 from src.controller.auth_manager import AuthManager
+from src.core.auth.admin_shadow import observe_admin_policy
+from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
     AUTH_LOGIN_FAILED,
@@ -207,17 +209,20 @@ def get_current_user(
     return user
 
 
-def require_admin(current_user=Depends(get_current_user)):
+def require_admin(request: Request, current_user=Depends(get_current_user)):
     roles = (
         current_user.get("roles", [])
         if isinstance(current_user, dict)
         else getattr(current_user, "roles", [])
     )
-    if not any(
+    allowed = any(
         isinstance(role, dict)
         and str(role.get("code", "")).strip().lower() == "admin"
         for role in roles
-    ):
+    )
+    route = getattr(request.scope.get("route"), "path", "")
+    observe_admin_policy(current_user, request.method, route, allowed, audit_log.record)
+    if not allowed:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_error_detail(AUTH_FORBIDDEN, "需要管理员权限"),

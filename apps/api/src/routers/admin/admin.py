@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app_instance import app
 from src.core.admin_alerts import get_admin_alerts_snapshot
+from src.modules.ai.run_metrics import AiRunMetricsSnapshot, ai_run_metrics
 from src.core.audit_log import get_audit_log_snapshot
 from src.core.metrics import get_request_metrics_snapshot
 from src.core.metrics_history import get_metrics_history_snapshot
@@ -142,6 +143,7 @@ async def get_admin_logs(
         default=None
     ),
     event_type: str | None = Query(default=None, min_length=1, max_length=64),
+    request_id: str | None = Query(default=None, min_length=1, max_length=200),
     _current_user: User = Depends(require_admin),
 ):
     """Return bounded, sanitized lifecycle and request audit events."""
@@ -151,7 +153,13 @@ async def get_admin_logs(
                 limit=limit,
                 severity=severity,
                 event_type=event_type,
+                request_id=request_id,
             )
         ),
         msg="ok",
     )
+
+
+@router.get("/ai/metrics", response_model=ApiResponse[AiRunMetricsSnapshot])
+def get_ai_run_metrics(_current_user=Depends(require_admin)):
+    return ok(data=ai_run_metrics.snapshot())

@@ -7,6 +7,7 @@ vi.mock('../api', () => ({ fetchBlogPage }))
 import { useBlogList } from './useBlogList'
 
 describe('useBlogList', () => {
+  beforeEach(() => fetchBlogPage.mockReset())
   it('maps labels and exhausts pagination without duplicate requests', async () => {
     fetchBlogPage.mockResolvedValueOnce({
       list: [
@@ -42,5 +43,22 @@ describe('useBlogList', () => {
 
     await act(() => result.current.loadMore())
     expect(fetchBlogPage).toHaveBeenCalledTimes(1)
+  })
+  it('exhausts candidate pages even when public bodies are missing', async () => {
+    fetchBlogPage
+      .mockResolvedValueOnce({ list: [], total: 3 })
+      .mockResolvedValueOnce({
+        list: [{ id: 3, title: 'Visible', abstract: 'body', tag: [] }],
+        total: 3,
+      })
+    const { result } = renderHook(() => useBlogList([], [], 2))
+    await act(() => result.current.loadFirstPage())
+    expect(result.current.items).toEqual([])
+    expect(result.current.hasMore).toBe(true)
+    await act(() => result.current.loadMore())
+    expect(result.current.items.map((item) => item.id)).toEqual(['3'])
+    expect(result.current.hasMore).toBe(false)
+    await act(() => result.current.loadMore())
+    expect(fetchBlogPage).toHaveBeenCalledTimes(2)
   })
 })

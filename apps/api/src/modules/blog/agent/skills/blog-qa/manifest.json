@@ -1,0 +1,14 @@
+{
+  "id": "blog-qa",
+  "version": "1",
+  "module_id": "blog-content",
+  "content_sha256": "ae3d9fec893c09fe66467142cf77a57e0dfcb35c7ef6899306e73b68b8454ca7",
+  "tool_ids": ["blog.search_public", "blog.read_public"],
+  "tool_versions": {
+    "blog.search_public": "1",
+    "blog.read_public": "1"
+  },
+  "input_contract": "question/plain-text",
+  "output_contract": "answer/sourceIds",
+  "evaluation_set": "apps/agent-worker/tests/protocol/protocol.test.mjs"
+}

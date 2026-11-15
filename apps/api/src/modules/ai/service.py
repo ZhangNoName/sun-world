@@ -338,6 +338,10 @@ class AiService:
     async def set_feedback(self, user_id: int, message_id: str, value: str):
         await self.repository.set_feedback(user_id, message_id, None if value == "none" else value)
 
+    async def resolve_agent_model(self) -> ProviderConfig:
+        """Resolve only the server's global catalog default, never a personal profile."""
+        return await self._resolve_provider_config(None, None)
+
     async def _resolve_provider_config(
         self,
         user_id: int | None,
@@ -476,6 +480,22 @@ class AiService:
         return {"role": "system", "content": "\n\n".join(sections)}
 
     async def stream_run(
+        self,
+        user_id: int | None,
+        request: AiRunRequest,
+        *,
+        guest_session_id: str | None = None,
+    ) -> AsyncIterator[AiStreamEvent]:
+        from contextlib import aclosing
+        from .run_metrics import observe_run
+
+        async with aclosing(observe_run(self._stream_run(
+            user_id, request, guest_session_id=guest_session_id,
+        ))) as events:
+            async for event in events:
+                yield event
+
+    async def _stream_run(
         self,
         user_id: int | None,
         request: AiRunRequest,

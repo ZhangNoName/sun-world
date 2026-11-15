@@ -9,10 +9,13 @@ from app_instance import app  # Import the app instance
 from src.core.observability import safe_log_value
 from src.core.request_context import get_request_id
 from src.core.response import fail
+from src.module_composition import create_module_registry
+from src.modules.comments.router import router as comments_router
 from src.modules.dictionaries.router import router as dictionary_router
 from src.modules.ai.mcp_router import router as ai_mcp_router
 from src.modules.identity.router import router as identity_router
 from src.modules.integrations.router import router as integrations_router
+from src.modules.agent_runtime.router import create_blog_qa_router
 from src.routers import (
     admin_router,
     ai_router,
@@ -26,6 +29,9 @@ from src.routers import (
     telemetry_router,
     user_router,
 )
+
+
+app.module_registry = create_module_registry()
 
 
 # ---- 全局异常处理器 — 统一使用 { code, data, msg } envelope ----
@@ -128,6 +134,8 @@ routers = [
     telemetry_router,
     admin_router,
     dictionary_router,
+    comments_router,
+    create_blog_qa_router(app),
 ]
 
 # 使用循环一次性添加所有路由器

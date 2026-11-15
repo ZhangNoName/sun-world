@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+  '/admin/ai/metrics': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Ai Run Metrics */
+    get: operations['get_ai_run_metrics_admin_ai_metrics_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/admin/ai/providers': {
     parameters: {
       query?: never
@@ -53,6 +70,40 @@ export interface paths {
      */
     get: operations['get_admin_alerts_admin_alerts_get']
     put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/comments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Admin Comments */
+    get: operations['admin_comments_admin_comments_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/comments/{comment_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Review Comment */
+    put: operations['review_comment_admin_comments__comment_id__put']
     post?: never
     delete?: never
     options?: never
@@ -291,6 +342,74 @@ export interface paths {
     put?: never
     /** Generate Image */
     post: operations['generate_image_ai_read_image_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/blog-qa/capabilities': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Capabilities */
+    get: operations['capabilities_ai_v1_blog_qa_capabilities_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/blog-qa/runs/stream': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Start */
+    post: operations['start_ai_v1_blog_qa_runs_stream_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/blog-qa/runs/{run_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Run */
+    get: operations['get_run_ai_v1_blog_qa_runs__run_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/ai/v1/blog-qa/runs/{run_id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Cancel */
+    post: operations['cancel_ai_v1_blog_qa_runs__run_id__cancel_post']
     delete?: never
     options?: never
     head?: never
@@ -964,6 +1083,24 @@ export interface paths {
      *         dict: 包含删除成功消息的字典
      */
     delete: operations['delete_blog_blogs__blog_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/blogs/{blog_id}/comments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Comments */
+    get: operations['list_comments_blogs__blog_id__comments_get']
+    put?: never
+    /** Create Comment */
+    post: operations['create_comment_blogs__blog_id__comments_post']
+    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -1865,6 +2002,25 @@ export interface components {
        */
       type: 'record'
     }
+    /** AiRunMetricsSnapshot */
+    AiRunMetricsSnapshot: {
+      /** Active */
+      active: number
+      /** Cancelled */
+      cancelled: number
+      /** Completed */
+      completed: number
+      /** Failed */
+      failed: number
+      /** P95 Duration Ms */
+      p95_duration_ms: number
+      /** Sample Count */
+      sample_count: number
+      /** Started */
+      started: number
+      /** Started At */
+      started_at: string
+    }
     /** AiRunRequest */
     AiRunRequest: {
       /** Conversation Id */
@@ -2060,6 +2216,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[AiRunMetricsSnapshot] */
+    ApiResponse_AiRunMetricsSnapshot_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['AiRunMetricsSnapshot'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[AiSkill] */
     ApiResponse_AiSkill_: {
       /** Code */
@@ -2073,6 +2237,14 @@ export interface components {
       /** Code */
       code: number | string
       data?: components['schemas']['AuthSession'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[BlogComment] */
+    ApiResponse_BlogComment_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['BlogComment'] | null
       /** Msg */
       msg: string
     }
@@ -2100,11 +2272,35 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[BlogQaCapabilities] */
+    ApiResponse_BlogQaCapabilities_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['BlogQaCapabilities'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[BlogQaRun] */
+    ApiResponse_BlogQaRun_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['BlogQaRun'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[BlogStats] */
     ApiResponse_BlogStats_: {
       /** Code */
       code: number | string
       data?: components['schemas']['BlogStats'] | null
+      /** Msg */
+      msg: string
+    }
+    /** ApiResponse[CommentPage] */
+    ApiResponse_CommentPage_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['CommentPage'] | null
       /** Msg */
       msg: string
     }
@@ -2460,6 +2656,27 @@ export interface components {
        */
       view_num: number
     }
+    /** BlogComment */
+    BlogComment: {
+      /** Author Name */
+      author_name: string
+      /** Blog Id */
+      blog_id: number
+      /** Content */
+      content: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** Id */
+      id: number
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'pending' | 'approved' | 'rejected'
+    }
     /** BlogCreate */
     BlogCreate: {
       /**
@@ -2611,6 +2828,56 @@ export interface components {
        */
       total: number
     }
+    /** BlogQaCapabilities */
+    BlogQaCapabilities: {
+      /** Authenticated */
+      authenticated: boolean
+      /** Dataset */
+      dataset: string
+      /** Enabled */
+      enabled: boolean
+      /**
+       * Local Validation
+       * @default false
+       */
+      local_validation: boolean
+      /**
+       * Mode
+       * @default site
+       */
+      mode: string
+      /** Model */
+      model: string
+      /** Reason */
+      reason?: string | null
+    }
+    /** BlogQaRun */
+    BlogQaRun: {
+      /** Answer */
+      answer?: string | null
+      /** Error Code */
+      error_code?: string | null
+      /** Id */
+      id: string
+      /**
+       * Question
+       * @default
+       */
+      question: string
+      /** Sources */
+      sources?: components['schemas']['BlogQaSource'][]
+      /** Status */
+      status: string
+    }
+    /** BlogQaSource */
+    BlogQaSource: {
+      /** Article Id */
+      article_id: number
+      /** Title */
+      title: string
+      /** Url */
+      url: string
+    }
     /** BlogStats */
     BlogStats: {
       /**
@@ -2673,6 +2940,30 @@ export interface components {
        * @default 1
        */
       session_id: string
+    }
+    /** CommentInput */
+    CommentInput: {
+      /** Content */
+      content: string
+    }
+    /** CommentPage */
+    CommentPage: {
+      /** Items */
+      items: components['schemas']['BlogComment'][]
+      /** Page */
+      page: number
+      /** Page Size */
+      page_size: number
+      /** Total */
+      total: number
+    }
+    /** CommentReview */
+    CommentReview: {
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'approved' | 'rejected'
     }
     /** DependencyReadiness */
     DependencyReadiness: {
@@ -3282,6 +3573,16 @@ export interface components {
       /** Total Value */
       total_value: number
     }
+    /** RunInput */
+    RunInput: {
+      /**
+       * Idempotency Key
+       * Format: uuid
+       */
+      idempotency_key: string
+      /** Question */
+      question: string
+    }
     /** StatusMetric */
     StatusMetric: {
       /**
@@ -3599,6 +3900,26 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
+  get_ai_run_metrics_admin_ai_metrics_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_AiRunMetricsSnapshot_']
+        }
+      }
+    }
+  }
   list_admin_ai_providers_admin_ai_providers_get: {
     parameters: {
       query?: never
@@ -3734,6 +4055,74 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ApiResponse_AdminAlertsSnapshot_']
+        }
+      }
+    }
+  }
+  admin_comments_admin_comments_get: {
+    parameters: {
+      query?: {
+        status?: ('pending' | 'approved' | 'rejected') | null
+        page?: number
+        pageSize?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_CommentPage_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  review_comment_admin_comments__comment_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        comment_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentReview']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_BlogComment_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
@@ -4014,6 +4403,7 @@ export interface operations {
         limit?: number
         severity?: ('debug' | 'info' | 'warning' | 'error' | 'critical') | null
         event_type?: string | null
+        request_id?: string | null
       }
       header?: never
       path?: never
@@ -4263,6 +4653,121 @@ export interface operations {
         }
         content: {
           'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  capabilities_ai_v1_blog_qa_capabilities_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_BlogQaCapabilities_']
+        }
+      }
+    }
+  }
+  start_ai_v1_blog_qa_runs_stream_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RunInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'text/event-stream': string
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_run_ai_v1_blog_qa_runs__run_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        run_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_BlogQaRun_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  cancel_ai_v1_blog_qa_runs__run_id__cancel_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        run_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_BlogQaRun_']
         }
       }
       /** @description Validation Error */
@@ -5694,6 +6199,75 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ApiResponse_NoneType_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_comments_blogs__blog_id__comments_get: {
+    parameters: {
+      query?: {
+        page?: number
+        pageSize?: number
+      }
+      header?: never
+      path: {
+        blog_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_CommentPage_']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_comment_blogs__blog_id__comments_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        blog_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CommentInput']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_BlogComment_']
         }
       }
       /** @description Validation Error */

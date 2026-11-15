@@ -623,8 +623,43 @@ class MySqlAiRepository:
     async def list_provider_catalog(self) -> list[AiProviderCatalog]:
         return await asyncio.to_thread(self._list_provider_catalog)
 
+    def _read_catalog(self, method: str, sql: str, params=None):
+        """Conservative read compatibility for pre-auth-mode/default catalogs."""
+        import pymysql
+        read = getattr(self.db, method)
+        try:
+            return read(sql) if params is None else read(sql, params)
+        except pymysql.err.OperationalError as exc:
+            if (not exc.args or exc.args[0] != 1054
+                    or not any(name in str(exc.args[1]) for name in ("auth_mode", "is_default"))):
+                raise
+            columns = {row["Field"] for row in self.db.fetch_all("SHOW COLUMNS FROM ai_provider_catalog")}
+            legacy_sql = sql
+            if "auth_mode" not in columns:
+                legacy_sql = legacy_sql.replace("default_model, auth_mode, ", "default_model, 'bearer' AS auth_mode, ")
+            missing_default = "is_default" not in columns
+            if missing_default:
+                legacy_sql = legacy_sql.replace("is_enabled, is_default, ", "is_enabled, 0 AS is_default, ")
+            default_lookup = missing_default and "WHERE is_enabled = 1 AND is_default = 1 LIMIT 1" in legacy_sql
+            if default_lookup:
+                legacy_sql = legacy_sql.replace("WHERE is_enabled = 1 AND is_default = 1 LIMIT 1",
+                    "WHERE is_enabled = 1 ORDER BY sort_order ASC, id ASC LIMIT 2")
+                rows = self.db.fetch_all(legacy_sql)
+                if len(rows) > 1:
+                    raise AiDomainError("AI_PROVIDER_NOT_CONFIGURED", "Legacy catalog has no unambiguous default model.", status_code=503)
+                if rows:
+                    rows[0]["is_default"] = True
+                return rows[0] if rows else None
+            result = read(legacy_sql) if params is None else read(legacy_sql, params)
+            rows = result if method == "fetch_all" else [result] if result else []
+            if missing_default and method == "fetch_all":
+                enabled = [row for row in rows if row.get("is_enabled")]
+                if len(enabled) == 1:
+                    enabled[0]["is_default"] = True
+            return result
+
     def _list_provider_catalog(self) -> list[AiProviderCatalog]:
-        rows = self.db.fetch_all(
+        rows = self._read_catalog("fetch_all",
             "SELECT id, name, default_base_url, default_model, auth_mode, "
             "is_enabled, is_default, sort_order, "
             "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
@@ -637,7 +672,7 @@ class MySqlAiRepository:
         return await asyncio.to_thread(self._get_default_provider_record)
 
     def _get_default_provider_record(self) -> tuple[AiProviderCatalog, str | None] | None:
-        row = self.db.fetch_one(
+        row = self._read_catalog("fetch_one",
             "SELECT id, name, default_base_url, default_model, auth_mode, "
             "is_enabled, is_default, sort_order, "
             "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "
@@ -663,7 +698,7 @@ class MySqlAiRepository:
         self,
         provider_id: str,
     ) -> tuple[AiProviderCatalog, str | None]:
-        row = self.db.fetch_one(
+        row = self._read_catalog("fetch_one",
             "SELECT id, name, default_base_url, default_model, auth_mode, "
             "is_enabled, is_default, sort_order, "
             "api_key_ciphertext IS NOT NULL AS has_api_key, api_key_hint, "

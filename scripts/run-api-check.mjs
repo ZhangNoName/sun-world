@@ -10,6 +10,11 @@ const nodeScripts = [
   resolve(repoRoot, 'scripts/check-audit-log-deploy.mjs'),
 ]
 const scripts = [
+  { script: resolve(repoRoot, 'scripts/check-admin-policy.py'), args: [] },
+  {
+    script: resolve(repoRoot, 'scripts/export-agent-contracts.py'),
+    args: ['--check'],
+  },
   { script: resolve(repoRoot, 'scripts/check-api-migration.py'), args: [] },
   {
     script: resolve(

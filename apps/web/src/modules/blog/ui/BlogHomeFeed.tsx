@@ -47,7 +47,7 @@ export function BlogHomeFeed() {
   }, [searchOpen])
 
   useEffect(() => {
-    if (!loaderRef.current || !blog.hasMore) return
+    if (!loaderRef.current || !blog.hasMore || blog.loading) return
     const loader = loaderRef.current
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -61,7 +61,7 @@ export function BlogHomeFeed() {
     )
     observer.observe(loader)
     return () => observer.disconnect()
-  }, [blog.hasMore, blog.items.length, blog.loadMore])
+  }, [blog.hasMore, blog.items.length, blog.loadMore, blog.loading])
 
   const apply = () => {
     const [sortBy, sortOrder] = sort.split(':') as [BlogSortBy, BlogSortOrder]

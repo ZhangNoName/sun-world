@@ -171,6 +171,25 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
         "primary_key": ["id"],
         "indexes": ["KEY `idx_blog_category` (`category`)"],
     },
+    "blog_comments": {
+        "columns": [
+            {'name': 'id', 'definition': 'INT NOT NULL AUTO_INCREMENT', 'type': 'int'},
+            {'name': 'blog_id', 'definition': 'INT NOT NULL', 'type': 'int'},
+            {'name': 'user_id', 'definition': 'INT NOT NULL', 'type': 'int'},
+            {'name': 'author_name', 'definition': 'VARCHAR(128) NOT NULL', 'type': 'varchar'},
+            {'name': 'content', 'definition': 'TEXT NOT NULL', 'type': 'text'},
+            {'name': 'status', 'definition': "VARCHAR(16) NOT NULL DEFAULT 'pending'", 'type': 'varchar'},
+            {'name': 'created_at', 'definition': 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP', 'type': 'datetime'},
+            {'name': 'reviewed_by', 'definition': 'INT NULL', 'type': 'int'},
+            {'name': 'reviewed_at', 'definition': 'DATETIME NULL', 'type': 'datetime'},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "KEY `idx_comments_blog_status` (`blog_id`, `status`, `id`)",
+            "KEY `idx_comments_status_id` (`status`, `id`)",
+            "KEY `idx_comments_user_created` (`user_id`, `created_at`)",
+        ],
+    },
     "blog_tag": {
         "columns": [
             {"name": "blog_id", "definition": "INT NOT NULL", "type": "int"},

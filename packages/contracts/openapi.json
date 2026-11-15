@@ -1197,6 +1197,54 @@
         "title": "AiRecordBlock",
         "type": "object"
       },
+      "AiRunMetricsSnapshot": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "integer"
+          },
+          "cancelled": {
+            "title": "Cancelled",
+            "type": "integer"
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "integer"
+          },
+          "p95_duration_ms": {
+            "title": "P95 Duration Ms",
+            "type": "number"
+          },
+          "sample_count": {
+            "title": "Sample Count",
+            "type": "integer"
+          },
+          "started": {
+            "title": "Started",
+            "type": "integer"
+          },
+          "started_at": {
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "started_at",
+          "started",
+          "active",
+          "completed",
+          "failed",
+          "cancelled",
+          "sample_count",
+          "p95_duration_ms"
+        ],
+        "title": "AiRunMetricsSnapshot",
+        "type": "object"
+      },
       "AiRunRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1805,6 +1853,38 @@
         "title": "ApiResponse[AiProviderProfile]",
         "type": "object"
       },
+      "ApiResponse_AiRunMetricsSnapshot_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiRunMetricsSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[AiRunMetricsSnapshot]",
+        "type": "object"
+      },
       "ApiResponse_AiSkill_": {
         "properties": {
           "code": {
@@ -1867,6 +1947,38 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[AuthSession]",
+        "type": "object"
+      },
+      "ApiResponse_BlogComment_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogComment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[BlogComment]",
         "type": "object"
       },
       "ApiResponse_BlogCreateResult_": {
@@ -1965,6 +2077,70 @@
         "title": "ApiResponse[BlogPage]",
         "type": "object"
       },
+      "ApiResponse_BlogQaCapabilities_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogQaCapabilities"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[BlogQaCapabilities]",
+        "type": "object"
+      },
+      "ApiResponse_BlogQaRun_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlogQaRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[BlogQaRun]",
+        "type": "object"
+      },
       "ApiResponse_BlogStats_": {
         "properties": {
           "code": {
@@ -1995,6 +2171,38 @@
         },
         "required": ["code", "msg"],
         "title": "ApiResponse[BlogStats]",
+        "type": "object"
+      },
+      "ApiResponse_CommentPage_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CommentPage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[CommentPage]",
         "type": "object"
       },
       "ApiResponse_DictionaryItem_": {
@@ -3213,6 +3421,46 @@
         "title": "BlogBase",
         "type": "object"
       },
+      "BlogComment": {
+        "properties": {
+          "author_name": {
+            "title": "Author Name",
+            "type": "string"
+          },
+          "blog_id": {
+            "title": "Blog Id",
+            "type": "integer"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "status": {
+            "enum": ["pending", "approved", "rejected"],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "blog_id",
+          "author_name",
+          "content",
+          "status",
+          "created_at"
+        ],
+        "title": "BlogComment",
+        "type": "object"
+      },
       "BlogCreate": {
         "properties": {
           "abstract": {
@@ -3431,6 +3679,118 @@
         "title": "BlogPage",
         "type": "object"
       },
+      "BlogQaCapabilities": {
+        "properties": {
+          "authenticated": {
+            "title": "Authenticated",
+            "type": "boolean"
+          },
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "local_validation": {
+            "default": false,
+            "title": "Local Validation",
+            "type": "boolean"
+          },
+          "mode": {
+            "default": "site",
+            "title": "Mode",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": ["enabled", "dataset", "model", "authenticated"],
+        "title": "BlogQaCapabilities",
+        "type": "object"
+      },
+      "BlogQaRun": {
+        "properties": {
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "question": {
+            "default": "",
+            "title": "Question",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/BlogQaSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": ["id", "status"],
+        "title": "BlogQaRun",
+        "type": "object"
+      },
+      "BlogQaSource": {
+        "properties": {
+          "article_id": {
+            "title": "Article Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": ["article_id", "title", "url"],
+        "title": "BlogQaSource",
+        "type": "object"
+      },
       "BlogStats": {
         "properties": {
           "blog_count": {
@@ -3529,6 +3889,57 @@
         },
         "required": ["question"],
         "title": "ChatRequest",
+        "type": "object"
+      },
+      "CommentInput": {
+        "properties": {
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          }
+        },
+        "required": ["content"],
+        "title": "CommentInput",
+        "type": "object"
+      },
+      "CommentPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BlogComment"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": ["items", "total", "page", "page_size"],
+        "title": "CommentPage",
+        "type": "object"
+      },
+      "CommentReview": {
+        "properties": {
+          "status": {
+            "enum": ["approved", "rejected"],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": ["status"],
+        "title": "CommentReview",
         "type": "object"
       },
       "DependencyReadiness": {
@@ -4744,6 +5155,25 @@
         "title": "RumWebVitalMetric",
         "type": "object"
       },
+      "RunInput": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": ["question", "idempotency_key"],
+        "title": "RunInput",
+        "type": "object"
+      },
       "StatusMetric": {
         "properties": {
           "count": {
@@ -5269,6 +5699,30 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/ai/metrics": {
+      "get": {
+        "operationId": "get_ai_run_metrics_admin_ai_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AiRunMetricsSnapshot_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Get Ai Run Metrics",
+        "tags": ["admin"]
+      }
+    },
     "/admin/ai/providers": {
       "get": {
         "operationId": "list_admin_ai_providers_admin_ai_providers_get",
@@ -5456,6 +5910,139 @@
         ],
         "summary": "Get Admin Alerts",
         "tags": ["admin"]
+      }
+    },
+    "/admin/comments": {
+      "get": {
+        "operationId": "admin_comments_admin_comments_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": ["pending", "approved", "rejected"],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "pending",
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Pagesize",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CommentPage_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Admin Comments",
+        "tags": ["comments"]
+      }
+    },
+    "/admin/comments/{comment_id}": {
+      "put": {
+        "operationId": "review_comment_admin_comments__comment_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "comment_id",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Comment Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogComment_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Review Comment",
+        "tags": ["comments"]
       }
     },
     "/admin/dictionaries/types": {
@@ -5971,6 +6558,24 @@
               ],
               "title": "Event Type"
             }
+          },
+          {
+            "in": "query",
+            "name": "request_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Request Id"
+            }
           }
         ],
         "responses": {
@@ -6300,6 +6905,159 @@
         },
         "summary": "Generate Image",
         "tags": ["ai"]
+      }
+    },
+    "/ai/v1/blog-qa/capabilities": {
+      "get": {
+        "operationId": "capabilities_ai_v1_blog_qa_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogQaCapabilities_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Capabilities",
+        "tags": ["blog-qa"]
+      }
+    },
+    "/ai/v1/blog-qa/runs/stream": {
+      "post": {
+        "operationId": "start_ai_v1_blog_qa_runs_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Start",
+        "tags": ["blog-qa"]
+      }
+    },
+    "/ai/v1/blog-qa/runs/{run_id}": {
+      "get": {
+        "operationId": "get_run_ai_v1_blog_qa_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogQaRun_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Get Run",
+        "tags": ["blog-qa"]
+      }
+    },
+    "/ai/v1/blog-qa/runs/{run_id}/cancel": {
+      "post": {
+        "operationId": "cancel_ai_v1_blog_qa_runs__run_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogQaRun_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Cancel",
+        "tags": ["blog-qa"]
       }
     },
     "/ai/v1/conversations": {
@@ -8295,6 +9053,124 @@
         ],
         "summary": "Update Blog",
         "tags": ["blog"]
+      }
+    },
+    "/blogs/{blog_id}/comments": {
+      "get": {
+        "operationId": "list_comments_blogs__blog_id__comments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blog_id",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Blog Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Pagesize",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CommentPage_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Comments",
+        "tags": ["comments"]
+      },
+      "post": {
+        "operationId": "create_comment_blogs__blog_id__comments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blog_id",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Blog Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_BlogComment_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "summary": "Create Comment",
+        "tags": ["comments"]
       }
     },
     "/dictionaries/{code}": {

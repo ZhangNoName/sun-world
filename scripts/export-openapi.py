@@ -63,7 +63,8 @@ def install_schema_stubs(schema_app: Any) -> None:
         sys.modules[module_name] = module
 
 
-def export_openapi(output: Path) -> None:
+def build_schema_app():
+    """Compose declarations only; never initialize runtime managers or storage."""
     root = repo_root()
     api_dir = root / "apps" / "api"
 
@@ -105,14 +106,20 @@ def export_openapi(output: Path) -> None:
             routers_module.admin_router,
             routers_module.health_router,
             dictionary_router,
+            importlib.import_module("src.modules.comments.router").router,
+            importlib.import_module("src.modules.agent_runtime.router").create_blog_qa_router(schema_app),
         ]
         for router in routers:
             schema_app.include_router(router)
 
-        schema = schema_app.openapi()
+        return schema_app
     finally:
         os.chdir(previous_cwd)
 
+
+def export_openapi(output: Path) -> None:
+    root = repo_root()
+    schema = build_schema_app().openapi()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(schema, ensure_ascii=False, indent=2, sort_keys=True) + "\n",

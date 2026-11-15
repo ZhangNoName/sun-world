@@ -65,6 +65,7 @@ export interface AiWorkspaceProps {
   providerProfiles?: AiUiProviderProfile[]
   commands?: AiComposerCommand[]
   renderers?: AiRendererRegistry
+  sidebarNavigation?: ReactNode
   toolbarActions?: ReactNode
   railBrand?: ReactNode
   railFooter?: ReactNode
@@ -93,6 +94,7 @@ export function AiWorkspace({
   providerProfiles = [],
   commands = [],
   renderers,
+  sidebarNavigation,
   toolbarActions,
   railBrand,
   railFooter,
@@ -689,6 +691,7 @@ export function AiWorkspace({
               <SunIcon name="more-horizontal" />
               <span>更多</span>
             </Button>
+            {sidebarNavigation}
           </nav>
 
           <section className="sw-ai-sidebar-recents" aria-label="对话历史">

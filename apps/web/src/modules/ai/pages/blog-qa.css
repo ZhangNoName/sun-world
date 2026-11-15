@@ -1,0 +1,115 @@
+.blog-qa-page {
+  min-height: 100%;
+  padding: 24px;
+  background: var(--background);
+  color: var(--foreground);
+}
+.blog-qa-header {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.blog-qa-main {
+  max-width: 760px;
+  margin: 48px auto;
+}
+.blog-qa-kicker {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--muted-foreground);
+}
+.blog-qa-main h1 {
+  font-size: clamp(30px, 5vw, 42px);
+  margin: 12px 0;
+  font-weight: 650;
+}
+.blog-qa-main > p {
+  color: var(--muted-foreground);
+  margin-bottom: 24px;
+}
+.blog-qa-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 3px solid var(--border);
+  background: var(--muted);
+  padding: 16px;
+  margin: 24px 0;
+  font-size: 13px;
+}
+.blog-qa-main form {
+  margin: 24px 0 16px;
+  display: grid;
+  gap: 12px;
+}
+.blog-qa-actions,
+.blog-qa-result-heading,
+.blog-qa-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.blog-qa-actions span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.blog-qa-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.blog-qa-answer {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 32px;
+}
+.blog-qa-answer h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.blog-qa-question {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  margin: 16px 0;
+}
+.blog-qa-answer-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.blog-qa-sources {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 16px;
+}
+.blog-qa-sources h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.blog-qa-sources ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin-top: 8px;
+}
+.blog-qa-sources a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .blog-qa-page {
+    padding: 16px;
+  }
+  .blog-qa-main {
+    margin: 32px auto;
+  }
+  .blog-qa-answer {
+    padding: 16px;
+  }
+  .blog-qa-actions {
+    align-items: flex-end;
+  }
+}

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import aclosing
+
 import asyncio
 import hashlib
 import os
@@ -726,12 +728,13 @@ async def stream_run(
                         )
                     )
                     return
-            async for event in service.stream_run(
+            async with aclosing(service.stream_run(
                 user_id,
                 effective_body,
                 guest_session_id=guest_session_id,
-            ):
-                yield encode_sse_event(event)
+            )) as run_events:
+                async for event in run_events:
+                    yield encode_sse_event(event)
         finally:
             # Releasing both leases in one protected worker call prevents
             # cancellation between conversation and global cleanup.

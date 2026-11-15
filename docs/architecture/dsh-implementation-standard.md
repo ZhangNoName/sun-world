@@ -1,6 +1,6 @@
 # DSH 平台实现规范与目标仓库架构
 
-日期：2026-11-12。状态：设计基线，暂不开发。适用于新增 DSH 能力及触及的旧入口，不要求一次迁移全仓库。依据[评审报告](../reviews/2026-11-12-dsh-architecture-review.md)补充[架构总纲](agent-module-platform.md)；本文收敛首期实现选择，总纲继续定义业务方向。生产状态以 [current-state](../current-state.md) 为准。命名、缩进与测试位置遵循[工程文件规范](../repository-conventions.md)；模块鉴权矩阵、页面扩展点和跨项目适配遵循[扩展契约](module-extension-contract.md)。
+日期：2026-11-12。状态：设计基线；阶段 A 首批已在本地开发，详见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)，未部署。适用于新增 DSH 能力及触及的旧入口，不要求一次迁移全仓库。依据[评审报告](../reviews/2026-11-12-dsh-architecture-review.md)补充[架构总纲](agent-module-platform.md)；本文收敛首期实现选择，总纲继续定义业务方向。生产状态以 [current-state](../current-state.md) 为准。命名、缩进与测试位置遵循[工程文件规范](../repository-conventions.md)；模块鉴权矩阵、页面扩展点和跨项目适配遵循[扩展契约](module-extension-contract.md)。
 
 ## 1. 架构决策与代价
 
@@ -251,7 +251,7 @@ P1 Worker 默认只部署隔离测试环境；是否放现有 Lighthouse 由峰�
 
 1. 列出 owner、能力键、数据所有权、错误码及兼容策略；契约生成差异可审阅。
 2. 覆盖授权拒绝、跨账号、资源变化、重复请求、取消竞争、失联和旧代次；不能仅测试 mock 返回成功。
-3. 新增架构检查：模块 ID/路由重复、依赖环、未登记能力、工具映射冲突、schema/bundle 漂移、Skill hash、非法跨模块 import。**这些检查是待实现门禁，目前根 check 不包含它们。**
+3. 新增架构检查：模块 ID/路由重复、依赖环、未登记能力、工具映射冲突、schema/bundle 漂移、Skill hash、非法跨模块 import。**模块重复 ID/HTTP 路由/能力/工具映射、依赖环和生成 schema 漂移已由 API gate 检查；Skill hash、完整跨模块 import 与 bundle 运行握手仍待实现。**
 4. 按 [实施计划](../plans/dsh-platform-implementation.md) 运行对应现有命令与新增测试；文档记录实测和缺口，不能把设计门槛写成通过。
 5. 有兼容迁移、关停/回滚说明和 handoff；涉及写权限与发布的 PR 单独审查，不与 P1 只读问答合并放行。
 

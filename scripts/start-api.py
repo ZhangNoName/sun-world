@@ -32,6 +32,7 @@ def main() -> None:
         port=args.port,
         log_level="info",
         reload=args.reload,
+        timeout_graceful_shutdown=1,
     )
 
 

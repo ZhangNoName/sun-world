@@ -63,7 +63,10 @@
     "check:web": "node scripts/check-web.mjs",
     "check:web:budgets": "node scripts/check-web-budgets.mjs",
     "check:api": "node scripts/run-api-check.mjs",
-    "check": "node scripts/check-all.mjs"
+    "check": "node scripts/check-all.mjs",
+    "dev:blog-qa": "node scripts/dev-blog-qa.mjs",
+    "test:agent-worker": "node --test apps/agent-worker/tests/protocol/*.test.mjs",
+    "dev:blog-qa:fixtures": "node scripts/dev-blog-qa.mjs --fixtures"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",

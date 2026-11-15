@@ -65,8 +65,13 @@ records and must be verified before any deployment.
 
 ## DSH Implementation Entry
 
-Current scope: documentation/design only; do not start implementation without a
-new development instruction. File naming, indentation and test placement follow
+Current scope: phase A foundation development authorized on 2026-11-12 on
+`zxy/dsh-platform-foundation`; see the [branch handoff](../docs/handoff/branches/zxy-dsh-platform-foundation.md).
+A local existing-site preview is available via `corepack pnpm dev:blog-qa`;
+see [site validation](../docs/development/blog-qa.md). It reuses real account sessions,
+public blog queries and the global model catalog, with an independent development SQLite ledger.
+Synthetic fixtures remain available via `corepack pnpm dev:blog-qa:fixtures`. Production Worker/run admission,
+federation, migrations and deployment remain unimplemented or disabled. File naming, indentation and test placement follow
 [repository conventions](../docs/repository-conventions.md). Module permissions,
 page slots and project integrations follow
 [the extension contract](../docs/architecture/module-extension-contract.md).

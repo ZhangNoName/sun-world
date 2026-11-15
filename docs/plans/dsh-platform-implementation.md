@@ -1,12 +1,20 @@
 # DSH 平台分阶段实施计划
 
-日期：2026-11-12。状态：仅设计，按用户要求暂不开发；下表是未来顺序，不是开工指令。执行前读取[评审](../reviews/2026-11-12-dsh-architecture-review.md)、[实现规范](../architecture/dsh-implementation-standard.md)、[架构总纲](../architecture/agent-module-platform.md)和当前 handoff。实施时保留工作区其他任务修改，不把本文视为部署或生产发布授权。
+日期：2026-11-12。状态：用户于 2026-11-12 授权在 `zxy/dsh-platform-foundation` 开始阶段 A；其余阶段仍按下表逐项实施和验收。执行前读取[评审](../reviews/2026-11-12-dsh-architecture-review.md)、[实现规范](../architecture/dsh-implementation-standard.md)、[架构总纲](../architecture/agent-module-platform.md)和当前 handoff。实施时保留工作区其他任务修改，不把本文视为部署或生产发布授权。
+
+## 本地验证入口（2026-11-12）
+
+用户进一步授权继续开发到可本地验证。已提供 `corepack pnpm dev:blog-qa` 与 `/aigc/blog-qa` 页面，使用独立 loopback API、两名合成开发用户、三篇合成文章、SQLite 验证账本、真实固定 SDK 与真实模型。详见[本地说明](../../tools/dsh-blog-local/README.md)。此入口不导入生产应用/配置，不改生产数据库 schema，主 API 未开放 Agent 运行。
+
+现已进一步接入正常站点的真实 Cookie/Redis 会话、账号与公开博客查询、全局模型目录，默认启动命令切为站点模式（3030/8032）；三篇合成数据使用 `dev:blog-qa:fixtures`。详见[站点验证说明](../development/blog-qa.md)。已用用户授权的现有管理员正常登录，完成真实博客问答、引用、令牌刷新、取消和退出验收；使用显式本地测试Qwen，旧目录DeepSeek的解密配置仍未提供。
+
+这是供开发机验证 B/C/D 核心交互的独立切片，不代表正式阶段已整体通过：MySQL 账本、Redis 准入、真实会话授权、Linux 隔离、内部 TLS 与生产故障矩阵仍须完成。macOS 回环沙盒不能替代 Linux 地址与PID硬限制。
 
 ## 设计约束与阶段映射
 
 文件命名、缩进、测试布局以[工程文件规范](../repository-conventions.md)为准；模块权限、页面贡献及跨项目接入以[扩展契约](../architecture/module-extension-contract.md)为准。P0 是历史原型，A–D 对应 P1，E–F 对应 P2，G 对应 P3，不混用优先级 P1 与阶段编号。
 
-当前仅完成文档。将来进入实施时先明确以下任务归属：A 增加模块权限和声明验证；D 按实际页面引入有限 slot/contribution，覆盖卸载、错误隔离和能力加载；G 在第二项目启用前完成项目隔离与 adapter 契约测试。格式配置统一作为独立维护任务，不与功能改造混做。
+阶段 A 首批已在本地实现模块注册、严格工具 schema、公开读取策略和 HTTP/工具共用查询；完整范围及验证见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)。管理员入口源码盘点、40项显式基线及旧/新影子比较已在本地实现，见[迁移说明](../development/admin-policy-migration.md)；真实角色/resource 数据核对和逐入口能力迁移尚未完成，阶段 A 未整体验收；Worker/运行准入保持关闭。任务归属：A 增加模块权限和声明验证；D 按实际页面引入有限 slot/contribution，覆盖卸载、错误隔离和能力加载；G 在第二项目启用前完成项目隔离与 adapter 契约测试。格式配置统一作为独立维护任务，不与功能改造混做。
 
 ## 交付顺序
 
@@ -73,7 +81,7 @@ git diff --check
 
 P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 macOS 条件，安装阶段需要包仓库；不是生产验收命令。A 增加模块依赖/声明/生成产物检查，B 增加 Worker 测试和 Linux 隔离验证，C 增加数据库集成及故障注入；对应命令在实际 package/script 添加后才写入根 `check`，本计划不捏造已存在脚本。
 
-完整实现集成后运行 `corepack pnpm check`。需要部署时再检查当前 Git 状态、镜像与 schema、关停方案及生产首页/API；本轮仅文档更新无需运行全量应用构建。
+完整实现集成后运行 `corepack pnpm check`。需要部署时再检查当前 Git 状态、镜像与 schema、关停方案及生产首页/API；当前本地实现按影响范围运行检查，记录已有共享工作区门禁失败，不把定向测试通过写成全部通过。
 
 ## 迁移与回滚清单
 
@@ -86,7 +94,7 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 
 ## 尚待实施中确定
 
-- Linux Worker 的实际部署位置、内存/PID/token 硬上限与并发容量：由 B 的报告决定，作为未来 A/B 的输入，本轮不启动开发。
+- Linux Worker 的实际部署位置、内存/PID/token 硬上限与并发容量：由 B 的报告决定，作为未来 A/B 的输入，本分支先实现 A，B 仍须单独验证。
 - 现有角色/resource 数据到 capability 的精确迁移：A 先做只读盘点和管理员基线，不猜测生产行内容。
 - 内部 TLS/服务凭据签发与轮换、诊断保留期：D 开放前完成运维配置及演练；本地开发可用独立测试凭据，禁止导入生产密钥。
 - 正文迁移总量、版本基线回填时长、最低回滚镜像：F 前实测；不能提前承诺无停写迁移。

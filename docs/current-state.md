@@ -1,5 +1,19 @@
 # Current State
 
+## 2026-11-12 Local existing-site blog QA
+
+`zxy/dsh-platform-foundation` has an explicitly local account/blog integration via
+`corepack pnpm dev:blog-qa` (Web3030/API8032). It reuses configured account sessions,
+public blog data and the global model catalog; production Agent execution remains
+disabled. It keeps a separate local SQLite ledger and skips checkpointer setup DDL.
+See [development instructions](development/blog-qa.md) and [branch handoff](handoff/branches/zxy-dsh-platform-foundation.md).
+Public navigation/article smoke tests and automated authorization tests passed;
+real-account end-to-end acceptance passed with the user's authorized admin login and
+an explicitly selected local Qwen test model. The legacy global DeepSeek catalog
+has no local decryption configuration; no business schema or catalog records changed.
+No production deployment, account password reset or blog edit was performed.
+
+
 ## 2026-11-12 跨项目方案中的生产记录冲突（待核实）
 
 2026-11-10 的 Stars 发布记录（本地稿 `docs/blog/2026-11-10-stars-cold-start-brotli.md`，未随本次提交）与 handoff 记载主域名已由 Stars 服务，博客使用 `blog.sunworld.site`；本文较早段落、README 与部分部署脚本仍使用旧主域名/容器映射。此次只完成本地文档和源码核对，公网读取工具未成功，未连接服务器核对配置，因此不覆盖具体容器、端口与部署版本为新事实。

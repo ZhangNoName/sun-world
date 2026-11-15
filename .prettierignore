@@ -14,3 +14,6 @@ pnpm-lock.yaml
 # Keep the first formatting baseline focused on code and machine-readable config.
 *.md
 *.py
+
+# Python-generated internal contract; export-agent-contracts.py owns formatting.
+packages/contracts/agent/tool-catalog.json

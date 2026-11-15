@@ -74,13 +74,12 @@ export function useBlogList(
       try {
         const response = await fetchBlogPage(page, pageSize, nextQuery)
         const mapped = (response.list ?? []).map(mapItem)
-        setItems((current) => {
-          const next = append ? [...current, ...mapped] : mapped
-          const more = next.length < response.total
-          state.current.hasMore = more
-          setHasMore(more)
-          return next
-        })
+        // A page can be sparse when metadata has no public body. Advance by
+        // the scanned candidate window rather than the number of visible cards.
+        const more = page * pageSize < response.total
+        state.current.hasMore = more
+        setHasMore(more)
+        setItems((current) => (append ? [...current, ...mapped] : mapped))
         state.current.page = page
         setTotal(response.total)
       } finally {

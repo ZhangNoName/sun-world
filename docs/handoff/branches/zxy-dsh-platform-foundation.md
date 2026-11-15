@@ -1,0 +1,179 @@
+# DSH platform foundation
+
+## Goal and scope
+
+2026-11-12 用户授权拉分支开发。在当前工作区从 `main` 的 `6b14478` 新建 `zxy/dsh-platform-foundation`，未 fetch/pull、未建 worktree、未提交/推送/部署。开始实施计划 A 首批基础，不代表整个 A 或 A–D 验收完成。
+
+起点 `main` 相对本地远端跟踪记录 ahead 3；工作区已有 AI 运营、评论、博客阅读、Markdown、写作 Skill 与稿件等大量未提交变更。保留这些变更。`apps/api/main.py` 和 `docs/agent-handoff.md` 原已修改，本轮仅增组合根和分支入口；不得整批暂存本工作区。
+
+## Implemented
+
+- `apps/api/src/core/module_registry.py`：显式静态模块声明；重复模块/能力/路由形状/工具映射、依赖版本/环、输入 schema 与身份字段检查。
+- `apps/api/src/module_composition.py`、`main.py`：组合根登记 blog-content；没有公开工具执行端点或 Agent 运行开关。
+- `apps/api/src/core/auth/`：只读策略默认拒绝未知能力、目标和服务主体；会话适配委托现有 AuthManager 重验 Redis/账户并恢复 sid 与当前角色，不替换旧登录或管理员写守卫。
+- `apps/api/src/modules/blog/`：manifest、Pydantic schema、只读仓储、服务、公开接口与薄工具。旧 BlogManager 读取委托服务；旧 HTTP 响应、排序、页偏移与元数据 total 保持，缺正文不出卡片。total 表示候选元数据数量，不是跨库有效正文精确计数；稀疏页不无限补齐。读取无浏览量写入。
+- 工具输入禁止额外字段/类型强制转换，搜索最多10候选，标题/摘要限制并标 truncated；正文 UTF-8 安全截断到16KiB，摘要绑定文章ID/完整标题/完整正文。累计64KiB/run、来源回执和提交重验尚待 C 实现；不能将基础适配器视为完整网关。
+- `scripts/export-agent-contracts.py`、`packages/contracts/agent/tool-catalog.json`：单源生成、bundle hash、--check；API gate 接入漂移检查。生成物由 Python 格式化，`.prettierignore` 精确排除此文件，避免双格式器互改。
+- `useBlogList.ts`、`BlogHomeFeed.tsx`：按候选分页窗口结束加载；加载结束重建 observer，支持连续稀疏页。修复独立审查发现的无限空页请求。
+
+## Verification
+
+- `corepack pnpm check:api`：通过，388 tests；包括新增注册/策略/共享公开查询、工具输入/截断与拒绝测试，无真实数据库访问。
+- `corepack pnpm -F @sun-world/blog exec vitest run src/modules/blog/composables/useBlogList.test.tsx src/modules/blog/ui/BlogHomeFeed.test.tsx`：9 tests通过。
+- `corepack pnpm -F @sun-world/blog typecheck`、`corepack pnpm test:contracts`（6 tests）、`corepack pnpm check:api:deploy-schema`：通过。
+- `corepack pnpm check:web`：contracts 6、AI UI 25、Web 213 tests及typecheck/build/SSG/manifest通过；在build-summary的 `total-css-gzip` 预算失败，整体未通过。此轮未修改 CSS 或预算；共享工作区已有其他样式变更，未隔离重跑起点，不能把失败根因写成已证实。
+- `corepack pnpm format:check`：仅报 `docs/content-sources/csdn-qq-42345136/manifest.json` 格式问题，此文件本轮未改。任务涉及的 TS/MJS 单独 prettier --check 通过；生成契约 --check 通过；`git diff --check` 通过。
+- 判官独立审查后，修复稀疏分页；搜索摘要压缩并标记截断，新增序列化结果预算回归。没有真实 Worker、模型、Linux 隔离、迁移或生产验收。
+
+## Remaining / next step
+
+1. A 尚需现有角色/resource只读盘点、管理员基线与旧/新策略影子差异机制，未迁移旧写入口。当前只登记并启用公开读取能力；不把管理员角色自动转成 Agent 写权限。
+2. B 验证固定SDK真实模型参数流/停止原因、Linux隔离与资源硬上限；确认部署位置和服务凭据。
+3. C 再实现运行账本、白名单准入、实时撤销、累计预算、来源交付回执和终态事务；D 才接只读内测。
+4. 合并前另处理全局Web预算/素材格式失败；不以定向通过代替根检查全绿。
+
+## Writing / publication
+
+使用 sun-world-blog → sun-world-write-design 局部更新 `docs/blog/2026-11-12-dsh-skill-boundaries.md`，分类「后端」，原标签「架构笔记 / Agent / DeepSeek Harness」。区分本地已实现注册/查询和待实现运行时；沿用现有关系示意，本批是基础落地状态补充，无新增图片，未网页预览、未发布。
+
+
+## 2026-11-12 Continue to local validation
+
+用户继续授权开发到可本地验证。已交付 `corepack pnpm dev:blog-qa`，当前服务运行在 `http://127.0.0.1:3031/aigc/blog-qa` / API `127.0.0.1:8011`。本轮没有修改生产数据库 schema、部署或生产功能开关；不占用已有其他项目的8000端口。
+
+### Delivery boundary
+
+- `tools/dsh-blog-local/`：独立 loopback FastAPI、仅开发用合成账号、三篇合成文章、SQLite 运行/调用/来源账本。认证、精确 Origin/Host、归属、幂等、单并发、45秒、4模型请求/4工具/64KiB、来源回执、完成重验、取消/退出/断流撤销、重启中断、历史失效链接隐藏已实现。模型请求随取消中止，子进程组TERM/KILL和固定临时目录清理。
+- `apps/agent-worker/src/`：固定0.2.2-rc.1真实SDK、独立home/cwd、只读两工具、可信loopback模型桥、root session/单turn/成功终态投影。无shell/MCP/文件工具。SDK DSL不接受Pydantic min/max等JSON Schema关键字，也不允许required:false；仅投影其支持的类型/默认/描述/required:true，API始终使用完整schema验证。实际空工具清单会被模型代理/启动检查拒绝，不降级继续。
+- 博客模块的 `agent/skills/blog-qa/`：产品Skill原文及manifest；内容hash/工具版本纳入生成bundle，Worker重验。未装载开发或用户Skill。
+- `scripts/dev-blog-qa.mjs`：独立临时目录锁定依赖安装、禁install scripts、SDK实际两工具登记检查、macOS文件/外网负向探测、前后端启动/关闭。`package.json`增加dev:blog-qa与test:agent-worker。运行过程不安装依赖。
+- `apps/web/src/modules/ai/`：新增blog-qa-api、useBlogQa、BlogQaPage及其样式/测试，注册独立路由。页面明确本地验证、合成数据与真实模型；测试登录、发送/停止、恢复、纯文本答案、引用原文、退出状态。所有异步账户操作使用generation/account fence，防止退出后迟到响应显示旧回答。
+
+### Verification evidence
+
+- 最终 `corepack pnpm check:api` 通过，407 tests；本地控制16项、模型转换3项包含在内。
+- Worker协议3项、AI模块8文件48tests、Web typecheck、定向Prettier、生成契约--check、git diff --check均通过。
+- `corepack pnpm check:web`：contracts6、AI UI25、Web66文件219tests、typecheck、build/SSG/manifest通过；完整gate仍在build-summary的total-css-gzip失败（18 assets）。本轮新增一份blog-qa CSS，预算未调宽；之前17资产时该预算也失败，不将根因归属写成已独立证明。
+- `corepack pnpm check`：根脚本/CI/deploy协议通过，在format gate因本轮未改的 `docs/content-sources/csdn-qq-42345136/manifest.json` 失败而停止。任务文件单独Prettier全部通过，未修改其他任务素材。
+- 启动实际通过SDK两工具登记检查与macOS负向探测：项目文件读取、TEST-NET外网连接均EPERM；取消后运行目录残留0。
+- 真实qwen38_27b与真实DSH端到端：问题「博客问答怎样核对参考来源？」约8秒完成，实际搜索/读取/回执后返回中文答案及文章1引用。另测无结果问题「量子纠缠实验的结论是什么？」固定无结果回答。没有用fixture响应伪装真实模型。
+- 自动浏览器（临时Playwright+已安装Chrome headless）验证登录→真实提问→答案→点击原文→刷新恢复；另验停止→已取消、退出→旧结果清除。1280×900和390×844截图已检查，无横向溢出、pageerror为空。CUA连接两次超时后使用此fallback。截图位于受忽略 `.tmp/dsh-blog-local/{desktop,mobile}.png`，未加入Git。
+- 判官独立审查并复核迟到响应修复通过。未连接生产数据库、导入模型凭据或进行Linux验收；常规SSG构建保留既有公开文章的只读获取。
+
+### Next steps / limitations
+
+本地验证入口可交给用户操作；重启命令与验收步骤见 `tools/dsh-blog-local/README.md`。真实模型调用的是既有公开keyless模型地址，出站使用项目固定地址校验，无凭据，不使用生产AI API。
+
+这不是正式A–D整体完成。仍缺MySQL运行账本、Redis准入、真实账户白名单/角色影子盘点、生产AI会话事务、Linux容器/PID/网关地址隔离、TLS/服务凭据运维与完整故障/语义评测。macOS回环允许策略不等于生产端口白名单，SQLite/合成账户只用于本地验证，禁止作为生产迁移捷径。正式内测仍关闭。
+
+写作沿用sun-world-blog → sun-world-write-design，局部更新架构笔记03，分类后端、原3标签不变；补本地真实链路与生产边界，不新增重复图片，不发布。未做文章网页排版预览。未提交、推送或部署；原有其他dirty文件仍保留。
+
+
+## 2026-11-12 Existing-site account and blog integration
+
+### Goal / delivery
+
+用户要求接真实账号和博客，在现有站点流程验证。默认 `corepack pnpm dev:blog-qa` 已改为正常站点模式：Web `127.0.0.1:3030`，完整API `127.0.0.1:8032`，经同源 `/api` 代理。8030另有其他任务静态预览，未停止或覆盖。原合成验证3031/8011已停止，其显式入口保留 `dev:blog-qa:fixtures`。
+
+- 只读检查当前local配置的MySQL/Mongo/Redis/PostgreSQL可达；账号6个，公开metadata31条。默认只读收集启用的admin ID（当前1个）成为本地名单，操作时仍重验admin角色；该管理员有非空密码配置。未读取或打印密码内容、未创建/修改账号或文章。
+- 真实模式复用站点 Cookie、AuthManager、Redis与账户/角色，未增加登录旁路。外部旧Cookie严格拒绝；运行绑定owner/family，服务端有界短期凭据缓存（128/60s，不落盘/不下发Worker）。跨页refresh通过同设备/family的Redis当前snapshot接续，再完整验证当前access与账号/角色，deadline仍45秒。
+- `agent_runtime` 共用单套控制内核；tools合成runtime/store变兼容导出。公开查询复用真实MySQL/Mongo，来源正常 `/blog/{id}`。Redis专用命名空间原子限流，未知/不可用failclosed，正式运行仍只允许local+flag+名单。
+- SQLite仅本地运行账本 `.tmp/dsh-blog-site/ledger.sqlite3`，文件0600，未改业务数据库schema。本地启动跳过原Postgres checkpointer setup DDL，既有表只读预检确认存在。
+- `ai/public.py` + `ai/model_proxy.py`公开模型适配接口，使用现有全局catalog默认，私有配置仅服务端解密；普通聊天文本流不改。默认模型配置在本地runtime创建时固定，更换后重启。
+- main注册site router；公有接口ApiResponse/Pydantic输出+Cookie安全声明，内部接口loopback+双凭据且不进入OpenAPI；export脚本、类型与route/method/auth元数据已同步，原其他任务契约变更保留。
+- `useBlogQa`复用AuthStore和shared sessionPort，401可走现有刷新后重试，stream start沿用同幂等key。站点模式无合成登录按钮，原登录页return_to回问答。AiWorkspace增加可选sidebarNavigation展示注入的应用链接；普通AI侧栏与收起导航都有问答入口，不在共享包写业务路由。
+- 应用shut_down调用runtime.aclose，撤销模型/任务、await进程组清理、关闭SQLite；优雅退出1秒进入lifespan，launcher等待5秒。SSE pin/refcount防并发GET提前删凭据；撤销终态安全空question/sources与前端normalize防崩溃。
+- 本地开发签名密钥由显式环境或启动器在受忽略`.tmp`生成0600文件，以支持重启后验证Cookie；不记入文档/日志，不提交。重启时未完成运行中断，不重放。
+
+### Verification and current running state
+
+- 最终 `corepack pnpm check:api`：422 tests通过；包括34个blog_qa控制/认证/模型转换/进程测试，及核心策略相关用例。判官两轮审查/最终复核通过。
+- `corepack pnpm test:contracts` 6tests、`test:ai-ui`25tests、AI模块53tests、Web typecheck、生成契约检查通过。
+- 完整 `corepack pnpm check:web`：67文件224tests、类型、包构建、Web构建/SSG/manifest通过；仍在total-css-gzip(18assets)预算失败，不调宽门槛。
+- format:check仅失败于本轮未改的 `docs/content-sources/csdn-qq-42345136/manifest.json`；任务JS/TS/JSON单独格式检查与git diff --check通过。
+- 真实操作系统进程故障测试 `test_blog_qa_shutdown_process.py` 启动不返回结果的Node子进程，通过实际Application.shut_down回收并确认PID不存在、workspace删除；不把此测试当SDK/模型验收。
+- 实际停止旧站点launcher后3030/8032无监听、未见残留local-runner；重启加载最终代码，health200、Web200，Guest能力关闭原因active_session_required，未创建问答运行。
+- 浏览器（临时Playwright/已安装Chrome headless）实测普通AI侧栏→博客问答→原登录页、return_to保留、无合成账号入口；打开真实文章41标题/详情正常，pageerror为空。公共API页返回当前真实文章，非三篇fixture。
+- 当前本地认证method仅password enabled，QQ/短信等未配置；管理员密码有配置，但没有尝试或猜测凭据。已请用户在网页正常登录，尚未收到已登录回执；因此**真实账号登录→真实博客→真实模型的完整端到端尚待用户验收**。此前真实模型+fixture成功不能替代此项。
+
+### Next suggested step
+
+请用户打开 `http://127.0.0.1:3030/login?return_to=%2Faigc%2Fblog-qa` 使用已有管理员账号密码登录（无需发密码）。登录后提出真实文章相关问题，核对模型选择/读取/来源，再验退出/刷新/取消。普通账号用显式 `--user-ids`名单启动；QQ-only账号须先具备本地OAuth配置，不复制或读取禁止的生产secret文件。
+
+开发说明：`docs/development/blog-qa.md`。仍缺正式MySQL运行账本、Linux隔离和生产部署放行；未宣称A–D全面完成。没有提交、推送、发布文章或部署。其他dirty业务改动保留。
+
+博客按sun-world-blog→design局部更新架构笔记03，后端分类及原标签不变；说明合成与真实站点模式、真实登录验收边界，无新增配图（现有关系示意足够），未做文章预览或发布。
+
+
+## 2026-11-12 Admin end-to-end acceptance completed
+
+用户授权使用现有管理员测试，并允许凭据存本地非Git文件。凭据已保存到被Git忽略的 `.tmp/dsh-blog-site/test-account.json`，权限0600；不在文档记录内容，也不放到源码/fixture。正常密码登录成功，没有改账号密码。
+
+### Findings and fixes
+
+- 实际登录首次加载能力时发现DB旧目录没有auth_mode和is_default，之前guest smoke与mock schema未覆盖。`MySqlAiRepository._read_catalog`新增窄只读兼容：仅已知1054字段错误触发SHOW COLUMNS和投影重写；缺auth_mode保持bearer；缺default时仅唯一enabled可作默认，多候选503拒猜；未知表/其他列错误照常失败。不ALTER或UPDATE模型目录。
+- 当前只有既有DeepSeek目录项，但本地未配置密文解密key。未读取被禁止的生产secret文件；改为在ignored `.tmp/dsh-blog-site/options.json`显式选择qwen-public用于本机测试（文件0600）。launcher也支持--model，factory生产拒绝、仅固定keyless地址；页面明确“本地测试模型”，不伪称目录DeepSeek可用。线上配置未改。
+- 兼容读取和本地模型覆盖增加6项单元测试；判官复核通过，无凭据读取/网络调用。
+
+### Real acceptance evidence
+
+- Chrome headless通过原网页登录→原return_to→blog-qa，capabilities authenticated/enabled均true。
+- 真实DSH使用本地测试Qwen，实际搜索/读取真实公开文章，问题“博客里的 dsh 问答怎样拦下伪造引用？”完成，来源为正常 `/blog/41`。刷新恢复completed结果，点击来源后验证真实标题。
+- 新运行先取消，页面状态已取消；再启动运行并通过站点原 `/auth/refresh_token`（200）轮换，同family运行继续完成。
+- 退出后旧回答清除，`/user/me`返回401。浏览器pageerror为空。截图 `.tmp/dsh-blog-site/real-account-answer.png`受忽略，未加入Git。
+- `corepack pnpm check:api`最终428 tests通过；新增legacy-read与override测试6项通过。此前Web224tests/构建结果仍适用（本轮无前端逻辑修改）；已知素材格式与CSS总预算失败仍保留，不改门槛。
+- 测试账号文件和options均复核0600且git check-ignore成功；git diff --check通过。未提交、推送、部署或发布。
+
+真实登录→真实博客→真实模型（显式本地测试模型）已验收，不再等待用户代登录。全局目录模型解密配置、正式MySQL运行账本、Linux隔离和生产放行仍未完成。当前服务仍在3030/8032运行；默认启动会读取本地options以复现测试模型选择。
+
+按sun-world-blog→design局部更新架构笔记03的本地验收边界，原分类/标签保留，无新配图、未发布。截图仅用于开发验收，不混入公开稿。
+
+
+## 2026-11-15 管理员权限基线与影子比较
+
+### Goal / delivered
+
+用户继续授权迭代，本轮补阶段 A 的管理员入口盘点与新旧策略比较，保留共享工作区已有变更；未提交、暂存、推送、迁移数据库或部署。
+
+- `apps/api/src/core/auth/admin_shadow.py`：显式40项 method/路由模板基线，仅当前用户、正整数ID和admin角色可匹配；这是迁移候选，不登记为Agent能力。未知操作拒绝，公开读策略不扩权。
+- `apps/api/src/routers/auth/auth.py`：原会话/管理员判断仍是唯一放行依据；影子使用本次验证上下文，不新增会话查询或allow缓存。差异、未映射和候选错误进入现有有界审计日志，不记录用户信息、原始路径、查询参数或异常文本。影子与记录失败不会改变旧判断。
+- `scripts/check-admin-policy.py`、`scripts/export-openapi.py`、`scripts/run-api-check.mjs`：复用schema-only组合根读取有效依赖树，检查基线双向漂移并纳入API gate；覆盖继承守卫/前缀。独立审查发现重复路径可掩盖无守卫入口，已改为集合化之前拒绝包含guard的重复method/path，并补三种顺序回归。
+- `apps/api/tests/test_admin_policy_shadow.py`：7项测试覆盖身份/未知操作、双向差异、候选异常、日志隐私/失败、HTTP旧鉴权不变、继承依赖/前缀和重复路由。
+- [源码盘点与使用说明](../../development/admin-policy-migration.md)：记录roles/user_roles/resources/role_resources现有职责及40项操作分组。未查询实际数据库行，不将源码盘点表述为生产权限审计。
+
+### Verification
+
+- `corepack pnpm check:api`：最终435 tests通过，包含40条基线门禁；既有Pydantic弃用警告仍存在。判官独立审查发现的重复路由问题修复后复核通过，无剩余阻塞项。
+- `apps/api/.venv/bin/python scripts/check-admin-policy.py`：40项匹配；新测试文件7项通过。
+- OpenAPI导出至ignored `.tmp/dsh-admin-openapi.json`，JSON内容与当前 `packages/contracts/openapi.json` 一致，无需改公开契约。
+- `corepack pnpm format:check`：仍仅失败于原有 `docs/content-sources/csdn-qq-42345136/manifest.json`；本轮MJS定向检查与 `git diff --check` 通过。未修改Web逻辑/样式，未重跑Web gate；先前CSS预算失败尚未处理。
+
+### Remaining / writing
+
+阶段A仍需在明确环境只读核对真实角色/resource行、失联绑定和恢复管理员，再逐入口迁移最小能力/近期认证/资源范围；当前影子基线不能用于业务放行。MySQL运行账本、Linux隔离和生产功能放行仍未完成。本轮未重启3030/8032服务，因此已有长驻进程不保证加载本轮代码。
+
+使用sun-world-blog→sun-world-write-design局部更新架构笔记03，分类「后端」、原标签「架构笔记 / Agent / DeepSeek Harness」保留。说明先比较再切换的理由，无新增图片（这一权限迁移规则用段落即可解释），未做文章网页预览或发布。
+
+
+## 2026-11-15 授权持续迭代与版本保存
+
+用户授权按计划自主实现、review、验证、中文提交并同步写博客。未授权推送/部署，继续在当前工作区。
+
+### 本次修复
+
+- 判官复查新增发现：只按路由模板集合比较会漏检前置公开动态路由对受保护入口的遮挡。门禁现在按有效注册顺序做固定前缀的保守重叠拒绝；包含str/int/path转换器的回归通过。不是任意正则互斥证明，必要时将更具体的受保护路由提前。
+- 完成态问答的并发GET/GET、GET/cancel会共用family引用，原release可提前删除其他请求仍用的凭据。改为CredentialVault同锁put+pin、请求finally unpin，SSE也采用原子获取。确定性HTTP并发测试确认两请求均200、已完成状态不变，结束后pins/entries为空。
+- 版本保存范围：此前DSH基础、共用公开读取、独立本地Worker/账本/模型桥、真实站点适配与前端问答、管理员影子基线。40项基线及生成契约依赖现有评论与AI监控后端，所以保存必要后端依赖及测试；不混入未关联的后台UI、阅读器样式和写作Skill变更，不包含data/、.tmp或本地凭据。
+
+### 验证与后续
+
+管理员基线40项、影子策略8tests、真实会话适配15tests定向通过。接下来验证完整API、Worker协议和前端问答/类型；提交前从暂存树导出临时快照运行API检查，防止未暂存文件掩盖漏提交依赖。原素材清单格式和共享Web CSS预算失败仍保留，未调宽门槛。
+
+下一步继续阶段A真实角色/resource只读核对，再推进C的正式持久化账本；B的Linux隔离仍单独放行。博客沿用sun-world-blog→design局部补充架构笔记03，分类后端、原三标签不变，无新增配图，未发布或网页预览。
+
+### 提交前最终复核
+
+- 复查第三项问题：SSE断流后AnyIO取消scope可能打断gather和unpin，留下运行/凭据。已使用屏蔽外层取消、独立清理任务与嵌套finally；重复运行取消幂等，模型和monitor回收后再移除映射。直接ASGI http.disconnect测试在暂存旧实现失败（pin残留），修复后确认runner/proxy清理、cancelled终态、pins/entries/active/tasks/model_tasks全空。判官复核通过，无本次范围内剩余阻塞。
+- 从暂存tree `a332af9ca403cc5a2be1eb519653e0e81cae0b38` 导出独立临时快照，未拷贝.git、.tmp、data或本地override，运行 `node scripts/run-api-check.mjs`，完整API gate **438 tests通过**。使用项目venv作为依赖解释器，不借用工作区未暂存Python源码。
+- Worker协议3tests、前端AI模块及博客分页定向11文件62tests、Web typecheck、contracts6tests、deploy-schema静态检查通过。暂存JS/TS/CSS/JSON定向Prettier和私钥/token模式检查通过，未暂存本地配置/凭据/运行数据。
+- 共享工作区format素材与Web CSS预算问题仍是未完成项；没有声称root check全部通过。博客已补影子对照、动态遮挡与并发凭据机制；未做本次网页预览，不发布。

@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -44,11 +45,17 @@ describe('AigcPage', () => {
     })
 
     render(
-      <ThemeProvider>
-        <AigcPage />
-      </ThemeProvider>
+      <MemoryRouter>
+        <ThemeProvider>
+          <AigcPage />
+        </ThemeProvider>
+      </MemoryRouter>
     )
 
+    expect(screen.getByRole('link', { name: '博客问答' })).toHaveAttribute(
+      'href',
+      '/aigc/blog-qa'
+    )
     expect(
       screen.getByRole('region', { name: 'Sun World AI 工作区' })
     ).toBeInTheDocument()

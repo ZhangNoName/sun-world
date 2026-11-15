@@ -1,0 +1,220 @@
+{
+  "protocol_version": "1",
+  "modules": [
+    {
+      "id": "blog-content",
+      "version": "1",
+      "owner": "blog",
+      "dependencies": [],
+      "capabilities": [
+        "blog.article.read_public"
+      ],
+      "http_entries": [
+        {
+          "method": "GET",
+          "path": "/blogs/"
+        },
+        {
+          "method": "GET",
+          "path": "/blogs/{blog_id}"
+        }
+      ],
+      "tools": [
+        {
+          "id": "blog.search_public",
+          "version": "1",
+          "module_id": "blog-content",
+          "model_name": "blog_search_public",
+          "capability": "blog.article.read_public",
+          "effect": "read",
+          "data_class": "public",
+          "confirmation": "none",
+          "input_schema_ref": "BlogSearchPublicInput",
+          "output_schema_ref": "BlogSearchPublicOutput"
+        },
+        {
+          "id": "blog.read_public",
+          "version": "1",
+          "module_id": "blog-content",
+          "model_name": "blog_read_public",
+          "capability": "blog.article.read_public",
+          "effect": "read",
+          "data_class": "public",
+          "confirmation": "none",
+          "input_schema_ref": "BlogReadPublicInput",
+          "output_schema_ref": "BlogReadPublicOutput"
+        }
+      ],
+      "skills": [
+        "blog-qa@1"
+      ],
+      "data_owners": [
+        "mysql.blog",
+        "mysql.blog_tag",
+        "mongo.blogs"
+      ]
+    }
+  ],
+  "schemas": {
+    "BlogReadPublicInput": {
+      "additionalProperties": false,
+      "properties": {
+        "article_id": {
+          "exclusiveMinimum": 0,
+          "title": "Article Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "article_id"
+      ],
+      "title": "BlogReadPublicInput",
+      "type": "object"
+    },
+    "BlogReadPublicOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "article_id": {
+          "exclusiveMinimum": 0,
+          "title": "Article Id",
+          "type": "integer"
+        },
+        "title": {
+          "maxLength": 512,
+          "title": "Title",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "truncated": {
+          "title": "Truncated",
+          "type": "boolean"
+        },
+        "content_bytes": {
+          "minimum": 0,
+          "title": "Content Bytes",
+          "type": "integer"
+        },
+        "returned_bytes": {
+          "maximum": 16384,
+          "minimum": 0,
+          "title": "Returned Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "article_id",
+        "title",
+        "content",
+        "content_hash",
+        "truncated",
+        "content_bytes",
+        "returned_bytes"
+      ],
+      "title": "BlogReadPublicOutput",
+      "type": "object"
+    },
+    "BlogSearchPublicInput": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "BlogSearchPublicInput",
+      "type": "object"
+    },
+    "BlogSearchPublicOutput": {
+      "$defs": {
+        "BlogPublicSearchItem": {
+          "additionalProperties": false,
+          "properties": {
+            "article_id": {
+              "exclusiveMinimum": 0,
+              "title": "Article Id",
+              "type": "integer"
+            },
+            "title": {
+              "maxLength": 128,
+              "title": "Title",
+              "type": "string"
+            },
+            "abstract": {
+              "maxLength": 512,
+              "title": "Abstract",
+              "type": "string"
+            },
+            "truncated": {
+              "default": false,
+              "title": "Truncated",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "article_id",
+            "title",
+            "abstract"
+          ],
+          "title": "BlogPublicSearchItem",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/BlogPublicSearchItem"
+          },
+          "maxItems": 10,
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "title": "BlogSearchPublicOutput",
+      "type": "object"
+    }
+  },
+  "product_skills": [
+    {
+      "id": "blog-qa",
+      "version": "1",
+      "module_id": "blog-content",
+      "content_sha256": "ae3d9fec893c09fe66467142cf77a57e0dfcb35c7ef6899306e73b68b8454ca7",
+      "tool_ids": [
+        "blog.search_public",
+        "blog.read_public"
+      ],
+      "tool_versions": {
+        "blog.search_public": "1",
+        "blog.read_public": "1"
+      },
+      "input_contract": "question/plain-text",
+      "output_contract": "answer/sourceIds",
+      "evaluation_set": "apps/agent-worker/tests/protocol/protocol.test.mjs"
+    }
+  ],
+  "bundle_hash": "1a788c4765f0fd9806b177ed8db6d851afdc311aebb5b836699b9d4504303688"
+}

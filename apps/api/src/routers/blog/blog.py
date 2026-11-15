@@ -51,7 +51,7 @@ async def create_blog(
 
 # 获取指定博客
 @router.get("/{blog_id}", response_model=ApiResponse[BlogDetail])
-async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_manager)):
+def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_manager)):
     """
     获取指定 ID 的博客
 
@@ -73,7 +73,7 @@ async def get_blog(blog_id:int, blog_manager: BlogManager = Depends(get_blog_man
 
 # 分页获取博客
 @router.get("/", response_model=ApiResponse[BlogPage])
-async def get_blogs_paginated(
+def get_blogs_paginated(
     page: int = Query(default=1, ge=1),
     pageSize: int = Query(default=10, ge=1, le=100),
     keyword: str | None = Query(default=None, max_length=200),

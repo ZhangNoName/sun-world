@@ -9,6 +9,19 @@ export const aiModule: AppModule = {
   name: 'AI',
   routes: [
     {
+      path: '/aigc/blog-qa',
+      lazy: () =>
+        import('./pages/BlogQaPage').then((module) => ({
+          Component: module.BlogQaPage,
+        })),
+      meta: {
+        module: 'ai',
+        title: '博客问答 - Sun World',
+        hideFooter: true,
+        hideHeader: true,
+      },
+    },
+    {
       path: '/aigc',
       lazy: page,
       meta: {
