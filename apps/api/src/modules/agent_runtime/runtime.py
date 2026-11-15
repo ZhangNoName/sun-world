@@ -2,7 +2,6 @@
 
 import asyncio
 
-import anyio
 import hashlib
 import hmac
 import json
@@ -18,6 +17,7 @@ from fastapi import HTTPException
 from src.core.auth import Principal
 from src.modules.blog.manifest import BLOG_MANIFEST
 
+from .cleanup import finish_cleanup
 from .store import TERMINAL
 
 
@@ -26,25 +26,6 @@ def digest(value):
                                      separators=(",", ":")).encode()).hexdigest()
 
 
-async def finish_cleanup(cleanup):
-    """Drain cleanup despite request-scope or repeated asyncio cancellation.
-
-    The separate task keeps direct Task.cancel() calls from interrupting process
-    teardown. AnyIO shielding prevents a disconnected response's level-triggered
-    cancel scope from repeatedly cancelling each await. Cancellation is propagated
-    again once owned resources have been reclaimed.
-    """
-    task = asyncio.create_task(cleanup)
-    cancelled = False
-    with anyio.CancelScope(shield=True):
-        while not task.done():
-            try:
-                await asyncio.shield(task)
-            except asyncio.CancelledError:
-                cancelled = True
-        task.result()
-    if cancelled:
-        raise asyncio.CancelledError
 
 
 class Runtime:

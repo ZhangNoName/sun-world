@@ -103,9 +103,10 @@ class AgentRunLedgerTests(unittest.TestCase):
 
     def complete(self, row, **kwargs):
         from src.modules.ai.schemas import AiTextBlock
+        text = kwargs.pop('text', '未找到相关公开文章。')
         return self.ledger.commit_answer(row['id'], execution_id=self.execution, generation=kwargs.pop('generation', 1),
             root_session_id=kwargs.pop('root_session_id', row['root_session_id']), root_turn_id='root-turn',
-            blocks=[AiTextBlock(text=kwargs.pop('text', '未找到相关公开文章。'), format='plain')], **kwargs)
+            prepare=lambda *_: [AiTextBlock(text=text, format='plain')], **kwargs)
 
     def test_accept_is_atomic_idempotent_and_owner_scoped(self):
         from src.modules.agent_runtime.ledger import LedgerError

@@ -97,3 +97,11 @@ class AgentHistoryTransactions:
         )
         uow.execute("UPDATE ai_conversations SET updated_at = %s WHERE id = %s", (now, conversation_id))
         return message_id
+
+
+def agent_answer_blocks(answer, links):
+    """AI-owned plain-answer representation; the gateway owns link authority."""
+    if (not isinstance(answer, str) or not answer.strip() or len(answer.encode()) > 32768
+            or not isinstance(links, list) or len(links) > 4):
+        raise AiDomainError("AI_CONVERSATION_MISMATCH", "Invalid answer.", status_code=409)
+    return [AiTextBlock(text=answer, format="plain"), *[AiLinkBlock(**link) for link in links]]

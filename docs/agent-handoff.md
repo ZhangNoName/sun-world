@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+## 2026-11-15 C2 正式网关库与来源预算
+
+- 实现工具/来源持久化journal、分受众凭据、live hooks、来源回执与同事务完成重验、4次工具/4次模型/64KiB完整响应预算；文档见[网关说明](development/agent-run-gateway.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。不存工具正文/参数JSON，缓存丢失不重读。
+- 独立暂存树API504tests、deploy-schema与review通过。博客04补交付/预算/cache章节，保留锚点，未网页预览/发布。原素材格式/CSS预算仍未解决。
+- 仍未注册新HTTP、切换SQLite或派发正式Worker；C3需真实会话/准入与协议接线、一次性MySQL锁/撤销/池验收，B隔离/token硬限制单独放行。生产关闭，未推送部署。
+
+
 ## 2026-11-15 C1 生命周期与历史同事务
 
 - 新增MySQL运行账本声明/仓储、AI历史同UOW接口与普通聊天隔离；接受幂等、单次领取、租约、取消完成竞争与有界对账已本地实现，未接HTTP/Worker或替换原SQLite入口。说明见[正式账本](development/agent-run-ledger.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。

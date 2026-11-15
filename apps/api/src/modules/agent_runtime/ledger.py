@@ -102,7 +102,9 @@ class MySqlRunLedger:
                        model_id=model_id, status='accepted', generation=1, execution_id=None,
                        root_session_id=None, root_turn_id=None, result_hash=None, error_code=None,
                        deadline=now + timedelta(seconds=45), lease_expires_at=None,
-                       accepted_at=now, updated_at=now, ended_at=None)
+                       accepted_at=now, updated_at=now, ended_at=None, tool_count=0, model_count=0,
+                       result_bytes=0, tool_credential_hash=None, model_credential_hash=None,
+                       result_credential_hash=None)
             columns = ', '.join(row)
             placeholders = ', '.join(['%s'] * len(row))
             uow.execute(f'INSERT INTO agent_runs ({columns}) VALUES ({placeholders})', tuple(row.values()))
@@ -124,24 +126,36 @@ class MySqlRunLedger:
             raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
         return row
 
-    def claim(self, run_id, *, execution_id):
+    def claim(self, run_id, *, execution_id, credential_hashes=None, authorize=None):
         run_id, execution_id = uuid_text(run_id), uuid_text(execution_id)
+        hashes = credential_hashes or dict.fromkeys(('tool', 'model', 'result'))
+        if (set(hashes) != {'tool', 'model', 'result'} or (credential_hashes is not None and
+                any(not isinstance(value, str) or not re.fullmatch('[0-9a-f]{64}', value)
+                    for value in hashes.values()))):
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
         with self.database.unit_of_work() as uow:
             row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s FOR UPDATE', (run_id,))
             now = self.now()
             if (not row or row['status'] != 'accepted' or row['deadline'] <= now
                     or row['execution_id'] is not None or row['generation'] != 1):
                 return None
+            if authorize is not None and authorize(uow, row) is not True:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
+            now = self.now()
+            if row['deadline'] <= now:
+                raise LedgerError(error_codes.AGENT_EXECUTION_EXPIRED)
             lease = min(now + timedelta(seconds=10), row['deadline'])
             updated = uow.execute(
                 "UPDATE agent_runs SET status='running', execution_id=%s, root_session_id=%s, "
-                'lease_expires_at=%s, updated_at=%s WHERE id=%s AND status=\'accepted\' AND generation=1 AND execution_id IS NULL',
-                (execution_id, 'blog-qa-' + run_id, lease, now, run_id))
+                'lease_expires_at=%s, updated_at=%s, tool_credential_hash=%s, model_credential_hash=%s, '
+                'result_credential_hash=%s WHERE id=%s AND status=\'accepted\' AND generation=1 AND execution_id IS NULL',
+                (execution_id, 'blog-qa-' + run_id, lease, now, hashes['tool'], hashes['model'], hashes['result'], run_id))
             if updated != 1:
                 raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
             uow.commit()
             return {**row, 'status': 'running', 'execution_id': execution_id,
-                    'root_session_id': 'blog-qa-' + run_id, 'lease_expires_at': lease, 'updated_at': now}
+                    'root_session_id': 'blog-qa-' + run_id, 'lease_expires_at': lease, 'updated_at': now,
+                    **{audience + '_credential_hash': value for audience, value in hashes.items()}}
 
     @staticmethod
     def _binding(uow, run_id, execution_id, generation):
@@ -158,20 +172,24 @@ class MySqlRunLedger:
                 or row['lease_expires_at'] is None or row['lease_expires_at'] <= now):
             raise LedgerError(error_codes.AGENT_EXECUTION_EXPIRED)
 
-    def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id):
+    def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id, authorize=None):
         if not isinstance(root_turn_id, str) or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_turn_id):
             raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
         with self.database.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
+            if authorize is not None and authorize(uow, row) is not True:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
             self._live(row, self.now())
             if row['root_turn_id'] is not None and row['root_turn_id'] != root_turn_id:
                 raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
             uow.execute('UPDATE agent_runs SET root_turn_id=%s WHERE id=%s', (root_turn_id, row['id']))
             uow.commit()
 
-    def heartbeat(self, run_id, *, execution_id, generation):
+    def heartbeat(self, run_id, *, execution_id, generation, authorize=None):
         with self.database.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
+            if authorize is not None and authorize(uow, row) is not True:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
             now = self.now()
             self._live(row, now)
             lease = min(now + timedelta(seconds=10), row['deadline'])
@@ -192,23 +210,29 @@ class MySqlRunLedger:
             uow.commit()
             return 'cancelled'
 
-    def commit_answer(self, run_id, *, execution_id, generation, root_session_id, root_turn_id, blocks):
-        # Caller must already verify current session, sources and authoritative
-        # switches. C2 will wire this through that gateway, not expose it as RPC.
-        if not isinstance(blocks, list) or not blocks or len(blocks) > 16:
+    def commit_answer(self, run_id, *, execution_id, generation, root_session_id, root_turn_id, prepare):
+        # The trusted gateway must construct/validate blocks inside this SAME
+        # transaction, including current session and delivered/current sources.
+        if not callable(prepare):
             raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
-        try:
-            payload = [block.model_dump(mode='json') for block in blocks]
-        except (AttributeError, TypeError, ValueError):
-            raise LedgerError(error_codes.AGENT_OUTPUT_INVALID) from None
-        if len(json.dumps(payload, ensure_ascii=False).encode()) > 65536:
-            raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
-        result_hash = digest(payload)
         with self.database.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if (root_session_id != row['root_session_id'] or not row['root_turn_id']
                     or root_turn_id != row['root_turn_id']):
                 raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+            if row['status'] != 'completed':
+                self._live(row, self.now())
+            blocks = prepare(uow, row)
+            if not isinstance(blocks, list) or not blocks or len(blocks) > 16:
+                raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
+            try:
+                payload = [block.model_dump(mode='json') for block in blocks]
+                size = len(json.dumps(payload, ensure_ascii=False).encode())
+            except (AttributeError, TypeError, ValueError, UnicodeError):
+                raise LedgerError(error_codes.AGENT_OUTPUT_INVALID) from None
+            if size > 65536:
+                raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
+            result_hash = digest(payload)
             if row['status'] == 'completed':
                 if row['result_hash'] == result_hash:
                     return False

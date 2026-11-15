@@ -219,3 +219,33 @@
 下一步C2实现工具/来源交付账本、累计预算与正式网关，接入实时会话重验/授权及Worker。C、B尚未整体验收，不能直接将存储接口作为授权入口。既有素材格式和CSS预算失败仍保留。
 
 最终暂存树`5faea5e17599cb4cf421c0179e3a2f2296324837`独立导出后完整API471tests通过，临时快照已删除，避免共享工作区未暂存源码掩盖漏依赖。deploy-schema协议与暂存空白/本地路径/私钥模式检查通过。format:check仍仅失败于原有content-sources/manifest.json，本轮未修改该素材；Python/Markdown不由Prettier证明格式。新稿链接/5个稳定锚点检查通过，未网页预览。
+
+
+## 2026-11-15 C2 工具/来源回执、预算与正式网关库
+
+### Implemented
+
+基点3b24abe。C2库未注册HTTP、没有接TLS/正式Worker或更换旧SQLite流程；没有调用真实模型、连接真实数据库写入或执行DDL，生产保持关闭。
+
+- `journal.py`与集中schema：新增agent_tool_calls/agent_sources及run的tool/model/result_bytes计数和三受众token摘要。工具预扣4次、模型4次，失败/取消不退款；工具完整响应累计64KiB，含外层包装和digest。body实际字节必须与metadata一致，单正文16KiB。调用按run/gen/call键幂等，参数摘要冲突拒绝；prepared来源收到正确完整响应回执后同事务delivered，只有当前代次已交付来源才能引用。来源只存ID/title/hash/read/delivery metadata，不存完整正文或参数/结果JSON。
+- `gateway.py`：固定两只读工具/registry schema、服务身份+分受众run token、run/execution/gen/lease/deadline/bundle/model/单项目比对；强制live enabled/authorize/allow callbacks。claim将执行绑定/租约/三个随机凭据摘要同事务提交，明文不落库且repr隐藏。工具读取前后/提交重验当前主体与策略；根turn登记和heartbeat同样验证result audience。
+- 响应digest覆盖canonical `{call_id,result,source_id}`（排除digest自身），预算覆盖最终整个response；source UUID预分配并纳入digest。cache仅内存32条/128KiB到deadline，丢失不重读/重扣，明确不可重放；C3必须版本化适配，不能直接复用旧SQLite协议的digest/整数source ID。
+- 最终事务：`ledger.commit_answer`现在必须prepare回调，在同run UOW内恢复delivered来源、重读公开文章/完整快照与片段摘要，再生成canonical站点link和text/plain，空来源用固定答复。取消/过期/当前会话或策略拒绝则不写答案。标题显示截500/空标题回退但hash仍绑定完整快照，非法Unicode稳定拒绝。
+- 模型预留后最多30秒且不越总deadline，覆盖model/max_tokens固定值、禁止地址/凭据/owner覆写；等待中轮询状态/授权，撤销时取消并drain。结果上限256KiB且stop_reason/model必须已知；不把未知usage额度退款。token/内存/PID硬上限与Linux仍待B。
+- 提取既有`finish_cleanup`到cleanup.py并保留runtime导出兼容，供正式代理同样抵抗重复取消。
+
+### Review / evidence
+
+coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官独立review及delta复核无阻塞。根据review池等待提醒，authorize显式接收当前`(uow,row)`，allow接收`(principal,row,uow)`，测试证明无需嵌套借池。真实MySQL Repeatable Read当前读/锁顺序与撤销边界仍未验证，不能以普通快照SELECT代替实时撤销证明，C3接线前须解决。
+
+- Journal13项、gateway20项、C1 ledger16项定向通过，真实临时SQLite事务覆盖身份/受众/旧代次、规范化幂等、回执冲突、来源变更/跨run、包装字节、缓存丢失、budget/存储rollback、模型失败不退款、取消清理、同连接授权等。SQLite BEGIN IMMEDIATE更强串行化，不代表InnoDB锁验收。
+- API完整检查此前501项通过；最后增加标题/Unicode和真实正文长度防绕过回归后再做最终暂存树门禁。既有Pydantic/SQLite datetime适配弃用警告保留。
+- 开发与协议说明见[agent-run-gateway](../../development/agent-run-gateway.md)；未安装数据库/修改业务表，未生产/真实模型验收。
+
+### Writing / next
+
+按sun-world-blog→sun-world-write-design修订[架构笔记04](../../blog/2026-11-15-agent-run-history-transaction.md)，新增“工具返回了正文，还要确认交付”章节，原history/verification稳定ID保留；分类后端、原三标签不变。解释prepared/交付、预算、临时cache丢失不重读与最终重验，保留跨存储/语义边界，无新增重复图片、未网页预览或发布。
+
+下一步C3正式会话/准入与dispatcher/router、Worker私有协议版本化/SDK接线、重启/未知派发与SSE/恢复验收；使用一次性MySQL验证真实迁移/并发/撤销/池，B隔离单独放行。原素材格式与CSS预算未处理，不声称root check全绿，不推送或部署。
+
+最终暂存树`f34f4770906d4a94fb20c6f2a3eb7128f0bf22e8`独立导出验证API **504tests通过**（包括20项网关测试），临时快照已清理。deploy-schema协议、最终diff空白和本地凭据路径/私钥模式扫描通过；判官最后复核标题/Unicode/真实正文长度三项delta，无剩余阻塞。全仓format:check仍仅报原有素材manifest格式；本文档/博客6个稳定锚点和链接检查通过，未网页预览。不把定向/后端通过表述为root check全绿。
