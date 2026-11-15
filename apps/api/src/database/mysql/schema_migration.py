@@ -24,6 +24,40 @@ from typing import Any, Iterable
 
 
 MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
+    "agent_runs": {
+        "columns": [
+            {'name': 'id', 'definition': 'VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'user_id', 'definition': 'INT NOT NULL', 'type': 'int'},
+            {'name': 'app_id', 'definition': "VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'sun-world'", 'type': 'varchar'},
+            {'name': 'scenario', 'definition': "VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'blog-qa'", 'type': 'varchar'},
+            {'name': 'idempotency_key', 'definition': 'VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'request_hash', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'conversation_id', 'definition': 'VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'session_family_hash', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'engine', 'definition': 'VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'bundle_hash', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'model_id', 'definition': 'VARCHAR(160) NOT NULL', 'type': 'varchar'},
+            {'name': 'status', 'definition': "VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'accepted'", 'type': 'varchar'},
+            {'name': 'generation', 'definition': 'INT NOT NULL DEFAULT 1', 'type': 'int'},
+            {'name': 'execution_id', 'definition': 'VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'root_session_id', 'definition': 'VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'root_turn_id', 'definition': 'VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'result_hash', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'error_code', 'definition': 'VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'deadline', 'definition': 'DATETIME(6) NOT NULL', 'type': 'datetime'},
+            {'name': 'lease_expires_at', 'definition': 'DATETIME(6) NULL', 'type': 'datetime'},
+            {'name': 'accepted_at', 'definition': 'DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)', 'type': 'datetime'},
+            {'name': 'updated_at', 'definition': 'DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)', 'type': 'datetime'},
+            {'name': 'ended_at', 'definition': 'DATETIME(6) NULL', 'type': 'datetime'},
+        ],
+        "primary_key": ["id"],
+        "indexes": [
+            "UNIQUE KEY `idx_agent_runs_idempotency` (`user_id`, `scenario`, `idempotency_key`)",
+            "UNIQUE KEY `idx_agent_runs_conversation` (`conversation_id`)",
+            "KEY `idx_agent_runs_lease` (`status`, `lease_expires_at`)",
+            "KEY `idx_agent_runs_deadline` (`status`, `deadline`)"
+        ],
+    },
     "users": {
         "columns": [
             {"name": "id", "definition": "INT NOT NULL AUTO_INCREMENT", "type": "int"},

@@ -1,6 +1,7 @@
 """Supported integration interface for model-aware application services."""
 
 from src.core.runtime_env import is_local_runtime
+from .agent_history import AgentHistoryTransactions
 from .model_proxy import StructuredModelProxy
 from .providers import ProviderConfig
 

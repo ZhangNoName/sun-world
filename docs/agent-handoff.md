@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+## 2026-11-15 C1 生命周期与历史同事务
+
+- 新增MySQL运行账本声明/仓储、AI历史同UOW接口与普通聊天隔离；接受幂等、单次领取、租约、取消完成竞争与有界对账已本地实现，未接HTTP/Worker或替换原SQLite入口。说明见[正式账本](development/agent-run-ledger.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- Review修复unicode_ci重音等价ID绕过；独立暂存树API471tests及deploy-schema通过。真实MySQL锁/迁移测试待一次性实例，未向配置数据库写表。C2来源/工具账本、预算、网关实时会话重验和B隔离未完成；生产关闭。
+- 新稿[架构笔记04](blog/2026-11-15-agent-run-history-transaction.md)已完成本地正文与链接/锚点检查，未网页预览或发布；本轮中文提交保存，不推送部署。
+
+
 ## 2026-11-15 阶段A权限数据只读盘点
 
 - 新增数据库强制只读快照工具，实际核对配置local目标的角色/resource与绑定：单启用管理员、resource目录为空，未发现空/重复码或失联绑定；恢复管理员路径仍未验证，权限未变。详见[迁移说明](development/admin-policy-migration.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。

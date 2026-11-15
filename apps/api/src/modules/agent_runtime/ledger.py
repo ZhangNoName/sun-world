@@ -1,0 +1,244 @@
+"""MySQL lifecycle ledger. Not wired to HTTP, Worker or production admission.
+
+Every method is synchronous and must run on a worker thread. Caller supplies a
+currently verified server Principal, never a request/Worker-provided user/family.
+AI history uses the SAME connection and commits only with the run transaction.
+"""
+
+import hashlib
+import json
+import re
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from uuid import UUID, uuid4
+
+from src.core import error_codes
+from src.core.auth import Principal
+from src.modules.ai.public import AgentHistoryTransactions
+
+
+TERMINAL = frozenset({'completed', 'failed', 'cancelled', 'interrupted'})
+ENGINE = 'dsh-node-0.2.2-rc.1'
+
+
+class LedgerError(Exception):
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+                                     separators=(',', ':')).encode()).hexdigest()
+
+
+def uuid_text(value):
+    try:
+        return str(UUID(str(value)))
+    except (ValueError, TypeError, AttributeError):
+        raise LedgerError(error_codes.AGENT_INPUT_INVALID) from None
+
+
+def family_hash(principal):
+    if (principal.kind != 'user' or type(principal.user_id) is not int or principal.user_id <= 0
+            or not isinstance(principal.session_family, str) or not principal.session_family
+            or len(principal.session_family) > 256):
+        raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
+    return digest([principal.user_id, principal.session_family])
+
+
+@dataclass(frozen=True)
+class Admission:
+    run: dict
+    created: bool
+
+
+class MySqlRunLedger:
+    def __init__(self, database, *, history=None, clock=None):
+        self.database = database
+        self.history = history or AgentHistoryTransactions()
+        self.clock = clock or (lambda: datetime.now(timezone.utc))
+
+    def now(self):
+        current = self.clock()
+        if not isinstance(current, datetime) or current.utcoffset() is None:
+            raise LedgerError(error_codes.AGENT_CLOCK_INVALID)
+        return current.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def accept(self, principal: Principal, *, question, idempotency_key, bundle_hash, model_id):
+        family = family_hash(principal)
+        key = uuid_text(idempotency_key)
+        if (not isinstance(question, str) or not question.strip() or len(question) > 2000
+                or not isinstance(bundle_hash, str) or not re.fullmatch('[0-9a-f]{64}', bundle_hash)
+                or not isinstance(model_id, str) or not model_id.strip() or len(model_id) > 160):
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
+        question = question.strip()
+        request_hash = digest({'scenario': 'blog-qa', 'question': question})
+        with self.database.unit_of_work() as uow:
+            # User row serializes concurrent idempotency requests from one owner.
+            # No retry on unknown commit results; clients query with the same key.
+            owner = uow.fetch_one('SELECT id, status FROM users WHERE id = %s FOR UPDATE',
+                                  (principal.user_id,))
+            if not owner or owner['status'] != 1:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
+            existing = uow.fetch_one(
+                'SELECT * FROM agent_runs WHERE user_id = %s AND scenario = %s '
+                'AND idempotency_key = %s FOR UPDATE', (principal.user_id, 'blog-qa', key))
+            if existing:
+                # A new family must not discover an earlier family's private run.
+                if existing['session_family_hash'] != family:
+                    raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+                if existing['request_hash'] != request_hash:
+                    raise LedgerError(error_codes.AGENT_IDEMPOTENCY_CONFLICT)
+                return Admission(existing, False)
+            now = self.now()
+            run_id = str(uuid4())
+            conversation_id = 'agent_conv_' + uuid4().hex
+            self.history.create(uow, user_id=principal.user_id, conversation_id=conversation_id,
+                                question=question, now=now)
+            row = dict(id=run_id, user_id=principal.user_id, app_id='sun-world', scenario='blog-qa',
+                       idempotency_key=key, request_hash=request_hash, conversation_id=conversation_id,
+                       session_family_hash=family, engine=ENGINE, bundle_hash=bundle_hash,
+                       model_id=model_id, status='accepted', generation=1, execution_id=None,
+                       root_session_id=None, root_turn_id=None, result_hash=None, error_code=None,
+                       deadline=now + timedelta(seconds=45), lease_expires_at=None,
+                       accepted_at=now, updated_at=now, ended_at=None)
+            columns = ', '.join(row)
+            placeholders = ', '.join(['%s'] * len(row))
+            uow.execute(f'INSERT INTO agent_runs ({columns}) VALUES ({placeholders})', tuple(row.values()))
+            uow.commit()
+            return Admission(row, True)
+
+    def get_owned(self, principal, run_id):
+        family = family_hash(principal)
+        with self.database.unit_of_work() as uow:
+            row = self._owned(uow, principal.user_id, family, run_id, lock=False)
+            return row
+
+    @staticmethod
+    def _owned(uow, user_id, family, run_id, *, lock=True):
+        row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s AND user_id = %s '
+                            'AND session_family_hash = %s' + (' FOR UPDATE' if lock else ''),
+                            (uuid_text(run_id), user_id, family))
+        if not row:
+            raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+        return row
+
+    def claim(self, run_id, *, execution_id):
+        run_id, execution_id = uuid_text(run_id), uuid_text(execution_id)
+        with self.database.unit_of_work() as uow:
+            row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s FOR UPDATE', (run_id,))
+            now = self.now()
+            if (not row or row['status'] != 'accepted' or row['deadline'] <= now
+                    or row['execution_id'] is not None or row['generation'] != 1):
+                return None
+            lease = min(now + timedelta(seconds=10), row['deadline'])
+            updated = uow.execute(
+                "UPDATE agent_runs SET status='running', execution_id=%s, root_session_id=%s, "
+                'lease_expires_at=%s, updated_at=%s WHERE id=%s AND status=\'accepted\' AND generation=1 AND execution_id IS NULL',
+                (execution_id, 'blog-qa-' + run_id, lease, now, run_id))
+            if updated != 1:
+                raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
+            uow.commit()
+            return {**row, 'status': 'running', 'execution_id': execution_id,
+                    'root_session_id': 'blog-qa-' + run_id, 'lease_expires_at': lease, 'updated_at': now}
+
+    @staticmethod
+    def _binding(uow, run_id, execution_id, generation):
+        if type(generation) is not int or generation != 1:
+            raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+        row = uow.fetch_one('SELECT * FROM agent_runs WHERE id=%s FOR UPDATE', (uuid_text(run_id),))
+        if (not row or row['execution_id'] != uuid_text(execution_id) or row['generation'] != generation):
+            raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+        return row
+
+    @staticmethod
+    def _live(row, now):
+        if (row['status'] != 'running' or row['deadline'] <= now
+                or row['lease_expires_at'] is None or row['lease_expires_at'] <= now):
+            raise LedgerError(error_codes.AGENT_EXECUTION_EXPIRED)
+
+    def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id):
+        if not isinstance(root_turn_id, str) or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_turn_id):
+            raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+        with self.database.unit_of_work() as uow:
+            row = self._binding(uow, run_id, execution_id, generation)
+            self._live(row, self.now())
+            if row['root_turn_id'] is not None and row['root_turn_id'] != root_turn_id:
+                raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+            uow.execute('UPDATE agent_runs SET root_turn_id=%s WHERE id=%s', (root_turn_id, row['id']))
+            uow.commit()
+
+    def heartbeat(self, run_id, *, execution_id, generation):
+        with self.database.unit_of_work() as uow:
+            row = self._binding(uow, run_id, execution_id, generation)
+            now = self.now()
+            self._live(row, now)
+            lease = min(now + timedelta(seconds=10), row['deadline'])
+            uow.execute('UPDATE agent_runs SET lease_expires_at=%s, updated_at=%s WHERE id=%s',
+                        (lease, now, row['id']))
+            uow.commit()
+            return lease
+
+    def cancel(self, principal, run_id):
+        family = family_hash(principal)
+        with self.database.unit_of_work() as uow:
+            row = self._owned(uow, principal.user_id, family, run_id)
+            if row['status'] in TERMINAL:
+                return row['status']
+            now = self.now()
+            uow.execute("UPDATE agent_runs SET status='cancelled', error_code='AGENT_RUN_CANCELLED', "
+                        'ended_at=%s, updated_at=%s WHERE id=%s', (now, now, row['id']))
+            uow.commit()
+            return 'cancelled'
+
+    def commit_answer(self, run_id, *, execution_id, generation, root_session_id, root_turn_id, blocks):
+        # Caller must already verify current session, sources and authoritative
+        # switches. C2 will wire this through that gateway, not expose it as RPC.
+        if not isinstance(blocks, list) or not blocks or len(blocks) > 16:
+            raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
+        try:
+            payload = [block.model_dump(mode='json') for block in blocks]
+        except (AttributeError, TypeError, ValueError):
+            raise LedgerError(error_codes.AGENT_OUTPUT_INVALID) from None
+        if len(json.dumps(payload, ensure_ascii=False).encode()) > 65536:
+            raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
+        result_hash = digest(payload)
+        with self.database.unit_of_work() as uow:
+            row = self._binding(uow, run_id, execution_id, generation)
+            if (root_session_id != row['root_session_id'] or not row['root_turn_id']
+                    or root_turn_id != row['root_turn_id']):
+                raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
+            if row['status'] == 'completed':
+                if row['result_hash'] == result_hash:
+                    return False
+                raise LedgerError(error_codes.AGENT_RESULT_CONFLICT)
+            now = self.now()
+            self._live(row, now)
+            self.history.complete(uow, user_id=row['user_id'], conversation_id=row['conversation_id'],
+                                  blocks=blocks, now=now)
+            now = self.now()
+            self._live(row, now)
+            changed = uow.execute("UPDATE agent_runs SET status='completed', result_hash=%s, "
+                                  'ended_at=%s, updated_at=%s WHERE id=%s AND status=\'running\'',
+                                  (result_hash, now, now, row['id']))
+            if changed != 1:
+                raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
+            uow.commit()
+            return True
+
+    def reconcile(self, *, limit=100):
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
+        now = self.now()
+        with self.database.unit_of_work() as uow:
+            rows = uow.fetch_all("SELECT * FROM agent_runs WHERE (status='accepted' AND deadline<=%s) "
+                                 "OR (status='running' AND (deadline<=%s OR lease_expires_at<=%s OR lease_expires_at IS NULL)) "
+                                 'ORDER BY deadline, id LIMIT %s FOR UPDATE', (now, now, now, limit))
+            for row in rows:
+                status = 'failed' if row['status'] == 'accepted' else 'interrupted'
+                error = error_codes.AGENT_ACCEPT_EXPIRED if status == 'failed' else error_codes.AGENT_RUN_INTERRUPTED
+                uow.execute('UPDATE agent_runs SET status=%s,error_code=%s,ended_at=%s,updated_at=%s '
+                            'WHERE id=%s', (status, error, now, now, row['id']))
+            uow.commit()
+            return [row['id'] for row in rows]

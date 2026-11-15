@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from pydantic import TypeAdapter
 
+from .agent_history import require_ordinary_conversation
 from .errors import AiDomainError
 from .schemas import (
     AiContentBlock,
@@ -449,7 +450,8 @@ class MySqlAiRepository:
     def _list_conversations(self, user_id: int) -> list[AiConversationSummary]:
         rows = self.db.fetch_all(
             "SELECT id, title, created_at, updated_at FROM ai_conversations "
-            "WHERE user_id = %s AND is_deleted = 0 ORDER BY updated_at DESC, id DESC",
+            "WHERE user_id = %s AND is_deleted = 0 AND LEFT(id, 11) <> 'agent_conv_' "
+            "ORDER BY updated_at DESC, id DESC",
             (user_id,),
         )
         return [AiConversationSummary(**row) for row in rows]
@@ -462,13 +464,16 @@ class MySqlAiRepository:
         )
 
     def _get_conversation(self, user_id: int, conversation_id: str) -> AiConversation:
+        require_ordinary_conversation(conversation_id)
         row = self.db.fetch_one(
             "SELECT id, title, created_at, updated_at FROM ai_conversations "
-            "WHERE id = %s AND user_id = %s AND is_deleted = 0",
+            "WHERE id = %s AND user_id = %s AND is_deleted = 0 "
+            "AND LEFT(id, 11) <> 'agent_conv_'",
             (conversation_id, user_id),
         )
         if not row:
             raise AiDomainError("AI_RESOURCE_NOT_FOUND", "Conversation not found.", status_code=404)
+        require_ordinary_conversation(row["id"])
         message_rows = self.db.fetch_all(
             "SELECT m.id, m.conversation_id, m.role, m.blocks, m.sequence, m.status, "
             "m.created_at, m.updated_at, f.value AS feedback "
@@ -501,7 +506,8 @@ class MySqlAiRepository:
         row = self.db.fetch_one(
             "SELECT c.id AS conversation_id FROM ai_messages m "
             "JOIN ai_conversations c ON c.id = m.conversation_id "
-            "WHERE m.id = %s AND c.user_id = %s AND c.is_deleted = 0",
+            "WHERE m.id = %s AND c.user_id = %s AND c.is_deleted = 0 "
+            "AND LEFT(c.id, 11) <> 'agent_conv_'",
             (message_id, user_id),
         )
         if not row:
@@ -510,6 +516,7 @@ class MySqlAiRepository:
                 "Message not found.",
                 status_code=404,
             )
+        require_ordinary_conversation(row["conversation_id"])
         return str(row["conversation_id"])
 
     async def append_message(
@@ -537,6 +544,7 @@ class MySqlAiRepository:
         blocks: list[AiContentBlock],
         status: str = "completed",
     ) -> AiMessage:
+        require_ordinary_conversation(conversation_id)
         # The conversation row is the serialization point for message sequence
         # allocation. Keeping ownership validation, MAX(sequence), insert, and
         # touch on one connection prevents concurrent runs from choosing the
@@ -544,7 +552,8 @@ class MySqlAiRepository:
         with self.db.unit_of_work() as uow:
             owned = uow.fetch_one(
                 "SELECT id FROM ai_conversations "
-                "WHERE id = %s AND user_id = %s AND is_deleted = 0 FOR UPDATE",
+                "WHERE id = %s AND user_id = %s AND is_deleted = 0 "
+                "AND LEFT(id, 11) <> 'agent_conv_' FOR UPDATE",
                 (conversation_id, user_id),
             )
             if not owned:
@@ -553,6 +562,7 @@ class MySqlAiRepository:
                     "Conversation not found.",
                     status_code=404,
                 )
+            require_ordinary_conversation(owned["id"])
             row = uow.fetch_one(
                 "SELECT COALESCE(MAX(sequence), 0) AS sequence "
                 "FROM ai_messages WHERE conversation_id = %s",
@@ -596,7 +606,8 @@ class MySqlAiRepository:
     def _set_feedback(self, user_id: int, message_id: str, value: str | None) -> None:
         owned = self.db.fetch_one(
             "SELECT m.id FROM ai_messages m JOIN ai_conversations c ON c.id = m.conversation_id "
-            "WHERE m.id = %s AND c.user_id = %s AND c.is_deleted = 0",
+            "WHERE m.id = %s AND c.user_id = %s AND c.is_deleted = 0 "
+            "AND LEFT(c.id, 11) <> 'agent_conv_'",
             (message_id, user_id),
         )
         if not owned:
@@ -615,8 +626,12 @@ class MySqlAiRepository:
 
     def _get_feedback(self, user_id: int, message_id: str) -> str | None:
         row = self.db.fetch_one(
-            "SELECT value FROM ai_message_feedback WHERE message_id = %s AND user_id = %s",
-            (message_id, user_id),
+            "SELECT f.value FROM ai_message_feedback f "
+            "JOIN ai_messages m ON m.id = f.message_id "
+            "JOIN ai_conversations c ON c.id = m.conversation_id "
+            "WHERE f.message_id = %s AND f.user_id = %s AND c.user_id = %s "
+            "AND c.is_deleted = 0 AND LEFT(c.id, 11) <> 'agent_conv_'",
+            (message_id, user_id, user_id),
         )
         return row["value"] if row else None
 
@@ -1215,7 +1230,8 @@ class MySqlAiRepository:
             # acquiring the message and conversation rows in reverse order.
             owned = uow.fetch_one(
                 "SELECT id FROM ai_conversations "
-                "WHERE id = %s AND user_id = %s AND is_deleted = 0 FOR UPDATE",
+                "WHERE id = %s AND user_id = %s AND is_deleted = 0 "
+                "AND LEFT(id, 11) <> 'agent_conv_' FOR UPDATE",
                 (conversation_id, user_id),
             )
             if not owned:
@@ -1224,6 +1240,7 @@ class MySqlAiRepository:
                     "Message not found.",
                     status_code=404,
                 )
+            require_ordinary_conversation(owned["id"])
             row = uow.fetch_one(
                 "SELECT * FROM ai_messages "
                 "WHERE id = %s AND conversation_id = %s FOR UPDATE",

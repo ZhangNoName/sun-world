@@ -191,3 +191,31 @@
 判官本轮独立审查与8项定向测试通过；另用Mock验证退出码0/2/1/1及rollback/close路径，未发现本轮范围阻塞。
 
 最终format:check仍仅报原有content-sources素材manifest格式；本轮Python/Markdown不受Prettier检查，文档链接与git diff --check通过。
+
+
+## 2026-11-15 C1 正式生命周期账本与历史事务
+
+### Delivered / scope
+
+基点`9a601e4`。本轮按计划开始C首批，生产/现有SQLite入口未切换、没有连接真实DB写入或执行迁移，没有推送部署。
+
+- `schema_migration.py`集中新增agent_runs，含单项目/场景、owner、UUID幂等键/请求摘要、会话关联、family摘要、固定引擎/bundle/model、execution/generation、根会话/回合、deadline/lease和终态。标识/摘要ASCII binary，幂等与会话唯一键；不存Cookie、原始family或Worker凭据。
+- `agent_runtime/ledger.py`实现同事务accept+AI会话/seq1问题；owner锁串行同用户键、差异参数冲突、family先验证。单次claim、根turn登记、heartbeat不复活到期租约；cancel/complete锁竞争、seq2答案与completed同事务，写后再验时限，重复同摘要完成幂等；最多100条对账终态，不盲目重派/重放。commit ACK丢失后通过原键/绑定查询恢复。需在工作线程调用，未接线到HTTP。
+- `ai/agent_history.py`由AI模块拥有并从public导出，复用传入UOW，不开连接/commit；Agent专用命名空间兼容旧AI schema，普通MySQL聊天所有读写/反馈路径隔离。引擎/场景由run关联，不新增旧AI表列。
+- `core/error_codes.py`登记实际使用的AGENT内部错误码；公开HTTP映射与前端码跟随C2正式接线，不伪造已存在端点。
+- coding实现AI接口与旧聊天隔离，判官独立发现unicode_ci重音别名可绕过输入前缀。已在get/append/edit查询实际行过滤，并复验canonical ID；模拟重音比较器确认修复前可读写、修复后404且消息不增加。模拟不是MySQL实测。复核通过，本轮范围无剩余阻塞。
+
+### Verification
+
+- 账本16tests、AI历史9tests、旧仓储20tests通过；真实SQLite连接覆盖事务rollback、两个writer的接受/领取/终态竞争、写答案途中超时、提交回执丢失后幂等恢复。SQLite BEGIN IMMEDIATE更强串行化，不能证明InnoDB锁行为。
+- `corepack pnpm check:api`完整471tests通过；schema静态contract 26tables/208columns通过。未运行真实DDL或修改配置目标的业务数据。
+- 本机Docker/mysqld/mariadbd均不可用，未安装/启动或为验收向共享数据库建表。真实MySQL并发/崩溃/迁移矩阵待后续一次性实例完成。
+- 开发说明见[agent-run-ledger](../../development/agent-run-ledger.md)，包含事务边界、命令、保留幂等键、迁移/回滚与未完成项。
+
+### Writing / next
+
+使用sun-world-blog→sun-world-write-design新增[架构笔记04](../../blog/2026-11-15-agent-run-history-transaction.md)，分类后端，标签架构笔记/Agent/DeepSeek Harness，stage本地验证。围绕同事务保存、幂等/终态与聊天隔离展开，用失败对照表说明回滚，不增加重复图片；MySQL排序规则就近链接官方说明，明确本地模拟边界。未网页预览或发布。
+
+下一步C2实现工具/来源交付账本、累计预算与正式网关，接入实时会话重验/授权及Worker。C、B尚未整体验收，不能直接将存储接口作为授权入口。既有素材格式和CSS预算失败仍保留。
+
+最终暂存树`5faea5e17599cb4cf421c0179e3a2f2296324837`独立导出后完整API471tests通过，临时快照已删除，避免共享工作区未暂存源码掩盖漏依赖。deploy-schema协议与暂存空白/本地路径/私钥模式检查通过。format:check仍仅失败于原有content-sources/manifest.json，本轮未修改该素材；Python/Markdown不由Prettier证明格式。新稿链接/5个稳定锚点检查通过，未网页预览。

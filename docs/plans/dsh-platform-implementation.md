@@ -16,6 +16,12 @@
 
 阶段 A 首批已在本地实现模块注册、严格工具 schema、公开读取策略和 HTTP/工具共用查询；完整范围及验证见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)。管理员入口源码盘点、40项显式基线及旧/新影子比较已在本地实现，见[迁移说明](../development/admin-policy-migration.md)；本地profile的真实角色/resource只读快照核对已完成（单启用管理员、resource目录为空，无重复/失联绑定），生产目标核对、恢复路径和逐入口能力迁移仍未完成，阶段 A 未整体验收；Worker/运行准入保持关闭。任务归属：A 增加模块权限和声明验证；D 按实际页面引入有限 slot/contribution，覆盖卸载、错误隔离和能力加载；G 在第二项目启用前完成项目隔离与 adapter 契约测试。格式配置统一作为独立维护任务，不与功能改造混做。
 
+## 阶段C首批：生命周期与历史事务（2026-11-15）
+
+本地新增MySQL agent_runs声明、接收/幂等/领取/租约/终态/对账仓储，以及AI模块同UOW历史接口。详见[账本说明](../development/agent-run-ledger.md)。普通聊天兼容旧AI表并隔离Agent会话；已修复重音等价ID绕过。未连接真实数据库执行DDL，未替换现有SQLite本地入口或开放生产准入。
+
+C仍未整体验收：来源交付/工具账本、累计预算、正式网关会话重验、Worker接线和真实MySQL故障矩阵继续实现；本地SQLite事务测试不代替InnoDB行锁或迁移验收。B的Linux隔离也仍独立放行。
+
 ## 交付顺序
 
 | 阶段 / 建议 PR | 修改边界 | 产物与放行条件 | 失败时处理 |
