@@ -392,3 +392,36 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步真实模型适配/质量集与token/output预算、Linux memory/PID/network硬隔离、持久journal留存及离线回收、已有库升级与DB/宿主崩溃矩阵、生产TLS签发轮换。此轮只完成真实本地协议/存储/控制实证，不足以放行P1生产内测。其他dirty保留，不推送/部署/发布。
 
 最终独立暂存树`55a2dba7f26df38cd5fab807602a84e08c439f17`：API570、Worker60、CI/root/deploy-schema/RPC漂移通过；从该树重新offline准备固定SDK（592缓存包/下载0），实际三库+mTLS+固定SDK完整6情景及等候模型时总launcher SIGTERM均通过。SIGTERM保留130且四root/三DBPID/Worker与SDK组无遗留。独立快照及两份本轮prepared runtime已清理，原verified binary缓存保留；最终只补本交接证据，无可执行源码变化。
+
+## 2026-11-16 模型预算与真实模型评测
+
+### Implemented / scope
+
+基点0e26b90。按B/C计划新增ModelJournal、agent_model_calls和run七项累计计量；Gateway事务先提交预占，再出网。每次1024输出token/64KiB响应，整run4096/256KiB；Gateway canonical输入每次128KiB/累计256KiB，不能当输入token硬限。actual/unknown独立、不退款、不重放，慢commit越deadline不启动provider，取消排空同步事务。详见[模型验证说明](../../development/agent-model-validation.md)。main未挂载，旧入口保留，不推送/部署/发布。
+
+- coding严格Messages↔OpenAI适配：角色/ID关联/固定两工具/模型/停止原因/严格usage，缺失不补零；固定30秒请求deadline、128KiB wire request/64KiB response，沿原provider DNS pin/allowlist/禁代理继承/redirect/retry。client进入异常与重复取消均drain close，清理时限与请求deadline区分。普通文本Provider未改。
+- 固定SDK profile显式disabled/off/1024；真实Qwen中性metadata和reasoning仅接受已定义形状，推理剥离、不入公开文本/工具/报告，不声称供应商内部无推理。v2 Skill改连续子串/单辨识词搜索、限制重搜、及时read，保留四模型/四工具；manifest/catalog/bundle更新，v1正文与导出首位保留，Worker须重打包。
+- maintained CLI在owned Redis+内存目录/history+loopback AI V1成功models/ask；未加载业务config/keys或访问生产AI API。真实四题模式显式--real-model --report，仅local factory的keyless qwen38_27b；报告O_EXCL0600、每题fsync、无原始推理/headers/凭据。SDK0.2.2-rc.1固定；上游只有alias，无不可变权重版本。
+
+### Review / evidence
+
+- 默认API609、Worker60、CLI17、contracts6、AI接口/CLI/契约与root/CI/deploy-schema通过。预算8、严格适配25、cleanup9进入默认gate；native MySQL17通过（8并发4赢家及observe提交后ACK丢失不重放/不重复计量）。判官独立预算/Gateway/适配与reserve/observe真实post-commit ACK注入通过，无剩余确认阻塞。报告shape P2已修：原先converter前保存未经验证model/tool/finish/index与unknown key，现仅固定字段/枚举/type/数量，纯回归5项经判官独立通过。最终独立暂存快照结果另补。
+- [固定四题与中间失败](../../evaluations/agent-model-2026-11-16/README.md)均真实保留：第一次因SDK默认控制在provider前拒绝；第二/三次实际返回metadata不兼容；第四次有答案/冲突题耗尽搜索额度；修profile/严格兼容/Skill后第五次四项结构通过。数据集/评分和预算未改；中间工作树记录缺最终源码hash，不追溯伪造。
+- 第五次主agent与判官分别语义复核通过：七天、未知价格不编造、旧七天/新十四天及取代关系、正文注入不服从。每题3模型、预占3072；工具2/2/3/2。有答案样本实际报告202输出token。这是agent复核，human_semantic_review仍pending，input_tokenizer_verified false。最终快照须新报告补准确实现/Skill/profile/bundle hash并重新复核，不能把第五次报告当已带这些字段。
+
+### Writing / next
+
+按sun-world-blog→sun-world-write-design新增[架构笔记05](../../blog/2026-11-16-agent-model-budget.md)，分类后端、标签架构笔记/Agent/DeepSeek Harness，透明SVG说明先预占/observed或unknown均保留预占。已写实际三调用3072/202示例、bytes≠tokens与真实模型/人工验收边界；未发布。独立正文预览http://127.0.0.1:3033/.tmp/model-budget-draft-769mkzhw/index.html，1280/390宽、5唯一稳定ID、3处strong、无残留双星/首行缩进/水平溢出，图360/342px已实际视觉检查。预览使用当前dirty renderer/CSS，不代表已提交前端或完整文章页E2E。
+
+下一步验证模型匹配的输入tokenizer/上下文模板及硬总限，再推进Linux memory/PID/network隔离、持久journal留存/离线回收、旧库升级/DB与宿主崩溃、生产TLS。人工语义签字与上游不可变版本仍缺，P1/A–D不整体放行。原素材manifest格式与Web CSS预算问题、其他dirty保留。所有本轮owned快照/SDK runtime需在结束前清理，验证二进制缓存保留。
+
+中间b3dc835复跑API606/Worker60/MySQL17/native组合10及真实四题通过，但并行SDK合成suite启动失败；实际lsof发现Mongo还有/tmp/mongodb-0.sock。已修owned unixSocketPrefix与getCmdLineOpts prefix/strict0600验证，并新增显式真实双Mongo隔离回归，不进入默认unit gate。原“无TCP”证明仍有效，“所有Unix私有”须以修后新快照为准。最终结果将补；第六次报告独立保留，不冒充最终隔离。
+
+补充父reaper具体缺陷与修复：首次SDK PGID探测EPERM原先短路全部TERM/KILL；独立实际孤儿复现后改未知继续、有界且TERM/CONT独立，拒绝信号才重试，最终仅ESRCH成功。cleanup9项通过（三个新增方法，signal含TERM/CONT/KILL子情景）；永久拒绝保留失败/root，独立safety finally确认回收。历史Worker并行59/60和SDK两次第6失败仍未定因，日志及随后串行Worker60/诊断包装六情景通过保留在评测目录，不用后来的成功改判过去。最终新树结果待补。
+
+
+最终独立暂存树`9b2834faac73100432b1633c51291ba55b2fe8fc`串行通过：API609、Worker60、MySQL17、native API组合10、实际双Mongo named Unix全私有0600/无TCP/独立数据、v1实际两工具注册。由该树offline重新准备592缓存包/下载0的固定SDK，默认合成模型六情景与真实qwen38_27b四题均通过；每题3模型/unknown0，源码/固定数据/Skill/profile/bundle摘要与fresh runtime一致，判官独立核对API答和SDK最后答（含无价格、空来源），human pending/tokenizer false不变。数据和验证源码摘要见docs/evaluations的final-snapshot/validation-manifest；不是一般语义准确率或不可变权重证明。
+
+同树实际SDK模型等待点总launcher SIGTERM复验exit130，Worker/SDK组、三DB PID及四root均消失。此前并行/串行失败证据保留且仍未定因，不能把后来的成功或独立EPERM修复当作原失败解释。下一步先增加固定清理阶段/错误类别诊断再定位本机回收观察，并继续输入tokenizer/模型版本、Linux硬隔离、留存/旧库与崩溃/生产TLS门槛。最终仅补文档与证据，无可执行源码再改；提交前对比验证清单、空白与密钥模式，清理本轮快照/prepared runtime，保留已核对binary缓存和3033正文预览。博客05桌面/手机最终预览复核通过、未发布；不推送部署，其他dirty与原格式/CSS预算问题保留。
+
+收尾确认：本轮所有owned模型验证快照/prepared runtime和SDK fixture root已清理，数据库binary缓存保留。原预览服务在中断后停止，现已重新启动loopback3033并实际HTTP200/桌面手机正文复验通过；只保留此正文预览服务。最终staged55路径范围与33项验证源码SHA一致，空白与密钥/token模式扫描通过；format:check仍仅既有素材manifest失败。

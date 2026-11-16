@@ -85,6 +85,9 @@ try {
             lease_expires_at: new Date(Date.now() + 10000).toISOString(),
           }
         else if (route === '/model/messages') {
+          assert.deepEqual(body.thinking, { type: 'disabled' })
+          assert.equal(body.output_config, undefined)
+          assert.equal(body.max_tokens, 1024)
           if (current.run_id === cancelRunId) {
             cancelModels++
             signalCancelModel()

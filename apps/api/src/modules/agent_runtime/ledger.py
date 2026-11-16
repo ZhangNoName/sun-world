@@ -108,6 +108,9 @@ class MySqlRunLedger:
                        root_session_id=None, root_turn_id=None, root_request_id=None, result_hash=None, error_code=None,
                        deadline=now + timedelta(seconds=45), lease_expires_at=None,
                        accepted_at=now, updated_at=now, ended_at=None, tool_count=0, model_count=0,
+                       model_input_bytes=0, model_output_tokens_reserved=0, model_response_bytes_reserved=0,
+                       model_input_tokens_observed=0, model_output_tokens_observed=0,
+                       model_response_bytes_observed=0, model_usage_unknown_count=0,
                        result_bytes=0, tool_credential_hash=None, model_credential_hash=None,
                        result_credential_hash=None)
             columns = ', '.join(row)

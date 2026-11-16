@@ -22,7 +22,7 @@ class JournalDatabase(Database):
     def __init__(self, path):
         super().__init__(path)
         with sqlite3.connect(path) as db:
-            for name in ('agent_tool_calls', 'agent_sources'):
+            for name in ('agent_tool_calls', 'agent_sources', 'agent_model_calls'):
                 schema = MYSQL_SCHEMA[name]
                 columns = ','.join(
                     f"{column['name']} {'TIMESTAMP' if column['type'] == 'datetime' else 'INTEGER' if column['type'] == 'int' else 'TEXT'}"

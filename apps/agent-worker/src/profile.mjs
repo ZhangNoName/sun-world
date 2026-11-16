@@ -16,6 +16,9 @@ export function profile(plugin, skill) {
         row('llm-deepseek-api-key', {
           apiKeyEnv: 'DEEPSEEK_API_KEY',
           streamIdleTimeoutMs: 30_000,
+          thinking: 'disabled',
+          reasoningEffort: 'off',
+          maxTokens: 1024,
         }),
         { ...row('fs-local'), id: 'filesystem' },
         row('working-directory'),

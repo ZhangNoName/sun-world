@@ -2,7 +2,7 @@
   "id": "blog-qa",
   "version": "2",
   "module_id": "blog-content",
-  "content_sha256": "e89c7d821f7af743f537b9522347953731884d430acb350824b1d4aa6ddb12a2",
+  "content_sha256": "f7c66619e26aef7eb27e73929d512b3c55eb1b0632cd8ff3ecfcd5a25a9033df",
   "tool_ids": ["blog.search_public", "blog.read_public"],
   "tool_versions": {
     "blog.search_public": "1",
@@ -10,5 +10,5 @@
   },
   "input_contract": "question/plain-text",
   "output_contract": "answer/sourceIds(uuid)",
-  "evaluation_set": "apps/agent-worker/tests/protocol/root-result.test.mjs"
+  "evaluation_set": "apps/api/tests/fixtures/agent-model-evaluation.json"
 }

@@ -54,8 +54,11 @@ def verified_client(environment):
     try:
         options = client.admin.command('getCmdLineOpts')['parsed']
         server = client.admin.command('serverStatus')
+        unix = options['net'].get('unixDomainSocket', {})
         if (server['pid'] != proof['pid'] or options['storage']['dbPath'] != str(data)
-                or options['net']['bindIp'] != str(socket) or options['net']['port'] != 0):
+                or options['net']['bindIp'] != str(socket) or options['net']['port'] != 0
+                or unix.get('pathPrefix') != str(root)
+                or type(unix.get('filePermissions')) is not int or unix['filePermissions'] != 0o600):
             raise RuntimeError('MongoDB fixture configuration mismatch')
         return client
     except BaseException:
@@ -92,7 +95,7 @@ def owned_mongo(binary):
         descriptor = os.open(root / 'console.log', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(descriptor, 'wb') as output:
             process = subprocess.Popen([str(binary), '--dbpath', str(data), '--bind_ip', str(socket),
-                '--port', '0', '--filePermissions', '0600', '--maxConns', '32',
+                '--port', '0', '--unixSocketPrefix', str(root), '--filePermissions', '0600', '--maxConns', '32',
                 '--wiredTigerCacheSizeGB', '0.25', '--setParameter', 'diagnosticDataCollectionEnabled=false',
                 '--pidfilepath', str(root / 'mongod.pid'), '--logpath', str(root / 'mongod.log')],
                 stdout=output, stderr=subprocess.STDOUT, start_new_session=True,

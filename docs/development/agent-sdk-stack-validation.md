@@ -21,7 +21,7 @@ API测试host使用单个asyncio loop与Uvicorn0.52.4的H11Protocol测试子类�
 
 ## 一次性MongoDB
 
-`scripts/test-agent-mongo.py`提供owned_mongo/verified_client，导入不连接。传入已验证binary，启动私有dbpath与显式Unix socket，bind_ip仅该socket路径、port0、socket0600、root700，WiredTiger cache256MiB、最多32连接；无安装或系统服务。nonce/marker权限与实际getCmdLineOpts、serverStatus.pid须一致，客户端使用该Unix socket、1秒连接/2秒读取、无读写retry。绝不回退到默认27017或业务配置。
+`scripts/test-agent-mongo.py`提供owned_mongo/verified_client，导入不连接。传入已验证binary，启动私有dbpath与显式Unix socket，bind_ip为该socket路径、port0、显式unixSocketPrefix为owned root、所有socket0600、root700，WiredTiger cache256MiB、最多32连接；无安装或系统服务。nonce/marker权限与实际getCmdLineOpts（含unixDomainSocket.pathPrefix/filePermissions）、serverStatus.pid须一致，客户端使用该Unix socket、1秒连接/2秒读取、无读写retry。绝不回退到默认27017或业务配置。
 
 [MongoDB 8.0官方参数文档](https://www.mongodb.com/docs/v8.0/reference/program/mongod/)支持显式Unix socket bind路径。实际lsof核对本实例无TCP LISTEN；正常、合成异常、SIGTERM三种出口均确认owned PID和目录消失。这个单机实例不模拟replica set、故障切换或备份恢复。
 
@@ -54,3 +54,21 @@ Node fixture严格读取首行16KiB exact配置、第二行仅stop，拒绝重�
 Python父即使没收到ACK、Worker已退出，也重新校验PID日志并回收detached SDK组；ACK不明仍保留失败结果。各资源独立清理，前一步失败不能跳过server或数据库关闭；无法证明进程退出则保留私有证据并失败。总启动器回收整个owned测试PGID，不能只检查leader；信号检查PermissionError不是组消失，继续有界检查，只有ESRCH证明回收。
 
 附加 `--interrupt-probe` 仅用于故障验证：等实际SDK进入模型等待后输出安全PID/root证明并等待终止，不运行常规suite。实际向总启动器发SIGTERM，确认退出130、Worker/SDK组与三数据库PID全部消失，四个owned root均删除。该测试仅证明优雅中断路径，SIGKILL整个宿主、系统重启和持久控制器离线处理仍未验收。
+
+## 显式真实模型模式（2026-11-16）
+
+默认六情景仍保留合成模型，新增`--real-model --report <new-file>`只在local runtime运行固定keyless验证模型，不加载业务配置/凭据。固定四题、预算账本、严格适配、报告追溯与失败样本见[模型预算与真实问答验证](agent-model-validation.md)。真实模式不等于生产上线或人工语义验收；SDK固定0.2.2-rc.1，模型只提供alias而未提供不可变权重版本。
+
+### Unix socket隔离修正（2026-11-16）
+
+本轮并行两个SDK启动器时发现：8.0.38即使显式bind_ip到私有socket，仍额外创建默认`/tmp/mongodb-0.sock`；先前仅证明无TCP监听，不能证明所有Unix socket都私有。现按[官方unixSocketPrefix参数](https://www.mongodb.com/docs/v8.0/reference/program/mongod/)把自动socket前缀也限定到owned root，并从实际getCmdLineOpts校验pathPrefix与严格整数0600权限。客户端仍只使用显式私有socket，不连接默认路径。
+
+新增显式真实双实例回归（不进入默认unitgate）：
+
+```bash
+apps/api/.venv/bin/python apps/api/tests/integration/mongo_isolation.py --mongod <verified-mongod>
+```
+
+两个同时运行的实例写相同库名但读回各自不同数据；实际lsof检查每PID全部named Unix socket（显式mongo.sock和自动mongodb-0.sock）均在自己的root且0600、无TCP LISTEN，shared default socket状态未改变。退出后两个PID/root均消失。历史无TCP结论仍成立，历史“仅私有socket”的范围以本修正为准，未把修前真实模型结果冒称已带此隔离。
+
+父reaper的EPERM处理亦已统一：探测拒绝视为未知存活，TERM与CONT独立尝试，有限窗口内仅重试被拒信号，随后尽力KILL；最终仍须ESRCH。实际owned孤儿瞬时/信号/永久拒绝三项回归加入默认API gate，永久拒绝仍保留root且独立测试兜底回收。另见[未定因失败记录](../evaluations/agent-model-2026-11-16/cleanup-observations.md)，不把修复独立缺陷等同已解释所有历史失败。

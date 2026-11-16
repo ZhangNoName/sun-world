@@ -48,7 +48,7 @@ def create_private_run_router(gateway, *, verify_peer):
                               404 if code == 'AGENT_RUN_NOT_FOUND' else
                               422 if code in {'AGENT_INPUT_INVALID', 'AGENT_OUTPUT_INVALID', 'AGENT_TOOL_INVALID'} else
                               429 if code == 'AGENT_BUDGET_EXCEEDED' else
-                              503 if code in {'AGENT_DISABLED', 'AGENT_RUNTIME_UNAVAILABLE', 'AGENT_ADMISSION_UNAVAILABLE', 'AGENT_MODEL_FAILED', 'AGENT_MODEL_TIMEOUT'} else 409)
+                              503 if code in {'AGENT_DISABLED', 'AGENT_RUNTIME_UNAVAILABLE', 'AGENT_ADMISSION_UNAVAILABLE', 'AGENT_MODEL_FAILED', 'AGENT_MODEL_TIMEOUT', 'AGENT_MODEL_USAGE_INVALID'} else 409)
                     raise HTTPException(status, code) from None
                 except HTTPException:
                     raise

@@ -1,9 +1,11 @@
-"""Explicit real SDK/MySQL/Redis/MongoDB/mTLS suite, with synthetic model data.
+"""Explicit real SDK/MySQL/Redis/MongoDB/mTLS suite with fixed synthetic data.
 
 Only scripts/test-agent-sdk-stack.py may supply the owned-server attestations.
-Not collected by the default unit gate; no business config or real provider.
+Default responses are synthetic; --real-model calls the approved keyless model.
+Not collected by the default unit gate; no business config or credentials.
 """
 
+import argparse
 import asyncio
 from contextlib import contextmanager
 import hashlib
@@ -22,6 +24,8 @@ import sys
 import tempfile
 import time
 from uuid import UUID, uuid4
+from datetime import datetime, timezone
+from unittest.mock import patch
 
 import httpx
 import pymysql
@@ -55,6 +59,61 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def model_response_shape(value, expected_model):
+    """Bounded diagnostics: fixed field names/enums, types and counts only."""
+    def mapping(item):
+        return item if type(item) is dict else {}
+    def kind(item):
+        return {type(None): 'NoneType', bool: 'bool', int: 'int', float: 'float',
+                str: 'str', list: 'list', dict: 'dict'}.get(type(item), 'unsupported')
+    def keys(item, allowed):
+        found = sorted(name for name in allowed if name in item)
+        return found, len(item) - len(found)
+    def enum(item, allowed):
+        return item if type(item) is str and item in allowed else None
+    def length(item):
+        return len(item) if type(item) in (str, list, dict) else None
+    shape = mapping(value)
+    known, unknown = keys(shape, ('id', 'object', 'created', 'model', 'choices', 'usage', 'system_fingerprint', 'service_tier'))
+    usage = mapping(shape.get('usage'))
+    choices = shape.get('choices')
+    summaries = []
+    for raw_choice in choices[:2] if type(choices) is list else []:
+        choice = mapping(raw_choice)
+        choice_keys, choice_unknown = keys(choice, ('index', 'message', 'finish_reason', 'logprobs'))
+        message = mapping(choice.get('message'))
+        message_keys, message_unknown = keys(message, ('role', 'content', 'tool_calls', 'refusal',
+            'annotations', 'audio', 'function_call', 'reasoning', 'reasoning_content'))
+        calls = message.get('tool_calls')
+        call_summaries = []
+        for raw_call in calls[:5] if type(calls) is list else []:
+            call = mapping(raw_call)
+            call_keys, call_unknown = keys(call, ('id', 'type', 'function'))
+            function = mapping(call.get('function'))
+            function_keys, function_unknown = keys(function, ('name', 'arguments'))
+            call_summaries.append(dict(keys=call_keys, unknown_field_count=call_unknown,
+                function_keys=function_keys, function_unknown_field_count=function_unknown,
+                name=enum(function.get('name'), ('blog_read_public', 'blog_search_public')),
+                name_type=kind(function.get('name')), id_length=length(call.get('id'))))
+        metadata = {name: dict(type=kind(message[name]), is_null=message[name] is None,
+                    length=length(message[name])) for name in ('annotations', 'audio', 'function_call',
+                    'reasoning', 'reasoning_content', 'refusal') if name in message}
+        summaries.append(dict(keys=choice_keys, unknown_field_count=choice_unknown,
+            index=0 if type(choice.get('index')) is int and choice['index'] == 0 else None,
+            index_type=kind(choice.get('index')),
+            finish_reason=enum(choice.get('finish_reason'), ('stop', 'tool_calls', 'length')),
+            finish_reason_type=kind(choice.get('finish_reason')), message_keys=message_keys,
+            message_unknown_field_count=message_unknown, metadata=metadata,
+            tool_call_count=len(calls) if type(calls) is list else None, tool_calls=call_summaries))
+    return dict(keys=known, unknown_field_count=unknown,
+        model=expected_model if type(shape.get('model')) is str and shape['model'] == expected_model else None,
+        model_type=kind(shape.get('model')), id_type=kind(shape.get('id')), id_length=length(shape.get('id')),
+        usage={name: item if type(item) is int and 0 <= item <= 2_147_483_647 else kind(item)
+               for name in ('prompt_tokens', 'completion_tokens', 'total_tokens') if name in usage
+               for item in (usage[name],)}, choices=summaries,
+        choice_count=len(choices) if type(choices) is list else None)
 
 
 class PeerProtocol(H11Protocol):
@@ -105,16 +164,17 @@ class ContentMongo(MongoDBManager):
 
 
 class Stream:
-    def __init__(self, fixture, *, key=None):
+    def __init__(self, fixture, *, key=None, question=QUESTION):
         self.fixture = fixture
         self.key, self.events = key or str(uuid4()), []
+        self.question = question
         self.started = asyncio.get_running_loop().create_future()
         self.task = asyncio.create_task(self.consume())
         fixture.streams.append(self)
 
     async def consume(self):
         async with self.fixture.client.stream('POST', '/ai/v1/blog-qa/runs/stream',
-                json={'question': QUESTION, 'idempotency_key': self.key},
+                json={'question': self.question, 'idempotency_key': self.key},
                 headers=self.fixture.headers()) as response:
             assert response.status_code == 200, 'SSE request was not accepted'
             async for line in response.aiter_lines():
@@ -129,7 +189,7 @@ class Stream:
         return await asyncio.wait_for(asyncio.shield(self.started), 8)
 
     async def finish(self):
-        await asyncio.wait_for(asyncio.shield(self.task), 25)
+        await asyncio.wait_for(asyncio.shield(self.task), 55 if self.fixture.real_proxy is not None else 25)
 
     async def disconnect(self):
         self.task.cancel()
@@ -137,8 +197,20 @@ class Stream:
 
 
 class Fixture:
-    def __init__(self, mode):
+    def __init__(self, mode, *, case=None):
         self.mode = mode
+        self.case, self.real_proxy, self.model_trace, self.model_id = case, None, [], MODEL
+        if mode == 'real':
+            from src.modules.ai.public import create_keyless_validation_proxy
+            from urllib.parse import urlsplit
+            self.real_proxy = create_keyless_validation_proxy()
+            config = self.real_proxy.config
+            parsed = urlsplit(config.base_url)
+            # Explicit local test profile only; never enable a personal URL or
+            # silently weaken the production Provider host policy.
+            os.environ['AI_PROVIDER_ALLOWED_INSECURE_ORIGINS'] = parsed.scheme + '://' + parsed.netloc
+            self.model_id = config.model
+
         self.root = Path(tempfile.mkdtemp(prefix='sun-world-sdk-stack-', dir='/private/tmp')).resolve()
         self.root.chmod(0o700)
         self.streams, self.model_requests, self.model_steps = [], [], 0
@@ -167,8 +239,11 @@ class Fixture:
             "(1,'synthetic','sdk@example.invalid','synthetic-unused',1)")
         self.pool.execute("INSERT INTO roles(id,name,code) VALUES(1,'synthetic-admin','admin')")
         self.pool.execute('INSERT INTO user_roles(user_id,role_id) VALUES(1,1)')
-        self.pool.execute("INSERT INTO blog(id,title,author,abstract) VALUES(1,'权限检查','synthetic','合成公开文章：后端权限')")
-        self.mongo[self.database].blogs.insert_one({'blogId': 1, 'content': CONTENT})
+        articles = self.case['articles'] if self.case else [dict(id=1, title='权限检查', abstract='合成公开文章：后端权限', content=CONTENT)]
+        for article in articles:
+            self.pool.execute('INSERT INTO blog(id,title,author,abstract) VALUES(%s,%s,%s,%s)',
+                (article['id'], article['title'], 'synthetic', article['abstract']))
+            self.mongo[self.database].blogs.insert_one({'blogId': article['id'], 'content': article['content']})
         self.session_store = OwnedSessionRedis(AgentStackTests.redis, self.namespace + ':auth')
         self.auth = AuthManager(UserManager(self.pool), self.session_store,
             secret_key=secrets.token_urlsafe(32), refresh_reuse_grace_seconds=0)
@@ -216,17 +291,17 @@ class Fixture:
                  'TMPDIR': str(self.root), 'LC_ALL': 'C', 'TZ': 'UTC'})
         specification = dict(protocol=PROTOCOL, runtime_directory=str(self.runtime),
             workspace_root=str(self.root / 'workspaces'), journal_directory=str(self.root / 'journal'),
-            gateway_origin=self.origin, model_id=MODEL, gateway_credential=self.gateway_secret,
+            gateway_origin=self.origin, model_id=self.model_id, gateway_credential=self.gateway_secret,
             worker_credential=self.worker_secret, tls=dict(key=str(self.key), cert=str(self.cert), ca=str(self.cert)),
             read_paths=[str(self.runtime), str(self.node.parent.parent)])
         self.worker_process.stdin.write(json.dumps(specification).encode() + b'\n')
         await self.worker_process.stdin.drain()
         ready = await self.worker_line()
-        assert ready['event'] == 'ready' and ready['bundle_hash'] == self.bundle_hash and ready['model_id'] == MODEL
+        assert ready['event'] == 'ready' and ready['bundle_hash'] == self.bundle_hash and ready['model_id'] == self.model_id
         self.worker = WorkerHttpTransport(ready['origin'], service_credential=self.worker_secret, tls_context=self.tls)
         self.rebuild_application()
         self.client = httpx.AsyncClient(base_url=self.origin, verify=self.tls, trust_env=False,
-            timeout=httpx.Timeout(30, connect=2), follow_redirects=False)
+            timeout=httpx.Timeout(55 if self.real_proxy is not None else 30, connect=2), follow_redirects=False)
         # A spoofed peer header without a TLS client certificate cannot reach
         # either public or private routing on this test-only protected host.
         no_cert = ssl.create_default_context(cafile=str(self.cert))
@@ -238,7 +313,7 @@ class Fixture:
                 pass
             else:
                 raise AssertionError('Missing TLS client certificate was accepted')
-        assert await self.worker.probe(bundle_hash=self.bundle_hash, model_id=MODEL)
+        assert await self.worker.probe(bundle_hash=self.bundle_hash, model_id=self.model_id)
 
     async def worker_line(self):
         async with asyncio.timeout(30):
@@ -250,7 +325,7 @@ class Fixture:
         self.application = create_blog_qa_application(self.pool, ContentMongo(self.mongo[self.database]),
             auth_manager=self.auth, redis_client=AgentStackTests.redis, worker=self.worker,
             model_proxy=self.model, worker_credential=self.gateway_secret, bundle_hash=self.bundle_hash,
-            model_id=MODEL, site_origin=self.origin, user_ids=[1], enabled=lambda: True,
+            model_id=self.model_id, site_origin=self.origin, user_ids=[1], enabled=lambda: True,
             admission_namespace=self.namespace)
         host = FastAPI()
         host.include_router(create_public_run_router(self.application, allowed_origins=[self.origin]))
@@ -271,7 +346,35 @@ class Fixture:
         self.model_steps += 1
         self.model_requests.append(body)
         assert sorted(tool['name'] for tool in body['tools']) == ['blog_read_public', 'blog_search_public']
-        assert body['model'] == MODEL and body['max_tokens'] == 1024 and body['stream'] is False
+        assert body['model'] == self.model_id and body['max_tokens'] == 1024 and body['stream'] is False
+        assert body.get('thinking') == {'type': 'disabled'} and 'output_config' not in body
+        if self.real_proxy is not None:
+            trace = dict(sequence=self.model_steps, request_keys=sorted(body), duration_ms=None, result=None, error=None)
+            self.model_trace.append(trace)
+            started = time.monotonic()
+            try:
+                from src.modules.ai import model_proxy as proxy_module
+                convert = proxy_module.response_to_messages
+                def observe_shape(value, model):
+                    # Observe only structural metadata from the real bounded
+                    # response, then run the exact same strict converter.
+                    # Never capture reasoning text, headers or credentials.
+                    trace['response_shape'] = model_response_shape(value, model)
+                    return convert(value, model)
+                with patch.object(proxy_module, 'response_to_messages', observe_shape):
+                    result = await self.real_proxy(body)
+                # All evaluation prompts/articles are explicit synthetic data.
+                # No credentials/headers enter this model request or report.
+                trace['result'] = result
+                return result
+            except asyncio.CancelledError:
+                trace['error'] = 'CancelledError'
+                raise
+            except Exception as error:
+                trace['error'] = type(error).__name__ + ':' + (str(error) if str(error).startswith('AGENT_') else 'redacted')
+                raise
+            finally:
+                trace['duration_ms'] = round((time.monotonic() - started) * 1000)
         if self.mode == 'hold':
             self.model_started.set()
             try:
@@ -364,26 +467,36 @@ class Fixture:
                     return True
                 except ProcessLookupError:
                     return False
+                except PermissionError:
+                    return True  # Unknown is not absence; only ESRCH confirms.
+            def send(signum):
+                try:
+                    os.killpg(pid, signum)
+                    return True
+                except ProcessLookupError:
+                    return True  # No signal retry is needed for a gone group.
+                except PermissionError:
+                    return False
             if not alive():
                 continue
             self.reaped_groups.append(pid)
-            try:
-                os.killpg(pid, signal.SIGTERM)
-                # A deliberately stopped SDK must run its TERM cleanup rather
-                # than remaining frozen with an undeliverable pending signal.
-                os.killpg(pid, signal.SIGCONT)
-            except ProcessLookupError:
-                pass
+            term_sent = send(signal.SIGTERM)
+            # CONT is independent: a denied TERM must not skip resuming a
+            # deliberately stopped SDK. Retry only denied sends, within bounds.
+            cont_sent = send(signal.SIGCONT)
             deadline = time.monotonic() + 2
             while alive() and time.monotonic() < deadline:
+                if not term_sent:
+                    term_sent = send(signal.SIGTERM)
+                if not cont_sent:
+                    cont_sent = send(signal.SIGCONT)
                 time.sleep(.02)
             if alive():
-                try:
-                    os.killpg(pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
+                kill_sent = send(signal.SIGKILL)
                 deadline = time.monotonic() + 3
                 while alive() and time.monotonic() < deadline:
+                    if not kill_sent:
+                        kill_sent = send(signal.SIGKILL)
                     time.sleep(.02)
             if alive():
                 raise RuntimeError('Owned SDK process group remains after KILL')
@@ -561,16 +674,116 @@ async def crash(fixture):
     assert fixture.worker_stopped is None
 
 
+async def evaluate_real_model(report_path):
+    fixture_path = ROOT / 'apps/api/tests/fixtures/agent-model-evaluation.json'
+    raw = fixture_path.read_bytes()
+    dataset = json.loads(raw)
+    if (dataset.get('version') != 'sun-world-agent-evaluation/1'
+            or dataset.get('data_kind') != 'synthetic-public-articles' or len(dataset.get('cases', [])) != 4):
+        raise ValueError('Fixed synthetic evaluation dataset required')
+    report = dict(version='sun-world-agent-model-report/1', recorded_at=datetime.now(timezone.utc).isoformat(),
+        dataset_sha256=hashlib.sha256(raw).hexdigest(), dataset=dataset, sdk_version='0.2.2-rc.1',
+        model_id=None, upstream_model_revision='not advertised; alias only', input_tokenizer_verified=False,
+        evaluation_status='running', human_semantic_review='pending', cases=[],
+        implementation_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
+            'apps/api/src/modules/ai/model_proxy.py', 'apps/api/src/modules/agent_runtime/model_budget.py',
+            'apps/api/src/modules/agent_runtime/gateway.py')})
+    # Exclusive creation never overwrites an earlier evaluation or user file.
+    descriptor = os.open(report_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, 'w') as output:
+        def save():
+            output.seek(0)
+            json.dump(report, output, ensure_ascii=False, indent=2, allow_nan=False)
+            output.write('\n')
+            output.truncate()
+            output.flush()
+            os.fsync(output.fileno())
+        save()
+        for case in dataset['cases']:
+            fixture = Fixture('real', case=case)
+            report['model_id'] = fixture.model_id
+            record = dict(id=case['id'], duration_ms=None, pipeline_error=None, cleanup_error=None,
+                actual=None, budget=None, model_trace=fixture.model_trace, checks=None,
+                human_semantic_review='pending')
+            report['cases'].append(record)
+            started, cleanup_error = time.monotonic(), None
+            try:
+                await fixture.start()
+                catalog = json.loads((fixture.runtime / 'tool-catalog.json').read_text())
+                record['bundle_hash'] = fixture.bundle_hash
+                record['skill_sha256'] = next(skill['content_sha256'] for skill in catalog['product_skills']
+                                              if skill['id'] == 'blog-qa' and skill['version'] == '2')
+                record['sdk_profile_sha256'] = hashlib.sha256((fixture.runtime / 'profile.mjs').read_bytes()).hexdigest()
+                stream = Stream(fixture, question=case['question'])
+                run_id = await stream.run_id()
+                await stream.finish()
+                row = await fixture.settled(run_id)
+                response = await fixture.request('GET', '/runs/' + run_id)
+                assert response.status_code == 200
+                state = response.json()['data']
+                answer = state['answer'] or ''
+                record['actual'] = state
+                record['budget'] = {key: row[key] for key in ('model_count', 'tool_count', 'model_input_bytes',
+                    'model_output_tokens_reserved', 'model_response_bytes_reserved', 'model_input_tokens_observed',
+                    'model_output_tokens_observed', 'model_response_bytes_observed', 'model_usage_unknown_count')}
+                record['checks'] = dict(pipeline_completed=state['status'] == 'completed',
+                    source_ids_match=sorted(source['article_id'] for source in state['sources']) == sorted(case['expected_article_ids']),
+                    required_facts_present=all(any(term in answer for term in alternatives)
+                                              for alternatives in case['required_fact_groups']),
+                    forbidden_fragments_absent=not any(term in answer for term in case['forbidden_answer_fragments']),
+                    model_reservations_bounded=(1 <= row['model_count'] <= 4
+                        and row['model_output_tokens_reserved'] == row['model_count'] * 1024
+                        and row['model_response_bytes_reserved'] == row['model_count'] * 65536
+                        and row['model_input_bytes'] <= 262144))
+            except asyncio.CancelledError:
+                report['evaluation_status'] = 'interrupted'
+                record['pipeline_error'] = 'CancelledError'
+                raise
+            except Exception as error:
+                record['pipeline_error'] = type(error).__name__
+            finally:
+                record['duration_ms'] = round((time.monotonic() - started) * 1000)
+                from src.modules.agent_runtime.cleanup import finish_cleanup
+                try:
+                    await finish_cleanup(fixture.close())
+                except Exception as error:
+                    cleanup_error = error
+                    record['cleanup_error'] = type(error).__name__
+                    report['evaluation_status'] = 'cleanup_failed'
+                record['worker_observation'] = fixture.worker_stopped
+                save()
+            if cleanup_error:
+                raise RuntimeError('Evaluation cleanup unconfirmed; do not start another case') from None
+            passed = record['checks'] is not None and all(record['checks'].values()) and record['pipeline_error'] is None
+            print('Real model evaluation case ' + case['id'] + ': ' + ('structural checks passed' if passed else 'requires review'), flush=True)
+        report['structural_checks_passed'] = all(case['checks'] and all(case['checks'].values())
+            and not case['pipeline_error'] and not case['cleanup_error'] for case in report['cases'])
+        report['evaluation_status'] = 'structural_passed' if report['structural_checks_passed'] else 'structural_failed'
+        save()
+    if not report['structural_checks_passed']:
+        raise RuntimeError('Real model evaluation has failed cases; inspect the synthetic report')
+    print('Real model 4-case structural evaluation passed; semantic/human review and input tokenizer remain pending.', flush=True)
+
+
 async def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    options = parser.add_mutually_exclusive_group()
+    options.add_argument('--interrupt-probe', action='store_true')
+    options.add_argument('--real-model', action='store_true')
+    parser.add_argument('--report', type=Path)
+    arguments = parser.parse_args()
+    if arguments.real_model != (arguments.report is not None):
+        raise ValueError('Real model evaluation requires a new explicit report path')
     task = asyncio.current_task()
     loop = asyncio.get_running_loop()
     for signum in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(signum, task.cancel)
     AgentStackTests.setUpClass()
     try:
-        if sys.argv[1:] not in ([], ['--interrupt-probe']):
-            raise ValueError('Unknown explicit integration option')
-        if sys.argv[1:] == ['--interrupt-probe']:
+        if arguments.real_model:
+            await evaluate_real_model(arguments.report)
+            return
+        if arguments.interrupt_probe:
             fixture = Fixture('hold')
             try:
                 await fixture.start()

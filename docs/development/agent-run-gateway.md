@@ -28,7 +28,7 @@ finish入口先检查服务/result凭据；C1的commit_answer改为必须提供�
 
 授权/来源检查后，最终消息与completed/结果摘要同事务提交；结束前再验时限。相同已完成回调仍验证当前身份和来源；不会再写消息。该检查仍是跨MySQL/Mongo观察边界，不承诺提交瞬间文章永不变化。
 
-模型调用同事务预扣每run最多4次，失败、取消或回执不明不返还。body最多128KiB，拒绝凭据/地址/owner配置字段，模型名由服务器覆盖，max_tokens固定1024。代理使用既有受审查StructuredModelProxy；最多等30秒且不越过总deadline，等待中每0.1秒重验运行/身份；撤销后取消代理任务并等待清理。模型结果最多256KiB，限定已知stop_reason和固定model；未知结果失败。provider的网络固定/响应上限沿用AI模块，不从模型参数选择出站目标。
+模型调用同事务预扣每run最多4次，失败、取消或回执不明不返还。body最多128KiB，拒绝凭据/地址/owner配置字段，模型名由服务器覆盖，max_tokens固定1024。代理使用既有受审查StructuredModelProxy；最多等30秒且不越过总deadline，等待中每0.1秒重验运行/身份；撤销后取消代理任务并等待清理。模型结果上限已在2026-11-16收紧到每次64KiB，限定已知stop_reason和固定model；未知结果失败。provider的网络固定/响应上限沿用AI模块，不从模型参数选择出站目标。
 
 工具最多4次、完整工具响应累计64KiB；这些只是当前P1开发预算，不是容量或模型语义质量保证。总token、Linux内存/PID硬限制、TLS/网络规则仍按B验收，不因库单测通过就开放内测。
 
@@ -51,3 +51,7 @@ C3继续补正式调度/路由、会话与准入、内外协议契约、API重�
 正式运行UOW已单独采用READ COMMITTED，不改变旧业务默认隔离。当前账户/角色与来源元数据查询都复用UOW，采用非锁定当前语句读取，不在持有run锁后反向锁用户行。已在一次性MySQL8.4.13验证当前读、默认隔离不泄漏、2连接等待场景和回滚；详见[MySQL与会话验证](agent-run-mysql-validation.md)。
 
 已新增复用AuthManager/SessionAuthenticator的RunSessionAuthorizer与只读名单策略，只有易失已验证token绑定，重启/过期失败关闭；没有直接注册HTTP或组合到旧SQLite入口。真实Redis/SDK、dispatcher/router、数据库崩溃恢复矩阵与B隔离仍未完成。
+
+## 模型持久预占与真实评测（2026-11-16）
+
+每run四次模型调用之外，新增输出token/响应字节的先提交预占及actual/unknown计量、累计canonical请求字节限制。30秒请求deadline和独立清理排空分开；严格供应商usage不可补零。真实固定SDK四题评测已进入显式本地模式，输入tokenizer与人工语义验收仍未完成。详情见[模型预算与验证](agent-model-validation.md)，不能把历史C2的合成模型证据当作当前真实评测。

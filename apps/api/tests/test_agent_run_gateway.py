@@ -76,7 +76,8 @@ class AgentRunGatewayTests(unittest.TestCase):
         self.after_read = None
         self.service_secret = 'S' * 43
         async def proxy(body):
-            return {'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': 'reply'}], 'model': body['model']}
+            return {'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': 'reply'}], 'model': body['model'],
+                    'usage': {'input_tokens': 10, 'output_tokens': 5}}
         self.gateway = RunGateway(self.ledger, registry=create_module_registry(),
             handlers={'blog.search_public': self.search, 'blog.read_public': self.read},
             enabled=lambda: self.flag, authorize=lambda *_: self.current, allow=lambda *_: self.allowed,

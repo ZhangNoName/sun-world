@@ -126,6 +126,7 @@
       "additionalProperties": false,
       "properties": {
         "query": {
+          "description": "按标题或摘要匹配连续片段；每次只用一个简短核心词，不用空格拼接多词。",
           "maxLength": 200,
           "minLength": 1,
           "title": "Query",
@@ -220,7 +221,7 @@
       "id": "blog-qa",
       "version": "2",
       "module_id": "blog-content",
-      "content_sha256": "e89c7d821f7af743f537b9522347953731884d430acb350824b1d4aa6ddb12a2",
+      "content_sha256": "f7c66619e26aef7eb27e73929d512b3c55eb1b0632cd8ff3ecfcd5a25a9033df",
       "tool_ids": [
         "blog.search_public",
         "blog.read_public"
@@ -231,8 +232,8 @@
       },
       "input_contract": "question/plain-text",
       "output_contract": "answer/sourceIds(uuid)",
-      "evaluation_set": "apps/agent-worker/tests/protocol/root-result.test.mjs"
+      "evaluation_set": "apps/api/tests/fixtures/agent-model-evaluation.json"
     }
   ],
-  "bundle_hash": "e72ad8bc56e7bf96dd8940fd78a6bcb059588e6f1c8aadd27176bb9b5f0195dd"
+  "bundle_hash": "8ea34c5ca724d9648827e2d3f1fafe5e70b3e49fb26385441389947ec8967d10"
 }

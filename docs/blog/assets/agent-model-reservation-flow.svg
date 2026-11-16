@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="420" viewBox="0 0 360 420" role="img" aria-labelledby="title desc">
+  <title id="title">模型请求的预算预占与用量记录</title>
+  <desc id="desc">出网前先在数据库预占，模型返回可核对的响应时记录用量，否则记录未知，两条路径都保留预占。</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#64748b"/></marker></defs>
+  <g fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrow)">
+    <path d="M180 60V92"/><path d="M180 150V182"/>
+    <path d="M180 240V264H88V310"/><path d="M180 264H272V310"/>
+  </g>
+  <g stroke-width="1.4">
+    <rect x="114" y="14" width="132" height="46" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+    <rect x="74" y="92" width="212" height="58" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <rect x="74" y="182" width="212" height="58" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <rect x="10" y="310" width="156" height="82" rx="10" fill="#f0fdf4" stroke="#86b99b"/>
+    <rect x="194" y="310" width="156" height="82" rx="10" fill="#fffbeb" stroke="#d6b570"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'PingFang SC', sans-serif" font-size="16" text-anchor="middle" fill="#1e293b">
+    <text x="180" y="43">模型请求</text>
+    <text x="180" y="117">数据库</text><text x="180" y="139">先提交预占</text>
+    <text x="180" y="207">模型服务</text><text x="180" y="229">再发出请求</text>
+    <text x="88" y="292">响应可核对</text><text x="272" y="292">失败或不明</text>
+    <text x="88" y="343">记录用量</text><text x="88" y="367">保留预占</text>
+    <text x="272" y="343">记录未知</text><text x="272" y="367">保留预占</text>
+  </g>
+</svg>

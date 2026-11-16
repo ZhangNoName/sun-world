@@ -155,6 +155,12 @@ class EmptyRedis:
 
 @unittest.skipUnless(os.name == 'posix', 'Owned process groups require POSIX')
 class AgentSdkFixtureCleanupTests(unittest.IsolatedAsyncioTestCase):
+    async def test_real_model_refuses_production_before_creating_fixture_root(self):
+        with patch.dict(os.environ, {'BLOG_RUNTIME_ENV': 'production'}), patch.object(sdk_stack.tempfile, 'mkdtemp') as create:
+            with self.assertRaises(ValueError):
+                sdk_stack.Fixture('real')
+        create.assert_not_called()
+
     async def test_transient_permission_denial_then_esrch_preserves_result_or_interrupt(self):
         # OS permission failures are injected; the two adjacent tests exercise
         # actual owned groups. Never try producing EPERM against another user.
@@ -255,6 +261,90 @@ class AgentSdkFixtureCleanupTests(unittest.IsolatedAsyncioTestCase):
                         process.kill()
                     await asyncio.wait_for(process.wait(), 3)
                     process.stdin.close()
+
+    async def _owned_reaper_permission_fault(self, denied_signal=None, *, permanent=False):
+        with tempfile.TemporaryDirectory(prefix='sun-world-sdk-cleanup-') as temporary:
+            root = Path(temporary).resolve()
+            with patch.object(sdk_stack.tempfile, 'mkdtemp', return_value=str(root)):
+                fixture = sdk_stack.Fixture('synthetic-permission-only')
+            fixture.expected_worker_crash = True
+            workspace = root / 'workspaces'
+            workspace.mkdir(mode=0o700)
+            record, ready = workspace / 'fixture-processes.jsonl', root / 'child-ready'
+            redis, cleanup = EmptyRedis(), []
+            class Pool:
+                def close(self):
+                    cleanup.append(not group_exists(json.loads(record.read_text())['pid']))
+            fixture.pool = Pool()
+            # Keep the leader alive until our explicit KILL; the child is an
+            # owned, fsynced detached group with its own independent safety net.
+            leader_code = DETACHED_GROUP_LEADER.replace('raise SystemExit(1)', 'time.sleep(60)')
+            with OwnedOrphan(record, child_field='pid', group_field='pid') as orphan:
+                process = await asyncio.create_subprocess_exec(sys.executable, '-c', leader_code,
+                    str(record), str(ready), stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL, start_new_session=True, env=environment(root))
+                fixture.worker_process = process
+                try:
+                    deadline = time.monotonic() + 4
+                    while not ready.exists() and time.monotonic() < deadline:
+                        await asyncio.sleep(.01)
+                    self.assertTrue(ready.exists())
+                    sdk_group = orphan.read()['pid']
+                    os.killpg(sdk_group, signal.SIGSTOP)
+                    process.kill()
+                    await asyncio.wait_for(process.wait(), 3)
+                    self.assertEqual(-signal.SIGKILL, process.returncode)
+                    original_killpg, calls, denials = os.killpg, [], []
+                    def fault(pid, signum):
+                        if pid == sdk_group:
+                            calls.append(signum)
+                            if permanent or (signum == denied_signal and not denials):
+                                denials.append(signum)
+                                raise PermissionError()
+                        return original_killpg(pid, signum)
+                    with patch.object(sdk_stack.AgentStackTests, 'redis', redis, create=True), \
+                            patch.object(sdk_stack.os, 'killpg', side_effect=fault):
+                        if permanent:
+                            with self.assertRaisesRegex(RuntimeError, '^SDK stack cleanup is unconfirmed$') as failure:
+                                await asyncio.wait_for(fixture.close(), 8)
+                            self.assertRegex(str(failure.exception.__cause__), '^Owned SDK process group remains after KILL$')
+                        else:
+                            await asyncio.wait_for(fixture.close(), 8)
+                    self.assertEqual([sdk_group], fixture.reaped_groups)
+                    self.assertIn(signal.SIGTERM, calls)
+                    self.assertIn(signal.SIGCONT, calls)
+                    self.assertIn(signal.SIGKILL, calls)
+                    self.assertEqual([fixture.namespace + '*'], redis.scans)
+                    if permanent:
+                        self.assertTrue(group_exists(sdk_group))
+                        self.assertTrue(root.exists())
+                        self.assertEqual([False], cleanup)
+                    else:
+                        self.assertEqual([denied_signal], denials)
+                        self.assertFalse(group_exists(sdk_group))
+                        self.assertFalse(root.exists())
+                        self.assertEqual([True], cleanup)
+                        if denied_signal:
+                            self.assertGreaterEqual(calls.count(denied_signal), 2)
+                finally:
+                    if process.returncode is None:
+                        process.kill()
+                    await asyncio.wait_for(process.wait(), 3)
+                    process.stdin.close()
+            # The independent safety net, outside the fault patch, also proves
+            # permanent-denial tests never leave their synthetic orphan alive.
+            self.assertFalse(group_exists(sdk_group))
+
+    async def test_sdk_reaper_transient_inspection_denial_still_reaps_actual_orphan(self):
+        await self._owned_reaper_permission_fault(0)
+
+    async def test_sdk_reaper_retries_denied_signals_and_continues_other_signals(self):
+        for signum in (signal.SIGTERM, signal.SIGCONT, signal.SIGKILL):
+            with self.subTest(signum=signum):
+                await self._owned_reaper_permission_fault(signum)
+
+    async def test_sdk_reaper_permanent_denial_preserves_failure_and_evidence(self):
+        await self._owned_reaper_permission_fault(permanent=True)
 
     async def test_pid_journal_rejects_current_group_or_nonprivate_mode_before_signalling(self):
         with tempfile.TemporaryDirectory(prefix='sun-world-sdk-cleanup-') as temporary:

@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 模型预算与真实模型评测
+
+- 新增模型持久预占与actual/unknown账本，先提交再出网、失败不退款/不重放；输出token与响应字节分别限额，输入bytes不冒称token硬限。严格固定SDK/供应商适配及四题真实keyless模型评测见[模型验证](development/agent-model-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。main/旧入口未切换，未推送部署。
+- API609、Worker60、CLI17、contracts6与定向门禁通过，native MySQL17通过。四题保留失败样本，修默认推理控制/metadata兼容/检索指导后通过结构与独立agent语义复核；未改题或扩大预算，报告shape自由值泄漏与Mongo默认Unix socket共享两项review问题均已修，纯回归/双实例实际监听检查通过；人工签字/input tokenizer/不可变上游版本仍缺。最终9b2834快照串行通过SDK六情景/真实四题与SIGTERM130回收，源码清单和失败历史均保留；详见分支交接。
+- 新博客05讲先预占、未知不退与bytes≠tokens，后端及原三标签、透明SVG；3033独立正文1280/390预览通过，未发布，预览使用dirty renderer/CSS。Linux隔离/留存/旧库与崩溃/生产TLS继续按计划；P1/A–D未整体完成，其他dirty及原格式/CSS门禁问题保留。
+
 ## 2026-11-16 固定SDK与真实三库整栈
 
 - 显式本地suite连接实际固定SDK、正式public/private API、MySQL/Redis/MongoDB与双向mTLS，工具走博客public facade。实际TLS transport生成peer attestation，伪造header不能通过。生产main/旧页面未切换；模型与文章数据仍为合成。见[整栈实证](development/agent-sdk-stack-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。

@@ -5,6 +5,21 @@ import asyncio
 import anyio
 
 
+async def run_sync(function, *args, **kwargs):
+    """Drain an in-flight sync transaction before propagating cancellation."""
+    task = asyncio.create_task(asyncio.to_thread(function, *args, **kwargs))
+    try:
+        return await asyncio.shield(task)
+    except asyncio.CancelledError:
+        async def drain():
+            try:
+                await asyncio.shield(task)
+            except Exception:
+                pass
+        await finish_cleanup(drain())
+        raise
+
+
 async def finish_cleanup(cleanup):
     """Drain cleanup despite request-scope or repeated asyncio cancellation.
 

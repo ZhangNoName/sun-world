@@ -1,0 +1,10 @@
+Disposable MySQL 8.4.13; Unix socket only; no shared config loaded.
+Owned runtime: /private/tmp/sunworld-agent-mysql-vsa5jkjw
+SDK stack passed: success/recovery
+SDK stack passed: explicit cancel
+SDK stack passed: browser TLS disconnect
+2026-11-16 14:37:41.629 | WARNING  | src.controller.auth_manager:verify_token:471 - Token mismatch in Redis: user_id=1, device_id=c8d9d45b-a5d5-4d5a-b9d1-99c8fc696b58
+SDK stack passed: live Redis session revoke
+SDK stack passed: withdraw before final commit
+SDK stack failed (RuntimeError); no business configuration was loaded.
+Owned mysqld stopped; disposable datadir removed on exit.

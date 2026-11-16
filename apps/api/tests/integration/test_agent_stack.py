@@ -230,7 +230,8 @@ class AgentStackTests(unittest.IsolatedAsyncioTestCase):
     def make_application(self):
         async def model(body):
             self.model_calls += 1
-            return {'model': body['model'], 'stop_reason': 'end_turn', 'content': []}
+            return {'model': body['model'], 'stop_reason': 'end_turn', 'content': [],
+                    'usage': {'input_tokens': 10, 'output_tokens': 5}}
         application = RunApplication(self.ledger, auth_manager=self.auth, admission=self.admission,
             worker=self.worker, registry=create_module_registry(),
             handlers={'blog.search_public': lambda *_: {'items': []}, 'blog.read_public': self.read},

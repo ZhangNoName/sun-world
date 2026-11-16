@@ -69,8 +69,19 @@ def main():
     for name in ('mysqld', 'redis-server', 'mongod', 'sdk-runtime', 'node'):
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--interrupt-probe', action='store_true')
+    parser.add_argument('--real-model', action='store_true')
+    parser.add_argument('--report', type=Path)
     arguments = parser.parse_args()
     try:
+        if arguments.real_model and (arguments.interrupt_probe or arguments.report is None):
+            raise ValueError('Real model evaluation requires a new report and cannot interrupt-probe')
+        if not arguments.real_model and arguments.report is not None:
+            raise ValueError('Report is only for explicit real model evaluation')
+        if arguments.real_model:
+            sys.path.insert(0, str(ROOT / 'apps/api'))
+            from src.core.runtime_env import is_local_runtime
+            if not is_local_runtime():
+                raise ValueError('Real model fixture is restricted to local runtime')
         if sys.platform != 'darwin':
             raise ValueError('Explicit macOS sandbox-exec fixture only')
         node = arguments.node.expanduser().resolve(strict=True)
@@ -87,7 +98,9 @@ def main():
                 'SUN_WORLD_AGENT_SDK_RUNTIME': str(runtime), 'SUN_WORLD_AGENT_SDK_NODE': str(node)}
             return mysql.run(arguments.mysqld, extra_env=environment, test_runner=owned_test_process,
                 test_command=[sys.executable, str(ROOT / 'apps/api/tests/integration/sdk_stack.py'),
-                              *(['--interrupt-probe'] if arguments.interrupt_probe else [])])
+                              *(['--interrupt-probe'] if arguments.interrupt_probe else []),
+                              *(['--real-model', '--report', str(arguments.report.resolve())] if arguments.real_model else [])],
+                test_timeout_seconds=300 if arguments.real_model else 180)
     except KeyboardInterrupt:
         print('SDK stack interrupted; owned shutdown requested and drained.', file=sys.stderr)
         return 130

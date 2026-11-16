@@ -19,9 +19,10 @@ from uuid import uuid4
 from src.core.auth import Principal
 from src.core.csrf import canonical_origin
 from src.modules.ai.public import agent_answer_blocks
-from .cleanup import finish_cleanup
+from .cleanup import finish_cleanup, run_sync
 from .journal import ToolJournal
 from .ledger import LedgerError, digest, family_hash
+from .model_budget import ModelJournal, model_usage
 
 
 TOOL_IDS = frozenset({'blog.search_public', 'blog.read_public'})
@@ -30,7 +31,7 @@ NO_SOURCES = '未找到相关公开文章。'
 
 def encode(value):
     try:
-        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
     except (TypeError, ValueError, UnicodeError):
         raise LedgerError('AGENT_INPUT_INVALID') from None
 
@@ -284,28 +285,49 @@ class RunGateway:
         if (not isinstance(body, dict) or len(encode(body)) > 131072
                 or set(body) & {'api_key', 'headers', 'base_url', 'url', 'provider', 'user_id', 'run_id', 'owner'}):
             raise LedgerError('AGENT_INPUT_INVALID')
+        # These are server-owned limits, never accepted from Worker/request
+        # fields. Byte accounting is not a substitute for an input tokenizer.
+        from src.modules.ai.public import STRUCTURED_MODEL_LIMITS as limits
+        payload = {**body, 'model': self.model_id, 'stream': False, 'max_tokens': limits.max_output_tokens}
+        request_bytes = len(encode(payload))
+        call_id, accounting = str(uuid4()), ModelJournal()
+        context = {'may_exist': False, 'observed': False}
         async def invoke():
             def reserve():
                 with self.ledger.unit_of_work() as uow:
                     row, _ = self._check(uow, call, 'model')
-                    self.journal.reserve_model(uow, row)
+                    accounting.reserve(uow, row, input_bytes=request_bytes, request_hash=digest(payload),
+                                       call_id=call_id, now=self.ledger.now(), limits=limits)
+                    context['may_exist'] = True
                     uow.commit()
                     return row
-            row = await asyncio.to_thread(reserve)
+            row = await run_sync(reserve)
             remaining = (row['deadline'] - self.ledger.now()).total_seconds()
+            if remaining <= 0:
+                raise LedgerError('AGENT_EXECUTION_EXPIRED')
             async with asyncio.timeout(min(30, max(0, remaining))):
-                task = asyncio.create_task(self.model_proxy({**body, 'model': self.model_id, 'stream': False, 'max_tokens': 1024}))
+                task = asyncio.create_task(self.model_proxy(payload))
                 try:
                     while not task.done():
                         await asyncio.wait({task}, timeout=.1)
-                        await asyncio.to_thread(self._validate, call, 'model')
+                        await run_sync(self._validate, call, 'model')
                     result = await task
                     if (not isinstance(result, dict) or result.get('stop_reason') not in {'end_turn', 'tool_use', 'max_tokens'}
                             or not isinstance(result.get('content'), list) or result.get('model', self.model_id) != self.model_id):
                         raise LedgerError('AGENT_MODEL_FAILED')
-                    if len(encode(result)) > 262144:
+                    response_bytes = len(encode(result))
+                    if response_bytes > limits.max_response_bytes:
                         raise LedgerError('AGENT_BUDGET_EXCEEDED')
-                    await asyncio.to_thread(self._validate, call, 'model')
+                    usage = model_usage(result, response_bytes, limits=limits)
+                    def observe():
+                        with self.ledger.unit_of_work() as uow:
+                            current = self.ledger._binding(uow, call.run_id, call.execution_id, call.generation)
+                            accounting.observe(uow, current, call_id, usage=usage,
+                                               result_hash=digest(result), now=self.ledger.now())
+                            uow.commit()
+                            context['observed'] = True
+                    await run_sync(observe)
+                    await run_sync(self._validate, call, 'model')
                     return result
                 finally:
                     async def cleanup():
@@ -321,3 +343,18 @@ class RunGateway:
             raise LedgerError('AGENT_MODEL_TIMEOUT') from None
         except Exception:
             raise LedgerError('AGENT_MODEL_FAILED') from None
+        finally:
+            if context['may_exist'] and not context['observed']:
+                def mark_unknown():
+                    with self.ledger.unit_of_work() as uow:
+                        row = self.ledger._binding(uow, call.run_id, call.execution_id, call.generation)
+                        accounting.unknown(uow, row, call_id, now=self.ledger.now())
+                        uow.commit()
+                async def cleanup_accounting():
+                    try:
+                        await run_sync(mark_unknown)
+                    except Exception:
+                        # Unknown DB acknowledgements never refund or trigger
+                        # another provider request. A reserved row stays charged.
+                        pass
+                await finish_cleanup(cleanup_accounting())

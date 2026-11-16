@@ -5,7 +5,7 @@ import hmac
 from datetime import timezone
 from uuid import uuid4
 
-from .cleanup import finish_cleanup
+from .cleanup import finish_cleanup, run_sync
 from .gateway import token_hash
 from .ledger import ENGINE, TERMINAL, LedgerError, digest, uuid_text
 from .rpc import PROTOCOL, ExecutionAck, ExecutionBinding, ExecutionStart
@@ -92,19 +92,7 @@ class RunDispatcher:
         except Exception:
             raise LedgerError('AGENT_DISPATCH_UNCONFIRMED') from None
 
-    @staticmethod
-    async def _db(function, *args, **kwargs):
-        task = asyncio.create_task(asyncio.to_thread(function, *args, **kwargs))
-        try:
-            return await asyncio.shield(task)
-        except asyncio.CancelledError:
-            async def drain():
-                try:
-                    await asyncio.shield(task)
-                except Exception:
-                    pass
-            await finish_cleanup(drain())
-            raise
+    _db = staticmethod(run_sync)
 
     async def _io(self, method, payload, *, row=None):
         timeout = IO_TIMEOUT

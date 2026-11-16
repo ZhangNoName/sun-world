@@ -6,7 +6,8 @@ class ToolInput(BaseModel):
 
 
 class BlogSearchPublicInput(ToolInput):
-    query: str = Field(min_length=1, max_length=200)
+    query: str = Field(min_length=1, max_length=200,
+                      description='按标题或摘要匹配连续片段；每次只用一个简短核心词，不用空格拼接多词。')
     limit: int = Field(default=10, ge=1, le=10)
 
     @field_validator("query", mode="before")

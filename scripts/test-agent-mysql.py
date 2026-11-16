@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(binary, *, test_command=None, extra_env=None, test_runner=None):
+def run(binary, *, test_command=None, extra_env=None, test_runner=None, test_timeout_seconds=180):
     import pymysql
     binary = binary.expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
@@ -87,8 +87,10 @@ def run(binary, *, test_command=None, extra_env=None, test_runner=None):
                 if (not isinstance(command, (tuple, list)) or not command
                         or any(not isinstance(value, str) or not value for value in command)):
                     raise ValueError('Explicit nonempty test command required')
+                if type(test_timeout_seconds) is not int or not 1 <= test_timeout_seconds <= 600:
+                    raise ValueError('Bounded test timeout required')
                 tests = (test_runner or subprocess.run)(command,
-                    cwd=ROOT, env=env, timeout=180)
+                    cwd=ROOT, env=env, timeout=test_timeout_seconds)
                 return tests.returncode
             finally:
                 if process is not None and process.poll() is None:

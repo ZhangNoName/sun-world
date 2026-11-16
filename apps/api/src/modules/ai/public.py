@@ -2,7 +2,7 @@
 
 from src.core.runtime_env import is_local_runtime
 from .agent_history import AgentHistoryTransactions, agent_answer_blocks
-from .model_proxy import StructuredModelProxy
+from .model_proxy import StructuredModelProxy, STRUCTURED_MODEL_LIMITS
 from .providers import ProviderConfig
 
 

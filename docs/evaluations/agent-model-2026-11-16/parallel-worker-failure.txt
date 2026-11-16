@@ -1,0 +1,84 @@
+
+> sun-world@1.0.0 test:agent-worker /private/tmp/sun-world-model-snapshot-p2rmnolc
+> node --test apps/agent-worker/tests/protocol/*.test.mjs
+
+✔ actual mTLS readiness is bound, stays ready while busy, and closes conservatively (293.459792ms)
+✔ actual mTLS V2 endpoints start, inspect without body, cancel, and never expose credentials (178.576ms)
+✔ client certificate, explicit certificate policy, service credential and V2 header are all mandatory (162.986ms)
+✔ strict bounded JSON and fixed routes reject duplicate identity, compression, oversized and GET bodies (143.044958ms)
+✔ wrong ACK binding and private service errors become fixed bounded responses (78.959916ms)
+✔ the HTTP deadline bounds an unresponsive trusted service without logging payloads (2040.525917ms)
+✔ factory rejects relaxed TLS and missing certificate policy without listening (59.457417ms)
+✔ promise-returning peer policies never admit a request or create unhandled rejections (114.769875ms)
+✔ an untrusted client certificate is rejected during the actual TLS handshake (83.265584ms)
+✔ start intent is durable before runner, identical retries never start twice, and journal has no payload (91.930417ms)
+✔ cancel-before-start tombstone survives a clean controller restart and is never evicted (91.302208ms)
+✔ cancel while start is pending persists intent and retains active capacity until true stop (129.422792ms)
+✔ failed stop is unconfirmed, retains capacity and lock, and cannot pretend cancelled (73.919583ms)
+✔ recovered running records become interrupted without replay or claiming old process cleanup (106.814083ms)
+✔ close drains pending start and rejects new admission before releasing controller lock (97.348375ms)
+✔ unsafe directory, symlinked journal record and concurrent owner fail closed (75.302791ms)
+✔ profile, generation and deadline checks reject without runner side effects (28.963083ms)
+✔ journal write failure still attempts owned stop without a successful durable ACK (119.868167ms)
+✔ deadline autonomously stops a known execution without waiting for API cancellation (582.54425ms)
+✔ a cleaned runner start failure is terminal and never replays the same request (75.49325ms)
+✔ deadline is rechecked after durable intent and before any runner launch (49.06975ms)
+✔ done confirmation cannot free capacity while an owned stop operation is still in flight (87.572917ms)
+✔ pending start RPCs are bounded independently from cancellation controls (124.866125ms)
+✔ fast done plus terminal journal failure cannot return a successful start ACK (87.751292ms)
+✔ actual HTTPS client scopes credentials, verifies digest and acknowledges before exposing UUID (129.522458ms)
+✔ altered hash/call/source never gets a delivery receipt or reaches final commit (70.715459ms)
+✔ unknown certificate, forbidden configuration and closed client fail without retries (61.1665ms)
+✔ redirect response is rejected after exactly one request (67.14475ms)
+✔ oversize tool result is refused before a receipt (115.957167ms)
+✔ local call budget rejects additional model work before transport (59.064417ms)
+✔ successful owned process is gone and workspace removed before done resolves (76.474292ms)
+✔ TERM-ignoring process receives KILL and no owned PID/group or home remains (352.632334ms)
+✔ failed spawn cleans only its owned workspace and rejects without a process handle (17.901209ms)
+✖ a child remaining after its parent exits is reaped with the owned group (40008.846458ms)
+✔ deadline is checked again after asynchronous launcher preparation before spawn (157.117958ms)
+✔ only one completed matching root turn may yield an answer (0.621208ms)
+✔ nested and interrupted assistant messages are not final output (0.063542ms)
+✔ adapter retains tool IDs, JSON argument chunks and stop reasons (0.134584ms)
+✔ completed root is tied to prompt inbox receipt and UUID sources (2.733125ms)
+✔ foreign session/request/turn, duplicate terminal, truncation and interrupted output fail closed (0.310875ms)
+✔ model JSON cannot invent integer IDs, duplicate UUIDs, extra keys or nonfinite values (0.287042ms)
+✔ strict wire parser refuses duplicate identities, overflow, invalid UTF-8 and deep JSON (0.958667ms)
+✔ generated schemas enforce canonical run/source IDs, finite bounds and unknown fields (3.115167ms)
+✔ canonical digest matches a Python ensure_ascii=False protocol vector (0.568708ms)
+✔ stack fixture composed rejection/redaction: missing configuration fields (65.576792ms)
+✔ stack fixture composed rejection/redaction: duplicate JSON keys (57.003208ms)
+✔ stack fixture composed rejection/redaction: missing line terminator (46.586625ms)
+✔ stack fixture composed rejection/redaction: invalid UTF-8 (49.544042ms)
+✔ stack fixture composed rejection/redaction: oversized first line before newline or EOF (52.325291ms)
+✔ stack fixture composed rejection/redaction: unexpected third input line (40.266334ms)
+✔ stack fixture composed rejection/redaction: empty EOF (37.912041ms)
+✔ shared reader accepts chunked UTF-8 config, stop and clean EOF (0.792333ms)
+✔ shared reader fails synchronously on third line after two legal deliveries (0.416292ms)
+✔ shared reader admits exact 16KiB config and 128-byte control boundaries (1.080458ms)
+✔ shared reader rejects byte 16385 before a newline or EOF (0.200333ms)
+✔ shared reader rejects control byte 129 after legal config, without EOF (0.098875ms)
+✔ shared reader rejects partial control at EOF after a legal config (0.127167ms)
+✔ shared reader accepts EOF instead of a control after a legal config (0.091792ms)
+✔ shared RPC parser rejects duplicate keys in an otherwise complete config shape (0.202334ms)
+✔ shared RPC parser rejects only-invalid-UTF8 bytes inside a complete config shape (0.097792ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 59
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40676.40275
+
+✖ failing tests:
+
+test at apps/agent-worker/tests/protocol/process-runner.test.mjs:83:1
+✖ a child remaining after its parent exits is reaped with the owned group (40008.846458ms)
+  Error: AGENT_EXECUTION_FAILED
+      at file:///private/tmp/sun-world-model-snapshot-p2rmnolc/apps/agent-worker/src/process-runner.mjs:140:27
+      at async finalize (file:///private/tmp/sun-world-model-snapshot-p2rmnolc/apps/agent-worker/src/process-runner.mjs:143:11)
+      at async file:///private/tmp/sun-world-model-snapshot-p2rmnolc/apps/agent-worker/src/process-runner.mjs:154:11
+      at async stop (file:///private/tmp/sun-world-model-snapshot-p2rmnolc/apps/agent-worker/src/process-runner.mjs:157:11)
+ ELIFECYCLE  Command failed with exit code 1.
+ WARN   Local package.json exists, but node_modules missing, did you mean to install?

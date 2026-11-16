@@ -34,7 +34,7 @@ export function apply(ctx) {
         name: tool.model_name,
         description:
           tool.id === 'blog.search_public'
-            ? '用简短核心词搜索公开文章。'
+            ? '用单个简短核心词匹配公开标题或摘要，不用空格拼接多词；搜索和读取合计最多四次。'
             : '读取公开正文，引用使用返回的source_id。',
         parameters,
         output: {

@@ -1,0 +1,72 @@
+{
+  "version": "sun-world-model-validation/1",
+  "source_base_commit": "0e26b907b91e9293af2625736ad5aed1273de7da",
+  "tested_staged_tree": "9b2834faac73100432b1633c51291ba55b2fe8fc",
+  "scope": "API/Worker and explicit owned native fixtures; no Web build or production acceptance",
+  "source_sha256": {
+    "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+    "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+    "apps/agent-worker/tests/integration/sdk-run.mjs": "45e872e2141c63e552e71b52756a61e39456d08ffc8cdfb54a959c72ba756943",
+    "apps/api/src/core/error_codes.py": "9a52b79b25c8519d59697904db7d976d47a8ed1278393834a408fe705fffbb3d",
+    "apps/api/src/database/mysql/schema_migration.py": "743da47bba323fa55bf926c20f5e5435ff3fc21f6dd4827a053ec8bc537be010",
+    "apps/api/src/modules/agent_runtime/cleanup.py": "e0ca86e25f3f00d5a59e4efd351a8e166c7bd828bb972f89bc5d9c84864b3e73",
+    "apps/api/src/modules/agent_runtime/dispatcher.py": "27d7b7b5dc9f2d54b79364d50515a5dec7e662eecd555959d5279eeef4801728",
+    "apps/api/src/modules/agent_runtime/gateway.py": "00e28af781165338831c0533463e9af63ade4d478cf6efbabf475a4cc045b7f0",
+    "apps/api/src/modules/agent_runtime/ledger.py": "af54f49e717d40aebb71524e175ef02a17be0c0f2b10fcf2ed1404744a6181f2",
+    "apps/api/src/modules/agent_runtime/model_budget.py": "94671564bef1c9163a9d8347eb1c21cd1e400ee62ad3a5cb3b6f0a6f03495483",
+    "apps/api/src/modules/agent_runtime/private_router.py": "a899304cf08978769318636393abdea0f0874fd23b6d9a0319c60839e514b9a0",
+    "apps/api/src/modules/ai/model_proxy.py": "43f64f4d88ac579ef8964f4c7295638eb5fb09b6fe5af2dae209686062ee1486",
+    "apps/api/src/modules/ai/public.py": "5162163c45f9cbecb5672235050857c4b0868857ba8a97f1f7bbaeb51d150ec2",
+    "apps/api/src/modules/blog/agent/skills/blog-qa-v2/SKILL.md": "f7c66619e26aef7eb27e73929d512b3c55eb1b0632cd8ff3ecfcd5a25a9033df",
+    "apps/api/src/modules/blog/agent/skills/blog-qa-v2/manifest.json": "18e7be3239dcb612ef19d51bff79cd89c4d4161ecb5b2da1919d80a05ec9d3d1",
+    "apps/api/src/modules/blog/schemas.py": "a7dde6b4cef07489a0001a6afc539dcb8c88eca52b92bae55edfef5acbe5b271",
+    "apps/api/tests/fixtures/agent-model-evaluation.json": "438a884c349a6aa25b964fe833eb6d3130691030e87733aa70cd69722c3041e7",
+    "apps/api/tests/integration/mongo_isolation.py": "c0bdc54a2e1f49bf1a38d115829b6c84412f74694a8894e780855ed81feb4f20",
+    "apps/api/tests/integration/sdk_stack.py": "fc6bb631f8efdb81df53ebb707813a27b8a345f2e9ef2e01ca5fcc4cf4c62eb6",
+    "apps/api/tests/integration/test_agent_mysql.py": "d386511c1d9acd1363534ab155ca6f6f7cf36aca3d18da1f04bbfcff4679479d",
+    "apps/api/tests/integration/test_agent_stack.py": "f3798845e4a7cc87f513a48c0bf656ef2c8bb104ae519d1f32ec3fa3488fcffd",
+    "apps/api/tests/test_agent_model_budget.py": "93c1c2428b5bccef5c6e39126245b6f3cbfc592d1c612357308fde734e291686",
+    "apps/api/tests/test_agent_model_report.py": "8e8253d7d8b6507206d23324b53d9fcaa5850ee9e7f221da214fac185ad949da",
+    "apps/api/tests/test_agent_run_gateway.py": "6a0cc01a5b18a21b168e5fbb614d5be4dc21213d7ae5ebd88955de51d882d5a6",
+    "apps/api/tests/test_agent_sdk_fixture_cleanup.py": "0851a5130cd72f353b33004e019eb056f7898ca1c1ca8478641b95a7ae1dfff0",
+    "apps/api/tests/test_agent_tool_journal.py": "be5c61b367a456616e9aaf154a696250be78d444add05cdd2c4c9e20e2ebabae",
+    "apps/api/tests/test_blog_qa_model_proxy.py": "989dec05ab803099ddc56513c495235fb1e81c8fc0c49001425f0c6d92fbf025",
+    "apps/api/tests/test_structured_model_proxy.py": "1008de9def4642d2be3f0992443816d551957a5b322499212ac5668251e81f58",
+    "packages/contracts/agent/tool-catalog.json": "934d103f09f295902f3b7cf765ad8ab805137c6ab6e98add95136ba7d7726f38",
+    "scripts/probe-agent-model.py": "121d4e5fccb2c82196d96a1144a8f9e59a26753fd76abae0fa2c9251206b0759",
+    "scripts/test-agent-mongo.py": "9bc6786ec582f4b5094962f79695307d1deef67941ed41285c106b8a0a787145",
+    "scripts/test-agent-mysql.py": "c238e161085e54103b62e2190313bc5bd9311120a82d8c5f8e844879e75f15f4",
+    "scripts/test-agent-sdk-stack.py": "38e3933d6f5d97cd886997fe095cef0474e2708d82474c648dab165ae9a579ea"
+  },
+  "additional_input_sha256": {
+    "package.json": "73279450e856f11debf4329daec8c8302352c04d08f37067575947eb3892360e",
+    ".nvmrc": "98182b41c9ce3357797985cf12dc3b0124490ef88bc918a905373e7688e6aec9",
+    "tools/dsh-blog-p0/package.json": "a04da34db5776523b082d3f7a2857360cd6e2b0c326117b116760aff24fb1ef2",
+    "tools/dsh-blog-p0/pnpm-lock.yaml": "08b4c4630848a1715e3fd2b46d523429f55c2d451c928a63c269e7c76ebe2500"
+  },
+  "results": {
+    "api_unit_tests": 609,
+    "worker_protocol_tests": 60,
+    "owned_mysql_tests": 17,
+    "owned_api_stack_tests": 10,
+    "owned_mongo_instances_isolation": 2,
+    "sdk_synthetic_scenarios": 6,
+    "real_model_structural_cases": 4,
+    "sigterm_launcher_exit": 130,
+    "sigterm_owned_pids_groups_roots_absent": true,
+    "agent_semantic_review": "passed; not human signoff",
+    "human_semantic_review": "pending",
+    "input_tokenizer_verified": false
+  },
+  "earlier_worktree_checks": {
+    "cli_tests": 17,
+    "contracts_tests": 6,
+    "ai_interface_cli_contract_checks": "passed",
+    "maintained_ai_v1_cli_probe": "passed before final snapshot; same script bytes"
+  },
+  "limitations": [
+    "Prior parallel Worker and two native SDK cleanup failures remain undiagnosed; evidence retained separately.",
+    "Input tokenizer/hard input token limit, immutable upstream model revision, human review and Linux/production gates remain incomplete.",
+    "Root formatting still fails on pre-existing content-source manifest; pre-existing Web CSS budget issue remains."
+  ]
+}

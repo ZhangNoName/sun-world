@@ -136,7 +136,8 @@ class AgentMySQLTests(unittest.TestCase):
             return dict(article_id=1, title='原始标题', content=content, content_hash=digest({'article_id':1,'title':'原始标题','content':content}),
                         returned_bytes=len(content.encode()),content_bytes=len(content.encode()),truncated=False)
         async def model(_):
-            return {'model':'synthetic','content':[],'stop_reason':'end_turn'}
+            return {'model':'synthetic','content':[],'stop_reason':'end_turn',
+                    'usage': {'input_tokens': 10, 'output_tokens': 5}}
         gateway = RunGateway(self.ledger, registry=create_module_registry(),
             handlers={'blog.search_public':lambda *_: {'items':[]},'blog.read_public':read},
             enabled=lambda:True, authorize=authorize or (lambda *_:self.owner), allow=allow or (lambda *_:True),
@@ -152,6 +153,56 @@ class AgentMySQLTests(unittest.TestCase):
 
     def finish(self,gateway,row,result,sources):
         return gateway.finish(result,root_session_id=row['root_session_id'],root_turn_id='root',answer='完成回答',source_ids=sources)
+
+    def test_native_model_precharge_concurrency_and_observations(self):
+        from src.modules.agent_runtime.gateway import RunCredentials
+        with patch('src.modules.agent_runtime.gateway.RunCredentials', return_value=RunCredentials('T'*43, 'M'*43, 'R'*43)):
+            gateway, row, _, _ = self.gateway()
+        call = RunCall(row['id'], row['execution_id'], 1, 'S'*43, 'M'*43)
+        async def scenario():
+            return await asyncio.gather(*(gateway.model(call, {'messages': []}) for _ in range(8)), return_exceptions=True)
+        results = asyncio.run(scenario())
+        self.assertEqual(sum(isinstance(item, dict) for item in results), 4)
+        self.assertEqual(sum(isinstance(item, LedgerError) for item in results), 4)
+        observed = self.ledger.get_owned(self.owner, row['id'])
+        self.assertEqual((observed['model_count'], observed['model_output_tokens_reserved'],
+            observed['model_response_bytes_reserved'], observed['model_output_tokens_observed']), (4, 4096, 262144, 20))
+        calls = self.pool.fetch_all('SELECT state,input_tokens,output_tokens FROM agent_model_calls WHERE run_id=%s', (row['id'],))
+        self.assertEqual(len(calls), 4)
+        self.assertTrue(all(item == {'state': 'observed', 'input_tokens': 10, 'output_tokens': 5} for item in calls))
+
+    def test_native_observation_commit_ack_loss_never_refunds_or_retries_provider(self):
+        from src.modules.agent_runtime.gateway import RunCredentials
+        from src.modules.agent_runtime.model_budget import ModelJournal
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        with patch('src.modules.agent_runtime.gateway.RunCredentials', return_value=RunCredentials('T'*43, 'M'*43, 'R'*43)):
+            gateway, row, _, _ = self.gateway()
+        call = RunCall(row['id'], row['execution_id'], 1, 'S'*43, 'M'*43)
+        original_observe, original_commit = ModelJournal.observe, MySQLUnitOfWork.commit
+        stage, injected, calls = threading.local(), [], []
+        original_proxy = gateway.model_proxy
+        async def proxy(body):
+            calls.append(1)
+            return await original_proxy(body)
+        gateway.model_proxy = proxy
+        def observe(journal, *args, **kwargs):
+            result = original_observe(journal, *args, **kwargs)
+            stage.observed = True
+            return result
+        def commit(uow):
+            original_commit(uow)
+            if getattr(stage, 'observed', False) and not injected:
+                injected.append(1)
+                raise RuntimeError('Synthetic post-commit observation ACK loss')
+        with patch.object(ModelJournal, 'observe', observe), patch.object(MySQLUnitOfWork, 'commit', commit):
+            with self.assertRaises(LedgerError):
+                asyncio.run(gateway.model(call, {'messages': []}))
+        observed = self.ledger.get_owned(self.owner, row['id'])
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(injected), 1)
+        self.assertEqual((observed['model_count'], observed['model_output_tokens_reserved'],
+                          observed['model_output_tokens_observed'], observed['model_usage_unknown_count']), (1, 1024, 5, 0))
+        self.assertEqual(self.pool.fetch_one('SELECT state FROM agent_model_calls WHERE run_id=%s', (row['id'],))['state'], 'observed')
 
     def test_mysql_receipt_completion_and_real_collation_isolation(self):
         from src.modules.ai.repositories import MySqlAiRepository
