@@ -9,6 +9,7 @@ import ipaddress
 import math
 import ssl
 import sys
+from time import monotonic
 from urllib.parse import urlsplit
 
 import anyio
@@ -255,10 +256,28 @@ def create_loopback_transport(options, proxy_url, *, ssl_context=None):
 class OfficialOpenAiDnsResolver:
     def __init__(self, proxy_url):
         self._proxy_url = validate_proxy(proxy_url)
+        self._lock = asyncio.Lock()
+        self._cached_addresses, self._cache_expires = None, 0
 
     async def resolve(self, host, port):
-        if host != HOST or type(port) is not int or port != 443:
+        if type(host) is not str or host != HOST or type(port) is not int or port != 443:
             raise ValueError(DNS_FAILED)
+        async with self._lock:
+            started = monotonic()
+            if self._cached_addresses is not None and started < self._cache_expires:
+                return self._cached_addresses
+            # Never fall back to stale or partially parsed answers.
+            self._cached_addresses, self._cache_expires = None, 0
+            addresses, ttl = await self._query()
+            if asyncio.current_task().cancelling():
+                raise asyncio.CancelledError
+            expires = started + min(ttl, 60)
+            if (ttl > 0 and monotonic() < expires
+                    and all(_address_is_blocked(address) is False for address in addresses)):
+                self._cached_addresses, self._cache_expires = addresses, expires
+            return addresses  # Every address still goes through Provider validation.
+
+    async def _query(self):
         client = response = None
         failed = False
         try:
@@ -292,7 +311,7 @@ class OfficialOpenAiDnsResolver:
                 if (type(question) is not dict or set(question) != {'name', 'type'}
                         or question['name'] not in (HOST, HOST + '.') or type(question['type']) is not int or question['type'] != 1):
                     raise ValueError(DNS_FAILED)
-                addresses = []
+                addresses, ttl = [], 60
                 for answer in value['Answer']:
                     if (type(answer) is not dict or set(answer) != {'name', 'type', 'TTL', 'data'}
                             or answer['name'] not in (HOST, HOST + '.') or type(answer['type']) is not int or answer['type'] != 1
@@ -300,9 +319,9 @@ class OfficialOpenAiDnsResolver:
                             or type(answer['data']) is not str):
                         raise ValueError(DNS_FAILED)
                     address = str(ipaddress.IPv4Address(answer['data']))
+                    ttl = min(ttl, answer['TTL'])
                     if address not in addresses:
                         addresses.append(address)
-                return tuple(addresses)  # Provider validates ALL addresses; none filtered here.
         except BaseException as error:
             failed = True
             if isinstance(error, asyncio.CancelledError):
@@ -315,3 +334,6 @@ class OfficialOpenAiDnsResolver:
             finally:
                 if client is not None:
                     await _release(client, failed or sys.exc_info()[0] is not None)
+        # Publication is outside both owned closes; an unknown close cannot
+        # return a candidate to resolve(), even after a valid HTTP response.
+        return tuple(addresses), ttl

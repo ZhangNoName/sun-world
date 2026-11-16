@@ -48,6 +48,7 @@ def create_local_openai_proxy(*, key_file=None, proxy_url=None):
     key_file = key_file or os.getenv('DSH_OPENAI_API_KEY_FILE') or DEFAULT_KEY_FILE
     config = ProviderConfig(provider='openai-local', model=MODEL, base_url='https://api.openai.com/v1',
                             auth_mode='bearer', api_key=read_key(key_file))
+    resolver = OfficialOpenAiDnsResolver(proxy_url) if proxy_url else None
 
     class OfficialProvider(OpenAiCompatibleProvider):
         def _load_dependencies(self):
@@ -68,5 +69,5 @@ def create_local_openai_proxy(*, key_file=None, proxy_url=None):
 
     def factory(selected, **limits):
         return OfficialProvider(selected, allowed_hosts=('api.openai.com',),
-            resolver=OfficialOpenAiDnsResolver(proxy_url) if proxy_url else None, **limits)
+            resolver=resolver, **limits)
     return OpenAiResponsesProxy(config, provider_factory=factory)
