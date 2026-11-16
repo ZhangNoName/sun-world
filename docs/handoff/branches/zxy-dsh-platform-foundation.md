@@ -249,3 +249,33 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步C3正式会话/准入与dispatcher/router、Worker私有协议版本化/SDK接线、重启/未知派发与SSE/恢复验收；使用一次性MySQL验证真实迁移/并发/撤销/池，B隔离单独放行。原素材格式与CSS预算未处理，不声称root check全绿，不推送或部署。
 
 最终暂存树`f34f4770906d4a94fb20c6f2a3eb7128f0bf22e8`独立导出验证API **504tests通过**（包括20项网关测试），临时快照已清理。deploy-schema协议、最终diff空白和本地凭据路径/私钥模式扫描通过；判官最后复核标题/Unicode/真实正文长度三项delta，无剩余阻塞。全仓format:check仍仅报原有素材manifest格式；本文档/博客6个稳定锚点和链接检查通过，未网页预览。不把定向/后端通过表述为root check全绿。
+
+
+## 2026-11-15 C3首批：当前会话、同连接来源与真实MySQL
+
+### Implemented
+
+基点6bd6a44。本轮推进C3接线前的认证/数据库基础，不注册新HTTP，不派发正式Worker，不更换旧SQLite入口。未读取业务YAML/env/凭据、未连接共享数据库、未生产DDL或推送部署。
+
+- MySQLUnitOfWork/Manager支持固定allowlist的单事务isolation_level；正式Ledger/Gateway统一经ledger.unit_of_work使用READ COMMITTED。旧业务默认不变；SET失败释放连接，复用对象重置commit状态。当前账户/角色通过同UOW一条非锁定LEFT JOIN读，只取id/status/code，不反向锁users，不额外借池。
+- AuthManager/SessionAuthenticator可选uow分支保留现有JWT/Redis校验，普通默认调用不变；新增RunSessionAuthorizer易失run token/reference绑定（容量/TTL有界、同family刷新不延长、关闭/撤销/缓存过期/丢失拒绝、迟到查询不恢复已撤销binding）和只读RunAllowlistPolicy。原黑名单日志token前缀移除并回归。
+- 发现来源重验同样存在二次借池风险，RunGateway新增强制source_reader(uow,principal,article_id)，blog.public.create_public_tools支持当前UOW读元数据与标签。旧业务工具的普通读在事务外仍可用原pool。
+- scripts/test-agent-mysql.py只接受已验证本地mysqld binary，--no-defaults/独立私有datadir/Unix socket/禁TCP与mysqlx/最小环境；不下载或系统安装。nonce和实际@@datadir/socket/skip_networking验证后才在该实例建随机测试库，退出/失败/信号停止owned进程并删datadir。
+
+### Evidence / review
+
+主线程从官方8.4页面取得macOS15 ARM MySQL8.4.13归档，官方MD5匹配、记录SHA256、codesign严格验证通过；缓存仅ignored.tmp，无Homebrew安装/系统服务。详见[验证说明](../../development/agent-run-mysql-validation.md)。
+
+- native MySQL **13项通过**：中央28表DDL、并发接受/领取、回执/JSON历史、终态竞争与rollback、真实unicode_ci别名隔离、RC当前读/旧RR恢复、真实AuthManager/JWT+合成Redis的刷新/撤角色、最终事务中途disable拒绝答案、内存丢失模拟与reconcile、真实INNODB_TRX LOCK WAIT中的2连接授权/来源同连接、真实公开工具facade不二次借池。
+- Review建议补空RC UOW和首SQL前异常后的隔离hint恢复，使用pool_size1强制同一物理session复用，两种场景的后续普通RR均保持旧快照，native通过，不以普通session变量代替行为证明。
+- 真实SIGTERM实验：server ready后停止launcher，exit130、owned server PID不存在、临时datadir不存在。所有实例已回收，下载binary缓存保留用于复跑（不提交）。
+- 默认API gate518tests通过；新session10项、UOW7项（旧3+新4）、旧AuthManager26/核心策略3/网关20回归通过。MySQL独立目录显式discover，不混入默认无DB gate。
+- coding实现会话适配；判官独立review与单测复跑未发现确认阻塞。只验证MySQL8.4.13/macOS单环境，Redis/Mongo为合成，未真实Redis/SDK/模型端到端；API重启为新authorizer模拟内存丢失，未杀API或MySQL做恢复实验。
+
+### Writing / next
+
+使用sun-world-blog→design修订架构笔记04，增加当前授权快照、同连接与2连接等待链说明，原稳定ID保留；官方隔离/SET作用域链接已核对，文章仍后端分类与原三标签。已有对照表和叙述足够，无新增重复图、未发布。已在现有3030服务用实际SunMarkdownPreview和当前工作区样式独立预览草稿：1280×900桌面和390×844手机，7个唯一稳定标题ID、正文无水平溢出、首行缩进0px。修复中文句末标点导致一处加粗原样显示的问题；DOM检查无残留双星标记、10个strong。截图保留于ignored.tmp/c3-blog-desktop.png与c3-blog-mobile.png。此项为独立正文渲染预览，使用了共享工作区未提交的渲染器/样式，不代表已提交前端或完整文章页、导航/登录/E2E验收。
+
+下一步继续正式dispatcher/router、Worker版本化协议与SDK接线、真实Redis与完整故障矩阵；B的Linux/token/PID/TLS仍未放行。一次性新库建表不代表已有数据库迁移演练，不能把首批验证宣称C3/A–D全面完成。原共享素材格式和CSS预算问题保留。
+
+最终暂存树`419a7850ef2cdd028a0cb9424b069f4f6db8a519`独立导出后API518项与真实MySQL13项均通过，快照和owned mysqld/datadir已清理；随后仅补充交接证据。暂存空白/私钥与GitHub token模式检查通过，未包含既有其他dirty源码/配置/素材。博客1280/390宽正文预览DOM与截图检查通过，无残留加粗标记；原素材format与CSS预算失败仍未处理。

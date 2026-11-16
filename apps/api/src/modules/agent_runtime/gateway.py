@@ -91,8 +91,8 @@ class ResultCache:
 
 class RunGateway:
     def __init__(self, ledger, *, registry, handlers, enabled, authorize, allow,
-                 worker_credential, bundle_hash, model_id, model_proxy, site_origin):
-        if set(handlers) != TOOL_IDS or not callable(enabled) or not callable(authorize) or not callable(allow) or not callable(model_proxy):
+                 worker_credential, bundle_hash, model_id, model_proxy, site_origin, source_reader):
+        if set(handlers) != TOOL_IDS or not callable(enabled) or not callable(authorize) or not callable(allow) or not callable(model_proxy) or not callable(source_reader):
             raise ValueError('Gateway requires fixed tools and live authorization hooks')
         if not isinstance(bundle_hash, str) or not re.fullmatch('[0-9a-f]{64}', bundle_hash):
             raise ValueError('Invalid bundle hash')
@@ -108,7 +108,7 @@ class RunGateway:
         self.enabled, self.authorize, self.allow = enabled, authorize, allow
         self.worker_hash = token_hash(worker_credential)
         self.bundle_hash, self.model_id = bundle_hash, model_id
-        self.model_proxy, self.origin = model_proxy, origin
+        self.model_proxy, self.origin, self.source_reader = model_proxy, origin, source_reader
         self.journal, self.cache = ToolJournal(), ResultCache()
 
     def _authorize(self, uow, row):
@@ -174,12 +174,14 @@ class RunGateway:
             generation=call.generation, authorize=authorize)
 
     def _validate(self, call, audience, *, live=True):
-        with self.ledger.database.unit_of_work() as uow:
+        with self.ledger.unit_of_work() as uow:
             return self._check(uow, call, audience, live=live)[0]
 
     def _result(self, tool_id, principal, arguments):
+        return self._checked_result(tool_id, self.handlers[tool_id](principal, arguments))
+
+    def _checked_result(self, tool_id, result):
         tool = self.registry.tools[tool_id]
-        result = self.handlers[tool_id](principal, arguments)
         result = self.registry.schemas[tool.output_schema_ref].model_validate(result).model_dump(mode='json')
         if tool_id == 'blog.read_public':
             actual = len(result['content'].encode())
@@ -190,7 +192,7 @@ class RunGateway:
         return result
 
     def tool(self, call, *, call_id, tool_id, tool_version, arguments):
-        with self.ledger.database.unit_of_work() as uow:
+        with self.ledger.unit_of_work() as uow:
             row, principal = self._check(uow, call, 'tool')
             if not isinstance(tool_id, str) or tool_id not in TOOL_IDS or tool_version != '1' or not isinstance(arguments, dict) or len(encode(arguments)) > 16384:
                 raise LedgerError('AGENT_TOOL_INVALID')
@@ -219,7 +221,7 @@ class RunGateway:
                 'article_id': result['article_id'], 'title': result['title'], 'content_hash': result['content_hash'],
                 'excerpt_hash': hashlib.sha256(result['content'].encode()).hexdigest(),
             }
-            with self.ledger.database.unit_of_work() as uow:
+            with self.ledger.unit_of_work() as uow:
                 fresh, _ = self._check(uow, call, 'tool')
                 self.journal.prepare(uow, fresh, call_id=call_id, result_hash=result_hash,
                     result_bytes=len(encode(response)), source=source, source_id=source_id, now=self.ledger.now())
@@ -230,7 +232,7 @@ class RunGateway:
             return response
         except Exception as exc:
             try:
-                with self.ledger.database.unit_of_work() as uow:
+                with self.ledger.unit_of_work() as uow:
                     fresh = self.ledger._binding(uow, call.run_id, call.execution_id, call.generation)
                     self.journal.fail_tool(uow, fresh, call_id, self.ledger.now())
                     uow.commit()
@@ -241,7 +243,7 @@ class RunGateway:
             raise LedgerError('AGENT_TOOL_FAILED') from None
 
     def receipt(self, call, *, call_id, result_hash):
-        with self.ledger.database.unit_of_work() as uow:
+        with self.ledger.unit_of_work() as uow:
             row, _ = self._check(uow, call, 'tool')
             self.journal.acknowledge(uow, row, call_id=call_id, result_hash=result_hash, now=self.ledger.now())
             uow.commit()
@@ -264,7 +266,8 @@ class RunGateway:
             links = []
             for source in sources:
                 try:
-                    current = self._result('blog.read_public', principal, {'article_id': source['article_id']})
+                    current = self._checked_result('blog.read_public',
+                        self.source_reader(uow, principal, source['article_id']))
                 except Exception:
                     raise LedgerError('BLOG_SOURCE_CHANGED') from None
                 if (current['content_hash'] != source['content_hash'] or current['title'] != source['title']
@@ -283,7 +286,7 @@ class RunGateway:
             raise LedgerError('AGENT_INPUT_INVALID')
         async def invoke():
             def reserve():
-                with self.ledger.database.unit_of_work() as uow:
+                with self.ledger.unit_of_work() as uow:
                     row, _ = self._check(uow, call, 'model')
                     self.journal.reserve_model(uow, row)
                     uow.commit()

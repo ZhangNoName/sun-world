@@ -459,7 +459,7 @@ class AuthManager:
 
             # 黑名单检查
             if (check_redis or token_type == "refresh") and self.is_token_blacklisted(token):
-                logger.warning(f"Token is blacklisted: {token[:20]}...")
+                logger.warning("Token is blacklisted")
                 return None
 
             # 对于 access_token，可以选择不检查 Redis（因为 JWT 本身有过期时间）
@@ -480,7 +480,7 @@ class AuthManager:
             logger.warning(f"Invalid token: {e}")
             return None
 
-    def get_user_from_token(self, token: str, check_redis: bool = False) -> Optional[User]:
+    def get_user_from_token(self, token: str, check_redis: bool = False, *, uow=None) -> Optional[User]:
         """
         从 token 获取用户信息
 
@@ -488,12 +488,15 @@ class AuthManager:
             token: JWT access token
             check_redis: 是否检查 Redis 中的 token（默认 False，只验证 JWT 有效性）
         """
+        if uow is not None and getattr(uow, "isolation_level", None) != "READ COMMITTED":
+            raise ValueError("Current authorization requires READ COMMITTED")
         user_id = self.verify_token(token, "access", check_redis=check_redis)
         if not user_id:
             return None
 
-        user = self.user_manager.get_user_by_id(user_id)
-        if not user:
+        user = (self.user_manager.get_user_by_id(user_id) if uow is None
+                else self.user_manager.get_auth_context(user_id, uow=uow))
+        if not user or (uow is not None and user.get('status') != 1):
             return None
 
         # 检查用户状态

@@ -12,10 +12,15 @@ class SessionAuthenticator:
     def __init__(self, auth_manager):
         self.auth_manager = auth_manager
 
-    def authenticate(self, access_token: str, *, request_id: str | None = None) -> Principal:
+    def authenticate(self, access_token: str, *, request_id: str | None = None, uow=None) -> Principal:
         # Re-read Redis and current account/roles on every call. Never cache allow.
         try:
-            user = self.auth_manager.get_user_from_token(access_token, check_redis=True)
+            if uow is None:
+                user = self.auth_manager.get_user_from_token(access_token, check_redis=True)
+            else:
+                if getattr(uow, "isolation_level", None) != "READ COMMITTED":
+                    raise ValueError("Current authorization requires READ COMMITTED")
+                user = self.auth_manager.get_user_from_token(access_token, check_redis=True, uow=uow)
             if not user:
                 raise ValueError("Inactive session")
             payload = jwt.decode(access_token, self.auth_manager.secret_key, algorithms=["HS256"])
@@ -40,7 +45,7 @@ class SessionAuthenticator:
             # Fail closed on dependency failure; no credential in error or log.
             raise AuthorizationDenied("Active login required") from None
 
-    def revalidate_bound_session(self, cached_access_token: str, reference: str) -> tuple[Principal, str]:
+    def revalidate_bound_session(self, cached_access_token: str, reference: str, *, uow=None) -> tuple[Principal, str]:
         """Refresh an already verified server-side binding from authoritative Redis.
 
         This is never an HTTP authentication entrypoint. The old, signed token
@@ -68,7 +73,7 @@ class SessionAuthenticator:
             current, refresh, current_family = snapshot
             if not current or not refresh or current_family != family:
                 raise ValueError("Session family changed")
-            subject = self.authenticate(current)
+            subject = self.authenticate(current) if uow is None else self.authenticate(current, uow=uow)
             current_payload = jwt.decode(current, self.auth_manager.secret_key, algorithms=["HS256"])
             if (subject.user_id != user_id or subject.session_family != family
                     or current_payload.get("device") != device):

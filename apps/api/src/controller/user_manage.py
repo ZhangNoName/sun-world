@@ -88,6 +88,30 @@ class UserManager:
             return False
 
 
+    def get_auth_context(self, user_id, *, uow):
+        """Current account/roles in one nonlocking READ COMMITTED statement.
+
+        This path never borrows another connection and deliberately excludes
+        passwords, names, contacts and resource records from the projection.
+        """
+        if getattr(uow, "isolation_level", None) != "READ COMMITTED":
+            raise ValueError("Current authorization requires READ COMMITTED")
+        if (isinstance(user_id, bool) or not isinstance(user_id, (str, int))
+                or not str(user_id).isascii() or not str(user_id).isdigit()
+                or str(user_id).startswith("0") or len(str(user_id)) > 19
+                or int(user_id) > 9_223_372_036_854_775_807):
+            raise ValueError("Invalid account identifier")
+        rows = uow.fetch_all(
+            "SELECT u.id, u.status, r.code FROM users u "
+            "LEFT JOIN user_roles ur ON ur.user_id = u.id "
+            "LEFT JOIN roles r ON r.id = ur.role_id WHERE u.id = %s",
+            (int(user_id),),
+        )
+        if not rows:
+            return None
+        return {"id": rows[0]["id"], "status": rows[0]["status"],
+                "roles": [{"code": row["code"]} for row in rows if row["code"] is not None]}
+
     def get_user_by_id(self, user_id: int) -> Optional[User]:
         """
         根据用户ID获取用户信息，同时获取角色列表和资源权限列表

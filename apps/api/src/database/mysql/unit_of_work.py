@@ -8,7 +8,10 @@ from typing import Any
 class MySQLUnitOfWork:
     """Keep related statements on one connection and commit explicitly."""
 
-    def __init__(self, manager) -> None:
+    def __init__(self, manager, *, isolation_level: str | None = None) -> None:
+        if isolation_level not in {None, "READ COMMITTED", "REPEATABLE READ"}:
+            raise ValueError("Unsupported transaction isolation")
+        self.isolation_level = isolation_level
         self.manager = manager
         self.connection = None
         self.cursor = None
@@ -18,6 +21,17 @@ class MySQLUnitOfWork:
     def __enter__(self) -> "MySQLUnitOfWork":
         self._borrow_context = self.manager._borrow()
         self.connection, self.cursor = self._borrow_context.__enter__()
+        self._committed = False
+        try:
+            if self.isolation_level is not None:
+                # SET TRANSACTION applies to this transaction only, not the
+                # pooled session's default isolation for later legacy requests.
+                self.cursor.execute("SET TRANSACTION ISOLATION LEVEL " + self.isolation_level)
+        except BaseException as exc:
+            context = self._borrow_context
+            self.cursor = self.connection = self._borrow_context = None
+            context.__exit__(type(exc), exc, exc.__traceback__)
+            raise
         return self
 
     def _require_cursor(self):

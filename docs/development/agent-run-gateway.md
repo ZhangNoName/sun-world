@@ -44,3 +44,10 @@ corepack pnpm check:api:deploy-schema
 ```
 
 C3继续补正式调度/路由、会话与准入、内外协议契约、API重启/丢失派发确认、SSE生命周期和端到端恢复；一次性MySQL实例验证迁移、真实锁/池/撤销，再完成B的Linux隔离。集中schema只新增两表与运行列；本轮仅静态check，不执行apply。旧SQLite入口原协议保持，本库不会自动替换它。当前没有TTL清理或删除幂等记录的逻辑，清理/账户删除策略投产前另验。
+
+
+## C3 当前授权读取与真实MySQL首批（2026-11-15）
+
+正式运行UOW已单独采用READ COMMITTED，不改变旧业务默认隔离。当前账户/角色与来源元数据查询都复用UOW，采用非锁定当前语句读取，不在持有run锁后反向锁用户行。已在一次性MySQL8.4.13验证当前读、默认隔离不泄漏、2连接等待场景和回滚；详见[MySQL与会话验证](agent-run-mysql-validation.md)。
+
+已新增复用AuthManager/SessionAuthenticator的RunSessionAuthorizer与只读名单策略，只有易失已验证token绑定，重启/过期失败关闭；没有直接注册HTTP或组合到旧SQLite入口。真实Redis/SDK、dispatcher/router、数据库崩溃恢复矩阵与B隔离仍未完成。

@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 C3 当前授权与一次性MySQL验证
+
+- 正式Ledger/Gateway采用单事务READ COMMITTED；绑定真实会话并从当前UOW重读启用状态/角色，来源重验复用连接，避免有限池中嵌套借池。详见[验证说明](development/agent-run-mysql-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 独立暂存树API518tests、一次性私有Unix socket MySQL8.4.13的13项测试及独立review通过；SIGTERM后进程/数据目录已回收。Redis/Mongo仍为合成，未做真实数据库崩溃/已有库升级验收。
+- 博客04已补当前授权边界，完成1280/390宽正文预览并修复加粗语法；正文预览使用当前工作区渲染器，不代表完整文章页验收。分类/标签保留、未发布。仍未接HTTP/dispatcher/正式Worker，B隔离未放行，生产关闭；未推送部署，其他dirty文件保留。
+
 ## 2026-11-15 C2 正式网关库与来源预算
 
 - 实现工具/来源持久化journal、分受众凭据、live hooks、来源回执与同事务完成重验、4次工具/4次模型/64KiB完整响应预算；文档见[网关说明](development/agent-run-gateway.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。不存工具正文/参数JSON，缓存丢失不重读。

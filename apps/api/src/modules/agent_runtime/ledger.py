@@ -59,6 +59,11 @@ class MySqlRunLedger:
         self.history = history or AgentHistoryTransactions()
         self.clock = clock or (lambda: datetime.now(timezone.utc))
 
+    def unit_of_work(self):
+        # Each authorization re-read sees newly committed account/role state.
+        # No session-wide isolation change leaks to legacy pool borrowers.
+        return self.database.unit_of_work(isolation_level='READ COMMITTED')
+
     def now(self):
         current = self.clock()
         if not isinstance(current, datetime) or current.utcoffset() is None:
@@ -74,7 +79,7 @@ class MySqlRunLedger:
             raise LedgerError(error_codes.AGENT_INPUT_INVALID)
         question = question.strip()
         request_hash = digest({'scenario': 'blog-qa', 'question': question})
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             # User row serializes concurrent idempotency requests from one owner.
             # No retry on unknown commit results; clients query with the same key.
             owner = uow.fetch_one('SELECT id, status FROM users WHERE id = %s FOR UPDATE',
@@ -113,7 +118,7 @@ class MySqlRunLedger:
 
     def get_owned(self, principal, run_id):
         family = family_hash(principal)
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = self._owned(uow, principal.user_id, family, run_id, lock=False)
             return row
 
@@ -133,7 +138,7 @@ class MySqlRunLedger:
                 any(not isinstance(value, str) or not re.fullmatch('[0-9a-f]{64}', value)
                     for value in hashes.values()))):
             raise LedgerError(error_codes.AGENT_INPUT_INVALID)
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s FOR UPDATE', (run_id,))
             now = self.now()
             if (not row or row['status'] != 'accepted' or row['deadline'] <= now
@@ -175,7 +180,7 @@ class MySqlRunLedger:
     def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id, authorize=None):
         if not isinstance(root_turn_id, str) or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_turn_id):
             raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if authorize is not None and authorize(uow, row) is not True:
                 raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
@@ -186,7 +191,7 @@ class MySqlRunLedger:
             uow.commit()
 
     def heartbeat(self, run_id, *, execution_id, generation, authorize=None):
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if authorize is not None and authorize(uow, row) is not True:
                 raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
@@ -200,7 +205,7 @@ class MySqlRunLedger:
 
     def cancel(self, principal, run_id):
         family = family_hash(principal)
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = self._owned(uow, principal.user_id, family, run_id)
             if row['status'] in TERMINAL:
                 return row['status']
@@ -215,7 +220,7 @@ class MySqlRunLedger:
         # transaction, including current session and delivered/current sources.
         if not callable(prepare):
             raise LedgerError(error_codes.AGENT_OUTPUT_INVALID)
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if (root_session_id != row['root_session_id'] or not row['root_turn_id']
                     or root_turn_id != row['root_turn_id']):
@@ -255,7 +260,7 @@ class MySqlRunLedger:
         if type(limit) is not int or not 1 <= limit <= 100:
             raise LedgerError(error_codes.AGENT_INPUT_INVALID)
         now = self.now()
-        with self.database.unit_of_work() as uow:
+        with self.unit_of_work() as uow:
             rows = uow.fetch_all("SELECT * FROM agent_runs WHERE (status='accepted' AND deadline<=%s) "
                                  "OR (status='running' AND (deadline<=%s OR lease_expires_at<=%s OR lease_expires_at IS NULL)) "
                                  'ORDER BY deadline, id LIMIT %s FOR UPDATE', (now, now, now, limit))

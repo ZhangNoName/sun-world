@@ -15,8 +15,9 @@ sys.path.insert(0, str(ROOT / 'apps/api'))
 # This is a real rollback/concurrency adapter, not MySQL lock conformance.
 # BEGIN IMMEDIATE serializes writers more strongly than InnoDB row locks.
 class SqliteUow:
-    def __init__(self, database):
+    def __init__(self, database, isolation_level=None):
         self.database = database
+        self.isolation_level = isolation_level
 
     def __enter__(self):
         self.connection = sqlite3.connect(self.database.path, timeout=10, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -69,8 +70,8 @@ class Database:
             db.execute(f'CREATE TABLE agent_runs({columns},PRIMARY KEY(id),'
                        'UNIQUE(user_id,scenario,idempotency_key),UNIQUE(conversation_id))')
 
-    def unit_of_work(self):
-        return SqliteUow(self)
+    def unit_of_work(self, *, isolation_level=None):
+        return SqliteUow(self, isolation_level)
 
     def count(self, table):
         with sqlite3.connect(self.path) as db:

@@ -91,3 +91,50 @@ class MySQLUnitOfWorkTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MySQLTransactionIsolationTests(unittest.TestCase):
+    def test_isolation_is_set_before_first_operation_and_not_on_default_path(self):
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        manager = Manager()
+        with MySQLUnitOfWork(manager, isolation_level='READ COMMITTED') as uow:
+            self.assertEqual(uow.isolation_level, 'READ COMMITTED')
+            uow.fetch_one('SELECT id FROM users')
+        self.assertEqual(manager.cursor.calls[0][0], 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED')
+        self.assertEqual(manager.cursor.calls[1][0], 'SELECT id FROM users')
+        default = Manager()
+        with MySQLUnitOfWork(default) as uow:
+            uow.fetch_one('SELECT id FROM users')
+        self.assertEqual(len(default.cursor.calls), 1)
+
+    def test_invalid_isolation_rejected_before_borrow(self):
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        manager = Manager()
+        with self.assertRaises(ValueError):
+            MySQLUnitOfWork(manager, isolation_level='READ COMMITTED; DROP TABLE users')
+        self.assertEqual(manager.returned, 0)
+
+    def test_isolation_setup_failure_returns_connection_and_clears_context(self):
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        manager = Manager()
+        def failed(*_args):
+            raise RuntimeError('synthetic setup failure')
+        manager.cursor.execute = failed
+        uow = MySQLUnitOfWork(manager, isolation_level='READ COMMITTED')
+        with self.assertRaises(RuntimeError):
+            with uow:
+                self.fail('failed setup cannot enter transaction')
+        self.assertEqual(manager.returned, 1)
+        self.assertIsNone(uow.cursor)
+        self.assertIsNone(uow.connection)
+
+    def test_reusing_uow_does_not_skip_second_commit(self):
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        manager = Manager()
+        uow = MySQLUnitOfWork(manager)
+        for _ in range(2):
+            with uow:
+                uow.execute('UPDATE users SET status=1')
+                uow.commit()
+        self.assertEqual(manager.connection.commits, 2)
+        self.assertEqual(manager.returned, 2)

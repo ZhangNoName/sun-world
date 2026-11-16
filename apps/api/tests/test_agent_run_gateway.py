@@ -42,7 +42,8 @@ class AgentRunGatewayTests(unittest.TestCase):
             handlers={'blog.search_public': self.search, 'blog.read_public': self.read},
             enabled=lambda: self.flag, authorize=lambda *_: self.current, allow=lambda *_: self.allowed,
             worker_credential=self.service_secret, bundle_hash='a'*64, model_id='synthetic',
-            model_proxy=proxy, site_origin='https://blog.example.test')
+            model_proxy=proxy, site_origin='https://blog.example.test',
+            source_reader=lambda uow, principal, article_id: self.read(principal, {'article_id': article_id}))
         self.run, self.credentials = self.new_run()
         self.tool_call, self.model_call, self.result_call = [self.call(audience) for audience in ('tool', 'model', 'result')]
         self.gateway.bind_root_turn(self.result_call, 'root-turn')
@@ -279,12 +280,12 @@ class AgentRunGatewayTests(unittest.TestCase):
         active = threading.local()
         original = self.db.unit_of_work
         @contextlib.contextmanager
-        def one_connection():
+        def one_connection(**kwargs):
             if getattr(active, 'borrowed', False):
                 raise AssertionError('nested database pool borrow')
             active.borrowed = True
             try:
-                with original() as uow:
+                with original(**kwargs) as uow:
                     yield uow
             finally:
                 active.borrowed = False
