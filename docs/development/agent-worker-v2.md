@@ -12,6 +12,8 @@ cancel即使尚未见过start也先持久保存cancelled tombstone，再确认�
 
 正常close释放控制器锁。崩溃遗留锁不靠PID检测自动抢占；需宿主先核对并强制回收旧cgroup/进程，再离线处理。独占打开后发现running记录标为interrupted并保留needs_reap/容量，不能假装孤儿已退出。当前已新增已确认终态的30天留存清理和显式离线check/apply，详见[留存协议](agent-journal-retention.md)；未知孤儿/陈旧锁恢复与生产策略仍未验收，不承诺无限持续准入。
 
+同一journal在取消、running和completed切点的实际控制器SIGKILL验证见[崩溃矩阵](agent-worker-crash-validation.md)。该矩阵分别观察真实合成执行组与旧锁，再由fixture仅对自己的私有目录处理锁以进入恢复分支；running仍不确认回收，completed原请求不重派。它补充旧合成metadata恢复及实际SDK父reaper证据，不提供生产自动接管或未知进程恢复授权。
+
 新journal v3保存控制器留存时间，旧v2迁移从当前时间建立基点，不依据mtime。readiness/start只在串行队列内回收已过期且无在途引用的确认终态；先持久保存精确run身份摘要和必须存在index的owner，再删详情，摘要集合最多8192且永不TTL清空，满时停止新准入但保留inspect/cancel。时间下界、checksum和文件边界失败均拒绝，混合迁移和六位小数deadline兼容性有专门回归。此处只清理Worker观察元数据，不删除API运行账本或用户历史。
 
 createExecutionServer只返回node:https.Server，不读取env/证书、不自动listen。强制client certificate验证、显式同步peer证书策略、独立服务凭据和V2头，拒绝重复身份头、压缩体、重复JSON key、非有限数、非法UTF-8与schema未知字段。请求16KiB、响应8KiB，握手/HTTP响应有界；错误只给固定码。2秒HTTP时限不会回滚已进入service的持久启动操作，确认丢失时API只查询/取消原execution；尚在收包/认证且未调用service的超时请求不能新受理。service内部start/control各有128个在途硬界，避免慢fsync与超时重连无界积累；执行自身仍受绝对deadline约束。控制路径与API client兼容：start、无body的GET原execution、cancel。

@@ -1,5 +1,7 @@
 # Worker journal留存与离线清理
 
+后续同一持久journal的取消/running/completed实际控制器强杀与重启验证见[崩溃矩阵](agent-worker-crash-validation.md)。既有锁仍拒check/apply；测试专用锁处理只发生在自己的owned组全部确认消失后，生产未知锁/孤儿的恢复授权仍未完成。
+
 2026-11-16，基点0d541a6。本轮实现Worker观察元数据的30天留存、已确认终态回收和显式离线check/apply；不清理API运行/历史/审计数据，不解除未知进程占用或自动处理崩溃控制器锁。生产仍关闭，真实保留政策与部署前演练独立验收。
 
 ## 必须保持的语义

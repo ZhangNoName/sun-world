@@ -1,0 +1,97 @@
+{
+  "version": "sun-world-worker-crash-validation/1",
+  "runtime": {
+    "platform": "darwin",
+    "node": "24.17.0"
+  },
+  "recorded_final_worker_gate": {
+    "cases": [
+      {
+        "version": "sun-world-worker-crash-proof/1",
+        "case": "idle_cancelled",
+        "signal": "SIGKILL",
+        "actual_controller_sigkill": true,
+        "fixture_only_unlock": true,
+        "controller_group_gone": true,
+        "stale_lock_rejected": true,
+        "lock_bytes_preserved": true,
+        "record_bytes_preserved_before_recovery": true,
+        "running_orphan_observed": false,
+        "recovery_needs_reap": false,
+        "runner_starts_before_crash": 0,
+        "runner_starts_after_recovery": 0,
+        "owned_groups_gone": true,
+        "private_root_removed": true
+      },
+      {
+        "version": "sun-world-worker-crash-proof/1",
+        "case": "running",
+        "signal": "SIGKILL",
+        "actual_controller_sigkill": true,
+        "fixture_only_unlock": true,
+        "controller_group_gone": true,
+        "stale_lock_rejected": true,
+        "lock_bytes_preserved": true,
+        "record_bytes_preserved_before_recovery": true,
+        "running_orphan_observed": true,
+        "recovery_needs_reap": true,
+        "runner_starts_before_crash": 1,
+        "runner_starts_after_recovery": 0,
+        "owned_groups_gone": true,
+        "private_root_removed": true
+      },
+      {
+        "version": "sun-world-worker-crash-proof/1",
+        "case": "completed",
+        "signal": "SIGKILL",
+        "actual_controller_sigkill": true,
+        "fixture_only_unlock": true,
+        "controller_group_gone": true,
+        "stale_lock_rejected": true,
+        "lock_bytes_preserved": true,
+        "record_bytes_preserved_before_recovery": true,
+        "running_orphan_observed": false,
+        "recovery_needs_reap": false,
+        "runner_starts_before_crash": 1,
+        "runner_starts_after_recovery": 1,
+        "owned_groups_gone": true,
+        "private_root_removed": true
+      }
+    ],
+    "cutpoint_controller_sigkills": 3,
+    "matrix_synthetic_execution_starts": 3,
+    "fixture_roots_remaining_after_all_runs": 0
+  },
+  "fixture_failure_before": {
+    "reported_by": "independent_review",
+    "phase": "before_fixture_fix",
+    "source_sha256": {
+      "apps/agent-worker/tests/fixtures/crash-owned.mjs": "b497c26af11f39b58ed0fdf94d04f296e821e56b01a5e993f9603f640dc1fc1e",
+      "apps/agent-worker/tests/fixtures/controller-crash.mjs": "ab50b60607d3745e2121838a6f424b6c8f9473ed00076622cd36601849589cbb",
+      "apps/agent-worker/tests/protocol/execution-crash.test.mjs": "46938f3f79c13c097168945d98508de1667cd55ac1ceb9a25695d92368984bbd"
+    },
+    "cleanup_returned_success_with_unregistered_second_owned_group_alive": true,
+    "private_root_removed_while_second_owned_group_alive": true,
+    "independent_owned_group_reaped": true,
+    "reproduction_driver_saved": false
+  },
+  "fixture_failure_after": {
+    "reported_by": "independent_review",
+    "phase": "after_fixture_fix",
+    "cleanup_rejected_before_second_registration": true,
+    "private_root_retained_while_second_owned_group_alive": true,
+    "fixture_unlock_rejected": true,
+    "late_registration_confirmed": true,
+    "independent_owned_group_reaped": true,
+    "final_owned_root_removed": true,
+    "reproduction_driver_saved": false
+  },
+  "negative_control": {
+    "guard_disabled_regression_failed": true,
+    "production_source_modified": false,
+    "scope": "Temporary helper copy; only registration-gap regression. Its initial known execution is cleaned before the expected assertion failure.",
+    "driver_sha256": "2f7c6373cc158de0957c6e1f3a9e9bfaf19cf306b940a676c705b7100170b11d",
+    "driver_saved_only_in_ignored_tmp": true
+  },
+  "scope": "Real macOS controller SIGKILL and ProcessRunner; synthetic Node children, fixture-only lock handling. No SDK, database, supplier requests or production recovery authorization."
+}

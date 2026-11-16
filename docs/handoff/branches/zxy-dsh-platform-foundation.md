@@ -686,3 +686,15 @@ root维护命令实测200，安全报告visible true/candidates空/generation0/i
 [安全实证](../../evaluations/agent-openai-version-2026-11-16/README.md)含安全inventory及17项source/index摘要，执行源树aaedd9b078bf9762f21fdc33fb5552139b7372e9。博客05同题补固定标识与版本依据，分类后端、原架构笔记/Agent/DeepSeek Harness标签、5章节ID及透明预算图保留；新内容是版本判断规则，现图足够，不新加图。1280/390视觉/DOM通过，8处strong、0缩进/无双星/溢出，图360/342px；未发布，仍用dirty renderer/CSS正文预览，不等于整页验收。
 
 下一步继续本地运行恢复、未知孤儿/旧锁的可诊断边界，不能因缺少供应商版本承诺反复查目录或自行解锁生产。若出现独立官方快照，先独立profile核对计数/工具并重跑固定语义，再决定替换；不自动按日期选择/回退。Linux/人工/模型版本生产决策/生产TLS/目标库与备份/账号日志政策仍独立待，P1/A–D及持续goal未完成。其他80项dirty、main handoff原210加/1删与现有3030/8032/3033服务保留；只本地中文提交，不推送/部署/发布。Claude Code/claude-ds接手须读版本策略，保留immutable false、key可见范围与日期候选非承诺三点。
+
+## 2026-11-16 同一Worker journal的实际控制器崩溃
+
+基点c2459be，先写[Worker崩溃契约](../../development/agent-worker-crash-validation.md)再同步复用coding/判官。新增ExecutionService真实Node控制器三切点SIGKILL（cancel已持久/running/completed），running亲见实际ProcessRunner合成子组仍活/workspace在；旧锁check/apply/新controller均拒且字节不变。仅fixture确认全部owned组消失后处理自己的锁进入恢复，unknown仍interrupted/needs_reap/availablefalse，旧新start拒/cancel和close未确认/runner0；completed原完整请求旧ACK、不重派、改deadline冲突、新身份实际执行1。原SDK活跃强杀/父reaper证据不变，本轮补同journal三个切点，不声称首次Worker崩溃验证或生产恢复授权。
+
+新增tests/protocol/execution-crash.test.mjs与fixtures/controller-crash.mjs、crash-owned.mjs，无生产Worker/API源改动。修前正常99通过后判官用第二真实子程序在nonce marker前延迟10秒、fresh ACK后SIGKILL确定复现新fixture P2：全局expected布尔/旧组非空使cleanup误成功删根，而第二组仍活，已独立回收。先补契约再修每潜在真实派发计数（含fresh）、覆盖不足保根/拒解锁/no proof；第四回归不伪造marker，旧dead组不能填后续缺口，第二实际执行补齐后才清理。同实际交错修后保根拒绝，等真实marker补齐/owned组ESRCH才成功；判官4项无剩余确认阻塞，preload经stdin临时执行无driver归档，不把SHA当完整重放材料。
+
+coding新4/相关49通过；root最终corepack pnpm test:agent-worker100/9.240秒、零skip。root临时副本关闭两处覆盖判断后第四回归如期exit1/fail1，仓库未改、预期失败前没有第二未知进程。三份正常proof仅全部断言和cleanup后发，记录gate中的切点SIGKILL3/合成执行3不等于整个Worker gate全部进程数；root确认所有run结束后fixture前缀根0。三新MJS语法/定向格式、root-script/scoped diff通过；根format仍仅原内容manifest问题，API无改不冒称本轮787重跑，不重复三库/SDK/官方生成。29项source/index，执行树9bfc1f1df5e0f7e9624d1368d851b611d545e57f；[安全实证](../../evaluations/agent-worker-crash-2026-11-16/README.md)保留修前/后范围和负向控制。现有3030/8032/3033与必要缓存保留。
+
+顺修Worker README旧“无在线清理/真实Redis等仍待”陈述，链接已有局部实证与真实未完成门槛。博客04按sun-world-blog→design同题说明控制器死亡/执行组存活/持久回收确认分界，后端和架构笔记/Agent/DeepSeek Harness标签、7章节ID与原两图保留；27 strong、1280/390无缩进/双星/溢出，图360/约342px。两种恢复结果以相邻段落可比较，不加重复图，未发布，dirty renderer/CSS正文预览非整页验收。
+
+下一步先只读核对本机可用Linux容器/VM，再选实际隔离验证；不把fixture解锁升级为生产恢复流程。Linux/人工/模型版本生产决策/TLS/目标库备份/完整账号日志政策仍待，P1/A–D与持续goal未完成。其他80dirty、主handoff原210加/1删保留，只本地中文提交，不推送部署发布。Claude Code/claude-ds接手须读新崩溃契约与per-attempt fixture登记覆盖、未知恢复仍blocked、旧SDK范围独立三项增量。

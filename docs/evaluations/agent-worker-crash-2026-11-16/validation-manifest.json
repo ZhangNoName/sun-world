@@ -1,0 +1,99 @@
+{
+  "version": "sun-world-worker-crash-validation-manifest/1",
+  "date": "2026-11-16",
+  "base_commit": "c2459be76fd1c4c436cf284876ea9d5fc2e245f0",
+  "execution_source_tree": "9bfc1f1df5e0f7e9624d1368d851b611d545e57f",
+  "selected_source_sha256": {
+    "apps/agent-worker/tests/fixtures/crash-owned.mjs": "02562d2dbda0a257717c9428d14e169d344c949a9a06f175db880ef8a1991b71",
+    "apps/agent-worker/tests/fixtures/controller-crash.mjs": "ab50b60607d3745e2121838a6f424b6c8f9473ed00076622cd36601849589cbb",
+    "apps/agent-worker/tests/protocol/execution-crash.test.mjs": "77058ef684302ca68400a3f3cd2f2e6568f4b338914f0d5cdbad997a6a1e4dc7",
+    "apps/agent-worker/src/blog-tools.mjs": "c281cd57aa52cbeb8b51d4447fd0c8943ffae72c191c7e51ea16573788df5178",
+    "apps/agent-worker/src/cleanup-diagnostics.mjs": "ed38c59ebe490b59b3eda58d5932745c26bf781876c1e92c1252e2f518307abe",
+    "apps/agent-worker/src/execution-http.mjs": "6231eab4e075a982ed19f5fbefd3920a7cb44630e89afc39939c80ad0cfaf98f",
+    "apps/agent-worker/src/execution-journal.mjs": "ba916ce12a34a28359f616ce40faae53730b8aca7559aae0372e38f3e3a4a484",
+    "apps/agent-worker/src/execution-service.mjs": "06e51a598f60166880b054ec1d973eb2173c1408e019497fcaebe390c028fd03",
+    "apps/agent-worker/src/gateway-client.mjs": "0c0e9c07f630e576c625a74cbc390cdcb1d5e80d0b07e79c9928df5deb02eb77",
+    "apps/agent-worker/src/local-runner.mjs": "4cf884de4a21bedf86378590ae04389a6baf2a84ca77925790a63f1d0ca49bce",
+    "apps/agent-worker/src/process-runner.mjs": "117b0c527607d4015ea3dca3c29dd17d15beaa739d966cdf56f2f11609caadb6",
+    "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+    "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+    "apps/agent-worker/src/root-result.mjs": "1f8d54942e2b099b1b04921dd424d582487060aa73ada5e249dcd69a0a4098d8",
+    "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+    "apps/agent-worker/src/sdk-execution.mjs": "59c660727089b15dab781030f4ac1f84ae8e06288f48045d6fe0864ae99ca327",
+    "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+    "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+    "apps/agent-worker/src/verify-tools.mjs": "c8179438605cbb446c59402ebae21f4a7ba6152ecda76ff61102bd71d6666d8e",
+    "apps/agent-worker/src/worker.mjs": "b6d216171079e38eb4ab1061dbe30e5e55ebaf3ded91ff199822911c20cb2edd",
+    "scripts/prune-agent-worker-journal.mjs": "49a82d9481456209b9e6b5619abb0f79061a4e2178f843fd8fe50e57e9600117",
+    "packages/contracts/agent/rpc-v2.json": "4039d3801d618848ac52112db51022e0a11852b960cce171e29821acfd271f62",
+    "packages/contracts/agent/tool-catalog.json": "934d103f09f295902f3b7cf765ad8ab805137c6ab6e98add95136ba7d7726f38",
+    "apps/agent-worker/tests/protocol/test-helpers.mjs": "554d41e006c6c82628509b624a671d04f5c9072e0f57d60a880a83761a3d2ee0",
+    "apps/agent-worker/tests/protocol/execution-service.test.mjs": "6257b567ef5e1477af3f085ce4f035b8be4f6d4bcac7e31766b754950cacee6f",
+    "apps/agent-worker/tests/protocol/execution-journal.test.mjs": "dd03e07d05926c513e049b832edf4ac50a7c4054b6af781620297db837b76dc8",
+    "apps/agent-worker/tests/protocol/journal-maintenance.test.mjs": "45d10516c94d8646af967576e027bf7e1adadc020786d462c3019cf83c4577ed",
+    "apps/agent-worker/tests/protocol/process-runner.test.mjs": "cb86dfad3cf03a937eaa3bc1abda9d1618d667b600a229302292320c17d856a4",
+    "package.json": "73279450e856f11debf4329daec8c8302352c04d08f37067575947eb3892360e"
+  },
+  "checks": {
+    "worker_gate": {
+      "command": "corepack pnpm test:agent-worker",
+      "tests": 100,
+      "seconds": 9.240159583,
+      "passed": true,
+      "skipped": 0,
+      "scope": "Final fixed source, root-owned recorded invocation"
+    },
+    "coding_related": {
+      "tests": 49,
+      "new_tests": 4,
+      "passed": true
+    },
+    "independent_review": {
+      "new_tests": 4,
+      "passed": true,
+      "confirmed_blockers_remaining": 0,
+      "actual_delayed_second_registration_before_after": true,
+      "scope": "Own real Node/ProcessRunner resources; no network, databases, SDK or business keys"
+    },
+    "negative_control": {
+      "guard_disabled_regression_failed": true,
+      "production_source_modified": false
+    },
+    "new_mjs_syntax_files": 3,
+    "root_script_protocol": true,
+    "scoped_mjs_format": true,
+    "root_format": {
+      "passed": false,
+      "existing_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+      "file_modified_by_iteration": false
+    },
+    "api": {
+      "reexecuted": false,
+      "reason": "No API or production Worker source changed; this slice adds native Worker test evidence and fixes its new fixture."
+    },
+    "blog_preview": {
+      "viewports": [1280, 390],
+      "headings": 7,
+      "strong_count": 27,
+      "indent": "0px",
+      "horizontal_overflow": false,
+      "stray_bold_markers": false,
+      "figures": 2,
+      "figure_widths_desktop": [360, 360],
+      "figure_widths_mobile": [341.984375, 342],
+      "visual_reviewed": true,
+      "published": false,
+      "scope": "Body preview using existing dirty renderer/CSS"
+    }
+  },
+  "new_fixture_issue": {
+    "severity": "P2",
+    "resolved": true,
+    "scope": "Test harness registration accounting; not production Worker"
+  },
+  "evidence": "native-crash.json",
+  "production_source_changed": false,
+  "production_automatic_recovery_verified": false,
+  "linux_isolation_verified": false,
+  "p1_all_gates_complete": false
+}

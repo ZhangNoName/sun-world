@@ -23,4 +23,6 @@ macOS 沙盒只允许回环网络并拒绝项目/用户主目录读取（Node �
 
 普通协议测试仍用`corepack pnpm test:agent-worker`，已纳入根check和CI common quality；不需要SDK安装、真实模型或数据库。SDK集成单独运行：先用`node scripts/prepare-agent-worker.mjs --output /private/tmp/new-worker-runtime --offline`准备全新固定运行资源，再用`node apps/agent-worker/tests/integration/sdk-run.mjs /private/tmp/new-worker-runtime`（目前要求macOS sandbox-exec）。
 
-当前没有生产镜像/监听入口、自动崩溃锁恢复或在线记录清理；持久容量满时拒绝新身份，不能逐出可能收到迟到启动的记录。真实Redis准入、业务模型语义、Linux memory/PID/地址硬隔离及TLS签发轮换仍待验收，生产准入保持关闭。
+确认终态的观察详情已支持三十天留存清理，永久身份摘要继续阻止重跑；未知进程、在途操作和既有控制器锁不会被自动清除，容量满时拒绝新身份。规则见[留存协议](../../docs/development/agent-journal-retention.md)，实际控制器崩溃的验证范围见[故障矩阵](../../docs/development/agent-worker-crash-validation.md)。
+
+本地真实Redis准入、正式MySQL与固定SDK的整栈以及官方模型四题已有独立实证，详见[整栈验证](../../docs/development/agent-sdk-stack-validation.md)；人工语义、Linux memory/PID/地址硬隔离、未知孤儿/旧锁的生产恢复授权及TLS签发轮换仍需独立验收。当前没有生产镜像或生产监听入口，生产准入保持关闭。

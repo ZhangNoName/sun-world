@@ -1,5 +1,17 @@
 ﻿## Current Handoff
 
+## 2026-11-16 Worker控制器崩溃与测试宿主回收修复
+
+当前目标：继续可本地验证的实现/review及中文版本保存。基点c2459be，本轮新增[同journal控制器故障矩阵](development/agent-worker-crash-validation.md)：cancel/running/completed三切点实际SIGKILL，运行中执行组仍活、旧锁拒接管；仅fixture确认owned组gone后处理自有锁，恢复unknown仍保needs_reap/拒新任务、completed原ACK不重派、新身份可执行。不是生产未知锁/孤儿恢复授权，旧实际SDK强杀/父reaper范围保持。
+
+主要文件：Worker tests/protocol/execution-crash.test.mjs与fixtures/{controller-crash,crash-owned}.mjs，Worker README旧状态修正、协议/实证、计划/分支handoff及博客04局部。修前99正常通过后判官确定新fixture P2：第二真实子程序在nonce marker前延迟/控制器SIGKILL，旧组非空使cleanup误成功删根但第二组仍活，已独立回收。现每潜在真实派发先增预期数，缺登记保根/拒解锁/no proof；新第四回归及原实际交错复验通过，无剩余确认阻塞。
+
+验证：root最终corepack pnpm test:agent-worker100/9.240秒、零skip，coding新4/相关49、判官独立4；临时副本移除保护后新回归按预期exit1/fail1，不改仓库或创建第二未知进程。三正常proof均在断言+cleanup完成后发，所有owned组/私有根确认清理，root另确认fixture前缀根0。29 source/index与执行树9bfc1f1df5e0f7e9624d1368d851b611d545e57f、修前后安全投影见[实证](evaluations/agent-worker-crash-2026-11-16/README.md)。三MJS语法/定向格式/root-script通过；根format仍仅原内容manifest，生产/API无改不重跑三库/SDK/生成，也不冒称API787为本轮结果。
+
+博客04按sun-world-blog→design同题补恢复分界，后端/原三标签、7稳定ID/两透明图保留；27 strong、1280/390视觉/DOM无缩进/双星/溢出，图360/约342px。相邻恢复场景已可表达区别，不加重复图，未发布；预览用dirty renderer/CSS，非整页验收。原3030问答/8032 API/3033正文预览及其他80dirty、本文件原210加/1删保留，只本地提交，不推送部署。
+
+后续先只读核对本机是否已有可用Linux容器/VM，再选择隔离验证。Linux/生产未知孤儿授权/人工/模型版本生产决策/TLS/目标库备份与完整账号日志政策仍独立待，P1/A–D及持续goal未完成。Claude Code/claude-ds接手须读上述新契约；详情在[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ## 2026-11-16 官方模型版本证据与只读维护命令
 
 当前目标：继续可本地验证的Agent迭代、review与中文版本保存。基点7c5ad03，本轮已完成[版本策略](development/agent-openai-version-policy.md)、固定官方目录维护CLI及[安全实证](evaluations/agent-openai-version-2026-11-16/README.md)。官方页面与当前key目录仅见gpt-6.1-sol，没有日期候选；目录可见/created不证明不可变权重，immutable继续false，不自动换模型或解锁生产。
