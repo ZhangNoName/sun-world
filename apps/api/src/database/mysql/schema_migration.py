@@ -64,6 +64,7 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
             {'name': 'accepted_at', 'definition': 'DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)', 'type': 'datetime'},
             {'name': 'updated_at', 'definition': 'DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)', 'type': 'datetime'},
             {'name': 'ended_at', 'definition': 'DATETIME(6) NULL', 'type': 'datetime'},
+            {'name': 'history_deleted_at', 'definition': 'DATETIME(6) NULL', 'type': 'datetime'},
         ],
         "primary_key": ["id"],
         "indexes": [

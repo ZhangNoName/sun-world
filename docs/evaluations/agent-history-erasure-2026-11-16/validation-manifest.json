@@ -1,0 +1,125 @@
+{
+  "format": "sun-world-agent-history-erasure-validation/1",
+  "base_commit": "5cffc24",
+  "execution_source_tree": "8c5ccf5078ab46eb064498c279ceef5c6cbca692",
+  "runtime": {
+    "os": "macOS arm64",
+    "python": "3.12.13",
+    "node": "24.17.0",
+    "pnpm": "10.15.1"
+  },
+  "checks": {
+    "api": {
+      "passed": true,
+      "tests": 733,
+      "seconds": 28.975
+    },
+    "native_stack": {
+      "passed": true,
+      "tests": 19,
+      "history_cases": 9,
+      "skips": 0,
+      "seconds": 15.385
+    },
+    "native_mysql_migration": {
+      "passed": true,
+      "tests": 29,
+      "skips": 0,
+      "new_erasure_marker_default": "NULL",
+      "seconds": 4.495
+    },
+    "prior_native_crash_matrix_rerun": {
+      "passed": true,
+      "tests": 8,
+      "skips": 0,
+      "seconds": 10.057,
+      "erasure_specific_crash_cases": false
+    },
+    "independent_review": {
+      "passed": true,
+      "offline_tests": 48,
+      "python_ast_files": 10,
+      "settle_fence_before_worker_observe_release": [0, 0],
+      "settle_fence_after_worker_observe_release": [1, 1],
+      "remaining_confirmed_blockers": 0
+    },
+    "changed_python_ast": {
+      "passed": true,
+      "files": 13
+    },
+    "root_script_protocol": true,
+    "api_deploy_schema_protocol": true,
+    "root_format": {
+      "passed": false,
+      "unrelated_file": "docs/content-sources/csdn-qq-42345136/manifest.json"
+    },
+    "scoped_diff": true
+  },
+  "blog": {
+    "draft": "docs/blog/2026-11-15-agent-run-history-transaction.md",
+    "published": false,
+    "widths": [1280, 390],
+    "headings": 7,
+    "strong_count": 24,
+    "paragraph_indent": "0px",
+    "overflow": false,
+    "new_svg": "docs/blog/assets/agent-history-erasure-boundary.svg",
+    "transparent_canvas": true,
+    "figure_widths_desktop": [360, 360],
+    "figure_widths_mobile": [341.984375, 342]
+  },
+  "limits": {
+    "full_account_physical_erasure": false,
+    "anonymous_tombstone_claimed": false,
+    "automatic_history_ttl_implemented": false,
+    "sqlite_v1_site_switched": false,
+    "worker_sdk_or_provider_rerun": false,
+    "production_deployed": false,
+    "linux_tested": false,
+    "host_power_loss_tested": false
+  },
+  "source_sha256": {
+    "apps/api/src/controller/user_manage.py": "7635ac4cd27e26b31c42303c02e13fd03a4f6145a719124bdb11753f94ec0147",
+    "apps/api/src/core/auth/session.py": "479a0960e1ce50bedbe2147552e9792ec692b4069cac3915501008cf2c0f1246",
+    "apps/api/src/core/error_codes.py": "d3d62c9c0416b3c400534b07033844bc399522bd28394261bd48cd6cbd96c32d",
+    "apps/api/src/database/mysql/mysql_manage.py": "65f5588d6a1d668feeff3a1e056255e75429b53435c495e3e6468d78bce70abd",
+    "apps/api/src/database/mysql/schema_migration.py": "1c11f384462dcdc8c1318538020d3de1ebb7074562b77c6528e476bc89ea671d",
+    "apps/api/src/database/mysql/unit_of_work.py": "eb7725d36b7118ede76d3573eb110412693f32c77c7b402ea781773d6d4ab143",
+    "apps/api/src/modules/agent_runtime/__init__.py": "dd5b3c225af631eea3c1c8d379189df03636735317111a60e7a72d0695dfcc66",
+    "apps/api/src/modules/agent_runtime/admission.py": "cd9b26096484a7a92cf31464f16fad417e7f66f4f944d39ee18edac4121b5ac2",
+    "apps/api/src/modules/agent_runtime/application.py": "6293229d3f3531ddbe23c57b17ef5947eedfb856822b757c6f9e55e9cf95cb73",
+    "apps/api/src/modules/agent_runtime/cleanup.py": "e0ca86e25f3f00d5a59e4efd351a8e166c7bd828bb972f89bc5d9c84864b3e73",
+    "apps/api/src/modules/agent_runtime/dispatcher.py": "27d7b7b5dc9f2d54b79364d50515a5dec7e662eecd555959d5279eeef4801728",
+    "apps/api/src/modules/agent_runtime/gateway.py": "0decf398167c120c243e14b77f3a0eda6277ab2c5a4e6550b449861f6d0918ee",
+    "apps/api/src/modules/agent_runtime/journal.py": "9b6c474318db5545e2cbd5a1484f2924cebf3eeba6d33af33a9efbb70bbccef2",
+    "apps/api/src/modules/agent_runtime/ledger.py": "29a4ac725df6586232d8571859f9773f888accda9d4c6c8454067c732160fa92",
+    "apps/api/src/modules/agent_runtime/local_model_budget.py": "ecb34f6e24415364bf188b15e51c5264b896316f74446b99a2a4b4f584c3c0fd",
+    "apps/api/src/modules/agent_runtime/model_budget.py": "064fca5e28365a704a9ce6ede4e541599d2174007ef606a55e1491d5d479806e",
+    "apps/api/src/modules/agent_runtime/private_router.py": "a899304cf08978769318636393abdea0f0874fd23b6d9a0319c60839e514b9a0",
+    "apps/api/src/modules/agent_runtime/public_router.py": "be4f29737eaab55e6d3eac702e1a3f21dc3d61d310bb2292ea1fceb815abbe24",
+    "apps/api/src/modules/agent_runtime/router.py": "0ca68771e303f48606375374a11a80d284d322f534279bf43fda9c6a9b85c35c",
+    "apps/api/src/modules/agent_runtime/rpc.py": "3f16b55536761dc98ca8d470c8c6a1716d825aaf7983196a0ab961fbb6b12813",
+    "apps/api/src/modules/agent_runtime/run_view.py": "985ae3bcd96fe98e83cb60cdd6c5de35fdb6c9be519478a2a285d01b542a8b3d",
+    "apps/api/src/modules/agent_runtime/runtime.py": "a2f51a26597b2dfe9d42590378df1cc626f1d3c9bddefbd77b05e8aff0989544",
+    "apps/api/src/modules/agent_runtime/schemas.py": "92c8644531dee9293d5aad7a37b43720b7f47fdc0361daea5da0e04f9db65bf8",
+    "apps/api/src/modules/agent_runtime/session_authorizer.py": "07b92abf954b5e6dfbb453ceadcedea3bafd5cf53139cae73ca4ec6409528446",
+    "apps/api/src/modules/agent_runtime/store.py": "7a1a131b1f042534db04c530d7910a9f0d99ee00a34b901fc220c7da6b972f51",
+    "apps/api/src/modules/agent_runtime/worker_transport.py": "39e52e2123bb7f20bed63ab6ea5b243975aafa5d5216eab3ea73418574a23f3c",
+    "apps/api/src/modules/ai/agent_history.py": "6707f506b6ef97252f15bed32df4cbf8ac784bd3b5b32a4713c85b5b196025b3",
+    "apps/api/src/modules/ai/public.py": "b160619939d73e293756896691a18f8176ccab9fa97b440060e37c6c1c3bf7df",
+    "apps/api/tests/integration/fixture_mysql.py": "6cc81879a7ccdd80297165a4547abc5a98e2f4a852c886fb2bf5094b702d0bff",
+    "apps/api/tests/integration/fixture_signals.py": "17359f9fd5e67fd1ff8ab7977d99f4a613225b9f2eb340da0e1a730851deff44",
+    "apps/api/tests/integration/mysql_recovery.py": "095db14e143ffefb6f9ebd66d8ba128c3497672f3b426735e65e8295518b2ab2",
+    "apps/api/tests/integration/test_agent_history_stack.py": "c059367cb69f95e8032d18b0eaf8789530d091636ae57c7c11b16bb1d1baa401",
+    "apps/api/tests/integration/test_agent_mysql.py": "66a83301309912132dc63fa77c49e89f269a83f8668129d0db2f0186f41dfd4a",
+    "apps/api/tests/integration/test_agent_mysql_upgrade.py": "8d9af86846763697903234106748d33769fee7c7b570dbc18fd05ca07ed32d87",
+    "apps/api/tests/integration/test_agent_stack.py": "f3798845e4a7cc87f513a48c0bf656ef2c8bb104ae519d1f32ec3fa3488fcffd",
+    "apps/api/tests/test_agent_history_erasure.py": "6c4564dbbd373c572afd0198eba9d8d7137e05fa4df3a30e750529d46f8bf0e6",
+    "apps/api/tests/test_agent_public_router.py": "841c7060d9ad0943db3b21c7e64d1c03aa12506af38e2d6f00b4178fe4f03739",
+    "apps/api/tests/test_agent_run_ledger.py": "6939bb9b35b14603ab7f12dcd02e7123b42f798d968a2067cee22fff2849356f",
+    "scripts/test-agent-mysql-recovery.py": "a61034dcf7cd4e150b715e982fdd3715e2d26523e16a8e622b7c354f89e5273b",
+    "scripts/test-agent-mysql.py": "b30fcf127c776e4f00bc911d9312f9b5f61c47d0ff59f0a6a31841ea2309b5b0",
+    "scripts/test-agent-redis.py": "00dde6710f7ef494e21f51e16727bc365b95880bd8532efa72d7276851368fc1",
+    "scripts/test-agent-stack.py": "b59b76d17e966d6de3f9ec9753731bb18e4eef56674bfd52597c271c5f619ae9"
+  }
+}

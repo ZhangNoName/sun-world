@@ -300,6 +300,23 @@ class RunApplication:
         await self.dispatcher.cancel(owner, run_id)
         return await self.view(token, run_id)
 
+    async def erase_history(self, token, run_id):
+        owner = await self._sync(self._authenticate, token)
+        def erase():
+            def authorize(uow, row):
+                self._require_enabled()
+                fresh = self.authenticator.authenticate(token, uow=uow)
+                if fresh.user_id != owner.user_id or family_hash(fresh) != family_hash(owner):
+                    raise AuthorizationDenied('Active owner session required')
+                self._public_policy(fresh, uow, row)
+                return True
+            try:
+                self.ledger.erase_history(owner, run_id, authorize=authorize)
+            except AuthorizationDenied:
+                raise LedgerError('AGENT_ACTIVE_SESSION_REQUIRED') from None
+        await self._sync(erase)
+        return True
+
     async def _cancel_owned(self, owner, run_id):
         try:
             await self.dispatcher.cancel(owner, run_id)

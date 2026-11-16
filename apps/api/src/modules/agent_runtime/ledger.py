@@ -93,6 +93,8 @@ class MySqlRunLedger:
                 # A new family must not discover an earlier family's private run.
                 if existing['session_family_hash'] != family:
                     raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+                if existing.get('history_deleted_at') is not None:
+                    raise LedgerError(error_codes.AGENT_HISTORY_DELETED)
                 if existing['request_hash'] != request_hash:
                     raise LedgerError(error_codes.AGENT_IDEMPOTENCY_CONFLICT)
                 return Admission(existing, False)
@@ -113,7 +115,7 @@ class MySqlRunLedger:
                        model_input_tokens_observed=0, model_output_tokens_observed=0,
                        model_response_bytes_observed=0, model_usage_unknown_count=0,
                        result_bytes=0, tool_credential_hash=None, model_credential_hash=None,
-                       result_credential_hash=None)
+                       result_credential_hash=None, history_deleted_at=None)
             columns = ', '.join(row)
             placeholders = ', '.join(['%s'] * len(row))
             uow.execute(f'INSERT INTO agent_runs ({columns}) VALUES ({placeholders})', tuple(row.values()))
@@ -121,9 +123,11 @@ class MySqlRunLedger:
             return Admission(row, True)
 
     def get_owned(self, principal, run_id):
+        # Trusted lifecycle readers still need terminal identity for cleanup.
+        # Public recovery uses _owned's default hidden-history filter instead.
         family = family_hash(principal)
         with self.unit_of_work() as uow:
-            row = self._owned(uow, principal.user_id, family, run_id, lock=False)
+            row = self._owned(uow, principal.user_id, family, run_id, lock=False, include_deleted=True)
             return row
 
     def find_request(self, principal, *, question, idempotency_key):
@@ -142,6 +146,8 @@ class MySqlRunLedger:
             if row:
                 if row['session_family_hash'] != family:
                     raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+                if row.get('history_deleted_at') is not None:
+                    raise LedgerError(error_codes.AGENT_HISTORY_DELETED)
                 if row['request_hash'] != request_hash:
                     raise LedgerError(error_codes.AGENT_IDEMPOTENCY_CONFLICT)
             return row
@@ -164,13 +170,40 @@ class MySqlRunLedger:
             return 'failed'
 
     @staticmethod
-    def _owned(uow, user_id, family, run_id, *, lock=True):
+    def _owned(uow, user_id, family, run_id, *, lock=True, include_deleted=False):
         row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s AND user_id = %s '
-                            'AND session_family_hash = %s' + (' FOR UPDATE' if lock else ''),
+                            'AND session_family_hash = %s' + ('' if include_deleted else ' AND history_deleted_at IS NULL')
+                            + (' FOR UPDATE' if lock else ''),
                             (uuid_text(run_id), user_id, family))
         if not row:
             raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
         return row
+
+    def erase_history(self, principal, run_id, *, authorize=None):
+        family = family_hash(principal)
+        with self.unit_of_work() as uow:
+            row = self._owned(uow, principal.user_id, family, run_id, include_deleted=True)
+            if authorize is not None and authorize(uow, row) is not True:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
+            if row.get('history_deleted_at') is not None:
+                return False
+            if row['status'] not in TERMINAL:
+                raise LedgerError(error_codes.AGENT_HISTORY_NOT_TERMINAL)
+            now = self.now()
+            self.history.erase(uow, user_id=row['user_id'], conversation_id=row['conversation_id'], now=now)
+            # Receipts live on agent_sources.delivered, not in a separate table.
+            for table in ('agent_sources', 'agent_tool_calls', 'agent_model_calls'):
+                uow.execute(f'DELETE FROM {table} WHERE run_id=%s', (row['id'],))
+            uow.execute('UPDATE agent_runs SET history_deleted_at=%s,updated_at=%s,'
+                        'tool_credential_hash=NULL,model_credential_hash=NULL,result_credential_hash=NULL,'
+                        'result_hash=NULL,root_session_id=NULL,root_turn_id=NULL,root_request_id=NULL WHERE id=%s',
+                        (now, now, row['id']))
+            # Current account/session/role state is re-read after destructive
+            # work and before commit. A denial rolls back this entire UOW.
+            if authorize is not None and authorize(uow, row) is not True:
+                raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
+            uow.commit()
+            return True
 
     def claim(self, run_id, *, execution_id, credential_hashes=None, authorize=None):
         run_id, execution_id = uuid_text(run_id), uuid_text(execution_id)
@@ -182,7 +215,7 @@ class MySqlRunLedger:
         with self.unit_of_work() as uow:
             row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s FOR UPDATE', (run_id,))
             now = self.now()
-            if (not row or row['status'] != 'accepted' or row['deadline'] <= now
+            if (not row or row.get('history_deleted_at') is not None or row['status'] != 'accepted' or row['deadline'] <= now
                     or row['execution_id'] is not None or row['generation'] != 1):
                 return None
             if authorize is not None and authorize(uow, row) is not True:
@@ -194,7 +227,8 @@ class MySqlRunLedger:
             updated = uow.execute(
                 "UPDATE agent_runs SET status='running', execution_id=%s, root_session_id=%s, "
                 'lease_expires_at=%s, updated_at=%s, tool_credential_hash=%s, model_credential_hash=%s, '
-                'result_credential_hash=%s WHERE id=%s AND status=\'accepted\' AND generation=1 AND execution_id IS NULL',
+                'result_credential_hash=%s WHERE id=%s AND status=\'accepted\' AND generation=1 '
+                'AND execution_id IS NULL AND history_deleted_at IS NULL',
                 (execution_id, 'blog-qa-' + run_id, lease, now, hashes['tool'], hashes['model'], hashes['result'], run_id))
             if updated != 1:
                 raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
@@ -251,7 +285,7 @@ class MySqlRunLedger:
     def cancel(self, principal, run_id):
         family = family_hash(principal)
         with self.unit_of_work() as uow:
-            row = self._owned(uow, principal.user_id, family, run_id)
+            row = self._owned(uow, principal.user_id, family, run_id, include_deleted=True)
             if row['status'] in TERMINAL:
                 return row['status']
             now = self.now()

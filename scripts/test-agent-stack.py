@@ -32,7 +32,7 @@ def main():
             print('Owned stack: real MySQL + Redis; synthetic Worker/model/articles.', flush=True)
             return mysql.run(arguments.mysqld, extra_env=environment,
                 test_command=[sys.executable, '-m', 'unittest', 'discover', '-v',
-                    '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_stack.py'])
+                    '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_*stack.py'])
     except KeyboardInterrupt:
         print('Owned stack interrupted; owned server cleanup completed.', file=sys.stderr)
         return 130

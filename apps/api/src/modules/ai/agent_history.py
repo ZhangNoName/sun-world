@@ -46,6 +46,36 @@ class AgentHistoryTransactions:
     No connection, transaction commit or rollback is created here.
     """
 
+    def erase(self, uow, *, user_id, conversation_id, now):
+        """Remove only the canonical transcript, including legacy hidden rows.
+
+        Historical MySQL identifiers are accent/case insensitive. The exact
+        bytes of both conversation and feedback/message identity matter here.
+        The caller owns the run lock and commits this together with its marker.
+        """
+        _validate_context(user_id, conversation_id, now)
+        owned = uow.fetch_one('SELECT id FROM ai_conversations WHERE id=%s AND user_id=%s FOR UPDATE',
+                              (conversation_id, user_id))
+        if not owned or owned['id'] != conversation_id:
+            raise AiDomainError('AI_RESOURCE_NOT_FOUND', 'Conversation not found.', status_code=404)
+        # Indexed equality narrows candidates; the second predicate prevents
+        # historical case/accent folding from widening those candidates.
+        uow.execute('DELETE FROM ai_message_feedback WHERE message_id IN '
+                    '(SELECT id FROM ai_messages WHERE conversation_id=%s '
+                    'AND CAST(conversation_id AS BINARY)=CAST(%s AS BINARY)) '
+                    'AND CAST(message_id AS BINARY) IN '
+                    '(SELECT CAST(id AS BINARY) FROM ai_messages '
+                    'WHERE conversation_id=%s AND CAST(conversation_id AS BINARY)=CAST(%s AS BINARY))',
+                    (conversation_id, conversation_id, conversation_id, conversation_id))
+        uow.execute('DELETE FROM ai_messages WHERE conversation_id=%s '
+                    'AND CAST(conversation_id AS BINARY)=CAST(%s AS BINARY)',
+                    (conversation_id, conversation_id))
+        removed = uow.execute('DELETE FROM ai_conversations WHERE user_id=%s '
+                              'AND id=%s AND CAST(id AS BINARY)=CAST(%s AS BINARY)',
+                              (user_id, conversation_id, conversation_id))
+        if removed != 1:
+            raise AiDomainError('AI_RESOURCE_NOT_FOUND', 'Conversation not found.', status_code=404)
+
     def read(self, uow, *, user_id, conversation_id, now):
         """Bounded Agent-only recovery through the owning module's public API."""
         _validate_context(user_id, conversation_id, now)

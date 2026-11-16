@@ -581,3 +581,34 @@ sun-world-blog→design同题更新博客04：删详情不授予重跑、时间�
 按sun-world-blog→design同题补博客04的崩溃、提交回执与部分DDL边界。分类后端、标签架构笔记/Agent/DeepSeek Harness保留；1280/390正文及新增段落视觉/DOM检查通过，7稳定ID、22处strong、0px缩进、无残留双星/横向溢出。已有透明Redis预占图360/约342px保留；新内容为三个提交边界和少量顺序规则，邻近段落/已有比较表足以说明，不加重复图。未发布，正文预览仍用dirty renderer/CSS，非整篇文章页验收；3030/8032既有SQLite问答与3033正文预览保留。
 
 下一步本地推进API历史/账号删除边界。目标业务库结构及备份恢复、断电/跨版本、未知孤儿/cgroup/陈旧锁、Linux、人工语义、模型版本策略和生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty及主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步owned初始化登记/同目录重启、合成升级来源、固定八题报告门槛和等待取消观察这些协议增量，不把本轮当生产故障全验收。
+
+## 2026-11-16 正式问答历史删除与账号停用
+
+### 目标与实现
+
+基点5cffc24，按[历史删除协议](../../development/agent-history-erasure.md)先落契约再同步coding/判官，继续本地历史/账号边界。正式public router新增owner/family终态DELETE，Cookie/Origin/空body/开关/allowlist和锁后当前授权；AI模块同UOW删反馈/消息/对话，Agent清来源/tool/model详情、三凭据/result/root关联，新增nullable UTC history_deleted_at。账本原键/请求与family摘要/终态/执行身份/累计预算保留；公开view404、重复DELETE成功、旧键同/换问题409且不收费不重跑，late回调拒绝。active409要求先停止，不猜Worker退出或提前释放/退额度。
+
+账号admin DELETE仍是UserManager.status0停用，不自动删历史；实际旧JWT/Redis会话不能GET/DELETE或再完成。历史默认保留至显式删除；永久去重账本仍关联账户，不称匿名化、全账号物理抹除或备份/日志清除。未实现跨family管理、自动历史TTL或用户删除UI，当前3030/8032 SQLite/v1页面未切换，也没在业务库执行DDL/删除或读取真实账号/凭据。
+
+主要源：schema_migration.py、core/error_codes.py、ai/agent_history.py、agent_runtime/{ledger,gateway,application,public_router}.py；新SQLite erasure12与原生history stack9、public router5、共享SQLite fixture和合成upgrade marker NULL增量；stack launcher默认test_agent_*stack.py，load_tests只选新类自己的history方法避免重复继承原十题。所有SQL只用绑定参数；BINARY精确匹配有索引友好相等候选，不用CAST-only扫描条件，SQLite只作BLOB/NOCASE模拟。
+
+### 确认问题与修复
+
+- 初版默认_owned隐藏也传到trusted get_owned/cancel，判官真实临时SQLite/Application._settle栅栏复现：删除先提交，Worker观察0/Redis释放0但本地lease被pop。先补协议再修，可信get_owned/cancel包含deleted终态，公开_view仍用默认隐藏；同交错修后1/1。实际MySQL/Redis第九题再停在settle前，确认删除200时Redis仍owned，放行后Worker inspect读已删marker并释放真实slot，公开GET404。不把隐藏历史等同资源已释放。
+- 主线程要求精确字节裁剪同时保留conversation/message索引候选；AI反馈先可索引message_id候选再BINARY收敛，消息/对话同样双条件，避免跨大小写/重音别名扩大删除。新native刻意插入折叠相等、字节不同的孤儿alias消息/反馈，并保留普通聊天。
+- 首轮原生18项有1个合成构造错：alias沿用sequence1撞实际unicode_ci UNIQUE(conv,sequence)，不是生产缺陷；改alias9，未放宽生产约束。增加可信settle第九题后最终冻结源复验19项全过。
+- coding新删除12项及相关旧回归共144项通过；判官独立erasure/router/ledger/AI历史48与10文件AST通过，未运行真实DB/SDK，无剩余确认阻塞。角色用followup复用，协议增量同步先于实现，未新建agent或worktree。
+
+### 最终验证与证据
+
+完整`corepack pnpm check:api`733/28.975秒通过；真实owned MySQL8.4.13/Redis7.2.17/Auth/ASGI HTTP stack19/15.385秒、零skip（原10+新9）通过。两方向完成/删除/公开读取竞争先确认实际InnoDB LOCK WAIT再释放栅栏；最终当前读拒绝处理中被另一连接停用的账号并整体回滚，真实COMMIT后ACK丢失503但重复DELETE成功。Worker/文章/模型均合成，没有供应商/TLS/真实SDK新验收。
+
+正式MySQL29/4.495秒复验通过（缺新marker合成结构补NULL、原记录保持）；旧八题真实SIGKILL矩阵8/10.057秒复验通过，仍是admission/completion/model预算，不称新删除专门crash或断电验收。其输入case旧replacement warning保留，不预先定因或宣称旧在线池已自动恢复。MySQL/Redis owned临时根均恢复0、对应context确认停止；verified binary缓存与原站点必要SDK资源保留。
+
+执行源树8c5ccf5078ab46eb064498c279ceef5c6cbca692，42项selected source/index SHA核对，13个变更Python AST通过；root-script/api:deploy-schema、scoped diff及本轮JSON格式通过。根format:check只报既有docs/content-sources/csdn-qq-42345136/manifest.json，未改该dirty、不宣称root/Web全绿。[本轮安全实证](../../evaluations/agent-history-erasure-2026-11-16/README.md)含正式栈投影、旧crash复验与源码清单，原始日志/浏览器截图仅留ignored .tmp/history-erasure。
+
+### 博客与后续
+
+按sun-world-blog→design同题更新博客04第五节：删内容/保留去重/停用账号三者边界，回滚、旧键及迟到回调；后端分类、架构笔记/Agent/DeepSeek Harness标签保留。新增透明SVG agent-history-erasure-boundary.svg把内容与去重记录的分支关系画清，沿用旧图字体/配色/线宽；桌面360px、手机342px、原Redis图360/约342px均可读，未加图下小字。1280/390视觉/DOM检查通过，7稳定ID、24处strong、0px缩进、无残留双星或横向溢出。未发布；预览仍用dirty renderer/CSS，非完整文章页验收，既有问答与3033正文预览保留。
+
+下一步本地核验数据库短暂不可用后的既有连接池恢复，追踪旧replacement warning但不替历史故障补定因。全账号/备份/日志/自动TTL/跨family管理、未知孤儿/cgroup/旧锁、Linux、目标业务库与备份恢复、人工语义、上游版本策略、生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty和主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手必须读取历史删除协议及可信/公开读取分离、索引候选+BINARY和同锁竞争这些增量，不能物理删去重行后允许旧请求重跑。

@@ -147,6 +147,8 @@ class RunGateway:
         if not isinstance(call, RunCall) or not hmac.compare_digest(token_hash(call.service_credential), self.worker_hash):
             raise LedgerError('AGENT_CREDENTIAL_INVALID')
         row = row if row is not None else self.ledger._binding(uow, call.run_id, call.execution_id, call.generation)
+        if row.get('history_deleted_at') is not None:
+            raise LedgerError('AGENT_CREDENTIAL_INVALID')
         expected = row.get(audience + '_credential_hash')
         if not isinstance(expected, str) or not hmac.compare_digest(token_hash(call.token), expected):
             raise LedgerError('AGENT_CREDENTIAL_INVALID')

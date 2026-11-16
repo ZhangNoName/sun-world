@@ -52,7 +52,8 @@ def create_public_run_router(application, *, allowed_origins):
                               404 if error.code == 'AGENT_RUN_NOT_FOUND' else
                               429 if error.code == 'AGENT_RATE_LIMITED' else
                               422 if error.code == 'AGENT_INPUT_INVALID' else
-                              409 if error.code in {'AGENT_IDEMPOTENCY_CONFLICT', 'AGENT_ADMISSION_PENDING'} else 503)
+                              409 if error.code in {'AGENT_IDEMPOTENCY_CONFLICT', 'AGENT_ADMISSION_PENDING',
+                                  'AGENT_HISTORY_DELETED', 'AGENT_HISTORY_NOT_TERMINAL'} else 503)
                     headers = {'Retry-After': str(error.retry_after)} if type(getattr(error, 'retry_after', None)) is int else {}
                     return JSONResponse(status_code=status, headers=headers,
                         content=fail(code=error.code, msg=error.code).model_dump())
@@ -132,5 +133,14 @@ def create_public_run_router(application, *, allowed_origins):
         if await request.body() not in {b'', b'{}'}:
             raise LedgerError('AGENT_INPUT_INVALID')
         return ok(data=await application.cancel(request.cookies.get('access_token'), run_id))
+
+    @router.delete('/ai/v1/blog-qa/runs/{run_id}', response_model=ApiResponse[bool],
+                   dependencies=[Security(access_token_cookie)])
+    async def erase_history(run_id: str, request: Request):
+        require_origin(request)
+        if await request.body() not in {b'', b'{}'}:
+            raise LedgerError('AGENT_INPUT_INVALID')
+        return ok(data=await application.erase_history(request.cookies.get('access_token'), run_id),
+                  msg='历史已删除')
 
     return router

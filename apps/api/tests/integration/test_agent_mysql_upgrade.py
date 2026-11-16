@@ -31,6 +31,7 @@ RUN_BUDGET_COLUMNS = frozenset({
     'model_response_bytes_observed', 'model_usage_unknown_count',
 })
 CALL_BUDGET_COLUMNS = frozenset({'reserved_input_tokens', 'wire_request_hash', 'count_request_hash', 'input_reserved_at'})
+RUN_EXTENSION_COLUMNS = RUN_BUDGET_COLUMNS | {'history_deleted_at'}
 BUSINESS_ROWS = ('users', 'roles', 'user_roles', 'dictionary_types', 'dictionary_items', 'ai_conversations', 'ai_messages')
 STAMP = datetime(2026, 11, 16, 12, 0, 0, 123456)
 
@@ -39,7 +40,7 @@ def synthetic_schema(*, no_agent=False):
     schema = copy.deepcopy(migration.MYSQL_SCHEMA)
     if no_agent:
         return {name: definition for name, definition in schema.items() if not name.startswith('agent_')}
-    for table, missing in (('agent_runs', RUN_BUDGET_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
+    for table, missing in (('agent_runs', RUN_EXTENSION_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
         present = {column['name'] for column in schema[table]['columns']}
         if not missing <= present:
             raise AssertionError('Synthetic schema cut no longer matches the central contract')
@@ -94,7 +95,7 @@ class SyntheticUpgradeFixtureTests(unittest.TestCase):
         business, budgets = synthetic_schema(no_agent=True), synthetic_schema()
         self.assertFalse(any(name.startswith('agent_') for name in business))
         self.assertEqual(set(budgets), set(before))
-        for table, removed in (('agent_runs', RUN_BUDGET_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
+        for table, removed in (('agent_runs', RUN_EXTENSION_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
             self.assertEqual(removed, {column['name'] for column in before[table]['columns']}
                 - {column['name'] for column in budgets[table]['columns']})
         budgets['users']['columns'][0]['definition'] = 'synthetic change'
@@ -199,6 +200,8 @@ class AgentMySQLUpgradeTests(unittest.TestCase):
         run_values = self.rows('SELECT ' + ','.join(sorted(RUN_BUDGET_COLUMNS)) + ' FROM agent_runs')
         self.assertEqual(2, len(run_values))
         self.assertTrue(all(type(value) is int and value == 0 for row in run_values for value in row.values()))
+        self.assertTrue(all(row['history_deleted_at'] is None
+            for row in self.rows('SELECT history_deleted_at FROM agent_runs')))
         calls = self.rows('SELECT state,input_tokens,' + ','.join(sorted(CALL_BUDGET_COLUMNS)) + ' FROM agent_model_calls')
         self.assertEqual({'observed', 'unknown'}, {row['state'] for row in calls})
         self.assertTrue(all(row[name] is None for row in calls for name in CALL_BUDGET_COLUMNS))
@@ -223,7 +226,7 @@ class AgentMySQLUpgradeTests(unittest.TestCase):
         before = self.snapshot(schema)
         actions, errors = migration.build_plan(self.connection, self.database)
         self.assertEqual([], errors)
-        self.assertEqual(len(RUN_BUDGET_COLUMNS) + len(CALL_BUDGET_COLUMNS), len(actions))
+        self.assertEqual(len(RUN_EXTENSION_COLUMNS) + len(CALL_BUDGET_COLUMNS), len(actions))
         migration.apply_plan(self.connection, actions)
         self.assertEqual(before, self.snapshot(schema))
         self.assert_new_defaults()

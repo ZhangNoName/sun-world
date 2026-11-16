@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 正式问答历史删除与账号停用
+
+- owner/family终态DELETE同事务移除AI问答/反馈/标题与Agent详情，保留原键/终态/身份摘要/累计预算；公开GET404、重复删除成功、旧键409不收费不重跑、late回调拒绝。active须先停止，停用账号仍为status0，不称全账号抹除；见[删除协议](development/agent-history-erasure.md)。未切换现有SQLite页面或操作业务库。
+- 修公开隐藏误用于可信get_owned/cancel而跳过settle的P2；可信终态与公开恢复分离，BINARY清理保留索引候选。API733、真实MySQL/Redis/Auth/ASGI19（原10+新9，两个实际LOCK WAIT/删除先于settle仍释放真实槽）、迁移29/旧崩溃8复验及独立48通过；[实证](evaluations/agent-history-erasure-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)保留真实/合成/ACK注入范围及根format既有失败。
+- 博客04同题补边界和新透明关系图，1280/390预览通过未发布。owned两库已回收、现有问答及3033预览保留；下一步核既有连接池失联恢复。自动历史TTL/跨family/全账号与备份日志、Linux/未知锁/目标库/人工/版本/生产TLS仍待，P1/A–D未完成；其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 合成旧结构升级与MySQL进程崩溃
 
 - 两种中央schema合成裁剪验证保留旧记录、0/NULL默认、重复收敛、部分DDL失败及五类不兼容阻止修改；原生29项通过。固定八题逐题SIGKILL同datadir/socket/UUID重启，事务回滚/唯一完成/模型预占不退不重放/授权与租约收敛均过；见[恢复协议](development/agent-mysql-recovery.md)。不是实际业务快照、断电、跨版本或在线旧池自动恢复验收。

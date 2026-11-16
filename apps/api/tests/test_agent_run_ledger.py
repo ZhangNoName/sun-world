@@ -29,6 +29,7 @@ class SqliteUow:
         if self.database.fail_completion and sql.startswith("UPDATE agent_runs SET status='completed'"):
             raise RuntimeError('synthetic commit failure')
         return self.connection.execute(sql.replace('%s', '?').replace(' FOR UPDATE', '')
+                                       .replace(' AS BINARY)', ' AS BLOB)')
                                        .replace('CURRENT_TIMESTAMP(6)', 'CURRENT_TIMESTAMP'), params)
 
     def fetch_one(self, sql, params=()):
@@ -66,6 +67,8 @@ class Database:
                 CREATE TABLE ai_messages(id TEXT PRIMARY KEY,conversation_id TEXT,role TEXT,blocks TEXT,
                     sequence INTEGER,status TEXT,created_at TIMESTAMP,updated_at TIMESTAMP,
                     UNIQUE(conversation_id,sequence));
+                CREATE TABLE ai_message_feedback(message_id TEXT,user_id INTEGER,value TEXT,
+                    created_at TIMESTAMP,updated_at TIMESTAMP,PRIMARY KEY(message_id,user_id));
             ''')
             db.execute(f'CREATE TABLE agent_runs({columns},PRIMARY KEY(id),'
                        'UNIQUE(user_id,scenario,idempotency_key),UNIQUE(conversation_id))')
