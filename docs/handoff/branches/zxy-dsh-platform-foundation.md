@@ -341,3 +341,30 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步真实Redis准入/API组合、真实模型质量集、在线留存/离线回收与自动崩溃恢复、Linux资源/PID/地址和生产身份签发轮换。当前journal保留128条后失败关闭，需离线核对释放，不能宣称无限持续准入；异常锁/未知孤儿不自动恢复。标准已补本地实现链接与root request语义，已向coding/判官同步；下一Claude-ds prompt必须读更新标准。生产仍关闭，其他dirty保留，不推送或发布。
 
 最终暂存树`b79fa6fe982b69d650e4138cda3005d5d069e9b7`独立导出后API549项、Worker43项、root/CI/deploy/schema门禁及从该树offline打包的完整mTLS+真实固定SDK集成全部通过；v1实际工具注册仍严格两项。缓存安装下载0，快照和该次prepared runtime已清理；随后只补交接证据，无可执行源码变化。暂存空白/私钥/GitHub token模式扫描通过，未包含其他dirty前端、技能或素材。
+
+## 2026-11-16 C3 Redis准入与正式API组合
+
+### Implemented / scope
+
+基点973776c。按计划实现显式正式API组合与Redis准入；仍未挂载main、切换旧开发页面、推送、部署或发布。两个owned数据库只用于本机私有socket，不读业务配置，不安装系统服务。详见[准入与验证说明](../../development/agent-run-admission.md)。
+
+- RedisRunAdmission用单次Lua检查全部key类型/值/TTL/配置指纹，预占分钟与owner并发槽；默认用户6/全局10次每固定60秒、用户/全局并发1，45秒run/60秒槽/120秒reservation。重复pending不二扣，不交回owner；未知EVAL ACK不重试；分钟不退款；旧release不能删除新owner。每次gateway live授权检查owned，Redis丢key后拒绝调用。
+- module_composition显式factory仅注入依赖，校验raw Redis pool的真实超时与禁retry配置；RunApplication连接真实AuthManager/session/allowlist、MySQL preflight/受理、Dispatcher/Gateway/固定Worker及到期reaper。MySQL未知commit保守等TTL不派发；只在新建run的一方派发。终态+Worker同execution静止才提前release，interrupted/未知不早释放。
+- 正式public_router factory含Origin、16KiB请求、严格JSON、稳定错误/Retry-After、幂等409+原run、GET/cancel与SSE；响应finally负责断流回收，不仅依赖generator finally。新应用GET用当前cookie重验family/角色；活跃私有回调用原run绑定，丢失不重建；不回放运行或事件。
+- AI模块拥有有界纯文本历史读取，恢复核对问题/答案摘要及当前公开来源，失效/变化/不可读链接隐藏。Worker新增同mTLS/service身份的readyz，严格匹配bundle/model；忙碌不误报故障，journal满/恢复受阻/关闭失败关闭。
+
+### Review / evidence
+
+- 判官确认并修复RC恢复竞态：旧running row+新提交第二消息会误报失败；GET现在锁run后读AI历史，与完成事务同锁顺序。native按finish真实connectionID观察INNODB_TRX LOCK WAIT，再放开恢复，证明先running/1条后completed/2条。
+- 判官第二项：clean close在job首SQL阶段可能遗留accepted和槽。已补cancelled分支先持久取消再settle；不在同job的cleanup task内反向等待该job，保留未知DB结果等TTL的边界。新增实际栅栏回归通过：close等待首SQL排空，SQL已取消/无execution、并发槽释放/分钟不退款、Worker未start且各vault为空；判官独立复验后两项均解除，无剩余确认阻塞。
+- redis-py5.3.1 Unix构造器丢弃connect timeout，owned fixture已改显式UnixDomainSocketConnection pool，借出实际连接核对connect1秒/socket2秒；factory拒绝无界/隐式retry误配。
+- 当前API565项、Worker44项、contracts6项、CI/root协议/生成RPC通过。native Redis15、组合10及原MySQL15通过；组合使用真实MySQL8.4.13/Redis7.2.17/AuthManager，Worker/model/文章明确合成。SQL未知ACK为提交后注入，新应用为同进程新实例，不宣称进程崩溃/Redis failover或真实SDK整栈。
+- Redis官方7.2.17归档SHA256核对后本地libc编译，缓存ignored；正常、异常、SIGTERM回收已实测。默认API gate不自动启动数据库。全仓format仍仅既有素材manifest失败，原Web CSS预算保留，无新增前端变更。
+
+### Writing / next
+
+沿用sun-world-blog→sun-world-write-design修订博客04，后端分类与架构笔记/Agent/DeepSeek Harness标签保留。新增预占与数据库确认边界、恢复锁机制及真实组合的合成范围；透明SVG梳理Redis/MySQL确认分支，桌面360px、手机约342px，7个唯一标题ID/13处strong，1280/390宽正文无缩进/溢出，图像加载和视觉检查通过。预览仍为3033独立正文URL，使用当前dirty renderer/CSS，不等于已提交前端或完整文章页验收；未发布。
+
+下一步将完整Worker/真实固定SDK接入此真实Redis/MySQL组合，再做模型质量集、已有库升级/崩溃矩阵、持久journal留存与离线回收、Linux资源/PID/地址隔离及生产TLS签发轮换。对账不自动重放accepted；生产关闭，不能以本地切片宣称P1或A–D整体验收。其他dirty文件保留。
+
+最终独立暂存树`1e5e50a7116a1ca8d159e099f458b36033a950e0`导出后API565、Worker44、真实Redis15、真实MySQL+Redis组合10及CI/root/deploy-schema/RPC漂移均通过；验证时只借用原项目Python依赖，源码来自暂存树。临时快照使用独立index供git ls-files检查，未建分支或worktree；最终仅再补本交接证据，无可执行源码变化。原MySQL15与contracts6已在当前工作区通过。

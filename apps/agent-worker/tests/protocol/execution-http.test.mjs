@@ -127,6 +127,32 @@ async function setup(t, { verifyPeer, service: supplied } = {}) {
   return { request, run, service, tls, started: () => started }
 }
 
+test('actual mTLS readiness is bound, stays ready while busy, and closes conservatively', async (t) => {
+  const { request, run, service } = await setup(t)
+  const expected = {
+    protocol: PROTOCOL,
+    bundle_hash: run.bundle_hash,
+    model_id: run.model_id,
+    available: true,
+  }
+  const probe = async () =>
+    JSON.parse((await request('GET', '/internal/v2/readyz')).body)
+  assert.deepEqual(await probe(), expected)
+  assert.equal(
+    (
+      await request('GET', '/internal/v2/readyz', undefined, {
+        headers: { 'x-worker-service': 'x'.repeat(43) },
+      })
+    ).status,
+    403
+  )
+  assert.equal((await request('GET', '/internal/v2/readyz', {})).status, 400)
+  await request('POST', '/internal/v2/executions', run)
+  assert.deepEqual(await probe(), expected)
+  await service.close()
+  assert.equal((await probe()).available, false)
+})
+
 test('actual mTLS V2 endpoints start, inspect without body, cancel, and never expose credentials', async (t) => {
   const { request, run, started } = await setup(t)
   const first = await request('POST', '/internal/v2/executions', run)

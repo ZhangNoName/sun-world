@@ -196,6 +196,39 @@
       "title": "ExecutionAck",
       "type": "object"
     },
+    "WorkerReadiness": {
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "sun-world-agent/2",
+          "title": "Protocol",
+          "type": "string"
+        },
+        "bundle_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Bundle Hash",
+          "type": "string"
+        },
+        "model_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Model Id",
+          "type": "string"
+        },
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "protocol",
+        "bundle_hash",
+        "model_id",
+        "available"
+      ],
+      "title": "WorkerReadiness",
+      "type": "object"
+    },
     "RootRegistration": {
       "additionalProperties": false,
       "properties": {

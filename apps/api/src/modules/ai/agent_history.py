@@ -46,6 +46,44 @@ class AgentHistoryTransactions:
     No connection, transaction commit or rollback is created here.
     """
 
+    def read(self, uow, *, user_id, conversation_id, now):
+        """Bounded Agent-only recovery through the owning module's public API."""
+        _validate_context(user_id, conversation_id, now)
+        owned = uow.fetch_one('SELECT id FROM ai_conversations WHERE id=%s AND user_id=%s AND is_deleted=0',
+                              (conversation_id, user_id))
+        if not owned or owned['id'] != conversation_id:
+            raise AiDomainError('AI_RESOURCE_NOT_FOUND', 'Conversation not found.', status_code=404)
+        messages = uow.fetch_all('SELECT role,sequence,blocks,status FROM ai_messages '
+                                 'WHERE conversation_id=%s ORDER BY sequence ASC LIMIT 3', (conversation_id,))
+        if (not 1 <= len(messages) <= 2 or messages[0]['role'] != 'user' or messages[0]['sequence'] != 1
+                or (len(messages) == 2 and (messages[1]['role'] != 'assistant' or messages[1]['sequence'] != 2))):
+            raise AiDomainError('AI_CONVERSATION_MISMATCH', 'Invalid Agent transcript.', status_code=409)
+        result = []
+        try:
+            for message in messages:
+                raw = message['blocks']
+                if isinstance(raw, (str, bytes)):
+                    if len(raw.encode() if isinstance(raw, str) else raw) > 65536:
+                        raise ValueError
+                    raw = json.loads(raw)
+                blocks = _BLOCKS.validate_python(raw)
+                if (message['status'] != 'completed' or not blocks
+                        or any(not isinstance(block, (AiTextBlock, AiLinkBlock)) for block in blocks)
+                        or not isinstance(blocks[0], AiTextBlock)
+                        or any(isinstance(block, AiTextBlock) and block.format != 'plain' for block in blocks)):
+                    raise ValueError
+                if message['role'] == 'user' and (len(blocks) != 1 or not blocks[0].text.strip()
+                                                  or len(blocks[0].text) > 2000):
+                    raise ValueError
+                if message['role'] == 'assistant' and (len(blocks) > 5
+                        or len(blocks[0].text.encode()) > 32768
+                        or any(not isinstance(block, AiLinkBlock) for block in blocks[1:])):
+                    raise ValueError
+                result.append({'role': message['role'], 'blocks': blocks})
+        except (TypeError, ValueError, UnicodeError):
+            raise AiDomainError('AI_CONVERSATION_MISMATCH', 'Invalid Agent transcript.', status_code=409) from None
+        return result
+
     def create(self, uow, *, user_id, conversation_id, question, now):
         _validate_context(user_id, conversation_id, now)
         if not isinstance(question, str) or not question.strip() or len(question) > 2000:

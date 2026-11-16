@@ -104,6 +104,26 @@ export class ExecutionService {
     await this.#ready
   }
 
+  async readiness() {
+    return this.#bounded(false, async () => {
+      await this.#ready
+      return this.#serial(() => ({
+        protocol: PROTOCOL,
+        bundle_hash: this.#bundle,
+        model_id: this.#model,
+        // Health is independent of the distributed admission slot; a busy
+        // healthy Worker must still support inspect/cancel and return 429 at
+        // the API's quota boundary, not masquerade as a broken dependency.
+        available:
+          !this.#closing &&
+          !this.#shutdown &&
+          !this.#faulted &&
+          !this.#recoveryBlocked &&
+          this.#entries.size < this.#capacity,
+      }))
+    })
+  }
+
   async #bounded(start, operation) {
     // RPC timeouts do not cancel persisted execution intents. Keep the queue
     // itself bounded even if local storage or an owned stop is unresponsive;

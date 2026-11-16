@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(binary):
+def run(binary, *, test_command=None, extra_env=None):
     import pymysql
     binary = binary.expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
@@ -78,10 +78,16 @@ def run(binary):
                     finally:
                         connection.close()
                     break
-                env = dict(os.environ, SUN_WORLD_AGENT_MYSQL_ROOT=str(directory),
-                           SUN_WORLD_AGENT_MYSQL_NONCE=nonce, PYTHONUNBUFFERED='1')
-                tests = subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-v',
-                    '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_mysql.py'],
+                env = {**os.environ, **(extra_env or {}),
+                       'SUN_WORLD_AGENT_MYSQL_ROOT': str(directory),
+                       'SUN_WORLD_AGENT_MYSQL_NONCE': nonce, 'PYTHONUNBUFFERED': '1'}
+                command = ([sys.executable, '-m', 'unittest', 'discover', '-v',
+                    '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_mysql.py']
+                    if test_command is None else test_command)
+                if (not isinstance(command, (tuple, list)) or not command
+                        or any(not isinstance(value, str) or not value for value in command)):
+                    raise ValueError('Explicit nonempty test command required')
+                tests = subprocess.run(command,
                     cwd=ROOT, env=env, timeout=180)
                 return tests.returncode
             finally:

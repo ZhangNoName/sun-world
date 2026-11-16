@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="416" viewBox="0 0 360 416" role="img" aria-labelledby="title desc">
+  <title id="title">新提问的预占、保存与确认分支</title>
+  <desc id="desc">新提问先在Redis预占额度，再在MySQL保存运行。确认保存成功后派发一次执行；提交回执丢失时保留预占，用原请求键查询运行。</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#64748b"/></marker></defs>
+  <g fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrow)">
+    <path d="M180 54V84"/><path d="M180 142V172"/>
+    <path d="M180 230V256H88V302"/><path d="M180 256H272V302"/>
+  </g>
+  <g stroke-width="1.4">
+    <rect x="118" y="8" width="124" height="46" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+    <rect x="74" y="84" width="212" height="58" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <rect x="74" y="172" width="212" height="58" rx="10" fill="#eff6ff" stroke="#60a5fa"/>
+    <rect x="10" y="302" width="156" height="82" rx="10" fill="#f0fdf4" stroke="#86b99b"/>
+    <rect x="194" y="302" width="156" height="82" rx="10" fill="#fffbeb" stroke="#d6b570"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'PingFang SC', sans-serif" font-size="16" text-anchor="middle" fill="#1e293b">
+    <text x="180" y="37">新提问</text>
+    <text x="180" y="109">Redis</text><text x="180" y="131">预占额度</text>
+    <text x="180" y="197">MySQL</text><text x="180" y="219">保存运行</text>
+    <text x="88" y="282">确认成功</text><text x="272" y="282">回执丢失</text>
+    <text x="88" y="339">派发一次执行</text>
+    <text x="272" y="335">保留预占</text><text x="272" y="359">原键查询运行</text>
+  </g>
+</svg>

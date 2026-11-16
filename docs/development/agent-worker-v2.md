@@ -14,6 +14,8 @@ cancel即使尚未见过start也先持久保存cancelled tombstone，再确认�
 
 createExecutionServer只返回node:https.Server，不读取env/证书、不自动listen。强制client certificate验证、显式同步peer证书策略、独立服务凭据和V2头，拒绝重复身份头、压缩体、重复JSON key、非有限数、非法UTF-8与schema未知字段。请求16KiB、响应8KiB，握手/HTTP响应有界；错误只给固定码。2秒HTTP时限不会回滚已进入service的持久启动操作，确认丢失时API只查询/取消原execution；尚在收包/认证且未调用service的超时请求不能新受理。service内部start/control各有128个在途硬界，避免慢fsync与超时重连无界积累；执行自身仍受绝对deadline约束。控制路径与API client兼容：start、无body的GET原execution、cancel。
 
+正式组合新增同身份保护的无body `GET /internal/v2/readyz`，生成WorkerReadiness schema约束protocol/bundle/model/available。journal故障、恢复受阻、保留记录满或关闭时不可受理；仅活跃忙碌仍可ready，由Redis全局槽返回限额，不把并发忙碌误作版本/运行环境不可用。API探测严格匹配bundle/model，不重试；不纳入普通站点readyz。组合和本地实测边界见[准入说明](agent-run-admission.md)。
+
 ## SDK与网关
 
 GatewayClient使用Node HTTPS固定origin、强制证书/hostname校验，不继承环境代理、不重定向或自动重试。工具/model/result分别使用本次run的三受众凭据，服务身份在外层头。核对完整工具响应digest和call/source绑定后才发receipt；收到delivered才向SDK暴露source_id。模型不能把数字文章ID当引用UUID。

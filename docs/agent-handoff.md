@@ -1,5 +1,13 @@
 ﻿## Current Handoff
 
+## 2026-11-16 C3 Redis准入与正式API组合
+
+- 显式组合真实会话/白名单、Redis原子分钟与并发预占、MySQL幂等受理、Dispatcher/Gateway、正式SSE/GET/cancel与Worker版本化readiness；main未挂载、旧入口未切换。见[准入说明](development/agent-run-admission.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。未知commit不猜成功/不重放，只有未执行或Worker确认静止才提前释放并发；分钟不退款。
+- API565、Worker44、Redis15、组合10、原MySQL15及contracts/协议定向检查通过。组合真实MySQL8.4.13/Redis7.2.17/AuthManager，Worker/model/文章为合成；新实例恢复不等于进程崩溃试验。判官修复恢复RC混合快照及clean close遗留accepted两P2，真实锁等待/关闭栅栏回归通过，独立复审无剩余确认阻塞。
+- 博客04增加跨存储预占/恢复锁说明与透明关系图，3033独立正文1280/390预览通过，分类标签保留、未发布。下一步完整SDK+真实存储整栈、模型质量、留存回收、已有库/崩溃、Linux/生产TLS；生产仍关闭，未推送部署，其他dirty及既有格式/CSS问题保留。
+
+- 独立暂存树`1e5e50a7116a1ca8d159e099f458b36033a950e0`再次验证API565、Worker44、Redis15、真实组合10及CI/root/deploy-schema/RPC通过；临时快照/数据库已回收，最终只补文档证据。
+
 ## 2026-11-16 Worker V2服务与持久取消
 
 - 已实现mTLS控制服务、持久启动/取消tombstone、三受众网关client、固定SDK根messageId/turn与UUIDreceipt，以及owned group/home确认回收。详见[Worker V2](development/agent-worker-v2.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。blog-qa@2产品Skill独立声明，v1内容/首位兼容保留；根check与CI已加入Worker协议测试。

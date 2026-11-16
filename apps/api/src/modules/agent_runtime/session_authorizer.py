@@ -153,16 +153,23 @@ class RunAllowlistPolicy:
         self._user_ids = frozenset(user_ids)
         self._require_admin = require_admin
 
+    def admit(self, principal, uow):
+        _require_current_uow(uow)
+        if (not isinstance(principal, Principal) or principal.kind != 'user'
+                or type(principal.user_id) is not int or principal.user_id not in self._user_ids
+                or not isinstance(principal.roles, tuple)
+                or any(not isinstance(role, str) for role in principal.roles)
+                or (self._require_admin and 'admin' not in principal.roles)):
+            raise _denied()
+        return True
+
     def __call__(self, principal, row, uow):
         try:
             _require_current_uow(uow)
             _, user_id, family, _ = _row_context(row)
             _match(principal, user_id, family)
-            if (row.get('app_id') != 'sun-world' or row.get('scenario') != 'blog-qa'
-                    or not isinstance(principal.roles, tuple)
-                    or any(not isinstance(role, str) for role in principal.roles)
-                    or user_id not in self._user_ids
-                    or (self._require_admin and 'admin' not in principal.roles)):
+            self.admit(principal, uow)
+            if row.get('app_id') != 'sun-world' or row.get('scenario') != 'blog-qa':
                 raise _denied()
             return True
         except Exception:

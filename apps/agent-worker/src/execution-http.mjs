@@ -159,6 +159,19 @@ export function createExecutionServer({
           }
           if (unavailable()) return
           const raw = Buffer.concat(chunks)
+          if (
+            request.method === 'GET' &&
+            request.url === '/internal/v2/readyz'
+          ) {
+            if (raw.length || typeof service.readiness !== 'function')
+              throw new Error('AGENT_INPUT_INVALID')
+            const state = validateRpc(
+              'WorkerReadiness',
+              await service.readiness()
+            )
+            if (!unavailable()) send(200, state)
+            return
+          }
           let ack, expected
           const match =
             /^\/internal\/v2\/executions\/([0-9a-f-]{36})\/([0-9a-f-]{36})(\/cancel)?$/.exec(

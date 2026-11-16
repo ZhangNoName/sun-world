@@ -73,6 +73,13 @@ class ExecutionAck(ExecutionBinding):
     status: Literal['running', 'completed', 'failed', 'cancelled', 'interrupted']
 
 
+class WorkerReadiness(StrictModel):
+    protocol: Literal['sun-world-agent/2']
+    bundle_hash: Hash
+    model_id: str = Field(min_length=1, max_length=160)
+    available: bool
+
+
 class RootRegistration(StrictModel):
     root_turn_id: Identifier
     root_request_id: Identifier
@@ -122,6 +129,6 @@ def strict_json(raw):
 
 
 def contract():
-    models = (ExecutionBinding, ExecutionStart, ExecutionAck, RootRegistration,
+    models = (ExecutionBinding, ExecutionStart, ExecutionAck, WorkerReadiness, RootRegistration,
               ToolInvocation, DeliveryReceipt, FinalResult)
     return {'protocol': PROTOCOL, 'schemas': {model.__name__: model.model_json_schema() for model in models}}

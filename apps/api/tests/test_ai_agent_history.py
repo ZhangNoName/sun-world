@@ -94,6 +94,36 @@ class SqliteHistoryDatabase:
 
 
 class AgentHistoryTransactionTests(unittest.TestCase):
+    def test_recovery_reads_only_owned_canonical_plain_transcript_without_committing(self):
+        self.create()
+        with self.db.unit_of_work() as uow:
+            first = self.history.read(uow, user_id=1, conversation_id=self.conversation_id, now=self.now)
+            self.assertEqual(first[0]['blocks'][0].text, '测试问题')
+            self.complete(uow)
+            restored = self.history.read(uow, user_id=1, conversation_id=self.conversation_id, now=self.now)
+            self.assertEqual(restored[1]['blocks'], self.blocks)
+            self.assertEqual(self.db.commits, 1)
+            for owner, key in [(2, self.conversation_id), (1, self.conversation_id.upper())]:
+                with self.assertRaises(AiDomainError) as caught:
+                    self.history.read(uow, user_id=owner, conversation_id=key, now=self.now)
+                self.assertEqual(caught.exception.status_code, 404)
+
+    def test_recovery_rejects_corrupt_status_shape_size_and_extra_messages(self):
+        self.create()
+        for blocks, status in [('[', 'completed'), ('[]', 'completed'),
+                (json.dumps([{'type': 'text', 'text': 'x', 'format': 'markdown'}]), 'completed'),
+                (' ' * 65537, 'completed'),
+                (json.dumps([{'type': 'text', 'text': 'x', 'format': 'plain'}]), 'pending')]:
+            with self.subTest(status=status, blocks=blocks[:20]), self.db.unit_of_work() as uow:
+                uow.execute('UPDATE ai_messages SET blocks=%s,status=%s', (blocks, status))
+                with self.assertRaises(AiDomainError):
+                    self.history.read(uow, user_id=1, conversation_id=self.conversation_id, now=self.now)
+        with self.db.unit_of_work() as uow:
+            self.complete(uow)
+            uow.execute("INSERT INTO ai_messages(id,conversation_id,role,blocks,sequence,status) VALUES('extra',%s,'assistant','[]',3,'completed')", (self.conversation_id,))
+            with self.assertRaises(AiDomainError):
+                self.history.read(uow, user_id=1, conversation_id=self.conversation_id, now=self.now)
+
     def setUp(self):
         self.db = SqliteHistoryDatabase()
         self.addCleanup(self.db.connection.close)

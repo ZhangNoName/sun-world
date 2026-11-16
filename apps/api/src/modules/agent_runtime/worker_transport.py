@@ -12,7 +12,7 @@ import httpx
 
 from .gateway import encode, token_hash
 from .ledger import LedgerError
-from .rpc import ExecutionAck, ExecutionBinding, ExecutionStart, PROTOCOL, strict_json
+from .rpc import ExecutionAck, ExecutionBinding, ExecutionStart, WorkerReadiness, PROTOCOL, strict_json
 
 
 class WorkerHttpTransport:
@@ -31,7 +31,7 @@ class WorkerHttpTransport:
         self._credential = service_credential
         self._context, self._transport = context, transport
 
-    async def _send(self, method, path, payload, binding):
+    async def _send(self, method, path, payload, binding, *, schema=ExecutionAck):
         try:
             raw = encode(payload) if payload is not None else None
             if raw is not None and len(raw) > 16384:
@@ -53,7 +53,7 @@ class WorkerHttpTransport:
                             body.extend(chunk)
                             if len(body) > 8192:
                                 raise ValueError('Worker response too large')
-            ack = ExecutionAck.model_validate(strict_json(bytes(body))).model_dump()
+            ack = schema.model_validate(strict_json(bytes(body))).model_dump()
             if any(ack[key] != value for key, value in binding.items()):
                 raise ValueError('Worker binding mismatch')
             return ack
@@ -70,6 +70,11 @@ class WorkerHttpTransport:
 
     async def inspect(self, binding):
         return await self._bound_request('GET', binding)
+
+    async def probe(self, *, bundle_hash, model_id):
+        expected = {'protocol': PROTOCOL, 'bundle_hash': bundle_hash, 'model_id': model_id}
+        result = await self._send('GET', '/internal/v2/readyz', None, expected, schema=WorkerReadiness)
+        return result['available'] is True
 
     async def cancel(self, binding):
         return await self._bound_request('POST', binding)

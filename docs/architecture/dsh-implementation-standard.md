@@ -200,6 +200,8 @@ docs/plans/                      # 分阶段交付与验收
 
 本地V2实现与当前边界见[Worker V2](../development/agent-worker-v2.md)和[派发说明](../development/agent-run-dispatch.md)：根请求关联使用固定SDK prompt返回的durable inbox messageId，并核对根session内实际进入turn的user/message；不是任选一条LLM request或最后助手消息。Worker控制/回调使用显式v2路径和后端生成schema，旧v1本地入口仍独立保留。持久取消记录/目录锁目前失败关闭且有容量上限，在线留存、自动崩溃恢复和Linux隔离仍须验收。
 
+本地已增加[Redis准入与正式API显式组合](../development/agent-run-admission.md)，仍未挂载生产main。Redis原子预占与MySQL幂等事务分开，未知提交保留预占而不自动重试；只在未执行或Worker确认静止后释放并发。恢复读取锁定run以串行化状态与AI历史；当前对账只收敛过期accepted/running，不会自动派发重启前的accepted。
+
 API 重启只恢复未领取 accepted。派发确认丢失时，允许向原 Worker 查询已有 execution_id，但不能重新发送启动请求；无法确认则中断。采用“宁可明确中断，也不盲目重放”的首期策略，不承诺分布式 exactly-once。用户主动重试使用新幂等键。
 
 - 接收事务创建会话、用户消息和运行，命中相同幂等键返回 409 + 原 run ID；同键不同请求 hash 返回独立冲突码。键按账户隔离；保留期至少覆盖可查询的运行记录，过期策略在迁移 PR 明确，避免过早复用。

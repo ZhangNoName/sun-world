@@ -24,6 +24,45 @@ from src.modules.agent_runtime.ledger import LedgerError, MySqlRunLedger, digest
 
 
 class AgentRunGatewayTests(unittest.TestCase):
+    def project(self):
+        from src.modules.agent_runtime.run_view import RunView
+        with self.ledger.unit_of_work() as uow:
+            row = uow.fetch_one('SELECT * FROM agent_runs WHERE id=%s', (self.run['id'],))
+            return RunView(self.gateway).project(uow, row, self.owner)
+
+    def test_recovery_revalidates_sources_and_hides_changed_deleted_or_unavailable_links(self):
+        self.assertIsNone(self.project()['answer'])
+        source = self.delivered()
+        self.finish([source])
+        saved = self.project()
+        self.assertEqual(saved['answer'], '有据可查的回答。')
+        self.assertEqual(saved['sources'][0]['url'], 'https://blog.example.test/blog/1')
+        self.content += '内容变化'
+        self.assertEqual(self.project()['sources'], [])
+        self.assertEqual(self.project()['answer'], saved['answer'])
+        self.content = '公开正文不会复制到来源账本。'
+        self.title = '标题变化'
+        self.assertEqual(self.project()['sources'], [])
+        def unavailable(*_args):
+            raise ConnectionError('private source diagnostic')
+        self.gateway.source_reader = unavailable
+        self.assertEqual(self.project()['sources'], [])
+
+    def test_recovery_rejects_tampered_question_or_answer(self):
+        self.finish([])
+        for role in ('user', 'assistant'):
+            with self.subTest(role=role):
+                with self.ledger.unit_of_work() as uow:
+                    original = uow.fetch_one('SELECT blocks FROM ai_messages WHERE role=%s', (role,))['blocks']
+                    uow.execute('UPDATE ai_messages SET blocks=%s WHERE role=%s',
+                        (json.dumps([{'type': 'text', 'format': 'plain', 'text': 'tampered'}]), role))
+                    uow.commit()
+                with self.assertRaises(LedgerError):
+                    self.project()
+                with self.ledger.unit_of_work() as uow:
+                    uow.execute('UPDATE ai_messages SET blocks=%s WHERE role=%s', (original, role))
+                    uow.commit()
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

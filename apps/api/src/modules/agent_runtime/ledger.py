@@ -122,6 +122,43 @@ class MySqlRunLedger:
             row = self._owned(uow, principal.user_id, family, run_id, lock=False)
             return row
 
+    def find_request(self, principal, *, question, idempotency_key):
+        """Read-only preflight before a Redis reservation; accept rechecks it.
+
+        This read does not grant creation/dispatch permission and cannot replace
+        accept's user-row lock and unique constraint.
+        """
+        family, key = family_hash(principal), uuid_text(idempotency_key)
+        if not isinstance(question, str) or not question.strip() or len(question) > 2000:
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
+        request_hash = digest({'scenario': 'blog-qa', 'question': question.strip()})
+        with self.unit_of_work() as uow:
+            row = uow.fetch_one('SELECT * FROM agent_runs WHERE user_id=%s AND scenario=%s AND idempotency_key=%s',
+                                (principal.user_id, 'blog-qa', key))
+            if row:
+                if row['session_family_hash'] != family:
+                    raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+                if row['request_hash'] != request_hash:
+                    raise LedgerError(error_codes.AGENT_IDEMPOTENCY_CONFLICT)
+            return row
+
+    def fail_accepted(self, run_id, *, code):
+        """Trusted admission failure only; never rewrites a claimed execution."""
+        if code not in {'AGENT_ADMISSION_UNAVAILABLE', 'AGENT_ACTIVE_SESSION_REQUIRED',
+                        'AGENT_DISABLED', 'AGENT_RUNTIME_UNAVAILABLE'}:
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
+        with self.unit_of_work() as uow:
+            row = uow.fetch_one('SELECT * FROM agent_runs WHERE id=%s FOR UPDATE', (uuid_text(run_id),))
+            if not row:
+                raise LedgerError(error_codes.AGENT_RUN_NOT_FOUND)
+            if row['status'] != 'accepted':
+                return row['status']
+            now = self.now()
+            uow.execute("UPDATE agent_runs SET status='failed',error_code=%s,ended_at=%s,updated_at=%s "
+                        "WHERE id=%s AND status='accepted'", (code, now, now, row['id']))
+            uow.commit()
+            return 'failed'
+
     @staticmethod
     def _owned(uow, user_id, family, run_id, *, lock=True):
         row = uow.fetch_one('SELECT * FROM agent_runs WHERE id = %s AND user_id = %s '

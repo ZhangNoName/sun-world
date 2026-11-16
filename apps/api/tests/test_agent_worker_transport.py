@@ -25,6 +25,27 @@ class Stream(httpx.AsyncByteStream):
 
 
 class WorkerTransportTests(unittest.IsolatedAsyncioTestCase):
+    async def test_readiness_is_authenticated_bound_and_rejects_schema_or_fingerprint_drift(self):
+        expected = dict(protocol=PROTOCOL, bundle_hash='a'*64, model_id='fixed-model', available=True)
+        calls = []
+        def handler(request):
+            calls.append(request)
+            return httpx.Response(200, stream=Stream(json.dumps(expected).encode()))
+        client = self.transport(handler)
+        self.assertTrue(await client.probe(bundle_hash='a'*64, model_id='fixed-model'))
+        self.assertEqual(calls[-1].url.path, '/internal/v2/readyz')
+        self.assertEqual(calls[-1].content, b'')
+        self.assertEqual(calls[-1].headers['x-worker-service'], 's'*43)
+        expected['available'] = False
+        self.assertFalse(await client.probe(bundle_hash='a'*64, model_id='fixed-model'))
+        for changes in [{'model_id': 'wrong'}, {'bundle_hash': 'b'*64}, {'protocol': '1'}, {'available': 1}, {'secret': 'diagnostic'}]:
+            original = expected.copy()
+            expected.update(changes)
+            with self.subTest(changes=changes), self.assertRaises(LedgerError):
+                await client.probe(bundle_hash='a'*64, model_id='fixed-model')
+            expected.clear()
+            expected.update(original)
+
     def setUp(self):
         self.binding = dict(protocol=PROTOCOL, run_id=str(uuid4()), execution_id=str(uuid4()),
                             generation=1, bundle_hash='a'*64)

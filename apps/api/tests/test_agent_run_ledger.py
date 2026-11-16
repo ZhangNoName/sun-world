@@ -79,6 +79,33 @@ class Database:
 
 
 class AgentRunLedgerTests(unittest.TestCase):
+    def test_request_preflight_is_read_only_and_conflicts_preserve_family_privacy(self):
+        from dataclasses import replace
+        from src.modules.agent_runtime.ledger import LedgerError
+        self.assertIsNone(self.ledger.find_request(self.owner, question='具体问题', idempotency_key=self.key))
+        self.assertEqual(self.db.count('agent_runs'), 0)
+        row = self.accept().run
+        self.assertEqual(self.ledger.find_request(self.owner, question=' 具体问题 ', idempotency_key=self.key)['id'], row['id'])
+        for owner, question, code in [(self.owner, 'changed', 'AGENT_IDEMPOTENCY_CONFLICT'),
+                (replace(self.owner, session_family='other'), 'changed', 'AGENT_RUN_NOT_FOUND')]:
+            with self.assertRaises(LedgerError) as caught:
+                self.ledger.find_request(owner, question=question, idempotency_key=self.key)
+            self.assertEqual(caught.exception.code, code)
+        self.assertEqual(self.db.count('ai_messages'), 1)
+
+    def test_admission_failure_cannot_rewrite_running_or_terminal_run(self):
+        from src.modules.agent_runtime.ledger import LedgerError
+        row = self.accept().run
+        with self.assertRaises(LedgerError):
+            self.ledger.fail_accepted(row['id'], code='private diagnostic')
+        self.assertEqual(self.ledger.fail_accepted(row['id'], code='AGENT_ADMISSION_UNAVAILABLE'), 'failed')
+        self.assertEqual(self.ledger.fail_accepted(row['id'], code='AGENT_DISABLED'), 'failed')
+        self.assertEqual(self.ledger.get_owned(self.owner, row['id'])['error_code'], 'AGENT_ADMISSION_UNAVAILABLE')
+        self.key = str(uuid4())
+        running = self.running()
+        self.assertEqual(self.ledger.fail_accepted(running['id'], code='AGENT_DISABLED'), 'running')
+        self.assertIsNone(self.ledger.get_owned(self.owner, running['id'])['error_code'])
+
     def setUp(self):
         from src.core.auth import Principal
         from src.modules.agent_runtime.ledger import MySqlRunLedger
