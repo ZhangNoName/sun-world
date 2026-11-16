@@ -104,11 +104,6 @@ export async function runHarness(
   run,
   { cwd, signal, onCommitted = () => {} } = {}
 ) {
-  const subscription = client.subscribe(
-    (notification) =>
-      notification.method === 'session.event' &&
-      notification.params.sessionId === run.root_session_id
-  )
   const notifications = []
   let bytes = 0,
     finishing = false,
@@ -118,9 +113,29 @@ export async function runHarness(
     if (bytes > 2097152 || notifications.length >= 4096) invalid()
     notifications.push(notification)
   }
+  // The pinned SDK invokes filters synchronously in wire order. Collect here
+  // and decline queue delivery, so an async iterator and a final tryNext drain
+  // cannot race over the same subscription or reorder an in-flight event.
+  const subscription = client.subscribe((notification) => {
+    if (
+      notification.method === 'session.event' &&
+      notification.params.sessionId === run.root_session_id
+    ) {
+      try {
+        observe(notification)
+      } catch (error) {
+        readerFailure = error
+        throw error
+      }
+    }
+    return false
+  })
   const reader = (async () => {
     try {
-      for await (const notification of subscription) observe(notification)
+      // No notification should be queued: this waiter only watches transport
+      // or filter failures, including the bounded collection gates above.
+      await subscription.next()
+      invalid()
     } catch (error) {
       if (!finishing) {
         readerFailure = error
@@ -128,6 +143,7 @@ export async function runHarness(
       }
     }
   })()
+  void reader.catch(() => {})
   const abort = () => {
     void client.close().catch(() => {})
   }
@@ -144,8 +160,6 @@ export async function runHarness(
       { type: 'text', text: run.question },
     ])
     await client.request('session/wait', { sessionId: run.root_session_id })
-    for (let item; (item = subscription.tryNext()) !== undefined; )
-      observe(item)
     finishing = true
     subscription.close()
     await reader
