@@ -7,113 +7,30 @@ installs nothing and never registers a service or touches the binary's datadir.
 """
 
 import argparse
-import json
 import os
-import secrets
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
-from fixture_signals import owned_interrupts, owned_temporary_directory
+from fixture_mysql import owned_mysql
 
 
 def run(binary, *, test_command=None, extra_env=None, test_runner=None, test_timeout_seconds=180):
-    with owned_interrupts() as interrupts:
-        return _run(binary, test_command=test_command, extra_env=extra_env,
-                    test_runner=test_runner, test_timeout_seconds=test_timeout_seconds,
-                    interrupts=interrupts)
-
-
-def _run(binary, *, test_command, extra_env, test_runner, test_timeout_seconds, interrupts):
-    import pymysql
-    binary = binary.expanduser().resolve(strict=True)
-    if not binary.is_file() or not os.access(binary, os.X_OK):
-        raise ValueError('Executable mysqld is required')
-    basedir = binary.parent.parent
-    process = None
-    with owned_temporary_directory(interrupts, prefix='sunworld-agent-mysql-',
-                                      cleanup_confirmed=lambda: process is None or process.poll() is not None,
-                                      dir='/private/tmp' if sys.platform == 'darwin' else None) as temporary:
-        directory = Path(temporary).resolve()
-        data, socket = directory / 'data', directory / 'mysql.sock'
-        # Unix socket address limits are platform-specific; fail rather than
-        # silently connecting to a default/shared socket when the path is long.
-        if len(str(socket).encode()) > 100:
-            raise ValueError('Temporary socket path is too long')
-        data.mkdir(mode=0o700)
-        files = directory / 'files'
-        files.mkdir(mode=0o700)
-        nonce = secrets.token_hex(32)
-        marker = directory / 'owner.json'
-        marker.write_text(json.dumps({'nonce': nonce, 'data': str(data), 'socket': str(socket)}))
-        marker.chmod(0o600)
-        log = directory / 'mysqld.log'
-        server_env = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'HOME': str(directory),
-                      'TMPDIR': str(directory), 'LC_ALL': 'C', 'TZ': 'UTC'}
-        common = [str(binary), '--no-defaults', f'--basedir={basedir}', f'--datadir={data}']
-        with log.open('wb') as output:
-            subprocess.run([*common, '--initialize-insecure', '--innodb-buffer-pool-size=64M'],
-                           stdout=output, stderr=subprocess.STDOUT, check=True, timeout=120, env=server_env)
-            try:
-                with interrupts.defer():
-                    process = subprocess.Popen([*common, '--skip-networking', '--mysqlx=0',
-                        f'--socket={socket}', f'--pid-file={directory / "mysqld.pid"}',
-                        '--innodb-buffer-pool-size=64M', '--innodb-redo-log-capacity=32M',
-                        '--performance-schema=OFF', '--skip-log-bin', f'--secure-file-priv={files}'],
-                        stdout=output, stderr=subprocess.STDOUT, start_new_session=True, env=server_env)
-                deadline = time.monotonic() + 45
-                while True:
-                    if process.poll() is not None:
-                        raise RuntimeError('Owned mysqld exited before readiness')
-                    try:
-                        connection = pymysql.connect(unix_socket=str(socket), user='root', password='',
-                                                     connect_timeout=1, read_timeout=2)
-                    except pymysql.Error:
-                        if time.monotonic() >= deadline:
-                            raise TimeoutError('Owned mysqld readiness timed out') from None
-                        time.sleep(.1)
-                        continue
-                    try:
-                        with connection.cursor() as cursor:
-                            cursor.execute('SELECT @@datadir, @@socket, @@skip_networking, VERSION()')
-                            actual_data, actual_socket, disabled_network, version = cursor.fetchone()
-                            if Path(actual_data).resolve() != data or Path(actual_socket).resolve() != socket or disabled_network != 1:
-                                raise RuntimeError('Refusing a database not owned by this launcher')
-                            print(f'Disposable MySQL {version}; Unix socket only; no shared config loaded.', flush=True)
-                            print('Owned runtime:', directory, flush=True)
-                    finally:
-                        connection.close()
-                    break
-                env = {**os.environ, **(extra_env or {}),
-                       'SUN_WORLD_AGENT_MYSQL_ROOT': str(directory),
-                       'SUN_WORLD_AGENT_MYSQL_NONCE': nonce, 'PYTHONUNBUFFERED': '1'}
-                command = ([sys.executable, '-m', 'unittest', 'discover', '-v',
-                    '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_mysql.py']
-                    if test_command is None else test_command)
-                if (not isinstance(command, (tuple, list)) or not command
-                        or any(not isinstance(value, str) or not value for value in command)):
-                    raise ValueError('Explicit nonempty test command required')
-                if type(test_timeout_seconds) is not int or not 1 <= test_timeout_seconds <= 600:
-                    raise ValueError('Bounded test timeout required')
-                tests = (test_runner or subprocess.run)(command,
-                    cwd=ROOT, env=env, timeout=test_timeout_seconds)
-                return tests.returncode
-            finally:
-                with interrupts.defer():
-                    if process is not None and process.poll() is None:
-                        os.killpg(process.pid, signal.SIGTERM)
-                        try:
-                            process.wait(timeout=15)
-                        except subprocess.TimeoutExpired:
-                            os.killpg(process.pid, signal.SIGKILL)
-                            process.wait(timeout=5)
-                    if process is not None and process.poll() is None:
-                        raise RuntimeError('Owned mysqld process cleanup is unconfirmed')
-                    print('Owned mysqld stopped; disposable datadir removed on exit.', flush=True)
+    command = ([sys.executable, '-m', 'unittest', 'discover', '-v',
+        '-s', str(ROOT / 'apps/api/tests/integration'), '-p', 'test_agent_mysql*.py']
+        if test_command is None else test_command)
+    if (not isinstance(command, (tuple, list)) or not command
+            or any(not isinstance(value, str) or not value for value in command)):
+        raise ValueError('Explicit nonempty test command required')
+    if type(test_timeout_seconds) is not int or not 1 <= test_timeout_seconds <= 600:
+        raise ValueError('Bounded test timeout required')
+    with owned_mysql(binary) as server:
+        env = {**os.environ, **(extra_env or {}), **server.environment, 'PYTHONUNBUFFERED': '1'}
+        tests = (test_runner or subprocess.run)(command, cwd=ROOT, env=env, timeout=test_timeout_seconds)
+        return tests.returncode
 
 
 def main():

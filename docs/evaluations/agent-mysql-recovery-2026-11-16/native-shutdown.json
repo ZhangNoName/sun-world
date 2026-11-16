@@ -1,0 +1,18 @@
+[
+  {
+    "scenario": "initialization",
+    "exit_code": 130,
+    "pid_absent": true,
+    "process_group_absent": true,
+    "directory_removed": true,
+    "fallback_used": false
+  },
+  {
+    "scenario": "late-cleanup-repeat",
+    "exit_code": 130,
+    "pid_absent": true,
+    "process_group_absent": true,
+    "directory_removed": true,
+    "fallback_used": false
+  }
+]

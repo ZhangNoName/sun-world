@@ -1,0 +1,99 @@
+{
+  "format": "sun-world-agent-mysql-recovery/1",
+  "synthetic_data": true,
+  "real_provider_called": false,
+  "host_power_loss_tested": false,
+  "production_snapshot_tested": false,
+  "scenarios": [
+    "test_recovery_attempt_commit_crash_never_counts_or_generates",
+    "test_recovery_committed_admission_ack_loss_is_idempotent",
+    "test_recovery_committed_completion_ack_loss_has_one_answer",
+    "test_recovery_input_commit_crash_never_generates_or_refunds",
+    "test_recovery_new_authorizer_denies_and_expiry_never_reclaims",
+    "test_recovery_observation_commit_crash_never_replays_provider",
+    "test_recovery_uncommitted_admission_has_no_partial_history",
+    "test_recovery_uncommitted_completion_rolls_back_answer_and_run"
+  ],
+  "mysql_version": "8.4.13",
+  "crashes": [
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    }
+  ],
+  "tests_run": 8,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "owned_process_stopped": true,
+  "owned_directory_removed": true,
+  "passed": true
+}

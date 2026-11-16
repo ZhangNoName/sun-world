@@ -553,3 +553,31 @@ Node主要文件：execution-service.mjs、新execution-journal.mjs、新journal
 sun-world-blog→design同题更新博客04：删详情不授予重跑、时间与混合迁移、嵌套信号；保留后端/架构笔记/Agent/DeepSeek Harness及7稳定ID，21处strong。1280/390正文与新增段落视觉/DOM检查通过，无缩进/残留双星/横向溢出，既有透明Redis图360/约342px保留；新增为少量顺序规则，列表够用、不加重复图，未发布。预览仍用dirty renderer/CSS，非完整文章页验收。
 
 下一步本地推进已有业务库升级与实际数据库崩溃矩阵；Worker未知孤儿/cgroup/陈旧锁恢复、API历史与账号删除政策、Linux、人工语义、模型版本策略和生产TLS仍独立未完成，P1/A–D与整个持续goal未完成。Claude Code/claude-ds接手必须读取永久屏障/index-owner顺序、保留时间与UTC兼容、共享信号和目录确认这些增量；不能清空索引或按PID猜旧锁安全。
+
+## 2026-11-16 合成旧结构升级与真实MySQL进程崩溃
+
+### 目标、实现与范围
+
+基点89df5ce，继续本地已有结构升级/数据库故障缺口。先落[恢复契约](../../development/agent-mysql-recovery.md)，复用coding开发唯一upgrade测试文件，判官只读审查；主线程抽出fixture_mysql.py及正式test-agent-mysql薄启动器，新增显式recovery CLI与八题suite。初始化也登记Popen，强杀只用自身仍持有句柄，确认-9后同datadir/socket启动并核UUID、skip_networking与flush=1；共享中断/defer和未知退出保目录不放宽。默认launcher纳入test_agent_mysql*.py，不接收已有socket/data/PID，不读业务配置或供应商密钥。
+
+升级使用中央schema深拷贝裁剪的两种合成结构，既有用户/字典FK/历史/Agent run与observed+unknown call原列保持，新增八个run预算列0、四个call元数据NULL，幂等空plan；正式DDL第一条成功、下一条非法SQL失败后rollback不撤销前缀，freshconnection重新plan收敛。五种列/索引/FK不兼容通过正式run_database_mode阻止其余待建表动作、实际DDL/记录均不变。未发现需修改的生产迁移器或ledger源码；没有真实业务快照，不称目标生产旧库验收，旧默认0/NULL不能当历史计数或继续执行许可。
+
+八题实际SIGKILL覆盖admission/completion提交前原子回滚、真实COMMIT后ACK丢失唯一结果、模型attempt/input/observation预占保留且不重放、重建授权器拒旧绑定与租约收敛。ACK丢失在真实connection.commit返回后注入，进程崩溃是真的；模型/文章合成，未调用官方模型。恢复显式创建新API管理器，不承诺旧在线池无限自动恢复。输入case出现一次replacement连接拒绝warning后断言通过，保留观察、不扩称已解决生产故障。
+
+### 发现、修复与审查
+
+- 初版recovery import早于owned env，八项skip且入口exit1；移入env后实际执行。首轮有效运行清理仍复用已关闭的旧admin/重复close，改为drop独立owned新连接、由原cleanup关闭原连接。attempt提交后Gateway可settle为unknown，测试不再误期待reserved。
+- 升级首轮原生29项有1个空fetchall tuple/list断言失败，coding统一rows为list，第二次29项全过；不称生产缺陷。
+- 判官复现空矩阵0test/0crash仍exit0的P2误绿。固定八题精确集合、testsRun=8/零skip/8次crash，每题tearDown恰好一次；实际CLI空/缺题/skip/零执行四项回归通过。
+- full API719曾触发旧dispatcher测试在cancel入口登记后立即索引尚未完成的异步观察，IndexError；四处wait统一等待cancel_states完成，生产取消逻辑未变。判官再用原相同0.25秒延迟注入，两个受影响用例修后均过，最终17项dispatcher通过。
+- 独立离线signals5、入口4、升级构造2共11项通过，最终dispatcher17及延迟注入2通过；判官未独立启动真实DB，无剩余确认阻塞。过程中用followup启动completed角色，没有以send_message排队冒充在运行。
+
+### 最终验证、证据、资源与文章
+
+`corepack pnpm check:api`最终719/27.817秒通过（最后四处测试等待源）；正式原生29/3.989秒通过（19旧+8升级+2构造、零skip），显式恢复8/9.997秒、8次SIGKILL/零skip通过。实际mysqld初始化期间SIGTERM，以及最终关闭wait栅栏第二次SIGTERM，两probe均130、PID/组/目录消失，无fallback接管。恢复与原生实例均回收，私有MySQL根恢复0；verified binary缓存保留，不清现有站点必要资源。
+
+执行源树b3dfe93984439a5161203f141210ec47acc5bc26，34项selected source/index摘要核对；七个变更Python AST、root-script、api:deploy-schema与scoped diff通过。[安全实证](../../evaluations/agent-mysql-recovery-2026-11-16/README.md)包括原生恢复/信号投影与最终检查/source SHA；原始日志/监督driver只在ignored .tmp/mysql-recovery。未重跑供应商四题、Worker96或真实SDK全栈；根format/CSS既有问题保留，不宣称root/Web全绿。
+
+按sun-world-blog→design同题补博客04的崩溃、提交回执与部分DDL边界。分类后端、标签架构笔记/Agent/DeepSeek Harness保留；1280/390正文及新增段落视觉/DOM检查通过，7稳定ID、22处strong、0px缩进、无残留双星/横向溢出。已有透明Redis预占图360/约342px保留；新内容为三个提交边界和少量顺序规则，邻近段落/已有比较表足以说明，不加重复图。未发布，正文预览仍用dirty renderer/CSS，非整篇文章页验收；3030/8032既有SQLite问答与3033正文预览保留。
+
+下一步本地推进API历史/账号删除边界。目标业务库结构及备份恢复、断电/跨版本、未知孤儿/cgroup/陈旧锁、Linux、人工语义、模型版本策略和生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty及主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步owned初始化登记/同目录重启、合成升级来源、固定八题报告门槛和等待取消观察这些协议增量，不把本轮当生产故障全验收。

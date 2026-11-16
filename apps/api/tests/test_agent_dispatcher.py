@@ -202,14 +202,16 @@ class AgentDispatcherTests(unittest.IsolatedAsyncioTestCase):
     async def test_monitor_closing_flag_or_external_terminal_also_reclaims_worker(self):
         await self.dispatch()
         self.fixture.flag = False
-        await self.wait_for(lambda: bool(self.worker.cancels))
+        # cancel() registers entry before its asynchronous ledger read. Wait
+        # for that observation before asserting its recorded terminal state.
+        await self.wait_for(lambda: bool(self.worker.cancel_states))
         self.assertEqual(self.state()['status'], 'interrupted')
         self.assertEqual(self.worker.cancel_states[-1], 'interrupted')
         self.fixture.flag = True
         other = self.accept()
         await self.dispatch(other)
         self.ledger.cancel(self.owner, other['id'])
-        await self.wait_for(lambda: any(binding['run_id'] == other['id'] for binding in self.worker.cancels))
+        await self.wait_for(lambda: len(self.worker.cancel_states) == 2)
         self.assertEqual(self.state(other)['status'], 'cancelled')
         self.assertEqual(self.worker.cancel_states[-1], 'cancelled')
 
@@ -300,14 +302,14 @@ class AgentDispatcherTests(unittest.IsolatedAsyncioTestCase):
     async def test_monitor_session_loss_and_lease_reconcile_stop_the_original_worker(self):
         await self.dispatch()
         self.fixture.current = None
-        await self.wait_for(lambda: bool(self.worker.cancels))
+        await self.wait_for(lambda: bool(self.worker.cancel_states))
         self.assertEqual(self.state()['status'], 'interrupted')
         self.fixture.current = self.owner
         other = self.accept()
         await self.dispatch(other)
         self.fixture.time += timedelta(seconds=11)
         self.ledger.reconcile()
-        await self.wait_for(lambda: any(binding['run_id'] == other['id'] for binding in self.worker.cancels))
+        await self.wait_for(lambda: len(self.worker.cancel_states) == 2)
         self.assertEqual(self.state(other)['status'], 'interrupted')
         self.assertEqual(self.worker.cancel_states[-1], 'interrupted')
 

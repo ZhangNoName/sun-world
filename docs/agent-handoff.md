@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 合成旧结构升级与MySQL进程崩溃
+
+- 两种中央schema合成裁剪验证保留旧记录、0/NULL默认、重复收敛、部分DDL失败及五类不兼容阻止修改；原生29项通过。固定八题逐题SIGKILL同datadir/socket/UUID重启，事务回滚/唯一完成/模型预占不退不重放/授权与租约收敛均过；见[恢复协议](development/agent-mysql-recovery.md)。不是实际业务快照、断电、跨版本或在线旧池自动恢复验收。
+- 修空矩阵报告误绿、初始化进程登记及旧dispatcher测试等取消入口而非观察的竞态；API719、原生29/恢复8、实际初始化SIGTERM和晚关闭第二次SIGTERM均通过，PID/组/目录确认回收；独立离线11/dispatcher17/延迟注入2通过。[安全实证](evaluations/agent-mysql-recovery-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)保留合成、ACK注入、真实crash及warning各自范围。
+- 博客04同题补边界，1280/390预览通过、透明图保留未新加，未发布。现有SQLite站点和3033预览保留；下一步API历史/账号删除边界。目标库/备份恢复、未知锁/孤儿、Linux/人工/版本策略/生产TLS仍待，P1/A–D未整体验收，其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 Worker详情留存与嵌套中断
 
 - 已实现30天确认终态详情清理、永久有界身份摘要与显式offline check/apply；index/owner先确认再删，旧身份改deadline也不能重跑。保留期内128详情、永久8192摘要均有硬界，满时拒新，未知孤儿/旧锁不接管，API历史不删；见[留存协议](development/agent-journal-retention.md)。
