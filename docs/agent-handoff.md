@@ -1,5 +1,13 @@
 ﻿## Current Handoff
 
+## 2026-11-16 固定SDK与真实三库整栈
+
+- 显式本地suite连接实际固定SDK、正式public/private API、MySQL/Redis/MongoDB与双向mTLS，工具走博客public facade。实际TLS transport生成peer attestation，伪造header不能通过。生产main/旧页面未切换；模型与文章数据仍为合成。见[整栈实证](development/agent-sdk-stack-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 六情景通过：成功/幂等/恢复、实际SDK等待时cancel、真实HTTPS断流、Redis撤会话、提交前撤文章、暂停SDK后SIGKILL Worker与父独立回收。API570、Worker60、旧MySQL15通过；独立review发现的两项孤儿漏收已修并固化真实进程回归。总启动器SIGTERM复验exit130、所有owned PID/group/root回收；Mongo实际无TCP监听。没有借此宣称生产自动崩溃接管。
+- 博客04更新真实SDK/存储边界与进程组回收，3033独立正文1280/390预览通过、分类标签/透明图保留，未发布。下一步真实模型/预算、Linux硬隔离、留存/已有库/崩溃/生产TLS；其他dirty与原素材格式/CSS预算问题保留，未推送部署。
+
+- 独立暂存树`55a2dba7f26df38cd5fab807602a84e08c439f17`再次通过API570、Worker60、从该树打包的真实SDK六情景及SIGTERM回收、CI/root/deploy-schema/RPC；验证快照与prepared runtime已清理，最终仅补文档证据。
+
 ## 2026-11-16 C3 Redis准入与正式API组合
 
 - 显式组合真实会话/白名单、Redis原子分钟与并发预占、MySQL幂等受理、Dispatcher/Gateway、正式SSE/GET/cancel与Worker版本化readiness；main未挂载、旧入口未切换。见[准入说明](development/agent-run-admission.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。未知commit不猜成功/不重放，只有未执行或Worker确认静止才提前释放并发；分钟不退款。

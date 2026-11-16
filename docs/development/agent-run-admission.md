@@ -44,3 +44,5 @@ apps/api/.venv/bin/python scripts/test-agent-stack.py \
 MySQL启动器原CLI不变，内部run可接显式测试命令及额外环境，但本次owned MySQL证明变量最后覆盖。两个服务均由启动器创建/回收；测试验证CONFIG/实际datadir/socket，不接受业务连接参数。redis-py5.3.1的 `Redis(unix_socket_path=...)` 会丢弃connect timeout，owned client改用显式UnixDomainSocketConnection池，测试借出实际连接检查connect=1秒/socket=2秒。导入启动器不启动进程。
 
 本地证据：独立Redis15项（含32并发同key唯一lease、16并发额度、key污染无前段写、迟到release及配置冲突）；组合10项（真实AuthManager/JWT/Redis会话、完成SSE、幂等不二扣、白名单/撤角色/禁用、family刷新与新应用实例GET、wrong owner/family、分钟与并发、原生ASGI断流、Redis丢key、未知SQL受理回执、非静止Worker持槽、clean close排空未领取任务并释放槽而不退分钟）；原MySQL入口15项回归。恢复/完成竞争通过information_schema.innodb_trx按finish的实际connection ID确认LOCK WAIT，放开恢复后先读running/1条、再完成并读completed/2条。未知SQL回执为提交后的故障注入，应用重建为同进程新实例；未杀MySQL/Redis/API进程做崩溃或持久化故障切换实验。正常/合成异常/SIGTERM三种Redis启动器出口也实际核对owned PID和目录回收。
+
+后续切片已接实际固定SDK、真实双向mTLS与MongoDB正文，覆盖真实连接断开及Worker崩溃，见[完整SDK整栈验证](agent-sdk-stack-validation.md)。本节原10项仍保留为可控Worker故障注入回归，不以它代替实际SDK证据；生产与真实模型边界仍未放行。

@@ -202,6 +202,8 @@ docs/plans/                      # 分阶段交付与验收
 
 本地已增加[Redis准入与正式API显式组合](../development/agent-run-admission.md)，仍未挂载生产main。Redis原子预占与MySQL幂等事务分开，未知提交保留预占而不自动重试；只在未执行或Worker确认静止后释放并发。恢复读取锁定run以串行化状态与AI历史；当前对账只收敛过期accepted/running，不会自动派发重启前的accepted。
 
+[固定SDK整栈验证](../development/agent-sdk-stack-validation.md)已连接正式public/private API、真实MySQL/Redis/Mongo与双向mTLS；模型与文章数据仍为合成。测试宿主以私有PID日志回收崩溃Worker遗留SDK，不等于生产自动接管锁或恢复执行；Linux隔离、真实模型语义/资源预算及持久留存关停策略仍须独立验收。
+
 API 重启只恢复未领取 accepted。派发确认丢失时，允许向原 Worker 查询已有 execution_id，但不能重新发送启动请求；无法确认则中断。采用“宁可明确中断，也不盲目重放”的首期策略，不承诺分布式 exactly-once。用户主动重试使用新幂等键。
 
 - 接收事务创建会话、用户消息和运行，命中相同幂等键返回 409 + 原 run ID；同键不同请求 hash 返回独立冲突码。键按账户隔离；保留期至少覆盖可查询的运行记录，过期策略在迁移 PR 明确，避免过早复用。

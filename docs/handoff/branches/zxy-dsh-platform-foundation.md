@@ -368,3 +368,27 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步将完整Worker/真实固定SDK接入此真实Redis/MySQL组合，再做模型质量集、已有库升级/崩溃矩阵、持久journal留存与离线回收、Linux资源/PID/地址隔离及生产TLS签发轮换。对账不自动重放accepted；生产关闭，不能以本地切片宣称P1或A–D整体验收。其他dirty文件保留。
 
 最终独立暂存树`1e5e50a7116a1ca8d159e099f458b36033a950e0`导出后API565、Worker44、真实Redis15、真实MySQL+Redis组合10及CI/root/deploy-schema/RPC漂移均通过；验证时只借用原项目Python依赖，源码来自暂存树。临时快照使用独立index供git ls-files检查，未建分支或worktree；最终仅再补本交接证据，无可执行源码变化。原MySQL15与contracts6已在当前工作区通过。
+
+## 2026-11-16 固定SDK与真实三库整栈
+
+### Implemented / scope
+
+基点c9906df。下一计划项不再用合成Worker绕开正式链路：新增显式原生SDK整栈fixture，真实MySQL/Redis/MongoDB、实际public/private HTTPS与固定0.2.2-rc.1 SDK，模型和文章数据仍明确合成。生产main、旧SQLite页面、真实模型、部署均未改；没有业务config/env/凭据读取或共享服务连接。详见[整栈验证说明](../../development/agent-sdk-stack-validation.md)。
+
+- scripts/test-agent-sdk-stack.py显式注入已验证三种binary、prepared runtime、项目Node；原MySQL launcher增加可选test_runner内部扩展，CLI默认保留。SDK资源offline准备592缓存包、下载0，运行期间不安装。新Mongo launcher只绑定private Unix socket，1秒connect/2秒read、禁retry；getCmdLineOpts/server PID/nonce证明，实际lsof无TCP LISTEN。官方8.0.38 ARM归档SHA256与codesign核对，缓存ignored，无全局安装。
+- API测试host用一个asyncio loop/Uvicorn H11测试协议，从真实CERT_REQUIRED ssl_object产生peer摘要scope，不信header；module_composition直接接博客public facade，元数据MySQL与正文Mongo均真实查询。Node fixture严格两行stdin、无凭据stdout、macOS loopback sandbox/deny用户HOME，启动bootstrap先fsync PID再进实际SDK。
+- 每情景独立新库/namespace/TLS/Worker：成功3模型/2工具/UUID/root/final、重复不二扣/同family刷新+新app GET/Mongo变化隐藏链接；实际模型等待中cancel；真实HTTPS断流；真实Redis会话撤销；MySQL提交前撤回文章；实际SDK组SIGSTOP再SIGKILL Worker、API中断且不早释放槽、测试父独立回收孤儿。完整六情景通过，不是把原native10合成Worker结果改称SDK。
+
+### Review / evidence
+
+- 判官两个P2均实际复现并独立复验解除：Worker已死但detached SDK存活时，Python父原先只看ACK而漏reap；测试leader先exit但同PGID子进程仍在时，总启动器原先只看poll而漏reap。现前者校验private600/nlink1 PID日志、父死后TERM/CONT/KILL并仅ESRCH认消失，后者无论leader状态均确认整个owned PGID；失败ACK/原exitcode保留，各资源独立继续清理。
+- 实际总launcher SIGTERM在SDK模型等待点触发，曾出现signal0 PermissionError覆盖KeyboardInterrupt；已改“权限拒绝=未确认，继续有界poll”，不能当ESRCH。复验exit130、Worker/SDK组与三DB PID均消失，四个owned root删除。Mongo正常/合成异常/SIGTERM均确认PID与目录回收。不是生产自动抢锁/进程接管或整宿主SIGKILL/重启恢复。
+- 新Worker坏stdin组合拒绝/脱敏7项及共享纯reader/完整JSON单fault独立9项（合法分块、第三行、bytes/EOF、duplicate/UTF8）加入普通协议gate；新API真实孤儿/防错杀/瞬时与永久EPERM5项加入默认gate，含失败时独立兜底。API570、Worker60、旧MySQL15通过；默认gate不启动SDK/native DB。原全仓format仍仅既有素材manifest问题、CSS预算保留。
+
+### Writing / next
+
+继续sun-world-blog→sun-world-write-design修订博客04，后端分类与原三标签不变：更新真实SDK/三库边界、父进程退出不等于组回收、剩余真实模型验收。既有透明预占图仍准确，此次正文只补验证依据与回收关系，无新增重复图；3033独立正文1280/390宽预览、7个唯一标题ID/13处strong、无缩进/水平溢出与配图加载复核通过，未发布；仍使用当前工作区dirty renderer/CSS，非已提交前端或完整文章页E2E。
+
+下一步真实模型适配/质量集与token/output预算、Linux memory/PID/network硬隔离、持久journal留存及离线回收、已有库升级与DB/宿主崩溃矩阵、生产TLS签发轮换。此轮只完成真实本地协议/存储/控制实证，不足以放行P1生产内测。其他dirty保留，不推送/部署/发布。
+
+最终独立暂存树`55a2dba7f26df38cd5fab807602a84e08c439f17`：API570、Worker60、CI/root/deploy-schema/RPC漂移通过；从该树重新offline准备固定SDK（592缓存包/下载0），实际三库+mTLS+固定SDK完整6情景及等候模型时总launcher SIGTERM均通过。SIGTERM保留130且四root/三DBPID/Worker与SDK组无遗留。独立快照及两份本轮prepared runtime已清理，原verified binary缓存保留；最终只补本交接证据，无可执行源码变化。

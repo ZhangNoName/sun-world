@@ -48,4 +48,4 @@ prepare命令只接受全新绝对目录，复制显式Worker源、生成契约�
 
 协议单测覆盖严格JSON与后端生成schema、Python独立digest向量、TLS信任/主机名/重定向/大小、交付前拒绝来源、根请求隔离、实际TERM-ignore/KILL及父进程退出后残留子进程。服务单测另覆盖持久tombstone、重启/冲突/容量/停止失败，HTTPS使用自有临时证书。根check和GitHub common quality已加入Worker协议测试；协议门禁通过不意味着已验证整个root check。
 
-后续：真实Redis准入与API组合、真实模型质量集、数据库/服务进程崩溃恢复、持久记录留存及离线回收、Linux资源/地址/PID隔离与生产TLS签发轮换。现有素材format/CSS预算失败仍单独保留，不据本轮成功开放生产内测。
+真实Redis准入/API组合及固定SDK+MySQL/Redis/MongoDB整栈已在隔离环境验证，详见[准入说明](agent-run-admission.md)与[整栈实证](agent-sdk-stack-validation.md)。真实模型质量集、数据库/服务进程自动崩溃恢复、持久记录留存及离线回收、Linux资源/地址/PID隔离与生产TLS签发轮换仍待完成。现有素材format/CSS预算失败仍单独保留，不据本轮成功开放生产内测。

@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(binary, *, test_command=None, extra_env=None):
+def run(binary, *, test_command=None, extra_env=None, test_runner=None):
     import pymysql
     binary = binary.expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
@@ -87,7 +87,7 @@ def run(binary, *, test_command=None, extra_env=None):
                 if (not isinstance(command, (tuple, list)) or not command
                         or any(not isinstance(value, str) or not value for value in command)):
                     raise ValueError('Explicit nonempty test command required')
-                tests = subprocess.run(command,
+                tests = (test_runner or subprocess.run)(command,
                     cwd=ROOT, env=env, timeout=180)
                 return tests.returncode
             finally:
