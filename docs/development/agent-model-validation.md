@@ -2,6 +2,8 @@
 
 日期：2026-11-16；基点0e26b90。此轮新增模型预占账本、严格结构化适配和显式真实模型评测。生产main未挂载Agent入口，旧SQLite/v1入口保留，不部署、不发布。总体放行仍按[实施计划](../plans/dsh-platform-implementation.md)。
 
+后续增量：官方gpt-6.1-sol Responses路径已接入[完整输入计数与持久预算](agent-input-budget.md)，单次16384、累计32768输入token；正式Gateway与本地SQLite均有两阶段预占。下文Qwen整栈/探针的历史结果及三个false保持原义，不套用为官方路径的结论。
+
 ## 预占与观察分开
 
 `agent_model_calls`以run/generation/服务器生成的call UUID唯一标识请求，保存请求摘要、输入字节、输出/响应预占、reserved/observed/unknown状态、可空实际用量和结果摘要。`agent_runs`新增七项累计计量；不另存提示词、正文、响应文本、凭据或推理内容。schema是集中声明的兼容增量，已有业务库升级和DDL部分成功恢复仍未验收。
@@ -19,7 +21,7 @@ Gateway在同一UOW锁run、实时授权、扣模型次数并写ModelJournal预�
 
 合法响应必须有严格非负整数input/output usage，output不超过1024；缺失、bool、非法数、总数矛盾拒绝，不补零。观察与预占独立、不退款。同一call重复相同用量不二加，不同值冲突。超时、取消、格式错误或保存结果不明只尽力标unknown；保存本身失败时保留reserved，不凭未知数据构造usage。observed ACK丢失后不能改写unknown或再次加量。终态后可补诊断计量，但不改变终态或授予交付权限，迟到答案仍被拒绝。
 
-**输入token仅记录供应商观察值，尚无模型匹配且验证过的tokenizer和硬输入token总限。** 输出token/字节预算不能替代此项，也不是实际账单或容量证明。
+**本节原Qwen兼容路径的输入token仅记录供应商观察值，尚无模型匹配且验证过的tokenizer和硬输入token总限。** 官方计数路径的后续预占机制见本文开头链接。输出token/字节预算不能替代此项，也不是实际账单或容量证明。
 
 ## 严格Messages与OpenAI适配
 
@@ -52,7 +54,7 @@ apps/api/.venv/bin/python scripts/test-agent-sdk-stack.py \
 
 预算事务8项（含取消commit排空、慢commit过期不出网）、严格适配25项、清理9项进入默认gate；native MySQL新增并发8争4和提交后观察ACK丢失，共17项。完整计数、独立暂存快照和真实评测结果以[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)为准。
 
-输入tokenizer/总输入token硬上限、不可变上游模型版本、人工语义验收、Linux memory/PID/network硬隔离、持久journal留存与离线回收、已有库升级/DB与宿主崩溃矩阵、生产TLS签发轮换仍是独立未完成门槛。本轮小样本不能放行P1或A–D整体。
+原Qwen路径的输入tokenizer/总输入token硬上限、不可变上游模型版本、人工语义验收、Linux memory/PID/network硬隔离、持久journal留存与离线回收、已有库升级/DB与宿主崩溃矩阵、生产TLS签发轮换仍是独立未完成门槛。本轮小样本不能放行P1或A–D整体。
 
 最终暂存复跑额外修正一次性MongoDB的默认Unix socket前缀，新增双实例实际监听/独立数据回归；详见[SDK整栈说明](agent-sdk-stack-validation.md#unix-socket隔离修正2026-11-16)。修前四题不能作为修后socket隔离证据。
 

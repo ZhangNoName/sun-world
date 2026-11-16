@@ -480,3 +480,25 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 按sun-world-blog→sun-world-write-design局部更新博客05：托管API计数可免本地模型部署、Responses函数/阶段往返和推理输出预算；后端/架构笔记/Agent/DeepSeek Harness原分类标签保留。5稳定ID/7处strong，1280/390正文预览、透明图360/342px、无缩进/溢出通过，新增段落与实际QA手机画面已视觉检查；原图够用，不添重复图。3033独立正文预览保留，仍用dirty renderer/CSS，未发布。
 
 下一步本地可验证项优先官方Responses完整输入计数、固定payload摘要与Gateway同UOW持久累计输入预算；计数调用本身也须限次/超时/实时授权，不能把代理响应usage或bytes当预出网硬限。仍需独立人工语义、模型版本、Linux硬隔离、已有库升级/崩溃、journal留存回收及生产TLS，生产/P1/A–D未整体放行。此前一次代理失败仍待带首错复现；不对未知请求自动重放。其他dirty任务全部保留，不推送/部署/发布。Claude Code后续接手须同步固定官方profile/显式代理/日志FD修复与失败历史这些增量，不要求用户部署本地权重。
+
+## 2026-11-16 官方完整输入计数与持久预占
+
+### 当前目标、范围与实现
+
+基点36b2e0f，继续本地可验证项。先写[输入预算协议](../../development/agent-input-budget.md)并广播coding/判官，再实现固定Responses input_tokens端点、opaque单次handle绑定原wire、冻结metadata和usage严格相等。原attempt预算提交后才能计数，同UOW持久输入预占确认后才能生成：单次16384、累计32768。计数8秒/4KiB、每attempt至多一次，仍最多4attempts；整个模型操作30秒/剩余run期限，不重放/不退款。schema集中声明run计数和call可空字段；正式Gateway+ModelJournal与实际开发SQLite+Runtime均接入，不运行业务库/生产DDL。原Qwen/合成兼容路径无计数，不伪造零或硬限结论。
+
+重要源文件：AI的model_input/openai_responses/local_openai_transport/public，agent_runtime的model_budget/local_model_budget/gateway/store/runtime/ledger，以及MySQL schema和定向测试。metadata只含数值/两个摘要，持久账本不存提示词/响应/凭据。直接proxy只有单次上限，没有run就不声称累计持久预算。协议有改动须先同步文档，Claude Code/claude-ds接手须带上此增量。
+
+### 验证与review
+
+- `corepack pnpm check:api`最终696项通过，`corepack pnpm check:ai-interface`通过；未改Worker，本轮没有重跑其历史71项。
+- `apps/api/.venv/bin/python scripts/test-agent-mysql.py --mysqld <verified-mysqld>`真实一次性MySQL 8.4.13共19项通过，含4次计数争2份额度与input commit ACK丢失不生成；上游MockTransport。owned mysqld停止、datadir删除，不访问业务库。
+- 判官独立AI41/正式预算9/旧授权16通过。初期两项旧授权回归定位为wait_for直接重复取消，已改shield+单次取消排空；随后判官复现最终授权to_thread未在owned task内的P2，已将完整模型操作注册后才开始await。新增最终授权阻塞时request cancel/runtime.aclose均须等线程退出的回归；最终本地预算7+旧授权16独立复验通过，无剩余确认阻塞。全API696在此修复后运行，之后无可执行源码改动。
+- 官方三组合成数据每组一次计数/一次生成，Unicode177、两工具184、工具历史219，均等于实际input usage，输出各6。通过授权key的显式Clash、TLS/DNS/IPpin链路，未记录自由响应/推理/headers/凭据，不要求本地模型。
+- 当前新代码正常launcher启动并保留服务3030/8032。浏览器正常登录→实际SDK三次模型+search/read→文章41来源→刷新恢复通过，1280/390无溢出/pageerror。只读SQLite核对551/1935/676均observed且等于预占，run总额3162。该实证是开发SQLite+工作区前端，不冒称正式MySQL/mTLS V2+官方模型整栈。详细安全投影和源码SHA见[本轮实证](../../evaluations/agent-input-budget-2026-11-16/README.md)。
+
+### 写作、资源与下一步
+
+按sun-world-blog→design同题更新博客05，两次预占、固定payload/单次许可和usage漂移拒绝；后端/原三标签、5稳定ID/7处strong、透明预算图保留，正文1280/390及新增段落视觉检查通过，无新图、未发布。继续使用dirty renderer/CSS，不是完整文章页验收。3033原正文预览保留，运行站点入口为http://127.0.0.1:3030/aigc/blog-qa；SDK临时根是服务必要资源，停止launcher才清理。浏览器和本轮临时MySQL已回收；ignored凭据文件不入提交/报告/交接，后续不得复制值或hint。
+
+下一步优先正式V2+官方模型显式验证与留存/故障矩阵。原Qwen探针三个false、上游版本策略/人工语义、Linux memory/PID/network、已有业务库升级/崩溃、journal回收及生产TLS仍独立待验收；历史一次官方模型代理失败仍未定因，不用新成功倒推修复。P1/A–D整体未完成。所有其他dirty及既有素材格式/Web CSS预算问题保留，未推送/部署/发布。本轮仅提交自有源文件、测试、文档与安全证据，主handoff只暂存新入口，保留其他未提交记录。

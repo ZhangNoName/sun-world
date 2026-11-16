@@ -1,0 +1,59 @@
+{
+  "model": "gpt-6.1-sol",
+  "status": "ok",
+  "cases": [
+    {
+      "case": "unicode",
+      "count_attempts": 1,
+      "generation_attempts": 1,
+      "counted_input_tokens": 177,
+      "wire_request_hash": "68442f8ea1cd69b4c8005d23733e1006f18cdefc7f08ce55e04e512bfdd79625",
+      "count_request_hash": "f5548e95bc24e10b35455c37aeb899af4d7ae52c66865f3097a5ac4f1a566ece",
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 6
+      },
+      "count_matches_usage": true,
+      "stop_reason": "end_turn",
+      "answer_matches": true,
+      "status": "ok"
+    },
+    {
+      "case": "tools",
+      "count_attempts": 1,
+      "generation_attempts": 1,
+      "counted_input_tokens": 184,
+      "wire_request_hash": "46c066f73ba2028e396b1d24ec0381c2be06a152145ef2d6477a57660cdad91e",
+      "count_request_hash": "26adb62b370087797506b472801f264c5fa53c7115338fa0a48a095aefed1bac",
+      "usage": {
+        "input_tokens": 184,
+        "output_tokens": 6
+      },
+      "count_matches_usage": true,
+      "stop_reason": "end_turn",
+      "answer_matches": true,
+      "status": "ok"
+    },
+    {
+      "case": "tool_history",
+      "count_attempts": 1,
+      "generation_attempts": 1,
+      "counted_input_tokens": 219,
+      "wire_request_hash": "9cb3f3c46c336cbbcab727b0d8774cc9e01b6ef5f182b0108d7fada0c9bda151",
+      "count_request_hash": "638a2eafb7e621139355ae15c2e27a54b9a675d809ae5e8dbf755a53da4a6656",
+      "usage": {
+        "input_tokens": 219,
+        "output_tokens": 6
+      },
+      "count_matches_usage": true,
+      "stop_reason": "end_turn",
+      "answer_matches": true,
+      "status": "ok"
+    }
+  ],
+  "maximum_count_attempts": 3,
+  "maximum_generation_attempts": 3,
+  "max_output_tokens_per_call": 256,
+  "store": false,
+  "data": "synthetic"
+}

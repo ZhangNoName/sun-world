@@ -17,7 +17,7 @@ from fastapi import HTTPException
 from src.core.auth import Principal
 from src.modules.blog.manifest import BLOG_MANIFEST
 
-from .cleanup import finish_cleanup
+from .cleanup import finish_cleanup, run_sync
 from .store import TERMINAL
 
 
@@ -107,7 +107,7 @@ class Runtime:
         for model_task in self.model_tasks.get(run_id, set()).copy():
             if not model_task.cancelling():
                 model_task.cancel()
-        self.store.transition(run_id, "cancelled", error_code=error_code)
+        await run_sync(self.store.transition, run_id, "cancelled", error_code=error_code)
         task = self.tasks.get(run_id)
         if task and not task.done() and not task.cancelling():
             task.cancel()
@@ -185,10 +185,10 @@ class Runtime:
     async def monitor(self, run_id):
         while True:
             await asyncio.sleep(.25)
-            if self.store.get(run_id)["status"] in TERMINAL:
+            if (await run_sync(self.store.get, run_id))["status"] in TERMINAL:
                 return
             try:
-                await asyncio.to_thread(self.ensure_active, run_id)
+                await run_sync(self.ensure_active, run_id)
             except Exception:
                 await self.cancel(run_id, "session_revoked")
                 return
@@ -219,16 +219,29 @@ class Runtime:
         return {"call_id": body.call_id, "result": result, "result_hash": result_hash}
 
     async def model(self, run_id, body):
-        await asyncio.to_thread(self.ensure_active, run_id)
-        if not self.store.increment_model(run_id):
-            raise HTTPException(429, "model_budget_exhausted")
-        if self.model_proxy is None:
-            raise HTTPException(503, "model_unavailable")
-        task = asyncio.create_task(self.model_proxy({**body, "stream": False}))
+        from src.modules.ai.public import is_counted_model_proxy
+        proxy = self.model_proxy
+        async def operation():
+            await run_sync(self.ensure_active, run_id)
+            if is_counted_model_proxy(proxy):
+                from .local_model_budget import invoke_counted_model
+                result = await invoke_counted_model(self, run_id, body, proxy)
+            else:
+                if not await run_sync(self.store.increment_model, run_id):
+                    raise HTTPException(429, "model_budget_exhausted")
+                if proxy is None:
+                    raise HTTPException(503, "model_unavailable")
+                result = await proxy({**body, "stream": False})
+            # The registry owns this final check too, so shutdown cannot close
+            # session/store resources while its validation thread is still live.
+            await run_sync(self.ensure_active, run_id)
+            return result
+        task = asyncio.create_task(operation())
         self.model_tasks.setdefault(run_id, set()).add(task)
         try:
-            result = await asyncio.wait_for(task, timeout=30)
-            await asyncio.to_thread(self.ensure_active, run_id)
+            # This wrapper owns cancellation. Parent shutdown/disconnect must
+            # not inject another cancel into a child already draining cleanup.
+            result = await asyncio.wait_for(asyncio.shield(task), timeout=30)
             return result
         except asyncio.CancelledError:
             raise HTTPException(409, "model_request_cancelled") from None
@@ -237,7 +250,12 @@ class Runtime:
         except Exception:
             raise HTTPException(502, "model_proxy_failed") from None
         finally:
-            self.model_tasks.get(run_id, set()).discard(task)
+            async def cleanup():
+                if not task.done() and not task.cancelling():
+                    task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+                self.model_tasks.get(run_id, set()).discard(task)
+            await finish_cleanup(cleanup())
 
     def complete(self, run_id, result):
         run, _ = self.ensure_active(run_id)

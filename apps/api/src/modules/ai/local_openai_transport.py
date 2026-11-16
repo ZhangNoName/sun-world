@@ -230,7 +230,8 @@ class _LoopbackTransport(httpx.AsyncBaseTransport):
                     or request.url.host not in self._addresses or request.headers.get('host') != HOST
                     or request.extensions.get('sni_hostname') != HOST or request.url.fragment
                     or (request.method, request.url.raw_path) not in
-                        (('GET', b'/v1/models'), ('POST', b'/v1/responses'))):
+                        (('GET', b'/v1/models'), ('POST', b'/v1/responses'),
+                         ('POST', b'/v1/responses/input_tokens'))):
                 raise ValueError(FAILED)
             response = await self._pool.handle_async_request(httpcore.Request(method=request.method,
                 url=httpcore.URL(scheme=request.url.raw_scheme, host=request.url.raw_host,

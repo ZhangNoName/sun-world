@@ -288,9 +288,11 @@ class RunGateway:
         # These are server-owned limits, never accepted from Worker/request
         # fields. Byte accounting is not a substitute for an input tokenizer.
         from src.modules.ai.public import STRUCTURED_MODEL_LIMITS as limits
+        from src.modules.ai.public import is_counted_model_proxy
         payload = {**body, 'model': self.model_id, 'stream': False, 'max_tokens': limits.max_output_tokens}
         request_bytes = len(encode(payload))
         call_id, accounting = str(uuid4()), ModelJournal()
+        proxy = self.model_proxy
         context = {'may_exist': False, 'observed': False}
         async def invoke():
             def reserve():
@@ -306,7 +308,24 @@ class RunGateway:
             if remaining <= 0:
                 raise LedgerError('AGENT_EXECUTION_EXPIRED')
             async with asyncio.timeout(min(30, max(0, remaining))):
-                task = asyncio.create_task(self.model_proxy(payload))
+                async def provider_operation():
+                    if not is_counted_model_proxy(proxy):
+                        return await proxy(payload)
+                    prepared = await proxy.prepare(payload)
+                    metadata = proxy.input_metadata(prepared)
+                    def reserve_input():
+                        with self.ledger.unit_of_work() as uow:
+                            current, _ = self._check(uow, call, 'model')
+                            accounting.reserve_input(uow, current, call_id, metadata=metadata,
+                                                     now=self.ledger.now())
+                            uow.commit()
+                            return current
+                    current = await run_sync(reserve_input)
+                    if current['deadline'] <= self.ledger.now():
+                        raise LedgerError('AGENT_EXECUTION_EXPIRED')
+                    await run_sync(self._validate, call, 'model')
+                    return await proxy.generate(prepared)
+                task = asyncio.create_task(provider_operation())
                 try:
                     while not task.done():
                         await asyncio.wait({task}, timeout=.1)
@@ -331,7 +350,7 @@ class RunGateway:
                     return result
                 finally:
                     async def cleanup():
-                        if not task.done():
+                        if not task.done() and not task.cancelling():
                             task.cancel()
                         await asyncio.gather(task, return_exceptions=True)
                     await finish_cleanup(cleanup())

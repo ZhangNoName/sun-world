@@ -1,6 +1,8 @@
 """Bounded Responses adaptation for the explicit official OpenAI local profile."""
 
 import asyncio
+import hashlib
+import json
 import logging
 
 from .errors import AiDomainError
@@ -10,6 +12,7 @@ from .model_proxy import (
     _decode_json, _invalid, _json_bytes, _object, _payload, _text, response_to_messages,
 )
 from .providers import OpenAiCompatibleProvider, ProviderConfig
+from .model_input import MODEL_INPUT_LIMITS, ModelInputMetadata, _PreparedInputs
 
 MODEL = 'gpt-6.1-sol'
 LOGGER = logging.getLogger(__name__)
@@ -62,7 +65,7 @@ def responses_payload(body):
          'parameters': item['function']['parameters'], 'strict': False}
         for item in converted['tools']], 'tool_choice': choice, 'parallel_tool_calls': False,
         'max_output_tokens': converted['max_tokens'], 'reasoning': {'effort': 'low'},
-        'store': False, 'stream': False}
+        'store': False, 'stream': False, 'truncation': 'disabled'}
 
 
 def responses_result(body):
@@ -136,6 +139,7 @@ class OpenAiResponsesProxy:
         from .model_proxy import StructuredModelProxy
         StructuredModelProxy(config)
         self.config, self._factory = config, provider_factory
+        self._prepared = _PreparedInputs(self)
         self.model_label = MODEL + '（OpenAI 官方 API）'
 
     @property
@@ -143,44 +147,92 @@ class OpenAiResponsesProxy:
         return STRUCTURED_MODEL_LIMITS
 
     async def __call__(self, body):
-        payload = responses_payload(body)
-        raw = _json_bytes(payload, self.limits.max_request_bytes, INPUT_INVALID)
-        client, dependencies, succeeded = None, None, False
-        stage, status = 'connect', None
         try:
             async with asyncio.timeout(self.limits.total_timeout_seconds):
-                provider = self._factory(self.config, total_timeout_seconds=30, read_timeout_seconds=30,
-                    max_output_tokens=1024, max_stream_bytes=self.limits.max_response_bytes)
+                return await self.generate(await self.prepare(body))
+        except TimeoutError as error:
+            _diagnose(error, 'total', None, 'AGENT_MODEL_TIMEOUT')
+            raise RuntimeError('AGENT_MODEL_TIMEOUT') from None
+
+    def input_metadata(self, handle) -> ModelInputMetadata:
+        return self._prepared.metadata(self, handle)
+
+    async def prepare(self, body):
+        self._prepared.check(self)
+        payload = responses_payload(body)
+        def canonical(value):
+            _json_bytes(value, self.limits.max_request_bytes, INPUT_INVALID)
+            return json.dumps(value, ensure_ascii=False, allow_nan=False,
+                              separators=(',', ':'), sort_keys=True).encode('utf-8')
+        raw = canonical(payload)
+        count_raw = canonical({key: value for key, value in payload.items()
+                               if key not in ('max_output_tokens', 'store', 'stream')})
+        value = await self._post(count_raw, counting=True)
+        try:
+            _object(value, ('object', 'input_tokens'), code=RESPONSE_INVALID)
+            if (value['object'] != 'response.input_tokens' or type(value['input_tokens']) is not int
+                    or not 1 <= value['input_tokens'] <= 2147483647):
+                _invalid(RESPONSE_INVALID)
+        except ValueError as error:
+            _diagnose(error, 'count_adapt', 200)
+            raise
+        metadata = ModelInputMetadata(value['input_tokens'], hashlib.sha256(raw).hexdigest(),
+                                      hashlib.sha256(count_raw).hexdigest())
+        # _post has already drained close; a failed/cancelled close never issues.
+        return self._prepared.issue(self, metadata, raw)
+
+    async def generate(self, handle):
+        state = self._prepared.consume(self, handle)  # Atomic and before any await/DNS.
+        payload = json.loads(state.wire)  # Read controls; never rebuild generation wire.
+        value = await self._post(state.wire, counting=False)
+        stage = 'adapt'
+        try:
+            result = responses_result(value)
+            stage = 'controls'
+            if (result['usage']['input_tokens'] != state.metadata.input_tokens
+                    or result['usage']['output_tokens'] > payload['max_output_tokens']):
+                _invalid(RESPONSE_INVALID)
+            calls = [item for item in result['content'] if item['type'] == 'tool_use']
+            choice = payload['tool_choice']
+            if (len(calls) > 1 or choice == 'none' and calls
+                    or isinstance(choice, dict) and (len(calls) != 1 or calls[0]['name'] != choice['name'])
+                    or choice == 'required' and not calls):
+                _invalid(RESPONSE_INVALID)
+            previous = {item['call_id'] for item in payload['input'] if item.get('type') == 'function_call'}
+            if any(item['type'] == 'tool_use' and item['id'] in previous for item in result['content']):
+                _invalid(RESPONSE_INVALID)
+            return result
+        except ValueError as error:
+            _diagnose(error, stage, 200)
+            raise
+
+    async def _post(self, raw, *, counting):
+        seconds = MODEL_INPUT_LIMITS.count_timeout_seconds if counting else self.limits.total_timeout_seconds
+        response_limit = MODEL_INPUT_LIMITS.max_count_response_bytes if counting else self.limits.max_response_bytes
+        path = '/v1/responses/input_tokens' if counting else '/v1/responses'
+        prefix = 'count_' if counting else ''
+        client, dependencies, succeeded = None, None, False
+        stage, status = prefix + 'connect', None
+        try:
+            async with asyncio.timeout(seconds):
+                provider = self._factory(self.config, total_timeout_seconds=seconds, read_timeout_seconds=seconds,
+                    max_output_tokens=1024, max_stream_bytes=response_limit)
                 if not isinstance(provider, OpenAiCompatibleProvider):
                     raise RuntimeError('AGENT_MODEL_FAILED')
-                options = await provider._connection_options('https://api.openai.com/v1/responses')
+                options = await provider._connection_options('https://api.openai.com' + path)
                 dependencies = provider._load_dependencies()
                 client = provider._build_http_client(dependencies, options)
                 await client.__aenter__()
-                stage = 'request'
+                stage = prefix + 'request'
                 response = await client.post(options.endpoint, content=raw,
                                              headers={'Content-Type': 'application/json'})
                 status = response.status_code
                 if response.status_code != 200:
                     raise RuntimeError('AGENT_MODEL_FAILED')
-                stage = 'decode'
-                value = _decode_json(response.content, self.limits.max_response_bytes, RESPONSE_INVALID)
-                stage = 'adapt'
-                result = responses_result(value)
-                stage = 'controls'
-                if result['usage']['output_tokens'] > payload['max_output_tokens']:
-                    _invalid(RESPONSE_INVALID)
-                calls = [item for item in result['content'] if item['type'] == 'tool_use']
-                choice = payload['tool_choice']
-                if (len(calls) > 1 or choice == 'none' and calls
-                        or isinstance(choice, dict) and (len(calls) != 1 or calls[0]['name'] != choice['name'])
-                        or choice == 'required' and not calls):
-                    _invalid(RESPONSE_INVALID)
-                previous = {item['call_id'] for item in payload['input'] if item.get('type') == 'function_call'}
-                if any(item['type'] == 'tool_use' and item['id'] in previous for item in result['content']):
-                    _invalid(RESPONSE_INVALID)
+                stage = prefix + 'decode'
+                value = _decode_json(response.content, response_limit, RESPONSE_INVALID)
                 succeeded = True
-                return result
+                return value
         except asyncio.CancelledError:
             raise
         except ValueError as error:
@@ -206,5 +258,7 @@ class OpenAiResponsesProxy:
                 except asyncio.CancelledError:
                     raise
                 except Exception:
+                    if asyncio.current_task().cancelling():
+                        raise asyncio.CancelledError from None
                     if succeeded:
                         raise RuntimeError('AGENT_MODEL_FAILED') from None

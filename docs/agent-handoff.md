@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 官方输入token持久预算
+
+- 固定Responses完整请求计数与原wire单次生成，attempt先提交、输入预占再提交，单次16384/run32768；正式MySQL Gateway和当前SQLite均接入。计数失败/ACK丢失/usage漂移不退款不重放，见[协议](development/agent-input-budget.md)。原Qwen兼容路径与三个false不变，不要求本地模型。
+- API696/一次性MySQL19/AI边界检查及独立复核通过，修最终授权线程取消/关闭排空P2。官方三组合成计数177/184/219等于usage；真实本地站点三次551/1935/676、累计3162，登录/文章41来源/刷新恢复通过。[安全实证](evaluations/agent-input-budget-2026-11-16/README.md)区分MySQL模拟上游和SQLite真实模型，未宣称正式V2+官方整栈通过；详见[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 博客05同题修订与1280/390正文预览通过，分类标签/透明图保留，未发布；[本地问答](http://127.0.0.1:3030/aigc/blog-qa)继续运行。下一步正式V2官方模型验证、留存/故障矩阵；Linux/人工语义/业务库升级崩溃/生产TLS等仍未完成，旧代理失败根因仍未知，P1/A–D未整体放行。其他dirty保留，不推送部署。
+
 ## 2026-11-16 OpenAI官方API本地接通
 
 - 固定gpt-6.1-sol Responses profile经显式Clash转发，保持IPpin/Host/SNI/TLS和原预算；无需本地部署模型，凭据值只从ignored私密文件读取，不入源码/报告/应用日志/Worker。实际生成、函数往返与正常站点登录→文章41问答/来源→刷新恢复通过，[本地入口](http://127.0.0.1:3030/aigc/blog-qa)继续运行，未改全站模型目录或生产。

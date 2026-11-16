@@ -10,7 +10,13 @@ if TYPE_CHECKING:
 from src.core.runtime_env import is_local_runtime
 from .agent_history import AgentHistoryTransactions, agent_answer_blocks
 from .model_proxy import StructuredModelProxy, STRUCTURED_MODEL_LIMITS
+from .model_input import MODEL_INPUT_LIMITS, ModelInputMetadata
 from .providers import ProviderConfig
+
+
+def is_counted_model_proxy(proxy) -> bool:
+    from .openai_responses import OpenAiResponsesProxy
+    return isinstance(proxy, OpenAiResponsesProxy)
 
 
 def create_keyless_validation_proxy() -> StructuredModelProxy:

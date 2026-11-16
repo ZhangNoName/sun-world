@@ -171,6 +171,67 @@ class AgentMySQLTests(unittest.TestCase):
         self.assertEqual(len(calls), 4)
         self.assertTrue(all(item == {'state': 'observed', 'input_tokens': 10, 'output_tokens': 5} for item in calls))
 
+    def counted_gateway(self, *, counting=None):
+        from test_counted_model_budget import make_proxy
+        from src.modules.ai.openai_responses import MODEL
+        proxy, factory = make_proxy(tokens=16384, counting=counting)
+        gateway = RunGateway(self.ledger, registry=create_module_registry(),
+            handlers={'blog.search_public': lambda *_: {'items': []}, 'blog.read_public': lambda *_: None},
+            enabled=lambda: True, authorize=lambda *_: self.owner, allow=lambda *_: True,
+            worker_credential='S'*43, bundle_hash='a'*64, model_id=MODEL, model_proxy=proxy,
+            site_origin='https://example.test', source_reader=lambda *_: None)
+        accepted = self.ledger.accept(self.owner, question='计数预算合成问题', idempotency_key=str(uuid4()),
+                                      bundle_hash='a'*64, model_id=MODEL).run
+        row, credentials = gateway.claim(accepted['id'], execution_id=str(uuid4()))
+        call = RunCall(row['id'], row['execution_id'], 1, 'S'*43, credentials.model)
+        return gateway, row, call, factory
+
+    def test_native_counted_preflights_only_charge_two_generation_permits(self):
+        from test_counted_model_budget import count_reply, messages
+        async def scenario():
+            arrived, gate = [], asyncio.Event()
+            async def counting(_):
+                arrived.append(1)
+                if len(arrived) == 4:
+                    gate.set()
+                await gate.wait()
+                return count_reply(16384)
+            gateway, row, call, factory = self.counted_gateway(counting=counting)
+            async with asyncio.timeout(10):
+                values = await asyncio.gather(*(gateway.model(call, messages()) for _ in range(4)), return_exceptions=True)
+            self.assertEqual(sum(isinstance(value, dict) for value in values), 2)
+            self.assertEqual(sum(isinstance(value, LedgerError) and value.code == 'AGENT_BUDGET_EXCEEDED' for value in values), 2)
+            observed = self.ledger.get_owned(self.owner, row['id'])
+            self.assertEqual((observed['model_count'], observed['model_input_tokens_reserved'], observed['model_input_tokens_observed']), (4, 32768, 32768))
+            self.assertEqual((len(factory.count_requests), len(factory.generation_requests)), (4, 2))
+        asyncio.run(scenario())
+
+    def test_native_input_commit_ack_loss_never_dispatches_generation(self):
+        from test_counted_model_budget import messages
+        from src.modules.agent_runtime.model_budget import ModelJournal
+        from src.database.mysql.unit_of_work import MySQLUnitOfWork
+        gateway, row, call, factory = self.counted_gateway()
+        original_reserve, original_commit = ModelJournal.reserve_input, MySQLUnitOfWork.commit
+        stage, injected = threading.local(), []
+        def reserve(journal, *args, **kwargs):
+            value = original_reserve(journal, *args, **kwargs)
+            stage.input = True
+            return value
+        def commit(uow):
+            original_commit(uow)
+            if getattr(stage, 'input', False) and not injected:
+                stage.input = False
+                injected.append(1)
+                raise RuntimeError('synthetic input ACK loss')
+        with patch.object(ModelJournal, 'reserve_input', reserve), patch.object(MySQLUnitOfWork, 'commit', commit):
+            with self.assertRaises(LedgerError):
+                asyncio.run(gateway.model(call, messages()))
+        observed = self.ledger.get_owned(self.owner, row['id'])
+        self.assertEqual((observed['model_count'], observed['model_input_tokens_reserved']), (1, 16384))
+        self.assertEqual((len(factory.count_requests), len(factory.generation_requests)), (1, 0))
+        attempt = self.pool.fetch_one('SELECT state,reserved_input_tokens FROM agent_model_calls WHERE run_id=%s', (row['id'],))
+        self.assertEqual(attempt, {'state': 'unknown', 'reserved_input_tokens': 16384})
+
     def test_native_observation_commit_ack_loss_never_refunds_or_retries_provider(self):
         from src.modules.agent_runtime.gateway import RunCredentials
         from src.modules.agent_runtime.model_budget import ModelJournal

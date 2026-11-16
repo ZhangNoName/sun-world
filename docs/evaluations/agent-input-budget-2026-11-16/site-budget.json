@@ -1,0 +1,38 @@
+{
+  "phase": "live_sqlite_counted_budget",
+  "status": "ok",
+  "run_reference_sha256": "e1696ea16d22b8ca38af118c15b929d9b6008c94c340182aa9962e31d8ad3972",
+  "run": {
+    "status": "completed",
+    "model_count": 3,
+    "model_input_tokens_reserved": 3162
+  },
+  "attempts": [
+    {
+      "state": "observed",
+      "reserved_input_tokens": 551,
+      "input_tokens": 551,
+      "wire_request_hash": "cfeaeef673bd78834719325819dbca7b4a88bc37cd739e239f93d2741e612fd9",
+      "count_request_hash": "c864d523794a15e70e60e2e9d3982e677eddefcaedf4aeeeaa6990f3da5c4239"
+    },
+    {
+      "state": "observed",
+      "reserved_input_tokens": 1935,
+      "input_tokens": 1935,
+      "wire_request_hash": "914b32c34abcfd9fa4dfdd5ae13ccf799d8bd6b430aadf41889de90ca0c6ec3d",
+      "count_request_hash": "ed086d3ddfb86b44f45097adc4d44bfe358f820088a76dd89522cbda8ec570a2"
+    },
+    {
+      "state": "observed",
+      "reserved_input_tokens": 676,
+      "input_tokens": 676,
+      "wire_request_hash": "2e31644d52691d2dbabf6c759a724ef2408e6a9563f723d3b1806c03e71a75f2",
+      "count_request_hash": "92ec826230a4ae95d481620c7d5df26903c5d66412e70703656661f0f54eb2dc"
+    }
+  ],
+  "per_call_limit": 16384,
+  "run_limit": 32768,
+  "source_article_ids": [41],
+  "count_equals_observed": true,
+  "sum_equals_run_reserved": true
+}

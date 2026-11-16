@@ -51,6 +51,20 @@ def config():
 
 
 class OfficialWire(wire.WireFactory):
+    def __init__(self, handler, *, count_handler=None):
+        count_handler = count_handler or (lambda _: httpx.Response(200,
+            json={'object': 'response.input_tokens', 'input_tokens': 20}))
+        super().__init__(lambda request: count_handler(request)
+            if request.url.path == '/v1/responses/input_tokens' else handler(request))
+
+    @property
+    def count_requests(self):
+        return [request for request in self.requests if request.url.path == '/v1/responses/input_tokens']
+
+    @property
+    def generation_requests(self):
+        return [request for request in self.requests if request.url.path == '/v1/responses']
+
     def __call__(self, selected, **limits):
         provider = super().__call__(selected, **limits)
         provider._allowed_hosts = ('api.openai.com',)
@@ -66,6 +80,7 @@ class ResponsesAdapterTests(unittest.TestCase):
         self.assertEqual('c1', payload['input'][3]['call_id'])
         self.assertEqual('公开文章', payload['input'][3]['output'])
         self.assertEqual({'effort': 'low'}, payload['reasoning'])
+        self.assertEqual('disabled', payload['truncation'])
         self.assertFalse(payload['store'])
         self.assertFalse(payload['stream'])
         self.assertFalse(payload['parallel_tool_calls'])
@@ -126,16 +141,18 @@ class ResponsesWireTests(unittest.IsolatedAsyncioTestCase):
         factory = OfficialWire(lambda _: httpx.Response(200, json=result(tools=True)))
         value = await adapter.OpenAiResponsesProxy(config(), provider_factory=factory)(messages())
         self.assertEqual('tool_use', value['stop_reason'])
-        self.assertEqual([('api.openai.com', 443)], factory.dns)
-        self.assertEqual(1, len(factory.requests))
-        request = factory.requests[0]
+        self.assertEqual([('api.openai.com', 443)] * 2, factory.dns)
+        self.assertEqual(1, len(factory.count_requests))
+        self.assertEqual(1, len(factory.generation_requests))
+        self.assertEqual([4096, 65536], [item['max_stream_bytes'] for item in factory.constructed])
+        request = factory.generation_requests[0]
         self.assertEqual('/v1/responses', request.url.path)
         self.assertEqual('1.1.1.1', request.url.host)
         self.assertEqual('api.openai.com', request.headers['host'])
         self.assertEqual('api.openai.com', request.extensions['sni_hostname'])
         self.assertFalse(factory.options[0]['trust_env'])
         self.assertFalse(factory.options[0]['follow_redirects'])
-        self.assertTrue(factory.clients[0].is_closed)
+        self.assertTrue(all(client.is_closed for client in factory.clients))
 
     async def test_http_and_protocol_faults_are_safe_single_attempts(self):
         responses = [httpx.Response(401, content=PRIVATE.encode()), httpx.Response(302),
@@ -146,8 +163,9 @@ class ResponsesWireTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises((RuntimeError, ValueError)) as caught:
                 await adapter.OpenAiResponsesProxy(config(), provider_factory=factory)(messages())
             self.assertNotIn(PRIVATE, str(caught.exception))
-            self.assertEqual(1, len(factory.requests))
-            self.assertTrue(factory.clients[0].is_closed)
+            self.assertEqual(1, len(factory.count_requests))
+            self.assertEqual(1, len(factory.generation_requests))
+            self.assertTrue(all(client.is_closed for client in factory.clients))
 
     async def test_diagnostics_preserve_category_without_private_error_text(self):
         def timed_out(_):
@@ -185,8 +203,9 @@ class ResponsesWireTests(unittest.IsolatedAsyncioTestCase):
             body['tool_choice'] = {'type': 'tool', 'name': 'blog_search_public'}
             with self.assertRaisesRegex(ValueError, '^AGENT_MODEL_RESPONSE_INVALID$'):
                 await adapter.OpenAiResponsesProxy(config(), provider_factory=factory)(body)
-            self.assertEqual(1, len(factory.requests))
-            self.assertTrue(factory.clients[0].is_closed)
+            self.assertEqual(1, len(factory.count_requests))
+            self.assertEqual(1, len(factory.generation_requests))
+            self.assertTrue(all(client.is_closed for client in factory.clients))
         factory = OfficialWire(lambda _: httpx.Response(200, json=result(tools=True)))
         body = messages()
         body['tool_choice'] = {'type': 'none'}
@@ -195,8 +214,11 @@ class ResponsesWireTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_cancellation_during_close_drains_before_propagating(self):
         factory = OfficialWire(lambda _: httpx.Response(200, json=result()))
+        proxy = adapter.OpenAiResponsesProxy(config(), provider_factory=factory)
+        handle = await proxy.prepare(messages())
+        factory.close_started.clear()
         factory.close_gate = asyncio.Event()
-        task = asyncio.create_task(adapter.OpenAiResponsesProxy(config(), provider_factory=factory)(messages()))
+        task = asyncio.create_task(proxy.generate(handle))
         try:
             await asyncio.wait_for(factory.close_started.wait(), 1)
             task.cancel()
@@ -210,7 +232,11 @@ class ResponsesWireTests(unittest.IsolatedAsyncioTestCase):
         finally:
             factory.close_gate.set()
             await asyncio.gather(task, return_exceptions=True)
-        self.assertTrue(factory.clients[0].is_closed)
+        self.assertTrue(all(client.is_closed for client in factory.clients))
+        with self.assertRaisesRegex(ValueError, '^AGENT_MODEL_INPUT_INVALID$'):
+            await proxy.generate(handle)
+        self.assertEqual(1, len(factory.count_requests))
+        self.assertEqual(1, len(factory.generation_requests))
 
 
 class LocalOpenAiProfileTests(unittest.IsolatedAsyncioTestCase):

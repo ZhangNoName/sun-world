@@ -273,7 +273,11 @@ class LoopbackTransportTests(unittest.IsolatedAsyncioTestCase):
                     writer.write(b'HTTP/1.1 200 Connection established\r\n\r\n')
                     await writer.drain()
                     await writer.start_tls(context, ssl_handshake_timeout=2)
-                    seen.append(('request', await reader.readuntil(b'\r\n\r\n')))
+                    headers = await reader.readuntil(b'\r\n\r\n')
+                    seen.append(('request', headers))
+                    length = next((int(line.split(b':', 1)[1]) for line in headers.split(b'\r\n')
+                        if line.lower().startswith(b'content-length:')), 0)
+                    await reader.readexactly(length)
                     writer.write(b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}')
                     await writer.drain()
             except (Exception, asyncio.CancelledError):
@@ -307,6 +311,8 @@ class LoopbackTransportTests(unittest.IsolatedAsyncioTestCase):
         async with client:
             response = await client.get('https://api.openai.com/v1/models')
             self.assertEqual(200, response.status_code)
+            counted = await client.post('https://api.openai.com/v1/responses/input_tokens', content=b'{}')
+            self.assertEqual(200, counted.status_code)
         self.assertIn(('sni', 'api.openai.com'), seen)
         self.assertIn(('connect', b'CONNECT 1.1.1.1:443 HTTP/1.1\r\nHost: 1.1.1.1:443\r\n\r\n'), seen)
         self.assertIn(b'Host: api.openai.com\r\n', next(value for kind, value in seen if kind == 'request'))
@@ -330,6 +336,8 @@ class LoopbackTransportTests(unittest.IsolatedAsyncioTestCase):
                 ('GET', 'https://1.1.1.1/v1/models', 'api.openai.com', 'wrong.invalid'),
                 ('DELETE', 'https://1.1.1.1/v1/models', 'api.openai.com', 'api.openai.com'),
                 ('GET', 'https://1.1.1.1/v1/files', 'api.openai.com', 'api.openai.com'),
+                ('GET', 'https://1.1.1.1/v1/responses/input_tokens', 'api.openai.com', 'api.openai.com'),
+                ('POST', 'https://1.1.1.1/v1/responses/input_tokens?x=1', 'api.openai.com', 'api.openai.com'),
                 ('GET', 'https://1.1.1.1/v1/models?key=x', 'api.openai.com', 'api.openai.com'),
                 ('GET', 'https://1.1.1.1/v1/models#private', 'api.openai.com', 'api.openai.com')]
             for method, url, host, sni in cases:

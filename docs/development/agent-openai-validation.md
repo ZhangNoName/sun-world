@@ -39,4 +39,8 @@ corepack pnpm dev:blog-qa --model openai-local
 - 启动曾两次在Node负向sandbox自检SIGABRT。证实相同argv/policy/env继承repo内日志FD时2/2崩溃，改/private/tmp日志或pipe4/4成功；此前10个pipe/PTY最小检查未重现，不能作根因反证。修为probe独立pipe、父进程转发，不更改sandbox规则。修后正常launcher输出仍写repo日志，启动和仓库读取/外网EPERM负向检查通过。只确认继承FD触发条件，没有声称定位具体内核syscall。
 - 首次浏览器问答完成，但刷新只固定等1.8秒，检查记failed；第二个独立新run首次model回调约8秒后502/model_proxy_failed，尚无上游首错可定因，不臆断为计费/配额/解析或网络原因。新增失败日志仅固定stage、HTTP status、固定类别和本模块源码行整数，丢弃异常自由文本，日志sink故障不替换主错。第三个独立run用诊断版与最多15秒条件轮询通过问答和刷新；没有修改前端/题目/预算，也没有自动重放前两次请求。失败历史与最终安全投影见[评测记录](../evaluations/agent-openai-2026-11-16/README.md)。
 
-博客05继续按design局部说明托管API计数路径、Responses工具/阶段适配及推理输出预算；后端与原三标签、5章节ID保留，透明预占图仍足够，无新增图，1280/390正文预览通过、7处strong，未发布。输入token预出网累计硬限尚未接入；上游模型版本/人工语义/Linux memory-PID-network/已有库崩溃与journal留存/生产TLS仍独立待验收。不推送、不部署、不更改生产目录或准入。
+博客05继续按design局部说明托管API计数路径、Responses工具/阶段适配及推理输出预算；后端与原三标签、5章节ID保留，透明预占图仍足够，无新增图，1280/390正文预览通过、7处strong，未发布。当时尚未接入输入token预出网累计硬限，后续已完成下节增量；上游模型版本/人工语义/Linux memory-PID-network/已有库崩溃与journal留存/生产TLS仍独立待验收。不推送、不部署、不更改生产目录或准入。
+
+## 后续输入预算增量
+
+基点36b2e0f后新增固定`/v1/responses/input_tokens`计数端点，单次16384/run32768，原attempt提交→完整wire计数→同UOW输入预占提交→原wire单次生成，严格拒绝usage漂移。详见[输入预算协议](agent-input-budget.md)与[安全实证](../evaluations/agent-input-budget-2026-11-16/README.md)。本轮API696/owned MySQL19通过，官方三组合成计数177/184/219逐项匹配usage；当前开发站点三次调用551/1935/676、累计3162，正常登录/来源/刷新通过。历史评测目录的input gate false仅代表当时版本，不修改旧报告。正式MySQL预算使用模拟上游、真实站点使用SQLite，尚未验收MySQL/mTLS V2+官方模型完整组合；历史一次未知模型失败也未因此定因。

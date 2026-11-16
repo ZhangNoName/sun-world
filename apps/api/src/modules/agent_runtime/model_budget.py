@@ -1,8 +1,8 @@
 """Durable model precharge and observed usage; never a guessed tokenizer.
 
 The caller holds the run lock and owns commit/rollback. Output tokens and byte
-reservations are never refunded. Input-token observations do not claim a hard
-input-token limit: that still requires a reviewed, model-matched tokenizer.
+reservations are never refunded. Only issuer-validated preflight metadata can
+authorize counted input; legacy observed usage cannot create that permission.
 """
 
 from uuid import uuid4
@@ -39,6 +39,16 @@ def model_usage(result, response_bytes, *, limits):
         response_bytes=_integer(response_bytes, limits.max_response_bytes))
 
 
+def input_metadata_fields(metadata):
+    from src.modules.ai.public import MODEL_INPUT_LIMITS, ModelInputMetadata
+    if type(metadata) is not ModelInputMetadata:
+        raise LedgerError('AGENT_INPUT_INVALID')
+    tokens = metadata.input_tokens
+    if type(tokens) is not int or not 1 <= tokens <= MODEL_INPUT_LIMITS.max_input_tokens:
+        raise LedgerError('AGENT_BUDGET_EXCEEDED')
+    return tokens, _hash(metadata.wire_request_hash), _hash(metadata.count_request_hash)
+
+
 class ModelJournal:
     def reserve(self, uow, run, *, input_bytes, request_hash, now, limits, call_id=None):
         _limits(limits)
@@ -67,6 +77,35 @@ class ModelJournal:
              limits.max_output_tokens, limits.max_response_bytes, now, now))
         return call_id
 
+    def reserve_input(self, uow, run, call_id, *, metadata, now):
+        from src.modules.ai.public import MODEL_INPUT_LIMITS
+        run_id, generation = _context(run, now)
+        if run['deadline'] <= now:
+            raise LedgerError('AGENT_EXECUTION_EXPIRED')
+        row = self._call(uow, run, call_id)
+        if row['state'] != 'reserved':
+            raise LedgerError('AGENT_STATE_CONFLICT')
+        values = input_metadata_fields(metadata)
+        if row.get('reserved_input_tokens') is not None:
+            if values != tuple(row[key] for key in ('reserved_input_tokens', 'wire_request_hash', 'count_request_hash')):
+                raise LedgerError('AGENT_MODEL_USAGE_CONFLICT')
+            return False
+        tokens, wire_hash, count_hash = values
+        updated = uow.execute(
+            'UPDATE agent_runs SET model_input_tokens_reserved=model_input_tokens_reserved+%s '
+            "WHERE id=%s AND generation=%s AND status='running' AND model_input_tokens_reserved>=0 "
+            'AND model_input_tokens_reserved+%s<=%s',
+            (tokens, run_id, generation, tokens, MODEL_INPUT_LIMITS.max_run_input_tokens))
+        if updated != 1:
+            raise LedgerError('AGENT_BUDGET_EXCEEDED')
+        changed = uow.execute('UPDATE agent_model_calls SET reserved_input_tokens=%s,wire_request_hash=%s,'
+            'count_request_hash=%s,input_reserved_at=%s,updated_at=%s '
+            'WHERE run_id=%s AND generation=%s AND call_id=%s',
+            (tokens, wire_hash, count_hash, now, now, run_id, generation, row['call_id']))
+        if changed != 1:
+            raise LedgerError('AGENT_STATE_CONFLICT')
+        return True
+
     @staticmethod
     def _call(uow, run, call_id):
         # Metadata can settle after cancel/terminal; it grants no new execution
@@ -84,6 +123,8 @@ class ModelJournal:
         row = self._call(uow, run, call_id)
         _hash(result_hash)
         input_tokens = _integer(usage['input_tokens'], MAX_COUNTER)
+        if row.get('reserved_input_tokens') is not None and input_tokens != row['reserved_input_tokens']:
+            raise LedgerError('AGENT_MODEL_USAGE_INVALID')
         output_tokens = _integer(usage['output_tokens'], row['reserved_output_tokens'])
         response_bytes = _integer(usage['response_bytes'], row['reserved_response_bytes'])
         values = (input_tokens, output_tokens, response_bytes, result_hash)
