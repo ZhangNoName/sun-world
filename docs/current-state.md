@@ -2,6 +2,8 @@
 
 ## 2026-11-12 Local existing-site blog QA
 
+2026-11-17整栈增量：正式API/账户会话、MySQL8.4.13/Redis7.0.15/MongoDB8.0.38、mTLS Worker与固定SDK已在同一原生Linux guest完成原六个合成场景。原49协议零skip+九隔离+五网关/组件SDK保持通过；512MiB/64task、正式peak111472640、OOM/pids超限0。Worker崩溃时SDK先由父死亡保护停止，父自有仍活正对照另经cgroup.kill+wait确认；未伪造ACK/退还未知并发。三库/relay/cgroup/目录及宿主组/root清理均核。最终261源/67资产，API859、Worker164、Mac原六场景及独立严格V4/hash复验通过；已登记目录缺失guard P2已修。见[协议](development/agent-linux-stack.md)与[最终实证及失败投影](evaluations/agent-linux-stack-2026-11-17/README.md)。8GiB是临时测试容量，未放行2GiB生产；本轮无真实供应商请求/密钥入guest，真实provider跨Linux及人工/生产模型策略/目标库备份/TLS运维仍待，fullperrun=false、P1/A–D未整体完成。此增量补齐较早记录中的Linux正式API/三库合成缺口；博客04实渲未发布、现有入口/模型/配置及原80dirty保持，不推送部署。
+
 2026-11-17最新增量：固定网关UDS透明转发+端到端mTLS及原SDK入口已在原生Linux通过。47源/8资产、49原协议零skip+九隔离+五网关，SDK两执行成功/重复/预取消/活动取消/EACCES保槽重试，512MiB/64task内peak112623616、OOM/pids超限0；host/组/根回收。另修SDK双consumer通知重排，确定性回归与fresh Mac SDK通过；API828、Worker151及独立65源/12SDK源/4ELF摘要核对通过。显式gateway VM4GiB只为依赖解压/复制，不代表2GiB生产容量放行；无真实DB/供应商调用，完整Linux正式API/三库/供应商门槛仍未验收，fullperrun=false。见[协议](development/agent-linux-gateway.md)、[最终实证与失败记录](evaluations/agent-linux-gateway-2026-11-17/README.md)。博客04同题/1280与390预览未发布；现有入口/模型/配置及原80dirty保留，未推送部署。
 
 2026-11-17逐任务增量：新增显式Linux cgroup2/bubblewrap launchSpec与同步登记/整树stop-release生命周期，原生37源/六资产验证九情景及原49协议零skip；真实512MiB OOM4、64项task上限EAGAIN/pids事件、只读runtime/跨run文件与7namespace隔离、权限清空、取消/deadline setsid后代、未知叶子与新实例拒接旧树均通过。API818/31.119秒、Worker116/9.318秒与独立复审通过，两个P2（无效handle晚校验、fixture半写可见）已修。失败历史/cold PID SIGABRT观察保持，旧第二次失败精确初因未知；见[协议](development/agent-linux-containment.md)与[证据](evaluations/agent-linux-containment-2026-11-17/README.md)。网关允许路径与真实SDK在Linux仍未验收，不把无NIC算网络完成；生产/人工/版本/TLS/目标库备份门槛保持。博客04更新并1280/390预览、未发布；原80dirty与旧handoff改动保留，不推送部署。

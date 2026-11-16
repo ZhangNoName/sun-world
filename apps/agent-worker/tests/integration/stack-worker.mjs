@@ -15,7 +15,14 @@ import { dirname, isAbsolute, join, relative } from 'node:path'
 import { homedir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { inputLines } from './fixture-input.mjs'
-let createSdkWorker, parseJson, toolCatalog, validateRpc
+let createSdkWorker,
+  parseJson,
+  toolCatalog,
+  validateRpc,
+  stackFixtureMode,
+  linuxStackSettings,
+  createStackLinuxLauncher,
+  inspectCgroupRoot
 
 const FORMAT = 'sun-world-sdk-stack-fixture/1'
 const invalid = () => new Error('AGENT_STACK_FIXTURE_FAILED')
@@ -121,9 +128,10 @@ async function tlsFile(path, key = false) {
   }
 }
 
-async function configuration(value) {
+async function configuration(value, linux) {
+  if (linux) linuxStackSettings(value)
   if (
-    process.platform !== 'darwin' ||
+    process.platform !== (linux ? 'linux' : 'darwin') ||
     typeof process.getuid !== 'function' ||
     !exact(value, [
       'protocol',
@@ -135,9 +143,10 @@ async function configuration(value) {
       'gateway_credential',
       'worker_credential',
       'tls',
-      'read_paths',
+      linux ? 'cgroup_root' : 'read_paths',
     ]) ||
-    value.protocol !== FORMAT ||
+    value.protocol !==
+      (linux ? 'sun-world-linux-sdk-stack-fixture/1' : FORMAT) ||
     !exact(value.tls, ['key', 'cert', 'ca']) ||
     !credential(value.gateway_credential) ||
     !credential(value.worker_credential) ||
@@ -146,9 +155,10 @@ async function configuration(value) {
     !value.model_id.trim() ||
     Array.from(value.model_id).length > 160 ||
     /[\x00-\x1f]/.test(value.model_id) ||
-    !Array.isArray(value.read_paths) ||
-    value.read_paths.length < 2 ||
-    value.read_paths.length > 8
+    (!linux &&
+      (!Array.isArray(value.read_paths) ||
+        value.read_paths.length < 2 ||
+        value.read_paths.length > 8))
   )
     throw invalid()
   const origin = new URL(value.gateway_origin)
@@ -161,15 +171,16 @@ async function configuration(value) {
     origin.password
   )
     throw invalid()
-  const home = await realpath(homedir())
-  const nodeRoot = dirname(dirname(await realpath(process.execPath)))
+  const home = linux ? undefined : await realpath(homedir())
+  const nodeRoot = linux
+    ? undefined
+    : dirname(dirname(await realpath(process.execPath)))
   const runtime = await canonicalPath(value.runtime_directory)
   const root = await canonicalPath(dirname(value.workspace_root))
   await privateDirectory(root)
   if (
-    inside(home, root) ||
-    inside(root, home) ||
-    inside(home, runtime) ||
+    (!linux &&
+      (inside(home, root) || inside(root, home) || inside(home, runtime))) ||
     dirname(value.journal_directory) !== root ||
     value.workspace_root === value.journal_directory ||
     inside(value.workspace_root, runtime) ||
@@ -184,7 +195,7 @@ async function configuration(value) {
     throw invalid()
   await privateDirectory(runtime)
   const paths = []
-  for (const path of value.read_paths) {
+  for (const path of linux ? [] : value.read_paths) {
     await canonicalPath(path)
     const info = await lstat(path)
     if (
@@ -197,11 +208,13 @@ async function configuration(value) {
     paths.push(path)
   }
   if (
-    new Set(paths).size !== paths.length ||
-    !paths.includes(runtime) ||
-    !paths.includes(nodeRoot)
+    !linux &&
+    (new Set(paths).size !== paths.length ||
+      !paths.includes(runtime) ||
+      !paths.includes(nodeRoot))
   )
     throw invalid()
+  if (linux) await inspectCgroupRoot(value.cgroup_root)
   await privateDirectory(value.workspace_root, true)
   await privateDirectory(value.journal_directory, true)
   if (
@@ -214,15 +227,16 @@ async function configuration(value) {
     cert: await tlsFile(value.tls.cert),
     ca: await tlsFile(value.tls.ca),
   }
-  return { ...value, tls, home, paths }
+  return linux ? { ...value, tls } : { ...value, tls, home, paths }
 }
 
-async function launchFiles(config) {
+async function launchFiles(config, linux) {
   const policy = join(config.workspace_root, 'fixture-isolation.sb')
   const bootstrap = join(config.workspace_root, 'fixture-bootstrap.mjs')
   const pids = join(config.workspace_root, 'fixture-processes.jsonl')
   const options = { flag: 'wx', mode: 0o600 }
   await writeFile(pids, '', options)
+  if (linux) return { pids }
   await writeFile(
     policy,
     `(version 1)\n(allow default)\n(deny network*)\n` +
@@ -323,6 +337,7 @@ async function observations(config, files, secrets) {
 let worker,
   config,
   files,
+  linuxLauncher,
   failed = false,
   stopping = false,
   resolveStop
@@ -348,10 +363,15 @@ try {
   ;({ createSdkWorker } = await import('../../src/worker.mjs'))
   ;({ parseJson, toolCatalog, validateRpc } =
     await import('../../src/rpc-validation.mjs'))
+  ;({ stackFixtureMode, linuxStackSettings, createStackLinuxLauncher } =
+    await import('./stack-linux-launcher.mjs'))
+  ;({ inspectCgroupRoot } = await import('../../src/linux-launcher.mjs'))
+  const linux = stackFixtureMode(process.argv.slice(2)) === 'linux'
   const line = await bounded(Promise.race([input.next(), stopSignal]), 5000)
   if (line === null) throw invalid()
-  config = await configuration(parseJson(line, 16384))
-  files = await launchFiles(config)
+  config = await configuration(parseJson(line, 16384), linux)
+  files = await launchFiles(config, linux)
+  if (linux) linuxLauncher = await createStackLinuxLauncher(config, files)
   diagnosticDescriptor = openSync(
     join(config.workspace_root, 'fixture-cleanup.jsonl'),
     constants.O_WRONLY |
@@ -369,13 +389,16 @@ try {
     gatewayOrigin: config.gateway_origin,
     gatewayCredential: config.gateway_credential,
     gatewayTls: config.tls,
+    ...(linux && { gatewaySocketPath: '/gateway/socket' }),
     serviceCredential: config.worker_credential,
     listenerTls: config.tls,
     verifyPeer: (socket) => socket.authorized === true,
-    launchSpec: () => ({
-      command: '/usr/bin/sandbox-exec',
-      args: ['-f', files.policy, process.execPath, files.bootstrap],
-    }),
+    launchSpec: linux
+      ? linuxLauncher.launchSpec
+      : () => ({
+          command: '/usr/bin/sandbox-exec',
+          args: ['-f', files.policy, process.execPath, files.bootstrap],
+        }),
     onCleanupDiagnostic: cleanupDiagnostic,
   })
   const start = worker.service.start.bind(worker.service)
@@ -425,6 +448,7 @@ try {
   try {
     if (worker) await worker.close()
     if (!diagnosticsComplete) throw invalid()
+    if (!failed && linuxLauncher) await linuxLauncher.finish()
     if (!failed && config && files)
       stoppedObservation = await observations(config, files, sensitive)
     else failed = true

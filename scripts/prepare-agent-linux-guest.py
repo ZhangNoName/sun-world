@@ -55,6 +55,13 @@ def gateway_helper():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def stack_helper():
+    spec = importlib.util.spec_from_file_location('owned_linux_stack_assets', Path(__file__).with_name('agent-linux-vm-stack.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 SECRET = re.compile(rb'sk-[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*(?:PRIVATE KEY|CERTIFICATE)-----|Bearer[ \t]+[A-Za-z0-9_.~+/-]{24,}')
 FAILED = 'AGENT_LINUX_GUEST_PREPARE_FAILED'
 
@@ -67,12 +74,13 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def read_owned(path, maximum, *, private=False, dir_fd=None):
+def read_owned(path, maximum, *, private=False, dir_fd=None, allow_empty=False):
     descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=dir_fd)
     try:
         info = os.fstat(descriptor)
         if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_nlink != 1
-                or not 0 < info.st_size <= maximum or private and stat.S_IMODE(info.st_mode) != 0o600):
+                or not (0 if allow_empty else 1) <= info.st_size <= maximum
+                or private and stat.S_IMODE(info.st_mode) != 0o600):
             fail()
         result, remaining = [], maximum + 1
         while remaining:
@@ -89,7 +97,7 @@ def read_owned(path, maximum, *, private=False, dir_fd=None):
         os.close(descriptor)
 
 
-def read_source(name):
+def read_source(name, *, allow_empty=False):
     # A whitelisted final filename must not acquire an unlisted source through
     # a symlinked parent directory either.
     descriptor = os.open(ROOT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -99,7 +107,7 @@ def read_source(name):
             following = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
             os.close(descriptor)
             descriptor = following
-        return read_owned(parts[-1], 1048576, dir_fd=descriptor)
+        return read_owned(parts[-1], 1048576, dir_fd=descriptor, allow_empty=allow_empty)
     finally:
         os.close(descriptor)
 
@@ -127,24 +135,25 @@ def link_target(name, target):
 
 
 class Budget:
-    def __init__(self, gateway=False):
+    def __init__(self, gateway=False, stack=False):
         self.entries, self.total = 0, 0
-        self.maximum = 1024**3 if gateway else 512 * 1024**2
-        self.entry_limit = 131072 if gateway else 20000
+        self.maximum = 8 * 1024**3 if stack else 1024**3 if gateway else 512 * 1024**2
+        self.entry_limit = 131072 if gateway or stack else 20000
+        self.file_limit = (512 if stack else 256) * 1024**2
 
     def size(self, size):
-        if type(size) is not int or not 0 <= size <= 256 * 1024**2:
+        if type(size) is not int or not 0 <= size <= self.file_limit:
             fail()
         self.total += size
         if self.total > self.maximum:
             fail()
 
 
-def tar_entries(raw, budget, selected=None):
+def tar_entries(raw, budget, selected=None, *, repeat_directories=False):
     class BoundedInfo(tarfile.TarInfo):
         def _proc_member(self, archive):
             budget.entries += 1
-            if budget.entries > budget.entry_limit or self.size < 0 or self.size > 256 * 1024**2:
+            if budget.entries > budget.entry_limit or self.size < 0 or self.size > budget.file_limit:
                 fail()
             if self.type in (tarfile.XHDTYPE, tarfile.XGLTYPE, tarfile.GNUTYPE_LONGNAME, tarfile.GNUTYPE_LONGLINK):
                 if self.size > 65536:
@@ -153,7 +162,7 @@ def tar_entries(raw, budget, selected=None):
             elif self.type not in (tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE, tarfile.SYMTYPE, tarfile.LNKTYPE):
                 fail()
             return super()._proc_member(archive)
-    seen, known = set(), {}
+    seen, known, directories = set(), {}, {}
     with tarfile.open(fileobj=io.BytesIO(raw), mode='r|*', tarinfo=BoundedInfo) as archive:
         for item in archive:
             name = relative(item.name)
@@ -161,11 +170,18 @@ def tar_entries(raw, budget, selected=None):
                 if not item.isdir():
                     fail()
                 continue
-            if name in seen or item.sparse is not None:
+            if name in seen:
+                if (repeat_directories and item.isdir() and item.size == 0
+                        and directories.get(name) == (item.mode, item.uid, item.gid)):
+                    continue
+                fail()
+            if item.sparse is not None:
                 fail()
             seen.add(name)
+            if item.isdir():
+                directories[name] = (item.mode, item.uid, item.gid)
             budget.size(item.size)
-            chosen = selected is None or name == selected
+            chosen = selected is None or (selected(name) if callable(selected) else name == selected)
             if selected is not None and name == selected and not item.isreg():
                 fail()
             data = b''
@@ -271,7 +287,8 @@ class Cpio:
         self.add('TRAILER!!!', stat.S_IFREG)
 
 
-def load_inputs(cache, *, containment=False, gateway=False):
+def load_inputs(cache, *, containment=False, gateway=False, stack=False):
+    gateway = gateway or stack
     containment = containment or gateway
     info = os.lstat(cache)
     if not Path(cache).is_absolute() or not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
@@ -308,9 +325,18 @@ def load_inputs(cache, *, containment=False, gateway=False):
         more, detail = gateway_helper().load(Path(cache), GATEWAY_ASSETS, CONTAINMENT_ASSETS, read_owned, read_source)
         assets.update(more)
         metadata.update(detail)
+    extra_sources = []
+    if stack:
+        extra_sources = stack_helper().source_paths(read_source)
+        more, detail, _ = stack_helper().load(Path(cache), read_owned, read_source)
+        if set(more) & set(assets):
+            fail()
+        assets.update(more)
+        metadata.update(detail)
     payload = {}
-    for name in SOURCES + (CONTAINMENT_SOURCES if containment else ()) + (GATEWAY_SOURCES if gateway else ()):
-        raw = read_source(name)
+    base_sources = SOURCES + (CONTAINMENT_SOURCES if containment else ()) + (GATEWAY_SOURCES if gateway else ())
+    for name in dict.fromkeys((*base_sources, *extra_sources)):
+        raw = read_source(name, allow_empty=True) if name not in base_sources else read_source(name)
         if SECRET.search(raw):
             fail()
         payload[name] = raw
@@ -337,12 +363,13 @@ class HashedOutput:
         return len(raw)
 
 
-def build(cache, output, *, containment=False, gateway=False):
+def build(cache, output, *, containment=False, gateway=False, stack=False):
+    gateway = gateway or stack
     containment = containment or gateway
     if not Path(output).is_absolute():
         fail()
     manifest_path = Path(str(output) + '.manifest.json')
-    assets, metadata, payload = load_inputs(cache, containment=containment, gateway=gateway)
+    assets, metadata, payload = load_inputs(cache, containment=containment, gateway=gateway, stack=stack)
     if os.path.lexists(output) or os.path.lexists(manifest_path):
         fail()
     descriptor = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
@@ -351,9 +378,9 @@ def build(cache, output, *, containment=False, gateway=False):
         with os.fdopen(descriptor, 'wb', closefd=False) as target:
             derived = HashedOutput(target)
             derived.write(assets['original-initrd'])
-            budget = Budget(gateway)
+            budget = Budget(gateway, stack)
             with gzip.GzipFile(filename='', fileobj=derived, mode='wb', mtime=0) as compressed:
-                writer = Cpio(compressed, gateway)
+                writer = stack_helper().writer_type(Cpio)(compressed) if stack else Cpio(compressed, gateway)
                 writer.directory('sw-root')
                 for row in tar_entries(assets['ubuntu-base.tar.gz'], budget):
                     writer.add('sw-root/' + row[0], *row[1:])
@@ -378,6 +405,10 @@ def build(cache, output, *, containment=False, gateway=False):
                     writer.directory('sw-root/runtime-sdk')
                     for row in tar_entries(assets['sdk-runtime.tar.gz'], budget):
                         writer.add('sw-root/runtime-sdk/' + row[0], *row[1:])
+                if stack:
+                    kinds = {name: row['kind'] for name, row in metadata.items() if 'kind' in row}
+                    stack_helper().emit(writer, budget, assets, kinds, tar_entries=tar_entries,
+                        deb_archive=tini_archive, decode_zstd_deb=gateway_helper().openssl_archive, relative=relative)
                 writer.finish()
             target.flush()
             os.fsync(descriptor)
@@ -387,6 +418,10 @@ def build(cache, output, *, containment=False, gateway=False):
         'payload_sha256': {name: sha(raw) for name, raw in payload.items()},
         'original_initrd': metadata['original-initrd'], 'derived_initrd': {'sha256': derived.hash.hexdigest(), 'size': derived.size},
         'guest_entries': writer.inode - 1, 'expanded_bytes': budget.total}
+    if stack:
+        report['stack_selected_bytes'] = writer.selected_bytes
+        report['stack_contract_sha256'] = {name: sha(read_source(name)) for name in
+            (stack_helper().CONTRACT, stack_helper().PYTHON, stack_helper().SOURCES)}
     descriptor = os.open(manifest_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     try:
         os.fchmod(descriptor, 0o600)
@@ -410,11 +445,12 @@ def main(argv=None):
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--containment', action='store_true')
     parser.add_argument('--gateway', action='store_true')
+    parser.add_argument('--stack', action='store_true')
     arguments = parser.parse_args(argv)
     try:
-        if arguments.gateway and arguments.containment:
+        if sum((arguments.gateway, arguments.containment, arguments.stack)) > 1:
             fail()
-        build(arguments.cache, arguments.output, containment=arguments.containment, gateway=arguments.gateway)
+        build(arguments.cache, arguments.output, containment=arguments.containment, gateway=arguments.gateway, stack=arguments.stack)
         print('AGENT_LINUX_GUEST_PREPARED')
         return 0
     except BaseException as error:

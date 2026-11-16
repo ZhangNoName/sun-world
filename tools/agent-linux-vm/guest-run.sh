@@ -41,4 +41,14 @@ if [ "$status" -eq 0 ] && [ "${sw_gateway:-0}" = 1 ]; then
     node apps/agent-worker/tests/integration/sdk-run.mjs /runtime-sdk --linux-gateway
   status=$?
 fi
+if [ "$status" -eq 0 ] && [ "${sw_stack:-0}" = 1 ]; then
+  chmod 700 /runtime-sdk || exit 1
+  export PYTHONDONTWRITEBYTECODE=1
+  /opt/python/bin/python3.12 -I tools/agent-linux-vm/stack-probe.py &&
+    /opt/python/bin/python3.12 -I scripts/test-agent-sdk-stack.py \
+      --mysqld /opt/mysql/bin/mysqld --redis-server /usr/local/bin/redis-server \
+      --mongod /opt/mongo/bin/mongod --sdk-runtime /runtime-sdk \
+      --node /usr/local/bin/node --linux-stack
+  status=$?
+fi
 exit "$status"

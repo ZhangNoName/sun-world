@@ -1,0 +1,152 @@
+{
+  "version": "sun-world-linux-stack-attempts/1",
+  "iteration_base_commit": "d73f3ac",
+  "attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 1,
+      "status": "failed",
+      "note": "SDK parent-death protection already emptied its frozen tree; test incorrectly required a live SDK survivor. Five formal cases passed; final assertion failed.",
+      "formal_cases_passed": 5,
+      "raw_private_console_sha256": "e0f915fe707b8d1d9367fff7eb6478664210c946a7b6ff261f8f6e1fea9e7294",
+      "recovery_observation": {
+        "worker_sigkill_confirmed": true,
+        "had_processes": false,
+        "remaining_leaf_snapshots": 1,
+        "recorded_group_count": 1
+      },
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      }
+    },
+    {
+      "attempt": 2,
+      "exit_code": 0,
+      "status": "passed",
+      "note": "Six formal cases and explicit parent-owned live recovery control passed. Historical source before the missing-owned-workspace guard fix.",
+      "formal_cases_passed": 6,
+      "raw_private_console_sha256": "1840f3239c4397bc4ff3f3341ed0caa1d855c403204f8ca48037cd2b7078d6f3",
+      "recovery_observation": {
+        "worker_sigkill_confirmed": true,
+        "had_processes": true,
+        "survivor_was_live": true,
+        "survivor_cgroup_killed": true,
+        "sdk_group_already_gone_before_parent": true,
+        "remaining_leaf_snapshots": 1,
+        "recorded_group_count": 1
+      },
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "formal_stack": {
+        "version": "sun-world-linux-formal-stack-result/1",
+        "cases": 6,
+        "sdk_executions": 6,
+        "synthetic_model_requests": 10,
+        "tool_calls": 4,
+        "formal_api_and_three_databases": true,
+        "mutual_tls": true,
+        "success_and_recovery": true,
+        "explicit_cancel": true,
+        "tls_disconnect": true,
+        "live_session_revocation": true,
+        "withdraw_before_commit": true,
+        "worker_crash_frozen_cgroup_reaped": true,
+        "unknown_ack_quota_retained": true,
+        "parent_recovery_positive_control": true,
+        "sdk_group_already_gone_before_parent": true,
+        "normal_worker_acks": 5,
+        "parent_cgroup_recoveries": 1,
+        "memory_max_bytes": 536870912,
+        "pids_max": 64,
+        "maximum_memory_peak_bytes": 113528832,
+        "relays_closed": true,
+        "cgroups_removed": true,
+        "workspaces_removed": true,
+        "real_supplier_requests": 0
+      },
+      "owned_groups_gone": true,
+      "private_run_root_removed": true,
+      "guest_payload_sha256_manifest_digest": "fda26310e9c338f6a0b634929b33bbecee1c7c91fc635fe0f1d74e72cd88a0eb",
+      "raw_private_report_sha256": "35f07dc88326d680ecd74e0fb43be8bc3d1e0eb85df185053677631ebc5add91"
+    },
+    {
+      "attempt": 3,
+      "exit_code": 0,
+      "status": "passed",
+      "note": "Final source including missing-owned-workspace guard; all six formal cases and parent-owned recovery control passed.",
+      "formal_cases_passed": 6,
+      "raw_private_console_sha256": "fc0d9df67f9d7954969892fb5ad0d4ad396dd16e7205ce0146e080f363521708",
+      "recovery_observation": {
+        "worker_sigkill_confirmed": true,
+        "had_processes": true,
+        "survivor_was_live": true,
+        "survivor_cgroup_killed": true,
+        "sdk_group_already_gone_before_parent": true,
+        "remaining_leaf_snapshots": 1,
+        "recorded_group_count": 1
+      },
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "formal_stack": {
+        "version": "sun-world-linux-formal-stack-result/1",
+        "cases": 6,
+        "sdk_executions": 6,
+        "synthetic_model_requests": 10,
+        "tool_calls": 4,
+        "formal_api_and_three_databases": true,
+        "mutual_tls": true,
+        "success_and_recovery": true,
+        "explicit_cancel": true,
+        "tls_disconnect": true,
+        "live_session_revocation": true,
+        "withdraw_before_commit": true,
+        "worker_crash_frozen_cgroup_reaped": true,
+        "unknown_ack_quota_retained": true,
+        "parent_recovery_positive_control": true,
+        "sdk_group_already_gone_before_parent": true,
+        "normal_worker_acks": 5,
+        "parent_cgroup_recoveries": 1,
+        "memory_max_bytes": 536870912,
+        "pids_max": 64,
+        "maximum_memory_peak_bytes": 111472640,
+        "relays_closed": true,
+        "cgroups_removed": true,
+        "workspaces_removed": true,
+        "real_supplier_requests": 0
+      },
+      "owned_groups_gone": true,
+      "private_run_root_removed": true,
+      "guest_payload_sha256_manifest_digest": "5a341943cd0b7eda371c8d552581f3b4538261fd12374b9c1e10ec50ce9efdab",
+      "raw_private_report_sha256": "99d61b25d42887aace423b8a37a17f54c40ecde9fdcf93762c6e8582db1955b1"
+    }
+  ],
+  "archive_preflight": [
+    {
+      "attempt": 1,
+      "vm_started": false,
+      "status": "failed",
+      "reason": "Identical MySQL directory headers rejected by the default strict parser; no file duplicate accepted.",
+      "trace_sha256": "7ce1db05792d64b78041db44fb0c1a6c54d44811c5114af628c0211392b70af5"
+    },
+    {
+      "attempt": 2,
+      "vm_started": false,
+      "status": "built-intermediate-source",
+      "initrd_bytes": 774605035,
+      "initrd_sha256": "2e5725f7d29558dca4e6e595364a95caa333b4191480042a4e0ed0add590bc95"
+    }
+  ],
+  "final_attempt": 3,
+  "missing_owned_workspace_guard_regression": "real renamed workspace retained live AF_UNIX listener; registered path absence and dangling symlink now fail closed"
+}

@@ -37,6 +37,10 @@ class OwnedMySQL:
                            'TMPDIR': str(directory), 'LC_ALL': 'C', 'TZ': 'UTC'}
         self.common = [str(binary), '--no-defaults', f'--basedir={binary.parent.parent}',
                        f'--datadir={self.data}']
+        if sys.platform == 'linux' and os.getuid() == 0:
+            # The disposable Linux guest controller runs as root. This option
+            # applies only to its new, socket-only fixture datadir.
+            self.common.append('--user=root')
 
     def _spawn(self, arguments):
         if self.process is not None and self.process.poll() is None:

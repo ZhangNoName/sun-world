@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+### 2026-11-17 Linux 正式 API/三库与真实 SDK 合成整栈
+
+- 目标仍按计划实现/审查/本地验证/中文提交。最终原生Linux同guest正式API、三库、mTLS、固定SDK六场景通过，原49零skip/九隔离/五网关保持；task512MiB/64，正式peak111472640。SDK父死亡保护先结束，父自有活正对照另经cgroup.kill+wait确认；未知ACK保额。宿主/三库/CG/relay/目录均回收。
+- API859、Worker164、Mac原六场景与独立strict V4/261源SHA/67资产复核通过，目录缺失误判guard P2已修。固定来源/失败历史/287源暂存树见[实证](evaluations/agent-linux-stack-2026-11-17/README.md)，具体文件/命令/下一步见[分支checkpoint](handoff/branches/zxy-dsh-platform-foundation.md)与[协议](development/agent-linux-stack.md)。根format只原素材manifest失败。博客04后端/原三标签、两透明图、1280/390预览未发布。
+- 仅本地中文提交，不推送部署；现有服务/模型/配置、原80dirty和本文件原210加1删保持。真实provider跨Linux、人工/生产模型策略/目标库备份/TLS运维等继续待，fullperrun/P1/A–D未整体完成；下一步固定通道的真实供应商组合，Claude Code/claude-ds先读新协议。
+
 ### 2026-11-17 Linux固定网关与真实SDK组件
 
 原49协议+九隔离+五网关+原SDK入口在原生Linux通过，SDK成功/来源/重复/取消/EACCES保槽重试与Mac fresh复验通过；API828/Worker151，65源/12SDK源/4ELF及strict v3独立核对。SDK通知顺序竞态已修（a56ab5a），前五失败保留。正式API/三库/供应商Linux组合、人工及生产门槛仍待，P1/A–D未完成；博客04更新/1280与390预览未发布，原dirty保留，不推送部署。详见[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)与[安全实证](evaluations/agent-linux-gateway-2026-11-17/README.md)。

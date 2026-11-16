@@ -161,7 +161,8 @@ def valid_host(value):
                                'startup_failed', 'guest_error'})
 
 
-def verify_console(raw, control, *, containment=False, gateway=False):
+def verify_console(raw, control, *, containment=False, gateway=False, stack=False):
+    gateway = gateway or stack
     containment = containment or gateway
     host = only_json(control, 'SW_LINUX_HOST_RESULT')
     guest = only_json(raw, 'SW_LINUX_GUEST_RESULT')
@@ -189,7 +190,7 @@ def verify_console(raw, control, *, containment=False, gateway=False):
     if type(probe.get('kernel')) is not str or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+[A-Za-z0-9._+~-]{0,100}', probe['kernel']):
         fail()
     memory = probe.get('memory_bytes')
-    lower, upper = (3221225472, 4294967296) if gateway else (1073741824, 2147483648)
+    lower, upper = (6442450944, 8589934592) if stack else (3221225472, 4294967296) if gateway else (1073741824, 2147483648)
     if type(memory) is not int or not lower <= memory <= upper:
         fail()
     before_clock = probe.get('clock_before_seed_seconds')
@@ -253,6 +254,38 @@ def verify_console(raw, control, *, containment=False, gateway=False):
             linux_gateway_egress_verified=True, linux_sdk_synthetic_verified=True)
     elif any(line.startswith((b'SW_LINUX_GATEWAY_RESULT', b'SW_LINUX_SDK_RESULT')) for line in raw.splitlines()):
         fail()
+    if stack:
+        assets = only_json(raw, 'SW_LINUX_STACK_ASSETS_RESULT')
+        expected = {'version': 'sun-world-linux-stack-assets-result/1', 'python': '3.12.13',
+            'architecture': 'aarch64', 'mysql': '8.4.13', 'mongo': '8.0.38', 'redis': '7.0.15',
+            'locked_wheels': 36, 'native_imports_loaded': True}
+        if set(assets) != set(expected) or any(type(assets[k]) is not type(v) or assets[k] != v for k,v in expected.items()):
+            fail()
+        proof = only_json(raw, 'SW_LINUX_STACK_RESULT')
+        expected = {'version': 'sun-world-linux-formal-stack-result/1', 'cases': 6, 'sdk_executions': 6,
+            'synthetic_model_requests': 10, 'tool_calls': 4, 'formal_api_and_three_databases': True, 'mutual_tls': True,
+            'success_and_recovery': True, 'explicit_cancel': True, 'tls_disconnect': True,
+            'live_session_revocation': True, 'withdraw_before_commit': True,
+            'worker_crash_frozen_cgroup_reaped': True, 'unknown_ack_quota_retained': True,
+            'parent_recovery_positive_control': True,
+            'normal_worker_acks': 5, 'parent_cgroup_recoveries': 1,
+            'memory_max_bytes': 536870912, 'pids_max': 64, 'relays_closed': True,
+            'cgroups_removed': True, 'workspaces_removed': True, 'real_supplier_requests': 0}
+        if set(proof) != set(expected) | {'maximum_memory_peak_bytes', 'sdk_group_already_gone_before_parent'} or any(type(proof[k]) is not type(v) or proof[k] != v for k,v in expected.items()):
+            fail()
+        if type(proof['sdk_group_already_gone_before_parent']) is not bool:
+            fail()
+        if type(proof['maximum_memory_peak_bytes']) is not int or not 1 <= proof['maximum_memory_peak_bytes'] <= 536870912:
+            fail()
+        resources = only_json(raw, 'SW_LINUX_STACK_RESOURCES_RESULT')
+        expected = {'version': 'sun-world-linux-stack-resources/1', 'database_processes_stopped': True,
+            'database_roots_removed': True, 'owned_test_group_gone': True}
+        if set(resources) != set(expected) or any(type(resources[k]) is not type(v) or resources[k] != v for k,v in expected.items()):
+            fail()
+        result.update(version='sun-world-linux-native-validation/4', stack_assets=assets,
+            formal_stack=proof, stack_resources=resources, linux_formal_stack_synthetic_verified=True)
+    elif any(line.startswith(b'SW_LINUX_STACK_') for line in raw.splitlines()):
+        fail()
     return result
 
 
@@ -285,9 +318,10 @@ def main(argv=None):
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--containment', action='store_true')
     parser.add_argument('--gateway', action='store_true')
+    parser.add_argument('--stack', action='store_true')
     arguments = parser.parse_args(argv)
     try:
-        if (arguments.gateway and arguments.containment or sys.platform != 'darwin' or not arguments.cache.is_absolute()
+        if (sum((arguments.gateway, arguments.containment, arguments.stack)) > 1 or sys.platform != 'darwin' or not arguments.cache.is_absolute()
                 or not arguments.report.is_absolute() or not arguments.report.parent.is_dir()
                 or arguments.report.exists() or Path(str(arguments.report) + '.console.log').exists()):
             fail()
@@ -299,8 +333,8 @@ def main(argv=None):
                 run = Path(temporary)
                 execute([sys.executable, str(ROOT / 'scripts/prepare-agent-linux-guest.py'),
                     '--cache', str(arguments.cache), '--output', str(run / 'guest.initrd'),
-                    *(['--gateway'] if arguments.gateway else ['--containment'] if arguments.containment else [])],
-                    state=state, directory=run, timeout=180 if arguments.gateway else 90, confirmations=confirmations)
+                    *(['--stack'] if arguments.stack else ['--gateway'] if arguments.gateway else ['--containment'] if arguments.containment else [])],
+                    state=state, directory=run, timeout=300 if arguments.stack else 180 if arguments.gateway else 90, confirmations=confirmations)
                 build = json.loads((run / 'guest.initrd.manifest.json').read_text())
                 # The builder has verified the original compressed kernel bytes.
                 contract = json.loads((ROOT / 'tools/agent-linux-vm/assets.json').read_text())
@@ -318,8 +352,8 @@ def main(argv=None):
                     state=state, directory=run, timeout=15, confirmations=confirmations)
                 try:
                     console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
-                        *(['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
-                        state=state, directory=run, timeout=110, is_vm=True, confirmations=confirmations)
+                        *(['stack'] if arguments.stack else ['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
+                        state=state, directory=run, timeout=330 if arguments.stack else 110, is_vm=True, confirmations=confirmations)
                 finally:
                     log = run / 'console.log'
                     if log.exists():
@@ -328,7 +362,7 @@ def main(argv=None):
                             target.write(log.read_bytes())
                             target.flush()
                             os.fsync(target.fileno())
-                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway)
+                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway, stack=arguments.stack)
                 result['guest_build'] = build
                 result['kernel_image_sha256'] = hashlib.sha256(kernel).hexdigest()
                 result['owned_groups_gone'] = confirmations['groups_gone']

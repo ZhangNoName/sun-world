@@ -39,21 +39,22 @@ final class GuestDelegate: NSObject, VZVirtualMachineDelegate {
 }
 
 guard [3, 4].contains(CommandLine.arguments.count),
-      CommandLine.arguments.count == 3 || ["containment", "gateway"].contains(CommandLine.arguments[3]),
+      CommandLine.arguments.count == 3 || ["containment", "gateway", "stack"].contains(CommandLine.arguments[3]),
       VZVirtualMachine.isSupported else {
     finish("configuration_invalid", false)
     exit(1)
 }
 let configuration = VZVirtualMachineConfiguration()
 configuration.cpuCount = 2
-let gateway = CommandLine.arguments.count == 4 && CommandLine.arguments[3] == "gateway"
-configuration.memorySize = (gateway ? 4 : 2) * 1024 * 1024 * 1024
+let stack = CommandLine.arguments.count == 4 && CommandLine.arguments[3] == "stack"
+let gateway = stack || CommandLine.arguments.count == 4 && CommandLine.arguments[3] == "gateway"
+configuration.memorySize = (stack ? 8 : gateway ? 4 : 2) * 1024 * 1024 * 1024
 configuration.platform = VZGenericPlatformConfiguration()
 let boot = VZLinuxBootLoader(kernelURL: URL(fileURLWithPath: CommandLine.arguments[1]))
 boot.initialRamdiskURL = URL(fileURLWithPath: CommandLine.arguments[2])
 let epoch = Int(Date().timeIntervalSince1970)
 let containment = CommandLine.arguments.count == 4 ? 1 : 0
-boot.commandLine = "console=hvc0 rdinit=/init panic=0 loglevel=3 sw_epoch=\(epoch) sw_containment=\(containment) sw_gateway=\(gateway ? 1 : 0)"
+boot.commandLine = "console=hvc0 rdinit=/init panic=0 loglevel=3 sw_epoch=\(epoch) sw_containment=\(containment) sw_gateway=\(gateway ? 1 : 0) sw_stack=\(stack ? 1 : 0)"
 configuration.bootLoader = boot
 let console = VZVirtioConsoleDeviceSerialPortConfiguration()
 console.attachment = VZFileHandleSerialPortAttachment(fileHandleForReading: nil, fileHandleForWriting: .standardOutput)
@@ -79,7 +80,7 @@ let signals = [SIGINT, SIGTERM].map { number -> DispatchSourceSignal in
     source.resume()
     return source
 }
-DispatchQueue.main.asyncAfter(deadline: .now() + 90) { stop("deadline") }
+DispatchQueue.main.asyncAfter(deadline: .now() + (stack ? 300 : 90)) { stop("deadline") }
 machine?.start { result in
     switch result {
     case .success: started = true

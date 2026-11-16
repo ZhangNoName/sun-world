@@ -18,11 +18,14 @@ modprobe virtio_console 2>/dev/null || true
 modprobe virtio_rng 2>/dev/null || true
 exec </dev/hvc0 >/dev/hvc0 2>&1
 "$BB" mkdir -p /newroot
-"$BB" mount -t tmpfs -o mode=0755,size=1536m tmpfs /newroot
+root_size=1536m
+temporary_size=384m
+if [ "${sw_stack:-0}" = 1 ]; then root_size=4g; temporary_size=2g; fi
+"$BB" mount -t tmpfs -o "mode=0755,size=$root_size" tmpfs /newroot
 "$BB" cp -a /sw-root/. /newroot/
 "$BB" cp -a "$BB" /newroot/usr/local/bin/busybox
 "$BB" mkdir -p /newroot/tmp /newroot/run /newroot/proc /newroot/sys /newroot/dev
-"$BB" mount -t tmpfs -o mode=1777,nosuid,nodev,size=384m tmpfs /newroot/tmp
+"$BB" mount -t tmpfs -o "mode=1777,nosuid,nodev,size=$temporary_size" tmpfs /newroot/tmp
 for name in proc sys dev; do
   "$BB" mount --move "/$name" "/newroot/$name"
 done

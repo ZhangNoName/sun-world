@@ -197,7 +197,10 @@ class Stream:
 
 
 class Fixture(FixtureCleanupMixin):
-    def __init__(self, mode, *, case=None, real_model_profile='qwen-public'):
+    def __init__(self, mode, *, case=None, real_model_profile='qwen-public', linux=False):
+        if type(linux) is not bool or linux and (sys.platform != 'linux' or mode == 'real'):
+            raise ValueError('EVALUATION_OPTIONS_INVALID')
+        self.linux = linux
         if mode != 'real' and real_model_profile != 'qwen-public':
             raise ValueError('EVALUATION_OPTIONS_INVALID')
         self.mode = mode
@@ -223,7 +226,7 @@ class Fixture(FixtureCleanupMixin):
                 os.environ['AI_PROVIDER_ALLOWED_INSECURE_ORIGINS'] = parsed.scheme + '://' + parsed.netloc
             self.model_id = config.model
 
-        self.root = Path(tempfile.mkdtemp(prefix='sun-world-sdk-stack-', dir='/private/tmp')).resolve()
+        self.root = Path(tempfile.mkdtemp(prefix='sun-world-sdk-stack-', dir='/run' if linux else '/private/tmp')).resolve()
         self.root.chmod(0o700)
         self.streams, self.model_requests, self.model_steps = [], [], 0
         self.model_started, self.model_cancelled = asyncio.Event(), asyncio.Event()
@@ -273,7 +276,7 @@ class Fixture(FixtureCleanupMixin):
         config.write_text('[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=extensions\n'
             '[dn]\nCN=localhost\n[extensions]\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n'
             'basicConstraints=critical,CA:TRUE\nkeyUsage=critical,digitalSignature,keyEncipherment,keyCertSign\n')
-        await asyncio.to_thread(subprocess.run, ['/usr/bin/openssl', 'req', '-x509', '-newkey', 'rsa:2048',
+        await asyncio.to_thread(subprocess.run, ['/usr/local/bin/openssl' if self.linux else '/usr/bin/openssl', 'req', '-x509', '-newkey', 'rsa:2048',
             '-nodes', '-days', '1', '-config', str(config), '-keyout', str(self.key), '-out', str(self.cert)],
             check=True, timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.key.chmod(0o600)
@@ -300,6 +303,7 @@ class Fixture(FixtureCleanupMixin):
                 await asyncio.sleep(.01)
         self.worker_process = await asyncio.create_subprocess_exec(str(self.node),
             str(ROOT / 'apps/agent-worker/tests/integration/stack-worker.mjs'),
+            *(['--linux-stack'] if self.linux else []),
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
             env={'PATH': str(self.node.parent) + ':/usr/bin:/bin', 'HOME': str(Path.home()),
                  'TMPDIR': str(self.root), 'LC_ALL': 'C', 'TZ': 'UTC'})
@@ -308,6 +312,9 @@ class Fixture(FixtureCleanupMixin):
             gateway_origin=self.origin, model_id=self.model_id, gateway_credential=self.gateway_secret,
             worker_credential=self.worker_secret, tls=dict(key=str(self.key), cert=str(self.cert), ca=str(self.cert)),
             read_paths=[str(self.runtime), str(self.node.parent.parent)])
+        if self.linux:
+            specification.pop('read_paths')
+            specification.update(protocol='sun-world-linux-sdk-stack-fixture/1', cgroup_root=str(self.containment.path))
         self.worker_process.stdin.write(json.dumps(specification).encode() + b'\n')
         await self.worker_process.stdin.drain()
         ready = await self.worker_line()
@@ -528,7 +535,11 @@ async def crash(fixture):
     assert len(groups) == 1
     # Hold the actual SDK so it cannot self-exit after the API interrupts the
     # run; the Python parent's PID-journal fallback must reclaim this orphan.
-    os.killpg(groups[0], signal.SIGSTOP)
+    if fixture.linux:
+        fixture.containment.start_survivor()
+        fixture.containment.freeze()
+    else:
+        os.killpg(groups[0], signal.SIGSTOP)
     fixture.expected_worker_crash = True
     fixture.worker_process.kill()
     await fixture.worker_process.wait()
@@ -553,7 +564,14 @@ async def main():
     options.add_argument('--real-model', action='store_true')
     parser.add_argument('--report', type=Path)
     parser.add_argument('--real-model-profile', choices=('qwen-public', 'openai-local'))
+    parser.add_argument('--linux-stack', action='store_true')
     arguments = parser.parse_args()
+    if arguments.linux_stack and (sys.platform != 'linux' or arguments.real_model or arguments.interrupt_probe):
+        raise ValueError('EVALUATION_OPTIONS_INVALID')
+    fixture_factory = Fixture
+    if arguments.linux_stack:
+        from linux_sdk_stack import linux_fixture_class
+        fixture_factory = linux_fixture_class(Fixture)
     profile = validate_options(arguments.real_model, arguments.report, arguments.real_model_profile,
                                interrupt=arguments.interrupt_probe)
     task = asyncio.current_task()
@@ -581,13 +599,14 @@ async def main():
                 from src.modules.agent_runtime.cleanup import finish_cleanup
                 await finish_cleanup(fixture.close())
             return
+        linux_observations = []
         for label, mode, action in [('success/recovery', 'complete', success),
                 ('explicit cancel', 'hold', cancel),
                 ('browser TLS disconnect', 'hold', lambda fixture: cancel(fixture, disconnect=True)),
                 ('live Redis session revoke', 'hold', lambda fixture: cancel(fixture, revoke=True)),
                 ('withdraw before final commit', 'withdraw', withdraw),
                 ('Worker crash with stopped SDK group', 'hold', crash)]:
-            fixture = Fixture(mode)
+            fixture = fixture_factory(mode)
             try:
                 await fixture.start()
                 await action(fixture)
@@ -596,12 +615,23 @@ async def main():
                 from src.modules.agent_runtime.cleanup import finish_cleanup
                 await finish_cleanup(fixture.close())
             if fixture.expected_worker_crash:
-                assert len(fixture.reaped_groups) == 1 and fixture.worker_stopped is None
+                assert fixture.worker_stopped is None
+                if fixture.linux:
+                    assert fixture.linux_summary()['parent_recovery_positive_control']
+                else:
+                    assert len(fixture.reaped_groups) == 1
             else:
                 assert fixture.worker_stopped['start_count'] == 1
+            if arguments.linux_stack:
+                linux_observations.append(fixture.linux_summary())
             print('SDK stack passed: ' + label, flush=True)
         print('Real fixed SDK + real MySQL/Redis/MongoDB + two-way mTLS: 6 scenarios passed.', flush=True)
-        print('Model/article data are synthetic; macOS sandbox only, no Linux or real-model acceptance.', flush=True)
+        print('Model/article data are synthetic; Linux cgroup/bubblewrap fixture only, no real-model acceptance.'
+              if arguments.linux_stack else
+              'Model/article data are synthetic; macOS sandbox only, no Linux or real-model acceptance.', flush=True)
+        if arguments.linux_stack:
+            from linux_sdk_stack import stack_proof
+            print('SW_LINUX_STACK_RESULT ' + json.dumps(stack_proof(linux_observations)), flush=True)
     finally:
         AgentStackTests.tearDownClass()
         for signum in (signal.SIGINT, signal.SIGTERM):

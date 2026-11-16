@@ -1,0 +1,584 @@
+{
+  "version": "sun-world-linux-stack-assets/1",
+  "architecture": "arm64",
+  "gateway_assets_sha256": "59acec17334c10c23732f2fa15f7b3f61b85d5302315632669e0d3ffe0aca529",
+  "python_contract_sha256": "4119de137055355624bfb0d09c3e3109ded8670965b8613eeee83e067689e99f",
+  "sources_contract_sha256": "f2f3ef8d950480a12a75fd5a639d467d6d350b6792a5f915c3cf3d1f56338fa9",
+  "assets": [
+    {
+      "filename": "mysql.tar.xz",
+      "url": "https://cdn.mysql.com/Downloads/MySQL-8.4/mysql-8.4.13-linux-glibc2.28-aarch64.tar.xz",
+      "size": 823781920,
+      "sha256": "6531bb50f64c986a2abdab6b647cbd553e8740b3e5d3867f5415e33568879fc9",
+      "publisher_md5": "93961907cdc7b106e5082399ce13ad54",
+      "version": "8.4.13",
+      "pgp_signature_verified": false,
+      "resumed_from": 544210944,
+      "kind": "mysql"
+    },
+    {
+      "filename": "python.tar.gz",
+      "kind": "python",
+      "version": "3.12.13",
+      "release": "20260320",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260320/cpython-3.12.13%2B20260320-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+      "size": 29575140,
+      "sha256": "36ddba171f170664c0b8f254be9c60a10d6319d922f115cf6b913e8d4cdfc200"
+    },
+    {
+      "filename": "mongo.tar.gz",
+      "url": "https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2404-8.0.38.tgz",
+      "size": 99529198,
+      "sha256": "178f6a9ef70637626f44f9edda779848bb8c72000cd5f8f46c9eb5b2aa1d26d7",
+      "version": "8.0.38",
+      "kind": "mongo"
+    },
+    {
+      "filename": "libatomic1.deb",
+      "package": "libatomic1",
+      "version": "14.2.0-4ubuntu2~24.04.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/g/gcc-14/libatomic1_14.2.0-4ubuntu2~24.04.1_arm64.deb",
+      "sha256": "fdeab74e7ad8572cf69c7024e8040c7ac851f6e667d35f0d429e7a0352840f73",
+      "size": 11604,
+      "kind": "library"
+    },
+    {
+      "filename": "libbrotli1.deb",
+      "package": "libbrotli1",
+      "version": "1.1.0-2ubuntu0.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/brotli/libbrotli1_1.1.0-2ubuntu0.1_arm64.deb",
+      "sha256": "911411fb6fdfb4ab91dd4242f5a0a5e1f47b38e003a25c8dc7730238cb323e18",
+      "size": 339950,
+      "kind": "library"
+    },
+    {
+      "filename": "libcurl4t64.deb",
+      "package": "libcurl4t64",
+      "version": "8.5.0-2ubuntu10.16",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/c/curl/libcurl4t64_8.5.0-2ubuntu10.16_arm64.deb",
+      "sha256": "41fa5964da7f422e0729d2355317254e3ee1a28eda9eba70423ed43f77cc7477",
+      "size": 337276,
+      "kind": "library"
+    },
+    {
+      "filename": "libgssapi-krb5-2.deb",
+      "package": "libgssapi-krb5-2",
+      "version": "1.20.1-6ubuntu2.10",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/k/krb5/libgssapi-krb5-2_1.20.1-6ubuntu2.10_arm64.deb",
+      "sha256": "7a13651d117e3b8f06139f4aac2184d4efaa8b5d375954b5229f0a332b3d6aeb",
+      "size": 141730,
+      "kind": "library"
+    },
+    {
+      "filename": "libjemalloc2.deb",
+      "package": "libjemalloc2",
+      "version": "5.3.0-2build1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/j/jemalloc/libjemalloc2_5.3.0-2build1_arm64.deb",
+      "sha256": "f7f2bc5b78a8cd6cdcadc8e6b48b4055171e97d368ea84070b73c0c0d4807885",
+      "size": 204324,
+      "kind": "library"
+    },
+    {
+      "filename": "libk5crypto3.deb",
+      "package": "libk5crypto3",
+      "version": "1.20.1-6ubuntu2.10",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/k/krb5/libk5crypto3_1.20.1-6ubuntu2.10_arm64.deb",
+      "sha256": "f05865643982afcec53b08c20e5e69be364f632dd63342009eec99f2ceb180c9",
+      "size": 85774,
+      "kind": "library"
+    },
+    {
+      "filename": "libkeyutils1.deb",
+      "package": "libkeyutils1",
+      "version": "1.6.3-3build1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/k/keyutils/libkeyutils1_1.6.3-3build1_arm64.deb",
+      "sha256": "d141e94ed3b32ea6540f2e927a83b3d42cd4378256a1aad60cda583ffdbd78af",
+      "size": 9654,
+      "kind": "library"
+    },
+    {
+      "filename": "libkrb5-3.deb",
+      "package": "libkrb5-3",
+      "version": "1.20.1-6ubuntu2.10",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/k/krb5/libkrb5-3_1.20.1-6ubuntu2.10_arm64.deb",
+      "sha256": "0ba099c96bfe18c168e0c12f92408c7a389566692db959be4afc88bd23466963",
+      "size": 349720,
+      "kind": "library"
+    },
+    {
+      "filename": "libkrb5support0.deb",
+      "package": "libkrb5support0",
+      "version": "1.20.1-6ubuntu2.10",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/k/krb5/libkrb5support0_1.20.1-6ubuntu2.10_arm64.deb",
+      "sha256": "62d276c37b371c0d48de636d14f55d12f93aa18164ffe16d6fa66a81caeacf74",
+      "size": 35356,
+      "kind": "library"
+    },
+    {
+      "filename": "libldap2.deb",
+      "package": "libldap2",
+      "version": "2.6.10+dfsg-0ubuntu0.24.04.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/o/openldap/libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_arm64.deb",
+      "sha256": "60893ca2782c2e52dc3b7b192be0169228beb91f7c87e93abaeca5871c5f16ee",
+      "size": 195858,
+      "kind": "library"
+    },
+    {
+      "filename": "liblzf1.deb",
+      "package": "liblzf1",
+      "version": "3.6-4",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/libl/liblzf/liblzf1_3.6-4_arm64.deb",
+      "sha256": "13aa9cd5a4e8db06f2ae79eaad2d8876b3a59b0906de200ad792ad585ca31f7a",
+      "size": 7426,
+      "kind": "library"
+    },
+    {
+      "filename": "libnghttp2-14.deb",
+      "package": "libnghttp2-14",
+      "version": "1.59.0-1ubuntu0.4",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/n/nghttp2/libnghttp2-14_1.59.0-1ubuntu0.4_arm64.deb",
+      "sha256": "ec812e0b82dfb315b140020f4c8434191a89cf42c49dbb82605d0892b6783b59",
+      "size": 74758,
+      "kind": "library"
+    },
+    {
+      "filename": "libnuma1.deb",
+      "package": "libnuma1",
+      "version": "2.0.18-1ubuntu0.24.04.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/n/numactl/libnuma1_2.0.18-1ubuntu0.24.04.1_arm64.deb",
+      "sha256": "fb1de2dbe2a22cb59753c2ec622575a408d1ade28a9b090acc4c59d247462eb4",
+      "size": 23710,
+      "kind": "library"
+    },
+    {
+      "filename": "libpsl5t64.deb",
+      "package": "libpsl5t64",
+      "version": "0.21.2-1.1build1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libp/libpsl/libpsl5t64_0.21.2-1.1build1_arm64.deb",
+      "sha256": "886d485c74567b855bcd19b6f353a769a08b58c111b2d8275a908a469c15d4bf",
+      "size": 57436,
+      "kind": "library"
+    },
+    {
+      "filename": "librtmp1.deb",
+      "package": "librtmp1",
+      "version": "2.4+20151223.gitfa8646d.1-2build7",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/r/rtmpdump/librtmp1_2.4+20151223.gitfa8646d.1-2build7_arm64.deb",
+      "sha256": "fb771b2743120d9d44ee9989fd485205680976f7bf89f2f1ac5df50238ea1db7",
+      "size": 57804,
+      "kind": "library"
+    },
+    {
+      "filename": "libsasl2-2.deb",
+      "package": "libsasl2-2",
+      "version": "2.1.28+dfsg1-5ubuntu3.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/c/cyrus-sasl2/libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_arm64.deb",
+      "sha256": "05da24adf2b95285ce7eaf9a2ea902fbf4f756a796c8adbfd221d746035df44b",
+      "size": 54660,
+      "kind": "library"
+    },
+    {
+      "filename": "libsasl2-modules-db.deb",
+      "package": "libsasl2-modules-db",
+      "version": "2.1.28+dfsg1-5ubuntu3.1",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/c/cyrus-sasl2/libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_arm64.deb",
+      "sha256": "ee8237dfd0d26df4d5fbfd3a9b132ae9f34f05b4508176b8bd1839f12739d94c",
+      "size": 21552,
+      "kind": "library"
+    },
+    {
+      "filename": "libssh-4.deb",
+      "package": "libssh-4",
+      "version": "0.10.6-2ubuntu0.5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libs/libssh/libssh-4_0.10.6-2ubuntu0.5_arm64.deb",
+      "sha256": "f1b8da917a3d65ca77918027206b55b69d62795df2676c39828d4439bc97e68f",
+      "size": 192306,
+      "kind": "library"
+    },
+    {
+      "filename": "redis-tools.deb",
+      "package": "redis-tools",
+      "version": "5:7.0.15-1ubuntu0.24.04.5",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/r/redis/redis-tools_7.0.15-1ubuntu0.24.04.5_arm64.deb",
+      "sha256": "c74a99662a91d85e6acd01c5352c276384ac5075d316a687f45a721168fecbca",
+      "size": 1170186,
+      "kind": "redis"
+    },
+    {
+      "filename": "libaio1.deb",
+      "package": "libaio1",
+      "version": "0.3.112-13build1",
+      "url": "https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/pool/main/liba/libaio/libaio1_0.3.112-13build1_arm64.deb",
+      "sha256": "1bcb0d9c08aa35298741b1c68904844e9b71ebf64f15b3e05e6ec6f3fa01d93b",
+      "size": 7018,
+      "publisher_index": {
+        "url": "https://ports.ubuntu.com/ubuntu-ports/dists/jammy/main/binary-arm64/Packages.xz",
+        "sha256": "b80d1f097198f4a2d80f84db0252263d902051a695040acbc085f033048bc9bb",
+        "independent_gpg_verified": false
+      },
+      "kind": "library"
+    },
+    {
+      "filename": "PyJWT-2.10.1-py3-none-any.whl",
+      "name": "pyjwt",
+      "version": "2.10.1",
+      "sha256": "dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb",
+      "size": 22997,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pyjwt/2.10.1/json"
+    },
+    {
+      "filename": "annotated_doc-0.0.5-py3-none-any.whl",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "sha256": "117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101",
+      "size": 5302,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/annotated-doc/0.0.5/json"
+    },
+    {
+      "filename": "annotated_types-0.7.0-py3-none-any.whl",
+      "name": "annotated-types",
+      "version": "0.7.0",
+      "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
+      "size": 13643,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/annotated-types/0.7.0/json"
+    },
+    {
+      "filename": "anyio-4.12.1-py3-none-any.whl",
+      "name": "anyio",
+      "version": "4.12.1",
+      "sha256": "d405828884fc140aa80a3c667b8beed277f1dfedec42ba031bd6ac3db606ab6c",
+      "size": 113592,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/anyio/4.12.1/json"
+    },
+    {
+      "filename": "certifi-2026.1.4-py3-none-any.whl",
+      "name": "certifi",
+      "version": "2026.1.4",
+      "sha256": "9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c",
+      "size": 152900,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/certifi/2026.1.4/json"
+    },
+    {
+      "filename": "cffi-2.0.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "name": "cffi",
+      "version": "2.0.0",
+      "sha256": "b21e08af67b8a103c71a250401c78d5e0893beff75e28c53c98f4de42f774062",
+      "size": 220097,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/cffi/2.0.0/json"
+    },
+    {
+      "filename": "click-8.3.1-py3-none-any.whl",
+      "name": "click",
+      "version": "8.3.1",
+      "sha256": "981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6",
+      "size": 108274,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/click/8.3.1/json"
+    },
+    {
+      "filename": "cryptography-46.0.3-cp311-abi3-manylinux_2_28_aarch64.whl",
+      "name": "cryptography",
+      "version": "46.0.3",
+      "sha256": "6eae65d4c3d33da080cff9c4ab1f711b15c1d9760809dad6ea763f3812d254cb",
+      "size": 4299615,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/cryptography/46.0.3/json"
+    },
+    {
+      "filename": "dnspython-2.8.0-py3-none-any.whl",
+      "name": "dnspython",
+      "version": "2.8.0",
+      "sha256": "01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af",
+      "size": 331094,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/dnspython/2.8.0/json"
+    },
+    {
+      "filename": "ecdsa-0.19.1-py2.py3-none-any.whl",
+      "name": "ecdsa",
+      "version": "0.19.1",
+      "sha256": "30638e27cf77b7e15c4c4cc1973720149e1033827cfd00661ca5c8cc0cdb24c3",
+      "size": 150607,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/ecdsa/0.19.1/json"
+    },
+    {
+      "filename": "email_validator-2.3.0-py3-none-any.whl",
+      "name": "email-validator",
+      "version": "2.3.0",
+      "sha256": "80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4",
+      "size": 35604,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/email-validator/2.3.0/json"
+    },
+    {
+      "filename": "fastapi-0.141.1-py3-none-any.whl",
+      "name": "fastapi",
+      "version": "0.141.1",
+      "sha256": "bfb91aa2d334c61cb35ba9a116fc123b3d3df31640b801cf57a7a78ec3f603b3",
+      "size": 131954,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/fastapi/0.141.1/json"
+    },
+    {
+      "filename": "h11-0.16.0-py3-none-any.whl",
+      "name": "h11",
+      "version": "0.16.0",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "size": 37515,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/h11/0.16.0/json"
+    },
+    {
+      "filename": "httpcore-1.0.9-py3-none-any.whl",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55",
+      "size": 78784,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/httpcore/1.0.9/json"
+    },
+    {
+      "filename": "httpx-0.28.1-py3-none-any.whl",
+      "name": "httpx",
+      "version": "0.28.1",
+      "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad",
+      "size": 73517,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/httpx/0.28.1/json"
+    },
+    {
+      "filename": "idna-3.19-py3-none-any.whl",
+      "name": "idna",
+      "version": "3.19",
+      "sha256": "815e7be7a7806d54abb586dc943addc79e8b2ee16915059658cbeff4b1b43bf4",
+      "size": 68550,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/idna/3.19/json"
+    },
+    {
+      "filename": "loguru-0.7.3-py3-none-any.whl",
+      "name": "loguru",
+      "version": "0.7.3",
+      "sha256": "31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c",
+      "size": 61595,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/loguru/0.7.3/json"
+    },
+    {
+      "filename": "orjson-3.11.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+      "name": "orjson",
+      "version": "3.11.5",
+      "sha256": "ed24250e55efbcb0b35bed7caaec8cedf858ab2f9f2201f17b8938c618c8ca6f",
+      "size": 132074,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/orjson/3.11.5/json"
+    },
+    {
+      "filename": "pyasn1-0.6.1-py3-none-any.whl",
+      "name": "pyasn1",
+      "version": "0.6.1",
+      "sha256": "0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629",
+      "size": 83135,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pyasn1/0.6.1/json"
+    },
+    {
+      "filename": "pycparser-2.23-py3-none-any.whl",
+      "name": "pycparser",
+      "version": "2.23",
+      "sha256": "e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934",
+      "size": 118140,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pycparser/2.23/json"
+    },
+    {
+      "filename": "pydantic-2.12.5-py3-none-any.whl",
+      "name": "pydantic",
+      "version": "2.12.5",
+      "sha256": "e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d",
+      "size": 463580,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pydantic/2.12.5/json"
+    },
+    {
+      "filename": "pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+      "name": "pydantic-core",
+      "version": "2.41.5",
+      "sha256": "e96cea19e34778f8d59fe40775a7a574d95816eb150850a85a7a4c8f4b94ac69",
+      "size": 1919200,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pydantic-core/2.41.5/json"
+    },
+    {
+      "filename": "pygments-2.19.2-py3-none-any.whl",
+      "name": "pygments",
+      "version": "2.19.2",
+      "sha256": "86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b",
+      "size": 1225217,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pygments/2.19.2/json"
+    },
+    {
+      "filename": "pymongo-4.15.5-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+      "name": "pymongo",
+      "version": "4.15.5",
+      "sha256": "b8c6813110c0d9fde18674b7262f47a2270ae46c0ddd05711e6770caa3c9a3fb",
+      "size": 1726089,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pymongo/4.15.5/json"
+    },
+    {
+      "filename": "pymysql-1.1.2-py3-none-any.whl",
+      "name": "pymysql",
+      "version": "1.1.2",
+      "sha256": "e6b1d89711dd51f8f74b1631fe08f039e7d76cf67a42a323d3178f0f25762ed9",
+      "size": 45300,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/pymysql/1.1.2/json"
+    },
+    {
+      "filename": "python_jose-3.5.0-py2.py3-none-any.whl",
+      "name": "python-jose",
+      "version": "3.5.0",
+      "sha256": "abd1202f23d34dfad2c3d28cb8617b90acf34132c7afd60abd0b0b7d3cb55771",
+      "size": 34624,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/python-jose/3.5.0/json"
+    },
+    {
+      "filename": "python_multipart-0.0.21-py3-none-any.whl",
+      "name": "python-multipart",
+      "version": "0.0.21",
+      "sha256": "cf7a6713e01c87aa35387f4774e812c4361150938d20d232800f75ffcf266090",
+      "size": 24541,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/python-multipart/0.0.21/json"
+    },
+    {
+      "filename": "redis-5.3.1-py3-none-any.whl",
+      "name": "redis",
+      "version": "5.3.1",
+      "sha256": "dc1909bd24669cc31b5f67a039700b16ec30571096c5f1f0d9d2324bff31af97",
+      "size": 272833,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/redis/5.3.1/json"
+    },
+    {
+      "filename": "rsa-4.9.1-py3-none-any.whl",
+      "name": "rsa",
+      "version": "4.9.1",
+      "sha256": "68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762",
+      "size": 34696,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/rsa/4.9.1/json"
+    },
+    {
+      "filename": "six-1.17.0-py2.py3-none-any.whl",
+      "name": "six",
+      "version": "1.17.0",
+      "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "size": 11050,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/six/1.17.0/json"
+    },
+    {
+      "filename": "sniffio-1.3.1-py3-none-any.whl",
+      "name": "sniffio",
+      "version": "1.3.1",
+      "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2",
+      "size": 10235,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/sniffio/1.3.1/json"
+    },
+    {
+      "filename": "starlette-1.6.0-py3-none-any.whl",
+      "name": "starlette",
+      "version": "1.6.0",
+      "sha256": "a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c",
+      "size": 75969,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/starlette/1.6.0/json"
+    },
+    {
+      "filename": "typing_extensions-4.15.0-py3-none-any.whl",
+      "name": "typing-extensions",
+      "version": "4.15.0",
+      "sha256": "f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548",
+      "size": 44614,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/typing-extensions/4.15.0/json"
+    },
+    {
+      "filename": "typing_inspection-0.4.2-py3-none-any.whl",
+      "name": "typing-inspection",
+      "version": "0.4.2",
+      "sha256": "4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7",
+      "size": 14611,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/typing-inspection/0.4.2/json"
+    },
+    {
+      "filename": "uvicorn-0.52.4-py3-none-any.whl",
+      "name": "uvicorn",
+      "version": "0.52.4",
+      "sha256": "f86e41a149d7d05a9969337e3946a9c171c06a5d42680896daaba624aeac8da1",
+      "size": 79871,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/uvicorn/0.52.4/json"
+    },
+    {
+      "filename": "zstandard-0.25.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "name": "zstandard",
+      "version": "0.25.0",
+      "sha256": "6dffecc361d079bb48d7caef5d673c88c8988d3d33fb74ab95b7ee6da42652ea",
+      "size": 5063012,
+      "kind": "wheel",
+      "source": "https://pypi.org/pypi/zstandard/0.25.0/json"
+    }
+  ],
+  "ubuntu_indexes": [
+    {
+      "suite": "noble",
+      "component": "main",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble/main/binary-arm64/Packages.xz",
+      "sha256": "4a1901e6124fb0a111f5dffc8f5c14474f449e2ecfa71f2eaf0b29917edb53f9",
+      "size": 1376632,
+      "inrelease_sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+      "independent_gpg_verified": false
+    },
+    {
+      "suite": "noble",
+      "component": "universe",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble/universe/binary-arm64/Packages.xz",
+      "sha256": "6df230cf5cfebcbd59e4e2713b8eed07dc0aaed66fb471ebf046cb70ccb07275",
+      "size": 15313828,
+      "inrelease_sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+      "independent_gpg_verified": false
+    },
+    {
+      "suite": "noble-updates",
+      "component": "main",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-updates/main/binary-arm64/Packages.xz",
+      "sha256": "5deada790dab71833bcd8324dabdea346e49aa3b87f6baab86834591ae46fe4c",
+      "size": 1506872,
+      "inrelease_sha256": "b3b3351a7d20dfb77fcdc97d602da9f841c2723ea3755344269bf3edd28e61bf",
+      "independent_gpg_verified": false
+    },
+    {
+      "suite": "noble-updates",
+      "component": "universe",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-updates/universe/binary-arm64/Packages.xz",
+      "sha256": "e0a9a4662ac6af29504e9337c0004cf1640a91398844af9b88e9c914caeeeb9f",
+      "size": 1770056,
+      "inrelease_sha256": "b3b3351a7d20dfb77fcdc97d602da9f841c2723ea3755344269bf3edd28e61bf",
+      "independent_gpg_verified": false
+    }
+  ]
+}

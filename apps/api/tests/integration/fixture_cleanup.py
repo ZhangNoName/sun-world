@@ -18,6 +18,9 @@ from cleanup_diagnostics import read_worker_diagnostics, worker_stop_observation
 
 
 class FixtureCleanupMixin:
+    async def close_owned_containment(self):
+        """An explicit platform fixture may own an additional resource tree."""
+
     def recorded_groups(self):
         path = self.root / 'workspaces/fixture-processes.jsonl'
         if not path.exists():
@@ -203,6 +206,7 @@ class FixtureCleanupMixin:
                 assert all(key.startswith(self.namespace) for key in keys)
                 client.delete(*keys)
         await attempt('redis_drop', lambda: asyncio.to_thread(drop_redis))
+        await attempt('sdk_group_remains', self.close_owned_containment)
         if not errors:
             await attempt('workspace_remove', lambda: asyncio.to_thread(shutil.rmtree, self.root))
         if errors:

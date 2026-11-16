@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：Linux 正式 API 与三库 SDK 合成整栈通过
+
+- 基点d73f3ac，新增显式`--stack` guest profile/固定67资产与261源，真实Python3.12.13/36wheel、MySQL8.4.13/Redis7.0.15/MongoDB8.0.38与正式API/mTLS/固定SDK均在同一Linux，不用Mac API拼接。资产仅固定公开URL/hash，Poetry wheel逐核；MySQL相同目录header例外限单recipe，stack有界8GiB解析/2GiB选择/512MiB单项，旧profile不变。guest2CPU/8GiB仅测试，任务仍512MiB/64，官方key不入guest。
+- Node可信CLI选独立Linux fixture协议，原ready/stopped不变，复用生产launchSpec与固定/gateway/socket；bootstrap记录实际host PID，固定有界内核观察写私有controller根。Python父先登记当次cgroup树，诊断故障仍独立回收；旧PID只probe，不接管。正常确认关闭后释放，Worker crash无ACK仍保额度。
+- native1 SDK父死亡保护先杀SDK，强求仍活SDK导致最后断言失败（前五通过）；不关闭保护，改由仍活父创建/登记/移动同leaf的静态等待Popen，Worker wait后先核其仍活、再cgroup.kill+Popen.wait==-SIGKILL证明补偿。SDK先消失与正对照分开。native2六场景通过但修前；复审P2发现已登记workspace移走不能当relayclosed，补lstat/已知identity缺失拒绝及真实UDS rename回归；native3最终六场景/六SDK/十合成请求/四工具/五正常ACK/一父补偿全部通过。
+- 最终原49零skip+九隔离+五网关+组件SDK均保持；正式peak111472640、OOM/pids超限0。三库Popen/数据根、relay/CG/workspace与宿主started/stopped/completed/组/root全核。实际parsed2944563460/selected1799988004/initrd774605928，见[原生实证](../../evaluations/agent-linux-stack-2026-11-17/README.md)。判官独立strict V4/261SHA、不变67资产/36wheel复核，无剩余确认阻断；287源working/index摘要绑定源码暂存树。
+- 命令：维护的`test-agent-linux-vm.py --stack`最终native3；`corepack pnpm check:api`859/32.978秒，`test:agent-worker`164/9.414秒；fresh prepared Mac原六场景通过。adapter七项含活UDS移走/断链、AST14/shell2/定向Prettier/diff通过。根format仅原有素材manifest失败，不改该dirty，不称root/Web全绿。预构建失败、首次下载超时/续传、libaio固定镜像同官方SHA、无独立GPG验签限制均保留。
+- 博客04同题更新父死亡保护、补偿正对照与业务确认区别；后端/架构笔记/Agent/DeepSeek Harness，保两透明关系图，1280/390实渲7ID/31重点/无缩进溢出、两图360/~342，未发布。原dirty renderer/CSS不入提交。
+- 状态：只中文本地提交，不推送部署；现有3030/8032/3033及原80dirty/主handoff原210加1删保留。当前页面仍原开发SQLite/官方profile，本轮不改模型或配置。`linux_formal_stack_synthetic_verified=true`，fullperrun/P1/A–D仍未完成；真实provider跨Linux、人工语义、生产模型版本、目标库/备份/TLS运维与无人值守旧树恢复待验。下一步在保持固定通道及密钥边界下验证真实供应商组合。Claude Code/claude-ds继续前读[本轮协议](../../development/agent-linux-stack.md)。
+
 ### 2026-11-17 最新 checkpoint：Linux 固定网关与真实 SDK 组件通过
 
 - 基点495a365；SDK通知收集竞态先保存为a56ab5a。Linux launcher同步登记cgroup与未启动relay，再准备socket；每run只绑定/gateway/socket，固定literal IP/port透明转发、端到端mTLS固定Host/SNI/identity，无DNS/CONNECT/环境代理/fallback。8连接/每连接双向1MiB/建连2秒/绝对45秒，half-close分方向排空；整树stop→relay closed→release→工作目录，未知保handle/slot。
