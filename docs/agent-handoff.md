@@ -1,5 +1,9 @@
 ﻿## Current Handoff
 
+### 2026-11-17 Linux固定网关与真实SDK组件
+
+原49协议+九隔离+五网关+原SDK入口在原生Linux通过，SDK成功/来源/重复/取消/EACCES保槽重试与Mac fresh复验通过；API828/Worker151，65源/12SDK源/4ELF及strict v3独立核对。SDK通知顺序竞态已修（a56ab5a），前五失败保留。正式API/三库/供应商Linux组合、人工及生产门槛仍待，P1/A–D未完成；博客04更新/1280与390预览未发布，原dirty保留，不推送部署。详见[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)与[安全实证](evaluations/agent-linux-gateway-2026-11-17/README.md)。
+
 ## 2026-11-17 Linux逐任务资源/文件组件
 
 已实现真实cgroup2/bubblewrap/ProcessRunner启动与同步containment所有权、整树stop-release及预spawn未知保槽；37源/六资产原生49协议零skip+九情景通过，真实512MiB OOM/64task EAGAIN、跨run FS/7ns/caps、setsid取消/deadline、未知/重启实例拒旧树均核。API818/31.119秒、Worker116/9.318秒与独立复审通过；P2晚校验无效handle/半写proof已修，失败历史与cold SIGABRT不误作UV初因。[协议](development/agent-linux-containment.md)、[证据](evaluations/agent-linux-containment-2026-11-17/README.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。下一步限定合法网关及真实SDK在Linux运行/容量；完整隔离和生产仍关闭。博客04同题补所有权，1280/390预览29重点，未发布；现有站点/80dirty及旧handoff210加1删保留，只中文本地提交不推送部署。人工/版本生产策略/TLS/目标库备份等仍独立待，P1/A–D未整体完成。

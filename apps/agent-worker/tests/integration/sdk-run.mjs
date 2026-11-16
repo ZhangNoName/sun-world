@@ -1,5 +1,6 @@
 // Explicit fixed-SDK integration with synthetic Messages and public articles.
-// This is not a model quality evaluation or Linux isolation acceptance.
+// The explicit Linux flag uses the owned cgroup/fixed-gateway fixture; neither
+// profile is a model-quality or formal business-database acceptance.
 import assert from 'node:assert/strict'
 import { once } from 'node:events'
 import fs, { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
@@ -11,9 +12,18 @@ import { randomUUID } from 'node:crypto'
 import { createSdkWorker } from '../../src/worker.mjs'
 import { hashJson, parseJson, toolCatalog } from '../../src/rpc-validation.mjs'
 import { runInput, tlsFixture } from '../protocol/test-helpers.mjs'
+import { linuxSdkFixture } from './linux-sdk-fixture.mjs'
 
 const runtime = process.argv[2]
-if (!runtime || !isAbsolute(runtime) || process.platform !== 'darwin')
+const linux =
+  process.argv[3] === '--linux-gateway' && process.platform === 'linux'
+if (
+  !runtime ||
+  !isAbsolute(runtime) ||
+  (!linux && process.platform !== 'darwin') ||
+  (process.argv[3] !== undefined && !linux) ||
+  process.argv.length > 4
+)
   throw new Error(
     'Usage: node sdk-run.mjs /absolute/prepared/runtime (macOS sandbox-exec required)'
   )
@@ -21,10 +31,13 @@ const cleanup = []
 const testScope = { after: (callback) => cleanup.push(callback) }
 let server, worker
 const cleanupEvents = []
+let linuxProof
 try {
   const tls = await tlsFixture(testScope)
   const workspaceRoot = await mkdtemp(
-    join(tmpdir(), 'sun-world-sdk-integration-')
+    linux
+      ? '/run/sun-world-sdk-integration-'
+      : join(tmpdir(), 'sun-world-sdk-integration-')
   )
   cleanup.push(() => rm(workspaceRoot, { recursive: true, force: true }))
   const policy = join(workspaceRoot, 'isolation.sb')
@@ -207,6 +220,14 @@ try {
   )
   server.listen(0, '127.0.0.1')
   await once(server, 'listening')
+  const linuxFixture = linux
+    ? await linuxSdkFixture({
+        runtimeDirectory: runtime,
+        workspaceRoot,
+        targetPort: server.address().port,
+        cleanup,
+      })
+    : undefined
   worker = await createSdkWorker({
     runtimeDirectory: runtime,
     workspaceRoot,
@@ -215,19 +236,22 @@ try {
     gatewayOrigin: `https://localhost:${server.address().port}`,
     gatewayCredential: 's'.repeat(43),
     gatewayTls: tls,
+    ...(linux && { gatewaySocketPath: '/gateway/socket' }),
     serviceCredential: 'c'.repeat(43),
     listenerTls: tls,
     verifyPeer: (socket) => socket.authorized === true,
     onCleanupDiagnostic: (event) => cleanupEvents.push(event),
-    launchSpec: () => ({
-      command: '/usr/bin/sandbox-exec',
-      args: [
-        '-f',
-        policy,
-        process.execPath,
-        join(runtime, 'sdk-execution.mjs'),
-      ],
-    }),
+    launchSpec:
+      linuxFixture?.launchSpec ??
+      (() => ({
+        command: '/usr/bin/sandbox-exec',
+        args: [
+          '-f',
+          policy,
+          process.execPath,
+          join(runtime, 'sdk-execution.mjs'),
+        ],
+      })),
   })
   worker.server.listen(0, '127.0.0.1')
   await once(worker.server, 'listening')
@@ -428,11 +452,29 @@ try {
     'Worker mTLS + fixed SDK: duplicate start ran once, 3 synthetic Messages responses, 2 tools, UUID/root result and active-SDK cancellation verified.'
   )
   console.log(
-    'Owned process group/home reclaimed; macOS loopback sandbox and mTLS fixture only; no real model or database used.'
+    linux
+      ? 'Owned cgroup/process group/home and fixed-gateway relays reclaimed; Linux mTLS fixture only; no real model or database used.'
+      : 'Owned process group/home reclaimed; macOS loopback sandbox and mTLS fixture only; no real model or database used.'
   )
   console.log(
     'Actual SDK cleanup fault: first directory removal refused, capacity retained, safe diagnostic observed, retry confirmed recovery without replay.'
   )
+  if (linux)
+    linuxProof = {
+      version: 'sun-world-linux-sdk-result/1',
+      fixed_sdk_version: '0.2.2-rc.1',
+      synthetic_model_responses: models,
+      sdk_wait_cancel_model_responses: cancelModels,
+      idempotent_single_start: true,
+      cancel_before_start: true,
+      active_sdk_cancel: true,
+      cleanup_failure_retained_slot: true,
+      root_uuid_receipts_result: true,
+      mutual_tls_and_gateway_socket: true,
+      real_supplier_requests: 0,
+      real_database_requests: 0,
+      ...(await linuxFixture.verify()),
+    }
 } finally {
   if (worker) await worker.close()
   if (server) {
@@ -441,3 +483,4 @@ try {
   }
   for (const callback of cleanup.reverse()) await callback()
 }
+if (linuxProof) console.log('SW_LINUX_SDK_RESULT ' + JSON.stringify(linuxProof))

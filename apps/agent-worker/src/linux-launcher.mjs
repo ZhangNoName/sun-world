@@ -2,11 +2,11 @@
 import fs from 'node:fs/promises'
 import { dirname, join, relative, posix } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { performance } from 'node:perf_hooks'
-import { setTimeout as pause } from 'node:timers/promises'
+import { containmentFor } from './linux-containment-state.mjs'
+import { createFixedGatewayRelay } from './gateway-relay.mjs'
+import { gatewayRelaySettings, inspectGatewaySocket } from './linux-gateway.mjs'
 
 import {
-  CGROUP2,
   fail,
   matches,
   nested,
@@ -15,8 +15,6 @@ import {
   inspectCgroupRoot,
   read,
   write,
-  numbers,
-  number,
 } from './linux-containment-paths.mjs'
 export {
   inspectTrustedPath,
@@ -44,6 +42,7 @@ function settings(options) {
           'bubblewrapPath',
           'nodePath',
           'entry',
+          'gatewayRelay',
         ].includes(key)
     )
   )
@@ -54,6 +53,9 @@ function settings(options) {
     bubblewrapPath: pathText(options.bubblewrapPath ?? '/usr/local/bin/bwrap'),
     nodePath: pathText(options.nodePath ?? '/usr/local/bin/node'),
     entry: options.entry ?? 'sdk-execution.mjs',
+    ...(options.gatewayRelay !== undefined && {
+      gatewayRelay: gatewayRelaySettings(options.gatewayRelay),
+    }),
   }
   if (
     result.cgroupRoot === '/' ||
@@ -99,7 +101,7 @@ async function validatePaths(config, workspace) {
   await inspectTrustedPath(wrapper, { directory: false })
 }
 
-export function bubblewrapArguments(config, workspace) {
+export function bubblewrapArguments(config, workspace, gatewaySocketPath) {
   return [
     '--unshare-user',
     '--unshare-pid',
@@ -113,6 +115,9 @@ export function bubblewrapArguments(config, workspace) {
     '--new-session',
     '--die-with-parent',
     '--clearenv',
+    ...(gatewaySocketPath === undefined
+      ? []
+      : ['--ro-bind', gatewaySocketPath, '/gateway/socket']),
     '--ro-bind',
     '/usr',
     '/usr',
@@ -157,117 +162,6 @@ export function bubblewrapArguments(config, workspace) {
     '/runtime/' + config.entry,
   ]
 }
-function containmentFor(config, rootIdentity, leaf, owned, forget) {
-  let leafIdentity,
-    released = false,
-    releaseAttempted = false,
-    emptyConfirmed = false,
-    configured = false,
-    cached,
-    tail = Promise.resolve()
-  const serial = (operation) => {
-    const task = tail.then(operation)
-    tail = task.catch(() => {})
-    return task.catch(() => {
-      throw fail()
-    })
-  }
-  const verify = async (strict = configured) => {
-    await inspectCgroupRoot(config.cgroupRoot, rootIdentity)
-    try {
-      const info = await inspectTrustedPath(leaf, {
-        privateDirectory: strict,
-        ownerOnly: true,
-      })
-      if (
-        (leafIdentity && !matches(info, leafIdentity)) ||
-        (await fs.statfs(leaf)).type !== CGROUP2
-      )
-        throw fail()
-      leafIdentity ??= info
-    } catch (error) {
-      if (error?.code === 'ENOENT' && releaseAttempted && emptyConfirmed) {
-        released = true
-        forget()
-        return false
-      }
-      throw error
-    }
-    return true
-  }
-  const empty = async () => {
-    const events = numbers(await read(join(leaf, 'cgroup.events')))
-    const procs = await read(join(leaf, 'cgroup.procs'))
-    if (
-      ![0, 1].includes(events.populated) ||
-      (procs && !/^[0-9]+(?:\n[0-9]+)*$/.test(procs))
-    )
-      throw fail()
-    return events.populated === 0 && procs === ''
-  }
-  const snapshot = async () => {
-    const mem = numbers(await read(join(leaf, 'memory.events'))),
-      pids = numbers(await read(join(leaf, 'pids.events')))
-    const populated = numbers(await read(join(leaf, 'cgroup.events'))).populated
-    const value = {
-      memory_current_bytes: number(await read(join(leaf, 'memory.current'))),
-      memory_peak_bytes: number(await read(join(leaf, 'memory.peak'))),
-      memory_max_bytes: number(await read(join(leaf, 'memory.max'))),
-      swap_max_bytes: number(await read(join(leaf, 'memory.swap.max'))),
-      pids_current: number(await read(join(leaf, 'pids.current'))),
-      pids_max: number(await read(join(leaf, 'pids.max'))),
-      memory_oom: mem.oom,
-      memory_oom_kill: mem.oom_kill,
-      memory_limit_events: mem.max,
-      pids_limit_events: pids.max,
-      populated,
-    }
-    if (
-      Object.values(value).some((n) => !Number.isSafeInteger(n) || n < 0) ||
-      ![0, 1].includes(populated)
-    )
-      throw fail()
-    return Object.freeze(value)
-  }
-  const ownedHandle = Object.freeze({
-    stop: () =>
-      serial(async () => {
-        if (released || !(await verify())) return
-        await write(join(leaf, 'cgroup.kill'), '1')
-        const deadline = performance.now() + 2000
-        while (!(await empty())) {
-          if (performance.now() >= deadline) throw fail()
-          await pause(10)
-        }
-      }),
-    release: () =>
-      serial(async () => {
-        if (released || !(await verify())) return cached
-        if (!(await empty())) throw fail()
-        cached = configured ? await snapshot() : undefined
-        emptyConfirmed = true
-        releaseAttempted = true
-        await fs.rmdir(leaf)
-        released = true
-        forget()
-        return cached
-      }),
-    snapshot: () =>
-      serial(async () => (released || !(await verify()) ? cached : snapshot())),
-  })
-  const state = {
-    handle: ownedHandle,
-    verify,
-    identity: () => leafIdentity,
-    released: () => released,
-    configured: () => {
-      configured = true
-    },
-  }
-  owned.set(leaf, state)
-  return state
-}
-
 export function createLinuxLaunchSpec(options) {
   const config = settings(options),
     owned = new Map()
@@ -322,14 +216,32 @@ export function createLinuxLaunchSpec(options) {
           if ((await read(join(leaf, name))) !== value) throw fail()
         }
         state.configured()
+        let gateway
+        if (config.gatewayRelay !== undefined) {
+          const relay = createFixedGatewayRelay({
+            directory: dirname(workspace),
+            ...config.gatewayRelay,
+          })
+          state.attachRelay(relay)
+          const gatewaySocketPath = await relay.ready()
+          gateway = {
+            gatewaySocketPath,
+            gatewaySocketIdentity:
+              await inspectGatewaySocket(gatewaySocketPath),
+          }
+        }
+        const { gatewayRelay: _, ...executionConfig } = config
         return {
           command: config.nodePath,
           args: [
             '--disable-warning=ExperimentalWarning',
             wrapper,
             JSON.stringify({
-              version: 'sun-world-linux-launch/1',
-              ...config,
+              version: gateway
+                ? 'sun-world-linux-launch/2'
+                : 'sun-world-linux-launch/1',
+              ...executionConfig,
+              ...gateway,
               workspace,
               leaf,
               rootIdentity,
@@ -341,6 +253,7 @@ export function createLinuxLaunchSpec(options) {
       } catch {
         if (state) {
           try {
+            await state.handle.stop()
             await state.handle.release()
           } catch {
             blocked = state
@@ -367,13 +280,18 @@ export async function executeLinuxLaunch(value) {
     'leaf',
     'rootIdentity',
     'leafIdentity',
+    ...(value?.version === 'sun-world-linux-launch/2'
+      ? ['gatewaySocketPath', 'gatewaySocketIdentity']
+      : []),
   ]
   if (
     process.platform !== 'linux' ||
     typeof process.execve !== 'function' ||
     !value ||
     Object.keys(value).sort().join() !== keys.sort().join() ||
-    value.version !== 'sun-world-linux-launch/1'
+    !['sun-world-linux-launch/1', 'sun-world-linux-launch/2'].includes(
+      value.version
+    )
   )
     throw fail()
   const config = settings(
@@ -392,7 +310,11 @@ export async function executeLinuxLaunch(value) {
     !/^run-[A-Za-z0-9]{6}$/.test(value.leaf.slice(config.cgroupRoot.length + 1))
   )
     throw fail()
-  for (const info of [value.rootIdentity, value.leafIdentity])
+  for (const info of [
+    value.rootIdentity,
+    value.leafIdentity,
+    ...(value.version.endsWith('/2') ? [value.gatewaySocketIdentity] : []),
+  ])
     if (
       !info ||
       Object.keys(info).sort().join() !== 'dev,ino' ||
@@ -401,6 +323,17 @@ export async function executeLinuxLaunch(value) {
     )
       throw fail()
   await validatePaths(config, value.workspace)
+  if (value.version.endsWith('/2')) {
+    if (
+      !matches(
+        await inspectGatewaySocket(value.gatewaySocketPath),
+        value.gatewaySocketIdentity
+      )
+    )
+      throw fail()
+    if (dirname(dirname(value.gatewaySocketPath)) !== dirname(value.workspace))
+      throw fail()
+  }
   await inspectCgroupRoot(config.cgroupRoot, value.rootIdentity)
   if (
     !matches(
@@ -438,7 +371,10 @@ export async function executeLinuxLaunch(value) {
     throw fail()
   process.execve(
     config.bubblewrapPath,
-    [config.bubblewrapPath, ...bubblewrapArguments(config, value.workspace)],
+    [
+      config.bubblewrapPath,
+      ...bubblewrapArguments(config, value.workspace, value.gatewaySocketPath),
+    ],
     { PATH: '/usr/bin:/bin' }
   )
   throw fail()

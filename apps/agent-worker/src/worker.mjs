@@ -19,6 +19,7 @@ export async function createSdkWorker({
   gatewayOrigin,
   gatewayCredential,
   gatewayTls = {},
+  gatewaySocketPath,
   serviceCredential,
   listenerTls,
   verifyPeer,
@@ -30,7 +31,8 @@ export async function createSdkWorker({
   if (
     !isAbsolute(runtimeDirectory) ||
     typeof launchSpec !== 'function' ||
-    bundleHash !== toolCatalog.bundle_hash
+    bundleHash !== toolCatalog.bundle_hash ||
+    (gatewaySocketPath !== undefined && gatewaySocketPath !== '/gateway/socket')
   )
     throw invalid()
   const url = new URL(gatewayOrigin)
@@ -83,6 +85,9 @@ export async function createSdkWorker({
     input: (run) => ({
       run,
       gateway_origin: url.origin,
+      ...(gatewaySocketPath !== undefined && {
+        gateway_socket_path: gatewaySocketPath,
+      }),
       service_credential: gatewayCredential,
       tls,
     }),

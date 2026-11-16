@@ -42,6 +42,7 @@ const gateway = new GatewayClient({
   serviceCredential: input.service_credential,
   run,
   tls: input.tls || {},
+  socketPath: input.gateway_socket_path,
 })
 const home = process.env.HOME
 const cwd = process.cwd()

@@ -328,7 +328,7 @@ class AgentLinuxGuestArchiveTests(unittest.TestCase):
             elif isinstance(node, ast.ImportFrom):
                 imports.add(node.module.split('.')[0])
         self.assertLessEqual(imports, {'argparse', 'gzip', 'hashlib', 'io', 'json', 'os', 'pathlib',
-                                      'posixpath', 're', 'stat', 'sys', 'tarfile', 'zstandard'})
+                                      'posixpath', 're', 'stat', 'sys', 'tarfile', 'zstandard', 'importlib'})
 
     def test_additional_zstd_deb_is_bounded_single_known_size_frame_without_host_extraction(self):
         import zstandard

@@ -1,0 +1,71 @@
+{
+  "version": "sun-world-linux-gateway-development-attempts/1",
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "failed",
+      "observation": "fixture_tls_buffer_json",
+      "console_sha256": "faa470353f5291f49bef192ef11aea0c64c016b0f4674516b6fb97ce2f78bfc5",
+      "host_stopped_independently_confirmed": true,
+      "original_protocol_tests": 49,
+      "original_protocol_skipped": 0,
+      "containment_cases": 9,
+      "gateway_cases": 0,
+      "sdk_passed": false
+    },
+    {
+      "attempt": 2,
+      "status": "failed",
+      "observation": "guest_controller_localhost_missing",
+      "console_sha256": "eebc13bc84a568b844bf798893053e82de6b63a08fb21546d900ce8495079a67",
+      "host_stopped_independently_confirmed": true,
+      "original_protocol_tests": 49,
+      "original_protocol_skipped": 0,
+      "containment_cases": 9,
+      "gateway_cases": 5,
+      "sdk_passed": false
+    },
+    {
+      "attempt": 3,
+      "status": "failed",
+      "observation": "sdk_root_result_rejected",
+      "console_sha256": "58edd41e0bb2d86dd78f7d3971c9e62a0650aa4201d2bd85f4e9a41e64e41699",
+      "host_stopped_independently_confirmed": true,
+      "original_protocol_tests": 49,
+      "original_protocol_skipped": 0,
+      "containment_cases": 9,
+      "gateway_cases": 5,
+      "sdk_passed": false
+    },
+    {
+      "attempt": 4,
+      "status": "failed",
+      "observation": "sdk_root_result_resources_excluded",
+      "console_sha256": "0d095b49e74c444978a4b3664597ddd70ce65a4a4936fdadb24dba7e8ca44f7f",
+      "host_stopped_independently_confirmed": true,
+      "original_protocol_tests": 49,
+      "original_protocol_skipped": 0,
+      "containment_cases": 9,
+      "gateway_cases": 5,
+      "sdk_passed": false
+    },
+    {
+      "attempt": 5,
+      "status": "failed",
+      "observation": "sdk_wire_projection_valid_collector_rejected",
+      "console_sha256": "42863197bea177b87b995be6933f75b6200a8753e607de6c92f59f327b908163",
+      "host_stopped_independently_confirmed": true,
+      "original_protocol_tests": 49,
+      "original_protocol_skipped": 0,
+      "containment_cases": 9,
+      "gateway_cases": 5,
+      "sdk_passed": false
+    }
+  ],
+  "final_attempt": 6,
+  "final_status": "passed",
+  "final_entry": "sdk-execution.mjs",
+  "diagnostic_wrapper_removed": true,
+  "root_collector_race_independently_reproduced": true,
+  "root_collector_strict_checks_preserved": true
+}

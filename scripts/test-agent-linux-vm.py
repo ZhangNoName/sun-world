@@ -161,7 +161,8 @@ def valid_host(value):
                                'startup_failed', 'guest_error'})
 
 
-def verify_console(raw, control, *, containment=False):
+def verify_console(raw, control, *, containment=False, gateway=False):
+    containment = containment or gateway
     host = only_json(control, 'SW_LINUX_HOST_RESULT')
     guest = only_json(raw, 'SW_LINUX_GUEST_RESULT')
     probe = only_json(raw, 'SW_LINUX_PROBE')
@@ -188,7 +189,8 @@ def verify_console(raw, control, *, containment=False):
     if type(probe.get('kernel')) is not str or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+[A-Za-z0-9._+~-]{0,100}', probe['kernel']):
         fail()
     memory = probe.get('memory_bytes')
-    if type(memory) is not int or not 1073741824 <= memory <= 2147483648:
+    lower, upper = (3221225472, 4294967296) if gateway else (1073741824, 2147483648)
+    if type(memory) is not int or not lower <= memory <= upper:
         fail()
     before_clock = probe.get('clock_before_seed_seconds')
     if type(before_clock) is not int or not 0 <= before_clock <= 4102444800:
@@ -226,6 +228,31 @@ def verify_console(raw, control, *, containment=False):
             linux_resource_filesystem_containment_verified=True)
     elif any(line.startswith(b'SW_LINUX_CONTAINMENT_RESULT') for line in raw.splitlines()):
         fail()
+    if gateway:
+        network = only_json(raw, 'SW_LINUX_GATEWAY_RESULT')
+        expected = {'version': 'sun-world-linux-gateway-result/1', 'cases': 5, 'approved_heartbeat_requests': 3,
+            'mutual_tls_verified': True, 'server_name_rejected': True, 'missing_client_certificate_rejected': True,
+            'raw_ipv4_denied': True, 'raw_ipv6_denied': True, 'root_loopback_denied': True, 'udp_dns_denied': True,
+            'own_loopback_allowed': True, 'cross_run_socket_hidden': True, 'active_stream_cancelled': True,
+            'relay_listener_and_connections_closed': True, 'cgroups_removed': True, 'workspaces_removed': True,
+            'supplier_requests': 0, 'database_requests': 0}
+        if set(network) != set(expected) or any(type(network[k]) is not type(v) or network[k] != v for k,v in expected.items()):
+            fail()
+        sdk = only_json(raw, 'SW_LINUX_SDK_RESULT')
+        expected = {'version': 'sun-world-linux-sdk-result/1', 'fixed_sdk_version': '0.2.2-rc.1',
+            'synthetic_model_responses': 3, 'sdk_wait_cancel_model_responses': 1, 'idempotent_single_start': True,
+            'cancel_before_start': True, 'active_sdk_cancel': True, 'cleanup_failure_retained_slot': True,
+            'root_uuid_receipts_result': True, 'mutual_tls_and_gateway_socket': True,
+            'real_supplier_requests': 0, 'real_database_requests': 0, 'memory_max_bytes': 536870912,
+            'pids_max': 64, 'executions_reaped': 2, 'relay_connections_closed': True, 'cgroups_empty': True}
+        if set(sdk) != set(expected) | {'maximum_memory_peak_bytes'} or any(type(sdk[k]) is not type(v) or sdk[k] != v for k,v in expected.items()):
+            fail()
+        if type(sdk['maximum_memory_peak_bytes']) is not int or not 1 <= sdk['maximum_memory_peak_bytes'] <= 536870912:
+            fail()
+        result.update(version='sun-world-linux-native-validation/3', gateway=network, sdk=sdk,
+            linux_gateway_egress_verified=True, linux_sdk_synthetic_verified=True)
+    elif any(line.startswith((b'SW_LINUX_GATEWAY_RESULT', b'SW_LINUX_SDK_RESULT')) for line in raw.splitlines()):
+        fail()
     return result
 
 
@@ -257,9 +284,10 @@ def main(argv=None):
     parser.add_argument('--cache', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--containment', action='store_true')
+    parser.add_argument('--gateway', action='store_true')
     arguments = parser.parse_args(argv)
     try:
-        if (sys.platform != 'darwin' or not arguments.cache.is_absolute()
+        if (arguments.gateway and arguments.containment or sys.platform != 'darwin' or not arguments.cache.is_absolute()
                 or not arguments.report.is_absolute() or not arguments.report.parent.is_dir()
                 or arguments.report.exists() or Path(str(arguments.report) + '.console.log').exists()):
             fail()
@@ -271,8 +299,8 @@ def main(argv=None):
                 run = Path(temporary)
                 execute([sys.executable, str(ROOT / 'scripts/prepare-agent-linux-guest.py'),
                     '--cache', str(arguments.cache), '--output', str(run / 'guest.initrd'),
-                    *(['--containment'] if arguments.containment else [])],
-                    state=state, directory=run, timeout=90, confirmations=confirmations)
+                    *(['--gateway'] if arguments.gateway else ['--containment'] if arguments.containment else [])],
+                    state=state, directory=run, timeout=180 if arguments.gateway else 90, confirmations=confirmations)
                 build = json.loads((run / 'guest.initrd.manifest.json').read_text())
                 # The builder has verified the original compressed kernel bytes.
                 contract = json.loads((ROOT / 'tools/agent-linux-vm/assets.json').read_text())
@@ -290,7 +318,7 @@ def main(argv=None):
                     state=state, directory=run, timeout=15, confirmations=confirmations)
                 try:
                     console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
-                        *(['containment'] if arguments.containment else [])],
+                        *(['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
                         state=state, directory=run, timeout=110, is_vm=True, confirmations=confirmations)
                 finally:
                     log = run / 'console.log'
@@ -300,7 +328,7 @@ def main(argv=None):
                             target.write(log.read_bytes())
                             target.flush()
                             os.fsync(target.fileno())
-                result = verify_console(console, control, containment=arguments.containment)
+                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway)
                 result['guest_build'] = build
                 result['kernel_image_sha256'] = hashlib.sha256(kernel).hexdigest()
                 result['owned_groups_gone'] = confirmations['groups_gone']

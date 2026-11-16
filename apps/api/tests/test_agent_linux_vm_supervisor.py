@@ -38,6 +38,55 @@ def sample():
 
 
 class LinuxVmProofTests(unittest.TestCase):
+    def test_gateway_requires_both_transport_and_real_sdk_proof_with_bounded_actual_memory(self):
+        raw, control, _, probe, _ = sample()
+        raw = raw.replace(frame('SW_LINUX_PROBE', probe), frame('SW_LINUX_PROBE', {**probe, 'memory_bytes': 4200000000}))
+        containment = {'version': 'sun-world-linux-containment-result/1', 'cases': 9,
+            'memory_max_bytes': 536870912, 'pids_max': 64, 'memory_oom_kills': 1, 'pids_limit_events': 1,
+            'filesystem_and_capabilities': True, 'cross_run_visibility': True,
+            'cancel_tree_reaped': True, 'deadline_tree_reaped': True, 'cgroups_removed': True,
+            'workspaces_removed': True, 'gateway_allow_path_verified': False, 'sdk_stack_verified': False,
+            'cold_pid_abort_signal_observed': True, 'cold_pids_limit_events': 1,
+            'unknown_leaf_refused': True, 'restarted_factory_refused_live_tree': True}
+        network = {'version': 'sun-world-linux-gateway-result/1', 'cases': 5, 'approved_heartbeat_requests': 3,
+            'mutual_tls_verified': True, 'server_name_rejected': True, 'missing_client_certificate_rejected': True,
+            'raw_ipv4_denied': True, 'raw_ipv6_denied': True, 'root_loopback_denied': True, 'udp_dns_denied': True,
+            'own_loopback_allowed': True, 'cross_run_socket_hidden': True, 'active_stream_cancelled': True,
+            'relay_listener_and_connections_closed': True, 'cgroups_removed': True, 'workspaces_removed': True,
+            'supplier_requests': 0, 'database_requests': 0}
+        sdk = {'version': 'sun-world-linux-sdk-result/1', 'fixed_sdk_version': '0.2.2-rc.1',
+            'synthetic_model_responses': 3, 'sdk_wait_cancel_model_responses': 1, 'idempotent_single_start': True,
+            'cancel_before_start': True, 'active_sdk_cancel': True, 'cleanup_failure_retained_slot': True,
+            'root_uuid_receipts_result': True, 'mutual_tls_and_gateway_socket': True,
+            'real_supplier_requests': 0, 'real_database_requests': 0, 'memory_max_bytes': 536870912,
+            'pids_max': 64, 'executions_reaped': 2, 'relay_connections_closed': True, 'cgroups_empty': True,
+            'maximum_memory_peak_bytes': 400000000}
+        base = raw + frame('SW_LINUX_CONTAINMENT_RESULT', containment)
+        frames = frame('SW_LINUX_GATEWAY_RESULT', network) + frame('SW_LINUX_SDK_RESULT', sdk)
+        result = vm.verify_console(base + frames, control, gateway=True)
+        self.assertTrue(result['linux_gateway_egress_verified'])
+        self.assertTrue(result['linux_sdk_synthetic_verified'])
+        self.assertFalse(result['linux_per_run_isolation_verified'])
+        for candidate in (base, base + frame('SW_LINUX_GATEWAY_RESULT', network),
+                          base + frame('SW_LINUX_SDK_RESULT', sdk), base + frames * 2):
+            with self.assertRaises(Exception):
+                vm.verify_console(candidate, control, gateway=True)
+        for proof, prefix, other in ((network, 'SW_LINUX_GATEWAY_RESULT', frame('SW_LINUX_SDK_RESULT', sdk)),
+                                     (sdk, 'SW_LINUX_SDK_RESULT', frame('SW_LINUX_GATEWAY_RESULT', network))):
+            # Every attested field is required and type-strict, including bool vs int.
+            for key, value in proof.items():
+                changed = {**proof, key: 1 if type(value) is bool else True}
+                with self.subTest(prefix=prefix, field=key), self.assertRaises(Exception):
+                    vm.verify_console(base + frame(prefix, changed) + other, control, gateway=True)
+            with self.assertRaises(Exception):
+                vm.verify_console(base + frame(prefix, {**proof, 'unreviewed': True}) + other, control, gateway=True)
+        for peak in (0, -1, 536870913):
+            with self.assertRaises(Exception):
+                vm.verify_console(base + frame('SW_LINUX_GATEWAY_RESULT', network) +
+                    frame('SW_LINUX_SDK_RESULT', {**sdk, 'maximum_memory_peak_bytes': peak}), control, gateway=True)
+        with self.assertRaises(Exception):
+            vm.verify_console(base + frames, control, containment=True)
+
     def test_containment_requires_exact_positive_resource_proof_without_claiming_network_or_sdk(self):
         raw, control, *_ = sample()
         proof = {'version': 'sun-world-linux-containment-result/1', 'cases': 9,

@@ -1,0 +1,14 @@
+{
+  "version": "sun-world-linux-gateway-assets/1",
+  "containment_assets_sha256": "da60eb094a26b4933d51bb8e8dc4ba0347709fa00a29f7c6a336bec0041a2b04",
+  "assets": [
+    {
+      "filename": "openssl.deb",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/o/openssl/openssl_3.0.13-0ubuntu3.16_arm64.deb",
+      "version": "3.0.13-0ubuntu3.16",
+      "sha256": "07fa666e2dfe758e5c4e19ccc695a19e8a56fb512fa55bd7de89219a1e65d372",
+      "max_bytes": 4194304,
+      "publisher_index": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-security/main/binary-arm64/Packages.xz"
+    }
+  ]
+}

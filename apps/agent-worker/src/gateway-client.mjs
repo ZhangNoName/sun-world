@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import https from 'node:https'
+import { isIP } from 'node:net'
+import { isAbsolute, resolve } from 'node:path'
+import { checkServerIdentity } from 'node:tls'
 import {
   canonical,
   hashJson,
@@ -21,6 +24,8 @@ export class GatewayClient {
   #credential
   #origin
   #tls
+  #socketPath
+  #hostname
   #request
   #closed = new AbortController()
   #delivered = new Set()
@@ -34,6 +39,7 @@ export class GatewayClient {
     serviceCredential,
     run,
     tls = {},
+    socketPath,
     requestImpl = https.request,
   }) {
     const url = new URL(origin)
@@ -50,13 +56,22 @@ export class GatewayClient {
       /[^A-Za-z0-9_-]/.test(serviceCredential) ||
       Object.keys(tls).some((key) => !['ca', 'cert', 'key'].includes(key)) ||
       Boolean(tls.cert) !== Boolean(tls.key) ||
-      typeof requestImpl !== 'function'
+      typeof requestImpl !== 'function' ||
+      (socketPath !== undefined &&
+        (typeof socketPath !== 'string' ||
+          !isAbsolute(socketPath) ||
+          resolve(socketPath) !== socketPath ||
+          socketPath === '/' ||
+          Buffer.byteLength(socketPath) > 103 ||
+          /[\x00-\x20\x7f]/.test(socketPath)))
     )
       throw rejected()
     this.#run = validateRpc('ExecutionStart', run)
     this.#credential = serviceCredential
     this.#origin = url.origin
     this.#tls = { ...tls }
+    this.#socketPath = socketPath
+    this.#hostname = url.hostname.replace(/^\[|\]$/g, '')
     this.#request = requestImpl
   }
 
@@ -86,6 +101,14 @@ export class GatewayClient {
           ),
           {
             ...this.#tls,
+            ...(this.#socketPath !== undefined && {
+              socketPath: this.#socketPath,
+              servername: isIP(this.#hostname) ? undefined : this.#hostname,
+              // UDS selects only the transport. Certificate identity remains
+              // bound to the immutable HTTPS origin, including IP SANs.
+              checkServerIdentity: (_, certificate) =>
+                checkServerIdentity(this.#hostname, certificate),
+            }),
             method: 'POST',
             agent: false,
             rejectUnauthorized: true,

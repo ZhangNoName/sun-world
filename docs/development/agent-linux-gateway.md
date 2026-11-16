@@ -1,0 +1,51 @@
+# Linux 固定网关通道与 SDK 接续
+
+2026-11-17，基点495a365。接续[逐任务隔离](agent-linux-containment.md)，当前新增通道与SDK组合正在逐层验收，不能用全部断网完成网络门槛。目标是在原真实ProcessRunner/cgroup/bubblewrap路径只允许固定网关、保留端到端mTLS，再实测固定SDK的启动/工具/模型/结果及取消；不改变站点现有入口、官方模型目录或生产准入。
+
+## 通道边界
+
+任务仍使用独立netns且无外部接口，不增加任意TCP路由。可信控制器在每任务workspace的私有父目录新建独占Unix socket relay根（不挂给任务），只将该socket inode绑定到固定/gateway/socket。relay仅把字节转发到服务器配置的一个明确IP/端口，无DNS、客户端目标参数、CONNECT选择、重定向、重试或fallback；SDK/模型只能选原固定内部网关，不能通过run指定目标。
+
+TLS仍从任务内GatewayClient直达固定网关，relay不终止TLS、不持有TLS或供应商密钥、不读取/记录正文、headers或错误自由文本。Client的socketPath是可信启动配置，固定origin继续提供Host与显式SNI/hostname校验，默认CA与双向身份、rejectUnauthorized/TLS最低版本维持；UDS不是绕开证书验证的理由。readonly绑定socket仍允许RPC字节，不代表API只读；只读能力与run/audience授权继续由网关执行。
+
+每任务relay固定最多8个已接受连接、每连接总量1MiB、建连最多2秒/绝对寿命45秒（不是可被流量续期的idle timer），正确背压。所有接收/在途TCP socket先登记再操作，连接失败/超量/关闭均回收两端，不重试不换目的地址。Client禁代理环境与任意TLS/socket override；默认不配置socket仍按原HTTPS路径，不能因UDS失败自动退到TCP。
+
+正常half-close须分方向：上传EOF只.end上游写端，反向仍等待自己的EOF及queued writes排空；错误、取消与绝对deadline才整对hard teardown。新增真实回归曾观察请求完整但响应0/262144，已在relay内改allowHalfOpen并保留该回归，不以单向EOF大响应通过反证半关闭正确。
+
+## 生命周期与文件
+
+relay构造同步返回owned handle、ready单独启动。Linux launcher先创建cgroup并同步registerContainment，再把尚未启动的relay handle挂入同一containment，才await其ready；准备失败、deadline/取消均走同一已登记资源清理。relay根是服务器私有workspaces父目录下的新 sibling，只读绑定单socket，任务看不到根或其他运行的socket，不能通过/work改写其控制路径。
+
+stop先结束并确认整cgroup，再close本任务relay所有连接/监听器；只有listener与连接确认为静止并确认私有根inode后才能删socket空根，最后release cgroup，再由ProcessRunner确认原组gone/删除workspace。失败保留handle/目录/容量，可重试，绝不杀旧PID或自动接管未知socket。close必须处理startup尚未完成、连接尚未建立、重复close、已关闭与文件删除失败；不能把等待超时当不存在。重启遗留cgroup仍由原拒绝策略阻断。
+
+coding实现独立gateway-relay模块和真实socket/本地TCP离线测试；root接GatewayClient/SDK可信输入与Linux launcher、native suite及打包；判官只读复审。任何接口/规则变更先改本文并广播。禁止全局安装/主机daemon/生产连接/读取或打印密钥；不动原80dirty；后续Claude Code/claude-ds先读本协议。
+
+## 验证顺序
+
+先用宿主自有UDS/TCP资源验证固定目标、限额/背压/所有权/close，再用真实HTTPS+UDS验证合法CA/双向身份/hostname与无客户端证书/错误CA/错误name拒绝。然后在真实Linux bubblewrap中，固定网关连接成功，同时任意IPv4/IPv6、其他回环端口、其他run socket、宿主/其他workspace读取被拒；不能仅断言参数或接口不存在。原49协议与九隔离情景保持独立报告，不改旧报告或吞skip。
+
+固定SDK仅采用现有0.2.2-rc.1/已锁依赖，用新私有prepared runtime，不能把正在运行的home/profiles/业务数据或任意workspace打包。Linux arm64平台依赖需实际验证，安装禁脚本并核锁定完整性；优先离线缓存，缺件明确固定来源与hash，不伪装macOS二进制可运行。VM内mTLS只用本轮生成的临时测试身份，官方API key始终留原代理侧、不注入guest。真实SDK先对维护的合成网关运行，再推进正式API/存储与供应商组合；各层证据不能互相冒认，真实SDK的512MiB/64task容量必须实测，不凭合成sleep结果放行。
+
+实际准备发现两个假充分条件：ignore-workspace会忽略专用Linux架构设置；offline退出0仍可能只留optional包空目录，不能从包目录存在判ELF已安装。Linux模式用自己的隔离workspace配置、固定os/cpu/libc，并核两个必需包实际package.json与arm64 ELF header；禁Darwin系统包，生成可移植内链而非带宿主NODE_PATH的bin shim。缓存缺11件时显式download-locked只从固定公开npm registry按原frozen-lock下载，禁脚本/隐式用户及全局npm auth，代理只取明确无凭据回环地址，失败不自动退回其他registry/版本；不以第二个空目录准备结果冒称原生SDK通过。
+
+测试VM仍由自有VZ监督器管理、无宿主盘/目录分享。若SDK依赖解压/启动确需提高测试VM RAM，只能显式固定新suite资源并记录理由，不改任务512MiB/64或宣称生产2GiB主机已容量验收。压缩/归档必须有界且按明确来源/hash处理；不得在宿主展开来自Linux发行版的rootfs。
+
+本轮gateway profile固定2 CPU/4GiB：SDK归档展开515583751字节，叠加原rootfs约299MiB及guest内tmpfs复制，原2GiB测试配置不能代表此打包方式的容量。归档总展开上限1GiB、实际条目65536、包含PAX元数据的解析条目131072，单文件仍256MiB；只有显式gateway模式采用这些上限，原默认模式维持512MiB/20000条。该模式准备阶段监督期限180秒，VM运行仍90秒，guest退出后必须独立确认停止与自有组回收。
+
+Ubuntu固定OpenSSL包使用未知content size的单zstd frame，窗口8MiB。仅该包允许未知大小并限制窗口/实际输出各8MiB，禁止尾随字节/多帧；原bubblewrap包仍要求已知大小及2MiB上限。固定python-zstandard 0.25.0的C后端把max_window_size直接传给按字节计数的ZSTD_DCtx_setMaxWindowSize，与文档KiB描述不符；真实131072字节未知大小frame验证2048拒绝而131072接受，因此传入字节上限并另核frame窗口，不能误用2048导致合法包失败。参见[固定版本C实现](https://raw.githubusercontent.com/indygreg/python-zstandard/0.25.0/c-ext/decompressor.c)。
+
+博客04按sun-world-blog→design同题解释“固定通道+TLS+运行权限”分别负责什么，保留后端分类与架构笔记/Agent/DeepSeek Harness标签，按信息量决定配图；验证后检查1280/390预览并记录未发布，不自动发布。
+
+## 开发实测中的修正
+
+首轮native原49协议与九隔离均通过，固定网关probe在TLS前失败：测试fixture将Buffer证书直接JSON化成对象。改为PEM字符串后五网关场景通过；第二轮SDK控制器因guest无localhost映射而EAI_AGAIN，gateway模式仅为guest控制器写固定loopback hosts，不给任务增加/etc挂载或DNS路由。第三/四轮SDK已到三模型响应和工具回执，但未登记根结果；第四轮实际峰值111878144字节、OOM/pids超限0、relay8连接全closed/无quota事件，不能归因容量。第五轮仅测试wrapper同步观察wire元数据，22events可由严格projector独立验证，而原runHarness仍失败；随后以可控调度确认异步iterator与tryNext双consumer竞态，未放松顺序或结果检查。诊断文件需bounded NOFOLLOW/regular与exact schema只投影固定计数/bool/枚举，不复制任务任意JSON。
+
+archive复审发现先核ELF后写tar再次读取的漂移缺口；现核写入同份bytes hash、regular类型和完整已写集合，并保护native包声明与portable CLI link。真实synthetic变化/删除/symlink回归通过，修后fresh seal与原归档/manifest完全一致，原四个ELF成员hash也逐个核同。zstd另有未知大小fast path忽略allow_extra_data的问题：有界解压成功后，再对同一immutable首frame核EOF/unused_data/decoded一致；真实拼接/尾随回归此前失败，修后拒绝。
+
+事件收集现已确定性复现并修正：固定SDK公开NotificationSubscriptionImpl的同批五事件，在旧collector由async reader与tryNext竞争时先收较后seq，严格projector拒绝；改成同步subscribe filter按wire到达顺序收集并return false，不入异步queue，单next waiter仅监听transport/filter失败。session/wait后关闭并等待watcher，不sort或放宽原seq/根回执/终态校验。越过2MiB/4096时同步记readerFailure再抛错，防wait先resolve吞掉错误；新增七题与原三题通过。最终native应移除临时wrapper并使用原sdk-execution入口，不能用诊断wrapped-run冒称生产入口通过。
+
+## 最终原入口验收
+
+第六轮原生VZ gateway模式成功：47源码/8资产、展开822583539字节、派生initrd243907809字节；49协议零skip+九隔离+五网关情景，原sdk-execution入口的固定SDK0.2.2-rc.1完成三合成模型响应、两工具/UUID来源回执/根结果、单次启动、先cancel后start、活动SDK取消，以及首次目录删除EACCES保slot/503重试恢复。SDK两执行实际峰值112623616字节、OOM/pids事件0；含一次EACCES重试的三次snapshot均relay active0/closed。host独立completed/started/stopped、owned groups gone/runroot removed均true。最终未使用诊断wrapper，TLS身份在guest内生成，无真实数据库/供应商调用。原九隔离fixture自己的gateway/SDK false保留，新增v3各有独立gateway/sdk证明；完整linux_per_run_isolation_verified仍false，不代表正式应用/三库/供应商Linux组合已完成。
+
+同源fresh Mac prepared runtime必须放HOME拒绝范围之外；首次放仓库内被原sandbox正常拒绝（0backend/0model），未放宽HOME规则，改用新owned /private/tmp runtime后SDK完整复验通过。API828/31.578秒、Worker151/9.221秒、独立review和证据hash复核通过；根format仍仅原素材manifest失败。见[最终报告与开发失败](../evaluations/agent-linux-gateway-2026-11-17/README.md)。下一步先接正式API与一次性三库的Linux合成组合，之后才评估真实供应商固定通道；不将供应商key打入guest依赖归档。

@@ -8,6 +8,15 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：Linux 固定网关与真实 SDK 组件通过
+
+- 基点495a365；SDK通知收集竞态先保存为a56ab5a。Linux launcher同步登记cgroup与未启动relay，再准备socket；每run只绑定/gateway/socket，固定literal IP/port透明转发、端到端mTLS固定Host/SNI/identity，无DNS/CONNECT/环境代理/fallback。8连接/每连接双向1MiB/建连2秒/绝对45秒，half-close分方向排空；整树stop→relay closed→release→工作目录，未知保handle/slot。
+- 第六次原生VZ Linux gateway profile（2CPU/4GiB，task仍512MiB/64）实际47源码/8资产，原49协议零skip+九隔离+五网关+原sdk-execution入口真实SDK0.2.2-rc.1全部通过。合法TLS/错误name与缺cert拒绝、任意IPv4/IPv6/root-loopback/UDP DNS/跨run socket拒绝、own loopback可用、活动stream取消关闭；三模型合成响应/两工具/来源回执/根UUID最终结果、重复start一次、预cancel和活动cancel、EACCES保槽503后重试均核。SDK两执行最大peak112623616，OOM0/pids0，三snapshot含重试均relay active0/closed；host独立started/stopped/completed、owned groups/root回收。
+- 旧collector双consumer（async iterator+tryNext）会重排合法burst；固定SDK原subscription class确定性修前拒绝/修后通过，现同步filter收集/单故障watcher，保2MiB/4096与原严格seq/根绑定，不sort。前五native失败、两个假充分Linux准备和Mac runtime位于HOME被拒均保留，最终移除临时wrapper、Mac新/private/tmp同源SDK亦通过。archive首核/入tar bytes与类型/缺失漂移、codec0.25未知frame尾随、IPv6 wildcard及half-close均有真实反例修复。
+- API828/31.578秒、Worker151/9.221秒通过，Python AST4/shell/定向Prettier18/root-script/scoped diff通过。判官复审与最终47源、SDK12源/4实际ELF及strict v3重验全部匹配；65源码index摘要见[清单](../../evaluations/agent-linux-gateway-2026-11-17/validation-manifest.json)。根format仍仅原素材manifest失败，不宣称root/Web全绿。
+- [协议](../../development/agent-linux-gateway.md)、[报告/开发失败/资源来源](../../evaluations/agent-linux-gateway-2026-11-17/README.md)。Linux正式API/临时三库/真实供应商组合尚待，fullperrun=false与P1/A–D保持未完成；human待答、生产模型不可变版本策略、目标业务库备份迁移/生产TLS等仍独立。官方key不入guest，生产/页面/目录配置不改，不推送部署。下一步先推进正式API与一次性三库的Linux合成组合，再评估供应商固定通道。
+- 博客04按sun-world-blog→design同题补固定通道/TLS/业务授权与事件顺序，后端/架构笔记、Agent、DeepSeek Harness，7稳定ID/30重点，1280/390正文/两透明图视觉+DOM通过，未发布。主线仍为运行/历史保存，线性通道边界用正文说明，不新增图；预览复用原dirty renderer/CSS未纳提交。原80dirty与main handoff210/1保留；现有3030/8032/3033保留，自有VM根0。
+
 ### 2026-11-17 最新 checkpoint：Linux 逐任务组件通过
 
 - 基点7b90679，继续原目标：迭代/review/本地验证/中文提交/博客。新`linux-launcher`+exec+paths三个模块，ProcessRunner/worker接同步registerContainment与可选stop/release；所有清理成功才settle/删workspace，预spawn未知也保句柄/槽。未知cgroup根子树或新factory遇旧活跃树拒绝，不接管PID/旧锁。

@@ -19,6 +19,11 @@ case "$SW_LINUX_EPOCH" in ''|*[!0-9]*) exit 1 ;; esac
 [ "$SW_LINUX_EPOCH" -ge 1600000000 ] && [ "$SW_LINUX_EPOCH" -le 4102444800 ] || exit 1
 export SW_LINUX_CLOCK_BEFORE="$(date +%s)"
 date -s "@$SW_LINUX_EPOCH" >/dev/null || exit 1
+if [ "${sw_gateway:-0}" = 1 ]; then
+  /usr/local/bin/busybox ip link set dev lo up || exit 1
+  # Guest-local controller TLS name; no DNS or external network is available.
+  printf '127.0.0.1 localhost\n::1 localhost\n' >/etc/hosts || exit 1
+fi
 node /work/probe.mjs || exit 1
 node --test --test-reporter=tap \
   apps/agent-worker/tests/protocol/execution-service.test.mjs \
@@ -29,6 +34,11 @@ node --test --test-reporter=tap \
 status=$?
 if [ "$status" -eq 0 ] && [ "${sw_containment:-0}" = 1 ]; then
   node tools/agent-linux-vm/containment-suite.mjs
+  status=$?
+fi
+if [ "$status" -eq 0 ] && [ "${sw_gateway:-0}" = 1 ]; then
+  node tools/agent-linux-vm/gateway-suite.mjs &&
+    node apps/agent-worker/tests/integration/sdk-run.mjs /runtime-sdk --linux-gateway
   status=$?
 fi
 exit "$status"
