@@ -674,3 +674,15 @@ Fresh SDK0.2.2-rc.1+真实MySQL/Redis/Mongo+双向mTLS默认六合成情景通�
 sun-world-blog→design同题补博客04第五节三段：速率/存量、容量与历史同事务、旧库初始化/不清身份/满额旧操作可用。保留后端分类、架构笔记/Agent/DeepSeek Harness标签；新内容是有限计数规则，旧两张透明图已展示保留身份与内容关系，不加重复图。1280/390视觉/DOM通过，7稳定ID、26处strong、0px缩进、无残留双星/横向溢出，两图桌面360/手机约342px，未发布；preview仍用dirty renderer/CSS，非整页验收。3030/8032既有问答及3033正文预览保留。
 
 下一步核对官方模型快照与版本策略；不把alias或created当不可变权重，使用官方资料/已授权只读接口，不读取/回显key或改业务模型目录。生产存储测量、旧writer停写迁移、Linux/未知孤儿/旧锁、目标库/备份/断电跨版本、全账号/跨family/自动TTL/备份日志政策、人工语义与生产TLS仍独立未完成，P1/A–D及持续goal未完成。其他80项dirty、主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步容量单例/bounded初始化、旧key优先、FULL已知拒绝与未知ACK区别及新capacity/default/pool矩阵边界。
+
+## 2026-11-16 官方模型目录与版本策略
+
+基点7c5ad03，先写[版本策略](../../development/agent-openai-version-policy.md)再同步复用coding/判官。本轮只读、不生成：官方模型页Default snapshot/Snapshots均只列gpt-6.1-sol，当前key匹配目录也仅此标识，没有合法日期候选。目录受凭据可见范围影响，created/owner/日期形式不证明不可变权重，也不由无日期名字擅自断言官方承诺可变alias。immutable gate继续false，本地模型/原预算/旧报告与业务目录保持。
+
+新增 scripts/inspect-agent-openai-model.py、integration/openai_inventory.py 与13项离线测试；维护factory原DNS/public-IP/pin/Host/SNI/默认TLS/受限CONNECT复用，固定GET models一次、无重试/跳转/生成/选择，15秒请求上限、262144字节、2048基础记录、32真日期候选。catalogue独立strict decoder允许32768节点，不放宽生产8192节点；未知目录/元数据丢弃。未知参数/异常不回显，关闭确认后才report，重复cancel与KeyboardInterrupt+关闭失败保持中断；清理排空可超请求期限。
+
+root维护命令实测200，安全报告visible true/candidates空/generation0/immutable false；前置ignored driver另一次同源只读GET200，总2次GET、0计数/生成。不保存全目录/headers/key/原始响应，不启动数据库/SDK或改现有服务。root实际CLI进程另验production和未知参数固定失败且stdout空。API787/30.685秒通过，coding新13+原transport14/Responses14共41通过，独立判官13/3 AST无确认阻塞。root-script/api:deploy-schema通过，根format仍仅既有内容manifest；本轮JSON定向格式与diff/source核对通过，不称root/Web全绿，不扩展重跑无变更的原生DB/SDK/四题。
+
+[安全实证](../../evaluations/agent-openai-version-2026-11-16/README.md)含安全inventory及17项source/index摘要，执行源树aaedd9b078bf9762f21fdc33fb5552139b7372e9。博客05同题补固定标识与版本依据，分类后端、原架构笔记/Agent/DeepSeek Harness标签、5章节ID及透明预算图保留；新内容是版本判断规则，现图足够，不新加图。1280/390视觉/DOM通过，8处strong、0缩进/无双星/溢出，图360/342px；未发布，仍用dirty renderer/CSS正文预览，不等于整页验收。
+
+下一步继续本地运行恢复、未知孤儿/旧锁的可诊断边界，不能因缺少供应商版本承诺反复查目录或自行解锁生产。若出现独立官方快照，先独立profile核对计数/工具并重跑固定语义，再决定替换；不自动按日期选择/回退。Linux/人工/模型版本生产决策/生产TLS/目标库与备份/账号日志政策仍独立待，P1/A–D及持续goal未完成。其他80项dirty、main handoff原210加/1删与现有3030/8032/3033服务保留；只本地中文提交，不推送/部署/发布。Claude Code/claude-ds接手须读版本策略，保留immutable false、key可见范围与日期候选非承诺三点。

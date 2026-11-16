@@ -1,5 +1,7 @@
 # 模型预算与真实问答验证
 
+官方模型版本核对的当前结论与可重复只读命令见[版本策略](agent-openai-version-policy.md)。固定标识与计数对齐不等于已证明不可变权重，历史报告中的 immutable 标记仍保持 false。
+
 日期：2026-11-16；基点0e26b90。此轮新增模型预占账本、严格结构化适配和显式真实模型评测。生产main未挂载Agent入口，旧SQLite/v1入口保留，不部署、不发布。总体放行仍按[实施计划](../plans/dsh-platform-implementation.md)。
 
 后续增量：官方gpt-6.1-sol Responses路径已接入[完整输入计数与持久预算](agent-input-budget.md)，单次16384、累计32768输入token；正式Gateway与本地SQLite均有两阶段预占。下文Qwen整栈/探针的历史结果及三个false保持原义，不套用为官方路径的结论。

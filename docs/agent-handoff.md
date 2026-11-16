@@ -1,5 +1,17 @@
 ﻿## Current Handoff
 
+## 2026-11-16 官方模型版本证据与只读维护命令
+
+当前目标：继续可本地验证的Agent迭代、review与中文版本保存。基点7c5ad03，本轮已完成[版本策略](development/agent-openai-version-policy.md)、固定官方目录维护CLI及[安全实证](evaluations/agent-openai-version-2026-11-16/README.md)。官方页面与当前key目录仅见gpt-6.1-sol，没有日期候选；目录可见/created不证明不可变权重，immutable继续false，不自动换模型或解锁生产。
+
+主要文件：scripts/inspect-agent-openai-model.py、apps/api/tests/integration/openai_inventory.py、test_agent_openai_inventory.py，新协议与报告、原model/OpenAI说明链接、计划/分支handoff及博客05局部。维护factory与原受限TLS/CONNECT沿用，固定一次GET，262144字节/2048记录/32日期候选，错误无argv/响应自由文本，关闭确认后才报告；清理排空可超请求期限。
+
+验证：corepack pnpm check:api 787/30.685秒；coding相关41、独立判官新13/3 AST及root-script/api:deploy-schema通过，无确认阻塞。root维护CLI真实200，安全报告模型可见、候选空、生成0/immutable false；前置driver另一次只读GET，总2次GET、0计数/生成。另真实CLI production/未知参数固定拒绝且stdout空。17项source/index摘要，执行源树aaedd9b078bf9762f21fdc33fb5552139b7372e9。根format仍只有原内容manifest问题，未改该dirty；本轮未启动DB/SDK或更改运行时，无扩展原生/生成重跑，不能声称root/Web全绿。
+
+博客05按sun-world-blog→design同题补版本依据，后端/原三标签、5章节ID与透明预算图保留，此轮不加重复图。1280/390视觉/DOM通过，8 strong、0缩进/无双星/溢出，图360/342px；未发布，预览仍复用dirty renderer/CSS。现有3030问答、8032 API与3033正文预览保留；其他80项dirty与本文件原210加/1删保留，只本地提交，不推送/部署。
+
+后续：本地运行恢复与未知孤儿/旧锁诊断；若无新供应商版本依据，不反复查目录冒充进展。Linux/人工/生产版本决策/生产TLS/目标库备份/完整账号日志政策仍独立待，P1/A–D及持续goal未完成。Claude Code/claude-ds接手须读上述版本策略；详细状态在[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ## 2026-11-16 持久账本容量与去重保留
 
 - 正式MySQL配置新增固定8192身份上限（含已删历史），单例X锁/bounded8193初始化/预占与历史/run同commit；满额不清旧key，旧view/cancel/erase/已running保持。新请求Redis前预检，明确FULL竞争只释放并发、分钟不退，未知ACK仍TTL不重扣；见[容量契约](development/agent-ledger-capacity.md)。8192为本地保守值，不代生产存储测量。

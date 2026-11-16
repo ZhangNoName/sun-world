@@ -1,0 +1,95 @@
+{
+  "version": "sun-world-openai-version-validation/1",
+  "date": "2026-11-16",
+  "base_commit": "7c5ad0327b5664cdf54c7af6c08cc55d488ee416",
+  "execution_source_tree": "aaedd9b078bf9762f21fdc33fb5552139b7372e9",
+  "selected_source_sha256": {
+    "scripts/inspect-agent-openai-model.py": "d5b7f6cff21f080089e3bf694da44d1c62a8fa3b5f2464fd9a03c4e33541c797",
+    "apps/api/tests/integration/openai_inventory.py": "e69134ee5dbef154fb0fa7b383c2c907784502071b0ec9f8dccf8015c2a6a50e",
+    "apps/api/tests/test_agent_openai_inventory.py": "78df6263d73f9d9a7e4b8d2ba6a49d964cd63488946cae4f71bdeea927dfe7e7",
+    "scripts/run-api-check.mjs": "da3235c21d7d047ac4590bc9b50fba0658b05a183f0641fa0e041e0d9feec33e",
+    "apps/api/src/core/runtime_env.py": "e31b29e2e81db81ca53822ada4bfe123db057feea8d90e64013f4d1e6ff98257",
+    "apps/api/src/modules/ai/__init__.py": "8f48dece0c008e160ac1e3d04df63f116bf11d98683a1d4f126e800454aeec65",
+    "apps/api/src/modules/ai/local_openai.py": "191b9eb42096fece5aa66fbcf1fe7b0641199f0bff5416c0f93211df0df2bf21",
+    "apps/api/src/modules/ai/local_openai_transport.py": "39b52fb889ead154da63c79050a1d89cdf0b6501735c15f4ef3fc2d84b0a715f",
+    "apps/api/src/modules/ai/openai_responses.py": "41d34d02ddbb131c6d5cecf18a0f22456b67022973d91bee23b0b9b3bdea72a5",
+    "apps/api/src/modules/ai/providers.py": "58eeb1eae0d3718188f5aaddb1c4a49c211d719bf96aa674d3790104e8f69113",
+    "apps/api/src/modules/ai/model_proxy.py": "43f64f4d88ac579ef8964f4c7295638eb5fb09b6fe5af2dae209686062ee1486",
+    "apps/api/src/modules/ai/model_input.py": "646094c96af3d14bf9d64a746ffb09b1f5138ce42102ab435d715df2b704420e",
+    "apps/api/src/modules/ai/mcp_gateway.py": "77ae927da4be7297e59eb5800880384dd31930fcb5a8120a1abd42019edc73cd",
+    "apps/api/src/modules/ai/schemas.py": "3441353d65a429fbe04ee4f5e12373eaf36377899f280206c2e1afa187735ee3",
+    "apps/api/src/modules/ai/errors.py": "4023fb72c4deeb42f85369119dc7c2801ff796e1c4737993feabc275967a79e2",
+    "apps/api/tests/test_openai_responses.py": "eaebae82e3147b38109507db8f1ddede905bd4dcfcedbe95cd2538b79f4ba36d",
+    "apps/api/tests/test_local_openai_transport.py": "2a47eaa0e0895378a40a5d48d925671c655d377eb8e42ca233820824f951cd23"
+  },
+  "scope": "Local read-only official model inventory; no generation, input counting, business catalogue changes or deployment.",
+  "checks": {
+    "api": {
+      "command": "corepack pnpm check:api",
+      "tests": 787,
+      "seconds": 30.685,
+      "passed": true
+    },
+    "coding_related_offline": {
+      "tests": 41,
+      "new_tests": 13,
+      "passed": true,
+      "network_scope": "MockTransport and owned loopback TLS; no supplier requests, real credentials or databases"
+    },
+    "independent_review": {
+      "new_tests": 13,
+      "python_ast_files": 3,
+      "passed": true,
+      "confirmed_blockers": 0,
+      "scope": "Offline inventory tests, source and focused docs; no real credentials, supplier network, databases or SDK"
+    },
+    "root_cli_startup": {
+      "production_rejected": true,
+      "unknown_arguments_rejected_without_echo": true,
+      "success_stdout_on_failure": false
+    },
+    "protocols": {
+      "root_script": true,
+      "api_deploy_schema": true
+    },
+    "root_format": {
+      "passed": false,
+      "existing_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+      "file_modified_by_iteration": false
+    },
+    "blog_preview": {
+      "viewports": [1280, 390],
+      "headings": 5,
+      "strong_count": 8,
+      "indent": "0px",
+      "horizontal_overflow": false,
+      "stray_bold_markers": false,
+      "figure_widths": [360, 342],
+      "visual_reviewed": true,
+      "published": false,
+      "scope": "Existing dirty renderer/CSS; body preview only"
+    }
+  },
+  "supplier_io": {
+    "one_off_catalogue_get": 1,
+    "maintained_catalogue_get": 1,
+    "maintained_http_success": true,
+    "generation_requests": 0,
+    "input_count_requests": 0,
+    "raw_responses_saved": false,
+    "report": "inventory.json"
+  },
+  "conclusions": {
+    "fixed_model_visible": true,
+    "dated_candidates_observed": 0,
+    "immutable_model_revision_verified": false,
+    "production_enabled": false,
+    "p1_all_gates_complete": false
+  },
+  "unchanged_boundaries": [
+    "No automatic model selection or fallback",
+    "No replay or generated content",
+    "No change to historical evaluation reports",
+    "Linux isolation, human semantics, production TLS, target business database and backups remain independent gates"
+  ]
+}

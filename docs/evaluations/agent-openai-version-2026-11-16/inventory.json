@@ -1,0 +1,10 @@
+{
+  "version": "sun-world-openai-model-inventory/1",
+  "checked_at": "2026-11-16T15:09:47.069932Z",
+  "profile": "openai-local",
+  "model": "gpt-6.1-sol",
+  "visible": true,
+  "dated_candidate_ids": [],
+  "generation_requests": 0,
+  "immutable_model_revision_verified": false
+}
