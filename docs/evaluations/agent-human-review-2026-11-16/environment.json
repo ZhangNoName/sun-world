@@ -1,0 +1,54 @@
+{
+  "version": "sun-world-local-linux-availability/1",
+  "recorded_at": "2026-11-16T15:49:53.076904+00:00",
+  "host_platform": "Darwin",
+  "path_commands": {
+    "docker": false,
+    "colima": false,
+    "orb": false,
+    "limactl": false,
+    "podman": false,
+    "qemu-system-aarch64": false
+  },
+  "known_executables": {
+    "/Applications/Docker.app/Contents/Resources/bin/docker": "absent",
+    "/Applications/OrbStack.app/Contents/MacOS/orb": "absent",
+    "/opt/homebrew/bin/docker": "absent",
+    "/usr/local/bin/docker": "absent",
+    "/opt/homebrew/bin/colima": "absent",
+    "/opt/homebrew/bin/limactl": "absent",
+    "/opt/homebrew/bin/podman": "absent",
+    "/opt/homebrew/bin/qemu-system-aarch64": "absent"
+  },
+  "local_sockets": [
+    {
+      "candidate": "system_docker",
+      "state": "absent",
+      "ping_200": false
+    },
+    {
+      "candidate": "desktop_docker",
+      "state": "absent",
+      "ping_200": false
+    },
+    {
+      "candidate": "colima_default",
+      "state": "absent",
+      "ping_200": false
+    },
+    {
+      "candidate": "orbstack",
+      "state": "absent",
+      "ping_200": false
+    },
+    {
+      "candidate": "podman_machine",
+      "state": "absent",
+      "ping_200": false
+    }
+  ],
+  "virtual_machine_started": false,
+  "remote_daemon_contacted": false,
+  "linux_isolation_verified": false,
+  "scope": "Only PATH, listed common local installation paths and local socket candidates; not an exhaustive machine inventory."
+}

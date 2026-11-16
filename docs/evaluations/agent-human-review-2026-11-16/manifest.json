@@ -1,0 +1,16 @@
+{
+  "version": "sun-world-agent-human-review-material/1",
+  "human_semantic_review": "pending",
+  "report_sha256": "08edffd28f8a0ea2ff00125ca60e1bb7ce795586327096bb191e01064535a98b",
+  "dataset_sha256": "438a884c349a6aa25b964fe833eb6d3130691030e87733aa70cd69722c3041e7",
+  "case_ids": [
+    "answerable",
+    "unanswerable",
+    "conflicting-articles",
+    "article-prompt-injection"
+  ],
+  "files_sha256": {
+    "review.md": "21593bbaabf607354cbb867cd9abc3179d8c1258919453df8a60d7600c67add8",
+    "index.html": "50febd39bf2e24e4e0ef627eb0b63bbf5aea37ce27a4e3f06f1adcdd6b7cbb7e"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "version": "sun-world-human-review-validation/1",
+  "date": "2026-11-16",
+  "base_commit": "59b018fe53757d57da2846acd139685a24871346",
+  "execution_source_tree": "eabd6b7f1632d7a284b8b0f45bd4d8156de92e8e",
+  "selected_source_sha256": {
+    "scripts/prepare-agent-semantic-review.py": "1caf1611e2db8ce8a2f7eab68520b9481ce27f3b98fcf0fdea123f3c9e63343d",
+    "apps/api/tests/test_agent_semantic_review_material.py": "a61ea14d7abd59cd841c90b02d958e4dae58704203a0482c258a787388541405",
+    "docs/evaluations/agent-official-stack-2026-11-16/official-four-cases.json": "08edffd28f8a0ea2ff00125ca60e1bb7ce795586327096bb191e01064535a98b",
+    "apps/api/tests/fixtures/agent-model-evaluation.json": "438a884c349a6aa25b964fe833eb6d3130691030e87733aa70cd69722c3041e7",
+    "scripts/run-api-check.mjs": "da3235c21d7d047ac4590bc9b50fba0658b05a183f0641fa0e041e0d9feec33e",
+    "package.json": "73279450e856f11debf4329daec8c8302352c04d08f37067575947eb3892360e"
+  },
+  "checks": {
+    "api": {
+      "command": "corepack pnpm check:api",
+      "tests": 796,
+      "seconds": 30.743,
+      "passed": true
+    },
+    "coding_new_tests": 9,
+    "independent_review": {
+      "tests": 9,
+      "passed": true,
+      "confirmed_blockers": 0,
+      "scope": "Export source, raw pinned inputs, three generated artifacts and preview bytes; no browser/network/DB/SDK"
+    },
+    "python_ast_files": 2,
+    "root_script": true,
+    "material_preview": [
+      {
+        "viewport": 1280,
+        "cases": 4,
+        "overflow": false,
+        "scripts": 0,
+        "forms": 0,
+        "anchors": 0,
+        "systemElements": 0,
+        "sourceFieldsMatched": 16,
+        "cspScriptNone": true
+      },
+      {
+        "viewport": 390,
+        "cases": 4,
+        "overflow": false,
+        "scripts": 0,
+        "forms": 0,
+        "anchors": 0,
+        "systemElements": 0,
+        "sourceFieldsMatched": 16,
+        "cspScriptNone": true
+      }
+    ],
+    "material_visual_reviewed": true,
+    "raw_static_http_bytes_match": true,
+    "export_status": "pending",
+    "export_bundle_sha256": {
+      "index.html": "50febd39bf2e24e4e0ef627eb0b63bbf5aea37ce27a4e3f06f1adcdd6b7cbb7e",
+      "review.md": "21593bbaabf607354cbb867cd9abc3179d8c1258919453df8a60d7600c67add8",
+      "manifest.json": "e9e0177d817075848624d2fdc55710bcf9889670454b131da0fe919eb56a1a34"
+    },
+    "blog_preview": {
+      "viewports": [1280, 390],
+      "headings": 5,
+      "strong_count": 9,
+      "indent": "0px",
+      "horizontal_overflow": false,
+      "stray_bold_markers": false,
+      "figure_widths": [360, 342],
+      "visual_reviewed": true,
+      "published": false,
+      "scope": "Existing dirty renderer/CSS; body preview"
+    },
+    "root_format": {
+      "passed": false,
+      "existing_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+      "file_modified_by_iteration": false
+    }
+  },
+  "human_semantic_review": "pending",
+  "explicit_human_decision_received": false,
+  "human_question_issued": true,
+  "original_official_report_modified": false,
+  "new_supplier_requests": 0,
+  "vm_started": false,
+  "linux_isolation_verified": false,
+  "production_enabled": false,
+  "p1_all_gates_complete": false,
+  "completed_local_date": "2026-11-17",
+  "finalized_at": "2026-11-16T16:02:46.376970+00:00"
+}

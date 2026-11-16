@@ -1,5 +1,17 @@
 ﻿## Current Handoff
 
+## 2026-11-17 官方四题人工复核材料
+
+当前目标：继续实现/review、本地中文版本保存与博客修订。基点59b018f，本轮16日启动、17日收尾，已完成[人工复核契约](development/agent-human-semantic-review.md)与[固定材料](evaluations/agent-human-review-2026-11-16/README.md)。原报告/数据集双SHA钉住，纯stdlib导出原文/问题/实际API答案/判据，独占新目录，不携带run UUID/失效URL/trace/预算；HTML/MD字面展示注入文本，manifest固定pending，导出不构成人审。
+
+主要文件：scripts/prepare-agent-semantic-review.py、新test_agent_semantic_review_material.py、新协议、三静态导出物/环境观察/验证清单、原官方README材料链接、博客05与计划/分支handoff。用户已收到[四题阅读页](http://127.0.0.1:3033/.tmp/agent-human-review-20261116/index.html)及尚未审阅/四题通过/题号问题三选项；截至checkpoint无明确回复，继续pending。若后续明确通过，仅另录同快照四题判断，不能修改原JSON或当作上线许可。
+
+验证：API796/30.743秒，coding/判官各9、2 AST/root-script/定向JSON通过，无确认阻塞；源先验/不覆盖/类型错配/转义/权限/partial fsync失败均覆盖。三导出物与render及静态HTTP逐字相等，1280/390四卡16字段/无溢出/script-form-anchor-system DOM0，已视觉核对。6 source/index、执行树eabd6b7f1632d7a284b8b0f45bd4d8156de92e8e；根format仍仅原内容manifest，未改dirty、不称root/Web全绿。无新模型/DB/SDK调用，Worker/站点/预算源不改。
+
+本机PATH/8常见安装位/5socket均无可用Linux入口，仅检查范围，未安装启动VM或联系远端。博客05按sun-world-blog→design补原文/答案对照和导出不等人审，后端/原三标签、5ID/9 strong/原透明图保留；1280/390正文视觉/DOM通过，图360/342px，无重复新图、未发布，仍用dirty renderer/CSS预览。其他80dirty、本文件原210加/1删及3030问答/8032 API/3033预览保持，只本地提交，不推送部署。
+
+后续依据真实用户回复记录四题判断；可独立核对本机虚拟化能力/资源与ignored目录自有Linux环境可行性，不能把缺Docker当全无方案或用窄测试补成Linux通过。人工/Linux/生产孤儿授权/模型版本生产决策/TLS/目标库备份与账号日志政策仍待，P1/A–D及持续goal未完成。Claude Code/claude-ds接手读新契约并保持原报告字节与真实人审分离；详情见[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ## 2026-11-16 Worker控制器崩溃与测试宿主回收修复
 
 当前目标：继续可本地验证的实现/review及中文版本保存。基点c2459be，本轮新增[同journal控制器故障矩阵](development/agent-worker-crash-validation.md)：cancel/running/completed三切点实际SIGKILL，运行中执行组仍活、旧锁拒接管；仅fixture确认owned组gone后处理自有锁，恢复unknown仍保needs_reap/拒新任务、completed原ACK不重派、新身份可执行。不是生产未知锁/孤儿恢复授权，旧实际SDK强杀/父reaper范围保持。

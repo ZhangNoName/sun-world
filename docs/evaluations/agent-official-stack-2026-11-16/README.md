@@ -1,5 +1,7 @@
 # 官方模型与正式V2整栈实证
 
+后续为本次固定快照准备了[逐题人工复核材料](../agent-human-review-2026-11-16/README.md)。原JSON报告保持当时状态与字节，材料导出不构成人工通过；明确用户结论须另行记录并绑定该快照。
+
 2026-11-16，基点1a14ecb。协议和显式复跑命令见[固定SDK整栈验证](../../development/agent-sdk-stack-validation.md#官方模型整栈增量契约2026-11-16)，预算见[输入预占](../../development/agent-input-budget.md)。本轮补齐此前“真实官方模型只在开发SQLite验证，正式MySQL只用模拟上游”的组合缺口，不迁移现有页面或开放生产。
 
 ## 实际范围

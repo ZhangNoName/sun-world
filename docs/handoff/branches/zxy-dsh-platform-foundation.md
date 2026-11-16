@@ -698,3 +698,15 @@ coding新4/相关49通过；root最终corepack pnpm test:agent-worker100/9.240�
 顺修Worker README旧“无在线清理/真实Redis等仍待”陈述，链接已有局部实证与真实未完成门槛。博客04按sun-world-blog→design同题说明控制器死亡/执行组存活/持久回收确认分界，后端和架构笔记/Agent/DeepSeek Harness标签、7章节ID与原两图保留；27 strong、1280/390无缩进/双星/溢出，图360/约342px。两种恢复结果以相邻段落可比较，不加重复图，未发布，dirty renderer/CSS正文预览非整页验收。
 
 下一步先只读核对本机可用Linux容器/VM，再选实际隔离验证；不把fixture解锁升级为生产恢复流程。Linux/人工/模型版本生产决策/TLS/目标库备份/完整账号日志政策仍待，P1/A–D与持续goal未完成。其他80dirty、主handoff原210加/1删保留，只本地中文提交，不推送部署发布。Claude Code/claude-ds接手须读新崩溃契约与per-attempt fixture登记覆盖、未知恢复仍blocked、旧SDK范围独立三项增量。
+
+## 2026-11-17 官方四题人工复核材料（跨日收尾）
+
+基点59b018f，11月16日先写[人工复核契约](../../development/agent-human-semantic-review.md)再同步复用coding/判官，17日收尾。PATH/8常见安装位/5本地socket只读核对均无可用Linux入口，不装/启动VM、不联系远端；[环境观察](../../evaluations/agent-human-review-2026-11-16/environment.json)只涵盖检查范围，非全机器断言。原SDK/预算/模型/Worker/站点不改，Linux隔离仍false。
+
+新增prepare-agent-semantic-review.py和9项定向测试：固定官方报告/数据集原bytes双SHA，嵌入dataset类型/4case顺序/问题/来源ID/title核对后才生成新0700目录与0600三文件，不覆盖；纯stdlib、NOFOLLOW/NONBLOCK有界读，无运行时/config/key/DB/SDK/网络。review.md/index.html/manifest.json只投影原文/问题/实际API答案/判据与来源ID-title，丢弃runUUID/失效localhostURL/trace/预算；HTML escape+CSP静态无JS/外链/表单，MD自适应fence。无答案题明确服务端兜底不是模型原始拒绝证据。manifest固定pending，不能用导出或agent复核当人审。
+
+root正式[三份材料](../../evaluations/agent-human-review-2026-11-16/README.md)与冻结内存render逐字相等，现有3033的public/.tmp/agent-human-review-20261116/index.html纯静态HTTP字节也相等，无Vite脚本。1280/390四卡16字段匹配、无溢出，script/form/anchor/system DOM均0，已视觉核对。用户已收到具体复核页与尚未审阅/四题通过/题号问题三选项；截至本checkpoint无明确人工结论，继续pending，默认选项和等待不是回复。后续若有明确回复，仅另录绑定同快照/材料的四题结论，不改原JSON报告或据此上线。
+
+API796/30.743秒、coding/判官各9、2文件AST/root-script/定向JSON通过，无确认阻塞。root格式仍仅原内容manifest，未改dirty、不称root/Web全绿；无供应商新调用，不重跑无改的Worker/三库/SDK/生成。[验证清单](../../evaluations/agent-human-review-2026-11-16/validation-manifest.json)绑定6source/index与执行树eabd6b7f1632d7a284b8b0f45bd4d8156de92e8e。博客05按sun-world-blog→design同题补原文/交付答案对照及导出不等人审，后端/架构笔记/Agent/DeepSeek Harness、5ID/9strong/原透明图保留；1280/390无缩进/双星/溢出，图360/342px。规则由正文和复核卡片充分表达，不加重复图，未发布，博客dirty renderer/CSS预览非整页验收。
+
+下一步依据实际用户回复记录四题人审；独立核对本机虚拟化能力/资源与可否在ignored目录准备自有Linux验证环境，不把缺Docker当全无方案，也不擅自修改系统安装/生产宿主。若无法获得真实kernel验证条件，保持隔离缺口，不用窄测试代替。人工/Linux/生产未知孤儿授权/模型版本生产决策/TLS/目标库备份/账号日志政策仍待，P1/A–D及持续goal未完成。其他80dirty、主handoff原210加/1删和3030/8032/3033保留，只本地中文提交，不推送部署发布。Claude Code/claude-ds接手读新契约，保持原报告字节、pending与真实用户判断分离。
