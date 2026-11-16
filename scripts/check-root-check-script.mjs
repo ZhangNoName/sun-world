@@ -21,6 +21,14 @@ if (rootCheck !== 'node scripts/check-all.mjs') {
   )
 }
 
+const checkRunner = readFileSync(
+  join(repoRoot, 'scripts/check-all.mjs'),
+  'utf8'
+)
+if (!checkRunner.includes("args: ['test:agent-worker']")) {
+  violations.push('root check runner must execute Agent Worker protocol tests')
+}
+
 for (const [name, command] of Object.entries(packageJson.scripts ?? {})) {
   if (name.startsWith('check') && /\bbash\b/.test(String(command))) {
     violations.push(`check script ${name} must not depend on bash`)

@@ -40,6 +40,12 @@ C3继续正式会话/准入、路由与派发、版本化协议和真实MySQL故
 
 新测试覆盖真实Ledger/Gateway回调、受众/根请求、确认丢失/取消顺序、并发与关停；自有loopback TLS验证信任/主机名拒绝，临时MySQL现15项通过。Worker v2服务/SDK适配/取消tombstone、真实Redis准入、部署TLS身份与Linux/崩溃矩阵仍未实现/验收，不能宣称已完成正式Worker接线或C3整体验收。
 
+## B/C3 本地Worker V2服务与SDK执行（2026-11-16）
+
+已新增持久启动/取消记录、mTLS控制服务工厂、固定SDK进程执行与三受众网关client，见[Worker V2说明](../development/agent-worker-v2.md)。真实0.2.2-rc.1 SDK在自有macOS loopback沙盒跑通Worker HTTP重复start去重、3次合成Messages、两工具、UUID回执与根messageId/turn结果，owned group/home清理；取消先到的迟到start被拒绝。产品Skill v2独立声明并保留v1兼容，根check/CI加入普通Worker协议测试。
+
+这证明本地协议与进程控制，不是Linux隔离、真实模型语义、真实Redis/业务DB组合或无人值守崩溃恢复验收。持久记录容量有界且当前需离线核对清理，崩溃锁/未知孤儿失败关闭不重放；生产仍关闭，A–D未整体验收。下一步落实真实Redis准入与API组合、真实模型质量及B资源/服务身份/崩溃矩阵。
+
 ## 交付顺序
 
 | 阶段 / 建议 PR | 修改边界 | 产物与放行条件 | 失败时处理 |

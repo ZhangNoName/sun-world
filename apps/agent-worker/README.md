@@ -1,6 +1,8 @@
-# DSH local Worker
+# DSH Worker
 
-当前是本地 macOS 验证使用的真实 SDK 适配器，不是已部署的 Worker 服务。入口 `src/local-runner.mjs` 从标准输入接收运行，使用固定 `0.2.2-rc.1` SDK、每次独立 home/cwd、纯 prompt 接口与根 turn 成功投影。只登记生成目录中的公开搜索与读取工具，不装载开发 Skill、用户 Skill、shell、MCP 或文件工具。
+## 本地V1入口
+
+此入口是本地 macOS 验证使用的真实 SDK 适配器，不是已部署的 Worker 服务。入口 `src/local-runner.mjs` 从标准输入接收运行，使用固定 `0.2.2-rc.1` SDK、每次独立 home/cwd、纯 prompt 接口与根 turn 成功投影。只登记生成目录中的公开搜索与读取工具，不装载开发 Skill、用户 Skill、shell、MCP 或文件工具。
 
 使用仓库根目录 `corepack pnpm dev:blog-qa` 接现有站点，或 `corepack pnpm dev:blog-qa:fixtures` 接合成数据，详见[站点验证说明](../../docs/development/blog-qa.md)。launcher 从 `tools/dsh-blog-p0` 的固定包清单与锁文件在临时目录安装依赖（禁安装脚本），拷贝 Worker/工具目录/产品 Skill，确认 SDK 实际登记两项工具，并运行 macOS 沙盒负向探测。运行中不安装依赖。产品 Skill 的内容 hash 随生成 bundle 固定，Worker 启动重验。
 
@@ -11,3 +13,14 @@
 macOS 沙盒只允许回环网络并拒绝项目/用户主目录读取（Node 安装目录只读例外）；允许回环不等于生产网关端口白名单。尚未提供 Linux 容器、PID/地址硬隔离、TLS、正式调度服务和生产资源验收，不能以本地通过开放生产内测。
 
 协议回归：`corepack pnpm test:agent-worker`。真实模型、浏览器与负向探测见[本地验证说明](../../tools/dsh-blog-local/README.md)。
+
+
+## 私有V2服务（本地实现）
+
+新增显式mTLS服务factory与持久启动/取消记录、固定SDK执行端和网关client，详见[实现与验证](../../docs/development/agent-worker-v2.md)。createSdkWorker必须注入经过审查的隔离launcher、两方向服务身份、TLS与peer policy，不自动listen或读取业务配置。V2选择blog-qa@2产品Skill，模型引用读取工具提供的UUID source_id；V1内容与生成顺序保留。
+
+已在自有macOS loopback沙盒和mTLS fixture中跑通真实固定SDK：HTTP重复启动仅执行一次、两项实际工具、3次合成Messages、UUID摘要/回执、根messageId/turn与结果，进程组/home已回收。取消先到会持久阻止迟到start。该记录与API MySQL运行账本职责不同，不替代最终答案事务。
+
+普通协议测试仍用`corepack pnpm test:agent-worker`，已纳入根check和CI common quality；不需要SDK安装、真实模型或数据库。SDK集成单独运行：先用`node scripts/prepare-agent-worker.mjs --output /private/tmp/new-worker-runtime --offline`准备全新固定运行资源，再用`node apps/agent-worker/tests/integration/sdk-run.mjs /private/tmp/new-worker-runtime`（目前要求macOS sandbox-exec）。
+
+当前没有生产镜像/监听入口、自动崩溃锁恢复或在线记录清理；持久容量满时拒绝新身份，不能逐出可能收到迟到启动的记录。真实Redis准入、业务模型语义、Linux memory/PID/地址硬隔离及TLS签发轮换仍待验收，生产准入保持关闭。

@@ -90,6 +90,11 @@ const checks = [
     args: ['test:cli'],
   },
   {
+    label: 'Agent Worker protocol test',
+    command: 'pnpm',
+    args: ['test:agent-worker'],
+  },
+  {
     label: 'Frontend full check',
     command: 'pnpm',
     args: ['check:web'],

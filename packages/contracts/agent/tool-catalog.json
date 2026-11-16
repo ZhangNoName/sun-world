@@ -46,7 +46,8 @@
         }
       ],
       "skills": [
-        "blog-qa@1"
+        "blog-qa@1",
+        "blog-qa@2"
       ],
       "data_owners": [
         "mysql.blog",
@@ -214,7 +215,24 @@
       "input_contract": "question/plain-text",
       "output_contract": "answer/sourceIds",
       "evaluation_set": "apps/agent-worker/tests/protocol/protocol.test.mjs"
+    },
+    {
+      "id": "blog-qa",
+      "version": "2",
+      "module_id": "blog-content",
+      "content_sha256": "e89c7d821f7af743f537b9522347953731884d430acb350824b1d4aa6ddb12a2",
+      "tool_ids": [
+        "blog.search_public",
+        "blog.read_public"
+      ],
+      "tool_versions": {
+        "blog.search_public": "1",
+        "blog.read_public": "1"
+      },
+      "input_contract": "question/plain-text",
+      "output_contract": "answer/sourceIds(uuid)",
+      "evaluation_set": "apps/agent-worker/tests/protocol/root-result.test.mjs"
     }
   ],
-  "bundle_hash": "1a788c4765f0fd9806b177ed8db6d851afdc311aebb5b836699b9d4504303688"
+  "bundle_hash": "e72ad8bc56e7bf96dd8940fd78a6bcb059588e6f1c8aadd27176bb9b5f0195dd"
 }

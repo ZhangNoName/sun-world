@@ -309,3 +309,35 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步Worker v2服务/SDK根request关联、UUID来源与三受众桥、cancel tombstone，再接真实Redis准入与正式组合根；B的Linux/PID/地址/TLS服务身份和完整崩溃矩阵仍未完成。已发请求的cancel先到/start迟到必须由Worker tombstone拒绝，API侧关停drain不能替代这一网络故障保证。保留其他dirty文件，不推送/部署。
 
 最终暂存树`7243fdfe72b39f227322a338cdc756e668761b15`独立导出后API **549项**、一次性MySQL **15项**、旧Worker3项与deploy-schema协议全部通过；API gate同时验证RPC生成物无漂移。临时快照、MySQL进程/datadir已回收；随后仅补交接证据。暂存空白及私钥/GitHub token模式扫描通过。本轮未推送部署。
+
+
+## 2026-11-16 B/C3 Worker V2服务、SDK与持久取消
+
+### Implemented / scope
+
+基点530cbd6。主线程新增严格后端schema消费、GatewayClient、根receipt/turn投影、ProcessRunner、sdk-execution/tools与createSdkWorker显式组合；coding实现持久ExecutionService和mTLS HTTP factory。没有自动listen/生产入口、真实业务配置/凭据或业务库写入、推送部署。
+
+- V2控制服务先fsync启动intent再runner.start；取消未见start也持久tombstone阻迟到启动，绑定/摘要冲突拒绝，重复POST不启动第二份。只落绑定/摘要/状态/截止/needs_reap，不复制问题/正文/凭据。目录/文件0700/0600、owner/symlink/独占O_EXCL锁检查；崩溃锁不自动抢占，重启未知running标interrupted但保占用。
+- 活跃执行默认1、保留记录至多128；starting/stopping/needs_reap统一计占用；start/control各128pending硬界。HTTP 2秒不撤回已受理intent，只限制尚未进入service的请求/响应；API遇未知ACK只inspect/cancel。绝对deadline在fsync后及实际spawn前重验。停止/持久失败不给成功ACK，未确认进程保槽/锁。
+- 固定HTTPS+mTLS peer/service身份，不信转发头或Promise peer，V2字段/JSON/大小严格；根check和CI common quality加入协议单测，protocol guards通过。
+- GatewayClient验证完整工具digest、收到receipt delivered后才给模型UUID；model/tool/result分受众。SDK只持loopback短时桥token，服务身份/TLS留在可信父适配进程。SDK prompt的durable inbox messageId与根user/message/turn关联，序号/重复/错误会话/截断拒绝。
+- ProcessRunner最小环境、独立POSIX group、私有home/tmp/cwd，TERM→KILL；done只在group不存在和workspace删除后结算，父进程退出遗留子进程仍回收。host必须提供已审查launchSpec，不默认裸跑；Linux硬隔离未证明。
+- 产品Skill blog-qa@2独立hash/manifest并保留v1内容/导出首位，新catalog bundle hash变化须配套Worker资源；offline固定0.2.2-rc.1 SDK准备脚本不安装运行期依赖、不自动起服务。详见[Worker V2说明](../../development/agent-worker-v2.md)。
+
+### Verification / review
+
+- 完整Worker **43项**通过（核心20、持久service15、HTTP8）。真实mTLS/未知CA/peer拒绝、source摘要/回执、严格JSON/Python digest向量、实际TERM-ignore→KILL/父退出后子进程、slow launcher截止、pending槽/队列与journal fault均覆盖。
+- 判官首轮19项、第二轮service15/HTTP8/ProcessRunner5独立复验，当前范围无剩余确认阻塞。确认并修复P2：fast done终态rename失败被尾队列吞错，使start仍ACK running；新回归修前稳定复现，修后start/inspect unavailable、close未确认保锁。coding自审同步修fsync后deadline、持久故障仍尽力stop、done先完成但stop仍在途不放槽等。
+- 真实固定SDK+完整mTLS服务集成通过：重复HTTP start只执行一次，3个合成Messages响应、两实际工具、UUIDreceipt与根messageId/turn/result，另让第二份实际SDK等待模型时经mTLS cancel并确认owned group/home清理；未知cancel先落tombstone阻迟到start。不是fixture冒充SDK，也不是用合成响应宣称真实模型/业务DB/语义验收。
+- 离线准备592缓存包、下载0，SDK资源只在本轮owned /private/tmp runtime；无全局安装/真实配置读取。后端API549、contracts及CI/root协议门禁通过；最终独立暂存快照另记。
+- format:check仍仅失败于既有docs/content-sources/csdn-qq-42345136/manifest.json；CSS预算原问题保留，不宣称root check全绿。
+
+### Writing / next
+
+继续sun-world-blog→sun-world-write-design修订[架构笔记04](../../blog/2026-11-15-agent-run-history-transaction.md)，分类后端、标签架构笔记/Agent/DeepSeek Harness不变；解释根消息回执、取消先到和跨重启记录。已有失败对照表与两段机制足够本次增量，无新图、未发布。
+
+原3030监听已实际不存在，本轮只建loopback Vite3033独立正文预览，URL为http://127.0.0.1:3033/.tmp/c3-draft-7jaqfvk4/index.html。1280×900/390×844截图与DOM复核：7个唯一稳定ID、12处strong、无残留双星/首行缩进/水平溢出。截图在ignored.tmp，预览用当前工作区未提交renderer/CSS，不代表已提交前端或完整BlogDetailPage/TOC/auth/E2E。
+
+下一步真实Redis准入/API组合、真实模型质量集、在线留存/离线回收与自动崩溃恢复、Linux资源/PID/地址和生产身份签发轮换。当前journal保留128条后失败关闭，需离线核对释放，不能宣称无限持续准入；异常锁/未知孤儿不自动恢复。标准已补本地实现链接与root request语义，已向coding/判官同步；下一Claude-ds prompt必须读更新标准。生产仍关闭，其他dirty保留，不推送或发布。
+
+最终暂存树`b79fa6fe982b69d650e4138cda3005d5d069e9b7`独立导出后API549项、Worker43项、root/CI/deploy/schema门禁及从该树offline打包的完整mTLS+真实固定SDK集成全部通过；v1实际工具注册仍严格两项。缓存安装下载0，快照和该次prepared runtime已清理；随后只补交接证据，无可执行源码变化。暂存空白/私钥/GitHub token模式扫描通过，未包含其他dirty前端、技能或素材。

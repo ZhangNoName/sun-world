@@ -1,6 +1,6 @@
 # DSH 平台实现规范与目标仓库架构
 
-日期：2026-11-12。状态：设计基线；阶段 A 首批已在本地开发，详见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)，未部署。适用于新增 DSH 能力及触及的旧入口，不要求一次迁移全仓库。依据[评审报告](../reviews/2026-11-12-dsh-architecture-review.md)补充[架构总纲](agent-module-platform.md)；本文收敛首期实现选择，总纲继续定义业务方向。生产状态以 [current-state](../current-state.md) 为准。命名、缩进与测试位置遵循[工程文件规范](../repository-conventions.md)；模块鉴权矩阵、页面扩展点和跨项目适配遵循[扩展契约](module-extension-contract.md)。
+日期：2026-11-12；本地实现更新至2026-11-16。状态：设计基线；阶段A基础和B/C本地切片已实现，详见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)，仍未整体验收或部署。适用于新增 DSH 能力及触及的旧入口，不要求一次迁移全仓库。依据[评审报告](../reviews/2026-11-12-dsh-architecture-review.md)补充[架构总纲](agent-module-platform.md)；本文收敛首期实现选择，总纲继续定义业务方向。生产状态以 [current-state](../current-state.md) 为准。命名、缩进与测试位置遵循[工程文件规范](../repository-conventions.md)；模块鉴权矩阵、页面扩展点和跨项目适配遵循[扩展契约](module-extension-contract.md)。
 
 ## 1. 架构决策与代价
 
@@ -197,6 +197,8 @@ docs/plans/                      # 分阶段交付与验收
 | running → failed/cancelled | 明确失败/超时或用户取消；先落终态并撤权，再做进程回收 |
 | running → interrupted | 派发结果不明、API 重启无法恢复派发上下文、Worker 失联或租约过期；不自动派发第二份 |
 | 任意终态 | 不可逆；同摘要重复完成回调返回已提交结果，不重复写消息；不同摘要冲突 |
+
+本地V2实现与当前边界见[Worker V2](../development/agent-worker-v2.md)和[派发说明](../development/agent-run-dispatch.md)：根请求关联使用固定SDK prompt返回的durable inbox messageId，并核对根session内实际进入turn的user/message；不是任选一条LLM request或最后助手消息。Worker控制/回调使用显式v2路径和后端生成schema，旧v1本地入口仍独立保留。持久取消记录/目录锁目前失败关闭且有容量上限，在线留存、自动崩溃恢复和Linux隔离仍须验收。
 
 API 重启只恢复未领取 accepted。派发确认丢失时，允许向原 Worker 查询已有 execution_id，但不能重新发送启动请求；无法确认则中断。采用“宁可明确中断，也不盲目重放”的首期策略，不承诺分布式 exactly-once。用户主动重试使用新幂等键。
 

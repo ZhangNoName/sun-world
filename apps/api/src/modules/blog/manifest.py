@@ -15,7 +15,7 @@ BLOG_MANIFEST = ModuleManifest(
     owner="blog",
     capabilities=(BLOG_READ_PUBLIC,),
     http_entries=(HttpEntry("GET", "/blogs/"), HttpEntry("GET", "/blogs/{blog_id}")),
-    skills=("blog-qa@1",),
+    skills=("blog-qa@1", "blog-qa@2"),
     data_owners=("mysql.blog", "mysql.blog_tag", "mongo.blogs"),
     tools=(
         ToolManifest(

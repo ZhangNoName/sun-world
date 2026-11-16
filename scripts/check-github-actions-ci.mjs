@@ -83,6 +83,8 @@ if (workflow) {
     'pnpm check:github-actions:deploy',
     'Run Sun World CLI tests',
     'pnpm test:cli',
+    'Run Agent Worker protocol tests',
+    'pnpm test:agent-worker',
     'Build frontend package dependencies',
     'pnpm build:icons',
     'pnpm build:ui',

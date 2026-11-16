@@ -298,6 +298,9 @@ jobs:
       - name: Run Sun World CLI tests
         run: pnpm test:cli
 
+      - name: Run Agent Worker protocol tests
+        run: pnpm test:agent-worker
+
       - name: Test frontend runtime artifact verifier
         run: python3 -m unittest discover -s tests/deploy -p 'test_frontend_runtime_artifact.py' -v
 

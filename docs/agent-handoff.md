@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 Worker V2服务与持久取消
+
+- 已实现mTLS控制服务、持久启动/取消tombstone、三受众网关client、固定SDK根messageId/turn与UUIDreceipt，以及owned group/home确认回收。详见[Worker V2](development/agent-worker-v2.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。blog-qa@2产品Skill独立声明，v1内容/首位兼容保留；根check与CI已加入Worker协议测试。
+- 独立暂存树Worker43项、API549、CI/root/deploy-schema与offline打包的真实SDK集成通过，contracts定向通过；完整mTLS服务验证重复start只一份、3合成Messages响应/两工具/UUID结果，另实际SDK等待模型时cancel并清理。Review确认的终态写盘失败仍成功ACK已修并独立复核，无剩余确认阻塞。合成模型/文章不代表真实语义或业务DB验收。
+- 博客04补根消息与迟到启动，3033独立正文1280/390宽预览通过，未发布。journal留存/离线锁回收、Redis准入/正式API组合、Linux/真实模型/崩溃/生产TLS仍待完成；生产关闭，未推送部署，其他dirty与原格式/CSS问题保留。
+
 ## 2026-11-16 C3 派发控制与私有V2回调
 
 - 实现single-attempt dispatcher、固定HTTPS client、显式私有V2回调factory及后端生成schema，根session/turn/request与UUID来源贯通正式网关；说明见[派发控制](development/agent-run-dispatch.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。确认丢失只inspect原执行，不重放；终态先于尽力回收，DB结果不明保留UNCONFIRMED。
