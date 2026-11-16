@@ -23,6 +23,7 @@ export async function createSdkWorker({
   listenerTls,
   verifyPeer,
   launchSpec,
+  onCleanupDiagnostic,
   maxActive = 1,
   capacity = 128,
 }) {
@@ -76,6 +77,7 @@ export async function createSdkWorker({
   )
   const runner = new ProcessRunner({
     workspaceRoot,
+    onCleanupDiagnostic,
     launchSpec: ({ workspace }) => launchSpec({ workspace, runtimeDirectory }),
     input: (run) => ({
       run,

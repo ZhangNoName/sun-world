@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 回收首错与恢复诊断
+
+- 新增Worker每执行有界诊断、可选宿主钩子和安全Error快照；Python清理步骤/坏ACK/损坏文件均保留固定阶段与类别，继续独立回收资源。不改RPC/journal或done/stop/槽语义，详情见[回收诊断](development/agent-cleanup-diagnostics.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 最终6eff1e7暂存快照API624/Worker70、真实SDK目录EACCES探针、原生SDK六情景及一轮六任务并行复跑均通过，SIGTERM130/owned回收通过；坏ACK/深层JSON两P2已修并独立复核。不以新诊断倒推旧失败根因，Linux/跨重启留存/输入tokenizer仍待验收。
+- 按设计说明修订博客04的首错/后恢复机制，后端与原三标签、7稳定标题ID/17处strong，桌面手机正文预览通过，既有透明图保留、无新增重复配图、未发布。其他dirty保留，不推送部署。
+
 ## 2026-11-16 模型预算与真实模型评测
 
 - 新增模型持久预占与actual/unknown账本，先提交再出网、失败不退款/不重放；输出token与响应字节分别限额，输入bytes不冒称token硬限。严格固定SDK/供应商适配及四题真实keyless模型评测见[模型验证](development/agent-model-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。main/旧入口未切换，未推送部署。

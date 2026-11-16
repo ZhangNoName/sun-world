@@ -134,3 +134,5 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 在真实固定SDK/三库整栈之后，已实现每run四次模型请求的持久输出token/响应字节预占、canonical输入字节累计和独立actual/unknown计量。真实keyless qwen38_27b固定四题覆盖有答案、无答案、冲突、正文注入；保留中间失败样本，未改题或扩大额度，独立agent语义复核不冒称人工签字。具体机制和显式命令见[模型验证说明](../development/agent-model-validation.md)，最终快照实证见分支交接。
 
 B/P1与A–D仍未整体完成：缺已验证输入tokenizer/总输入token硬限、上游不可变模型版本、人工语义验收及Linux memory/PID/network硬隔离。留存与离线回收、旧库升级/真实崩溃恢复矩阵和生产TLS仍按原门槛推进，不挂main、不切旧页面、不以本地四题放行生产。
+
+2026-11-16后续补充回收失败可定位性：新增固定阶段/错误类别、有界首错与恢复记录、测试宿主私有sink及安全prefix reader，生产控制/RPC/journal不改变。实际SDK目录EACCES探针检查未确认不放槽，细节见[回收诊断](../development/agent-cleanup-diagnostics.md)。旧失败定因与Linux/跨重启诊断留存仍未因此完成。

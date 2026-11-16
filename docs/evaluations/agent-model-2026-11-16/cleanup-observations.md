@@ -9,3 +9,5 @@ d3a21c40871838845dcb4171bfce8d4ae5203b46暂存树首次同时运行API gate、Wo
 独立纯组件与实际owned Python孤儿注入又确认一项具体清理缺陷：SDK fixture reaper初次killpg(0)遇到EPERM便直接退出、没有尝试TERM/KILL，区别于已有outer launcher。这项可独立复现并修复；仍不能据此认定上面原生失败就是同一原因。永久拒绝必须保留unknown/失败，不能把权限拒绝当ESRCH。最终修正与验证结果见[分支交接](../../handoff/branches/zxy-dsh-platform-foundation.md)。
 
 默认进程门禁和SDK六情景用于本机验证；Linux实际memory/PID/network/cgroup/reaper、宿主崩溃与生产身份仍未验收。串行通过不构成并行清理稳定性或生产隔离保证。
+
+后续已在6eff1e721c9d71f320eeea6b9dfb4d257b6fc32b新增受限首错/恢复诊断，并完成一轮同类并行负载复跑，未复现旧失败；受控目录EACCES探针确实保留占用并在重试后记录恢复。见[后续验证](../agent-cleanup-2026-11-16/README.md)。这不补足旧记录缺失的因果证据，以上原始失败结论保持。

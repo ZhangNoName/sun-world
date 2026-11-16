@@ -1,0 +1,82 @@
+{
+  "version": "sun-world-cleanup-validation/1",
+  "source_base_commit": "6afeb296f017f4d4df5ad90effe53d5af431cb2a",
+  "validated_staged_tree": "6eff1e721c9d71f320eeea6b9dfb4d257b6fc32b",
+  "source_sha256": {
+    "apps/agent-worker/src/cleanup-diagnostics.mjs": "ed38c59ebe490b59b3eda58d5932745c26bf781876c1e92c1252e2f518307abe",
+    "apps/agent-worker/src/process-runner.mjs": "117b0c527607d4015ea3dca3c29dd17d15beaa739d966cdf56f2f11609caadb6",
+    "apps/agent-worker/src/worker.mjs": "b6d216171079e38eb4ab1061dbe30e5e55ebaf3ded91ff199822911c20cb2edd",
+    "apps/agent-worker/tests/integration/sdk-run.mjs": "2f96000673a792e1b8f603f4e72cfadd091925ac84c817d41fc74f41827ea7e3",
+    "apps/agent-worker/tests/integration/stack-worker.mjs": "20c9bead689321eabda6f4deda10940ad6178fa3ca7c560948730cfb1526909c",
+    "apps/agent-worker/tests/protocol/cleanup-diagnostics.test.mjs": "ac793c9687eb5df5b05c716adb6dbccad911d04846da14907a2f9deb77097a4e",
+    "apps/api/tests/integration/cleanup_diagnostics.py": "55a36903e442a9caf6c8a3f4b2b3abcd6d8fa0d55178ee694b97b45c15f2b06b",
+    "apps/api/tests/integration/fixture_cleanup.py": "8812f5c0d9a02beb4e29e30911278ef482d855c0305e4fb9cf8e84f6807a0c3f",
+    "apps/api/tests/integration/sdk_stack.py": "a0280aec6ece8b35ca3786d6beb4f1cc3fcb98d50ddf51bf108ce87c98d33e07",
+    "apps/api/tests/test_agent_cleanup_diagnostics.py": "efb9e5316de9d6ff773ef018cca4b18e37785873be3f717003e52048ec4e73b2",
+    "apps/api/tests/test_agent_fixture_cleanup_diagnostics.py": "3a3d926683472dc580c165b1c3acf21e9101002831c44ee61cd140c7e6317701"
+  },
+  "scope": "Real fixed SDK, mTLS and owned storage/process cleanup; synthetic model/article data; not model quality or Linux acceptance",
+  "serial": {
+    "api_tests": 624,
+    "worker_tests": 70,
+    "sdk_mtls_cleanup_fault_probe": {
+      "passed": true,
+      "first_cancel_http": 503,
+      "new_execution_while_cleanup_unknown_http": 503,
+      "retry_cancel_http": 200,
+      "failure_stage": "workspace_remove",
+      "failure_category": "permission_denied",
+      "recovery_event": true,
+      "no_replay_or_sensitive_text": true
+    },
+    "native_sdk_scenarios": 6,
+    "v1_registered_tools": 2,
+    "root_ci_schema_rpc_catalog_checks": "passed"
+  },
+  "parallel_probe": {
+    "runs": 1,
+    "host_memory_bytes": 34359738368,
+    "modes": [
+      "api",
+      "gates",
+      "mysql",
+      "native-stack",
+      "mongo-isolation",
+      "sdk-synthetic"
+    ],
+    "api_tests": 624,
+    "worker_tests": 70,
+    "mysql_tests": 17,
+    "native_api_stack_tests": 10,
+    "mongo_instances_isolation": 2,
+    "native_sdk_scenarios": 6,
+    "all_passed": true,
+    "original_failure_reproduced": false,
+    "original_failure_root_cause": "unresolved",
+    "external_real_model_called": false
+  },
+  "interrupt_probe": {
+    "launcher_exit": 130,
+    "worker_and_sdk_groups_absent": true,
+    "three_database_pids_absent": true,
+    "four_owned_roots_absent": true
+  },
+  "review": {
+    "independent_node_targeted_tests": 15,
+    "independent_python_targeted_tests": 24,
+    "code_index_tree_snapshot_bytes_equal": true,
+    "no_confirmed_remaining_scope_blocker": true
+  },
+  "pinned_inputs": {
+    "package.json": "73279450e856f11debf4329daec8c8302352c04d08f37067575947eb3892360e",
+    ".nvmrc": "98182b41c9ce3357797985cf12dc3b0124490ef88bc918a905373e7688e6aec9",
+    "tools/dsh-blog-p0/package.json": "a04da34db5776523b082d3f7a2857360cd6e2b0c326117b116760aff24fb1ef2",
+    "tools/dsh-blog-p0/pnpm-lock.yaml": "08b4c4630848a1715e3fd2b46d523429f55c2d451c928a63c269e7c76ebe2500"
+  },
+  "publication": "local draft only; no push/deploy/publish",
+  "remaining_gates": [
+    "Historical cleanup failure root cause unresolved; one successful probe is not general stability evidence.",
+    "Unconfigured production sink/cross-restart retention, model-matched input tokenizer and immutable revision, human semantics, Linux resource/PID/network isolation, legacy DB/crash and production TLS gates remain.",
+    "Root format still fails on existing content-source manifest; existing Web CSS budget issue remains."
+  ]
+}

@@ -2,7 +2,7 @@
 // This is not a model quality evaluation or Linux isolation acceptance.
 import assert from 'node:assert/strict'
 import { once } from 'node:events'
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import fs, { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { createServer, request as httpsRequest } from 'node:https'
 import { setTimeout as pause } from 'node:timers/promises'
 import { tmpdir, homedir } from 'node:os'
@@ -20,6 +20,7 @@ if (!runtime || !isAbsolute(runtime) || process.platform !== 'darwin')
 const cleanup = []
 const testScope = { after: (callback) => cleanup.push(callback) }
 let server, worker
+const cleanupEvents = []
 try {
   const tls = await tlsFixture(testScope)
   const workspaceRoot = await mkdtemp(
@@ -51,10 +52,12 @@ try {
     root,
     answer,
     prepared,
-    invalid = false
+    invalid = false,
+    backendFailure = 'none'
   server = createServer(
     { ...tls, requestCert: true, rejectUnauthorized: true },
     async (request, response) => {
+      let phase = 'request_identity'
       try {
         assert.equal(request.socket.authorized, true)
         const chunks = []
@@ -85,9 +88,16 @@ try {
             lease_expires_at: new Date(Date.now() + 10000).toISOString(),
           }
         else if (route === '/model/messages') {
-          assert.deepEqual(body.thinking, { type: 'disabled' })
+          phase = 'sdk_thinking'
+          // The strict parser intentionally creates null-prototype objects.
+          // Check the exact JSON shape without comparing JS prototypes.
+          assert.deepEqual(Object.keys(body.thinking), ['type'])
+          assert.equal(body.thinking.type, 'disabled')
+          phase = 'sdk_output_config'
           assert.equal(body.output_config, undefined)
+          phase = 'sdk_output_limit'
           assert.equal(body.max_tokens, 1024)
+          phase = 'model_scenario'
           if (current.run_id === cancelRunId) {
             cancelModels++
             signalCancelModel()
@@ -190,6 +200,7 @@ try {
           .end(JSON.stringify(result))
       } catch {
         invalid = true
+        if (backendFailure === 'none') backendFailure = phase
         response.writeHead(500).end()
       }
     }
@@ -207,6 +218,7 @@ try {
     serviceCredential: 'c'.repeat(43),
     listenerTls: tls,
     verifyPeer: (socket) => socket.authorized === true,
+    onCleanupDiagnostic: (event) => cleanupEvents.push(event),
     launchSpec: () => ({
       command: '/usr/bin/sandbox-exec',
       args: [
@@ -276,7 +288,19 @@ try {
     if (observed.value.status !== 'running') break
     await pause(25)
   } while (Date.now() < until)
-  assert.equal(observed.value.status, 'completed')
+  assert.equal(
+    observed.value.status,
+    'completed',
+    JSON.stringify({
+      models,
+      backend_requests: paths.length,
+      root_registered: Boolean(root),
+      answer_committed: typeof answer === 'string',
+      invalid_backend: invalid,
+      backend_failure_stage: backendFailure,
+      cleanup_events: cleanupEvents,
+    })
+  )
   // A control cancel may arrive before its old start. The persisted binding
   // must block this late start without launching another SDK process.
   const cancelled = runInput()
@@ -323,11 +347,57 @@ try {
     clearTimeout(cancelWait)
   }
   const stopRoute = `/internal/v2/executions/${stopping.run_id}/${stopping.execution_id}`
-  const stopped = await control('POST', stopRoute + '/cancel', stopBinding)
+  const originalRm = fs.rm
+  let denyWorkspaceRemove = true
+  fs.rm = async (path, options) => {
+    if (
+      denyWorkspaceRemove &&
+      typeof path === 'string' &&
+      path.startsWith(join(workspaceRoot, `run-${stopping.run_id}-`))
+    )
+      throw Object.assign(new Error('SYNTHETIC_PRIVATE_CLEANUP_MARKER'), {
+        code: 'EACCES',
+      })
+    return originalRm(path, options)
+  }
+  let stopped
+  try {
+    assert.equal(
+      (await control('POST', stopRoute + '/cancel', stopBinding)).status,
+      503
+    )
+    assert.ok(
+      cleanupEvents.some(
+        (event) =>
+          event.run_id === stopping.run_id &&
+          event.stage === 'workspace_remove' &&
+          event.category === 'permission_denied'
+      )
+    )
+    assert.equal(
+      (await control('POST', '/internal/v2/executions', runInput())).status,
+      503
+    )
+    denyWorkspaceRemove = false
+    stopped = await control('POST', stopRoute + '/cancel', stopBinding)
+  } finally {
+    fs.rm = originalRm
+  }
   assert.equal(stopped.status, 200)
   assert.equal(stopped.value.status, 'cancelled')
   assert.equal((await control('GET', stopRoute)).value.status, 'cancelled')
   assert.equal(cancelModels, 1)
+  const diagnosticText = JSON.stringify(cleanupEvents)
+  assert.ok(
+    cleanupEvents.some(
+      (event) =>
+        event.run_id === stopping.run_id && event.stage === 'recovery_confirmed'
+    )
+  )
+  assert.ok(!diagnosticText.includes('SYNTHETIC_PRIVATE_CLEANUP_MARKER'))
+  assert.ok(!diagnosticText.includes(stopping.question))
+  for (const credential of Object.values(stopping.credentials))
+    assert.ok(!diagnosticText.includes(credential))
   assert.equal(invalid, false)
   assert.equal(models, 3)
   assert.equal(answer, '文章说明权限需要在后端检查。')
@@ -359,6 +429,9 @@ try {
   )
   console.log(
     'Owned process group/home reclaimed; macOS loopback sandbox and mTLS fixture only; no real model or database used.'
+  )
+  console.log(
+    'Actual SDK cleanup fault: first directory removal refused, capacity retained, safe diagnostic observed, retry confirmed recovery without replay.'
   )
 } finally {
   if (worker) await worker.close()

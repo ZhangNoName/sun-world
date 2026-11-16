@@ -425,3 +425,17 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 同树实际SDK模型等待点总launcher SIGTERM复验exit130，Worker/SDK组、三DB PID及四root均消失。此前并行/串行失败证据保留且仍未定因，不能把后来的成功或独立EPERM修复当作原失败解释。下一步先增加固定清理阶段/错误类别诊断再定位本机回收观察，并继续输入tokenizer/模型版本、Linux硬隔离、留存/旧库与崩溃/生产TLS门槛。最终仅补文档与证据，无可执行源码再改；提交前对比验证清单、空白与密钥模式，清理本轮快照/prepared runtime，保留已核对binary缓存和3033正文预览。博客05桌面/手机最终预览复核通过、未发布；不推送部署，其他dirty与原格式/CSS预算问题保留。
 
 收尾确认：本轮所有owned模型验证快照/prepared runtime和SDK fixture root已清理，数据库binary缓存保留。原预览服务在中断后停止，现已重新启动loopback3033并实际HTTP200/桌面手机正文复验通过；只保留此正文预览服务。最终staged55路径范围与33项验证源码SHA一致，空白与密钥/token模式扫描通过；format:check仍仅既有素材manifest失败。
+
+## 2026-11-16 回收诊断
+
+基点6afeb29。继续既定回收未定因问题，先写docs/development/agent-cleanup-diagnostics.md再同步coding；不改变RPC/持久journal或done/stop/槽语义。Worker新增固定schema/onCleanupDiagnostic、每执行31失败+1恢复事件、冻结Error/handle快照；Node测试host私有0600/64KiB sink逐事件fsync，失败不阻止回收且不能成功ACK。Python固定步骤/类别、32条前缀、strict ACK/文件读取，不复制异常自由文本。原SDK fixture三清理方法抽到fixture_cleanup.py，sdk_stack.py约690行，纯helper无业务配置或服务发现。
+
+首轮review确认并复现两P2：不完整ACK在attempt外跳过后续关闭、深层JSON后缀触发RecursionError丢安全前缀。已改exact7字段安全投影/观测attempt及2048单行上限+递归拒绝；修后判官独立Python15纯组件+9实际owned清理、Node10诊断+5原runner均通过。真实SDK/mTLS目录删除EACCES探针同时验证首次503不放槽、原取消重试后200+恢复、无重派和敏感文本；未知仍失败，不把新诊断倒推旧故障。
+
+最终暂存树`6eff1e721c9d71f320eeea6b9dfb4d257b6fc32b`独立导出后，API624、Worker70、root/CI/deploy-schema/RPC/catalog通过；同树offline准备固定SDK592缓存包/下载0，实际SDK mTLS目录EACCES探针验证首cancel503/新run503保槽、原cancel重试200+首错/恢复事件/无重放无敏感文本，原生三库+SDK完整6情景与v1两工具注册通过。最后复跑六任务同类并行（API/Worker/MySQL/nativeStack/双Mongo/SDK6），624/70/17/10/双实例/6均通过；只一轮，不含外部真实模型，不以此断言生产稳定性或反推旧故障。
+
+同树模型等待点SIGTERM再验exit130、Worker/SDK组/三库PID/四root均不存在。判官独立Node15/Python24及11个可执行文件current/index/tree/snapshot/fresh runtime字节核对通过；P2坏ACK和深层JSON已解除。另实际SDK独立宿主旧断言因parseJson的null prototype而失败，受限阶段诊断定位后改成exact keys+disabled值，不放宽JSON形状；路径规范化对照未改善已撤回。历史回收失败仍未定因，原证据保留。详细结果与源码摘要在docs/evaluations/agent-cleanup-2026-11-16，未存本地原始日志。
+
+博客04修订首错/后恢复与诊断边界，既有透明Redis关系图足够本轮增量，无新增图；1280/390正文及新增段落实际视觉/DOM复核：7稳定ID、17处strong、无首行缩进/残留双星/横向溢出，既有图360/约342px。预览为3033原C3正文URL，草稿相对05链接在预览层映射本地05地址；源稿仍为同目录MD链接，未发布。使用dirty renderer/CSS，不代表完整文章页/提交前端。最终只补文档证据，无可执行源码再改；临时snapshot/prepared runtime待收尾清理，原素材format及Web CSS预算问题与其他dirty保留，不推送部署。下一步回收旧故障继续带阶段证据复现，生产sink/留存、模型输入tokenizer/版本、Linux、旧库/崩溃和生产TLS门槛仍独立未完成。
+
+收尾已确认：本轮两个prepared runtime和独立暂存快照已删除，SDK fixture root无遗留；保留verified DB binary缓存和3033正文预览。21个暂存路径与任务清单完全一致，11项可执行源码SHA与验证树一致；空白/密钥-token模式扫描通过。根format仍只既有CSDN素材manifest失败，无新增格式问题；本轮未运行/宣称整个Web/root build全绿。最终仅补文档，没有源码再改。

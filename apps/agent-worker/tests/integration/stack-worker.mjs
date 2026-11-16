@@ -1,6 +1,6 @@
 // Test-only owned-stack host. No environment/configuration discovery or model
 // provider exists here; Python supplies private paths and synthetic identities.
-import { constants } from 'node:fs'
+import { constants, closeSync, fsyncSync, openSync, writeSync } from 'node:fs'
 import {
   lstat,
   mkdir,
@@ -20,6 +20,28 @@ let createSdkWorker, parseJson, toolCatalog, validateRpc
 const FORMAT = 'sun-world-sdk-stack-fixture/1'
 const invalid = () => new Error('AGENT_STACK_FIXTURE_FAILED')
 const emit = (value) => process.stdout.write(JSON.stringify(value) + '\n')
+let diagnosticDescriptor,
+  diagnosticBytes = 0,
+  diagnosticCount = 0,
+  diagnosticsComplete = true
+const cleanupDiagnostic = (event) => {
+  if (!diagnosticsComplete) return
+  try {
+    const line = Buffer.from(JSON.stringify(event) + '\n')
+    if (
+      diagnosticDescriptor === undefined ||
+      diagnosticBytes + line.length > 65536 ||
+      line.length > 2048
+    )
+      throw invalid()
+    if (writeSync(diagnosticDescriptor, line) !== line.length) throw invalid()
+    fsyncSync(diagnosticDescriptor)
+    diagnosticBytes += line.length
+    diagnosticCount++
+  } catch {
+    diagnosticsComplete = false
+  }
+}
 const exact = (value, keys) =>
   value &&
   typeof value === 'object' &&
@@ -293,6 +315,8 @@ async function observations(config, files, secrets) {
     run_directories_empty: true,
     journal_clean: true,
     process_group_ids: groups,
+    cleanup_diagnostics_complete: diagnosticsComplete,
+    cleanup_diagnostic_count: diagnosticCount,
   }
 }
 
@@ -328,6 +352,14 @@ try {
   if (line === null) throw invalid()
   config = await configuration(parseJson(line, 16384))
   files = await launchFiles(config)
+  diagnosticDescriptor = openSync(
+    join(config.workspace_root, 'fixture-cleanup.jsonl'),
+    constants.O_WRONLY |
+      constants.O_CREAT |
+      constants.O_EXCL |
+      constants.O_NOFOLLOW,
+    0o600
+  )
   sensitive.add(config.gateway_credential).add(config.worker_credential)
   worker = await createSdkWorker({
     runtimeDirectory: config.runtime_directory,
@@ -344,6 +376,7 @@ try {
       command: '/usr/bin/sandbox-exec',
       args: ['-f', files.policy, process.execPath, files.bootstrap],
     }),
+    onCleanupDiagnostic: cleanupDiagnostic,
   })
   const start = worker.service.start.bind(worker.service)
   const observed = new Set()
@@ -388,16 +421,27 @@ try {
     emit({ event: 'error', code: 'AGENT_STACK_FIXTURE_FAILED' })
     process.exit(1)
   }, 8000)
+  let stoppedObservation
   try {
     if (worker) await worker.close()
+    if (!diagnosticsComplete) throw invalid()
     if (!failed && config && files)
-      emit(await observations(config, files, sensitive))
+      stoppedObservation = await observations(config, files, sensitive)
     else failed = true
   } catch {
     failed = true
   } finally {
     clearTimeout(watchdog)
+    if (diagnosticDescriptor !== undefined) {
+      try {
+        closeSync(diagnosticDescriptor)
+      } catch {
+        failed = true
+      }
+      diagnosticDescriptor = undefined
+    }
   }
   if (failed) emit({ event: 'error', code: 'AGENT_STACK_FIXTURE_FAILED' })
+  else if (stoppedObservation) emit(stoppedObservation)
   process.exitCode = failed ? 1 : 0
 }

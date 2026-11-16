@@ -14,11 +14,9 @@ import json
 import os
 from pathlib import Path
 import secrets
-import shutil
 import signal
 import socket
 import ssl
-import stat
 import subprocess
 import sys
 import tempfile
@@ -38,6 +36,8 @@ sys.path.insert(0, str(ROOT / 'apps/api'))
 sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
 from test_agent_stack import AgentStackTests, OwnedSessionRedis
 from test_agent_mysql import SocketManager
+from cleanup_diagnostics import CleanupDiagnostics
+from fixture_cleanup import FixtureCleanupMixin
 from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
 from src.database.mongo.mongodb_manage import MongoDBManager
@@ -196,7 +196,7 @@ class Stream:
         await asyncio.gather(self.task, return_exceptions=True)
 
 
-class Fixture:
+class Fixture(FixtureCleanupMixin):
     def __init__(self, mode, *, case=None):
         self.mode = mode
         self.case, self.real_proxy, self.model_trace, self.model_id = case, None, [], MODEL
@@ -221,6 +221,8 @@ class Fixture:
         self.worker_stopped = None
         self.expected_worker_crash = False
         self.reaped_groups = []
+        self.cleanup_diagnostics = CleanupDiagnostics()
+        self.worker_cleanup_diagnostics = dict(events=[], complete=False, acknowledged=False)
         self.database = 'sunworld_sdk_' + uuid4().hex
         self.namespace = 'agent:sdk:' + uuid4().hex + ':{sun-world}'
         self.gateway_secret, self.worker_secret = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
@@ -433,160 +435,9 @@ class Fixture:
         assert not list((self.root / 'workspaces').glob('run-*')), 'SDK workspace was retained'
         return row
 
-    def recorded_groups(self):
-        path = self.root / 'workspaces/fixture-processes.jsonl'
-        if not path.exists():
-            if self.worker is not None:
-                raise RuntimeError('Missing owned SDK process record')
-            return []
-        info = path.lstat()
-        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
-                or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1 or info.st_size > 8192
-                or path.parent.is_symlink() or path.parent.resolve() != self.root / 'workspaces'):
-            raise RuntimeError('Unsafe owned SDK process record')
-        groups = []
-        for line in path.read_text().splitlines():
-            item = json.loads(line)
-            if (set(item) != {'pid'} or type(item['pid']) is not int or item['pid'] <= 1
-                    or item['pid'] in {os.getpid(), os.getpgrp(), self.worker_process.pid}
-                    or item['pid'] in groups or len(groups) >= 128):
-                raise RuntimeError('Invalid owned SDK process identity')
-            groups.append(item['pid'])
-        return groups
-
-    def reap_recorded_groups(self):
-        # Only after the trusted Worker parent is dead: it cannot add another
-        # execution after we read its owned, fsynced bootstrap PID journal.
-        if self.worker_process.returncode is None:
-            raise RuntimeError('Worker parent is still alive')
-        groups = self.recorded_groups()
-        for pid in groups:
-            def alive():
-                try:
-                    os.killpg(pid, 0)
-                    return True
-                except ProcessLookupError:
-                    return False
-                except PermissionError:
-                    return True  # Unknown is not absence; only ESRCH confirms.
-            def send(signum):
-                try:
-                    os.killpg(pid, signum)
-                    return True
-                except ProcessLookupError:
-                    return True  # No signal retry is needed for a gone group.
-                except PermissionError:
-                    return False
-            if not alive():
-                continue
-            self.reaped_groups.append(pid)
-            term_sent = send(signal.SIGTERM)
-            # CONT is independent: a denied TERM must not skip resuming a
-            # deliberately stopped SDK. Retry only denied sends, within bounds.
-            cont_sent = send(signal.SIGCONT)
-            deadline = time.monotonic() + 2
-            while alive() and time.monotonic() < deadline:
-                if not term_sent:
-                    term_sent = send(signal.SIGTERM)
-                if not cont_sent:
-                    cont_sent = send(signal.SIGCONT)
-                time.sleep(.02)
-            if alive():
-                kill_sent = send(signal.SIGKILL)
-                deadline = time.monotonic() + 3
-                while alive() and time.monotonic() < deadline:
-                    if not kill_sent:
-                        kill_sent = send(signal.SIGKILL)
-                    time.sleep(.02)
-            if alive():
-                raise RuntimeError('Owned SDK process group remains after KILL')
-        return groups
-
-    async def close(self):
-        errors = []
-        async def attempt(action):
-            try:
-                return await action()
-            except BaseException as error:
-                errors.append(error)
-        for stream in self.streams:
-            if not stream.task.done():
-                await attempt(stream.disconnect)
-        if self.application:
-            await attempt(self.application.close)
-        if self.client:
-            await attempt(self.client.aclose)
-        if self.worker_process:
-            process = self.worker_process
-            try:
-                if process.returncode is None:
-                    try:
-                        process.stdin.write(b'{"command":"stop"}\n')
-                        await process.stdin.drain()
-                    except (BrokenPipeError, ConnectionResetError):
-                        pass  # It may already be closing from a forwarded TERM.
-                if not self.expected_worker_crash:
-                    self.worker_stopped = await self.worker_line()
-                    assert self.worker_stopped['event'] == 'stopped'
-                async with asyncio.timeout(10):
-                    await process.wait()
-                assert process.returncode == (-(signal.SIGKILL) if self.expected_worker_crash else 0), 'Unexpected Worker exit'
-            except BaseException as error:
-                errors.append(error)
-                if process.returncode is None:
-                    process.terminate()
-                    try:
-                        async with asyncio.timeout(20):
-                            await process.wait()
-                    except TimeoutError:
-                        process.kill()
-                        await process.wait()
-            groups = await attempt(lambda: asyncio.to_thread(self.reap_recorded_groups))
-            if self.worker_stopped and groups is not None:
-                if (not self.worker_stopped['run_directories_empty'] or not self.worker_stopped['journal_clean']
-                        or self.worker_stopped['start_count'] != len(groups)
-                        or self.worker_stopped['process_group_ids'] != groups or self.reaped_groups):
-                    errors.append(RuntimeError('Worker cleanup observation mismatch'))
-        if self.server:
-            self.server.should_exit = True
-            async def stop_server():
-                try:
-                    async with asyncio.timeout(8):
-                        await asyncio.shield(self.server_task)
-                finally:
-                    if not self.server_task.done():
-                        self.server_task.cancel()
-                        await asyncio.gather(self.server_task, return_exceptions=True)
-            await attempt(stop_server)
-        if self.listener:
-            await attempt(lambda: asyncio.to_thread(self.listener.close))
-        if self.pool:
-            await attempt(lambda: asyncio.to_thread(self.pool.close))
-        if self.admin:
-            def drop_mysql():
-                try:
-                    with self.admin.cursor() as cursor:
-                        cursor.execute(f'DROP DATABASE IF EXISTS `{self.database}`')
-                finally:
-                    self.admin.close()
-            await attempt(lambda: asyncio.to_thread(drop_mysql))
-        if self.mongo:
-            def drop_mongo():
-                try:
-                    self.mongo.drop_database(self.database)
-                finally:
-                    self.mongo.close()
-            await attempt(lambda: asyncio.to_thread(drop_mongo))
-        def drop_redis():
-            keys = list(AgentStackTests.redis.scan_iter(match=self.namespace + '*'))
-            if keys:
-                assert all(key.startswith(self.namespace) for key in keys)
-                AgentStackTests.redis.delete(*keys)
-        await attempt(lambda: asyncio.to_thread(drop_redis))
-        if errors:
-            # Keep the owned evidence if process teardown is uncertain.
-            raise RuntimeError('SDK stack cleanup is unconfirmed') from errors[0]
-        shutil.rmtree(self.root)
+    @staticmethod
+    def cleanup_redis():
+        return AgentStackTests.redis
 
 
 async def success(fixture):
@@ -751,6 +602,8 @@ async def evaluate_real_model(report_path):
                     record['cleanup_error'] = type(error).__name__
                     report['evaluation_status'] = 'cleanup_failed'
                 record['worker_observation'] = fixture.worker_stopped
+                record['cleanup_diagnostics'] = fixture.cleanup_diagnostics.snapshot()
+                record['worker_cleanup_diagnostics'] = fixture.worker_cleanup_diagnostics
                 save()
             if cleanup_error:
                 raise RuntimeError('Evaluation cleanup unconfirmed; do not start another case') from None

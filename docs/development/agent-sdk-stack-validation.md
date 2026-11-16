@@ -72,3 +72,5 @@ apps/api/.venv/bin/python apps/api/tests/integration/mongo_isolation.py --mongod
 两个同时运行的实例写相同库名但读回各自不同数据；实际lsof检查每PID全部named Unix socket（显式mongo.sock和自动mongodb-0.sock）均在自己的root且0600、无TCP LISTEN，shared default socket状态未改变。退出后两个PID/root均消失。历史无TCP结论仍成立，历史“仅私有socket”的范围以本修正为准，未把修前真实模型结果冒称已带此隔离。
 
 父reaper的EPERM处理亦已统一：探测拒绝视为未知存活，TERM与CONT独立尝试，有限窗口内仅重试被拒信号，随后尽力KILL；最终仍须ESRCH。实际owned孤儿瞬时/信号/永久拒绝三项回归加入默认API gate，永久拒绝仍保留root且独立测试兜底回收。另见[未定因失败记录](../evaluations/agent-model-2026-11-16/cleanup-observations.md)，不把修复独立缺陷等同已解释所有历史失败。
+
+清理方法已按自然职责抽出到`tests/integration/fixture_cleanup.py`，固定阶段/类别摘要与Worker私有诊断事件按[回收诊断说明](agent-cleanup-diagnostics.md)接线。坏ACK或损坏诊断后缀不得跳过其余资源关闭；不回显未知字段/异常自由文本。诊断完整、Worker确认、实际回收是不同观察，不互相替代。
