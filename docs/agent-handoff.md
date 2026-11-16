@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 持久账本容量与去重保留
+
+- 正式MySQL配置新增固定8192身份上限（含已删历史），单例X锁/bounded8193初始化/预占与历史/run同commit；满额不清旧key，旧view/cancel/erase/已running保持。新请求Redis前预检，明确FULL竞争只释放并发、分钟不退，未知ACK仍TTL不重扣；见[容量契约](development/agent-ledger-capacity.md)。8192为本地保守值，不代生产存储测量。
+- API774、MySQL33（实际8191/8192/8193与LOCK WAIT）、真实Auth/Redis/ASGI24（双user实际预检/reserve/accept交错）、容量2/2kill+旧8/8kill+pool4/5kill、fresh SDK/真实三库/mTLS六合成情景及独立51/8/2通过；[实证](evaluations/agent-ledger-capacity-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)分清真实/模拟，未操作业务库/供应商或当前SQLite页面。
+- 博客04同题补边界、两图保留、1280/390预览通过未发布；fresh/owned资源已回收，现有问答与预览保留。根format仍仅既有内容manifest失败。下一步官方模型快照/版本策略；生产容量/Linux/旧锁/目标库/账号政策/人工/TLS仍待，P1/A–D未完成，其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 既有MySQL连接池失联恢复
 
 - 修前offline/真实MySQL均确认补建失败丢空位，DB重启后同manager永久等待；现固定位置/PendingClose/集中登记，SQL前最多一次受控factory，已发SQL/COMMIT不重放。close拒新但不夺已借UOW，未知close保归属；见[恢复契约](development/mysql-pool-recovery.md)。未改业务schema/配置或当前SQLite页面。

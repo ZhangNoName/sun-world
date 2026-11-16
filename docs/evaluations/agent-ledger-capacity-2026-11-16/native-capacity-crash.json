@@ -1,0 +1,40 @@
+{
+  "format": "sun-world-agent-mysql-recovery/1",
+  "suite": "capacity",
+  "synthetic_data": true,
+  "real_provider_called": false,
+  "host_power_loss_tested": false,
+  "production_snapshot_tested": false,
+  "scenarios": [
+    "test_capacity_committed_ack_loss_crash_keeps_one_counter_and_admission",
+    "test_capacity_uncommitted_precharge_crash_leaves_no_counter_or_history"
+  ],
+  "mysql_version": "8.4.13",
+  "crashes": [
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    }
+  ],
+  "tests_run": 2,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "owned_process_stopped": true,
+  "owned_directory_removed": true,
+  "passed": true
+}

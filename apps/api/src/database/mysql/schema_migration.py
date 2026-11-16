@@ -24,6 +24,17 @@ from typing import Any, Iterable
 
 
 MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
+    "agent_ledger_capacity": {
+        "columns": [
+            {'name': 'id', 'definition': 'INT NOT NULL', 'type': 'int'},
+            {'name': 'format_version', 'definition': 'INT NOT NULL DEFAULT 1', 'type': 'int'},
+            {'name': 'capacity', 'definition': 'INT NOT NULL DEFAULT 8192', 'type': 'int'},
+            {'name': 'used_count', 'definition': 'INT NOT NULL DEFAULT 0', 'type': 'int'},
+            {'name': 'initialized', 'definition': 'INT NOT NULL DEFAULT 0', 'type': 'int'},
+        ],
+        "primary_key": ["id"],
+        "indexes": [],
+    },
     "agent_runs": {
         "columns": [
             {'name': 'id', 'definition': 'VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},

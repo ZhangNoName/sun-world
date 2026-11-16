@@ -642,3 +642,35 @@ MySQLManager改固定Queue位置、None空位、PendingClose与Condition同步�
 sun-world-blog→design同题补博客04第六节，说明可借位置与物理handle、SQL前修复与已发事务不重放、关闭未确认仍保归属。分类后端与原架构笔记/Agent/DeepSeek Harness标签保留，新增为少量状态规则，原两张透明图已经提供整体保存/删除关系，无需第三张重复图。1280/390视觉/DOM预览通过，7稳定ID、25处strong、0px缩进、无残留双星/横向溢出，原图桌面360、手机约342px，未发布；预览仍用dirty renderer/CSS，非整页验收。3030/8032旧SQLite问答与3033正文预览保留。
 
 下一步核对账本长期容量与永久去重保留上限，不能删身份后准许旧请求重跑。Linux硬隔离/未知孤儿/陈旧锁、目标业务库与备份/断电跨版本、全账号/自动TTL/备份日志政策、人工语义、上游版本策略及生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty及主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步fixed slots/PendingClose、factory集中登记、close并非drain、SQL前一次建连/已发语句不重放及pool/default矩阵范围这些增量。
+
+## 2026-11-16 永久去重记录的持久容量
+
+### 目标与实现
+
+基点7e319bd，按[容量契约](../../development/agent-ledger-capacity.md)先落文档再同步coding/判官。Redis速率限制不等于存量有界，新增中央agent_ledger_capacity单例（id1/v1/cap8192/used/initialized）及59行stateless helper。服务端固定8192条run身份，含active/terminal/deleted；永久key不淘汰，满额只拒新，不关旧view/cancel/erase或已运行回调。与Worker8192永久屏障同数量级的本地P1保守值，不是生产存储测量/全DB字节上限。
+
+accept在用户锁/启用和owner/family/幂等路径之后、history.create之前，以no-op upsert直接X锁单例再锁读，未初始化只读LIMIT8193个run id（无content/count聚合或deleted/app过滤），旧writer必须停写后升级。预占+初始化+AI历史+run一起commit；失败一起回滚，未知ACK不退不重扣，已有计数不自动下调。只读ensure_capacity不写/commit，缺行不能猜0；counter格式/上限/类型/额外行损坏拒新。历史删除/终态不归还永久位。
+
+Application在Redis reserve之前预检容量，capabilities只说明新受理不可用，应用开关不变。已知precommit FULL竞争只释放未启动的并发槽，分钟不退；DB/未知commit仍按原TTL保预占，未从错误文本猜确认。模型/工具/身份协议、Worker代码、业务配置与当前SQLite/v1页面未改，无业务DDL/数据操作或供应商调用。主要源：schema、error codes、capacity/ledger/application、共享SQLite fixture/14新离线case、四个MySQL/五个stack/两个crash原生case、legacy schema与CLI门禁增量，共13个Python源。
+
+### 验证中的观察与修正
+
+- 最后位native最初10ms频繁采样读到早期RUNNING（诊断为users2查询），同连接未看到LOCK WAIT而失败；150ms间隔后实际LOCK WAIT通过，2秒上限/强oracle保留，未改容量算法。临时诊断从测试源移除、raw log保留；参考MySQL监测视图一致性说明，不逐指令反推该binary缓存或称业务锁故障。
+- 应用race题早期patch预检结果只测分支，最终改真实双用户：调度栅栏停user1在reserve前，user2真实SSE接受/完成耗最后位，放行user1真实reserve/accept FULL。实际预检/Redis/事务不绕过；user1分钟1/global2，user1并发键消失、counter8192/run1/Worker1，不能靠退分钟/多派误绿。判官只读审查此最终delta/AST通过。
+- coding新14项及相关122通过；判官独立core/application51、launcher8、升级构造2与原生/新race oracle审查通过，无确认阻塞，未执行真实DB/SDK。角色用followup复用，不新建agent/worktree。SQLite更强串行/ON CONFLICT方言仅为模拟，不当InnoDB证明。
+
+### 最终实证与资源
+
+完整API774/29.976秒通过。owned MySQL8.4.13 default33/6.304秒（31native+2构造）通过，新四题真实8191/8192/8193身份（含删除）及跨user最后位实际LOCK WAIT；旧metadata缺失只读不seed，两个ledger/bootstrap旧3+新2=5；旧8193保存拒新；history失败全回滚、真实commit后ACK丢失used1/run1。合成旧schema已额外缺capacity表，升级后只补结构、不删原run。
+
+真实MySQL/Redis/JWT/ASGI stack24/17.733秒（原19+新5）通过，含最终双user race、full/损坏仍可旧操作、running继续模型/完成、未知ACK保持预占且重建app不重扣。容量专项2/2.455秒、2次实际SIGKILL在commit前/真实commit后：相应全零或唯一counter1/run1/history1；CLI固定2题2run2kill零skip。旧lifecycle8/10.478秒/8kill、pool4/6.641秒/5kill回归通过，默认原范围保留。
+
+Fresh SDK0.2.2-rc.1+真实MySQL/Redis/Mongo+双向mTLS默认六合成情景通过，17个Worker资源/index相同，592缓存包/下载0；prepared runtime和owned三库/SDK私有根均删除、context确认停止，缓存binary与站点必要SDK资源保留。未重跑官方四题或调用供应商，不称Linux/断电/目标业务库验收。
+
+执行源树a53f715791b15cbf6f1d478de0b63755d43cc377，72项selected source SHA/index一致，13个变更Python AST；root-script/api:deploy-schema、scoped diff及本轮JSON格式通过。根format仅旧docs/content-sources/csdn-qq-42345136/manifest.json失败，不改其他dirty、不称root/Web全绿。[本轮实证](../../evaluations/agent-ledger-capacity-2026-11-16/README.md)含专项crash投影/检查/source清单；raw logs/监督driver与截图仅ignored .tmp/ledger-capacity。
+
+### 写作与后续
+
+sun-world-blog→design同题补博客04第五节三段：速率/存量、容量与历史同事务、旧库初始化/不清身份/满额旧操作可用。保留后端分类、架构笔记/Agent/DeepSeek Harness标签；新内容是有限计数规则，旧两张透明图已展示保留身份与内容关系，不加重复图。1280/390视觉/DOM通过，7稳定ID、26处strong、0px缩进、无残留双星/横向溢出，两图桌面360/手机约342px，未发布；preview仍用dirty renderer/CSS，非整页验收。3030/8032既有问答及3033正文预览保留。
+
+下一步核对官方模型快照与版本策略；不把alias或created当不可变权重，使用官方资料/已授权只读接口，不读取/回显key或改业务模型目录。生产存储测量、旧writer停写迁移、Linux/未知孤儿/旧锁、目标库/备份/断电跨版本、全账号/跨family/自动TTL/备份日志政策、人工语义与生产TLS仍独立未完成，P1/A–D及持续goal未完成。其他80项dirty、主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步容量单例/bounded初始化、旧key优先、FULL已知拒绝与未知ACK区别及新capacity/default/pool矩阵边界。

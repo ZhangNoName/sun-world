@@ -98,6 +98,7 @@ class RunApplication:
                 principal = await self._sync(identify)
                 authenticated = True
                 await self._sync(self._authenticate, token)
+                await self._sync(self.ledger.ensure_capacity)
                 available = await self.available()
                 reason = None if available else 'AGENT_RUNTIME_UNAVAILABLE'
             except (AuthorizationDenied, LedgerError) as error:
@@ -132,7 +133,8 @@ class RunApplication:
             raise LedgerError('AGENT_RUNTIME_UNAVAILABLE')
         task = asyncio.current_task()
         self._admitting.add(task)
-        context = {'lease': None, 'accepted': None, 'begun': False, 'job': False}
+        context = {'lease': None, 'accepted': None, 'begun': False, 'job': False,
+                   'capacity_rejected': False}
         owner = None
         try:
             if not isinstance(question, str) or not question.strip() or len(question) > 2000:
@@ -146,6 +148,7 @@ class RunApplication:
             existing = await self._sync(self.ledger.find_request, owner, question=question, idempotency_key=key)
             if existing:
                 raise RequestExists(existing['id'])
+            await self._sync(self.ledger.ensure_capacity)
             if not await self.available():
                 raise LedgerError('AGENT_RUNTIME_UNAVAILABLE')
             def reserve():
@@ -155,8 +158,15 @@ class RunApplication:
             self._require_enabled()
             def accept():
                 context['begun'] = True
-                context['accepted'] = self.ledger.accept(owner, question=question, idempotency_key=key,
-                    bundle_hash=self.bundle_hash, model_id=self.model_id)
+                try:
+                    context['accepted'] = self.ledger.accept(owner, question=question, idempotency_key=key,
+                        bundle_hash=self.bundle_hash, model_id=self.model_id)
+                except LedgerError as error:
+                    # This code is raised only before the admission COMMIT;
+                    # database/unknown-commit errors keep the existing TTL rule.
+                    if error.code == 'AGENT_LEDGER_FULL':
+                        context['capacity_rejected'] = True
+                    raise
             await self._sync(accept)
             admission = context['accepted']
             if not admission.created:
@@ -176,7 +186,7 @@ class RunApplication:
                 lease, accepted = context['lease'], context['accepted']
                 if lease is None or context['job']:
                     return
-                release = not context['begun']
+                release = not context['begun'] or context['capacity_rejected']
                 if accepted is not None:
                     if accepted.created:
                         status = await self._sync(self.ledger.fail_accepted, accepted.run['id'], code='AGENT_ADMISSION_UNAVAILABLE')

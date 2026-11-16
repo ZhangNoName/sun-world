@@ -23,13 +23,17 @@ EXPECTED_SCENARIOS = frozenset({
     'test_recovery_uncommitted_admission_has_no_partial_history',
     'test_recovery_uncommitted_completion_rolls_back_answer_and_run',
 })
+CAPACITY_SCENARIOS = frozenset({
+    'test_capacity_uncommitted_precharge_crash_leaves_no_counter_or_history',
+    'test_capacity_committed_ack_loss_crash_keeps_one_counter_and_admission',
+})
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mysqld', required=True, type=Path)
     parser.add_argument('--report', type=Path)
-    parser.add_argument('--suite', choices=('lifecycle', 'pool'), default='lifecycle')
+    parser.add_argument('--suite', choices=('lifecycle', 'pool', 'capacity'), default='lifecycle')
     args = parser.parse_args(argv)
     if args.report is not None and args.report.exists():
         raise ValueError('Report must be a new file')
@@ -44,6 +48,9 @@ def main(argv=None):
                 expected, prefix = EXPECTED_POOL_SCENARIOS, 'test_pool_'
                 if len(expected) != 4 or sorted(expected.values()) != [1, 1, 1, 2]:
                     raise RuntimeError('The complete fixed recovery matrix is required')
+            elif args.suite == 'capacity':
+                from mysql_capacity_recovery import CapacityRecoveryTests as RecoveryTests
+                expected, prefix = dict.fromkeys(CAPACITY_SCENARIOS, 1), 'test_capacity_'
             else:
                 from mysql_recovery import RecoveryTests
                 expected, prefix = dict.fromkeys(EXPECTED_SCENARIOS, 1), 'test_recovery_'

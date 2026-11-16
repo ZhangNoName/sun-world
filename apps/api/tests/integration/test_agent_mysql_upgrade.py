@@ -40,6 +40,7 @@ def synthetic_schema(*, no_agent=False):
     schema = copy.deepcopy(migration.MYSQL_SCHEMA)
     if no_agent:
         return {name: definition for name, definition in schema.items() if not name.startswith('agent_')}
+    schema.pop('agent_ledger_capacity')
     for table, missing in (('agent_runs', RUN_EXTENSION_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
         present = {column['name'] for column in schema[table]['columns']}
         if not missing <= present:
@@ -94,7 +95,7 @@ class SyntheticUpgradeFixtureTests(unittest.TestCase):
         before = copy.deepcopy(migration.MYSQL_SCHEMA)
         business, budgets = synthetic_schema(no_agent=True), synthetic_schema()
         self.assertFalse(any(name.startswith('agent_') for name in business))
-        self.assertEqual(set(budgets), set(before))
+        self.assertEqual(set(budgets), set(before) - {'agent_ledger_capacity'})
         for table, removed in (('agent_runs', RUN_EXTENSION_COLUMNS), ('agent_model_calls', CALL_BUDGET_COLUMNS)):
             self.assertEqual(removed, {column['name'] for column in before[table]['columns']}
                 - {column['name'] for column in budgets[table]['columns']})
@@ -226,7 +227,7 @@ class AgentMySQLUpgradeTests(unittest.TestCase):
         before = self.snapshot(schema)
         actions, errors = migration.build_plan(self.connection, self.database)
         self.assertEqual([], errors)
-        self.assertEqual(len(RUN_EXTENSION_COLUMNS) + len(CALL_BUDGET_COLUMNS), len(actions))
+        self.assertEqual(len(RUN_EXTENSION_COLUMNS) + len(CALL_BUDGET_COLUMNS) + 1, len(actions))
         migration.apply_plan(self.connection, actions)
         self.assertEqual(before, self.snapshot(schema))
         self.assert_new_defaults()

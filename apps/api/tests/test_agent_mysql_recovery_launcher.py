@@ -15,13 +15,13 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class RecoveryLauncherTests(unittest.TestCase):
-    def invoke(self, *, omit=None, skipped=False, zero_run=False, pool=False):
+    def invoke(self, *, omit=None, skipped=False, zero_run=False, pool=False, capacity=False):
         with tempfile.TemporaryDirectory(prefix='sw-mysql-oracle-') as temporary:
             directory = Path(temporary)
             @contextmanager
             def owned(_binary):
                 yield SimpleNamespace(environment={}, directory=directory / 'absent-runtime',
-                    version='synthetic', crashes=[{}] * (5 if pool else 8),
+                    version='synthetic', crashes=[{}] * (2 if capacity else 5 if pool else 8),
                     process=SimpleNamespace(poll=lambda: 0))
             with patch.dict(sys.modules, {'fixture_mysql': SimpleNamespace(owned_mysql=owned)}):
                 original_path = sys.path[:]
@@ -37,6 +37,8 @@ class RecoveryLauncherTests(unittest.TestCase):
                          'test_pool_committed_ack_loss_preserves_one_admission': 1,
                          'test_pool_input_commit_ack_loss_keeps_budget_without_generation': 1}
                         if pool else dict.fromkeys(module.EXPECTED_SCENARIOS, 1))
+            if capacity:
+                expected = dict.fromkeys(module.CAPACITY_SCENARIOS, 1)
             methods = {name: (lambda _self: None) for name in expected
                        if omit != 'all' and name != omit}
             case = type('SyntheticRecovery', (unittest.TestCase,), methods)
@@ -46,8 +48,10 @@ class RecoveryLauncherTests(unittest.TestCase):
             dependency = ({'mysql_pool_recovery': SimpleNamespace(PoolRecoveryTests=case,
                            EXPECTED_POOL_SCENARIOS=expected)} if pool else
                           {'mysql_recovery': SimpleNamespace(RecoveryTests=case)})
+            if capacity:
+                dependency = {'mysql_capacity_recovery': SimpleNamespace(CapacityRecoveryTests=case)}
             arguments = ['--mysqld', 'synthetic-unused', '--report', str(report),
-                         '--suite', 'pool' if pool else 'lifecycle']
+                         '--suite', 'capacity' if capacity else 'pool' if pool else 'lifecycle']
             with patch.dict(sys.modules, dependency), redirect_stderr(io.StringIO()):
                 if omit is not None:
                     with self.assertRaisesRegex(RuntimeError, 'complete fixed recovery matrix'):
@@ -83,3 +87,12 @@ class RecoveryLauncherTests(unittest.TestCase):
     def test_pool_cli_rejects_skipped_or_zero_run_matrix(self):
         self.invoke(pool=True, skipped=True)
         self.invoke(pool=True, zero_run=True)
+
+    def test_capacity_cli_rejects_empty_or_missing_scenarios(self):
+        for missing in ('all', 'test_capacity_uncommitted_precharge_crash_leaves_no_counter_or_history'):
+            with self.subTest(missing=missing):
+                self.invoke(capacity=True, omit=missing)
+
+    def test_capacity_cli_rejects_skipped_or_zero_run_matrix(self):
+        self.invoke(capacity=True, skipped=True)
+        self.invoke(capacity=True, zero_run=True)

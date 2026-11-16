@@ -29,6 +29,8 @@ class SqliteUow:
         if self.database.fail_completion and sql.startswith("UPDATE agent_runs SET status='completed'"):
             raise RuntimeError('synthetic commit failure')
         return self.connection.execute(sql.replace('%s', '?').replace(' FOR UPDATE', '')
+                                       .replace(' ON DUPLICATE KEY UPDATE id=id',
+                                                ' ON CONFLICT(id) DO UPDATE SET id=id')
                                        .replace(' AS BINARY)', ' AS BLOB)')
                                        .replace('CURRENT_TIMESTAMP(6)', 'CURRENT_TIMESTAMP'), params)
 
@@ -72,6 +74,9 @@ class Database:
             ''')
             db.execute(f'CREATE TABLE agent_runs({columns},PRIMARY KEY(id),'
                        'UNIQUE(user_id,scenario,idempotency_key),UNIQUE(conversation_id))')
+            capacity = MYSQL_SCHEMA['agent_ledger_capacity']
+            columns = ','.join(f"{c['name']} INTEGER" for c in capacity['columns'])
+            db.execute(f'CREATE TABLE agent_ledger_capacity({columns},PRIMARY KEY(id))')
 
     def unit_of_work(self, *, isolation_level=None):
         return SqliteUow(self, isolation_level)

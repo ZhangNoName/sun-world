@@ -15,6 +15,7 @@ from uuid import UUID, uuid4
 from src.core import error_codes
 from src.core.auth import Principal
 from src.modules.ai.public import AgentHistoryTransactions
+from .capacity import LedgerCapacity
 
 
 TERMINAL = frozenset({'completed', 'failed', 'cancelled', 'interrupted'})
@@ -70,6 +71,11 @@ class MySqlRunLedger:
             raise LedgerError(error_codes.AGENT_CLOCK_INVALID)
         return current.astimezone(timezone.utc).replace(tzinfo=None)
 
+    def ensure_capacity(self):
+        """Read-only advisory check; accept reserves under its own X lock."""
+        with self.unit_of_work() as uow:
+            LedgerCapacity().check(uow)
+
     def accept(self, principal: Principal, *, question, idempotency_key, bundle_hash, model_id):
         family = family_hash(principal)
         key = uuid_text(idempotency_key)
@@ -98,6 +104,7 @@ class MySqlRunLedger:
                 if existing['request_hash'] != request_hash:
                     raise LedgerError(error_codes.AGENT_IDEMPOTENCY_CONFLICT)
                 return Admission(existing, False)
+            LedgerCapacity().reserve(uow)
             now = self.now()
             run_id = str(uuid4())
             conversation_id = 'agent_conv_' + uuid4().hex
