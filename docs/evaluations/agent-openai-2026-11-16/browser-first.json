@@ -1,0 +1,19 @@
+{
+  "phase": "existing_site_openai_browser",
+  "model": "gpt-6.1-sol",
+  "generation_runs": 1,
+  "status": "failed",
+  "page_errors": 0,
+  "normal_login": true,
+  "capabilities": {
+    "enabled": true,
+    "authenticated": true,
+    "model": "gpt-6.1-sol（OpenAI 官方 API）"
+  },
+  "completed": true,
+  "failed": false,
+  "source_links": ["/blog/41"],
+  "desktop_overflow": false,
+  "refresh_restored": false,
+  "mobile_overflow": false
+}

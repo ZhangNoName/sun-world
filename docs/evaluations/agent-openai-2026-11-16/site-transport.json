@@ -1,0 +1,10 @@
+{
+  "phase": "final_site_transport",
+  "successful_tools": ["blog.search_public", "blog.read_public"],
+  "successful_model_callbacks": 3,
+  "model_failure_diagnostics_count": 0,
+  "normal_launcher_with_repository_log": true,
+  "sandbox_negative_checks_passed": true,
+  "native_abort": false,
+  "api_health": "ok"
+}

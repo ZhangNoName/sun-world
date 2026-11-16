@@ -1,0 +1,71 @@
+{
+  "version": "sun-world-openai-validation/1",
+  "date": "2026-11-16",
+  "base_commit": "cc42e9c9fcca7f793b69754eb682227c0c613df1",
+  "validation_source_tree": "009982e8650b50a6f8d813510f7d49da905d9557",
+  "source_note": "Selected sources match index; final evidence/handoff documents are appended afterward. API667 and Worker71 exercised unchanged executable sources. Browser uses current workspace frontend with unrelated uncommitted changes.",
+  "python_version": "3.12.13",
+  "node_version": "v24.17.0",
+  "httpx_version": "0.28.1",
+  "httpcore_version": "1.0.9",
+  "sdk_version": "0.2.2-rc.1",
+  "checks": {
+    "api_tests": 667,
+    "worker_tests": 71,
+    "responses_offline_tests": 14,
+    "connect_offline_tests": 14,
+    "independent_python_tests": 28,
+    "independent_darwin_launcher_tests": 1,
+    "dev_launcher_protocol_passed": true,
+    "official_catalog_http_status": 200,
+    "bounded_smoke_passed": true,
+    "synthetic_function_roundtrip_passed": true,
+    "final_site_browser_passed": true,
+    "site_uses_existing_development_sqlite": true,
+    "site_uses_workspace_frontend": true,
+    "blog_body_preview": {
+      "widths": [1280, 390],
+      "heading_ids": 5,
+      "strong_count": 7,
+      "image_widths": [360, 342],
+      "page_overflow": false,
+      "uses_uncommitted_renderer_and_css": true
+    }
+  },
+  "gates": {
+    "input_token_hard_budget_verified": false,
+    "linux_isolation_verified": false,
+    "formal_v2_openai_stack_verified": false,
+    "human_semantic_review_complete": false,
+    "production_enabled": false,
+    "historical_proxy_failure_root_cause_identified": false
+  },
+  "source_sha256": {
+    "apps/api/src/modules/ai/local_openai.py": "191b9eb42096fece5aa66fbcf1fe7b0641199f0bff5416c0f93211df0df2bf21",
+    "apps/api/src/modules/ai/local_openai_transport.py": "851b5eebce3cdf88d098fdb8972f54b73256fa58c8550fce35182148a666152d",
+    "apps/api/src/modules/ai/openai_responses.py": "fe202d09f195f9d931a453a11f6fdb0ab1783bbb0df0d7f6d4e18f050730fbd8",
+    "apps/api/src/modules/ai/public.py": "7bbeffcc5928919c8cb49550b76915b5677f73a2bc49a936031ea71855b1cbc0",
+    "apps/api/tests/test_local_openai_transport.py": "65d06d3649d55954647baf71180a707345291c6174a92cf4ed8d22106d2520e0",
+    "apps/api/tests/test_openai_responses.py": "46402a407dcaf8e1b65a229b5e52567c067505360d05fc4b3a6364ff7fbbae2a",
+    "scripts/dev-blog-qa.mjs": "4d8ac2d7ebc0949a291e95af8fe60fcf9ddfb53d7f64c27060e4a4005a6d5942",
+    "apps/agent-worker/tests/protocol/launcher-sandbox.test.mjs": "063e42033887f95cf1771828d74478bb1c3a56f47e60e195cc16c1e81aace2f6",
+    "apps/api/src/modules/ai/providers.py": "58eeb1eae0d3718188f5aaddb1c4a49c211d719bf96aa674d3790104e8f69113",
+    "apps/api/src/modules/ai/model_proxy.py": "43f64f4d88ac579ef8964f4c7295638eb5fb09b6fe5af2dae209686062ee1486",
+    "apps/api/src/modules/ai/mcp_gateway.py": "77ae927da4be7297e59eb5800880384dd31930fcb5a8120a1abd42019edc73cd",
+    "apps/api/src/core/runtime_env.py": "e31b29e2e81db81ca53822ada4bfe123db057feea8d90e64013f4d1e6ff98257",
+    "apps/api/tests/test_structured_model_proxy.py": "1008de9def4642d2be3f0992443816d551957a5b322499212ac5668251e81f58",
+    "apps/api/tests/test_blog_qa_model_proxy.py": "989dec05ab803099ddc56513c495235fb1e81c8fc0c49001425f0c6d92fbf025",
+    "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+    "apps/api/poetry.lock": "80c770b8c36cd7e6214d6d64a704ef8a3512b761208ce97f2eb7a4c04254c1b2",
+    "tools/dsh-blog-p0/pnpm-lock.yaml": "08b4c4630848a1715e3fd2b46d523429f55c2d451c928a63c269e7c76ebe2500"
+  },
+  "safe_report_sha256": {
+    "browser-final.json": "3c641dfe181e78c60d444b042b263bd1dae438df6b36226f7616573343431e61",
+    "browser-first.json": "7b9b6bbea7fe0aa715effb331cdb0c14bddf9322f82f27772417ca3f8009690d",
+    "browser-second.json": "b678d401e34ecfe28ee2e47d35b29f945e91a3f33243cea511ea1c081e7dc456",
+    "catalog.json": "a96277d530742145804b61a5f204c0e6bb85576b05450476a14c13d9267ab893",
+    "site-transport.json": "9ff60a40ceef8e6ca6a0777aee0f77f46c14123533f92bce1cad56c205b5ee53",
+    "smoke.json": "50f6c10970ba4cf46aefbce1092593746d5feefa6382c799b691030f1fd3829b",
+    "tool-roundtrip.json": "4488f85034a3e00827be5c62cde5b160dbe119a389e7fcdd08a249a8abce44d9"
+  }
+}

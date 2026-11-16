@@ -1,0 +1,28 @@
+{
+  "phase": "responses_tool_roundtrip",
+  "model": "gpt-6.1-sol",
+  "generation_attempts": 2,
+  "maximum_attempts": 2,
+  "max_output_tokens_per_call": 1024,
+  "store": false,
+  "article_data": "synthetic",
+  "calls": [
+    {
+      "stop_reason": "tool_use",
+      "usage": {
+        "input_tokens": 183,
+        "output_tokens": 20
+      },
+      "expected_tool_and_arguments": true
+    },
+    {
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 231,
+        "output_tokens": 11
+      },
+      "answer_matches_synthetic_fact": true
+    }
+  ],
+  "status": "ok"
+}

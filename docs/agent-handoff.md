@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 OpenAI官方API本地接通
+
+- 固定gpt-6.1-sol Responses profile经显式Clash转发，保持IPpin/Host/SNI/TLS和原预算；无需本地部署模型，凭据值只从ignored私密文件读取，不入源码/报告/应用日志/Worker。实际生成、函数往返与正常站点登录→文章41问答/来源→刷新恢复通过，[本地入口](http://127.0.0.1:3030/aigc/blog-qa)继续运行，未改全站模型目录或生产。
+- API667/Worker71，独立Python28+Darwin1通过；修forced tool零调用漏检与sandbox继承repo日志FD崩溃，SBPL未放宽。一次历史UI模型代理失败未定因，保留三轮记录及安全阶段诊断，不自动重放；见[接入实证](evaluations/agent-openai-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 博客05补托管计数/Responses阶段与推理预算，1280/390正文预览通过、原分类标签和透明图保留，未发布。后续推进官方完整输入计数/持久预算；Linux/人工语义/已有库崩溃/生产TLS等门槛不变，P1/A–D未整体放行，其他dirty保留，不推送部署。
+
 ## 2026-11-16 Tokenizer能力观察
 
 - 新增固定六请求、无生成的显式探针；实际Qwen服务计数69/378/434、metadata缺tokenizer工件，三个验收flags仍false。API639/新增15项及独立15项review通过，安全证据与11项源码摘要见[观察记录](evaluations/agent-tokenizer-2026-11-16/README.md)。

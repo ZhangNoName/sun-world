@@ -1,0 +1,9 @@
+{
+  "phase": "official_catalog",
+  "http_status": 200,
+  "model_count": 96,
+  "selected_model": "gpt-6.1-sol",
+  "selected_model_available": true,
+  "inference_performed": false,
+  "transport": "fixed_official_hostname_explicit_loopback_proxy_default_tls"
+}

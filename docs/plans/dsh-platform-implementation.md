@@ -137,4 +137,6 @@ B/P1与A–D仍未整体完成：缺已验证输入tokenizer/总输入token硬�
 
 2026-11-16后续补充回收失败可定位性：新增固定阶段/错误类别、有界首错与恢复记录、测试宿主私有sink及安全prefix reader，生产控制/RPC/journal不改变。实际SDK目录EACCES探针检查未确认不放槽，细节见[回收诊断](../development/agent-cleanup-diagnostics.md)。旧失败定因与Linux/跨重启诊断留存仍未因此完成。
 
-2026-11-16输入token前置核对：显式无生成探针只观察固定测试模型的metadata和三组合成tokenize响应，不提供通用URL/输入入口；[探针契约](../development/agent-model-validation.md#tokenizer能力探针契约2026-11-16)要求三个验收flag始终false。服务端count不是经过锁定版本与模板验证的本地计数器，不能据此放行B/P1。下一步仍须取得模型/分词器不可变版本及实际模板，完成生成路径一致性验证后再接入持久输入预算；本机尚无可用Linux容器环境，真实memory/PID/network隔离验收仍缺。
+2026-11-16输入token前置核对：显式无生成探针只观察固定测试模型的metadata和三组合成tokenize响应，不提供通用URL/输入入口；[探针契约](../development/agent-model-validation.md#tokenizer能力探针契约2026-11-16)要求三个验收flag始终false。该Qwen别名的服务端count不能替代锁定版本与模板的验证；托管API可另评估供应商完整请求计数路径，不要求本地部署模型。实际生成路径一致性与持久输入预算仍须验证，不能据此放行B/P1。本机尚无可用Linux容器环境，真实memory/PID/network隔离验收仍缺。
+
+2026-11-16按用户授权接入OpenAI官方API：独立local-only gpt-6.1-sol Responses profile、私密key文件引用、显式Clash回环CONNECT及可信HTTPS DNS，保持Provider public全校验/IPpin/Host/SNI/证书与原预算。实际生成、两次函数调用往返及开发站点真实博客问答/刷新通过，见[接入与实证](../development/agent-openai-validation.md)。修强制工具空调用漏检和sandbox继承repo日志FD的启动崩溃；API667/Worker71通过。一次历史模型代理失败尚未定因，保留失败样本与安全阶段诊断。该站点仍是原SQLite本地入口，不冒称正式MySQL/mTLS V2 OpenAI整栈、完整语义或生产放行；下一步可本地推进官方完整输入计数/持久预算及留存/故障矩阵，Linux/人工与生产门槛不变。

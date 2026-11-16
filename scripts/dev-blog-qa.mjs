@@ -139,7 +139,9 @@ try {
     ],
     {
       cwd: directory,
-      stdio: 'inherit',
+      // Parent logs can be inside the denied repository/home subtree. Keep
+      // those file descriptors outside the sandbox, including during Node init.
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: {
         PATH: '/usr/bin:/bin',
         HOME: join(directory, 'home'),
@@ -147,6 +149,8 @@ try {
       },
     }
   )
+  probe.stdout.pipe(process.stdout, { end: false })
+  probe.stderr.pipe(process.stderr, { end: false })
   const [probeStatus] = await once(probe, 'exit')
   if (probeStatus !== 0) throw new Error('沙盒负向验证失败，不启动本地问答')
   let allowedIds = process.env.DSH_SITE_BLOG_QA_USER_IDS || ''
@@ -203,10 +207,10 @@ try {
   let localModel =
     process.env.DSH_SITE_BLOG_QA_MODEL || localOptions.model || ''
   if (modelIndex >= 0) localModel = process.argv[modelIndex + 1] || ''
+  if (localModel && !['qwen-public', 'openai-local'].includes(localModel))
+    throw new Error('本地测试模型仅支持 qwen-public 或 openai-local')
   if (localModel)
-    console.log('显式本地测试模型：qwen-public；不修改站点模型目录。')
-  if (localModel && localModel !== 'qwen-public')
-    throw new Error('本地测试模型仅支持 qwen-public')
+    console.log(`显式本地测试模型：${localModel}；不修改站点模型目录。`)
   const backendEnv = {
     ...process.env,
     PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
@@ -223,6 +227,12 @@ try {
     BLOG_CHECKPOINTER_SETUP: '0',
     BLOG_JWT_SECRET: signingKey || randomBytes(48).toString('hex'),
     DSH_SITE_BLOG_QA_MODEL: localModel,
+    DSH_OPENAI_API_KEY_FILE:
+      process.env.DSH_OPENAI_API_KEY_FILE ||
+      localOptions.openai_key_file ||
+      join(root, '.tmp/openai-local/api-key'),
+    DSH_OPENAI_PROXY_URL:
+      process.env.DSH_OPENAI_PROXY_URL || localOptions.openai_proxy_url || '',
     DSH_SITE_BLOG_QA_ENABLED: fixtures ? '0' : '1',
     DSH_SITE_BLOG_QA_USER_IDS: allowedIds,
     DSH_SITE_BLOG_QA_REQUIRE_ADMIN: explicitIds ? '0' : '1',

@@ -1,0 +1,17 @@
+{
+  "phase": "bounded_responses_smoke",
+  "model": "gpt-6.1-sol",
+  "generation_attempts": 1,
+  "max_output_tokens": 256,
+  "store": false,
+  "proxy": "explicit_loopback",
+  "provider_ip_pin": true,
+  "tls_verification": true,
+  "status": "ok",
+  "stop_reason": "end_turn",
+  "answer_matches": true,
+  "usage": {
+    "input_tokens": 154,
+    "output_tokens": 6
+  }
+}

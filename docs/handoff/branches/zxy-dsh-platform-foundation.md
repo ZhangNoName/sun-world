@@ -458,3 +458,25 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 用户表示暂时没有Linux/模型工件资料，先推进本地可验证部分，随后明确授权使用OpenAI官方API key直接运行，不要求本地部署模型。本次提供的凭据仅提取到ignored私密目录0700/文件0600，不写源码、提交、报告、日志或handoff值/提示；无需用户重复发送。正式运行仍须按协议实现预算，不以此授权打开生产。
 
 官方API初次直连在ConnectTimeout结束，未收到HTTP响应，不能认定key有效或无效。用户指示检查本机Clash Verge，系统代理和配置均7890，实际TCP确认可连接；先前lsof未显示root监听不能作无监听证据，已纠正。当前主线程通过显式回环代理、保持既有DNS/IPpin/Host/SNI与证书校验，做官方模型目录发现。后续只记录安全状态/固定模型标识，不记录原始错误或凭据。优先完成官方API可用模型/协议选择与本地接入；Responses输入计数可单独评估，不要求本地权重或tokenizer部署。Linux/已有库升级与崩溃矩阵/持久journal回收/人工语义/生产TLS依旧独立未完成。Claude Code后续接手须同步此增量，不得把“可API调用”当成原Qwen计数或Linux门槛已通过。
+
+
+## 2026-11-16 OpenAI官方API本地接通
+
+### 范围与结果
+
+基点cc42e9c。用户明确官方key及本机Clash Verge，授权直接API运行，不要求本地模型。新增local-only gpt-6.1-sol Responses profile、严格Messages/工具/phase/usage适配、私密key文件读取与显式loopback CONNECT/可信HTTPS DNS；普通Provider/MCP、站点模型目录、生产准入不改。协议见[OpenAI接入](../../development/agent-openai-validation.md)。凭据值不入源码/index/报告/应用日志/SDK，文件ignored且0700目录/0600权限；不得在后续prompt里复制值或hint。
+
+单次真实生成154in/6out；合成函数调用两次183/20与231/11，保留call_id并正确回答七天。官方模型目录200，gpt-6.1-sol可见。真实站点最终浏览器正常密码登录，actual SDK 3个model callback及search/read各一次，读取文章41、答案/来源/刷新恢复通过，1280/390无pageerror或overflow。此入口是已有开发SQLite+workspace前端，不冒称正式MySQL/mTLS V2 OpenAI整栈。当前服务3030/8032继续运行，入口`http://127.0.0.1:3030/aigc/blog-qa`，用户正常登录即可；ignored开发options默认openai-local、key路径引用和显式7890代理，未改全站目录。当前launcher输出在repo ignored日志中，SDK runtime根为其必要资源，停止launcher后清理。独立Chrome/诊断临时资源已回收。
+
+### 修复、失败与验证
+
+- 修复独立review复现的forced tool→零调用真空漏检，要求恰好一个同名调用；none/required/parallel/历史ID/实际usage上限保持拒绝路径，原预占不退款/不自动重放。
+- 修复legacy启动probe继承repo日志FD导致Node InitializeOnce native abort：对照2/2 repo FD崩溃、private tmp/pipe4/4成功，早前10个pipe/PTY最小检查没有重现。只改probe pipe+父转发，SBPL不改，不能把触发条件等同定位具体syscall。新增Darwin实际launcher片段回归，root repo读取/外网EPERM保持；修后正常launcher+repo日志完整启动通过。
+- UI首轮实际问答完成，但刷新固定1.8秒检查记failed；次轮独立run首模型callback约8s后generic502/model_proxy_failed，根因未知；没有原始上游首错，不猜测网络/配额/计费/解析。增加固定stage/status/known错误类别/本模块source line日志，不带自由值，sink错不替主错。第三独立run改最多15秒条件等待后问答/刷新均通过，未改前端/问题/预算或自动重放。三轮安全投影均保存于[实证](../../evaluations/agent-openai-2026-11-16/README.md)，不得用最终通过抹掉历史失败。
+- 最终check:api667、Worker71、dev-launcher协议、定向格式/语法/diff检查通过；判官独立Python28（Responses14+CONNECT14）与Darwin1项通过，无剩余确认阻塞。诊断sink抛异常仍保留主错/只一次请求/关闭client的额外只读注入也通过。验证源树009982e8650b50a6f8d813510f7d49da905d9557，17项选定源文件摘要与index相同；后补证据/交接无可执行源码再改。
+
+### 写作与下一步
+
+按sun-world-blog→sun-world-write-design局部更新博客05：托管API计数可免本地模型部署、Responses函数/阶段往返和推理输出预算；后端/架构笔记/Agent/DeepSeek Harness原分类标签保留。5稳定ID/7处strong，1280/390正文预览、透明图360/342px、无缩进/溢出通过，新增段落与实际QA手机画面已视觉检查；原图够用，不添重复图。3033独立正文预览保留，仍用dirty renderer/CSS，未发布。
+
+下一步本地可验证项优先官方Responses完整输入计数、固定payload摘要与Gateway同UOW持久累计输入预算；计数调用本身也须限次/超时/实时授权，不能把代理响应usage或bytes当预出网硬限。仍需独立人工语义、模型版本、Linux硬隔离、已有库升级/崩溃、journal留存回收及生产TLS，生产/P1/A–D未整体放行。此前一次代理失败仍待带首错复现；不对未知请求自动重放。其他dirty任务全部保留，不推送/部署/发布。Claude Code后续接手须同步固定官方profile/显式代理/日志FD修复与失败历史这些增量，不要求用户部署本地权重。

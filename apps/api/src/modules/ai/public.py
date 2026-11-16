@@ -1,5 +1,12 @@
 """Supported integration interface for model-aware application services."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .openai_responses import OpenAiResponsesProxy
+
 from src.core.runtime_env import is_local_runtime
 from .agent_history import AgentHistoryTransactions, agent_answer_blocks
 from .model_proxy import StructuredModelProxy, STRUCTURED_MODEL_LIMITS
@@ -17,8 +24,11 @@ def create_keyless_validation_proxy() -> StructuredModelProxy:
     return proxy
 
 
-async def create_blog_qa_proxy(ai_service, *, local_model=None) -> StructuredModelProxy:
+async def create_blog_qa_proxy(ai_service, *, local_model=None) -> StructuredModelProxy | OpenAiResponsesProxy:
     if local_model is not None:
+        if local_model == "openai-local":
+            from .local_openai import create_local_openai_proxy
+            return create_local_openai_proxy()
         if local_model != "qwen-public":
             raise ValueError("Unapproved local test model")
         return create_keyless_validation_proxy()
