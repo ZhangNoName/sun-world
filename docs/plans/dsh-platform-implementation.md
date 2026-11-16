@@ -136,3 +136,5 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 B/P1与A–D仍未整体完成：缺已验证输入tokenizer/总输入token硬限、上游不可变模型版本、人工语义验收及Linux memory/PID/network硬隔离。留存与离线回收、旧库升级/真实崩溃恢复矩阵和生产TLS仍按原门槛推进，不挂main、不切旧页面、不以本地四题放行生产。
 
 2026-11-16后续补充回收失败可定位性：新增固定阶段/错误类别、有界首错与恢复记录、测试宿主私有sink及安全prefix reader，生产控制/RPC/journal不改变。实际SDK目录EACCES探针检查未确认不放槽，细节见[回收诊断](../development/agent-cleanup-diagnostics.md)。旧失败定因与Linux/跨重启诊断留存仍未因此完成。
+
+2026-11-16输入token前置核对：显式无生成探针只观察固定测试模型的metadata和三组合成tokenize响应，不提供通用URL/输入入口；[探针契约](../development/agent-model-validation.md#tokenizer能力探针契约2026-11-16)要求三个验收flag始终false。服务端count不是经过锁定版本与模板验证的本地计数器，不能据此放行B/P1。下一步仍须取得模型/分词器不可变版本及实际模板，完成生成路径一致性验证后再接入持久输入预算；本机尚无可用Linux容器环境，真实memory/PID/network隔离验收仍缺。

@@ -439,3 +439,22 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 博客04修订首错/后恢复与诊断边界，既有透明Redis关系图足够本轮增量，无新增图；1280/390正文及新增段落实际视觉/DOM复核：7稳定ID、17处strong、无首行缩进/残留双星/横向溢出，既有图360/约342px。预览为3033原C3正文URL，草稿相对05链接在预览层映射本地05地址；源稿仍为同目录MD链接，未发布。使用dirty renderer/CSS，不代表完整文章页/提交前端。最终只补文档证据，无可执行源码再改；临时snapshot/prepared runtime待收尾清理，原素材format及Web CSS预算问题与其他dirty保留，不推送部署。下一步回收旧故障继续带阶段证据复现，生产sink/留存、模型输入tokenizer/版本、Linux、旧库/崩溃和生产TLS门槛仍独立未完成。
 
 收尾已确认：本轮两个prepared runtime和独立暂存快照已删除，SDK fixture root无遗留；保留verified DB binary缓存和3033正文预览。21个暂存路径与任务清单完全一致，11项可执行源码SHA与验证树一致；空白/密钥-token模式扫描通过。根format仍只既有CSDN素材manifest失败，无新增格式问题；本轮未运行/宣称整个Web/root build全绿。最终仅补文档，没有源码再改。
+
+
+## 2026-11-16 Tokenizer能力探针与官方API后续
+
+### 完成范围与验证
+
+基点569c187。新增显式本地无生成探针，固定三metadata GET与三合成POST/tokenize，无URL/输入/模板透传，复用Provider策略并有界保存0600安全报告。source/helper/test为3新增文件，见[探针契约](../../development/agent-model-validation.md#tokenizer能力探针契约2026-11-16)。未改代理、账本、准入或生产入口。
+
+实际固定六请求退出0且报告ok：alias匹配qwen38_27b、服务0.28.0、tokenizer_info404，三个count为69/378/434，严格等于有界token数组长度；没有生成请求。三个tokenizer/不可变模型版本/输入硬限flags仍false，不能证明工具被完整计入或与generation wire相同。证据见[安全观察与清单](../../evaluations/agent-tokenizer-2026-11-16/README.md)。
+
+完整check:api639项、新增15项离线测试与判官独立15项通过，无确认P1/P2。初审修成功响应close时取消误分类、fstat失败fd回收及close失败allowlist恢复；合法/非法响应重复取消均排空close。最后报告close失败即使文件有ok也必须按非0退出判失败。验证源树fdcc6309eeb45e26d0285b4a52f683f25d1109f3，11个选定可执行文件SHA与index一致；后补证据/交接文档，无源码再改。未重复未改的三库/Worker/SDK评测，不宣称root/Web全绿，旧格式/CSS预算问题保留。
+
+博客05按sun-world-blog→design补完整计数、不可变版本和预出网扣额三个条件；后端/原三标签、5稳定标题ID、6处strong，既有透明图保留。1280/390正文无缩进/溢出，图宽360/342，使用dirty renderer/CSS，非完整文章页验收；3033正文预览保留，未发布。所有无关dirty保留，不推送部署。
+
+### 当前转向与下一步
+
+用户表示暂时没有Linux/模型工件资料，先推进本地可验证部分，随后明确授权使用OpenAI官方API key直接运行，不要求本地部署模型。本次提供的凭据仅提取到ignored私密目录0700/文件0600，不写源码、提交、报告、日志或handoff值/提示；无需用户重复发送。正式运行仍须按协议实现预算，不以此授权打开生产。
+
+官方API初次直连在ConnectTimeout结束，未收到HTTP响应，不能认定key有效或无效。用户指示检查本机Clash Verge，系统代理和配置均7890，实际TCP确认可连接；先前lsof未显示root监听不能作无监听证据，已纠正。当前主线程通过显式回环代理、保持既有DNS/IPpin/Host/SNI与证书校验，做官方模型目录发现。后续只记录安全状态/固定模型标识，不记录原始错误或凭据。优先完成官方API可用模型/协议选择与本地接入；Responses输入计数可单独评估，不要求本地权重或tokenizer部署。Linux/已有库升级与崩溃矩阵/持久journal回收/人工语义/生产TLS依旧独立未完成。Claude Code后续接手须同步此增量，不得把“可API调用”当成原Qwen计数或Linux门槛已通过。

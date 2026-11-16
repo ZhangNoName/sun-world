@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 Tokenizer能力观察
+
+- 新增固定六请求、无生成的显式探针；实际Qwen服务计数69/378/434、metadata缺tokenizer工件，三个验收flags仍false。API639/新增15项及独立15项review通过，安全证据与11项源码摘要见[观察记录](evaluations/agent-tokenizer-2026-11-16/README.md)。
+- 博客05补完整输入/锁定版本/预出网扣额，1280/390正文预览通过，保留分类/标签/透明图，未发布。源码与交接见[分支记录](handoff/branches/zxy-dsh-platform-foundation.md)，其他dirty保留，不推送部署。
+- 用户选择直接接OpenAI官方API，无需本地部署模型；已授权凭据保存在ignored私密文件，当前核对Clash Verge显式回环转发及官方模型目录。Linux/输入预算/已有库崩溃与生产门槛仍独立待验收。
+
 ## 2026-11-16 回收首错与恢复诊断
 
 - 新增Worker每执行有界诊断、可选宿主钩子和安全Error快照；Python清理步骤/坏ACK/损坏文件均保留固定阶段与类别，继续独立回收资源。不改RPC/journal或done/stop/槽语义，详情见[回收诊断](development/agent-cleanup-diagnostics.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。

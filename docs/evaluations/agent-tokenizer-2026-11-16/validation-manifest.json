@@ -1,0 +1,56 @@
+{
+  "version": "sun-world-tokenizer-validation/1",
+  "date": "2026-11-16",
+  "base_commit": "569c187277d3debbf3ea429bef1b61edf8d203ba",
+  "validation_source_tree": "fdcc6309eeb45e26d0285b4a52f683f25d1109f3",
+  "source_note": "Selected executable sources match the staged index; API/scripts have no unstaged changes. Evidence/handoff documentation added afterward.",
+  "python_version": "3.12.13",
+  "node_version": "v24.17.0",
+  "checks": {
+    "api": {
+      "passed": true,
+      "tests": 639
+    },
+    "tokenizer_offline": {
+      "passed": true,
+      "tests": 15,
+      "independent_review_passed": true
+    },
+    "tokenizer_actual": {
+      "exit_code": 0,
+      "status": "ok",
+      "http_requests": 6,
+      "inference_performed": false
+    },
+    "blog_body_preview": {
+      "widths": [1280, 390],
+      "heading_ids": 5,
+      "strong_count": 6,
+      "image_widths": [360, 342],
+      "page_overflow": false,
+      "uses_uncommitted_renderer_and_css": true,
+      "full_article_page_e2e": false
+    }
+  },
+  "gates": {
+    "tokenizer_verified": false,
+    "immutable_model_revision_verified": false,
+    "input_token_hard_limit_verified": false,
+    "linux_isolation_verified": false,
+    "production_enabled": false
+  },
+  "executable_sha256": {
+    "scripts/probe-agent-tokenizer.py": "759930e74f0f068df734910b1f3251611b14bb1554aece8be36f6dd0485ef6aa",
+    "apps/api/tests/integration/tokenizer_probe.py": "8a0fa0fa6c5f0737706bb4ed9b18687d703c951a93352858dda3efe93fec51a1",
+    "apps/api/tests/test_agent_tokenizer_probe.py": "984906056864e9a48bf5dfa413a172ce3de7b79f5c899b7f471502f01b793b89",
+    "apps/api/src/modules/ai/model_proxy.py": "43f64f4d88ac579ef8964f4c7295638eb5fb09b6fe5af2dae209686062ee1486",
+    "apps/api/src/modules/ai/providers.py": "58eeb1eae0d3718188f5aaddb1c4a49c211d719bf96aa674d3790104e8f69113",
+    "apps/api/src/modules/ai/public.py": "5162163c45f9cbecb5672235050857c4b0868857ba8a97f1f7bbaeb51d150ec2",
+    "apps/api/src/modules/ai/mcp_gateway.py": "77ae927da4be7297e59eb5800880384dd31930fcb5a8120a1abd42019edc73cd",
+    "apps/api/src/modules/ai/errors.py": "4023fb72c4deeb42f85369119dc7c2801ff796e1c4737993feabc275967a79e2",
+    "apps/api/src/core/runtime_env.py": "e31b29e2e81db81ca53822ada4bfe123db057feea8d90e64013f4d1e6ff98257",
+    "apps/api/tests/test_structured_model_proxy.py": "1008de9def4642d2be3f0992443816d551957a5b322499212ac5668251e81f58",
+    "apps/api/tests/test_blog_qa_model_proxy.py": "989dec05ab803099ddc56513c495235fb1e81c8fc0c49001425f0c6d92fbf025"
+  },
+  "formatted_probe_sha256": "94426075d9c5149edcbc4864840d30061bc23db1e76a3964817fa9edd91e2bff"
+}

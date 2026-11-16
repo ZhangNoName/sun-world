@@ -1,0 +1,72 @@
+{
+  "version": "sun-world-tokenizer-probe/1",
+  "status": "ok",
+  "model_alias": "qwen38_27b",
+  "active_case": null,
+  "inference_performed": false,
+  "projection": "tokenize_protocol_not_generation_wire",
+  "tokenizer_verified": false,
+  "sample": "fixed_synthetic_messages_and_tools_not_sdk_request",
+  "immutable_model_revision_verified": false,
+  "input_token_hard_limit_verified": false,
+  "observations": [
+    {
+      "case": "models",
+      "status": "ok",
+      "response_sha256": "bd2f52b7de9ed3ada0d8d910712d4fa283add942dfd71fec7732a290c09f9395",
+      "known_fields": ["object", "data"],
+      "model_count": 1,
+      "alias_matches": true,
+      "model_known_fields": [
+        "id",
+        "object",
+        "created",
+        "owned_by",
+        "root",
+        "parent",
+        "max_model_len",
+        "permission"
+      ],
+      "max_model_len": 262144,
+      "metadata_root_sha256": "06bfbd263c6c68e9d30c29d749a0a155556a0e51be3648eee3cb5407fa89597f"
+    },
+    {
+      "case": "version",
+      "status": "ok",
+      "response_sha256": "323e57d99e31d99b620823335fe43528db1032186536150236edbd8dc3f32afd",
+      "known_fields": ["version"],
+      "server_version": "0.28.0"
+    },
+    {
+      "case": "tokenizer_info",
+      "status": "unavailable"
+    },
+    {
+      "case": "unicode",
+      "status": "ok",
+      "request_sha256": "df5a1a2c0b1edffd580bef257ba6281d6ab7b33ff150970b929e1eb8487aa52a",
+      "response_sha256": "cc3503c99b24b9d2bc641a84442b8c37379685c795723e85eb9bf46e52a1be7c",
+      "known_fields": ["count", "max_model_len", "tokens", "token_strs"],
+      "count": 69,
+      "max_model_len": 262144
+    },
+    {
+      "case": "tools",
+      "status": "ok",
+      "request_sha256": "b736a80f89124c514df97d09b3a26361800de5d356b716427032a5f9cd7a3711",
+      "response_sha256": "e7a9d8dbb667d1de5aaf773046e13aa4b48114d732b9467ef7fd7f68dc9778b4",
+      "known_fields": ["count", "max_model_len", "tokens", "token_strs"],
+      "count": 378,
+      "max_model_len": 262144
+    },
+    {
+      "case": "tool_history",
+      "status": "ok",
+      "request_sha256": "24f5e1f206fb40812a0e135bd6ec0570205d85c588b9c4e2af7d0d2c01b444ea",
+      "response_sha256": "ff5dd9e32da239107f1d284c45cb707266cb974be438ff153675543844b58992",
+      "known_fields": ["count", "max_model_len", "tokens", "token_strs"],
+      "count": 434,
+      "max_model_len": 262144
+    }
+  ]
+}

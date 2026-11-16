@@ -57,3 +57,24 @@ apps/api/.venv/bin/python scripts/test-agent-sdk-stack.py \
 最终暂存复跑额外修正一次性MongoDB的默认Unix socket前缀，新增双实例实际监听/独立数据回归；详见[SDK整栈说明](agent-sdk-stack-validation.md#unix-socket隔离修正2026-11-16)。修前四题不能作为修后socket隔离证据。
 
 SDK fixture父reaper现把瞬时EPERM视为未确认、有界继续TERM/CONT/KILL，分别重试被拒信号；永久拒绝仍失败并保留私有证据。新增三个实际owned孤儿回归（含三个signal子情景）与独立兜底，不能把权限拒绝解释为ESRCH。历史两次原生失败仍缺首错，见[回收观察](../evaluations/agent-model-2026-11-16/cleanup-observations.md)。
+
+## Tokenizer能力探针契约（2026-11-16）
+
+下一切片只建设显式、无生成的能力探针，不改变模型代理、预算账本或运行准入。维护CLI现无tokenizer能力，因此使用既有local-only keyless factory和Provider网络策略；不能接收自定义URL、key、消息或模板。只允许GET `/v1/models`、`/version`、`/tokenizer_info`和POST `/tokenize`，顺序有界、不重试、不调用生成或detokenize。生产runtime在出网或创建报告前拒绝。
+
+报告必须新建O_EXCL/NOFOLLOW/0600，写入有界投影并fsync；只保留固定状态/错误类别、已知字段的存在、版本安全字串、摘要和数值。不得保存未知字段名、原始模型根路径、token IDs/strings、模板、响应自由文本、headers或凭据；失败报告不能当成功。默认测试模拟网络，真实探针是独立显式命令，不进入常规CI的联网路径。
+
+固定合成样本覆盖中文/英文与Unicode、固定两工具定义、工具调用与结果历史；Messages转换复用当前代理适配，计数请求包含完整消息与工具及明确的generation/special-token开关。报告标明这是tokenize协议投影，不是生成请求的逐字复本，不能推断两接口采用相同推理控制/模板。响应count须为严格整数、等于有界非负整数token数组长度；计数响应的未知字段、重复JSON字段、非法数、超大体或不匹配均拒绝。单请求8秒、全探针网络工作45秒，独立shield close排空沿用代理做法，清理可能延长返回时间；错误只投影固定枚举。每步保存安全观察前缀；硬终止导致running/半份JSON时只能算未完成。探针临时收窄进程级insecure-origin配置并最终恢复，不能并发嵌入业务应用。
+
+即使探针成功，`tokenizer_verified`、`immutable_model_revision_verified`和`input_token_hard_limit_verified`仍固定false。模型别名、服务版本、root字串摘要、max_model_len与单次服务端计数均不能证明锁定了模型权重、tokenizer词表和chat模板。下一步必须获得可核对的不可变模型/分词器工件及实际生效模板，再比较完整wire输入的本地计数和供应商usage，最后将预出网计数与累计硬限接入同一预算事务。不得以字节换算、采样相等或仅有服务端count跳过此门槛。
+
+显式运行入口：
+
+```bash
+apps/api/.venv/bin/python scripts/probe-agent-tokenizer.py \
+  --probe --report /absolute/new-tokenizer-report.json
+```
+
+默认无参数及`--help`仅显示帮助，不联网；不接受自定义测试数据或服务地址。退出0仅表示此固定探针的响应协议通过，1表示失败，2为参数错误，130表示取消。只有退出0且报告可解析、status为ok，才算响应协议通过；落盘/关闭确认失败时即使文件中已有ok也不能算通过。三个验收门槛仍为false，不能只看退出码或单独看文件。当前协议依据[vLLM 0.28.0计数请求与响应声明](https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/entrypoints/serve/tokenize/protocol.py)，并不据此推断测试端点锁定了该源码或任何模型工件。
+
+用户后续选择直接接入OpenAI官方API，不要求本地部署模型。上面的工件/本地计数路径是当前Qwen别名的待验收方案；官方Responses另提供[完整请求输入计数接口](https://developers.openai.com/api/docs/guides/token-counting)，可作为新的供应商计数路径评估。是否覆盖实际生成payload、如何持久预占与验证仍需单独实现，不沿用本次Qwen探针放行结论。
