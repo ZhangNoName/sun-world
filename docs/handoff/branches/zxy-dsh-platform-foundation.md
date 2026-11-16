@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：Linux 官方通道已实现，四题验收未通过
+
+- 当前目标按计划开发/复审/验证/中文本地保存，P1/A–D未整体完成。基点83d5d53；先独立提交594a3bf的本地官方DNS复用（新13+旧28=41通过），其余本轮实现为显式VZ official第二串口与匿名pipes、受监督host broker、strict base64 frame、guest原计数代理仅替_post、正式三库/SDK四题及host原wire/usage↔MySQL原rows交叉证明。无NIC/共享目录/key入guest，不改生产或站点入口/模型目录。
+- 重要文件：`scripts/agent-linux-official-{host,broker,proof}.py`、原VM supervisor/Swift/guest-run、`apps/api/tests/integration/official_channel_{codec,guest,broker}.py`、`linux_official_evaluation.py`、LinuxFixture/SDK fixture/CLI、Node official-device-suite、两源合同及新三test。wire只固定count/gen/probe/cancel/evaluation，single-inflight/16+16，完整取消排空/未知毒化；rawTTY与CLOEXEC，task path/fd否定及每次count/gen前自有leaf livePID/fd元数据复核。host key只维护factory读，CLI stdout隔离、任意日志不入报告。
+- 原生1/2均0/4完成；1缺阶段诊断不能定因，2为3prepare失败+1计数request超时。补fixed event≤64/context隔离后，DNScache按min(all TTL,60)从query开始计，只在完整public批次+两close确认后发布，过期清旧不fallback、混private原样Provider整体拒绝，保原TLS/pin/timeout/no retry。原生3为3/4完成，注入第二gen超时；同源最后原生4为2/4，A/D各count超时。均明确failed/无V5成功flag，止付费复跑，不拼接跨run成功样本。原267 payload/67资产native3与4完整build完全一致，见[失败实证](../../evaluations/agent-linux-official-2026-11-17/README.md)。
+- 所有原49零skip/九隔离/五网关/组件SDK/正式合成6保持；四题每轮都WorkerACK/fixture cleanup confirmed，host独立completed；原生2–4明确记录guest/group/broker三boundarytrue、私有root删除，首轮缺完整外层报告的事实保留。P2 host TERM/probe拒绝跳过KILL/wait已修，真实own Popen拒绝子例通过；失败报告新passedfalse+stage+boundaries/build，dangling report在进程/付费前拒绝。host模型成功SHA/usage与MySQL已预占/observed多重集逐一一致，未知usage维持null并保预占，无退款/重放。
+- native3前三题agent语义复核通过；native4B/C一致。无资料题有服务端固定fallback，不证明模型原文未编价；D从未最终完成，空answer的forbidden=true不能算抗注入通过，人审pending。源码/计数/诊断只支持对应阶段，不进一步归因节点/Clash/OpenAI，不把缓存后无prepare失败说成网络根治。
+- 命令/验证：维护VM CLI四次`--official`，`corepack pnpm check:api`905/37.402秒，Worker164/9.402秒，fresh Mac原6通过，transport24/proof-host-supervisor9/DNS41定向与判官复核通过。根format仅原素材manifest失败，不改该dirty、不称Web/root全绿。VM和Mac自有临时运行根均回收，67验证资产缓存保留。四轮日志和eval在ignored `.tmp/linux-official/`，无key内容。
+- Clash只读：从当前core进程明确runtime socket，实际Mihomo1.19.33/rule/mixed7890（用户app目录旧port配置不作为运行事实）；受控目录GET/无生成检查失败，只看到DNS经Trojan/Selector而非Direct，未定API路径故障原因，不改代理模式/节点。已询问用户可选稳定转发资源；无答案默认保现状，继续可本地验证部分，不无限付费采样。
+- 博客05按sun-world-blog→design同题增加传输位置/预算顺序与fd继承，明确此前4题为Mac；后端/原三标签，保一透明图，1280/390五稳定ID/10重点/无缩进溢出、图360/342，未发布。原dirty renderer/CSS不入本提交。原80dirty和主handoff原210加1删保持，只本地中文提交，不推送部署；官方Linux四题、人工/模型版本/目标库备份/TLS运维及生产容量继续待。下一步稳定转发有实证变化后再验相同四题；当前先推进不依赖外网的剩余计划。Claude Code/claude-ds先读[本轮协议](../../development/agent-linux-official.md)。
+
 ### 2026-11-17 最新 checkpoint：Linux 正式 API 与三库 SDK 合成整栈通过
 
 - 基点d73f3ac，新增显式`--stack` guest profile/固定67资产与261源，真实Python3.12.13/36wheel、MySQL8.4.13/Redis7.0.15/MongoDB8.0.38与正式API/mTLS/固定SDK均在同一Linux，不用Mac API拼接。资产仅固定公开URL/hash，Poetry wheel逐核；MySQL相同目录header例外限单recipe，stack有界8GiB解析/2GiB选择/512MiB单项，旧profile不变。guest2CPU/8GiB仅测试，任务仍512MiB/64，官方key不入guest。

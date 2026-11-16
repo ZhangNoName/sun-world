@@ -197,8 +197,11 @@ class Stream:
 
 
 class Fixture(FixtureCleanupMixin):
-    def __init__(self, mode, *, case=None, real_model_profile='qwen-public', linux=False):
-        if type(linux) is not bool or linux and (sys.platform != 'linux' or mode == 'real'):
+    def __init__(self, mode, *, case=None, real_model_profile='qwen-public', linux=False, official_proxy_factory=None):
+        if (type(linux) is not bool or linux and sys.platform != 'linux'
+                or official_proxy_factory is not None and (not linux or mode != 'real'
+                    or real_model_profile != 'openai-local' or not callable(official_proxy_factory))
+                or linux and mode == 'real' and official_proxy_factory is None):
             raise ValueError('EVALUATION_OPTIONS_INVALID')
         self.linux = linux
         if mode != 'real' and real_model_profile != 'qwen-public':
@@ -213,7 +216,7 @@ class Fixture(FixtureCleanupMixin):
             if self.real_model_profile == 'openai-local':
                 from src.modules.ai.local_openai import create_local_openai_proxy
                 from src.modules.ai.openai_responses import OpenAiResponsesProxy
-                self.real_proxy = create_local_openai_proxy()
+                self.real_proxy = official_proxy_factory() if official_proxy_factory is not None else create_local_openai_proxy()
                 if not isinstance(self.real_proxy, OpenAiResponsesProxy):
                     raise ValueError('EVALUATION_PROFILE_INVALID')
             else:
@@ -565,6 +568,7 @@ async def main():
     parser.add_argument('--report', type=Path)
     parser.add_argument('--real-model-profile', choices=('qwen-public', 'openai-local'))
     parser.add_argument('--linux-stack', action='store_true')
+    parser.add_argument('--linux-official', action='store_true')
     arguments = parser.parse_args()
     if arguments.linux_stack and (sys.platform != 'linux' or arguments.real_model or arguments.interrupt_probe):
         raise ValueError('EVALUATION_OPTIONS_INVALID')
@@ -574,6 +578,9 @@ async def main():
         fixture_factory = linux_fixture_class(Fixture)
     profile = validate_options(arguments.real_model, arguments.report, arguments.real_model_profile,
                                interrupt=arguments.interrupt_probe)
+    if arguments.linux_official and (sys.platform != 'linux' or arguments.linux_stack
+            or not arguments.real_model or profile != 'openai-local' or arguments.interrupt_probe):
+        raise ValueError('EVALUATION_OPTIONS_INVALID')
     task = asyncio.current_task()
     loop = asyncio.get_running_loop()
     for signum in (signal.SIGINT, signal.SIGTERM):
@@ -581,7 +588,11 @@ async def main():
     AgentStackTests.setUpClass()
     try:
         if arguments.real_model:
-            await evaluate_real_model(arguments.report, profile=profile)
+            if arguments.linux_official:
+                from linux_official_evaluation import evaluate_linux_official
+                await evaluate_linux_official(arguments.report, base=Fixture, stream_factory=Stream, root=ROOT)
+            else:
+                await evaluate_real_model(arguments.report, profile=profile)
             return
         if arguments.interrupt_probe:
             fixture = Fixture('hold')

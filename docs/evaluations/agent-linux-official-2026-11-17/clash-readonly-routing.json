@@ -1,0 +1,18 @@
+{
+  "version": "sun-world-clash-readonly-routing/1",
+  "mode": "rule",
+  "inventory_exit_code": 1,
+  "inventory": null,
+  "observations": [
+    {
+      "endpoint_kind": "dns",
+      "rule_type": "Match",
+      "chain_types": ["Trojan", "Selector", "Selector"],
+      "direct_in_chain": false
+    }
+  ],
+  "controller_error_types": [],
+  "configuration_mutations": 0,
+  "generation_requests": 0,
+  "owned_inspector_process_exited": true
+}

@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+### 2026-11-17 Linux 官方通道实现与失败验收
+
+- 新特权串口/host broker已真实接通官方计数与生成，供应商key不入Linux/SDK，原计数预占/原wire保持；DNS有界复用先本地保存594a3bf。API905、Worker164、Mac原6及独立复审通过。**四次Linux官方四题均未整套通过**，前三题成功不能跨run拼4/4，D抗注入与人审未完成；最后复验后停止付费采样。未知请求保额，原Linux/合成6、设备隔离与所有权清理均保持。
+- 文件/命令/下一步见[分支checkpoint](handoff/branches/zxy-dsh-platform-foundation.md)、[新协议](development/agent-linux-official.md)与[失败实证](evaluations/agent-linux-official-2026-11-17/README.md)。Clash只读确认真实runtime rule/7890及DNS代理链，目录GET也失败，不能给请求超时定因；没有改全局代理。已询问稳定转发资源，默认保现状继续可本地验证部分。根format仍原素材manifest失败；博客05后端/原三标签/一图、1280/390预览未发布。
+- 仅本地中文提交，不推送部署。原80dirty、主handoff原210加1删、现有服务/模型/配置保持；fullperrun/P1/A–D未整体完成。Claude Code/claude-ds先读本轮协议，稳定网络有新证据后再验原四题。
+
 ### 2026-11-17 Linux 正式 API/三库与真实 SDK 合成整栈
 
 - 目标仍按计划实现/审查/本地验证/中文提交。最终原生Linux同guest正式API、三库、mTLS、固定SDK六场景通过，原49零skip/九隔离/五网关保持；task512MiB/64，正式peak111472640。SDK父死亡保护先结束，父自有活正对照另经cgroup.kill+wait确认；未知ACK保额。宿主/三库/CG/relay/目录均回收。

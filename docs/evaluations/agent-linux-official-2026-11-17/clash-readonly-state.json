@@ -1,0 +1,120 @@
+{
+  "/version": {
+    "http_status": 200,
+    "version": "v1.19.33",
+    "meta": true
+  },
+  "/configs": {
+    "http_status": 200,
+    "mode": "rule",
+    "mixed-port": 7890,
+    "port": 0,
+    "socks-port": 0,
+    "ipv6": true
+  },
+  "/proxies": {
+    "http_status": 200,
+    "selector_states": [
+      {
+        "type": "Selector",
+        "selected_type": "Direct",
+        "selected_is_direct": true
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Direct",
+        "selected_is_direct": true
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Direct",
+        "selected_is_direct": true
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Direct",
+        "selected_is_direct": true
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Direct",
+        "selected_is_direct": true
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Selector",
+        "selected_is_direct": false
+      },
+      {
+        "type": "Selector",
+        "selected_type": "Trojan",
+        "selected_is_direct": false
+      }
+    ]
+  }
+}

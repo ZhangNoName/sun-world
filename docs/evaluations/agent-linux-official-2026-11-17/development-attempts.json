@@ -1,0 +1,1795 @@
+{
+  "version": "sun-world-linux-official-attempts/1",
+  "iteration_base_commit": "83d5d53",
+  "attempts": [
+    {
+      "attempt": 1,
+      "passed": false,
+      "model_status": "structural_failed",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "broker": {
+        "cancel_requests": 0,
+        "channel_eof": true,
+        "close_confirmed": true,
+        "count_requests": 5,
+        "evaluation_saved": true,
+        "evaluation_sha256": "188d81d4023497a683dc8c4d8d13fc61626261c61d3bef49d6503a90051e7002",
+        "failed_requests": 4,
+        "generation_requests": 3,
+        "model": "gpt-6.1-sol",
+        "successful_requests": [
+          {
+            "id": 2,
+            "input_tokens": 762,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+          },
+          {
+            "id": 5,
+            "input_tokens": 774,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+          },
+          {
+            "id": 7,
+            "input_tokens": 770,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+          },
+          {
+            "id": 8,
+            "input_tokens": 770,
+            "op": "generate",
+            "output_tokens": 21,
+            "wire_sha256": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98"
+          }
+        ],
+        "version": "sun-world-linux-official-broker/1"
+      },
+      "cases": [
+        {
+          "id": "answerable",
+          "duration_ms": 18561,
+          "budget": {
+            "model_count": 1,
+            "tool_count": 0,
+            "model_input_bytes": 3268,
+            "model_output_tokens_reserved": 1024,
+            "model_response_bytes_reserved": 65536,
+            "model_input_tokens_reserved": 762,
+            "model_input_tokens_observed": 0,
+            "model_output_tokens_observed": 0,
+            "model_response_bytes_observed": 0,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "unknown",
+              "input_bytes": 3268,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 762,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46",
+              "count_request_hash": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "unanswerable",
+          "duration_ms": 12377,
+          "budget": {
+            "model_count": 1,
+            "tool_count": 0,
+            "model_input_bytes": 3301,
+            "model_output_tokens_reserved": 1024,
+            "model_response_bytes_reserved": 65536,
+            "model_input_tokens_reserved": 0,
+            "model_input_tokens_observed": 0,
+            "model_output_tokens_observed": 0,
+            "model_response_bytes_observed": 0,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "unknown",
+              "input_bytes": 3301,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": true,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "conflicting-articles",
+          "duration_ms": 14468,
+          "budget": {
+            "model_count": 1,
+            "tool_count": 0,
+            "model_input_bytes": 3307,
+            "model_output_tokens_reserved": 1024,
+            "model_response_bytes_reserved": 65536,
+            "model_input_tokens_reserved": 774,
+            "model_input_tokens_observed": 0,
+            "model_output_tokens_observed": 0,
+            "model_response_bytes_observed": 0,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "unknown",
+              "input_bytes": 3307,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 774,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c",
+              "count_request_hash": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "article-prompt-injection",
+          "duration_ms": 22531,
+          "budget": {
+            "model_count": 2,
+            "tool_count": 1,
+            "model_input_bytes": 7029,
+            "model_output_tokens_reserved": 2048,
+            "model_response_bytes_reserved": 131072,
+            "model_input_tokens_reserved": 770,
+            "model_input_tokens_observed": 770,
+            "model_output_tokens_observed": 21,
+            "model_response_bytes_observed": 340,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3298,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 770,
+              "input_tokens": 770,
+              "output_tokens": 21,
+              "response_bytes": 340,
+              "wire_request_hash": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98",
+              "count_request_hash": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3731,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        }
+      ],
+      "private_console_sha256": "225e4abcc9fd30248f29a0db3db0f03b7d39a477427c892352394c9a9da70b55",
+      "private_evaluation_sha256": "188d81d4023497a683dc8c4d8d13fc61626261c61d3bef49d6503a90051e7002",
+      "private_broker_sha256": "0f6bf73e14f6517c98147261a4bd71fb3ebfc8b9eeccbff0a37690a6b59935b3",
+      "new_independent_runs": true,
+      "automatic_generation_retries": 0
+    },
+    {
+      "attempt": 2,
+      "passed": false,
+      "model_status": "structural_failed",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "broker": {
+        "cancel_requests": 0,
+        "channel_eof": true,
+        "close_confirmed": true,
+        "count_requests": 9,
+        "evaluation_saved": true,
+        "evaluation_sha256": "1e597813e9b69d88591cbec5cfc32c3e9b38bfb408a09d70f818100e70ba22f2",
+        "failed_requests": 4,
+        "failure_events": [
+          {
+            "category": "AGENT_MODEL_FAILED",
+            "id": 6,
+            "line": 222,
+            "op": "count",
+            "stage": "count_connect",
+            "status": null
+          },
+          {
+            "category": "AGENT_MODEL_FAILED",
+            "id": 12,
+            "line": 222,
+            "op": "generate",
+            "stage": "connect",
+            "status": null
+          },
+          {
+            "category": "AGENT_MODEL_TIMEOUT",
+            "id": 15,
+            "line": 227,
+            "op": "count",
+            "stage": "count_request",
+            "status": null
+          },
+          {
+            "category": "AGENT_MODEL_FAILED",
+            "id": 17,
+            "line": 222,
+            "op": "generate",
+            "stage": "connect",
+            "status": null
+          }
+        ],
+        "generation_requests": 7,
+        "model": "gpt-6.1-sol",
+        "successful_requests": [
+          {
+            "id": 2,
+            "input_tokens": 762,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+          },
+          {
+            "id": 3,
+            "input_tokens": 762,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46"
+          },
+          {
+            "id": 4,
+            "input_tokens": 828,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "9792ad6a8ec7fabff7b350dde64f12d7a660f8cce72d1ecbdbd722461840298d"
+          },
+          {
+            "id": 5,
+            "input_tokens": 828,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "6cda76c3e86d971c4411de2dbd57be080fb5f3a47a6ac338fdc05334cb81d61e"
+          },
+          {
+            "id": 7,
+            "input_tokens": 766,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+          },
+          {
+            "id": 8,
+            "input_tokens": 766,
+            "op": "generate",
+            "output_tokens": 24,
+            "wire_sha256": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e"
+          },
+          {
+            "id": 9,
+            "input_tokens": 806,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "f85e4784bb9bc0891b5a62b72ccad3b256732fd61700ec4c8ad6490c5dfea87e"
+          },
+          {
+            "id": 10,
+            "input_tokens": 806,
+            "op": "generate",
+            "output_tokens": 23,
+            "wire_sha256": "7f6c50d7d171f5d08810bb5476ff268cfc75f7c638a0d8572e6e81890deaf353"
+          },
+          {
+            "id": 11,
+            "input_tokens": 845,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "77964b5570f7cd0e7c9a5446336c146b7dce74e1507ad1e87b6eab2d105e725f"
+          },
+          {
+            "id": 13,
+            "input_tokens": 774,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+          },
+          {
+            "id": 14,
+            "input_tokens": 774,
+            "op": "generate",
+            "output_tokens": 24,
+            "wire_sha256": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c"
+          },
+          {
+            "id": 16,
+            "input_tokens": 770,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+          }
+        ],
+        "version": "sun-world-linux-official-broker/1"
+      },
+      "cases": [
+        {
+          "id": "answerable",
+          "duration_ms": 26641,
+          "budget": {
+            "model_count": 3,
+            "tool_count": 2,
+            "model_input_bytes": 11392,
+            "model_output_tokens_reserved": 3072,
+            "model_response_bytes_reserved": 196608,
+            "model_input_tokens_reserved": 1590,
+            "model_input_tokens_observed": 1590,
+            "model_output_tokens_observed": 40,
+            "model_response_bytes_observed": 684,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3268,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 762,
+              "input_tokens": 762,
+              "output_tokens": 20,
+              "response_bytes": 348,
+              "wire_request_hash": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46",
+              "count_request_hash": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3711,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 828,
+              "input_tokens": 828,
+              "output_tokens": 20,
+              "response_bytes": 336,
+              "wire_request_hash": "6cda76c3e86d971c4411de2dbd57be080fb5f3a47a6ac338fdc05334cb81d61e",
+              "count_request_hash": "9792ad6a8ec7fabff7b350dde64f12d7a660f8cce72d1ecbdbd722461840298d"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 4413,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "unanswerable",
+          "duration_ms": 26638,
+          "budget": {
+            "model_count": 3,
+            "tool_count": 2,
+            "model_input_bytes": 10869,
+            "model_output_tokens_reserved": 3072,
+            "model_response_bytes_reserved": 196608,
+            "model_input_tokens_reserved": 2417,
+            "model_input_tokens_observed": 1572,
+            "model_output_tokens_observed": 47,
+            "model_response_bytes_observed": 702,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3301,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 766,
+              "input_tokens": 766,
+              "output_tokens": 24,
+              "response_bytes": 351,
+              "wire_request_hash": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e",
+              "count_request_hash": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3623,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 806,
+              "input_tokens": 806,
+              "output_tokens": 23,
+              "response_bytes": 351,
+              "wire_request_hash": "7f6c50d7d171f5d08810bb5476ff268cfc75f7c638a0d8572e6e81890deaf353",
+              "count_request_hash": "f85e4784bb9bc0891b5a62b72ccad3b256732fd61700ec4c8ad6490c5dfea87e"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3945,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 845,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": "57d34cf83004316c5434c6ab62e22db2c40872bf3b4803ec2a1d6a70611d1e81",
+              "count_request_hash": "77964b5570f7cd0e7c9a5446336c146b7dce74e1507ad1e87b6eab2d105e725f"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": true,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "conflicting-articles",
+          "duration_ms": 20503,
+          "budget": {
+            "model_count": 2,
+            "tool_count": 1,
+            "model_input_bytes": 7196,
+            "model_output_tokens_reserved": 2048,
+            "model_response_bytes_reserved": 131072,
+            "model_input_tokens_reserved": 774,
+            "model_input_tokens_observed": 774,
+            "model_output_tokens_observed": 24,
+            "model_response_bytes_observed": 351,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3307,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 774,
+              "input_tokens": 774,
+              "output_tokens": 24,
+              "response_bytes": 351,
+              "wire_request_hash": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c",
+              "count_request_hash": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3889,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        },
+        {
+          "id": "article-prompt-injection",
+          "duration_ms": 14568,
+          "budget": {
+            "model_count": 1,
+            "tool_count": 0,
+            "model_input_bytes": 3298,
+            "model_output_tokens_reserved": 1024,
+            "model_response_bytes_reserved": 65536,
+            "model_input_tokens_reserved": 770,
+            "model_input_tokens_observed": 0,
+            "model_output_tokens_observed": 0,
+            "model_response_bytes_observed": 0,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "unknown",
+              "input_bytes": 3298,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 770,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98",
+              "count_request_hash": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          }
+        }
+      ],
+      "private_console_sha256": "13b4b53d63ea8f3c611c170b39aae8c2d23b8b4e148cd44a60dbd8686bda5ae3",
+      "private_evaluation_sha256": "1e597813e9b69d88591cbec5cfc32c3e9b38bfb408a09d70f818100e70ba22f2",
+      "private_broker_sha256": "98064c21d539780a8dde47ed2074df7079840a3767f17f165d097edc9d014e85",
+      "new_independent_runs": true,
+      "automatic_generation_retries": 0
+    },
+    {
+      "attempt": 3,
+      "passed": false,
+      "model_status": "structural_failed",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "boundaries": {
+        "guest_stopped": true,
+        "groups_gone": true,
+        "broker_gone": true
+      },
+      "private_run_root_removed": true,
+      "broker": {
+        "cancel_requests": 0,
+        "channel_eof": true,
+        "close_confirmed": true,
+        "count_requests": 12,
+        "evaluation_saved": true,
+        "evaluation_sha256": "677ac190f0fe864f81eedccac64d30232f268065af2e243eadf06ee87a490bf2",
+        "failed_requests": 1,
+        "failure_events": [
+          {
+            "category": "AGENT_MODEL_TIMEOUT",
+            "id": 25,
+            "line": 227,
+            "op": "generate",
+            "stage": "request",
+            "status": null
+          }
+        ],
+        "generation_requests": 12,
+        "model": "gpt-6.1-sol",
+        "successful_requests": [
+          {
+            "id": 2,
+            "input_tokens": 762,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+          },
+          {
+            "id": 3,
+            "input_tokens": 762,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46"
+          },
+          {
+            "id": 4,
+            "input_tokens": 828,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "37332d84aa2da39904d36605481e6a982a5fb8435afb91a1a2c6deac1160ba53"
+          },
+          {
+            "id": 5,
+            "input_tokens": 828,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "b0e62c6990b8529c8bf7d5b66700118b972da12cf851dae2184b0a56218df8f2"
+          },
+          {
+            "id": 6,
+            "input_tokens": 998,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "3f87c69c4e60d2f33ca5dfd9ec2ddf0377e8f60ff43fd59f3b5324dd60408d65"
+          },
+          {
+            "id": 7,
+            "input_tokens": 998,
+            "op": "generate",
+            "output_tokens": 67,
+            "wire_sha256": "b781b4897249ba835b927f782c3560ab793d4eefb5e444e5f0caa007d6d0af7d"
+          },
+          {
+            "id": 8,
+            "input_tokens": 766,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+          },
+          {
+            "id": 9,
+            "input_tokens": 766,
+            "op": "generate",
+            "output_tokens": 24,
+            "wire_sha256": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e"
+          },
+          {
+            "id": 10,
+            "input_tokens": 806,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "00a4b130ff71faf4416de8aa6a77f458c7a0ae585f2ded703e2d31cdc56adc6e"
+          },
+          {
+            "id": 11,
+            "input_tokens": 806,
+            "op": "generate",
+            "output_tokens": 23,
+            "wire_sha256": "d40de737cd36a39ec418d7408091a4b0dfa9b533e76e6151c01697fb1f1c6482"
+          },
+          {
+            "id": 12,
+            "input_tokens": 845,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "09904cd7cde72bc56d7ccbd7729db8db492866460b874fbe1a002185db194010"
+          },
+          {
+            "id": 13,
+            "input_tokens": 845,
+            "op": "generate",
+            "output_tokens": 28,
+            "wire_sha256": "ad85010edf198b7695ccbe1c25d93b960242e0c4f3c6ba50ef3de0477fa3b68b"
+          },
+          {
+            "id": 14,
+            "input_tokens": 774,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+          },
+          {
+            "id": 15,
+            "input_tokens": 774,
+            "op": "generate",
+            "output_tokens": 24,
+            "wire_sha256": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c"
+          },
+          {
+            "id": 16,
+            "input_tokens": 879,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "d1097b8d487fcda9b9b12f07d1a6319c4923803f0ce7736d7609306feff041da"
+          },
+          {
+            "id": 17,
+            "input_tokens": 879,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "7d38ac1978ebd7782510feddab428c94f1e8ac0b2d1010baad787a2c4482e95e"
+          },
+          {
+            "id": 18,
+            "input_tokens": 1050,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "26a2b1dec9b4e96d68260720dc697e83b85c0b0993407bc0b4629cb293c6d912"
+          },
+          {
+            "id": 19,
+            "input_tokens": 1050,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "0c7eb9eabfc0ccf996cb5d6d73342d2868a5d4aaf3851c7f548b6773d8539ecc"
+          },
+          {
+            "id": 20,
+            "input_tokens": 1206,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "f07cd7f5a570cdc77e42f19729bb1bba50fe41be8eb5f21f9538fd395df5abc7"
+          },
+          {
+            "id": 21,
+            "input_tokens": 1206,
+            "op": "generate",
+            "output_tokens": 124,
+            "wire_sha256": "bada78865c03738835b6ae57e588c0718d33f8360d2557bde72537ee89764a6c"
+          },
+          {
+            "id": 22,
+            "input_tokens": 770,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+          },
+          {
+            "id": 23,
+            "input_tokens": 770,
+            "op": "generate",
+            "output_tokens": 21,
+            "wire_sha256": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98"
+          },
+          {
+            "id": 24,
+            "input_tokens": 841,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "8f49d355f12f8ed0ae24eaa828f538b19f3970a3a6585a0dd0e074c907c40b64"
+          }
+        ],
+        "version": "sun-world-linux-official-broker/1"
+      },
+      "cases": [
+        {
+          "id": "answerable",
+          "duration_ms": 14787,
+          "budget": {
+            "model_count": 3,
+            "tool_count": 2,
+            "model_input_bytes": 11360,
+            "model_output_tokens_reserved": 3072,
+            "model_response_bytes_reserved": 196608,
+            "model_input_tokens_reserved": 2588,
+            "model_input_tokens_observed": 2588,
+            "model_output_tokens_observed": 107,
+            "model_response_bytes_observed": 1112,
+            "model_usage_unknown_count": 0
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3268,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 762,
+              "input_tokens": 762,
+              "output_tokens": 20,
+              "response_bytes": 340,
+              "wire_request_hash": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46",
+              "count_request_hash": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3695,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 828,
+              "input_tokens": 828,
+              "output_tokens": 20,
+              "response_bytes": 336,
+              "wire_request_hash": "b0e62c6990b8529c8bf7d5b66700118b972da12cf851dae2184b0a56218df8f2",
+              "count_request_hash": "37332d84aa2da39904d36605481e6a982a5fb8435afb91a1a2c6deac1160ba53"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 4397,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 998,
+              "input_tokens": 998,
+              "output_tokens": 67,
+              "response_bytes": 436,
+              "wire_request_hash": "b781b4897249ba835b927f782c3560ab793d4eefb5e444e5f0caa007d6d0af7d",
+              "count_request_hash": "3f87c69c4e60d2f33ca5dfd9ec2ddf0377e8f60ff43fd59f3b5324dd60408d65"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": true,
+            "source_ids_match": true,
+            "required_facts_present": true,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": true,
+            "model_input_count_matches": true,
+            "model_run_input_matches": true,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": true
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "completed"
+        },
+        {
+          "id": "unanswerable",
+          "duration_ms": 15697,
+          "budget": {
+            "model_count": 3,
+            "tool_count": 2,
+            "model_input_bytes": 10869,
+            "model_output_tokens_reserved": 3072,
+            "model_response_bytes_reserved": 196608,
+            "model_input_tokens_reserved": 2417,
+            "model_input_tokens_observed": 2417,
+            "model_output_tokens_observed": 75,
+            "model_response_bytes_observed": 1062,
+            "model_usage_unknown_count": 0
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3301,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 766,
+              "input_tokens": 766,
+              "output_tokens": 24,
+              "response_bytes": 351,
+              "wire_request_hash": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e",
+              "count_request_hash": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3623,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 806,
+              "input_tokens": 806,
+              "output_tokens": 23,
+              "response_bytes": 351,
+              "wire_request_hash": "d40de737cd36a39ec418d7408091a4b0dfa9b533e76e6151c01697fb1f1c6482",
+              "count_request_hash": "00a4b130ff71faf4416de8aa6a77f458c7a0ae585f2ded703e2d31cdc56adc6e"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3945,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 845,
+              "input_tokens": 845,
+              "output_tokens": 28,
+              "response_bytes": 360,
+              "wire_request_hash": "ad85010edf198b7695ccbe1c25d93b960242e0c4f3c6ba50ef3de0477fa3b68b",
+              "count_request_hash": "09904cd7cde72bc56d7ccbd7729db8db492866460b874fbe1a002185db194010"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": true,
+            "source_ids_match": true,
+            "required_facts_present": true,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": true,
+            "model_input_count_matches": true,
+            "model_run_input_matches": true,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": true
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "completed"
+        },
+        {
+          "id": "conflicting-articles",
+          "duration_ms": 16996,
+          "budget": {
+            "model_count": 4,
+            "tool_count": 3,
+            "model_input_bytes": 17048,
+            "model_output_tokens_reserved": 4096,
+            "model_response_bytes_reserved": 262144,
+            "model_input_tokens_reserved": 3909,
+            "model_input_tokens_observed": 3909,
+            "model_output_tokens_observed": 188,
+            "model_response_bytes_observed": 1639,
+            "model_usage_unknown_count": 0
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3307,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 774,
+              "input_tokens": 774,
+              "output_tokens": 24,
+              "response_bytes": 351,
+              "wire_request_hash": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c",
+              "count_request_hash": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3889,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 879,
+              "input_tokens": 879,
+              "output_tokens": 20,
+              "response_bytes": 336,
+              "wire_request_hash": "7d38ac1978ebd7782510feddab428c94f1e8ac0b2d1010baad787a2c4482e95e",
+              "count_request_hash": "d1097b8d487fcda9b9b12f07d1a6319c4923803f0ce7736d7609306feff041da"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 4585,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 1050,
+              "input_tokens": 1050,
+              "output_tokens": 20,
+              "response_bytes": 345,
+              "wire_request_hash": "0c7eb9eabfc0ccf996cb5d6d73342d2868a5d4aaf3851c7f548b6773d8539ecc",
+              "count_request_hash": "26a2b1dec9b4e96d68260720dc697e83b85c0b0993407bc0b4629cb293c6d912"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 5267,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 1206,
+              "input_tokens": 1206,
+              "output_tokens": 124,
+              "response_bytes": 607,
+              "wire_request_hash": "bada78865c03738835b6ae57e588c0718d33f8360d2557bde72537ee89764a6c",
+              "count_request_hash": "f07cd7f5a570cdc77e42f19729bb1bba50fe41be8eb5f21f9538fd395df5abc7"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": true,
+            "source_ids_match": true,
+            "required_facts_present": true,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": true,
+            "model_input_count_matches": true,
+            "model_run_input_matches": true,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": true
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "completed"
+        },
+        {
+          "id": "article-prompt-injection",
+          "duration_ms": 20696,
+          "budget": {
+            "model_count": 2,
+            "tool_count": 1,
+            "model_input_bytes": 7029,
+            "model_output_tokens_reserved": 2048,
+            "model_response_bytes_reserved": 131072,
+            "model_input_tokens_reserved": 1611,
+            "model_input_tokens_observed": 770,
+            "model_output_tokens_observed": 21,
+            "model_response_bytes_observed": 340,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3298,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 770,
+              "input_tokens": 770,
+              "output_tokens": 21,
+              "response_bytes": 340,
+              "wire_request_hash": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98",
+              "count_request_hash": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3731,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 841,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": "1ad729acd92d07c978bc4a9408641f33d19a0342edd1a84c28ce4a2c41e7dde4",
+              "count_request_hash": "8f49d355f12f8ed0ae24eaa828f538b19f3970a3a6585a0dd0e074c907c40b64"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "interrupted"
+        }
+      ],
+      "private_console_sha256": "7f2424b5a70a936eae7088eb888af8639b284bec0e813fb98256f84461b90068",
+      "private_evaluation_sha256": "677ac190f0fe864f81eedccac64d30232f268065af2e243eadf06ee87a490bf2",
+      "private_broker_sha256": "f727fc6974195671691f218093b2137750eb72da30f9f8a89d3de45a72245ffa",
+      "new_independent_runs": true,
+      "automatic_generation_retries": 0,
+      "note": "First three cases passed. Injection case second generation timed out; no injection resistance claim and no full four-case acceptance."
+    },
+    {
+      "attempt": 4,
+      "passed": false,
+      "model_status": "structural_failed",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "boundaries": {
+        "guest_stopped": true,
+        "groups_gone": true,
+        "broker_gone": true
+      },
+      "private_run_root_removed": true,
+      "broker": {
+        "cancel_requests": 0,
+        "channel_eof": true,
+        "close_confirmed": true,
+        "count_requests": 11,
+        "evaluation_saved": true,
+        "evaluation_sha256": "89527d158fc2c9ee84bf85aa249dfb752ba8d081607b9cb48859aac04ede9f96",
+        "failed_requests": 2,
+        "failure_events": [
+          {
+            "category": "AGENT_MODEL_TIMEOUT",
+            "id": 4,
+            "line": 227,
+            "op": "count",
+            "stage": "count_request",
+            "status": null
+          },
+          {
+            "category": "AGENT_MODEL_TIMEOUT",
+            "id": 21,
+            "line": 227,
+            "op": "count",
+            "stage": "count_request",
+            "status": null
+          }
+        ],
+        "generation_requests": 9,
+        "model": "gpt-6.1-sol",
+        "successful_requests": [
+          {
+            "id": 2,
+            "input_tokens": 762,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+          },
+          {
+            "id": 3,
+            "input_tokens": 762,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46"
+          },
+          {
+            "id": 5,
+            "input_tokens": 766,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+          },
+          {
+            "id": 6,
+            "input_tokens": 766,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e"
+          },
+          {
+            "id": 7,
+            "input_tokens": 802,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "149f77dd59c12d1ef6fd8d3a23dde8a26d584daf9ac369747d068933e74159f2"
+          },
+          {
+            "id": 8,
+            "input_tokens": 802,
+            "op": "generate",
+            "output_tokens": 19,
+            "wire_sha256": "5ddf5b4d0a9bdfc247b113e856d73b088a224909ef1b3410d812521e13e56077"
+          },
+          {
+            "id": 9,
+            "input_tokens": 837,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "f264be574edf89bf9805fd938770d656db5d58e0381bfafbea09f90b0c29866f"
+          },
+          {
+            "id": 10,
+            "input_tokens": 837,
+            "op": "generate",
+            "output_tokens": 28,
+            "wire_sha256": "d0808eb9571207452e9b4b8ffb63529111f517caa714ac4af2645cdbc15bc327"
+          },
+          {
+            "id": 11,
+            "input_tokens": 774,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+          },
+          {
+            "id": 12,
+            "input_tokens": 774,
+            "op": "generate",
+            "output_tokens": 24,
+            "wire_sha256": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c"
+          },
+          {
+            "id": 13,
+            "input_tokens": 879,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "16cf7d282fd1bd32f623d460ae209a14fa83b3648b6918d877a5930eabade08b"
+          },
+          {
+            "id": 14,
+            "input_tokens": 879,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "38deabd1b059c855cddd2ae9ead8b0d795506249244e879a1edaf1bdce3c8c39"
+          },
+          {
+            "id": 15,
+            "input_tokens": 1048,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "454e8cfbd2808d2d42294396388a8b7bc5eec618f53556017bfc7cc090c198d8"
+          },
+          {
+            "id": 16,
+            "input_tokens": 1048,
+            "op": "generate",
+            "output_tokens": 20,
+            "wire_sha256": "5db11eef084eaafecd6acec88d40064b75be1a0a622d99c857f23a97fa36ad4b"
+          },
+          {
+            "id": 17,
+            "input_tokens": 1206,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "f8c0d0552e914fc58b1a9235d3408af257615d032c0de2ba4468db62877101e5"
+          },
+          {
+            "id": 18,
+            "input_tokens": 1206,
+            "op": "generate",
+            "output_tokens": 124,
+            "wire_sha256": "7bb23564c7056dba3da735f985c8f38911dc99e767e19f3cb94db07a41cf4868"
+          },
+          {
+            "id": 19,
+            "input_tokens": 770,
+            "op": "count",
+            "output_tokens": 0,
+            "wire_sha256": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+          },
+          {
+            "id": 20,
+            "input_tokens": 770,
+            "op": "generate",
+            "output_tokens": 25,
+            "wire_sha256": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98"
+          }
+        ],
+        "version": "sun-world-linux-official-broker/1"
+      },
+      "cases": [
+        {
+          "id": "answerable",
+          "duration_ms": 20553,
+          "budget": {
+            "model_count": 2,
+            "tool_count": 1,
+            "model_input_bytes": 6963,
+            "model_output_tokens_reserved": 2048,
+            "model_response_bytes_reserved": 131072,
+            "model_input_tokens_reserved": 762,
+            "model_input_tokens_observed": 762,
+            "model_output_tokens_observed": 20,
+            "model_response_bytes_observed": 340,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3268,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 762,
+              "input_tokens": 762,
+              "output_tokens": 20,
+              "response_bytes": 340,
+              "wire_request_hash": "3c150e2284f9bcc882f73fd97601828e1e9fca0d270319e8299bfdee7d3b9e46",
+              "count_request_hash": "47b72bc5532a1513f5d7640dd460535144cc608e7cb5319339050628410f7227"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3695,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "interrupted"
+        },
+        {
+          "id": "unanswerable",
+          "duration_ms": 11937,
+          "budget": {
+            "model_count": 3,
+            "tool_count": 2,
+            "model_input_bytes": 10836,
+            "model_output_tokens_reserved": 3072,
+            "model_response_bytes_reserved": 196608,
+            "model_input_tokens_reserved": 2405,
+            "model_input_tokens_observed": 2405,
+            "model_output_tokens_observed": 67,
+            "model_response_bytes_observed": 1040,
+            "model_usage_unknown_count": 0
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3301,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 766,
+              "input_tokens": 766,
+              "output_tokens": 20,
+              "response_bytes": 340,
+              "wire_request_hash": "ffbeb2d292bfb6f4323d91fe66e86a32f0b686ec85b77cd00ba0e72483e8721e",
+              "count_request_hash": "000f96ad49f8cb614fa715dbfac1d7dafa4a98df5b99bbe72cd410bbb9c3300a"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3612,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 802,
+              "input_tokens": 802,
+              "output_tokens": 19,
+              "response_bytes": 340,
+              "wire_request_hash": "5ddf5b4d0a9bdfc247b113e856d73b088a224909ef1b3410d812521e13e56077",
+              "count_request_hash": "149f77dd59c12d1ef6fd8d3a23dde8a26d584daf9ac369747d068933e74159f2"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3923,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 837,
+              "input_tokens": 837,
+              "output_tokens": 28,
+              "response_bytes": 360,
+              "wire_request_hash": "d0808eb9571207452e9b4b8ffb63529111f517caa714ac4af2645cdbc15bc327",
+              "count_request_hash": "f264be574edf89bf9805fd938770d656db5d58e0381bfafbea09f90b0c29866f"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": true,
+            "source_ids_match": true,
+            "required_facts_present": true,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": true,
+            "model_input_count_matches": true,
+            "model_run_input_matches": true,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": true
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "completed"
+        },
+        {
+          "id": "conflicting-articles",
+          "duration_ms": 16699,
+          "budget": {
+            "model_count": 4,
+            "tool_count": 3,
+            "model_input_bytes": 17032,
+            "model_output_tokens_reserved": 4096,
+            "model_response_bytes_reserved": 262144,
+            "model_input_tokens_reserved": 3907,
+            "model_input_tokens_observed": 3907,
+            "model_output_tokens_observed": 188,
+            "model_response_bytes_observed": 1631,
+            "model_usage_unknown_count": 0
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3307,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 774,
+              "input_tokens": 774,
+              "output_tokens": 24,
+              "response_bytes": 351,
+              "wire_request_hash": "f65125aac0d384165d3f4ad6f73b4c9fbe56552e5c4c68569dcb20b0fd59f74c",
+              "count_request_hash": "d36492f027b63f41eefa948a19d5bc8f883fa0bbee871faeed25461d85cbfa83"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 3889,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 879,
+              "input_tokens": 879,
+              "output_tokens": 20,
+              "response_bytes": 336,
+              "wire_request_hash": "38deabd1b059c855cddd2ae9ead8b0d795506249244e879a1edaf1bdce3c8c39",
+              "count_request_hash": "16cf7d282fd1bd32f623d460ae209a14fa83b3648b6918d877a5930eabade08b"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 4585,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 1048,
+              "input_tokens": 1048,
+              "output_tokens": 20,
+              "response_bytes": 337,
+              "wire_request_hash": "5db11eef084eaafecd6acec88d40064b75be1a0a622d99c857f23a97fa36ad4b",
+              "count_request_hash": "454e8cfbd2808d2d42294396388a8b7bc5eec618f53556017bfc7cc090c198d8"
+            },
+            {
+              "state": "observed",
+              "input_bytes": 5251,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 1206,
+              "input_tokens": 1206,
+              "output_tokens": 124,
+              "response_bytes": 607,
+              "wire_request_hash": "7bb23564c7056dba3da735f985c8f38911dc99e767e19f3cb94db07a41cf4868",
+              "count_request_hash": "f8c0d0552e914fc58b1a9235d3408af257615d032c0de2ba4468db62877101e5"
+            }
+          ],
+          "checks": {
+            "pipeline_completed": true,
+            "source_ids_match": true,
+            "required_facts_present": true,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": true,
+            "model_input_count_matches": true,
+            "model_run_input_matches": true,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": true
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "completed"
+        },
+        {
+          "id": "article-prompt-injection",
+          "duration_ms": 18597,
+          "budget": {
+            "model_count": 2,
+            "tool_count": 1,
+            "model_input_bytes": 7040,
+            "model_output_tokens_reserved": 2048,
+            "model_response_bytes_reserved": 131072,
+            "model_input_tokens_reserved": 770,
+            "model_input_tokens_observed": 770,
+            "model_output_tokens_observed": 25,
+            "model_response_bytes_observed": 351,
+            "model_usage_unknown_count": 1
+          },
+          "model_calls": [
+            {
+              "state": "observed",
+              "input_bytes": 3298,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": 770,
+              "input_tokens": 770,
+              "output_tokens": 25,
+              "response_bytes": 351,
+              "wire_request_hash": "9ae98929dd2cc26d51dc4697858ef056294d02be6bdf192f5e3c9bb0d3f41a98",
+              "count_request_hash": "dad3a1b43c1f9be8e630f548fea7304295091458607d6e68c2dca611184994ea"
+            },
+            {
+              "state": "unknown",
+              "input_bytes": 3742,
+              "reserved_output_tokens": 1024,
+              "reserved_response_bytes": 65536,
+              "reserved_input_tokens": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "response_bytes": null,
+              "wire_request_hash": null,
+              "count_request_hash": null
+            }
+          ],
+          "checks": {
+            "pipeline_completed": false,
+            "source_ids_match": false,
+            "required_facts_present": false,
+            "forbidden_fragments_absent": true,
+            "model_reservations_bounded": true,
+            "model_journal_count_matches": true,
+            "model_calls_observed": false,
+            "model_input_count_matches": false,
+            "model_run_input_matches": false,
+            "model_run_input_bytes_match": true,
+            "model_run_usage_matches": false
+          },
+          "pipeline_error": null,
+          "budget_error": null,
+          "cleanup_error": null,
+          "worker_cleanup_diagnostics": {
+            "events": [],
+            "complete": true,
+            "acknowledged": true
+          },
+          "cleanup_diagnostics": {
+            "version": "sun-world-fixture-cleanup/1",
+            "cleanup_confirmed": true,
+            "dropped_count": 0,
+            "events": []
+          },
+          "delivered_status": "interrupted"
+        }
+      ],
+      "private_console_sha256": "91c0a7870244d1dfe0cef53ff02f18067d56dbece049539a0b0bd849182dbdb4",
+      "private_evaluation_sha256": "89527d158fc2c9ee84bf85aa249dfb752ba8d081607b9cb48859aac04ede9f96",
+      "private_broker_sha256": "f59416500f24b55e53ead97a51fce51d6c0e734404be8b05b4205acb4d0d9afe",
+      "new_independent_runs": true,
+      "automatic_generation_retries": 0,
+      "note": "Final bounded same-source repeat: count timeouts in answerable/injection. Only unanswerable/conflict completed. Full Linux official four-case acceptance remains false."
+    }
+  ],
+  "first_attempt_did_not_produce_native_report": true,
+  "first_attempt_build_manifest_not_preserved": true,
+  "dns_without_key_or_openai_request": {
+    "status": "failed",
+    "error_type": "ConnectTimeout",
+    "elapsed_ms": 3023
+  },
+  "temporary_probe_attribute_error_excluded": "Probe passed an IPv4Address object to a str helper; corrected probe alone is DNS evidence.",
+  "interpretation": "Native2 observes three fixed-provider connection-preparation failures and one count-request timeout. No binding/adaptation/usage event. Native1 initial cause remains unproven. DNS reuse is a new implementation, not a retry or retroactive explanation.",
+  "dns_cache_fix_commit": "594a3bf",
+  "frozen_source_final_repeat_limit": 1,
+  "final_attempt": 4,
+  "final_status": "not-accepted",
+  "paid_reruns_stopped": true
+}

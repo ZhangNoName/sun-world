@@ -88,6 +88,7 @@ def main(argv=None):
     parser.add_argument('--real-model-profile', choices=('qwen-public', 'openai-local'))
     parser.add_argument('--report', type=Path)
     parser.add_argument('--linux-stack', action='store_true')
+    parser.add_argument('--linux-official', action='store_true')
     arguments = parser.parse_args(argv)
     try:
         sys.path.insert(0, str(ROOT / 'apps/api'))
@@ -97,7 +98,11 @@ def main(argv=None):
                                    interrupt=arguments.interrupt_probe)
         if arguments.linux_stack and (sys.platform != 'linux' or arguments.real_model or arguments.interrupt_probe):
             raise ValueError('Explicit synthetic Linux stack fixture only')
-        if not arguments.linux_stack and sys.platform != 'darwin':
+        if arguments.linux_official and (sys.platform != 'linux' or arguments.linux_stack
+                or not arguments.real_model or profile != 'openai-local' or arguments.interrupt_probe):
+            raise ValueError('Explicit Linux official profile only')
+        linux = arguments.linux_stack or arguments.linux_official
+        if not linux and sys.platform != 'darwin':
             raise ValueError('Explicit macOS sandbox-exec fixture only')
         node = arguments.node.expanduser().resolve(strict=True)
         version = subprocess.check_output([str(node), '--version'], timeout=5, text=True).strip()
@@ -113,10 +118,11 @@ def main(argv=None):
                 'SUN_WORLD_AGENT_SDK_RUNTIME': str(runtime), 'SUN_WORLD_AGENT_SDK_NODE': str(node)}
             command = [sys.executable, str(ROOT / 'apps/api/tests/integration/sdk_stack.py'),
                               *(['--linux-stack'] if arguments.linux_stack else []),
+                              *(['--linux-official'] if arguments.linux_official else []),
                               *(['--interrupt-probe'] if arguments.interrupt_probe else []),
                               *(['--real-model', '--real-model-profile', profile,
                                   '--report', str(arguments.report.resolve())] if arguments.real_model else [])]
-            if not arguments.linux_stack:
+            if not linux:
                 return mysql.run(arguments.mysqld, extra_env=environment, test_runner=owned_test_process,
                     test_command=command, test_timeout_seconds=300 if arguments.real_model else 180)
             server = stack.enter_context(mysql.owned_mysql(arguments.mysqld))
@@ -127,7 +133,7 @@ def main(argv=None):
         if any(Path(environment['SUN_WORLD_AGENT_' + kind + '_ROOT']).exists() for kind in ('REDIS', 'MONGO')):
             raise RuntimeError('Owned database root remains')
         if status == 0:
-            print('SW_LINUX_STACK_RESOURCES_RESULT ' + json.dumps({
+            print(('SW_LINUX_OFFICIAL_RESOURCES_RESULT ' if arguments.linux_official else 'SW_LINUX_STACK_RESOURCES_RESULT ') + json.dumps({
                 'version': 'sun-world-linux-stack-resources/1', 'database_processes_stopped': True,
                 'database_roots_removed': True, 'owned_test_group_gone': True}), flush=True)
         return status

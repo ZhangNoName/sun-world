@@ -89,8 +89,8 @@ def linux_fixture_class(base):
         raise unavailable()
 
     class LinuxFixture(base):
-        def __init__(self, mode):
-            super().__init__(mode, linux=True)
+        def __init__(self, mode, **options):
+            super().__init__(mode, linux=True, **options)
             self.containment = OwnedStackCgroups()
             info = self.root.lstat()
             self._root_identity = (info.st_dev, info.st_ino)
@@ -150,7 +150,7 @@ def linux_fixture_class(base):
                 'crashed': self.expected_worker_crash,
                 'executions': len(samples),
                 'maximum_memory_peak_bytes': max(row['memory_peak_bytes'] for row in samples),
-                'model_requests': self.model_steps,
+                'model_requests': int(self.pool.fetch_one('SELECT COALESCE(SUM(model_count),0) n FROM agent_runs')['n']),
                 'tool_calls': int(self.pool.fetch_one('SELECT COALESCE(SUM(tool_count),0) n FROM agent_runs')['n']),
                 'parent_cgroup_reaped': recovered['had_processes'],
                 'parent_recovery_positive_control': recovered['survivor_was_live'] and recovered['survivor_cgroup_killed'],

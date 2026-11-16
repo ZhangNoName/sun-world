@@ -52,6 +52,12 @@ C3继续正式会话/准入、路由与派发、版本化协议和真实MySQL故
 
 本轮补Linux正式API/三库的合成组合缺口，不是生产或真实供应商Linux验收。8GiB测试VM不代表2GiB目标容量；人工语义、生产模型版本策略、目标库迁移/数据/备份恢复、TLS运维与无人值守回收继续待验。B/C3/P1/A–D仍未整体完成，不开放生产、不改现有页面模型profile。
 
+## B/C3：Linux 官方通道实现与未通过验收（2026-11-17）
+
+已实现同guest正式API/三库/SDK经特权串口到host官方proxy，原opaque计数/持久预占/原wire生成保持；任务不能见或继承控制设备，host key不入guest。详见[协议](../development/agent-linux-official.md)与[完整失败记录](../evaluations/agent-linux-official-2026-11-17/README.md)。本地DNS有界复用已保存594a3bf，API905/Worker164/Mac合成6及独立复审通过。
+
+四次独立原生官方四题仍未整套通过，最好的一轮前三题完成、D生成超时；最后同源复验A/D计数超时，已停本轮付费复跑。不能跨run拼4/4、宣称抗注入或人工通过。未知请求保预占/null usage，所有Worker/fixture与VM/broker/group/root回收确认；外网间歇超时具体归因未定，不增加重试或放宽预算。稳定转发、完整四题/人审及原生产门槛继续待，B/C3/P1/A–D仍未整体验收；不改现有页面/模型/代理全局设置，不开放生产。
+
 ## 交付顺序
 
 | 阶段 / 建议 PR | 修改边界 | 产物与放行条件 | 失败时处理 |

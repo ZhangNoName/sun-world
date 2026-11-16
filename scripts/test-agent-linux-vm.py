@@ -2,9 +2,11 @@
 """Explicit disposable macOS VZ guest; no production services or model calls."""
 
 import argparse
+from contextlib import ExitStack
 import gzip
 import io
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -80,12 +82,13 @@ class Capture:
         self.selector.close()
 
 
-def execute(command, *, state, directory, timeout, is_vm=False, confirmations):
+def execute(command, *, state, directory, timeout, is_vm=False, confirmations, pass_fds=()):
     process, capture = None, None
     try:
         with state.defer():
             process = subprocess.Popen(command, cwd=directory, env=ENV, stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True,
+                **({'pass_fds': pass_fds} if pass_fds else {}))
             confirmations['groups_gone'] = False
             if is_vm:
                 confirmations['guest_stopped'] = False
@@ -161,7 +164,8 @@ def valid_host(value):
                                'startup_failed', 'guest_error'})
 
 
-def verify_console(raw, control, *, containment=False, gateway=False, stack=False):
+def verify_console(raw, control, *, containment=False, gateway=False, stack=False, official=False):
+    stack = stack or official
     gateway = gateway or stack
     containment = containment or gateway
     host = only_json(control, 'SW_LINUX_HOST_RESULT')
@@ -286,6 +290,27 @@ def verify_console(raw, control, *, containment=False, gateway=False, stack=Fals
             formal_stack=proof, stack_resources=resources, linux_formal_stack_synthetic_verified=True)
     elif any(line.startswith(b'SW_LINUX_STACK_') for line in raw.splitlines()):
         fail()
+    if official:
+        if any(line.split(b' ',1)[0] not in {b'SW_LINUX_OFFICIAL_DEVICE_RESULT',
+                b'SW_LINUX_OFFICIAL_RESOURCES_RESULT',b'SW_LINUX_OFFICIAL_STACK_RESULT'}
+                for line in raw.splitlines() if line.startswith(b'SW_LINUX_OFFICIAL_')):
+            fail()
+        device = only_json(raw, 'SW_LINUX_OFFICIAL_DEVICE_RESULT')
+        if device != {'version':'sun-world-linux-official-device/1','controller_device_present':True,
+                'task_device_path_denied':True,'task_inherited_device_absent':True,
+                'task_provider_environment_absent':True,'cgroup_and_workspace_removed':True} or any(
+                    type(v) is not bool for k,v in device.items() if k != 'version'):
+            fail()
+        resources = only_json(raw, 'SW_LINUX_OFFICIAL_RESOURCES_RESULT')
+        if resources != {'version':'sun-world-linux-stack-resources/1','database_processes_stopped':True,
+                'database_roots_removed':True,'owned_test_group_gone':True} or any(
+                    type(v) is not bool for k,v in resources.items() if k != 'version'):
+            fail()
+        result['official_device'] = device
+        result['official_resources'] = resources
+        result['official_stack'] = only_json(raw, 'SW_LINUX_OFFICIAL_STACK_RESULT')
+    elif any(line.startswith(b'SW_LINUX_OFFICIAL_') for line in raw.splitlines()):
+        fail()
     return result
 
 
@@ -319,23 +344,30 @@ def main(argv=None):
     parser.add_argument('--containment', action='store_true')
     parser.add_argument('--gateway', action='store_true')
     parser.add_argument('--stack', action='store_true')
+    parser.add_argument('--official', action='store_true')
     arguments = parser.parse_args(argv)
+    admitted, stage = False, 'admission'
+    confirmations, build, run = None, None, None
     try:
-        if (sum((arguments.gateway, arguments.containment, arguments.stack)) > 1 or sys.platform != 'darwin' or not arguments.cache.is_absolute()
+        if (sum((arguments.gateway, arguments.containment, arguments.stack, arguments.official)) > 1 or sys.platform != 'darwin' or not arguments.cache.is_absolute()
                 or not arguments.report.is_absolute() or not arguments.report.parent.is_dir()
-                or arguments.report.exists() or Path(str(arguments.report) + '.console.log').exists()):
+                or any(os.path.lexists(str(arguments.report)+suffix) for suffix in ('','.console.log','.broker.json','.evaluation.json'))):
             fail()
+        stack = arguments.stack or arguments.official
+        admitted = True
         confirmations = {'guest_stopped': True, 'groups_gone': True}
         with owned_interrupts() as state:
             with owned_temporary_directory(state, prefix='sun-world-linux-vm-',
                     dir=arguments.cache.parent,
                     cleanup_confirmed=lambda: all(confirmations.values())) as temporary:
                 run = Path(temporary)
+                stage = 'prepare'
                 execute([sys.executable, str(ROOT / 'scripts/prepare-agent-linux-guest.py'),
                     '--cache', str(arguments.cache), '--output', str(run / 'guest.initrd'),
-                    *(['--stack'] if arguments.stack else ['--gateway'] if arguments.gateway else ['--containment'] if arguments.containment else [])],
-                    state=state, directory=run, timeout=300 if arguments.stack else 180 if arguments.gateway else 90, confirmations=confirmations)
+                    *(['--stack'] if stack else ['--gateway'] if arguments.gateway else ['--containment'] if arguments.containment else [])],
+                    state=state, directory=run, timeout=300 if stack else 180 if arguments.gateway else 90, confirmations=confirmations)
                 build = json.loads((run / 'guest.initrd.manifest.json').read_text())
+                stage = 'compile'
                 # The builder has verified the original compressed kernel bytes.
                 contract = json.loads((ROOT / 'tools/agent-linux-vm/assets.json').read_text())
                 expected = next(row['sha256'] for row in contract['assets'] if row['filename'] == 'kernel')
@@ -350,10 +382,23 @@ def main(argv=None):
                 execute(['/usr/bin/codesign', '--force', '--sign', '-', '--entitlements',
                     str(ROOT / 'tools/agent-linux-vm/entitlements.plist'), str(run / 'host')],
                     state=state, directory=run, timeout=15, confirmations=confirmations)
+                broker = None
                 try:
-                    console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
-                        *(['stack'] if arguments.stack else ['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
-                        state=state, directory=run, timeout=330 if arguments.stack else 110, is_vm=True, confirmations=confirmations)
+                    with ExitStack() as services:
+                        descriptors = ()
+                        if arguments.official:
+                            stage = 'broker_start'
+                            host_spec = importlib.util.spec_from_file_location('official_host', ROOT/'scripts/agent-linux-official-host.py')
+                            host_module = importlib.util.module_from_spec(host_spec)
+                            host_spec.loader.exec_module(host_module)
+                            broker = services.enter_context(host_module.owned_broker(run,state,confirmations))
+                            descriptors = broker.descriptors()
+                        stage = 'vm'
+                        console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
+                            *(['official', *(str(fd) for fd in descriptors)] if arguments.official else
+                              ['stack'] if stack else ['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
+                            state=state, directory=run, timeout=630 if arguments.official else 330 if stack else 110,
+                            is_vm=True, confirmations=confirmations, pass_fds=descriptors)
                 finally:
                     log = run / 'console.log'
                     if log.exists():
@@ -362,13 +407,36 @@ def main(argv=None):
                             target.write(log.read_bytes())
                             target.flush()
                             os.fsync(target.fileno())
-                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway, stack=arguments.stack)
+                    if broker is not None and broker.closed:
+                        for path,suffix in ((broker.summary_path,'.broker.json'),(broker.evaluation_path,'.evaluation.json')):
+                            if path.stat().st_size:
+                                raw,_ = host_module.private_json(path,65536 if suffix=='.broker.json' else 262144)
+                                with Path(str(arguments.report)+suffix).open('xb') as target:
+                                    os.fchmod(target.fileno(),0o600)
+                                    target.write(raw)
+                                    target.flush()
+                                    os.fsync(target.fileno())
+                stage = 'verify_console'
+                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway, stack=stack, official=arguments.official)
+                if arguments.official:
+                    stage = 'verify_official'
+                    summary, evaluation = broker.results()
+                    proof_spec = importlib.util.spec_from_file_location('official_proof',ROOT/'scripts/agent-linux-official-proof.py')
+                    proof_module = importlib.util.module_from_spec(proof_spec)
+                    proof_spec.loader.exec_module(proof_module)
+                    result['official_crosscheck'] = proof_module.verify_official(summary,evaluation,result['official_stack'])
+                    result['version'] = 'sun-world-linux-native-validation/5'
+                    result['supplier_requests'] = summary['count_requests']+summary['generation_requests']
+                    result['linux_official_four_case_verified'] = True
+                    result['official_broker_group_gone'] = confirmations['broker_gone']
+                    result['official_evaluation_sha256'] = summary['evaluation_sha256']
                 result['guest_build'] = build
                 result['kernel_image_sha256'] = hashlib.sha256(kernel).hexdigest()
                 result['owned_groups_gone'] = confirmations['groups_gone']
                 if not all(confirmations.values()):
                     fail()
         result['private_run_root_removed'] = True
+        stage = 'write_report'
         with arguments.report.open('x', encoding='utf-8') as output:
             os.fchmod(output.fileno(), 0o600)
             output.write(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
@@ -377,6 +445,26 @@ def main(argv=None):
         print('AGENT_LINUX_VM_VALIDATED')
         return 0
     except BaseException as error:
+        if admitted and stage != 'write_report':
+            failure = {'version':'sun-world-linux-native-failure/1','passed':False,'stage':stage,
+                'interrupted':isinstance(error,KeyboardInterrupt),'boundaries':confirmations,
+                'private_run_root_removed':run is not None and not run.exists(),
+                'guest_build':build,'host':None}
+            try:
+                log = Path(str(arguments.report)+'.console.log')
+                if log.is_file():
+                    chunks = log.read_bytes().split(b'\nHOST_STDERR\n',1)
+                    if len(chunks)==2:
+                        host = only_json(chunks[1],'SW_LINUX_HOST_RESULT')
+                        if valid_host(host):
+                            failure['host'] = host
+                with arguments.report.open('x',encoding='utf-8') as output:
+                    os.fchmod(output.fileno(),0o600)
+                    output.write(json.dumps(failure,ensure_ascii=False,indent=2)+'\n')
+                    output.flush()
+                    os.fsync(output.fileno())
+            except BaseException:
+                pass  # Never replace the original failure or overwrite an artifact.
         print(FAILED, file=sys.stderr)
         return 130 if isinstance(error, KeyboardInterrupt) else 1
 

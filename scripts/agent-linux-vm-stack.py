@@ -48,7 +48,8 @@ def source_paths(read_source):
         fail()
     # The maintained contract is explicit; reject broad workspace expansion.
     exact = {'.nvmrc', 'apps/api/main.py', 'apps/api/pyproject.toml', 'apps/api/poetry.lock',
-             PYTHON, 'tools/agent-linux-vm/stack-probe.py'}
+             PYTHON, 'tools/agent-linux-vm/stack-probe.py',
+             'apps/api/tests/fixtures/agent-model-evaluation.json'}
     for path in value['paths']:
         if (path not in exact and not path.startswith(('apps/api/src/', 'apps/api/tests/integration/',
                 'apps/agent-worker/tests/integration/')) and path not in {
