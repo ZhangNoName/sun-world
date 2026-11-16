@@ -34,6 +34,12 @@ C3继续正式会话/准入、路由与派发、版本化协议和真实MySQL故
 
 仍未组合正式HTTP/dispatcher/Worker协议，也未验真实Redis/模型/SDK端到端或数据库进程崩溃恢复。C3、B及A–D不得按首批通过整体验收，下一步继续这些实现与验证。
 
+## C3 后续：派发控制与私有V2协议（2026-11-16）
+
+新增single-attempt dispatcher、固定HTTPS Worker client与显式私有V2回调工厂，根request关联字段及后端生成内部schema；说明见[派发控制](../development/agent-run-dispatch.md)。只有确认领取事务提交才发start；未知确认只inspect原execution，不能确定则中断并尽力取消。账本终态不由Worker ACK自报决定。私有factory未挂公网应用，旧SQLite/v1入口保留。
+
+新测试覆盖真实Ledger/Gateway回调、受众/根请求、确认丢失/取消顺序、并发与关停；自有loopback TLS验证信任/主机名拒绝，临时MySQL现15项通过。Worker v2服务/SDK适配/取消tombstone、真实Redis准入、部署TLS身份与Linux/崩溃矩阵仍未实现/验收，不能宣称已完成正式Worker接线或C3整体验收。
+
 ## 交付顺序
 
 | 阶段 / 建议 PR | 修改边界 | 产物与放行条件 | 失败时处理 |

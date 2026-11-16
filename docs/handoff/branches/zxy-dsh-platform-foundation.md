@@ -279,3 +279,33 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 下一步继续正式dispatcher/router、Worker版本化协议与SDK接线、真实Redis与完整故障矩阵；B的Linux/token/PID/TLS仍未放行。一次性新库建表不代表已有数据库迁移演练，不能把首批验证宣称C3/A–D全面完成。原共享素材格式和CSS预算问题保留。
 
 最终暂存树`419a7850ef2cdd028a0cb9424b069f4f6db8a519`独立导出后API518项与真实MySQL13项均通过，快照和owned mysqld/datadir已清理；随后仅补充交接证据。暂存空白/私钥与GitHub token模式检查通过，未包含既有其他dirty源码/配置/素材。博客1280/390宽正文预览DOM与截图检查通过，无残留加粗标记；原素材format与CSS预算失败仍未处理。
+
+
+## 2026-11-16 C3后续：派发控制、V2私有回调与TLS输运
+
+### Goal / implementation
+
+基点82f8f9c。继续按计划接线正式账本，保持旧SQLite/v1本地SDK与生产开关不变。本轮没有挂载公网HTTP、实现正式Worker服务/SDK v2执行端或部署；没有读取应用配置/凭据或连接业务库。
+
+- coding新增dispatcher与17项真实SQLite/Gateway控制链测试，ledger增加限定绑定终结方法及root_request登记/比对。先claim提交再发单次start，ACK不明只inspect原execution一次，不盲目重派；completed ACK不能生成答案。取消、当前授权失效、外部终态和close先尽力持久终态再stop，DB未知仍UNCONFIRMED并尽力cancel；线程/RPC取消drain。容量槽涵盖在途与活跃执行，不在原dispatch退出前释放。
+- 主线程实现固定HTTPS Worker client（禁代理/重定向/重试、校验证书/hostname、请求16KiB/响应8KiB/2秒），显式私有V2回调factory（需宿主可信ASGI TLS peer verifier，不信转发头、未挂main）；source UUID、分受众认证、根session/turn/request、同事务完成贯通原网关。新增nullable root_request_id中央schema，未升级业务库。
+- rpc.py严格schema由export-agent-rpc.py导出packages/contracts/agent/rpc-v2.json；API gate新增--check，Python生成器负责该文件格式（沿用tool-catalog约定）。JSON拒绝重复key、非对象、NaN/Infinity及1e999溢出。错误不回显driver/Worker诊断或token。
+- 说明：[派发控制与V2](../../development/agent-run-dispatch.md)。内部服务路径与schema是明确版本的实现契约，不能把v2交给现有整数来源/单token v1适配器。
+
+### Review / verification
+
+- 判官确认并复核解除：monitor看到外部终态漏cancel；owner cancel过早释放pending start槽可绕过max_active；科学计数1e999转inf绕过非有限数拒绝。对应回归已加，最终delta未发现新的确认阻塞。
+- 定向：dispatcher17、ledger18、gateway20、private-router7、transport4通过。私有router测试使用实际ledger/gateway+临时SQLite和合成peer，覆盖未回执/错request拒绝、完成及幂等；不作为部署TLS/mTLS验收。
+- test_agent_worker_tls使用自有loopback TLS监听器/临时openssl证书，信任成功、未知CA和SAN不符拒绝；所有临时socket/文件已回收，无真实服务身份/轮换演练。旧Worker协议3项、deploy-schema通过。
+- 安全启动器的一次性MySQL现15项通过，新增原生root_request/内部终态与派发ACK不明不重放/取消前已落interrupted；fake Worker只作故障注入，真实MySQL数据/进程全部回收。
+- 全仓format:check仍仅报原有docs/content-sources/csdn-qq-42345136/manifest.json；原CSS预算问题仍保留，不宣称root check全绿。
+
+### Writing / next
+
+继续sun-world-blog→sun-world-write-design修订架构笔记04，分类后端、标签架构笔记/Agent/DeepSeek Harness不变，补单次派发、确认丢失只查询、ACK不等于持久完成与外部终态回收。已有对照表足够解释本次增量，无新增图片、未发布。
+
+沿用3030下独立正文预览，1280×900及390×844，7个稳定唯一ID、无溢出/首行缩进、无残留双星标记、11处strong；截图在ignored.tmp。该预览使用当前工作区未提交的渲染器/样式，不代表已提交前端或完整BlogDetailPage/TOC/auth/E2E验收。
+
+下一步Worker v2服务/SDK根request关联、UUID来源与三受众桥、cancel tombstone，再接真实Redis准入与正式组合根；B的Linux/PID/地址/TLS服务身份和完整崩溃矩阵仍未完成。已发请求的cancel先到/start迟到必须由Worker tombstone拒绝，API侧关停drain不能替代这一网络故障保证。保留其他dirty文件，不推送/部署。
+
+最终暂存树`7243fdfe72b39f227322a338cdc756e668761b15`独立导出后API **549项**、一次性MySQL **15项**、旧Worker3项与deploy-schema协议全部通过；API gate同时验证RPC生成物无漂移。临时快照、MySQL进程/datadir已回收；随后仅补交接证据。暂存空白及私钥/GitHub token模式扫描通过。本轮未推送部署。

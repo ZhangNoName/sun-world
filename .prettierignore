@@ -17,3 +17,5 @@ pnpm-lock.yaml
 
 # Python-generated internal contract; export-agent-contracts.py owns formatting.
 packages/contracts/agent/tool-catalog.json
+# Python-generated Worker RPC schema; export-agent-rpc.py owns formatting.
+packages/contracts/agent/rpc-v2.json

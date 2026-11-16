@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 C3 派发控制与私有V2回调
+
+- 实现single-attempt dispatcher、固定HTTPS client、显式私有V2回调factory及后端生成schema，根session/turn/request与UUID来源贯通正式网关；说明见[派发控制](development/agent-run-dispatch.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。确认丢失只inspect原执行，不重放；终态先于尽力回收，DB结果不明保留UNCONFIRMED。
+- Review修复外部终态漏回收、在途槽过早释放与科学计数溢出；独立暂存树API549项、MySQL15项、旧Worker3项和deploy-schema通过；实际loopback TLS信任/hostname拒绝验证通过。自有临时数据库/快照已回收。博客04已补控制边界，1280/390宽正文预览通过，未发布。
+- 私有factory未挂main，Worker V2服务/SDK新协议、取消tombstone和真实Redis准入仍待实施；Linux/生产服务身份/崩溃矩阵未验收。未推送部署，生产关闭，其他dirty/原素材格式与CSS预算问题保留。
+
 ## 2026-11-16 C3 当前授权与一次性MySQL验证
 
 - 正式Ledger/Gateway采用单事务READ COMMITTED；绑定真实会话并从当前UOW重读启用状态/角色，来源重验复用连接，避免有限池中嵌套借池。详见[验证说明](development/agent-run-mysql-validation.md)和[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。

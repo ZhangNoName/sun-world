@@ -289,3 +289,40 @@ class AgentRunLedgerTests(unittest.TestCase):
                      'AGENT_IDEMPOTENCY_CONFLICT', 'AGENT_RESULT_CONFLICT']:
             self.assertTrue(is_known_error_code(code))
             self.assertEqual(get_error_namespace(code), 'AGENT')
+
+    def test_root_request_binding_is_immutable_and_required_for_final_replay(self):
+        from src.modules.agent_runtime.ledger import LedgerError
+        row = self.running()
+        self.ledger.bind_root_turn(row['id'], execution_id=self.execution, generation=1,
+                                  root_turn_id='root-turn', root_request_id='request-1')
+        for request in (None, 'request-2', '', 'bad request', True):
+            with self.subTest(request=request), self.assertRaises(LedgerError):
+                self.ledger.bind_root_turn(row['id'], execution_id=self.execution, generation=1,
+                                          root_turn_id='root-turn', root_request_id=request)
+        self.assertEqual(self.ledger.get_owned(self.owner, row['id'])['root_request_id'], 'request-1')
+        with self.assertRaises(LedgerError):
+            self.complete(row)
+        with self.assertRaises(LedgerError):
+            self.complete(row, root_request_id='request-2')
+        self.assertTrue(self.complete(row, root_request_id='request-1'))
+        self.assertFalse(self.complete(row, root_request_id='request-1'))
+        with self.assertRaises(LedgerError):
+            self.complete(row, root_request_id='request-2')
+        self.assertEqual(self.db.count('ai_messages'), 2)
+
+    def test_internal_execution_termination_is_bound_fixed_and_terminal_immutable(self):
+        from src.modules.agent_runtime.ledger import LedgerError
+        row = self.running()
+        for execution, generation, status in [(str(uuid4()), 1, 'interrupted'),
+                                               (self.execution, 2, 'failed'),
+                                               (self.execution, 1, 'completed'),
+                                               (self.execution, 1, 'private diagnostic')]:
+            with self.subTest(execution=execution, generation=generation, status=status), self.assertRaises(LedgerError):
+                self.ledger.end_execution(row['id'], execution_id=execution, generation=generation, status=status)
+        self.assertEqual(self.ledger.end_execution(row['id'], execution_id=self.execution,
+                                                   generation=1, status='interrupted'), 'interrupted')
+        self.assertEqual(self.ledger.end_execution(row['id'], execution_id=self.execution,
+                                                   generation=1, status='failed'), 'interrupted')
+        current = self.ledger.get_owned(self.owner, row['id'])
+        self.assertEqual(current['error_code'], 'AGENT_RUN_INTERRUPTED')
+        self.assertEqual(self.db.count('ai_messages'), 1)

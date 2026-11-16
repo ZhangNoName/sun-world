@@ -157,13 +157,13 @@ class RunGateway:
             self.ledger._live(row, self.ledger.now())
         return row, principal
 
-    def bind_root_turn(self, call, root_turn_id):
+    def bind_root_turn(self, call, root_turn_id, *, root_request_id=None):
         self._service(call)
         def authorize(uow, row):
             self._check(uow, call, 'result', row=row)
             return True
         return self.ledger.bind_root_turn(call.run_id, execution_id=call.execution_id,
-            generation=call.generation, root_turn_id=root_turn_id, authorize=authorize)
+            generation=call.generation, root_turn_id=root_turn_id, root_request_id=root_request_id, authorize=authorize)
 
     def heartbeat(self, call):
         self._service(call)
@@ -249,7 +249,7 @@ class RunGateway:
             uow.commit()
             return True
 
-    def finish(self, call, *, root_session_id, root_turn_id, answer, source_ids, finish='completed'):
+    def finish(self, call, *, root_session_id, root_turn_id, answer, source_ids, finish='completed', root_request_id=None):
         self._service(call)
         self._validate(call, 'result', live=False)
         try:
@@ -277,7 +277,7 @@ class RunGateway:
             self._check(uow, call, 'result', live=row['status'] != 'completed', row=row)
             return agent_answer_blocks(answer.strip() if links else NO_SOURCES, links)
         return self.ledger.commit_answer(call.run_id, execution_id=call.execution_id, generation=call.generation,
-            root_session_id=root_session_id, root_turn_id=root_turn_id, prepare=prepare)
+            root_session_id=root_session_id, root_turn_id=root_turn_id, root_request_id=root_request_id, prepare=prepare)
 
     async def model(self, call, body):
         self._service(call)

@@ -15,6 +15,10 @@ const scripts = [
     script: resolve(repoRoot, 'scripts/export-agent-contracts.py'),
     args: ['--check'],
   },
+  {
+    script: resolve(repoRoot, 'scripts/export-agent-rpc.py'),
+    args: ['--check'],
+  },
   { script: resolve(repoRoot, 'scripts/check-api-migration.py'), args: [] },
   {
     script: resolve(

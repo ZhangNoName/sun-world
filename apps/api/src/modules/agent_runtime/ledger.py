@@ -105,7 +105,7 @@ class MySqlRunLedger:
                        idempotency_key=key, request_hash=request_hash, conversation_id=conversation_id,
                        session_family_hash=family, engine=ENGINE, bundle_hash=bundle_hash,
                        model_id=model_id, status='accepted', generation=1, execution_id=None,
-                       root_session_id=None, root_turn_id=None, result_hash=None, error_code=None,
+                       root_session_id=None, root_turn_id=None, root_request_id=None, result_hash=None, error_code=None,
                        deadline=now + timedelta(seconds=45), lease_expires_at=None,
                        accepted_at=now, updated_at=now, ended_at=None, tool_count=0, model_count=0,
                        result_bytes=0, tool_credential_hash=None, model_credential_hash=None,
@@ -177,17 +177,21 @@ class MySqlRunLedger:
                 or row['lease_expires_at'] is None or row['lease_expires_at'] <= now):
             raise LedgerError(error_codes.AGENT_EXECUTION_EXPIRED)
 
-    def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id, authorize=None):
-        if not isinstance(root_turn_id, str) or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_turn_id):
+    def bind_root_turn(self, run_id, *, execution_id, generation, root_turn_id, root_request_id=None, authorize=None):
+        if (not isinstance(root_turn_id, str) or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_turn_id)
+                or (root_request_id is not None and (not isinstance(root_request_id, str)
+                    or not re.fullmatch('[A-Za-z0-9_-]{1,128}', root_request_id)))):
             raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
         with self.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if authorize is not None and authorize(uow, row) is not True:
                 raise LedgerError(error_codes.AGENT_ACTIVE_SESSION_REQUIRED)
             self._live(row, self.now())
-            if row['root_turn_id'] is not None and row['root_turn_id'] != root_turn_id:
+            if ((row['root_turn_id'] is not None and row['root_turn_id'] != root_turn_id)
+                    or (row.get('root_request_id') is not None and row['root_request_id'] != root_request_id)):
                 raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
-            uow.execute('UPDATE agent_runs SET root_turn_id=%s WHERE id=%s', (root_turn_id, row['id']))
+            uow.execute('UPDATE agent_runs SET root_turn_id=%s,root_request_id=%s WHERE id=%s',
+                        (root_turn_id, root_request_id, row['id']))
             uow.commit()
 
     def heartbeat(self, run_id, *, execution_id, generation, authorize=None):
@@ -215,7 +219,7 @@ class MySqlRunLedger:
             uow.commit()
             return 'cancelled'
 
-    def commit_answer(self, run_id, *, execution_id, generation, root_session_id, root_turn_id, prepare):
+    def commit_answer(self, run_id, *, execution_id, generation, root_session_id, root_turn_id, prepare, root_request_id=None):
         # The trusted gateway must construct/validate blocks inside this SAME
         # transaction, including current session and delivered/current sources.
         if not callable(prepare):
@@ -223,7 +227,9 @@ class MySqlRunLedger:
         with self.unit_of_work() as uow:
             row = self._binding(uow, run_id, execution_id, generation)
             if (root_session_id != row['root_session_id'] or not row['root_turn_id']
-                    or root_turn_id != row['root_turn_id']):
+                    or root_turn_id != row['root_turn_id']
+                    or ((row.get('root_request_id') is not None or root_request_id is not None)
+                        and row.get('root_request_id') != root_request_id)):
                 raise LedgerError(error_codes.AGENT_EXECUTION_INVALID)
             if row['status'] != 'completed':
                 self._live(row, self.now())
@@ -255,6 +261,27 @@ class MySqlRunLedger:
                 raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
             uow.commit()
             return True
+
+    def end_execution(self, run_id, *, execution_id, generation, status):
+        errors = {'failed': 'AGENT_WORKER_FAILED', 'cancelled': 'AGENT_RUN_CANCELLED',
+                  'interrupted': 'AGENT_RUN_INTERRUPTED'}
+        if not isinstance(status, str) or status not in errors:
+            raise LedgerError(error_codes.AGENT_INPUT_INVALID)
+        with self.unit_of_work() as uow:
+            row = self._binding(uow, run_id, execution_id, generation)
+            if row['status'] in TERMINAL:
+                return row['status']
+            if row['status'] != 'running':
+                raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
+            now = self.now()
+            changed = uow.execute(
+                'UPDATE agent_runs SET status=%s,error_code=%s,ended_at=%s,updated_at=%s '
+                "WHERE id=%s AND execution_id=%s AND generation=%s AND status='running'",
+                (status, errors[status], now, now, row['id'], row['execution_id'], generation))
+            if changed != 1:
+                raise LedgerError(error_codes.AGENT_STATE_CONFLICT)
+            uow.commit()
+            return status
 
     def reconcile(self, *, limit=100):
         if type(limit) is not int or not 1 <= limit <= 100:

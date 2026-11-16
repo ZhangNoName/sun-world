@@ -1,0 +1,319 @@
+{
+  "protocol": "sun-world-agent/2",
+  "schemas": {
+    "ExecutionBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "sun-world-agent/2",
+          "title": "Protocol",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "generation": {
+          "const": 1,
+          "title": "Generation",
+          "type": "integer"
+        },
+        "bundle_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Bundle Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "protocol",
+        "run_id",
+        "execution_id",
+        "generation",
+        "bundle_hash"
+      ],
+      "title": "ExecutionBinding",
+      "type": "object"
+    },
+    "ExecutionStart": {
+      "$defs": {
+        "Credentials": {
+          "additionalProperties": false,
+          "properties": {
+            "tool": {
+              "pattern": "^[A-Za-z0-9_-]{32,128}$",
+              "title": "Tool",
+              "type": "string"
+            },
+            "model": {
+              "pattern": "^[A-Za-z0-9_-]{32,128}$",
+              "title": "Model",
+              "type": "string"
+            },
+            "result": {
+              "pattern": "^[A-Za-z0-9_-]{32,128}$",
+              "title": "Result",
+              "type": "string"
+            }
+          },
+          "required": [
+            "tool",
+            "model",
+            "result"
+          ],
+          "title": "Credentials",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "sun-world-agent/2",
+          "title": "Protocol",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "generation": {
+          "const": 1,
+          "title": "Generation",
+          "type": "integer"
+        },
+        "bundle_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Bundle Hash",
+          "type": "string"
+        },
+        "app_id": {
+          "const": "sun-world",
+          "title": "App Id",
+          "type": "string"
+        },
+        "scenario": {
+          "const": "blog-qa",
+          "title": "Scenario",
+          "type": "string"
+        },
+        "model_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Model Id",
+          "type": "string"
+        },
+        "root_session_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Root Session Id",
+          "type": "string"
+        },
+        "deadline": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+          "title": "Deadline",
+          "type": "string"
+        },
+        "question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "credentials": {
+          "$ref": "#/$defs/Credentials"
+        }
+      },
+      "required": [
+        "protocol",
+        "run_id",
+        "execution_id",
+        "generation",
+        "bundle_hash",
+        "app_id",
+        "scenario",
+        "model_id",
+        "root_session_id",
+        "deadline",
+        "question",
+        "credentials"
+      ],
+      "title": "ExecutionStart",
+      "type": "object"
+    },
+    "ExecutionAck": {
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "const": "sun-world-agent/2",
+          "title": "Protocol",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "generation": {
+          "const": 1,
+          "title": "Generation",
+          "type": "integer"
+        },
+        "bundle_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Bundle Hash",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "running",
+            "completed",
+            "failed",
+            "cancelled",
+            "interrupted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "protocol",
+        "run_id",
+        "execution_id",
+        "generation",
+        "bundle_hash",
+        "status"
+      ],
+      "title": "ExecutionAck",
+      "type": "object"
+    },
+    "RootRegistration": {
+      "additionalProperties": false,
+      "properties": {
+        "root_turn_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Root Turn Id",
+          "type": "string"
+        },
+        "root_request_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Root Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root_turn_id",
+        "root_request_id"
+      ],
+      "title": "RootRegistration",
+      "type": "object"
+    },
+    "ToolInvocation": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Call Id",
+          "type": "string"
+        },
+        "tool_version": {
+          "const": "1",
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": true,
+          "title": "Arguments",
+          "type": "object"
+        }
+      },
+      "required": [
+        "call_id",
+        "tool_version",
+        "arguments"
+      ],
+      "title": "ToolInvocation",
+      "type": "object"
+    },
+    "DeliveryReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Call Id",
+          "type": "string"
+        },
+        "result_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Result Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "result_hash"
+      ],
+      "title": "DeliveryReceipt",
+      "type": "object"
+    },
+    "FinalResult": {
+      "additionalProperties": false,
+      "properties": {
+        "root_turn_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Root Turn Id",
+          "type": "string"
+        },
+        "root_request_id": {
+          "pattern": "^[A-Za-z0-9_-]{1,128}$",
+          "title": "Root Request Id",
+          "type": "string"
+        },
+        "root_session_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Root Session Id",
+          "type": "string"
+        },
+        "finish": {
+          "const": "completed",
+          "title": "Finish",
+          "type": "string"
+        },
+        "answer": {
+          "maxLength": 8000,
+          "minLength": 1,
+          "title": "Answer",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "root_turn_id",
+        "root_request_id",
+        "root_session_id",
+        "finish",
+        "answer",
+        "source_ids"
+      ],
+      "title": "FinalResult",
+      "type": "object"
+    }
+  }
+}

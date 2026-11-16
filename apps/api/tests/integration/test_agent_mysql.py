@@ -1,5 +1,6 @@
 """Real MySQL contract/concurrency tests; only the owned launcher may enable them."""
 
+import asyncio
 import json
 import os
 import sys
@@ -182,6 +183,54 @@ class AgentMySQLTests(unittest.TestCase):
         state=self.ledger.get_owned(self.owner,row['id'])['status']
         self.assertIn(state,{'completed','cancelled'})
         self.assertEqual(self.count('ai_messages'),2 if state=='completed' else 1)
+
+    def test_mysql_root_request_binding_and_internal_terminal_revoke(self):
+        gateway, row, tool, result = self.gateway()
+        gateway.bind_root_turn(result, 'root', root_request_id='request-native')
+        with self.assertRaises(LedgerError):
+            gateway.bind_root_turn(result, 'root', root_request_id='replaced')
+        with self.assertRaises(LedgerError):
+            gateway.finish(result, root_session_id=row['root_session_id'], root_turn_id='root',
+                root_request_id='wrong', answer='回答', source_ids=[])
+        self.assertEqual(self.count('ai_messages'), 1)
+        self.assertEqual(self.ledger.end_execution(row['id'], execution_id=row['execution_id'],
+            generation=1, status='interrupted'), 'interrupted')
+        self.assertEqual(self.ledger.end_execution(row['id'], execution_id=row['execution_id'],
+            generation=1, status='failed'), 'interrupted')
+        with self.assertRaises(LedgerError):
+            gateway.heartbeat(result)
+
+    def test_mysql_dispatch_unknown_start_is_not_replayed_and_revokes_before_cancel(self):
+        from src.modules.agent_runtime.dispatcher import RunDispatcher
+        gateway, _row, _tool, _result = self.gateway()
+        target = self.accept().run
+        events = []
+        ledger, owner = self.ledger, self.owner
+        class Worker:
+            async def start(inner, payload):
+                row = ledger.get_owned(owner, target['id'])
+                events.append(('start', row['status']))
+                self.assertEqual(row['execution_id'], payload['execution_id'])
+                self.assertIsNotNone(row['result_credential_hash'])
+                raise OSError('synthetic lost dispatch acknowledgement')
+            async def inspect(inner, binding):
+                events.append(('inspect', binding['execution_id']))
+                raise OSError('synthetic unknown execution')
+            async def cancel(inner, binding):
+                events.append(('cancel', ledger.get_owned(owner, target['id'])['status']))
+                return {**binding, 'status': 'cancelled'}
+        async def exercise():
+            dispatcher = RunDispatcher(gateway, Worker(), worker_credential='S'*43)
+            try:
+                state = await dispatcher.dispatch(target['id'], question='原始问题')
+                self.assertEqual(state['status'], 'interrupted')
+                self.assertIsNone(await dispatcher.dispatch(target['id'], question='原始问题'))
+            finally:
+                await dispatcher.aclose()
+        asyncio.run(exercise())
+        self.assertEqual([event[0] for event in events], ['start', 'inspect', 'cancel'])
+        self.assertEqual(events[0][1], 'running')
+        self.assertEqual(events[2][1], 'interrupted')
 
     def test_mysql_failed_run_update_rolls_back_message_insert(self):
         from src.database.mysql.unit_of_work import MySQLUnitOfWork

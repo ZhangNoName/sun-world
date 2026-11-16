@@ -42,6 +42,7 @@ MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
             {'name': 'execution_id', 'definition': 'VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
             {'name': 'root_session_id', 'definition': 'VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
             {'name': 'root_turn_id', 'definition': 'VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
+            {'name': 'root_request_id', 'definition': 'VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin NULL', 'type': 'varchar'},
             {'name': 'tool_count', 'definition': 'INT NOT NULL DEFAULT 0', 'type': 'int'},
             {'name': 'model_count', 'definition': 'INT NOT NULL DEFAULT 0', 'type': 'int'},
             {'name': 'result_bytes', 'definition': 'INT NOT NULL DEFAULT 0', 'type': 'int'},
