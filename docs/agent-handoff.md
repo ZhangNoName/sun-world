@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 Worker详情留存与嵌套中断
+
+- 已实现30天确认终态详情清理、永久有界身份摘要与显式offline check/apply；index/owner先确认再删，旧身份改deadline也不能重跑。保留期内128详情、永久8192摘要均有硬界，满时拒新，未知孤儿/旧锁不接管，API历史不删；见[留存协议](development/agent-journal-retention.md)。
+- 修mixed迁移丢index可重跑、Python六位时间戳不兼容，以及嵌套第二次SIGTERM重入；未知MySQL进程保目录。API715/Worker96、独立Node40/Python5、实际SDK/三库六情景及晚Redis等待栅栏二次SIGTERM通过，4 PID/5组/4根确认回收，无fallback；[安全实证](evaluations/agent-journal-retention-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)说明合成/真实范围，不能据此补认历史其他故障根因。
+- 博客04同题更新、1280/390正文与新段落预览通过，分类标签/透明图保留，未发布。fresh运行资源已回收，现有本地问答和3033预览保留。下一步已有库升级/数据库崩溃矩阵；Linux/人工/未知锁/用户历史保留与生产TLS仍独立未完成，P1/A–D未整体放行，其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 正式V2与官方模型整栈
 
 - 已补正式MySQL/Redis/Mongo+mTLS Worker+固定SDK+官方gpt-6.1-sol四题组合，原代理直接注入以执行持久输入预占。13个call全部observed、输入累计12142，计数/预占/usage与各run累计一致；四题端到端语义由主线程和判官分别复核，人工仍pending。无资料题仅证明服务端固定结果，未保存模型原始末答；见[安全实证](evaluations/agent-official-stack-2026-11-16/README.md)。

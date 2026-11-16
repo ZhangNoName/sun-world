@@ -39,3 +39,11 @@ Python fixture使用独立`sun-world-fixture-cleanup/1`摘要：最多32条{sequ
 API624、Worker70通过；判官独立Node15/Python24项复核并解除不完整ACK与深层JSON两项P2。真实固定SDK的双向mTLS探针实际注入当前owned workspace目录删除EACCES：首cancel503、新run503保留占用，解除fault后原cancel重试200，回调记录首错与recovery，无模型重放或敏感文本。原生三库+固定SDK完整六情景亦通过。最终独立暂存与并行复跑已完成，证据见[验证记录](../evaluations/agent-cleanup-2026-11-16/README.md)；提交前仍逐字校对可执行源码。
 
 独立SDK宿主还修正一条旧断言：strict parseJson产生null-prototype对象，原deepStrictEqual错误地把JS原型当作thinking JSON协议；现检查完整字段集合仅type且值disabled，仍拒绝额外字段。不修改生产Profile/适配/模型限制，也不把这个测试问题等同历史进程回收失败根因。
+
+## 嵌套宿主信号保护增量（2026-11-16）
+
+基点0d541a6，留存切片的父进程中断复验发现确定的新问题：Redis/Mongo owned context各自安装信号处理器，内层第一次SIGTERM设IGNORE并退出后，又恢复了外层旧处理器；在外层清理等待中第二次SIGTERM会重新抛KeyboardInterrupt，跳过剩余回收。真实CLI入口、真实两层资源context及实际owned进程组的受控回归中，单SIGTERM通过、第二次信号打断cleanup；数据库daemon/readiness为合成，不能当数据库崩溃证明。
+
+本轮先补共享owned_interrupts状态与defer区域：嵌套上下文共享首次中断标志，后续信号不重入；进程登记与资源关闭临界区延期抛首次中断，退出安全区域后仍报告130，不把取消吞成成功。清理自身失败优先保留原错误。该保护覆盖总CLI入口、owned子进程、三库context及临时目录清理，不改变生产Worker RPC/进程控制或任何业务配置。增量先写本文再广播coding/判官，Claude Code/claude-ds接手同步。须验证重复信号、首次信号在正常清理期间、原单信号和实际SDK/三库中断；与历史未定因失败分开，不能反推旧故障根因。
+
+最终纯回归5项和独立5项通过，增加MySQL退出未确认时保留临时目录；API715/Worker96通过。实际fixed SDK/三库六情景及晚Redis.wait栅栏二次SIGTERM通过，退出130、4 PID/5组/4根均确认回收，无独立fallback；详见[留存切片实证](../evaluations/agent-journal-retention-2026-11-16/README.md)。这补充此前只验证单次SIGTERM的范围，不否定旧单次通过记录，也不解释其他历史未知失败。

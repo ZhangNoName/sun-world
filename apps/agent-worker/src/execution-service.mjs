@@ -1,25 +1,10 @@
-import { constants } from 'node:fs'
+import { isAbsolute } from 'node:path'
+import { hashJson, PROTOCOL, validateRpc } from './rpc-validation.mjs'
 import {
-  mkdir,
-  lstat,
-  open,
-  readdir,
-  realpath,
-  rename,
-  unlink,
-} from 'node:fs/promises'
-import { isAbsolute, join } from 'node:path'
-import { randomUUID } from 'node:crypto'
-import {
-  hashJson,
-  parseJson,
-  PROTOCOL,
-  UUID_PATTERN,
-  validateRpc,
-} from './rpc-validation.mjs'
+  ExecutionJournal,
+  JOURNAL_FORMAT as FORMAT,
+} from './execution-journal.mjs'
 
-const FORMAT = 'sun-world-execution-journal/2'
-const TERMINAL = new Set(['completed', 'failed', 'cancelled', 'interrupted'])
 const error = (code) => new Error(code)
 const failure = () => error('AGENT_JOURNAL_UNAVAILABLE')
 const bindingOf = (value) =>
@@ -33,11 +18,6 @@ const bindingOf = (value) =>
   )
 const sameBinding = (first, second) =>
   Object.keys(first).every((key) => first[key] === second[key])
-const exact = (value, keys) =>
-  value &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  Object.keys(value).sort().join() === [...keys].sort().join()
 
 export class ExecutionService {
   #bundle
@@ -50,7 +30,9 @@ export class ExecutionService {
   #entries = new Map()
   #tail = Promise.resolve()
   #ready
-  #lock
+  #journal
+  #journalFs
+  #retirementBlocked = false
   #closing = false
   #shutdown = false
   #faulted = false
@@ -67,6 +49,7 @@ export class ExecutionService {
     maxActive = 1,
     capacity = 128,
     clock = Date.now,
+    journalFs,
   }) {
     if (
       typeof bundleHash !== 'string' ||
@@ -96,6 +79,7 @@ export class ExecutionService {
     this.#maxActive = maxActive
     this.#capacity = capacity
     this.#clock = clock
+    this.#journalFs = journalFs
     this.#ready = this.#initialize()
     void this.#ready.catch(() => {})
   }
@@ -107,20 +91,25 @@ export class ExecutionService {
   async readiness() {
     return this.#bounded(false, async () => {
       await this.#ready
-      return this.#serial(() => ({
-        protocol: PROTOCOL,
-        bundle_hash: this.#bundle,
-        model_id: this.#model,
-        // Health is independent of the distributed admission slot; a busy
-        // healthy Worker must still support inspect/cancel and return 429 at
-        // the API's quota boundary, not masquerade as a broken dependency.
-        available:
-          !this.#closing &&
-          !this.#shutdown &&
-          !this.#faulted &&
-          !this.#recoveryBlocked &&
-          this.#entries.size < this.#capacity,
-      }))
+      return this.#serial(async () => {
+        if (!this.#closing && !this.#shutdown && !this.#faulted)
+          await this.#prune()
+        return {
+          protocol: PROTOCOL,
+          bundle_hash: this.#bundle,
+          model_id: this.#model,
+          // Health is independent of the distributed admission slot; a busy
+          // healthy Worker must still support inspect/cancel and return 429 at
+          // the API's quota boundary, not masquerade as a broken dependency.
+          available:
+            !this.#closing &&
+            !this.#shutdown &&
+            !this.#faulted &&
+            !this.#recoveryBlocked &&
+            !this.#retirementBlocked &&
+            this.#entries.size < this.#capacity,
+        }
+      })
     })
   }
 
@@ -147,167 +136,61 @@ export class ExecutionService {
   }
 
   #now() {
-    const value = this.#clock()
-    if (typeof value !== 'number' || !Number.isFinite(value)) throw failure()
-    return value
-  }
-
-  async #syncDirectory() {
-    const handle = await open(this.#directory, constants.O_RDONLY)
-    try {
-      await handle.sync()
-    } finally {
-      await handle.close()
-    }
-  }
-
-  async #privateFile(path, maximum = 8192) {
-    const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW)
-    try {
-      const info = await handle.stat()
-      if (
-        !info.isFile() ||
-        info.uid !== process.getuid() ||
-        (info.mode & 0o777) !== 0o600 ||
-        info.nlink !== 1 ||
-        info.size > maximum
-      )
-        throw failure()
-      return parseJson(await handle.readFile(), maximum)
-    } finally {
-      await handle.close()
-    }
-  }
-
-  async #create(path, value) {
-    const handle = await open(
-      path,
-      constants.O_WRONLY |
-        constants.O_CREAT |
-        constants.O_EXCL |
-        constants.O_NOFOLLOW,
-      0o600
-    )
-    try {
-      await handle.writeFile(JSON.stringify(value))
-      await handle.sync()
-    } finally {
-      await handle.close()
-    }
-    await this.#syncDirectory()
+    return this.#journal.now()
   }
 
   async #persist(record) {
-    const temporary = join(this.#directory, `.pending-${randomUUID()}`)
     try {
-      await this.#create(temporary, record)
-      await rename(
-        temporary,
-        join(this.#directory, `${record.binding.run_id}.json`)
-      )
-      await this.#syncDirectory()
+      Object.assign(record, await this.#journal.persist(record))
     } catch {
       this.#faulted = true
       throw failure()
     }
   }
 
-  #record(value, runId) {
-    if (
-      !exact(value, [
-        'format',
-        'binding',
-        'request_hash',
-        'status',
-        'deadline',
-        'needs_reap',
-      ]) ||
-      value.format !== FORMAT ||
-      typeof value.needs_reap !== 'boolean' ||
-      !['running', ...TERMINAL].includes(value.status)
-    )
+  async #prune() {
+    try {
+      const removed = await this.#journal.prune((record) => {
+        const entry = this.#entries.get(record.binding.run_id)
+        return (
+          entry &&
+          !entry.slot &&
+          !entry.starting &&
+          !entry.stopping &&
+          !entry.handle &&
+          !entry.startTask &&
+          !entry.stopTask &&
+          !entry.observer &&
+          !entry.timer &&
+          !entry.inflight
+        )
+      })
+      for (const runId of removed) this.#entries.delete(runId)
+      this.#retirementBlocked = this.#journal.saturated
+    } catch (error) {
+      if (error?.message === 'AGENT_JOURNAL_RETIREMENT_FULL') {
+        this.#retirementBlocked = true
+        return
+      }
+      this.#faulted = true
       throw failure()
-    const binding = validateRpc('ExecutionBinding', value.binding)
-    if (
-      binding.run_id !== runId ||
-      (value.status === 'running' && !value.needs_reap) ||
-      (value.needs_reap && !['running', 'interrupted'].includes(value.status))
-    )
-      throw failure()
-    if (value.request_hash === null) {
-      if (
-        value.status !== 'cancelled' ||
-        value.deadline !== null ||
-        value.needs_reap
-      )
-        throw failure()
-    } else if (
-      typeof value.request_hash !== 'string' ||
-      value.request_hash.length !== 64 ||
-      /[^0-9a-f]/.test(value.request_hash) ||
-      typeof value.deadline !== 'string' ||
-      !Number.isFinite(Date.parse(value.deadline))
-    )
-      throw failure()
-    return { ...value, binding }
+    }
   }
 
   async #initialize() {
     try {
-      await mkdir(this.#directory, { recursive: true, mode: 0o700 })
-      const info = await lstat(this.#directory)
-      if (
-        !info.isDirectory() ||
-        info.isSymbolicLink() ||
-        info.uid !== process.getuid() ||
-        (info.mode & 0o777) !== 0o700
-      )
-        throw failure()
-      this.#directory = await realpath(this.#directory)
-      let files = await readdir(this.#directory)
-      const owner = join(this.#directory, '.owner.json')
-      if (!files.includes('.owner.json')) {
-        if (files.length) throw failure()
-        await this.#create(owner, { format: FORMAT, uid: process.getuid() })
-      }
-      const marker = await this.#privateFile(owner)
-      if (
-        !exact(marker, ['format', 'uid']) ||
-        marker.format !== FORMAT ||
-        marker.uid !== process.getuid()
-      )
-        throw failure()
-      // No PID-based stale-lock stealing: two recovering processes must never
-      // race an unlink and both believe they own this execution journal.
-      this.#lock = await open(
-        join(this.#directory, '.controller.lock'),
-        constants.O_WRONLY |
-          constants.O_CREAT |
-          constants.O_EXCL |
-          constants.O_NOFOLLOW,
-        0o600
-      )
-      await this.#lock.writeFile(
-        JSON.stringify({ format: FORMAT, pid: process.pid })
-      )
-      await this.#lock.sync()
-      await this.#syncDirectory()
-      files = await readdir(this.#directory)
-      for (const name of files) {
-        if (['.owner.json', '.controller.lock'].includes(name)) continue
-        if (!name.endsWith('.json') || !UUID_PATTERN.test(name.slice(0, -5)))
-          throw failure()
-        if (this.#entries.size >= this.#capacity) throw failure()
-        let record = this.#record(
-          await this.#privateFile(join(this.#directory, name)),
-          name.slice(0, -5)
-        )
+      this.#journal = await ExecutionJournal.open({
+        directory: this.#directory,
+        create: true,
+        clock: this.#clock,
+        fs: this.#journalFs,
+      })
+      await this.#journal.upgrade()
+      for (let record of this.#journal.records.values()) {
         if (record.status === 'running') {
           record = { ...record, status: 'interrupted', needs_reap: true }
           await this.#persist(record)
         }
-        // Unknown pre-restart processes retain a slot until an explicit offline
-        // recovery has proven process-group/cgroup teardown. Never replay them.
         if (record.needs_reap) this.#recoveryBlocked = true
         this.#entries.set(record.binding.run_id, {
           record,
@@ -320,15 +203,14 @@ export class ExecutionService {
           observer: null,
           timer: null,
           cancelRequested: false,
+          inflight: 0,
         })
       }
+      this.#retirementBlocked = this.#journal.saturated
+      if (this.#entries.size > this.#capacity) throw failure()
     } catch {
       this.#faulted = true
-      if (this.#lock) {
-        await this.#lock.close().catch(() => {})
-        this.#lock = null
-      }
-      // Retain a created lock after failed recovery for explicit operator review.
+      await this.#journal?.abandon()
       throw failure()
     }
   }
@@ -368,7 +250,7 @@ export class ExecutionService {
       entry.record = record
       entry.slot = false
       clearTimeout(entry.timer)
-      entry.timer = entry.handle = entry.observer = null
+      entry.timer = entry.handle = null
       if (!entry.starting) entry.startTask = null
     })
   }
@@ -387,125 +269,143 @@ export class ExecutionService {
     }
     const binding = bindingOf(payload)
     const digest = hashJson(payload)
-    let entry
-    await this.#serial(async () => {
-      this.#check(binding)
-      if (this.#closing || this.#recoveryBlocked)
-        throw error('AGENT_RUNTIME_UNAVAILABLE')
-      const remaining = Date.parse(payload.deadline) - this.#now()
-      if (payload.model_id !== this.#model)
-        throw error('AGENT_PROFILE_MISMATCH')
-      if (!payload.question.trim() || remaining <= 0 || remaining > 45000)
-        throw error('AGENT_EXECUTION_EXPIRED')
-      entry = this.#entries.get(binding.run_id)
-      if (entry) {
-        if (
-          !sameBinding(entry.record.binding, binding) ||
-          (entry.record.request_hash !== null &&
-            entry.record.request_hash !== digest)
-        )
-          throw error('AGENT_EXECUTION_CONFLICT')
-        if (
-          entry.record.status !== 'running' &&
-          entry.record.status !== 'completed'
-        )
-          throw error('AGENT_EXECUTION_TERMINAL')
-        return
-      }
-      if (
-        this.#entries.size >= this.#capacity ||
-        this.#active() >= this.#maxActive
-      )
-        throw error('AGENT_RUNTIME_UNAVAILABLE')
-      const record = {
-        format: FORMAT,
-        binding,
-        request_hash: digest,
-        status: 'running',
-        deadline: payload.deadline,
-        needs_reap: true,
-      }
-      await this.#persist(record)
-      entry = {
-        record,
-        slot: true,
-        starting: true,
-        stopping: false,
-        handle: null,
-        startTask: null,
-        stopTask: null,
-        observer: null,
-        timer: null,
-        cancelRequested: false,
-      }
-      this.#entries.set(binding.run_id, entry)
-      entry.startTask = (async () => {
-        let handle, left
-        try {
-          left = Date.parse(payload.deadline) - this.#now()
-        } catch {
-          await this.#settled(entry, false)
-          throw failure()
-        }
-        if (left <= 0) {
-          await this.#settled(entry, false)
+    let entry, reference
+    try {
+      await this.#serial(async () => {
+        this.#check(binding)
+        await this.#prune()
+        if (this.#closing || this.#recoveryBlocked)
+          throw error('AGENT_RUNTIME_UNAVAILABLE')
+        const remaining = Date.parse(payload.deadline) - this.#now()
+        if (payload.model_id !== this.#model)
+          throw error('AGENT_PROFILE_MISMATCH')
+        if (!payload.question.trim() || remaining <= 0 || remaining > 45000)
           throw error('AGENT_EXECUTION_EXPIRED')
+        entry = this.#entries.get(binding.run_id)
+        if (entry) {
+          if (
+            !sameBinding(entry.record.binding, binding) ||
+            (entry.record.request_hash !== null &&
+              entry.record.request_hash !== digest)
+          )
+            throw error('AGENT_EXECUTION_CONFLICT')
+          if (
+            entry.record.status !== 'running' &&
+            entry.record.status !== 'completed'
+          )
+            throw error('AGENT_EXECUTION_TERMINAL')
+          entry.inflight++
+          reference = entry
+          return
         }
-        entry.timer = setTimeout(() => {
-          void this.#requestStop(entry).catch(() => {})
-        }, left)
-        entry.timer.unref()
-        try {
-          handle = await this.#runner.start(payload)
-        } catch {
-          // Runner contract: rejection means it has confirmed no owned process
-          // remains. An unconfirmed teardown must retain a handle instead.
-          await this.#settled(entry, false)
-          throw error('AGENT_EXECUTION_FAILED')
-        }
+        if (this.#journal.retired(binding.run_id))
+          throw error('AGENT_EXECUTION_TERMINAL')
+        if (this.#retirementBlocked)
+          throw error('AGENT_JOURNAL_RETIREMENT_FULL')
         if (
-          !handle ||
-          typeof handle.stop !== 'function' ||
-          !handle.done ||
-          typeof handle.done.then !== 'function'
-        ) {
-          this.#recoveryBlocked = true
-          await this.#serial(async () => {
-            const invalid = {
-              ...entry.record,
-              status: 'interrupted',
-              needs_reap: true,
-            }
-            await this.#persist(invalid)
-            entry.record = invalid
-          })
-          throw error('AGENT_PROCESS_UNCONFIRMED')
-        }
-        entry.handle = handle
-        entry.observer = Promise.resolve(handle.done).then(
-          () => this.#settled(entry, true),
-          () => this.#settled(entry, false)
+          this.#entries.size >= this.#capacity ||
+          this.#active() >= this.#maxActive
         )
-        void entry.observer.catch(() => {})
-        return handle
-      })().finally(() => {
-        entry.starting = false
-        if (!entry.slot) entry.startTask = null
+          throw error('AGENT_RUNTIME_UNAVAILABLE')
+        const record = {
+          format: FORMAT,
+          binding,
+          request_hash: digest,
+          status: 'running',
+          deadline: payload.deadline,
+          needs_reap: true,
+        }
+        await this.#persist(record)
+        entry = {
+          record,
+          slot: true,
+          starting: true,
+          stopping: false,
+          handle: null,
+          startTask: null,
+          stopTask: null,
+          observer: null,
+          timer: null,
+          cancelRequested: false,
+          inflight: 1,
+        }
+        this.#entries.set(binding.run_id, entry)
+        reference = entry
+        entry.startTask = (async () => {
+          let handle, left
+          try {
+            left = Date.parse(payload.deadline) - this.#now()
+          } catch {
+            await this.#settled(entry, false)
+            throw failure()
+          }
+          if (left <= 0) {
+            await this.#settled(entry, false)
+            throw error('AGENT_EXECUTION_EXPIRED')
+          }
+          entry.timer = setTimeout(() => {
+            void this.#requestStop(entry).catch(() => {})
+          }, left)
+          entry.timer.unref()
+          try {
+            handle = await this.#runner.start(payload)
+          } catch {
+            // Runner contract: rejection means it has confirmed no owned process
+            // remains. An unconfirmed teardown must retain a handle instead.
+            await this.#settled(entry, false)
+            throw error('AGENT_EXECUTION_FAILED')
+          }
+          if (
+            !handle ||
+            typeof handle.stop !== 'function' ||
+            !handle.done ||
+            typeof handle.done.then !== 'function'
+          ) {
+            this.#recoveryBlocked = true
+            await this.#serial(async () => {
+              const invalid = {
+                ...entry.record,
+                status: 'interrupted',
+                needs_reap: true,
+              }
+              await this.#persist(invalid)
+              entry.record = invalid
+            })
+            throw error('AGENT_PROCESS_UNCONFIRMED')
+          }
+          entry.handle = handle
+          const observer = Promise.resolve(handle.done)
+            .then(
+              () => this.#settled(entry, true),
+              () => this.#settled(entry, false)
+            )
+            .finally(() => {
+              if (entry.observer === observer) entry.observer = null
+            })
+          entry.observer = observer
+          void entry.observer.catch(() => {})
+          return handle
+        })().finally(() => {
+          entry.starting = false
+          if (!entry.slot) entry.startTask = null
+        })
+        void entry.startTask.catch(() => {})
       })
-      void entry.startTask.catch(() => {})
-    })
-    if (entry.startTask) await entry.startTask
-    await this.#tail
-    if (
-      entry.record.status !== 'running' &&
-      entry.record.status !== 'completed'
-    )
-      throw error('AGENT_EXECUTION_TERMINAL')
-    // The completion observer can fail its terminal fsync while start is
-    // awaiting the serialized tail. Such an unconfirmed journal must never
-    // turn into a successful running/completed acknowledgement.
-    this.#check(binding)
-    return this.#ack(entry)
+      if (entry.startTask) await entry.startTask
+      await this.#tail
+      if (
+        entry.record.status !== 'running' &&
+        entry.record.status !== 'completed'
+      )
+        throw error('AGENT_EXECUTION_TERMINAL')
+      // The completion observer can fail its terminal fsync while start is
+      // awaiting the serialized tail. Such an unconfirmed journal must never
+      // turn into a successful running/completed acknowledgement.
+      this.#check(binding)
+      return this.#ack(entry)
+    } finally {
+      if (reference) reference.inflight--
+    }
   }
 
   async inspect(input) {
@@ -612,39 +512,52 @@ export class ExecutionService {
     } catch {
       throw error('AGENT_INPUT_INVALID')
     }
-    let entry
-    await this.#serial(async () => {
-      this.#check(binding)
-      entry = this.#entries.get(binding.run_id)
-      if (!entry) {
-        if (this.#entries.size >= this.#capacity)
-          throw error('AGENT_RUNTIME_UNAVAILABLE')
-        const record = {
-          format: FORMAT,
-          binding,
-          request_hash: null,
-          status: 'cancelled',
-          deadline: null,
-          needs_reap: false,
-        }
-        await this.#persist(record)
-        entry = {
-          record,
-          slot: false,
-          starting: false,
-          stopping: false,
-          handle: null,
-          startTask: null,
-          stopTask: null,
-          observer: null,
-          timer: null,
-          cancelRequested: true,
-        }
-        this.#entries.set(binding.run_id, entry)
-      } else if (!sameBinding(entry.record.binding, binding))
-        throw error('AGENT_EXECUTION_CONFLICT')
-    })
-    return this.#requestStop(entry)
+    let entry, reference, retired
+    try {
+      await this.#serial(async () => {
+        this.#check(binding)
+        entry = this.#entries.get(binding.run_id)
+        if (!entry) {
+          if (this.#journal.retired(binding.run_id)) {
+            retired = true
+            return
+          }
+          if (this.#entries.size >= this.#capacity)
+            throw error('AGENT_RUNTIME_UNAVAILABLE')
+          const record = {
+            format: FORMAT,
+            binding,
+            request_hash: null,
+            status: 'cancelled',
+            deadline: null,
+            needs_reap: false,
+          }
+          await this.#persist(record)
+          entry = {
+            record,
+            slot: false,
+            starting: false,
+            stopping: false,
+            handle: null,
+            startTask: null,
+            stopTask: null,
+            observer: null,
+            timer: null,
+            cancelRequested: true,
+            inflight: 0,
+          }
+          this.#entries.set(binding.run_id, entry)
+        } else if (!sameBinding(entry.record.binding, binding))
+          throw error('AGENT_EXECUTION_CONFLICT')
+        entry.inflight++
+        reference = entry
+      })
+      if (retired)
+        return validateRpc('ExecutionAck', { ...binding, status: 'cancelled' })
+      return await this.#requestStop(entry)
+    } finally {
+      if (reference) reference.inflight--
+    }
   }
 
   async close() {
@@ -668,19 +581,12 @@ export class ExecutionService {
         await this.#tail
         if (unconfirmed || this.#active())
           throw error('AGENT_PROCESS_UNCONFIRMED')
+        if (this.#faulted || this.#journal.faulted) throw failure()
         this.#shutdown = true
-        if (this.#lock) {
-          await this.#lock.close()
-          this.#lock = null
-        }
-        await unlink(join(this.#directory, '.controller.lock'))
-        await this.#syncDirectory()
+        await this.#journal.close()
       } catch {
         this.#shutdown = true
-        if (this.#lock) {
-          await this.#lock.close().catch(() => {})
-          this.#lock = null
-        }
+        await this.#journal?.abandon()
         // The O_EXCL lock file stays even after closing its descriptor.
         // An unconfirmed process keeps both journal state and the exclusive
         // controller lock. Offline cgroup/group recovery precedes lock cleanup.

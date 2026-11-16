@@ -12,6 +12,8 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
+from fixture_signals import owned_interrupts
 
 
 def load(name, path):
@@ -22,47 +24,59 @@ def load(name, path):
 
 
 def owned_test_process(command, *, cwd, env, timeout):
+    with owned_interrupts() as interrupts:
+        return _owned_test_process(command, cwd=cwd, env=env, timeout=timeout, interrupts=interrupts)
+
+
+def _owned_test_process(command, *, cwd, env, timeout, interrupts):
     # Forward a graceful stop to Python and its Node Worker together. The
     # Worker's detached SDK groups are reaped by its own bounded close path.
-    process = subprocess.Popen(command, cwd=cwd, env=env, start_new_session=True)
+    process = None
     try:
+        with interrupts.defer():
+            process = subprocess.Popen(command, cwd=cwd, env=env, start_new_session=True)
         return subprocess.CompletedProcess(command, process.wait(timeout=timeout))
     finally:
-        def alive():
-            try:
-                os.killpg(process.pid, 0)
-                return True
-            except ProcessLookupError:
-                return False
-            except PermissionError:
-                # A denial is neither absence nor permission to skip cleanup.
-                # Keep polling the owned group; only ESRCH confirms it is gone.
-                return True
-        # The Python leader may have exited while a Worker still occupies its
-        # owned session. A reaped leader is not proof the whole group is gone.
+        with interrupts.defer():
+            if process is not None:
+                _reap_test_process(process)
+
+
+def _reap_test_process(process):
+    def alive():
+        try:
+            os.killpg(process.pid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            # A denial is neither absence nor permission to skip cleanup.
+            # Keep polling the owned group; only ESRCH confirms it is gone.
+            return True
+    # The Python leader may have exited while a Worker still occupies its
+    # owned session. A reaped leader is not proof the whole group is gone.
+    if alive():
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+        deadline = time.monotonic() + 25
+        while alive() and time.monotonic() < deadline:
+            process.poll()
+            time.sleep(.02)
         if alive():
             try:
-                os.killpg(process.pid, signal.SIGTERM)
+                os.killpg(process.pid, signal.SIGKILL)
             except (ProcessLookupError, PermissionError):
                 pass
-            deadline = time.monotonic() + 25
+            deadline = time.monotonic() + 5
             while alive() and time.monotonic() < deadline:
                 process.poll()
                 time.sleep(.02)
-            if alive():
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except (ProcessLookupError, PermissionError):
-                    pass
-                deadline = time.monotonic() + 5
-                while alive() and time.monotonic() < deadline:
-                    process.poll()
-                    time.sleep(.02)
-            if alive():
-                raise RuntimeError('Owned test process group cleanup unconfirmed')
-        if process.poll() is None:
-            process.wait(timeout=5)
-
+        if alive():
+            raise RuntimeError('Owned test process group cleanup unconfirmed')
+    if process.poll() is None:
+        process.wait(timeout=5)
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -107,5 +121,14 @@ def main(argv=None):
         return 1
 
 
+def run_cli():
+    try:
+        with owned_interrupts():
+            return main()
+    except KeyboardInterrupt:
+        print('SDK stack interrupted; owned shutdown requested and drained.', file=sys.stderr)
+        return 130
+
+
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(run_cli())

@@ -1,0 +1,16 @@
+{
+  "version": "sun-world-native-journal-shutdown/1",
+  "status": "ok",
+  "real_sdk_model_wait_observed": true,
+  "late_redis_cleanup_gate_observed": true,
+  "second_sigterm_did_not_interrupt_cleanup": true,
+  "independent_cleanup_used": false,
+  "probe_source_sha256": "44fcf53db62b7bd49421865a5c08b98bd467152c9b886912f116cac42aacbb08",
+  "launcher_exit_code": 130,
+  "owned_child_pids_absent": 4,
+  "owned_process_groups_absent": 5,
+  "owned_fixture_roots_removed": 4,
+  "independent_prepared_runtime_removed": true,
+  "prepared_worker_sources_equal": 17,
+  "owned_fixture_prefixes_restored": true
+}

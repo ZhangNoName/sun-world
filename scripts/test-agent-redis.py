@@ -17,11 +17,13 @@ import stat
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
+from fixture_signals import owned_interrupts
+
 FORMAT = 'sun-world-owned-redis/1'
 
 
@@ -78,43 +80,41 @@ def verified_client(environment):
 
 @contextlib.contextmanager
 def owned_redis(binary):
+    with owned_interrupts() as interrupts:
+        yield from _owned_redis(binary, interrupts)
+
+
+def _owned_redis(binary, interrupts):
     binary = Path(binary).expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise ValueError('Executable redis-server is required')
-    root = Path(tempfile.mkdtemp(prefix='sunworld-agent-redis-',
-        dir='/private/tmp' if sys.platform == 'darwin' else None)).resolve()
-    root.chmod(0o700)
-    socket = root / 'redis.sock'
-    if len(str(socket).encode()) > 100:
-        shutil.rmtree(root)
-        raise ValueError('Temporary Redis socket path is too long')
-    nonce = secrets.token_hex(32)
-    environment = {'SUN_WORLD_AGENT_REDIS_ROOT': str(root), 'SUN_WORLD_AGENT_REDIS_NONCE': nonce}
-    process = None
-    previous = {}
-    def interrupted(_signum, _frame):
-        for signum in (signal.SIGINT, signal.SIGTERM):
-            signal.signal(signum, signal.SIG_IGN)
-        raise KeyboardInterrupt
-    if threading.current_thread() is threading.main_thread():
-        for signum in (signal.SIGINT, signal.SIGTERM):
-            previous[signum] = signal.signal(signum, interrupted)
+    root = process = None
     try:
+        with interrupts.defer():
+            root = Path(tempfile.mkdtemp(prefix='sunworld-agent-redis-',
+                dir='/private/tmp' if sys.platform == 'darwin' else None)).resolve()
+            root.chmod(0o700)
+        socket = root / 'redis.sock'
+        if len(str(socket).encode()) > 100:
+            raise ValueError('Temporary Redis socket path is too long')
+        nonce = secrets.token_hex(32)
+        environment = {'SUN_WORLD_AGENT_REDIS_ROOT': str(root), 'SUN_WORLD_AGENT_REDIS_NONCE': nonce}
         log = root / 'redis.log'
         descriptor = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(descriptor, 'wb') as output:
-            process = subprocess.Popen([str(binary), '--port', '0', '--unixsocket', str(socket),
-                '--unixsocketperm', '600', '--dir', str(root), '--pidfile', str(root / 'redis.pid'),
-                '--daemonize', 'no', '--save', '', '--appendonly', 'no', '--databases', '1',
-                '--maxmemory', '32mb', '--maxmemory-policy', 'noeviction', '--loglevel', 'warning'],
-                stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
-                env={'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'HOME': str(root), 'TMPDIR': str(root),
-                     'LC_ALL': 'C', 'TZ': 'UTC'})
-            marker = root / 'owner.json'
-            descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            with os.fdopen(descriptor, 'w') as output:
-                json.dump(dict(format=FORMAT, nonce=nonce, root=str(root),
-                               socket=str(socket), pid=process.pid), output)
+            with interrupts.defer():
+                process = subprocess.Popen([str(binary), '--port', '0', '--unixsocket', str(socket),
+                    '--unixsocketperm', '600', '--dir', str(root), '--pidfile', str(root / 'redis.pid'),
+                    '--daemonize', 'no', '--save', '', '--appendonly', 'no', '--databases', '1',
+                    '--maxmemory', '32mb', '--maxmemory-policy', 'noeviction', '--loglevel', 'warning'],
+                    stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
+                    env={'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'HOME': str(root), 'TMPDIR': str(root),
+                         'LC_ALL': 'C', 'TZ': 'UTC'})
+                marker = root / 'owner.json'
+                descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(descriptor, 'w') as output:
+                    json.dump(dict(format=FORMAT, nonce=nonce, root=str(root),
+                                   socket=str(socket), pid=process.pid), output)
             deadline = time.monotonic() + 15
             while True:
                 if process.poll() is not None:
@@ -131,7 +131,7 @@ def owned_redis(binary):
                 break
             yield environment
     finally:
-        try:
+        with interrupts.defer():
             if process is not None and process.poll() is None:
                 try:
                     os.killpg(process.pid, signal.SIGTERM)
@@ -147,10 +147,8 @@ def owned_redis(binary):
                     process.wait(timeout=3)
             if process is not None and process.poll() is None:
                 raise RuntimeError('Owned Redis process cleanup is unconfirmed')
-            shutil.rmtree(root)
-        finally:
-            for signum, handler in previous.items():
-                signal.signal(signum, handler)
+            if root is not None:
+                shutil.rmtree(root)
         # Leave the private marker/data intact if process cleanup is unconfirmed.
 
 

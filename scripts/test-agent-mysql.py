@@ -13,21 +13,30 @@ import secrets
 import signal
 import subprocess
 import sys
-import tempfile
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
+from fixture_signals import owned_interrupts, owned_temporary_directory
 
 
 def run(binary, *, test_command=None, extra_env=None, test_runner=None, test_timeout_seconds=180):
+    with owned_interrupts() as interrupts:
+        return _run(binary, test_command=test_command, extra_env=extra_env,
+                    test_runner=test_runner, test_timeout_seconds=test_timeout_seconds,
+                    interrupts=interrupts)
+
+
+def _run(binary, *, test_command, extra_env, test_runner, test_timeout_seconds, interrupts):
     import pymysql
     binary = binary.expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise ValueError('Executable mysqld is required')
     basedir = binary.parent.parent
     process = None
-    with tempfile.TemporaryDirectory(prefix='sunworld-agent-mysql-',
+    with owned_temporary_directory(interrupts, prefix='sunworld-agent-mysql-',
+                                      cleanup_confirmed=lambda: process is None or process.poll() is not None,
                                       dir='/private/tmp' if sys.platform == 'darwin' else None) as temporary:
         directory = Path(temporary).resolve()
         data, socket = directory / 'data', directory / 'mysql.sock'
@@ -50,11 +59,12 @@ def run(binary, *, test_command=None, extra_env=None, test_runner=None, test_tim
             subprocess.run([*common, '--initialize-insecure', '--innodb-buffer-pool-size=64M'],
                            stdout=output, stderr=subprocess.STDOUT, check=True, timeout=120, env=server_env)
             try:
-                process = subprocess.Popen([*common, '--skip-networking', '--mysqlx=0',
-                    f'--socket={socket}', f'--pid-file={directory / "mysqld.pid"}',
-                    '--innodb-buffer-pool-size=64M', '--innodb-redo-log-capacity=32M',
-                    '--performance-schema=OFF', '--skip-log-bin', f'--secure-file-priv={files}'],
-                    stdout=output, stderr=subprocess.STDOUT, start_new_session=True, env=server_env)
+                with interrupts.defer():
+                    process = subprocess.Popen([*common, '--skip-networking', '--mysqlx=0',
+                        f'--socket={socket}', f'--pid-file={directory / "mysqld.pid"}',
+                        '--innodb-buffer-pool-size=64M', '--innodb-redo-log-capacity=32M',
+                        '--performance-schema=OFF', '--skip-log-bin', f'--secure-file-priv={files}'],
+                        stdout=output, stderr=subprocess.STDOUT, start_new_session=True, env=server_env)
                 deadline = time.monotonic() + 45
                 while True:
                     if process.poll() is not None:
@@ -93,14 +103,17 @@ def run(binary, *, test_command=None, extra_env=None, test_runner=None, test_tim
                     cwd=ROOT, env=env, timeout=test_timeout_seconds)
                 return tests.returncode
             finally:
-                if process is not None and process.poll() is None:
-                    os.killpg(process.pid, signal.SIGTERM)
-                    try:
-                        process.wait(timeout=15)
-                    except subprocess.TimeoutExpired:
-                        os.killpg(process.pid, signal.SIGKILL)
-                        process.wait(timeout=5)
-                print('Owned mysqld stopped; disposable datadir removed on exit.', flush=True)
+                with interrupts.defer():
+                    if process is not None and process.poll() is None:
+                        os.killpg(process.pid, signal.SIGTERM)
+                        try:
+                            process.wait(timeout=15)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(process.pid, signal.SIGKILL)
+                            process.wait(timeout=5)
+                    if process is not None and process.poll() is None:
+                        raise RuntimeError('Owned mysqld process cleanup is unconfirmed')
+                    print('Owned mysqld stopped; disposable datadir removed on exit.', flush=True)
 
 
 def main():

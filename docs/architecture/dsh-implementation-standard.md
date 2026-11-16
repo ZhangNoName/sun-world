@@ -198,7 +198,7 @@ docs/plans/                      # 分阶段交付与验收
 | running → interrupted | 派发结果不明、API 重启无法恢复派发上下文、Worker 失联或租约过期；不自动派发第二份 |
 | 任意终态 | 不可逆；同摘要重复完成回调返回已提交结果，不重复写消息；不同摘要冲突 |
 
-本地V2实现与当前边界见[Worker V2](../development/agent-worker-v2.md)和[派发说明](../development/agent-run-dispatch.md)：根请求关联使用固定SDK prompt返回的durable inbox messageId，并核对根session内实际进入turn的user/message；不是任选一条LLM request或最后助手消息。Worker控制/回调使用显式v2路径和后端生成schema，旧v1本地入口仍独立保留。持久取消记录/目录锁目前失败关闭且有容量上限，在线留存、自动崩溃恢复和Linux隔离仍须验收。
+本地V2实现与当前边界见[Worker V2](../development/agent-worker-v2.md)和[派发说明](../development/agent-run-dispatch.md)：根请求关联使用固定SDK prompt返回的durable inbox messageId，并核对根session内实际进入turn的user/message；不是任选一条LLM request或最后助手消息。Worker控制/回调使用显式v2路径和后端生成schema，旧v1本地入口仍独立保留。持久取消记录/目录锁失败关闭且有容量上限；[已确认详情留存](../development/agent-journal-retention.md)已本地实现，永久有界身份摘要防止删详情后重跑。未知孤儿/陈旧锁恢复、API历史留存和Linux隔离仍须验收。
 
 本地已增加[Redis准入与正式API显式组合](../development/agent-run-admission.md)，仍未挂载生产main。Redis原子预占与MySQL幂等事务分开，未知提交保留预占而不自动重试；只在未执行或Worker确认静止后释放并发。恢复读取锁定run以串行化状态与AI历史；当前对账只收敛过期accepted/running，不会自动派发重启前的accepted。
 

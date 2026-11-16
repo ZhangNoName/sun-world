@@ -526,3 +526,30 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 sun-world-blog→design同题更新博客05：评测接线不能绕过预算、四次模型上限与无资料最终结果的观察边界。后端/架构笔记/Agent/DeepSeek Harness、5稳定ID/7处strong保留；既有透明预算图足够表达整体关系，不添重复图。1280/390正文及新段落视觉/DOM检查通过，无首行缩进/残留双星/横向溢出，图360/342px，仍用dirty renderer/CSS，非完整文章页验收，未发布。
 
 下一步推进可本地验证的journal留存/离线回收及已有库升级/崩溃矩阵。Linux memory/PID/network、人工语义、上游版本策略和生产TLS仍独立待资源或验收，P1/A–D未整体完成。历史一次官方代理失败根因仍未知，旧证据不改写。其他80项dirty及主handoff未提交记录保留，不推送/部署/发布。Claude Code/claude-ds接手须同步官方原实例直注入、ledger-only/pre_cleanup证据及误绿修复这些增量。
+
+## 2026-11-16 Worker详情留存、永久屏障与嵌套中断
+
+### 目标、实现与文件
+
+基点0d541a6，推进本地留存与回收缺口；先写[留存契约](../../development/agent-journal-retention.md)再同步coding/判官。共享execution-journal抽出schema/IO/owner/O_EXCL锁，v3可信retained时间、v2迁移从当前时间起算、不信mtime；仅确认终态且无slot/start/stop/observer/inflight引用可在30天后回收，cancel无deadline额外45秒。保留期内详情最多128仍拒满，精确永久run SHA256屏障最多8192/1MiB，先index+owner确认后unlink。改未来deadline/换execution的旧身份仍拒绝，index满只停新准入；unknown orphan/旧锁不清理，API历史不删除。
+
+Node主要文件：execution-service.mjs、新execution-journal.mjs、新journal-maintenance CLI及protocol tests；保留V2 RPC/contract/profile/Skill，源文件544/598行，自然职责拆分。CLI只处理显式已知私有目录，check/apply同锁，不接管既有锁，不联网或读业务配置/密钥，固定8字段数量；check失败不明可留本次锁，不能称绝对无副作用。用户当前站点仍是原SQLite入口，没有迁移或部署。
+
+另确认测试宿主嵌套SIGTERM重入，先补[信号协议](../../development/agent-cleanup-diagnostics.md)再广播。新fixture_signals.py共享首次中断状态和defer，四个test-agent脚本保护总CLI/进程登记/三库关闭；首次在正常cleanup期间的信号延后到安全点仍报告130，已有cleanup错优先。MySQL不确认daemon退出则保留私有目录，不由TemporaryDirectory析构删掉恢复证据。只改测试宿主，不影响生产认证/模型代理/Kernel或业务配置。
+
+### 确认问题、失败与修复
+
+- 初版Worker92绿测后，判官复现mixed owner2+index/v3末条被删，再丢index可重建空屏障使旧run改deadline执行。现index确认后先atomic/fsync owner3再unlink；owner rename/目录sync ACK不明零删除/留锁，check和纯legacy无index不写owner。新增mixed最后详情→index丢失拒绝无重跑回归。
+- 主线程发现新record loader多余canonical equality拒绝正式Python六位小数ISO：wire通过、journal报AGENT_JOURNAL_UNAVAILABLE/runner0。现只恢复原finite Date.parse，保存原串/hash；零/三/六位Z start及v2六位/offset迁移、二次重启通过。offset新start仍由原RPC Z-only拒绝，未改Python期限或合同。
+- 信号忠实回归在真实__main__/Redis/Mongo context/实际owned组下，单SIGTERM通过、重复SIGTERM在恢复旧外层handler后打断cleanup。daemon/readiness/版本发现与MySQL context为合成；最早全mock context缺handler的失败不是有效复现，未将其计入新bug依据。修后原单次、重复、首次正常cleanup期间、主错/handler恢复及不明目录保留共5项通过，独立复验同样5项；历史未知回收问题不因此定因。
+- coding最终37项（journal18/service19）、判官最终Node40（含真实CLI3）/Python5通过，无剩余确认阻塞。修复通知曾仅排消息未启动completed coding，主线程改followup后完成；最终来源与结果以文件为准，不把中间旧代码当已修。
+
+### 最终验证、资源与写作
+
+`corepack pnpm check:api`715、`corepack pnpm test:agent-worker`96通过。Python715覆盖最终Python源，Node96在两个Node P2修后运行；最终执行树465bbe5b9357b6a85464654951808decb15ec868，34项选定源SHA/index一致，之后仅补文档和安全证据。fresh SDK使用592缓存包/下载0，17项Worker资源逐字一致。原真实SDK/三库/mTLS六情景正常exit0；再实际SDK模型等待点SIGTERM，在真实Redis.wait关闭栅栏第二次SIGTERM，仍等待、释放后exit130，4个child PID/5组/4个fixture根均消失，无独立fallback代收。监督driver和原始日志只在ignored本地任务目录，安全投影/源码摘要见[本轮实证](../../evaluations/agent-journal-retention-2026-11-16/README.md)。本轮模型/文章合成，未调用供应商或重跑官方语义四题，上一轮实证保留原源范围。
+
+首个未使用的prepared runtime因Node review修复而丢弃；最终fresh runtime已核对并删除，verified DB缓存与现有站点必要SDK资源保留。三库/临时根均回收，3030/8032本地问答和3033正文预览HTTP200。未访问真实journal/业务库/凭据，留存测试只注入clock，未改机器时间。根format/CSS历史问题保留，不据本轮宣称root/Web全绿；其他80项dirty与主handoff原210加/1删内容保留，不推送部署。
+
+sun-world-blog→design同题更新博客04：删详情不授予重跑、时间与混合迁移、嵌套信号；保留后端/架构笔记/Agent/DeepSeek Harness及7稳定ID，21处strong。1280/390正文与新增段落视觉/DOM检查通过，无缩进/残留双星/横向溢出，既有透明Redis图360/约342px保留；新增为少量顺序规则，列表够用、不加重复图，未发布。预览仍用dirty renderer/CSS，非完整文章页验收。
+
+下一步本地推进已有业务库升级与实际数据库崩溃矩阵；Worker未知孤儿/cgroup/陈旧锁恢复、API历史与账号删除政策、Linux、人工语义、模型版本策略和生产TLS仍独立未完成，P1/A–D与整个持续goal未完成。Claude Code/claude-ds接手必须读取永久屏障/index-owner顺序、保留时间与UTC兼容、共享信号和目录确认这些增量；不能清空索引或按PID猜旧锁安全。

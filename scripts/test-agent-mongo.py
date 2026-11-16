@@ -13,10 +13,13 @@ import stat
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 from urllib.parse import quote
 from uuid import uuid4
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
+from fixture_signals import owned_interrupts
 
 FORMAT = 'sun-world-owned-mongo/1'
 
@@ -68,43 +71,40 @@ def verified_client(environment):
 
 @contextmanager
 def owned_mongo(binary):
+    with owned_interrupts() as interrupts:
+        yield from _owned_mongo(binary, interrupts)
+
+
+def _owned_mongo(binary, interrupts):
     binary = Path(binary).expanduser().resolve(strict=True)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise ValueError('Executable mongod required')
-    root = Path(tempfile.mkdtemp(prefix='sunworld-agent-mongo-',
-        dir='/private/tmp' if sys.platform == 'darwin' else None)).resolve()
-    root.chmod(0o700)
-    data, socket = root / 'data', root / 'mongo.sock'
-    if len(str(socket).encode()) > 100:
-        shutil.rmtree(root)
-        raise ValueError('MongoDB socket path too long')
-    data.mkdir(mode=0o700)
-    nonce = secrets.token_hex(32)
-    environment = {'SUN_WORLD_AGENT_MONGO_ROOT': str(root), 'SUN_WORLD_AGENT_MONGO_NONCE': nonce}
-    process, previous = None, {}
-
-    def interrupted(_signum, _frame):
-        for signum in (signal.SIGINT, signal.SIGTERM):
-            signal.signal(signum, signal.SIG_IGN)
-        raise KeyboardInterrupt
-
-    if threading.current_thread() is threading.main_thread():
-        for signum in (signal.SIGINT, signal.SIGTERM):
-            previous[signum] = signal.signal(signum, interrupted)
+    root = process = None
     try:
+        with interrupts.defer():
+            root = Path(tempfile.mkdtemp(prefix='sunworld-agent-mongo-',
+                dir='/private/tmp' if sys.platform == 'darwin' else None)).resolve()
+            root.chmod(0o700)
+        data, socket = root / 'data', root / 'mongo.sock'
+        if len(str(socket).encode()) > 100:
+            raise ValueError('MongoDB socket path too long')
+        data.mkdir(mode=0o700)
+        nonce = secrets.token_hex(32)
+        environment = {'SUN_WORLD_AGENT_MONGO_ROOT': str(root), 'SUN_WORLD_AGENT_MONGO_NONCE': nonce}
         descriptor = os.open(root / 'console.log', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(descriptor, 'wb') as output:
-            process = subprocess.Popen([str(binary), '--dbpath', str(data), '--bind_ip', str(socket),
-                '--port', '0', '--unixSocketPrefix', str(root), '--filePermissions', '0600', '--maxConns', '32',
-                '--wiredTigerCacheSizeGB', '0.25', '--setParameter', 'diagnosticDataCollectionEnabled=false',
-                '--pidfilepath', str(root / 'mongod.pid'), '--logpath', str(root / 'mongod.log')],
-                stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
-                env={'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'HOME': str(root), 'TMPDIR': str(root),
-                     'LC_ALL': 'C', 'TZ': 'UTC'})
-            descriptor = os.open(root / 'owner.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            with os.fdopen(descriptor, 'w') as marker:
-                json.dump(dict(format=FORMAT, nonce=nonce, root=str(root), socket=str(socket),
-                               data=str(data), pid=process.pid), marker)
+            with interrupts.defer():
+                process = subprocess.Popen([str(binary), '--dbpath', str(data), '--bind_ip', str(socket),
+                    '--port', '0', '--unixSocketPrefix', str(root), '--filePermissions', '0600', '--maxConns', '32',
+                    '--wiredTigerCacheSizeGB', '0.25', '--setParameter', 'diagnosticDataCollectionEnabled=false',
+                    '--pidfilepath', str(root / 'mongod.pid'), '--logpath', str(root / 'mongod.log')],
+                    stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
+                    env={'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'HOME': str(root), 'TMPDIR': str(root),
+                         'LC_ALL': 'C', 'TZ': 'UTC'})
+                descriptor = os.open(root / 'owner.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(descriptor, 'w') as marker:
+                    json.dump(dict(format=FORMAT, nonce=nonce, root=str(root), socket=str(socket),
+                                   data=str(data), pid=process.pid), marker)
             deadline = time.monotonic() + 25
             while True:
                 if process.poll() is not None:
@@ -120,7 +120,7 @@ def owned_mongo(binary):
                 break
             yield environment
     finally:
-        try:
+        with interrupts.defer():
             if process is not None and process.poll() is None:
                 try:
                     os.killpg(process.pid, signal.SIGTERM)
@@ -136,10 +136,8 @@ def owned_mongo(binary):
                     process.wait(timeout=5)
             if process is not None and process.poll() is None:
                 raise RuntimeError('MongoDB fixture process cleanup unconfirmed')
-            shutil.rmtree(root)
-        finally:
-            for signum, handler in previous.items():
-                signal.signal(signum, handler)
+            if root is not None:
+                shutil.rmtree(root)
 
 
 def main():

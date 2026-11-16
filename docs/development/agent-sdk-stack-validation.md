@@ -104,3 +104,9 @@ apps/api/.venv/bin/python scripts/test-agent-sdk-stack.py \
 修独立review复现的报告误绿：必须核对sum(call.input_bytes)等于run累计且不超262144，不能只检查run自报数。官方直接注入原代理、报告ledger-only；评测函数按自然职责抽到model_evaluation.py，旧入口保留转发。报告按case开始/run.started/结束及异常检查点flush/fsync，无周期ticker；失败预算标pre_cleanup，只表示关闭前快照，读取失败保留已读run数值，不能冒称关闭后最终状态。清理错误停止后续题，重复取消也排空采集线程并关闭fixture。
 
 四组SDK进程均复查ESRCH，四类owned临时根恢复为空，三库已停；16项Worker源与实际prepared runtime/暂存树字节一致。安全报告、逐题语义及源码摘要见[官方整栈实证](../evaluations/agent-official-stack-2026-11-16/README.md)。原SQLite站点3030/8032与正文预览3033继续保留，不迁移页面、不修改业务配置或生产DDL。Linux、已有业务库升级/崩溃、留存回收及生产TLS等独立门槛仍未完成。
+
+## Journal留存与嵌套中断增量（2026-11-16）
+
+基点0d541a6后新增[Worker详情留存与永久屏障](agent-journal-retention.md)，并修[嵌套信号重入](agent-cleanup-diagnostics.md#嵌套宿主信号保护增量2026-11-16)。最终源树465bbe5b9357b6a85464654951808decb15ec868的API715/Worker96及fresh prepared SDK默认六情景通过。另真实SDK模型等待点对总启动器发SIGTERM，在实际Redis.wait关闭栅栏再发第二次：退出130、4个owned child PID/5组（API/SDK与三库）均消失、4个fixture根删除，无独立fallback代收。这里只给Redis等待加栅栏，不替换daemon/数据库/证书/SDK。纯信号回归的daemon/readiness/MySQL context为合成，二者分别记录，见[本轮实证](../evaluations/agent-journal-retention-2026-11-16/README.md)。
+
+本轮模型/文章均为合成，AI/预算/Skill未改，没有重跑官方语义四题；上一节0d541a6的官方实证保持其原源版本范围。留存年龄边界使用注入clock的临时文件/真实CLI进程检查，不宣称现实等待三十天或系统clock被修改。未知孤儿、数据库崩溃与生产保留策略仍独立待验收。

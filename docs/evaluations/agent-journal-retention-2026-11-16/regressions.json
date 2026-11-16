@@ -1,0 +1,57 @@
+{
+  "version": "sun-world-journal-retention-regressions/1",
+  "date": "2026-11-16",
+  "initial_implementation": {
+    "worker_gate_passed_before_independent_findings": 92,
+    "mixed_migration": {
+      "owner_still_legacy_after_last_v3_deleted": true,
+      "index_loss_allowed_old_run_with_changed_deadline_to_start": true,
+      "confirmed_by": "independent temporary-directory reproduction"
+    },
+    "deadline_compatibility": {
+      "six_fraction_digit_start_passed_rpc_validation": true,
+      "start_error": "AGENT_JOURNAL_UNAVAILABLE",
+      "runner_starts": 0,
+      "confirmed_by": "main temporary-directory reproduction"
+    }
+  },
+  "baseline_nested_signals": {
+    "source_commit": "0d541a6",
+    "real_cli_and_redis_mongo_contexts": true,
+    "daemon_readiness_and_mysql_context": "synthetic",
+    "single_sigterm_passed": true,
+    "second_sigterm_interrupted_late_cleanup": true,
+    "early_fully_mocked_context_observation_not_used_as_evidence": true
+  },
+  "final": {
+    "api_tests": 715,
+    "worker_tests": 96,
+    "independent_node_tests": 40,
+    "independent_python_signal_tests": 5,
+    "mixed_owner_promotion_before_detail_delete": true,
+    "owner_rename_or_directory_sync_ack_loss_preserves_detail_and_lock": true,
+    "missing_index_cannot_reset_retired_identity": true,
+    "zero_three_six_fraction_digit_wire_compatibility_preserves_original_hash": true,
+    "legacy_offset_records_migrate_without_changing_deadline": true,
+    "offset_new_start_still_rejected_by_original_rpc": true,
+    "actual_cli_concurrent_controller_exclusion_and_expired_cleanup_passed": true,
+    "unconfirmed_directory_retention_verified_with_synthetic_predicate": true,
+    "native_sdk_synthetic_scenarios": 6,
+    "confirmed_review_blockers_remaining": 0
+  },
+  "limits": {
+    "retention_days": 30,
+    "cancel_without_deadline_extra_window_ms": 45000,
+    "retained_detail_capacity": 128,
+    "permanent_retired_hash_capacity": 8192,
+    "maximum_index_bytes": 1048576
+  },
+  "scope": {
+    "expiry_boundaries_use_injected_clock": true,
+    "machine_clock_changed": false,
+    "production_journal_accessed": false,
+    "business_database_accessed": false,
+    "real_provider_called_this_iteration": false,
+    "unknown_orphan_recovery_claimed": false
+  }
+}

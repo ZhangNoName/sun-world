@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import {
+import fs, {
   mkdtemp,
   mkdir,
   readFile,
@@ -15,7 +15,19 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { ExecutionService } from '../../src/execution-service.mjs'
-import { hashJson, toolCatalog } from '../../src/rpc-validation.mjs'
+import {
+  maintainExecutionJournal,
+  LEGACY_FORMAT,
+  JOURNAL_FORMAT,
+  INDEX_FILE,
+  RETENTION_MS,
+  retiredRunHash,
+} from '../../src/execution-journal.mjs'
+import {
+  hashJson,
+  toolCatalog,
+  validateRpc,
+} from '../../src/rpc-validation.mjs'
 import { runInput } from './test-helpers.mjs'
 
 const deferred = () => {
@@ -375,10 +387,19 @@ test('a cleaned runner start failure is terminal and never replays the same requ
 
 test('deadline is rechecked after durable intent and before any runner launch', async (t) => {
   const began = Date.now()
-  let checks = 0
-  const clock = () => began + (++checks >= 2 ? 1000 : 0)
-  const { service, runner } = await setup(t, { clock })
+  let now = began
   const run = runInput({ deadline: new Date(began + 500).toISOString() })
+  const journalFs = {
+    ...fs,
+    async rename(source, target) {
+      await fs.rename(source, target)
+      if (target.endsWith(`${run.run_id}.json`)) {
+        const record = JSON.parse(await readFile(target, 'utf8'))
+        if (record.status === 'running') now = began + 1000
+      }
+    },
+  }
+  const { service, runner } = await setup(t, { clock: () => now, journalFs })
   await assert.rejects(service.start(run), /AGENT_EXECUTION_EXPIRED/)
   assert.equal(runner.starts.length, 0)
   assert.equal((await service.inspect(binding(run))).status, 'failed')
@@ -454,4 +475,235 @@ test('fast done plus terminal journal failure cannot return a successful start A
   )
   await assert.rejects(fixture.service.close(), /AGENT_PROCESS_UNCONFIRMED/)
   await stat(join(directory, '.controller.lock'))
+})
+
+async function mixedOwnerFixture(t) {
+  let now = Date.now()
+  const clock = () => now
+  const fixture = await setup(t, { clock })
+  const run = runInput({ deadline: new Date(now + 40000).toISOString() })
+  await fixture.service.cancel(binding(run))
+  await fixture.service.close()
+  await writeFile(
+    join(fixture.directory, '.owner.json'),
+    JSON.stringify({ format: LEGACY_FORMAT, uid: process.getuid() })
+  )
+  now += RETENTION_MS + 45000
+  return { ...fixture, run, clock }
+}
+
+test('mixed migration retires the last v3 detail only after making the index mandatory', async (t) => {
+  const f = await mixedOwnerFixture(t)
+  const ownerPath = join(f.directory, '.owner.json')
+  const before = await readFile(ownerPath, 'utf8')
+  const indexBefore = await readFile(join(f.directory, INDEX_FILE), 'utf8')
+  const check = await maintainExecutionJournal({
+    directory: f.directory,
+    clock: f.clock,
+  })
+  assert.equal(check.expired_count, 1)
+  assert.equal(await readFile(ownerPath, 'utf8'), before)
+  assert.equal(
+    await readFile(join(f.directory, INDEX_FILE), 'utf8'),
+    indexBefore
+  )
+  const applied = await maintainExecutionJournal({
+    directory: f.directory,
+    apply: true,
+    clock: f.clock,
+  })
+  assert.equal(applied.removed_count, 1)
+  assert.equal(
+    JSON.parse(await readFile(ownerPath, 'utf8')).format,
+    JOURNAL_FORMAT
+  )
+  await assert.rejects(stat(join(f.directory, `${f.run.run_id}.json`)), {
+    code: 'ENOENT',
+  })
+  await unlink(join(f.directory, INDEX_FILE))
+  const restarted = new ExecutionService({
+    bundleHash: f.run.bundle_hash,
+    modelId: f.run.model_id,
+    runner: f.runner,
+    journalDirectory: f.directory,
+    clock: f.clock,
+  })
+  await assert.rejects(restarted.ready(), /AGENT_JOURNAL_UNAVAILABLE/)
+  for (const execution_id of [f.run.execution_id, randomUUID()]) {
+    await assert.rejects(
+      restarted.start({
+        ...f.run,
+        execution_id,
+        deadline: new Date(f.clock() + 40000).toISOString(),
+      }),
+      /AGENT_JOURNAL_UNAVAILABLE/
+    )
+  }
+  assert.equal(f.runner.starts.length, 0)
+  await stat(join(f.directory, '.controller.lock'))
+})
+
+test('mixed owner promotion rename or directory-fsync ACK loss never unlinks a detail', async (t) => {
+  for (const fault of ['rename', 'directory_sync']) {
+    const f = await mixedOwnerFixture(t)
+    const recordPath = join(f.directory, `${f.run.run_id}.json`)
+    const original = await readFile(recordPath, 'utf8')
+    let ownerRenamed = false,
+      failed = false,
+      removed = 0
+    const filesystem = {
+      ...fs,
+      async rename(source, target) {
+        if (target.endsWith('.owner.json')) {
+          const index = JSON.parse(
+            await readFile(join(f.directory, INDEX_FILE), 'utf8')
+          )
+          assert.ok(index.retired_hashes.includes(retiredRunHash(f.run.run_id)))
+        }
+        await fs.rename(source, target)
+        if (target.endsWith('.owner.json')) {
+          ownerRenamed = true
+          if (fault === 'rename')
+            throw new Error('PRIVATE_OWNER_COMMIT_DIAGNOSTIC')
+        }
+      },
+      async unlink(path) {
+        if (path.endsWith(`${f.run.run_id}.json`)) removed++
+        await fs.unlink(path)
+      },
+      async open(path, ...args) {
+        const handle = await fs.open(path, ...args)
+        if (!(await handle.stat()).isDirectory()) return handle
+        return new Proxy(handle, {
+          get(target, key) {
+            if (key === 'sync')
+              return async () => {
+                await target.sync()
+                if (ownerRenamed && !failed && fault === 'directory_sync') {
+                  failed = true
+                  throw new Error('PRIVATE_OWNER_COMMIT_DIAGNOSTIC')
+                }
+              }
+            const value = Reflect.get(target, key)
+            return typeof value === 'function' ? value.bind(target) : value
+          },
+        })
+      },
+    }
+    await assert.rejects(
+      maintainExecutionJournal({
+        directory: f.directory,
+        apply: true,
+        clock: f.clock,
+        fs: filesystem,
+      }),
+      { message: 'AGENT_JOURNAL_UNAVAILABLE' }
+    )
+    assert.equal(ownerRenamed, true)
+    assert.equal(removed, 0)
+    assert.equal(await readFile(recordPath, 'utf8'), original)
+    assert.equal(
+      JSON.parse(await readFile(join(f.directory, '.owner.json'), 'utf8'))
+        .format,
+      JOURNAL_FORMAT
+    )
+    await stat(join(f.directory, '.controller.lock'))
+  }
+})
+
+test('RPC deadlines with zero, three and six fractional digits preserve exact identity across restart', async (t) => {
+  const now = Date.now()
+  const canonical = new Date(now + 30000).toISOString()
+  for (const deadline of [
+    canonical.replace(/\.\d{3}Z$/, 'Z'),
+    canonical,
+    canonical.replace('Z', '456Z'),
+  ]) {
+    const { service, runner, directory } = await setup(t, { clock: () => now })
+    const run = runInput({ deadline })
+    assert.equal(validateRpc('ExecutionStart', run).deadline, deadline)
+    assert.equal((await service.start(run)).status, 'running')
+    runner.handles.get(run.run_id).resolve()
+    await waitFor(
+      async () => (await service.inspect(binding(run))).status === 'completed'
+    )
+    await service.close()
+    const stored = JSON.parse(
+      await readFile(join(directory, `${run.run_id}.json`), 'utf8')
+    )
+    assert.equal(stored.deadline, deadline)
+    assert.equal(stored.request_hash, hashJson(run))
+    const restarted = new ExecutionService({
+      bundleHash: run.bundle_hash,
+      modelId: run.model_id,
+      runner,
+      journalDirectory: directory,
+      clock: () => now,
+    })
+    t.after(() => restarted.close().catch(() => {}))
+    await restarted.ready()
+    assert.equal((await restarted.start(run)).status, 'completed')
+    assert.equal(runner.starts.length, 1)
+    await restarted.close()
+  }
+})
+
+test('v2 six-digit and offset deadline records migrate and restart without string/hash normalization', async (t) => {
+  const now = Date.now(),
+    canonical = new Date(now + 30000).toISOString()
+  const offset = new Date(now + 30000 + 8 * 60 * 60 * 1000)
+    .toISOString()
+    .replace('Z', '+08:00')
+  for (const deadline of [
+    canonical.replace('Z', '789Z'),
+    canonical.replace('Z', '+00:00'),
+    offset,
+  ]) {
+    const { service, runner, directory } = await setup(t, { clock: () => now })
+    const run = runInput({ deadline })
+    await service.close()
+    await unlink(join(directory, INDEX_FILE))
+    await writeFile(
+      join(directory, '.owner.json'),
+      JSON.stringify({ format: LEGACY_FORMAT, uid: process.getuid() })
+    )
+    const requestHash = hashJson(run)
+    await writeFile(
+      join(directory, `${run.run_id}.json`),
+      JSON.stringify({
+        format: LEGACY_FORMAT,
+        binding: binding(run),
+        request_hash: requestHash,
+        status: 'completed',
+        deadline,
+        needs_reap: false,
+      }),
+      { mode: 0o600 }
+    )
+    for (let generation = 0; generation < 2; generation++) {
+      const restarted = new ExecutionService({
+        bundleHash: run.bundle_hash,
+        modelId: run.model_id,
+        runner,
+        journalDirectory: directory,
+        clock: () => now,
+      })
+      t.after(() => restarted.close().catch(() => {}))
+      await restarted.ready()
+      assert.equal((await restarted.inspect(binding(run))).status, 'completed')
+      const stored = JSON.parse(
+        await readFile(join(directory, `${run.run_id}.json`), 'utf8')
+      )
+      assert.equal(stored.format, JOURNAL_FORMAT)
+      assert.equal(stored.deadline, deadline)
+      assert.equal(stored.request_hash, requestHash)
+      if (!deadline.endsWith('Z')) {
+        // Offset records were accepted by the old journal reader. The existing
+        // RPC contract is Z-only, so new starts remain rejected at that boundary.
+        await assert.rejects(restarted.start(run), /AGENT_INPUT_INVALID/)
+      }
+      await restarted.close()
+    }
+    assert.equal(runner.starts.length, 0)
+  }
 })
