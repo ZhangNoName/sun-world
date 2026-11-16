@@ -1,5 +1,9 @@
 ﻿## Current Handoff
 
+## 2026-11-17 本机原生Linux环境验证
+
+已在本机自有VZ临时VM实际运行Linux6.8/Node24.17、cgroup2/四namespace及原49项协议零skip，host独立确认正常停机/组gone/根删除；另真实双SIGTERM目标130且清理通过。API814、独立18通过；前四次开发失败保留，VM boot通过不代表逐run memory/PID/filesystem/合法API网络策略已验收。[协议](development/agent-linux-vm.md)、[证据](evaluations/agent-linux-vm-2026-11-17/README.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。Clash7890可连接，官方目录只读核验成功、生成0；原本地OpenAI页面3030/8032及预览3033保持200，无需本地模型。博客04补环境分界并1280/390预览，未发布；原80dirty/主handoff210加1删保留，不推送部署。下一步Linux逐run隔离；人工四题pending、版本生产策略/TLS/目标库备份等仍独立待，P1/A–D未整体完成。
+
 ## 2026-11-17 官方四题人工复核材料
 
 当前目标：继续实现/review、本地中文版本保存与博客修订。基点59b018f，本轮16日启动、17日收尾，已完成[人工复核契约](development/agent-human-semantic-review.md)与[固定材料](evaluations/agent-human-review-2026-11-16/README.md)。原报告/数据集双SHA钉住，纯stdlib导出原文/问题/实际API答案/判据，独占新目录，不携带run UUID/失效URL/trace/预算；HTML/MD字面展示注入文本，manifest固定pending，导出不构成人审。

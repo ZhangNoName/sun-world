@@ -1,0 +1,74 @@
+{
+  "version": "sun-world-linux-vm-development-attempts/1",
+  "attempts": [
+    {
+      "attempt": 1,
+      "overall_passed": false,
+      "console_bundle_sha256": "be764dedf3a504514e691ba4d5a0e618e3ba8a5cd69b0d3ddfc29cdba880d559",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "deadline"
+      },
+      "guest_probe_frames": 0,
+      "tap_pass_footers": [],
+      "observed_issue": "Original initrd/Base shared paths broke early tools; use sw-root prefix and guest-only tmpfs switch_root."
+    },
+    {
+      "attempt": 2,
+      "overall_passed": false,
+      "console_bundle_sha256": "f73cbd598ae41c80c44387cf8dc8b068d42e0b33b21990ed02af4bb4459fccf0",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "deadline"
+      },
+      "guest_probe_frames": 0,
+      "tap_pass_footers": [],
+      "observed_issue": "Original early initrd lacked mount point directories; create proc/sys/dev before mount."
+    },
+    {
+      "attempt": 3,
+      "overall_passed": false,
+      "console_bundle_sha256": "bffd514bdf85c92f6228eb9eabf5f51391d95abe2b5200cff08623c8883913a1",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "deadline"
+      },
+      "guest_probe_frames": 28,
+      "tap_pass_footers": [
+        48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+        48, 48, 48, 48, 48, 48, 48, 48, 48
+      ],
+      "observed_issue": "Clock initially zero affected original 31-day retention fixture; panic negative caused immediate reboot. No test assertion relaxed."
+    },
+    {
+      "attempt": 4,
+      "overall_passed": false,
+      "console_bundle_sha256": "1de79f520c0c9e8ea80ec6617cf330f152223bd2264b583f7102583c23e1f00f",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "deadline"
+      },
+      "guest_probe_frames": 1,
+      "tap_pass_footers": [49],
+      "observed_issue": "All 49 passed but missing busybox poweroff left PID1 panic; overall deadline failure."
+    }
+  ],
+  "first_attempt_partial_source_sha256": {
+    "tools/agent-linux-vm/guest-init.sh": "93e46b113e224dcfeb9945af70b7319898a6f744a323bb0e89962e34fc44bc83",
+    "tools/agent-linux-vm/guest-run.sh": "b7a6e51fb75e9ff550347ea10838373386c45468d6a2d56733f0afc8339b1374",
+    "tools/agent-linux-vm/guest-probe.mjs": "4d35ac11561bce9104742d4dc03061e55de2c6fd76e7007cf17ec769bcd73019",
+    "tools/agent-linux-vm/Host.swift": "3e68797ed7ce437ab9ae8d91eaa16ce2cba16ee4b0e20faa9f5e2df77570bdd9",
+    "scripts/test-agent-linux-vm.py": "72bc085219fe72724b552efb9befa0502e2afb71f6bfd40b5bbcbfd22cf881e1"
+  },
+  "old_source_snapshot_complete": false,
+  "raw_console_published": false,
+  "unknown_roots_at_final_checkpoint": 0
+}

@@ -1,0 +1,109 @@
+{
+  "version": "sun-world-linux-native-validation/1",
+  "host": {
+    "version": "sun-world-linux-host-result/1",
+    "started": true,
+    "stopped": true,
+    "reason": "completed"
+  },
+  "guest_probe": {
+    "version": "sun-world-linux-guest-probe/1",
+    "platform": "linux",
+    "architecture": "arm64",
+    "node": "v24.17.0",
+    "kernel": "6.8.0-147-generic",
+    "cpu_count": 2,
+    "memory_bytes": 2056138752,
+    "test_host_clock_seed_applied": true,
+    "clock_before_seed_seconds": 0,
+    "cgroup2_mounted": true,
+    "required_controllers": ["memory", "pids"],
+    "namespace_probe_succeeded": true,
+    "network_devices_other_than_loopback": 0,
+    "per_run_isolation_verified": false
+  },
+  "protocol_tests": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "linux_environment_boot_verified": true,
+  "linux_per_run_isolation_verified": false,
+  "supplier_requests": 0,
+  "console_sha256": "101101709e0cdaca90c0f36c04fb7f4f16ae48b2ccc681d287e61dd671639d3b",
+  "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+  "guest_build": {
+    "assets": {
+      "kernel": {
+        "sha256": "353bab8eeaad9caf931dd85fd7a7bf8800d2669d759c0369ffaba7abc03a7aff",
+        "size": 18600927
+      },
+      "node.tar.xz": {
+        "sha256": "67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3",
+        "size": 30386680
+      },
+      "original-initrd": {
+        "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+        "size": 29297293
+      },
+      "tini.deb": {
+        "sha256": "4846e4f601a17110f67e0128d41b6003217a2e55cd43286697229d2acd4f8cda",
+        "size": 211920
+      },
+      "ubuntu-base.tar.gz": {
+        "sha256": "a91d5a93010193712d346d761372b7c9db6dfcf093893161c64ca107f05914f2",
+        "size": 29936675
+      }
+    },
+    "derived_initrd": {
+      "sha256": "0debc83ecb413e0e35482af7a8e7f4e459852521188f03d968cde300b6a9c529",
+      "size": 103365354
+    },
+    "expanded_bytes": 299029626,
+    "guest_entries": 3459,
+    "original_initrd": {
+      "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+      "size": 29297293
+    },
+    "payload_sha256": {
+      "apps/agent-worker/src/blog-tools.mjs": "c281cd57aa52cbeb8b51d4447fd0c8943ffae72c191c7e51ea16573788df5178",
+      "apps/agent-worker/src/cleanup-diagnostics.mjs": "ed38c59ebe490b59b3eda58d5932745c26bf781876c1e92c1252e2f518307abe",
+      "apps/agent-worker/src/execution-http.mjs": "6231eab4e075a982ed19f5fbefd3920a7cb44630e89afc39939c80ad0cfaf98f",
+      "apps/agent-worker/src/execution-journal.mjs": "ba916ce12a34a28359f616ce40faae53730b8aca7559aae0372e38f3e3a4a484",
+      "apps/agent-worker/src/execution-service.mjs": "06e51a598f60166880b054ec1d973eb2173c1408e019497fcaebe390c028fd03",
+      "apps/agent-worker/src/gateway-client.mjs": "0c0e9c07f630e576c625a74cbc390cdcb1d5e80d0b07e79c9928df5deb02eb77",
+      "apps/agent-worker/src/local-runner.mjs": "4cf884de4a21bedf86378590ae04389a6baf2a84ca77925790a63f1d0ca49bce",
+      "apps/agent-worker/src/process-runner.mjs": "117b0c527607d4015ea3dca3c29dd17d15beaa739d966cdf56f2f11609caadb6",
+      "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+      "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+      "apps/agent-worker/src/root-result.mjs": "1f8d54942e2b099b1b04921dd424d582487060aa73ada5e249dcd69a0a4098d8",
+      "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+      "apps/agent-worker/src/sdk-execution.mjs": "59c660727089b15dab781030f4ac1f84ae8e06288f48045d6fe0864ae99ca327",
+      "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+      "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+      "apps/agent-worker/src/verify-tools.mjs": "c8179438605cbb446c59402ebae21f4a7ba6152ecda76ff61102bd71d6666d8e",
+      "apps/agent-worker/src/worker.mjs": "b6d216171079e38eb4ab1061dbe30e5e55ebaf3ded91ff199822911c20cb2edd",
+      "apps/agent-worker/tests/fixtures/controller-crash.mjs": "ab50b60607d3745e2121838a6f424b6c8f9473ed00076622cd36601849589cbb",
+      "apps/agent-worker/tests/fixtures/crash-owned.mjs": "02562d2dbda0a257717c9428d14e169d344c949a9a06f175db880ef8a1991b71",
+      "apps/agent-worker/tests/protocol/execution-crash.test.mjs": "77058ef684302ca68400a3f3cd2f2e6568f4b338914f0d5cdbad997a6a1e4dc7",
+      "apps/agent-worker/tests/protocol/execution-journal.test.mjs": "dd03e07d05926c513e049b832edf4ac50a7c4054b6af781620297db837b76dc8",
+      "apps/agent-worker/tests/protocol/execution-service.test.mjs": "6257b567ef5e1477af3f085ce4f035b8be4f6d4bcac7e31766b754950cacee6f",
+      "apps/agent-worker/tests/protocol/journal-maintenance.test.mjs": "45d10516c94d8646af967576e027bf7e1adadc020786d462c3019cf83c4577ed",
+      "apps/agent-worker/tests/protocol/process-runner.test.mjs": "cb86dfad3cf03a937eaa3bc1abda9d1618d667b600a229302292320c17d856a4",
+      "apps/agent-worker/tests/protocol/test-helpers.mjs": "554d41e006c6c82628509b624a671d04f5c9072e0f57d60a880a83761a3d2ee0",
+      "packages/contracts/agent/rpc-v2.json": "4039d3801d618848ac52112db51022e0a11852b960cce171e29821acfd271f62",
+      "packages/contracts/agent/tool-catalog.json": "934d103f09f295902f3b7cf765ad8ab805137c6ab6e98add95136ba7d7726f38",
+      "scripts/prune-agent-worker-journal.mjs": "49a82d9481456209b9e6b5619abb0f79061a4e2178f843fd8fe50e57e9600117",
+      "tools/agent-linux-vm/guest-init.sh": "3477c530bac427e79fe96b5b97299d1b90c8728f5d6a8df00addbc03f039745b",
+      "tools/agent-linux-vm/guest-probe.mjs": "07f44595fb2559648857fea780d7d414e458c799e6a91c564eed228431c07d7d",
+      "tools/agent-linux-vm/guest-run.sh": "41eb9d076b6a2c2e46c6061cee260cb9b9d1b727da6e8a442bf9eded0212c1ce"
+    },
+    "version": "sun-world-linux-guest-archive/1"
+  },
+  "kernel_image_sha256": "ce78832564a2705c98d474fe487f11dbd6823eb0c5f5c162ebf1e760089b504f",
+  "owned_groups_gone": true,
+  "private_run_root_removed": true
+}

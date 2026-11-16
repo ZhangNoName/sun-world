@@ -1,0 +1,16 @@
+{
+  "version": "sun-world-linux-vm-interruption/1",
+  "signals_sent": 2,
+  "target_exit_code": 130,
+  "host": {
+    "version": "sun-world-linux-host-result/1",
+    "started": true,
+    "stopped": true,
+    "reason": "interrupted"
+  },
+  "guest_probe_observed": true,
+  "owned_groups_gone": true,
+  "private_run_root_removed": true,
+  "protocol_suite_completed": false,
+  "linux_per_run_isolation_verified": false
+}

@@ -1,0 +1,37 @@
+{
+  "version": "sun-world-linux-vm-assets/1",
+  "architecture": "arm64",
+  "node_version": "24.17.0",
+  "assets": [
+    {
+      "filename": "ubuntu-base.tar.gz",
+      "url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.5-base-arm64.tar.gz",
+      "sha256": "a91d5a93010193712d346d761372b7c9db6dfcf093893161c64ca107f05914f2",
+      "max_bytes": 134217728
+    },
+    {
+      "filename": "kernel",
+      "url": "https://cloud-images.ubuntu.com/releases/noble/release/unpacked/ubuntu-24.04-server-cloudimg-arm64-vmlinuz-generic",
+      "sha256": "353bab8eeaad9caf931dd85fd7a7bf8800d2669d759c0369ffaba7abc03a7aff",
+      "max_bytes": 134217728
+    },
+    {
+      "filename": "original-initrd",
+      "url": "https://cloud-images.ubuntu.com/releases/noble/release/unpacked/ubuntu-24.04-server-cloudimg-arm64-initrd-generic",
+      "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+      "max_bytes": 134217728
+    },
+    {
+      "filename": "node.tar.xz",
+      "url": "https://nodejs.org/dist/v24.17.0/node-v24.17.0-linux-arm64.tar.xz",
+      "sha256": "67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3",
+      "max_bytes": 134217728
+    },
+    {
+      "filename": "tini.deb",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/universe/t/tini/tini_0.19.0-1_arm64.deb",
+      "sha256": "4846e4f601a17110f67e0128d41b6003217a2e55cd43286697229d2acd4f8cda",
+      "max_bytes": 1048576
+    }
+  ]
+}

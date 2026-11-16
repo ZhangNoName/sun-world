@@ -2,6 +2,8 @@
 
 ## 2026-11-12 Local existing-site blog QA
 
+2026-11-17增量：本机已实际通过原生Apple Virtualization的一次性Linux arm64环境验证，无需安装Docker。固定Linux6.8.0-147/Node24.17、cgroup2与四namespace探针、49项原协议零skip及正常停机清理通过；另真实双SIGTERM返回130，host/组/根均确认清理。API814项与独立18项通过，前四次开发失败未抹去。见[环境说明](development/agent-linux-vm.md)与[安全实证](evaluations/agent-linux-vm-2026-11-17/README.md)。这只补Linux环境缺口，逐run memory/PID/filesystem/允许API的网络隔离仍未验收；无guest NIC/共享盘/宿主目录或业务凭据。本机Clash7890可连接，原profile只读官方目录再次成功、生成0；不在guest中调用模型。旧安装位不可用报告保持为历史观察，不能再把它当“本机无法运行Linux”的结论。当前页面仍是原本地SQLite，人工/版本生产策略/TLS/目标库备份等继续待验收；未推送部署。
+
 `zxy/dsh-platform-foundation` has an explicitly local account/blog integration via
 `corepack pnpm dev:blog-qa` (Web3030/API8032). It reuses configured account sessions,
 public blog data and the global model catalog; production Agent execution remains

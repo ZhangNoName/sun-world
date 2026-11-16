@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：原生 Linux 环境通过
+
+- 当前目标仍为按计划迭代/审查/本地验证与中文提交；P1/A–D未整体完成。本轮在当前Mac自建一次性原生VZ Linux，不安装全局Docker，不用生产服务器；无需本地部署模型，现有官方API profile保持。
+- 新增`tools/agent-linux-vm/`六文件、`scripts/prepare-agent-linux-guest.py`、`scripts/test-agent-linux-vm.py`及显式双中断driver，API两个新test文件。固定五资产SHA、31文件guest payload、严格有界归档/同bytes使用、私有缓存；无guest NIC/disk/share/密钥。Swift只对自有二进制ad-hoc签名。源码树与42项摘要见[验证清单](../../evaluations/agent-linux-vm-2026-11-17/validation-manifest.json)。
+- 最终实际Linux6.8.0-147/Node24.17 arm64，2CPU、约1.915GiB可见内存，cgroup2有memory/pids，真实四namespace/PID1探针与原49项协议零skip通过。guest-only SysRq关机后host独立completed/started/stopped；own组gone/临时根删除。另真实双SIGTERM目标130，host interrupted/started/stopped、组/根清理通过，中断套件不计第二次49成功。
+- API完整814项/30.560秒通过（含归档11/监督器7），判官独立18与最终时钟seed/sysrq/中断driver复审通过，无确认阻塞；严格JSON重复键P2已修并回归。Python AST5、guest shell语法2、定向Prettier、root-script通过。根format仅原内容manifest失败，不改该dirty、不称Web/root全绿。前四次实际开发失败仍记录，尤其第四次49通过但关机失败，不能抹掉整体失败。
+- 代码/命令/边界见[环境协议](../../development/agent-linux-vm.md)与[实证](../../evaluations/agent-linux-vm-2026-11-17/README.md)。先前PATH/socket不可用只是当时窄范围，不再作为Linux不可用阻塞。已核验资产和Swift cache保留，runroot前缀0；3030/8032/3033均200，既有进程不停止。
+- 用户最新Clash线索已核验：本机mixed7890可连接，复用受限CONNECT/TLS/pin/私有loader的只读官方目录命令成功，固定模型可见，新增生成0/不可变版本false；不读取输出凭据、不把它注入guest。未改目录、模型或代理全局设置。
+- 博客04按sun-world-blog→design局部补环境与逐run边界，后端/架构笔记、Agent、DeepSeek Harness保留；7章节/28重点，1280/390正文与两透明图视觉/DOM通过、无缩进/溢出，图360/约342px，无需新增图，未发布。预览仍用dirty renderer/CSS。
+- 原80dirty与主handoff原210加/1删保留；本轮只中文本地提交，未推送部署。下一步在自有Linux实现/验证每run memory/PID与文件隔离，再验证合法API放行/任意外网拒绝，不能把VM总额或无NIC当这条验收。人工四题仍pending，不重复提问、不自动审结；模型版本生产决策/TLS/目标库结构与备份等仍独立待。后续Claude Code/claude-ds先读新协议及本checkpoint。
+
 - `apps/api/src/core/module_registry.py`：显式静态模块声明；重复模块/能力/路由形状/工具映射、依赖版本/环、输入 schema 与身份字段检查。
 - `apps/api/src/module_composition.py`、`main.py`：组合根登记 blog-content；没有公开工具执行端点或 Agent 运行开关。
 - `apps/api/src/core/auth/`：只读策略默认拒绝未知能力、目标和服务主体；会话适配委托现有 AuthManager 重验 Redis/账户并恢复 sid 与当前角色，不替换旧登录或管理员写守卫。

@@ -113,6 +113,8 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 
 完整实现集成后运行 `corepack pnpm check`。需要部署时再检查当前 Git 状态、镜像与 schema、关停方案及生产首页/API；当前本地实现按影响范围运行检查，记录已有共享工作区门禁失败，不把定向测试通过写成全部通过。
 
+2026-11-17本机Linux环境增量：原生VZ固定2CPU/2GiB、无NIC/disk/share，在实际Linux6.8.0-147/Node24.17观察cgroup2与四namespace，原49项协议零skip、正常停机/owned组/运行根回收通过；真实双SIGTERM目标130及清理通过。宿主归档/监督器18新回归、API814与独立18通过，前四次失败安全记录保留。见[协议](../development/agent-linux-vm.md)与[证据](../evaluations/agent-linux-vm-2026-11-17/README.md)。环境boot可验证不代表B逐run memory/PID/filesystem/合法API放行且任意网络拒绝已实现，后者为下一步；真实SDK未在本guest运行，人工四题pending、版本生产决策/TLS/目标库备份等仍独立待验收。博客04同题补边界并完成1280/390预览，未发布；保持原dirty与现有服务、不推送部署。
+
 ## 迁移与回滚清单
 
 1. 新增兼容 schema，单独记录真实结构检查与 DDL 部分成功恢复办法；不开功能、不收缩旧列。
