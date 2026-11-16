@@ -44,3 +44,5 @@ corepack pnpm dev:blog-qa --model openai-local
 ## 后续输入预算增量
 
 基点36b2e0f后新增固定`/v1/responses/input_tokens`计数端点，单次16384/run32768，原attempt提交→完整wire计数→同UOW输入预占提交→原wire单次生成，严格拒绝usage漂移。详见[输入预算协议](agent-input-budget.md)与[安全实证](../evaluations/agent-input-budget-2026-11-16/README.md)。本轮API696/owned MySQL19通过，官方三组合成计数177/184/219逐项匹配usage；当前开发站点三次调用551/1935/676、累计3162，正常登录/来源/刷新通过。历史评测目录的input gate false仅代表当时版本，不修改旧报告。正式MySQL预算使用模拟上游、真实站点使用SQLite，尚未验收MySQL/mTLS V2+官方模型完整组合；历史一次未知模型失败也未因此定因。
+
+基点1a14ecb后已补[正式V2官方模型四题实证](../evaluations/agent-official-stack-2026-11-16/README.md)：实际SDK、MySQL/Redis/MongoDB及双向mTLS，13个模型call均计数后持久预占且usage匹配，四题端到端语义经独立agent复核通过，人工仍pending。API710/原合成SDK六情景通过；这只补齐上述完整组合缺口，不改原SQLite页面、不开放生产，也不解释历史未知代理失败。

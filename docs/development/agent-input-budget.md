@@ -36,3 +36,5 @@ SQLite runs增量input reserved计数及独立model attempt表，记录UUID、�
 - 博客05正文1280/390预览通过，5稳定标题ID、7处strong、透明图360/342px，未新增图，未发布；使用工作区既有未提交renderer/CSS，不代表完整文章页验收。
 
 安全数值/摘要、源文件SHA及范围见[本轮实证](../evaluations/agent-input-budget-2026-11-16/README.md)。历史Qwen探针的三个false不变，历史一次官方模型代理失败根因仍未知；不得用本轮成功反推旧故障已修复。Linux硬隔离、人工语义、模型版本策略、已有业务库升级/崩溃、留存回收和生产TLS仍未完成，P1/A–D不整体放行。
+
+后续已补正式MySQL/mTLS V2+官方模型完整组合：同一固定四题一次通过，13次模型调用全部observed，输入累计12142；每项计数/预占/usage及run累计相等，详见[官方整栈实证](../evaluations/agent-official-stack-2026-11-16/README.md)。这补齐此前组合缺口，仍不改变Linux/人工/生产等独立结论；原安全报告的false仅指当时版本，历史文件不改写。

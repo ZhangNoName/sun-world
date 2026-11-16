@@ -80,3 +80,5 @@ apps/api/.venv/bin/python scripts/probe-agent-tokenizer.py \
 默认无参数及`--help`仅显示帮助，不联网；不接受自定义测试数据或服务地址。退出0仅表示此固定探针的响应协议通过，1表示失败，2为参数错误，130表示取消。只有退出0且报告可解析、status为ok，才算响应协议通过；落盘/关闭确认失败时即使文件中已有ok也不能算通过。三个验收门槛仍为false，不能只看退出码或单独看文件。当前协议依据[vLLM 0.28.0计数请求与响应声明](https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/entrypoints/serve/tokenize/protocol.py)，并不据此推断测试端点锁定了该源码或任何模型工件。
 
 用户后续选择直接接入OpenAI官方API，不要求本地部署模型。上面的工件/本地计数路径是当前Qwen别名的待验收方案；官方Responses另提供[完整请求输入计数接口](https://developers.openai.com/api/docs/guides/token-counting)，可作为新的供应商计数路径评估。是否覆盖实际生成payload、如何持久预占与验证仍需单独实现，不沿用本次Qwen探针放行结论。
+
+后续官方路径已实现完整计数和持久预占，并用同一固定四题完成正式V2+实际SDK+真实三库+mTLS验证，见[官方整栈实证](../evaluations/agent-official-stack-2026-11-16/README.md)。13次call的输入计数/预占/usage一致，四题端到端语义经独立agent复核通过。官方报告显式区分provider_input_budget_verified与local tokenizer/immutable revision，后两者仍false，人工仍pending；不修改原Qwen历史报告或推断Linux/生产已放行。

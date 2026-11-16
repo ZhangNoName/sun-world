@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 正式V2与官方模型整栈
+
+- 已补正式MySQL/Redis/Mongo+mTLS Worker+固定SDK+官方gpt-6.1-sol四题组合，原代理直接注入以执行持久输入预占。13个call全部observed、输入累计12142，计数/预占/usage与各run累计一致；四题端到端语义由主线程和判官分别复核，人工仍pending。无资料题仅证明服务端固定结果，未保存模型原始末答；见[安全实证](evaluations/agent-official-stack-2026-11-16/README.md)。
+- API710/原六个合成SDK场景/AI边界检查/独立43项通过；修报告漏核call输入bytes累计导致误绿，重复取消等待预算线程与fixture关闭。4组SDK、三库及独立prepared runtime确认回收；[协议](development/agent-sdk-stack-validation.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)已更新，未改生产AI/Kernel/Skill/数据集或当前SQLite页面。
+- 博客05同题修订、1280/390正文及新增段落预览通过，分类标签/透明图保留，未发布；原本地站点和3033正文预览保留。下一步留存/离线回收与旧库/崩溃矩阵；Linux/人工/版本策略/生产TLS仍独立未完成，P1/A–D不整体放行，旧代理失败未定因，其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 官方输入token持久预算
 
 - 固定Responses完整请求计数与原wire单次生成，attempt先提交、输入预占再提交，单次16384/run32768；正式MySQL Gateway和当前SQLite均接入。计数失败/ACK丢失/usage漂移不退款不重放，见[协议](development/agent-input-budget.md)。原Qwen兼容路径与三个false不变，不要求本地模型。

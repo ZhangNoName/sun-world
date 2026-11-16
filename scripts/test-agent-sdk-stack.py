@@ -64,24 +64,21 @@ def owned_test_process(command, *, cwd, env, timeout):
             process.wait(timeout=5)
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('mysqld', 'redis-server', 'mongod', 'sdk-runtime', 'node'):
         parser.add_argument('--' + name, required=True, type=Path)
     parser.add_argument('--interrupt-probe', action='store_true')
     parser.add_argument('--real-model', action='store_true')
+    parser.add_argument('--real-model-profile', choices=('qwen-public', 'openai-local'))
     parser.add_argument('--report', type=Path)
-    arguments = parser.parse_args()
+    arguments = parser.parse_args(argv)
     try:
-        if arguments.real_model and (arguments.interrupt_probe or arguments.report is None):
-            raise ValueError('Real model evaluation requires a new report and cannot interrupt-probe')
-        if not arguments.real_model and arguments.report is not None:
-            raise ValueError('Report is only for explicit real model evaluation')
-        if arguments.real_model:
-            sys.path.insert(0, str(ROOT / 'apps/api'))
-            from src.core.runtime_env import is_local_runtime
-            if not is_local_runtime():
-                raise ValueError('Real model fixture is restricted to local runtime')
+        sys.path.insert(0, str(ROOT / 'apps/api'))
+        sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
+        from model_evaluation import validate_options
+        profile = validate_options(arguments.real_model, arguments.report, arguments.real_model_profile,
+                                   interrupt=arguments.interrupt_probe)
         if sys.platform != 'darwin':
             raise ValueError('Explicit macOS sandbox-exec fixture only')
         node = arguments.node.expanduser().resolve(strict=True)
@@ -99,13 +96,14 @@ def main():
             return mysql.run(arguments.mysqld, extra_env=environment, test_runner=owned_test_process,
                 test_command=[sys.executable, str(ROOT / 'apps/api/tests/integration/sdk_stack.py'),
                               *(['--interrupt-probe'] if arguments.interrupt_probe else []),
-                              *(['--real-model', '--report', str(arguments.report.resolve())] if arguments.real_model else [])],
+                              *(['--real-model', '--real-model-profile', profile,
+                                  '--report', str(arguments.report.resolve())] if arguments.real_model else [])],
                 test_timeout_seconds=300 if arguments.real_model else 180)
     except KeyboardInterrupt:
         print('SDK stack interrupted; owned shutdown requested and drained.', file=sys.stderr)
         return 130
-    except Exception as error:
-        print('SDK stack failed (' + type(error).__name__ + '); no shared service or application configuration was used.', file=sys.stderr)
+    except Exception:
+        print('SDK stack failed; inspect the bounded evaluation report if one was created.', file=sys.stderr)
         return 1
 
 

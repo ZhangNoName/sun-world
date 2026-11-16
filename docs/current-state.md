@@ -13,6 +13,8 @@ an explicitly selected local Qwen test model. The legacy global DeepSeek catalog
 has no local decryption configuration; no business schema or catalog records changed.
 No production deployment, account password reset or blog edit was performed.
 
+2026-11-16本地增量：开发选项已显式选择`openai-local`，固定gpt-6.1-sol Responses，经本机Clash回环转发；凭据只从ignored私密文件读取，未修改站点模型目录。当前本地问答正常登录、来源与刷新恢复通过，官方完整输入计数和持久预占为单次16384/run32768。用法及验证边界见[官方接入](development/agent-openai-validation.md)与[输入预算](development/agent-input-budget.md)。此处仍是开发SQLite站点；独立正式MySQL/mTLS V2显式整栈已通过官方固定四题与agent语义复核，见[验证说明](development/agent-sdk-stack-validation.md)，不迁移当前页面、不据此开放生产，人工与Linux门槛仍独立。
+
 
 ## 2026-11-12 跨项目方案中的生产记录冲突（待核实）
 

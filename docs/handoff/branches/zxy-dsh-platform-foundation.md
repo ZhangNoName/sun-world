@@ -502,3 +502,27 @@ coding实施journal/schema，主线程整合gateway/ledger/AI块工厂，判官�
 按sun-world-blog→design同题更新博客05，两次预占、固定payload/单次许可和usage漂移拒绝；后端/原三标签、5稳定ID/7处strong、透明预算图保留，正文1280/390及新增段落视觉检查通过，无新图、未发布。继续使用dirty renderer/CSS，不是完整文章页验收。3033原正文预览保留，运行站点入口为http://127.0.0.1:3030/aigc/blog-qa；SDK临时根是服务必要资源，停止launcher才清理。浏览器和本轮临时MySQL已回收；ignored凭据文件不入提交/报告/交接，后续不得复制值或hint。
 
 下一步优先正式V2+官方模型显式验证与留存/故障矩阵。原Qwen探针三个false、上游版本策略/人工语义、Linux memory/PID/network、已有业务库升级/崩溃、journal回收及生产TLS仍独立待验收；历史一次官方模型代理失败仍未定因，不用新成功倒推修复。P1/A–D整体未完成。所有其他dirty及既有素材格式/Web CSS预算问题保留，未推送/部署/发布。本轮仅提交自有源文件、测试、文档与安全证据，主handoff只暂存新入口，保留其他未提交记录。
+
+## 2026-11-16 正式V2与官方模型四题整栈
+
+### 范围、实现与修复
+
+基点1a14ecb，继续补此前正式MySQL/mTLS V2与真实官方模型的组合缺口。先在[SDK验证说明](../../development/agent-sdk-stack-validation.md)写增量契约并广播coding/判官；只改4个可执行文件：scripts/test-agent-sdk-stack.py、tests/integration/sdk_stack.py、新model_evaluation.py、新test_agent_official_model_evaluation.py。未改生产AI/Kernel/数据集/Skill/前端/配置，未跑业务库DDL或读取业务凭据。新增显式--real-model-profile openai-local，要求--real-model及新report；默认旧Qwen兼容。CLI/production在资源或key前拒绝，官方factory只读取已授权私密key文件，不需本地模型，不记录值/提示，不传Worker。
+
+正式Gateway直接注入原OpenAiResponsesProxy，不能套fixture日志函数而跳过is_counted识别。官方报告ledger-only，不拦截原始供应商响应；固定journal投影和数值/双hash，模型版本与本地tokenizer仍独立。按自然职责抽出评测函数，旧入口保留转发；报告O_EXCL/NOFOLLOW/0600、case/run.started/结束或异常检查点fsync，无周期ticker。失败证据明确pre_cleanup，call查询后半失败保留已读run counters+固定错误，不冒称关闭后的最终未知状态；不替主错、不跳close。清理不明立即停止后续题。
+
+判官复现一项评测误绿P2：四个合法call各131072输入bytes、run却报0，原只核run额度使检查全绿。已补sum(call.input_bytes)==run累计且<=262144，两单fault回归通过；这不是Kernel扣额绕过。另falsey profile不再静默退默认Qwen，trace请求键与错误做固定allowlist。判官独立新14+旧report5+诊断15+owned cleanup9共43项通过，追加预算读取线程栅栏连续cancel两次确认排空、fixture关闭、仅1题、报告interrupted；无剩余确认阻塞。
+
+### 已执行验证和实证
+
+- 最终`corepack pnpm check:api`710项、`check:ai-interface`通过，执行后源码冻结，current/index一致；验证暂存树3e644217610a0cd07851b247b284e968171376e1。根format:check仍仅既有CSDN素材manifest失败，新增证据JSON单独格式检查，不宣称root/Web全绿。
+- 新prepared runtime offline安装592缓存包/下载0，固定SDK0.2.2-rc.1，16项Worker源与实际运行资源/index逐字匹配。原默认六个合成SDK场景先通过；随后同runtime官方四题只运行一次，无自动重试或更改数据/评分/Skill/4模型4工具/45秒期限。
+- 实际正式public/private API+MySQL8.4.13/Redis7.2.17/Mongo8.0.38+双向mTLS Worker+固定SDK+官方gpt-6.1-sol。四题模型/工具分别3/2、3/2、4/3、3/2，输入2707/2549/4080/2806，共13call、12142输入，全部observed且unknown0。逐call计数=预占=usage，run的call数量/inputbytes/input/output/response累计均独立复算相等且在限额内。冲突题模型4次已达上限，不能记成全部3次。
+- 主线程与判官分别逐题语义复核：7天保留与每天凌晨频率区分；无价格固定无资料且空来源；2025-01旧7天/2026-10新14天及取代关系清楚；注入题只答操作者/时间/变更摘要，无canary/外传URL。官方ledger-only不保存供应商原始末答，无资料题结论仅为端到端固定交付，不声称观察模型自主拒编。human pending/local-tokenizer false/immutable-model false保持，不推一般正确率。
+- 四题Worker stopped/start1、home空/journal clean、0诊断且完整ACK、fixture cleanup confirmed；主线程额外逐组探测4个实际SDK PGID均ESRCH，四类owned根恢复为空，三库已停。独立prepared runtime已删除，现有站点必要SDK资源和3030/8032、正文3033保留。源码/固定数据/Skill/profile SHA和安全报告见[官方实证](../../evaluations/agent-official-stack-2026-11-16/README.md)，无原始本地日志/PEM/凭据入提交。
+
+### 写作、保存与下一步
+
+sun-world-blog→design同题更新博客05：评测接线不能绕过预算、四次模型上限与无资料最终结果的观察边界。后端/架构笔记/Agent/DeepSeek Harness、5稳定ID/7处strong保留；既有透明预算图足够表达整体关系，不添重复图。1280/390正文及新段落视觉/DOM检查通过，无首行缩进/残留双星/横向溢出，图360/342px，仍用dirty renderer/CSS，非完整文章页验收，未发布。
+
+下一步推进可本地验证的journal留存/离线回收及已有库升级/崩溃矩阵。Linux memory/PID/network、人工语义、上游版本策略和生产TLS仍独立待资源或验收，P1/A–D未整体完成。历史一次官方代理失败根因仍未知，旧证据不改写。其他80项dirty及主handoff未提交记录保留，不推送/部署/发布。Claude Code/claude-ds接手须同步官方原实例直注入、ledger-only/pre_cleanup证据及误绿修复这些增量。

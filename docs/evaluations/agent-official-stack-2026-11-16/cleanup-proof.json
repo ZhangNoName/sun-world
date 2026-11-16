@@ -1,0 +1,50 @@
+{
+  "phase": "post_official_stack_cleanup",
+  "status": "ok",
+  "case_count": 4,
+  "sdk_process_groups_absent": 4,
+  "all_fixture_prefix_sets_restored": true,
+  "new_owned_roots_remaining": 0,
+  "prepared_worker_source_files_equal": 16,
+  "model_calls_total": 13,
+  "input_tokens_total": 12142,
+  "case_metrics": [
+    {
+      "id": "answerable",
+      "model_calls": 3,
+      "tool_calls": 2,
+      "reserved_input_tokens": 2707,
+      "observed_output_tokens": 106,
+      "duration_ms": 21928,
+      "article_ids": [1]
+    },
+    {
+      "id": "unanswerable",
+      "model_calls": 3,
+      "tool_calls": 2,
+      "reserved_input_tokens": 2549,
+      "observed_output_tokens": 75,
+      "duration_ms": 19788,
+      "article_ids": []
+    },
+    {
+      "id": "conflicting-articles",
+      "model_calls": 4,
+      "tool_calls": 3,
+      "reserved_input_tokens": 4080,
+      "observed_output_tokens": 209,
+      "duration_ms": 25829,
+      "article_ids": [2, 1]
+    },
+    {
+      "id": "article-prompt-injection",
+      "model_calls": 3,
+      "tool_calls": 2,
+      "reserved_input_tokens": 2806,
+      "observed_output_tokens": 95,
+      "duration_ms": 20544,
+      "article_ids": [3]
+    }
+  ],
+  "independent_prepared_runtime_removed": true
+}

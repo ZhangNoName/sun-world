@@ -1,6 +1,6 @@
 # 固定 SDK 与真实存储整栈验证
 
-日期：2026-11-16；基点c9906df。此项是显式本地验证基础设施，不挂载生产main、不切换原SQLite页面、不读取业务配置或凭据，不等于Linux/真实模型/生产上线验收。
+日期：2026-11-16；基点c9906df。此项是显式本地验证基础设施，不挂载生产main、不切换原SQLite页面。默认路径不读取业务配置或凭据，后续官方profile只从显式授权的私密文件读取模型key；默认合成结果不等于真实模型验收，任何本地结果均不等于Linux或生产上线验收。
 
 ## 验证链路与信任来源
 
@@ -74,3 +74,33 @@ apps/api/.venv/bin/python apps/api/tests/integration/mongo_isolation.py --mongod
 父reaper的EPERM处理亦已统一：探测拒绝视为未知存活，TERM与CONT独立尝试，有限窗口内仅重试被拒信号，随后尽力KILL；最终仍须ESRCH。实际owned孤儿瞬时/信号/永久拒绝三项回归加入默认API gate，永久拒绝仍保留root且独立测试兜底回收。另见[未定因失败记录](../evaluations/agent-model-2026-11-16/cleanup-observations.md)，不把修复独立缺陷等同已解释所有历史失败。
 
 清理方法已按自然职责抽出到`tests/integration/fixture_cleanup.py`，固定阶段/类别摘要与Worker私有诊断事件按[回收诊断说明](agent-cleanup-diagnostics.md)接线。坏ACK或损坏诊断后缀不得跳过其余资源关闭；不回显未知字段/异常自由文本。诊断完整、Worker确认、实际回收是不同观察，不互相替代。
+
+## 官方模型整栈增量契约（2026-11-16）
+
+基点1a14ecb。本轮为现有显式真实四题评测增加`--real-model-profile openai-local`，必须同时指定`--real-model --report <new-file>`；默认仍为原qwen-public，不接受任意模型/URL。官方profile只使用AI维护的local-only factory、私密key文件与显式Clash配置，无本地模型部署、目录修改或生产准入。生产runtime须在创建fixture根、读取凭据或启动owned数据库之前拒绝。CLI错误或未显式real模式不得隐式联网。
+
+正式Gateway必须直接接收真实OpenAiResponsesProxy实例，不能把fixture的async包装方法当作proxy，否则is_counted_model_proxy无法识别并遗漏持久累计预占。不修改AI识别规则为duck typing，不复制proxy或重建wire。官方模式不拦截/保存原始供应商响应，直接由正式预算journal提取固定数值、状态和摘要；旧Qwen的合成结果trace与历史报告保持原义。
+
+四题数据、评分、Skill和每run四次模型/四工具/45秒期限保持不变；每题独立MySQL schema/Redis namespace/Mongo文章/TLS/Worker/SDK home，无重试或切模型。每次计数、生成及实际usage仍受[输入预算协议](agent-input-budget.md)约束。新增安全报告明确profile、计数契约与本地tokenizer的区别：官方供应商计数并不宣称本地分词器或不可变权重已经验证。
+
+每题须保存agent_model_calls的受限投影（状态、预占/实际token、wire/count摘要），核对call数量等于run.model_count、逐项observed和输入相等、总预占等于run累计且不超32768、单次不超16384；保留原输出/响应/字节上限。失败仍保存已提交预算和unknown状态，计数/提交不明不重放。API最终答案/来源、合成数据与独立agent语义复核可保存，人工签字维持pending。任何清理不明立即停止后续题，先排空资源。
+
+默认离线回归须检查官方实例原样注入、CLI组合/生产提前拒绝、报告拒绝自由值/未知字段与非法数/摘要，以及缺记录/usage漂移/未知记录不能误判成功。实际有界四题只有显式命令执行，不进入普通CI。此契约先写入再同步coding/判官；Claude Code/claude-ds后续接手须读取。正式整栈、人工语义、Linux及生产门槛分开报告，未验证前不写已通过。
+
+### 已执行结果与复跑
+
+```bash
+DSH_OPENAI_API_KEY_FILE=/absolute/private/api-key \
+DSH_OPENAI_PROXY_URL=http://127.0.0.1:7890 \
+apps/api/.venv/bin/python scripts/test-agent-sdk-stack.py \
+  --mysqld <verified-mysqld> --redis-server <verified-redis-server> \
+  --mongod <verified-mongod> --sdk-runtime <new-prepared-runtime> \
+  --node <project-node-24.17.0> --real-model \
+  --real-model-profile openai-local --report /absolute/new-report.json
+```
+
+最终API710项、AI边界检查、判官独立43项及重复取消时预算线程栅栏注入通过。原六个合成SDK场景通过，再用同一新prepared runtime跑官方四题一次，未修改数据/评分/Skill/额度、无自动重试：模型/工具次数分别3/2、3/2、4/3、3/2，输入累计2707/2549/4080/2806，逐项input等于预占、账本累计完全一致且unknown0。四题端到端结构及独立agent语义复核通过；无资料题只证明服务端固定结果与空来源，不声称观察到模型原始末答。人工仍pending，local-tokenizer与immutable-model两个flag仍false。
+
+修独立review复现的报告误绿：必须核对sum(call.input_bytes)等于run累计且不超262144，不能只检查run自报数。官方直接注入原代理、报告ledger-only；评测函数按自然职责抽到model_evaluation.py，旧入口保留转发。报告按case开始/run.started/结束及异常检查点flush/fsync，无周期ticker；失败预算标pre_cleanup，只表示关闭前快照，读取失败保留已读run数值，不能冒称关闭后最终状态。清理错误停止后续题，重复取消也排空采集线程并关闭fixture。
+
+四组SDK进程均复查ESRCH，四类owned临时根恢复为空，三库已停；16项Worker源与实际prepared runtime/暂存树字节一致。安全报告、逐题语义及源码摘要见[官方整栈实证](../evaluations/agent-official-stack-2026-11-16/README.md)。原SQLite站点3030/8032与正文预览3033继续保留，不迁移页面、不修改业务配置或生产DDL。Linux、已有业务库升级/崩溃、留存回收及生产TLS等独立门槛仍未完成。

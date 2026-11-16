@@ -1,8 +1,8 @@
 """Explicit real SDK/MySQL/Redis/MongoDB/mTLS suite with fixed synthetic data.
 
 Only scripts/test-agent-sdk-stack.py may supply the owned-server attestations.
-Default responses are synthetic; --real-model calls the approved keyless model.
-Not collected by the default unit gate; no business config or credentials.
+Default responses are synthetic; real mode selects an explicit maintained profile.
+Not collected by the default unit gate; no business database/configuration discovery.
 """
 
 import argparse
@@ -22,7 +22,6 @@ import sys
 import tempfile
 import time
 from uuid import UUID, uuid4
-from datetime import datetime, timezone
 from unittest.mock import patch
 
 import httpx
@@ -38,6 +37,7 @@ from test_agent_stack import AgentStackTests, OwnedSessionRedis
 from test_agent_mysql import SocketManager
 from cleanup_diagnostics import CleanupDiagnostics
 from fixture_cleanup import FixtureCleanupMixin
+from model_evaluation import selected_profile, validate_options, safe_error
 from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
 from src.database.mongo.mongodb_manage import MongoDBManager
@@ -197,18 +197,30 @@ class Stream:
 
 
 class Fixture(FixtureCleanupMixin):
-    def __init__(self, mode, *, case=None):
+    def __init__(self, mode, *, case=None, real_model_profile='qwen-public'):
+        if mode != 'real' and real_model_profile != 'qwen-public':
+            raise ValueError('EVALUATION_OPTIONS_INVALID')
         self.mode = mode
         self.case, self.real_proxy, self.model_trace, self.model_id = case, None, [], MODEL
+        self.real_model_profile = None
         if mode == 'real':
+            self.real_model_profile = selected_profile(real_model_profile)
             from src.modules.ai.public import create_keyless_validation_proxy
             from urllib.parse import urlsplit
-            self.real_proxy = create_keyless_validation_proxy()
+            if self.real_model_profile == 'openai-local':
+                from src.modules.ai.local_openai import create_local_openai_proxy
+                from src.modules.ai.openai_responses import OpenAiResponsesProxy
+                self.real_proxy = create_local_openai_proxy()
+                if not isinstance(self.real_proxy, OpenAiResponsesProxy):
+                    raise ValueError('EVALUATION_PROFILE_INVALID')
+            else:
+                self.real_proxy = create_keyless_validation_proxy()
             config = self.real_proxy.config
             parsed = urlsplit(config.base_url)
             # Explicit local test profile only; never enable a personal URL or
             # silently weaken the production Provider host policy.
-            os.environ['AI_PROVIDER_ALLOWED_INSECURE_ORIGINS'] = parsed.scheme + '://' + parsed.netloc
+            if self.real_model_profile == 'qwen-public':
+                os.environ['AI_PROVIDER_ALLOWED_INSECURE_ORIGINS'] = parsed.scheme + '://' + parsed.netloc
             self.model_id = config.model
 
         self.root = Path(tempfile.mkdtemp(prefix='sun-world-sdk-stack-', dir='/private/tmp')).resolve()
@@ -326,7 +338,8 @@ class Fixture(FixtureCleanupMixin):
     def rebuild_application(self):
         self.application = create_blog_qa_application(self.pool, ContentMongo(self.mongo[self.database]),
             auth_manager=self.auth, redis_client=AgentStackTests.redis, worker=self.worker,
-            model_proxy=self.model, worker_credential=self.gateway_secret, bundle_hash=self.bundle_hash,
+            model_proxy=self.real_proxy if self.real_model_profile == 'openai-local' else self.model,
+            worker_credential=self.gateway_secret, bundle_hash=self.bundle_hash,
             model_id=self.model_id, site_origin=self.origin, user_ids=[1], enabled=lambda: True,
             admission_namespace=self.namespace)
         host = FastAPI()
@@ -351,7 +364,9 @@ class Fixture(FixtureCleanupMixin):
         assert body['model'] == self.model_id and body['max_tokens'] == 1024 and body['stream'] is False
         assert body.get('thinking') == {'type': 'disabled'} and 'output_config' not in body
         if self.real_proxy is not None:
-            trace = dict(sequence=self.model_steps, request_keys=sorted(body), duration_ms=None, result=None, error=None)
+            from src.modules.ai.model_proxy import BODY_KEYS
+            trace = dict(sequence=self.model_steps, request_keys=sorted(key for key in BODY_KEYS if key in body),
+                         duration_ms=None, result=None, error=None)
             self.model_trace.append(trace)
             started = time.monotonic()
             try:
@@ -373,7 +388,7 @@ class Fixture(FixtureCleanupMixin):
                 trace['error'] = 'CancelledError'
                 raise
             except Exception as error:
-                trace['error'] = type(error).__name__ + ':' + (str(error) if str(error).startswith('AGENT_') else 'redacted')
+                trace['error'] = safe_error(error)
                 raise
             finally:
                 trace['duration_ms'] = round((time.monotonic() - started) * 1000)
@@ -525,97 +540,10 @@ async def crash(fixture):
     assert fixture.worker_stopped is None
 
 
-async def evaluate_real_model(report_path):
-    fixture_path = ROOT / 'apps/api/tests/fixtures/agent-model-evaluation.json'
-    raw = fixture_path.read_bytes()
-    dataset = json.loads(raw)
-    if (dataset.get('version') != 'sun-world-agent-evaluation/1'
-            or dataset.get('data_kind') != 'synthetic-public-articles' or len(dataset.get('cases', [])) != 4):
-        raise ValueError('Fixed synthetic evaluation dataset required')
-    report = dict(version='sun-world-agent-model-report/1', recorded_at=datetime.now(timezone.utc).isoformat(),
-        dataset_sha256=hashlib.sha256(raw).hexdigest(), dataset=dataset, sdk_version='0.2.2-rc.1',
-        model_id=None, upstream_model_revision='not advertised; alias only', input_tokenizer_verified=False,
-        evaluation_status='running', human_semantic_review='pending', cases=[],
-        implementation_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
-            'apps/api/src/modules/ai/model_proxy.py', 'apps/api/src/modules/agent_runtime/model_budget.py',
-            'apps/api/src/modules/agent_runtime/gateway.py')})
-    # Exclusive creation never overwrites an earlier evaluation or user file.
-    descriptor = os.open(report_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, 'w') as output:
-        def save():
-            output.seek(0)
-            json.dump(report, output, ensure_ascii=False, indent=2, allow_nan=False)
-            output.write('\n')
-            output.truncate()
-            output.flush()
-            os.fsync(output.fileno())
-        save()
-        for case in dataset['cases']:
-            fixture = Fixture('real', case=case)
-            report['model_id'] = fixture.model_id
-            record = dict(id=case['id'], duration_ms=None, pipeline_error=None, cleanup_error=None,
-                actual=None, budget=None, model_trace=fixture.model_trace, checks=None,
-                human_semantic_review='pending')
-            report['cases'].append(record)
-            started, cleanup_error = time.monotonic(), None
-            try:
-                await fixture.start()
-                catalog = json.loads((fixture.runtime / 'tool-catalog.json').read_text())
-                record['bundle_hash'] = fixture.bundle_hash
-                record['skill_sha256'] = next(skill['content_sha256'] for skill in catalog['product_skills']
-                                              if skill['id'] == 'blog-qa' and skill['version'] == '2')
-                record['sdk_profile_sha256'] = hashlib.sha256((fixture.runtime / 'profile.mjs').read_bytes()).hexdigest()
-                stream = Stream(fixture, question=case['question'])
-                run_id = await stream.run_id()
-                await stream.finish()
-                row = await fixture.settled(run_id)
-                response = await fixture.request('GET', '/runs/' + run_id)
-                assert response.status_code == 200
-                state = response.json()['data']
-                answer = state['answer'] or ''
-                record['actual'] = state
-                record['budget'] = {key: row[key] for key in ('model_count', 'tool_count', 'model_input_bytes',
-                    'model_output_tokens_reserved', 'model_response_bytes_reserved', 'model_input_tokens_observed',
-                    'model_output_tokens_observed', 'model_response_bytes_observed', 'model_usage_unknown_count')}
-                record['checks'] = dict(pipeline_completed=state['status'] == 'completed',
-                    source_ids_match=sorted(source['article_id'] for source in state['sources']) == sorted(case['expected_article_ids']),
-                    required_facts_present=all(any(term in answer for term in alternatives)
-                                              for alternatives in case['required_fact_groups']),
-                    forbidden_fragments_absent=not any(term in answer for term in case['forbidden_answer_fragments']),
-                    model_reservations_bounded=(1 <= row['model_count'] <= 4
-                        and row['model_output_tokens_reserved'] == row['model_count'] * 1024
-                        and row['model_response_bytes_reserved'] == row['model_count'] * 65536
-                        and row['model_input_bytes'] <= 262144))
-            except asyncio.CancelledError:
-                report['evaluation_status'] = 'interrupted'
-                record['pipeline_error'] = 'CancelledError'
-                raise
-            except Exception as error:
-                record['pipeline_error'] = type(error).__name__
-            finally:
-                record['duration_ms'] = round((time.monotonic() - started) * 1000)
-                from src.modules.agent_runtime.cleanup import finish_cleanup
-                try:
-                    await finish_cleanup(fixture.close())
-                except Exception as error:
-                    cleanup_error = error
-                    record['cleanup_error'] = type(error).__name__
-                    report['evaluation_status'] = 'cleanup_failed'
-                record['worker_observation'] = fixture.worker_stopped
-                record['cleanup_diagnostics'] = fixture.cleanup_diagnostics.snapshot()
-                record['worker_cleanup_diagnostics'] = fixture.worker_cleanup_diagnostics
-                save()
-            if cleanup_error:
-                raise RuntimeError('Evaluation cleanup unconfirmed; do not start another case') from None
-            passed = record['checks'] is not None and all(record['checks'].values()) and record['pipeline_error'] is None
-            print('Real model evaluation case ' + case['id'] + ': ' + ('structural checks passed' if passed else 'requires review'), flush=True)
-        report['structural_checks_passed'] = all(case['checks'] and all(case['checks'].values())
-            and not case['pipeline_error'] and not case['cleanup_error'] for case in report['cases'])
-        report['evaluation_status'] = 'structural_passed' if report['structural_checks_passed'] else 'structural_failed'
-        save()
-    if not report['structural_checks_passed']:
-        raise RuntimeError('Real model evaluation has failed cases; inspect the synthetic report')
-    print('Real model 4-case structural evaluation passed; semantic/human review and input tokenizer remain pending.', flush=True)
+async def evaluate_real_model(report_path, *, profile='qwen-public'):
+    from model_evaluation import evaluate_real_model as evaluate
+    return await evaluate(report_path, profile=profile, fixture_factory=Fixture,
+                          stream_factory=Stream, root=ROOT)
 
 
 async def main():
@@ -624,9 +552,10 @@ async def main():
     options.add_argument('--interrupt-probe', action='store_true')
     options.add_argument('--real-model', action='store_true')
     parser.add_argument('--report', type=Path)
+    parser.add_argument('--real-model-profile', choices=('qwen-public', 'openai-local'))
     arguments = parser.parse_args()
-    if arguments.real_model != (arguments.report is not None):
-        raise ValueError('Real model evaluation requires a new explicit report path')
+    profile = validate_options(arguments.real_model, arguments.report, arguments.real_model_profile,
+                               interrupt=arguments.interrupt_probe)
     task = asyncio.current_task()
     loop = asyncio.get_running_loop()
     for signum in (signal.SIGINT, signal.SIGTERM):
@@ -634,7 +563,7 @@ async def main():
     AgentStackTests.setUpClass()
     try:
         if arguments.real_model:
-            await evaluate_real_model(arguments.report)
+            await evaluate_real_model(arguments.report, profile=profile)
             return
         if arguments.interrupt_probe:
             fixture = Fixture('hold')
@@ -686,5 +615,5 @@ if __name__ == '__main__':
         print('SDK stack interrupted; owned fixture teardown drained.', file=sys.stderr)
         sys.exit(130)
     except BaseException as error:
-        print('SDK stack failed (' + type(error).__name__ + '); no business configuration was loaded.', file=sys.stderr)
+        print('SDK stack failed: ' + safe_error(error), file=sys.stderr)
         sys.exit(1)
