@@ -1,0 +1,140 @@
+{
+  "version": "sun-world-linux-native-validation/2",
+  "host": {
+    "version": "sun-world-linux-host-result/1",
+    "started": true,
+    "stopped": true,
+    "reason": "completed"
+  },
+  "guest_probe": {
+    "version": "sun-world-linux-guest-probe/1",
+    "platform": "linux",
+    "architecture": "arm64",
+    "node": "v24.17.0",
+    "kernel": "6.8.0-147-generic",
+    "cpu_count": 2,
+    "memory_bytes": 2056134656,
+    "test_host_clock_seed_applied": true,
+    "clock_before_seed_seconds": 0,
+    "cgroup2_mounted": true,
+    "required_controllers": ["memory", "pids"],
+    "namespace_probe_succeeded": true,
+    "network_devices_other_than_loopback": 0,
+    "per_run_isolation_verified": false
+  },
+  "protocol_tests": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "linux_environment_boot_verified": true,
+  "linux_per_run_isolation_verified": false,
+  "supplier_requests": 0,
+  "console_sha256": "c106be32f37e47595ffc916d8a16db85e13bf784567051b0e056348a467a29c1",
+  "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+  "containment": {
+    "version": "sun-world-linux-containment-result/1",
+    "cases": 9,
+    "memory_max_bytes": 536870912,
+    "pids_max": 64,
+    "memory_oom_kills": 4,
+    "pids_limit_events": 1,
+    "cold_pid_abort_signal_observed": true,
+    "cold_pids_limit_events": 2,
+    "unknown_leaf_refused": true,
+    "restarted_factory_refused_live_tree": true,
+    "filesystem_and_capabilities": true,
+    "cross_run_visibility": true,
+    "cancel_tree_reaped": true,
+    "deadline_tree_reaped": true,
+    "cgroups_removed": true,
+    "workspaces_removed": true,
+    "gateway_allow_path_verified": false,
+    "sdk_stack_verified": false
+  },
+  "linux_resource_filesystem_containment_verified": true,
+  "guest_build": {
+    "assets": {
+      "bubblewrap.deb": {
+        "sha256": "dce3a2e5f0302eab717a64fe9c9411fe2d40469e2a7946e0f2ce1420a61025c3",
+        "size": 49976
+      },
+      "kernel": {
+        "sha256": "353bab8eeaad9caf931dd85fd7a7bf8800d2669d759c0369ffaba7abc03a7aff",
+        "size": 18600927
+      },
+      "node.tar.xz": {
+        "sha256": "67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3",
+        "size": 30386680
+      },
+      "original-initrd": {
+        "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+        "size": 29297293
+      },
+      "tini.deb": {
+        "sha256": "4846e4f601a17110f67e0128d41b6003217a2e55cd43286697229d2acd4f8cda",
+        "size": 211920
+      },
+      "ubuntu-base.tar.gz": {
+        "sha256": "a91d5a93010193712d346d761372b7c9db6dfcf093893161c64ca107f05914f2",
+        "size": 29936675
+      }
+    },
+    "derived_initrd": {
+      "sha256": "f5d738179e79e2de0a8f164b1f1575ed92c871f3e6518342ddb390b2826d24d8",
+      "size": 103402799
+    },
+    "expanded_bytes": 299166127,
+    "guest_entries": 3468,
+    "original_initrd": {
+      "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+      "size": 29297293
+    },
+    "payload_sha256": {
+      "apps/agent-worker/src/blog-tools.mjs": "c281cd57aa52cbeb8b51d4447fd0c8943ffae72c191c7e51ea16573788df5178",
+      "apps/agent-worker/src/cleanup-diagnostics.mjs": "5aa035d84fe2b70f20f015103ea45ea5115a7e064994f9ebec5c93f1c4f9ff69",
+      "apps/agent-worker/src/execution-http.mjs": "6231eab4e075a982ed19f5fbefd3920a7cb44630e89afc39939c80ad0cfaf98f",
+      "apps/agent-worker/src/execution-journal.mjs": "ba916ce12a34a28359f616ce40faae53730b8aca7559aae0372e38f3e3a4a484",
+      "apps/agent-worker/src/execution-service.mjs": "06e51a598f60166880b054ec1d973eb2173c1408e019497fcaebe390c028fd03",
+      "apps/agent-worker/src/gateway-client.mjs": "0c0e9c07f630e576c625a74cbc390cdcb1d5e80d0b07e79c9928df5deb02eb77",
+      "apps/agent-worker/src/linux-containment-paths.mjs": "018c810383405071589d1636439398b1dd883f2d0c6f5d7217d2ecfc4500b5a4",
+      "apps/agent-worker/src/linux-launch-exec.mjs": "757f08199ae703677454dea94b7bce36b5887781129cac8a8f753ac3c0a2a322",
+      "apps/agent-worker/src/linux-launcher.mjs": "be3c17dd00780d163b2bea4f2cbc0b1c650cfd3b57d599d7314d764af04b6d18",
+      "apps/agent-worker/src/local-runner.mjs": "4cf884de4a21bedf86378590ae04389a6baf2a84ca77925790a63f1d0ca49bce",
+      "apps/agent-worker/src/process-runner.mjs": "788f482e2bb48aa7b3adbe452c2cf422fa5123fdcabf73e49255ab3975fb421b",
+      "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+      "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+      "apps/agent-worker/src/root-result.mjs": "1f8d54942e2b099b1b04921dd424d582487060aa73ada5e249dcd69a0a4098d8",
+      "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+      "apps/agent-worker/src/sdk-execution.mjs": "59c660727089b15dab781030f4ac1f84ae8e06288f48045d6fe0864ae99ca327",
+      "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+      "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+      "apps/agent-worker/src/verify-tools.mjs": "c8179438605cbb446c59402ebae21f4a7ba6152ecda76ff61102bd71d6666d8e",
+      "apps/agent-worker/src/worker.mjs": "e5a102d0119200047c70599cdcfc1c1937d7b2d1e79f8e168a6beb6881d4081d",
+      "apps/agent-worker/tests/fixtures/controller-crash.mjs": "ab50b60607d3745e2121838a6f424b6c8f9473ed00076622cd36601849589cbb",
+      "apps/agent-worker/tests/fixtures/crash-owned.mjs": "02562d2dbda0a257717c9428d14e169d344c949a9a06f175db880ef8a1991b71",
+      "apps/agent-worker/tests/fixtures/linux-contained.mjs": "1c63c7f154e8a96dd933cd92ac1ff396734ef8da992bd59bd6a02aee5f31b07b",
+      "apps/agent-worker/tests/fixtures/publish-proof.mjs": "dcf01842b13a59a934b1826855bd9cb8b69171fabfa2e85841fedb2fddad9c95",
+      "apps/agent-worker/tests/protocol/execution-crash.test.mjs": "77058ef684302ca68400a3f3cd2f2e6568f4b338914f0d5cdbad997a6a1e4dc7",
+      "apps/agent-worker/tests/protocol/execution-journal.test.mjs": "dd03e07d05926c513e049b832edf4ac50a7c4054b6af781620297db837b76dc8",
+      "apps/agent-worker/tests/protocol/execution-service.test.mjs": "6257b567ef5e1477af3f085ce4f035b8be4f6d4bcac7e31766b754950cacee6f",
+      "apps/agent-worker/tests/protocol/journal-maintenance.test.mjs": "45d10516c94d8646af967576e027bf7e1adadc020786d462c3019cf83c4577ed",
+      "apps/agent-worker/tests/protocol/process-runner.test.mjs": "cb86dfad3cf03a937eaa3bc1abda9d1618d667b600a229302292320c17d856a4",
+      "apps/agent-worker/tests/protocol/test-helpers.mjs": "554d41e006c6c82628509b624a671d04f5c9072e0f57d60a880a83761a3d2ee0",
+      "packages/contracts/agent/rpc-v2.json": "4039d3801d618848ac52112db51022e0a11852b960cce171e29821acfd271f62",
+      "packages/contracts/agent/tool-catalog.json": "934d103f09f295902f3b7cf765ad8ab805137c6ab6e98add95136ba7d7726f38",
+      "scripts/prune-agent-worker-journal.mjs": "49a82d9481456209b9e6b5619abb0f79061a4e2178f843fd8fe50e57e9600117",
+      "tools/agent-linux-vm/containment-suite.mjs": "7758357f7fca2c2427f0d234f38a73581b99fb209e6be4bddd994647136d2af1",
+      "tools/agent-linux-vm/guest-init.sh": "8fa80003806a0b8beeb2c902fe715ef89d36bf3f78e4d122f8382c3b7d228936",
+      "tools/agent-linux-vm/guest-probe.mjs": "07f44595fb2559648857fea780d7d414e458c799e6a91c564eed228431c07d7d",
+      "tools/agent-linux-vm/guest-run.sh": "42e26c731cc797db3d791860cc786115a124e06624dda2cb2441a037b2468a1c"
+    },
+    "version": "sun-world-linux-guest-archive/1"
+  },
+  "kernel_image_sha256": "ce78832564a2705c98d474fe487f11dbd6823eb0c5f5c162ebf1e760089b504f",
+  "owned_groups_gone": true,
+  "private_run_root_removed": true
+}

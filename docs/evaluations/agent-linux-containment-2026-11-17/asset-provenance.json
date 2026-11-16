@@ -1,0 +1,38 @@
+{
+  "version": "sun-world-linux-containment-publisher/1",
+  "contract": {
+    "version": "sun-world-linux-containment-assets/1",
+    "base_assets_sha256": "a6772c16d962316779c7b4c2bdbad5366c057ad8012a646593c42398ebc51545",
+    "assets": [
+      {
+        "filename": "bubblewrap.deb",
+        "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/bubblewrap/bubblewrap_0.9.0-1ubuntu0.3_arm64.deb",
+        "sha256": "dce3a2e5f0302eab717a64fe9c9411fe2d40469e2a7946e0f2ce1420a61025c3",
+        "max_bytes": 1048576,
+        "publisher_index": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-security/main/binary-arm64/Packages.xz",
+        "version": "0.9.0-1ubuntu0.3"
+      }
+    ]
+  },
+  "publisher_index_sha256": "b37e227f733d3ba41b6f79f8da0c5631efb54e4732dbe238efd53137556771bb",
+  "publisher_index_fields": {
+    "package": "bubblewrap",
+    "version": "0.9.0-1ubuntu0.3",
+    "size": 49976,
+    "sha256": "dce3a2e5f0302eab717a64fe9c9411fe2d40469e2a7946e0f2ce1420a61025c3"
+  },
+  "publisher_https_sha_checked": true,
+  "independent_gpg_signature_verified": false,
+  "codec": {
+    "package": "zstandard",
+    "version": "0.25.0",
+    "already_locked_and_installed": true,
+    "new_installation": false,
+    "data_tar_declared_bytes": 122880,
+    "frame_window_bytes": 122880,
+    "max_declared_and_window_bytes": 2097152,
+    "single_frame": true,
+    "trailing_bytes_allowed": false
+  },
+  "host_archive_tree_extraction": false
+}

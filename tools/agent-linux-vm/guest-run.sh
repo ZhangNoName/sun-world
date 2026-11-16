@@ -27,4 +27,8 @@ node --test --test-reporter=tap \
   apps/agent-worker/tests/protocol/process-runner.test.mjs \
   apps/agent-worker/tests/protocol/execution-crash.test.mjs
 status=$?
+if [ "$status" -eq 0 ] && [ "${sw_containment:-0}" = 1 ]; then
+  node tools/agent-linux-vm/containment-suite.mjs
+  status=$?
+fi
 exit "$status"

@@ -1,0 +1,14 @@
+{
+  "version": "sun-world-linux-containment-assets/1",
+  "base_assets_sha256": "a6772c16d962316779c7b4c2bdbad5366c057ad8012a646593c42398ebc51545",
+  "assets": [
+    {
+      "filename": "bubblewrap.deb",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/bubblewrap/bubblewrap_0.9.0-1ubuntu0.3_arm64.deb",
+      "sha256": "dce3a2e5f0302eab717a64fe9c9411fe2d40469e2a7946e0f2ce1420a61025c3",
+      "max_bytes": 1048576,
+      "publisher_index": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-security/main/binary-arm64/Packages.xz",
+      "version": "0.9.0-1ubuntu0.3"
+    }
+  ]
+}

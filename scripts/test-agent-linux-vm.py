@@ -161,7 +161,7 @@ def valid_host(value):
                                'startup_failed', 'guest_error'})
 
 
-def verify_console(raw, control):
+def verify_console(raw, control, *, containment=False):
     host = only_json(control, 'SW_LINUX_HOST_RESULT')
     guest = only_json(raw, 'SW_LINUX_GUEST_RESULT')
     probe = only_json(raw, 'SW_LINUX_PROBE')
@@ -200,11 +200,33 @@ def verify_console(raw, control):
     values = {name: int(rows[0]) for name, rows in counts.items()}
     if values != {'tests': 49, 'pass': 49, 'fail': 0, 'cancelled': 0, 'skipped': 0, 'todo': 0}:
         fail()
-    return {'version': 'sun-world-linux-native-validation/1', 'host': host, 'guest_probe': probe,
+    result = {'version': 'sun-world-linux-native-validation/1', 'host': host, 'guest_probe': probe,
         'protocol_tests': values, 'linux_environment_boot_verified': True,
         'linux_per_run_isolation_verified': False, 'supplier_requests': 0,
         'console_sha256': hashlib.sha256(raw).hexdigest(),
         'host_control_sha256': hashlib.sha256(control).hexdigest()}
+    if containment:
+        proof = only_json(raw, 'SW_LINUX_CONTAINMENT_RESULT')
+        expected = {'version': 'sun-world-linux-containment-result/1', 'cases': 9,
+            'memory_max_bytes': 536870912, 'pids_max': 64,
+            'filesystem_and_capabilities': True, 'cross_run_visibility': True,
+            'cancel_tree_reaped': True, 'deadline_tree_reaped': True,
+            'cgroups_removed': True, 'workspaces_removed': True,
+            'cold_pid_abort_signal_observed': True,
+            'unknown_leaf_refused': True, 'restarted_factory_refused_live_tree': True,
+            'gateway_allow_path_verified': False, 'sdk_stack_verified': False}
+        counters = {'memory_oom_kills', 'pids_limit_events', 'cold_pids_limit_events'}
+        if set(proof) != set(expected) | counters:
+            fail()
+        if any(type(proof[k]) is not type(value) or proof[k] != value for k, value in expected.items()):
+            fail()
+        if any(type(proof[k]) is not int or not 1 <= proof[k] <= 2147483647 for k in counters):
+            fail()
+        result.update(version='sun-world-linux-native-validation/2', containment=proof,
+            linux_resource_filesystem_containment_verified=True)
+    elif any(line.startswith(b'SW_LINUX_CONTAINMENT_RESULT') for line in raw.splitlines()):
+        fail()
+    return result
 
 
 def kernel_bytes(path, expected):
@@ -234,6 +256,7 @@ def main(argv=None):
     parser = Arguments(description=__doc__, allow_abbrev=False)
     parser.add_argument('--cache', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
+    parser.add_argument('--containment', action='store_true')
     arguments = parser.parse_args(argv)
     try:
         if (sys.platform != 'darwin' or not arguments.cache.is_absolute()
@@ -247,7 +270,8 @@ def main(argv=None):
                     cleanup_confirmed=lambda: all(confirmations.values())) as temporary:
                 run = Path(temporary)
                 execute([sys.executable, str(ROOT / 'scripts/prepare-agent-linux-guest.py'),
-                    '--cache', str(arguments.cache), '--output', str(run / 'guest.initrd')],
+                    '--cache', str(arguments.cache), '--output', str(run / 'guest.initrd'),
+                    *(['--containment'] if arguments.containment else [])],
                     state=state, directory=run, timeout=90, confirmations=confirmations)
                 build = json.loads((run / 'guest.initrd.manifest.json').read_text())
                 # The builder has verified the original compressed kernel bytes.
@@ -265,7 +289,8 @@ def main(argv=None):
                     str(ROOT / 'tools/agent-linux-vm/entitlements.plist'), str(run / 'host')],
                     state=state, directory=run, timeout=15, confirmations=confirmations)
                 try:
-                    console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd')],
+                    console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
+                        *(['containment'] if arguments.containment else [])],
                         state=state, directory=run, timeout=110, is_vm=True, confirmations=confirmations)
                 finally:
                     log = run / 'console.log'
@@ -275,7 +300,7 @@ def main(argv=None):
                             target.write(log.read_bytes())
                             target.flush()
                             os.fsync(target.fileno())
-                result = verify_console(console, control)
+                result = verify_console(console, control, containment=arguments.containment)
                 result['guest_build'] = build
                 result['kernel_image_sha256'] = hashlib.sha256(kernel).hexdigest()
                 result['owned_groups_gone'] = confirmations['groups_gone']

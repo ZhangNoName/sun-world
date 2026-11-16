@@ -28,4 +28,8 @@ for name in proc sys dev; do
 done
 "$BB" mkdir -p /newroot/sys/fs/cgroup
 "$BB" mount -t cgroup2 none /newroot/sys/fs/cgroup
+if [ "${sw_containment:-0}" = 1 ]; then
+  # This is the disposable guest's own cgroup root, never a host path.
+  printf '+memory +pids' >/newroot/sys/fs/cgroup/cgroup.subtree_control
+fi
 exec "$BB" switch_root /newroot /usr/local/bin/tini -- /bin/sh /work/run-guest.sh

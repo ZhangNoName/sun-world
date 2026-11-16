@@ -1,5 +1,9 @@
 ﻿## Current Handoff
 
+## 2026-11-17 Linux逐任务资源/文件组件
+
+已实现真实cgroup2/bubblewrap/ProcessRunner启动与同步containment所有权、整树stop-release及预spawn未知保槽；37源/六资产原生49协议零skip+九情景通过，真实512MiB OOM/64task EAGAIN、跨run FS/7ns/caps、setsid取消/deadline、未知/重启实例拒旧树均核。API818/31.119秒、Worker116/9.318秒与独立复审通过；P2晚校验无效handle/半写proof已修，失败历史与cold SIGABRT不误作UV初因。[协议](development/agent-linux-containment.md)、[证据](evaluations/agent-linux-containment-2026-11-17/README.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。下一步限定合法网关及真实SDK在Linux运行/容量；完整隔离和生产仍关闭。博客04同题补所有权，1280/390预览29重点，未发布；现有站点/80dirty及旧handoff210加1删保留，只中文本地提交不推送部署。人工/版本生产策略/TLS/目标库备份等仍独立待，P1/A–D未整体完成。
+
 ## 2026-11-17 本机原生Linux环境验证
 
 已在本机自有VZ临时VM实际运行Linux6.8/Node24.17、cgroup2/四namespace及原49项协议零skip，host独立确认正常停机/组gone/根删除；另真实双SIGTERM目标130且清理通过。API814、独立18通过；前四次开发失败保留，VM boot通过不代表逐run memory/PID/filesystem/合法API网络策略已验收。[协议](development/agent-linux-vm.md)、[证据](evaluations/agent-linux-vm-2026-11-17/README.md)、[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。Clash7890可连接，官方目录只读核验成功、生成0；原本地OpenAI页面3030/8032及预览3033保持200，无需本地模型。博客04补环境分界并1280/390预览，未发布；原80dirty/主handoff210加1删保留，不推送部署。下一步Linux逐run隔离；人工四题pending、版本生产策略/TLS/目标库备份等仍独立待，P1/A–D未整体完成。

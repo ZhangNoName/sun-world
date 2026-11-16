@@ -2,6 +2,8 @@
 
 ## 2026-11-12 Local existing-site blog QA
 
+2026-11-17逐任务增量：新增显式Linux cgroup2/bubblewrap launchSpec与同步登记/整树stop-release生命周期，原生37源/六资产验证九情景及原49协议零skip；真实512MiB OOM4、64项task上限EAGAIN/pids事件、只读runtime/跨run文件与7namespace隔离、权限清空、取消/deadline setsid后代、未知叶子与新实例拒接旧树均通过。API818/31.119秒、Worker116/9.318秒与独立复审通过，两个P2（无效handle晚校验、fixture半写可见）已修。失败历史/cold PID SIGABRT观察保持，旧第二次失败精确初因未知；见[协议](development/agent-linux-containment.md)与[证据](evaluations/agent-linux-containment-2026-11-17/README.md)。网关允许路径与真实SDK在Linux仍未验收，不把无NIC算网络完成；生产/人工/版本/TLS/目标库备份门槛保持。博客04更新并1280/390预览、未发布；原80dirty与旧handoff改动保留，不推送部署。
+
 2026-11-17增量：本机已实际通过原生Apple Virtualization的一次性Linux arm64环境验证，无需安装Docker。固定Linux6.8.0-147/Node24.17、cgroup2与四namespace探针、49项原协议零skip及正常停机清理通过；另真实双SIGTERM返回130，host/组/根均确认清理。API814项与独立18项通过，前四次开发失败未抹去。见[环境说明](development/agent-linux-vm.md)与[安全实证](evaluations/agent-linux-vm-2026-11-17/README.md)。这只补Linux环境缺口，逐run memory/PID/filesystem/允许API的网络隔离仍未验收；无guest NIC/共享盘/宿主目录或业务凭据。本机Clash7890可连接，原profile只读官方目录再次成功、生成0；不在guest中调用模型。旧安装位不可用报告保持为历史观察，不能再把它当“本机无法运行Linux”的结论。当前页面仍是原本地SQLite，人工/版本生产策略/TLS/目标库备份等继续待验收；未推送部署。
 
 `zxy/dsh-platform-foundation` has an explicitly local account/blog integration via

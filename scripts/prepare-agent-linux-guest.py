@@ -16,6 +16,7 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'tools/agent-linux-vm/assets.json'
+CONTAINMENT_ASSETS = ROOT / 'tools/agent-linux-vm/containment-assets.json'
 SIZES = {'ubuntu-base.tar.gz': 134217728, 'kernel': 134217728, 'original-initrd': 134217728,
          'node.tar.xz': 134217728, 'tini.deb': 1048576}
 WORKER = ('blog-tools', 'cleanup-diagnostics', 'execution-http', 'execution-journal', 'execution-service',
@@ -31,6 +32,12 @@ SOURCES = tuple('apps/agent-worker/src/' + name + '.mjs' for name in WORKER) + (
 GUEST = {'tools/agent-linux-vm/guest-init.sh': ('init', 0o755),
          'tools/agent-linux-vm/guest-run.sh': ('sw-root/work/run-guest.sh', 0o755),
          'tools/agent-linux-vm/guest-probe.mjs': ('sw-root/work/probe.mjs', 0o644)}
+CONTAINMENT_SOURCES = ('apps/agent-worker/src/linux-launcher.mjs',
+    'apps/agent-worker/src/linux-launch-exec.mjs',
+    'apps/agent-worker/src/linux-containment-paths.mjs',
+    'apps/agent-worker/tests/fixtures/linux-contained.mjs',
+    'apps/agent-worker/tests/fixtures/publish-proof.mjs',
+    'tools/agent-linux-vm/containment-suite.mjs')
 SECRET = re.compile(rb'sk-[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*(?:PRIVATE KEY|CERTIFICATE)-----|Bearer[ \t]+[A-Za-z0-9_.~+/-]{24,}')
 FAILED = 'AGENT_LINUX_GUEST_PREPARE_FAILED'
 
@@ -196,6 +203,25 @@ def tini_archive(raw):
     return data[0]
 
 
+def bubblewrap_archive(raw):
+    data = tini_archive(raw)
+    if data.startswith(b'\x28\xb5\x2f\xfd'):
+        # Only the explicit additional suite needs the repository's locked
+        # codec; original five-asset/default construction remains stdlib-only.
+        import zstandard
+        if zstandard.__version__ != '0.25.0':
+            fail()
+        parameters = zstandard.get_frame_parameters(data)
+        maximum = 2 * 1024**2
+        if not 0 < parameters.content_size <= maximum or not 0 < parameters.window_size <= maximum:
+            fail()
+        data = zstandard.ZstdDecompressor(max_window_size=2048).decompress(data,
+            max_output_size=maximum, read_across_frames=False, allow_extra_data=False)
+        if len(data) != parameters.content_size:
+            fail()
+    return data
+
+
 class Cpio:
     def __init__(self, stream):
         self.stream, self.paths, self.inode = stream, {}, 0
@@ -225,7 +251,7 @@ class Cpio:
         self.add('TRAILER!!!', stat.S_IFREG)
 
 
-def load_inputs(cache):
+def load_inputs(cache, *, containment=False):
     info = os.lstat(cache)
     if not Path(cache).is_absolute() or not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
         fail()
@@ -242,8 +268,23 @@ def load_inputs(cache):
         if sha(raw) != entry['sha256']:
             fail()
         assets[name], metadata[name] = raw, {'sha256': sha(raw), 'size': len(raw)}
+    if containment:
+        extra = json.loads(read_owned(CONTAINMENT_ASSETS, 65536))
+        if (set(extra) != {'version', 'base_assets_sha256', 'assets'}
+                or extra['version'] != 'sun-world-linux-containment-assets/1'
+                or extra['base_assets_sha256'] != sha(read_owned(ASSETS, 65536))
+                or type(extra['assets']) is not list or len(extra['assets']) != 1):
+            fail()
+        entry = extra['assets'][0]
+        if (entry['filename'] != 'bubblewrap.deb' or entry['max_bytes'] != 1048576
+                or not re.fullmatch('[0-9a-f]{64}', entry['sha256'])):
+            fail()
+        raw = read_owned(Path(cache) / 'bubblewrap.deb', 1048576, private=True)
+        if sha(raw) != entry['sha256']:
+            fail()
+        assets['bubblewrap.deb'], metadata['bubblewrap.deb'] = raw, {'sha256': sha(raw), 'size': len(raw)}
     payload = {}
-    for name in SOURCES:
+    for name in SOURCES + (CONTAINMENT_SOURCES if containment else ()):
         raw = read_source(name)
         if SECRET.search(raw):
             fail()
@@ -271,11 +312,11 @@ class HashedOutput:
         return len(raw)
 
 
-def build(cache, output):
+def build(cache, output, *, containment=False):
     if not Path(output).is_absolute():
         fail()
     manifest_path = Path(str(output) + '.manifest.json')
-    assets, metadata, payload = load_inputs(cache)
+    assets, metadata, payload = load_inputs(cache, containment=containment)
     if os.path.lexists(output) or os.path.lexists(manifest_path):
         fail()
     descriptor = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
@@ -290,8 +331,11 @@ def build(cache, output):
                 writer.directory('sw-root')
                 for row in tar_entries(assets['ubuntu-base.tar.gz'], budget):
                     writer.add('sw-root/' + row[0], *row[1:])
-                for archive, member, destination in ((assets['node.tar.xz'], 'node-v24.17.0-linux-arm64/bin/node', 'sw-root/usr/local/bin/node'),
-                        (tini_archive(assets['tini.deb']), 'usr/bin/tini-static', 'sw-root/usr/local/bin/tini')):
+                programs = [(assets['node.tar.xz'], 'node-v24.17.0-linux-arm64/bin/node', 'sw-root/usr/local/bin/node'),
+                            (tini_archive(assets['tini.deb']), 'usr/bin/tini-static', 'sw-root/usr/local/bin/tini')]
+                if containment:
+                    programs.append((bubblewrap_archive(assets['bubblewrap.deb']), 'usr/bin/bwrap', 'sw-root/usr/local/bin/bwrap'))
+                for archive, member, destination in programs:
                     chosen = list(tar_entries(archive, budget, selected=member))
                     if len(chosen) != 1:
                         fail()
@@ -332,9 +376,10 @@ def main(argv=None):
     parser = Arguments(description=__doc__, allow_abbrev=False)
     parser.add_argument('--cache', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--containment', action='store_true')
     arguments = parser.parse_args(argv)
     try:
-        build(arguments.cache, arguments.output)
+        build(arguments.cache, arguments.output, containment=arguments.containment)
         print('AGENT_LINUX_GUEST_PREPARED')
         return 0
     except BaseException as error:

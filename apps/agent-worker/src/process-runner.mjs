@@ -87,14 +87,50 @@ export class ProcessRunner {
     } catch {
       throw failure(diagnostics)
     }
-    let child
+    let child, containment
+    async function containmentStep(method, operation) {
+      if (containment === undefined) return
+      try {
+        if (
+          containment === null ||
+          typeof containment.stop !== 'function' ||
+          typeof containment.release !== 'function'
+        )
+          throw failure(diagnostics)
+        await containment[method]()
+      } catch (error) {
+        const stage = `containment_${method}`
+        diagnostics.record(operation, stage, cleanupErrorCategory(error, stage))
+        throw failure(diagnostics)
+      }
+    }
     try {
       await Promise.all(
         ['home', 'tmp', 'cwd'].map((name) =>
           mkdir(join(workspace, name), { mode: 0o700 })
         )
       )
-      const spec = await this.#launch({ workspace, run })
+      const spec = await this.#launch({
+        workspace,
+        run,
+        registerContainment: (owned) => {
+          if (containment !== undefined && containment !== owned)
+            throw failure(diagnostics)
+          containment = owned
+        },
+      })
+      if (spec.containment !== undefined) {
+        if (containment !== undefined && containment !== spec.containment)
+          throw failure(diagnostics)
+        containment = spec.containment
+      }
+      if (
+        containment !== undefined &&
+        (containment === null ||
+          typeof containment.stop !== 'function' ||
+          typeof containment.release !== 'function')
+      )
+        throw failure(diagnostics)
       const raw = Buffer.from(canonical(await this.#input(run, workspace)))
       if (
         !isAbsolute(spec.command) ||
@@ -190,6 +226,9 @@ export class ProcessRunner {
         if (finalizing) return finalizing
         finalizing = (async () => {
           const result = await exited
+          // A namespace/session descendant may have left the original POSIX
+          // group. The trusted launcher owns the additional containment tree.
+          await containmentStep('stop', operation)
           // A parent can exit while descendants remain in the owned group.
           if (alive(child.pid, diagnostics, operation))
             await killOwned(operation)
@@ -197,6 +236,7 @@ export class ProcessRunner {
             diagnostics.record(operation, 'group_present', 'group_present')
             throw failure(diagnostics)
           }
+          await containmentStep('release', operation)
           try {
             await fs.rm(workspace, { recursive: true, force: true })
           } catch (error) {
@@ -224,6 +264,7 @@ export class ProcessRunner {
         if (stopTask) return stopTask
         stopping = true
         stopTask = (async () => {
+          await containmentStep('stop', 'stop')
           await killOwned('stop')
           await finalize('stop')
         })()
@@ -243,14 +284,60 @@ export class ProcessRunner {
       return { done, stop, cleanupDiagnostics: () => diagnostics.snapshot() }
     } catch {
       if (!child?.pid) {
+        async function cleanupPrepared() {
+          await containmentStep('stop', 'start')
+          await containmentStep('release', 'start')
+          try {
+            await fs.rm(workspace, { recursive: true, force: true })
+          } catch (error) {
+            diagnostics.record(
+              'start',
+              'workspace_remove',
+              cleanupErrorCategory(error, 'workspace_remove')
+            )
+            throw failure(diagnostics)
+          }
+        }
         try {
-          await fs.rm(workspace, { recursive: true, force: true })
-        } catch (error) {
-          diagnostics.record(
-            'start',
-            'workspace_remove',
-            cleanupErrorCategory(error, 'workspace_remove')
+          await cleanupPrepared()
+        } catch {
+          // Rejection tells ExecutionService it can release the slot. A failed
+          // pre-spawn teardown must instead retain a retryable owned handle.
+          let rejected,
+            stopped = false,
+            task
+          const done = new Promise((_, reject) => {
+            rejected = reject
+          })
+          void done.catch(() => {})
+          const stop = async () => {
+            if (stopped) return
+            if (task) return task
+            task = (async () => {
+              await cleanupPrepared()
+              stopped = true
+              clearTimeout(timer)
+              diagnostics.recovered('start')
+              rejected(diagnostics.error('AGENT_EXECUTION_FAILED'))
+            })()
+            try {
+              await task
+            } finally {
+              task = undefined
+            }
+          }
+          const timer = setTimeout(
+            () => {
+              void stop().catch(() => {})
+            },
+            Math.max(1, Date.parse(run.deadline) - Date.now())
           )
+          timer.unref()
+          return {
+            done,
+            stop,
+            cleanupDiagnostics: () => diagnostics.snapshot(),
+          }
         }
       }
       // Once spawn succeeded this method returns a handle, so no owned process

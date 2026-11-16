@@ -34,7 +34,7 @@ sdk-execution是受信任父适配进程：只有它持有网关服务身份与T
 
 ProcessRunner仅接收宿主提供的可信launchSpec，不从run构造命令、argv、环境或路径。它创建私有home/tmp/cwd，以最小环境、独立进程组启动；stdin传临时运行配置，stdout/stderr不保存转录或凭据。总deadline触发停止，TERM后仍存活则KILL；父进程退出但子进程仍在时同样回收整个owned group。
 
-done只在owned group已不存在并删除workspace后结算。kill/rm无法确认时done不伪装完成，stop拒绝且可重试，服务继续保留容量。此POSIX管理不等于Linux PID/memory/network隔离；生产仍必须提供经验证的隔离launcher，不能以profile中没有shell工具替代OS限制。
+done只在owned group已不存在并删除workspace后结算。kill/rm无法确认时done不伪装完成，stop拒绝且可重试，服务继续保留容量。新增可选containment在准备时同步登记，先整树stop、确认POSIX组gone、release后才删目录；准备失败但清理未知同样保留pending句柄与槽。实际[Linux工厂与九情景](agent-linux-containment.md)已补memory/PID/filesystem组件，原纯POSIX路径不冒认Linux隔离；合法网关通道与真实SDK仍须独立验收，不能以profile中没有shell工具替代OS限制。
 
 createSdkWorker显式组合固定运行资源、ProcessRunner、ExecutionService与mTLS factory，必须注入launchSpec/peer policy/两方向身份/TLS。返回server/service/close，仍不自动监听。尚无生产CLI、镜像、服务签发或公网入口。
 

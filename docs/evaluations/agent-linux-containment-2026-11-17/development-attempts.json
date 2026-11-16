@@ -1,0 +1,475 @@
+{
+  "version": "sun-world-linux-containment-development/1",
+  "attempts": [
+    {
+      "attempt": 1,
+      "note": "Build failed before guest: publisher security deb contains data.tar.zst; default Python tarfile cannot read it.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": false
+    },
+    {
+      "attempt": 2,
+      "note": "Original 49 passed; contained execution failed before phase observations existed. Exact initial cause remains unknown.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": true,
+      "console_bundle_sha256": "aea13fa9ff91f22667257bb1a2ca23d9eace2a60c93265dd86d748d12c1d9c00",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [],
+      "observed_target_release": [],
+      "containment_result_frames": [],
+      "cold_control": []
+    },
+    {
+      "attempt": 3,
+      "note": "Six containment cases passed after added phase writes; not proof that earlier failure was resolved or atomic fixture safe.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": true,
+      "console_bundle_sha256": "ceb4d219cea39590d4445eeb3cf6ab44cc43ded7941eaae1d57b0a5ef265b871",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [
+        "filesystem_start",
+        "first_target_observed",
+        "second_target_completed",
+        "memory_start",
+        "pids_start",
+        "cancel_start",
+        "deadline_start"
+      ],
+      "observed_target_release": [
+        {
+          "mode": "filesystem",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "hold",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "oom",
+          "phase": 1,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        }
+      ],
+      "containment_result_frames": [
+        {
+          "version": "sun-world-linux-containment-result/1",
+          "cases": 6,
+          "memory_max_bytes": 536870912,
+          "pids_max": 64,
+          "memory_oom_kills": 4,
+          "pids_limit_events": 1,
+          "filesystem_and_capabilities": true,
+          "cross_run_visibility": true,
+          "cancel_tree_reaped": true,
+          "deadline_tree_reaped": true,
+          "cgroups_removed": true,
+          "workspaces_removed": true,
+          "gateway_allow_path_verified": false,
+          "sdk_stack_verified": false
+        }
+      ],
+      "cold_control": []
+    },
+    {
+      "attempt": 4,
+      "note": "Controlled omission of early async PID phase write reproduced failure localized to PID saturation; no target proof, empty reaped tree.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": true,
+      "console_bundle_sha256": "4bf6ff07dd9dc14d00c49903f39bbbcccdaee19c0af8336a1896ea8fdbded534",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [
+        "filesystem_start",
+        "first_target_observed",
+        "second_target_completed",
+        "memory_start",
+        "pids_start"
+      ],
+      "observed_target_release": [
+        {
+          "mode": "filesystem",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "hold",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "oom",
+          "phase": 1,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "pids",
+          "phase": 0,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        }
+      ],
+      "containment_result_frames": [],
+      "cold_control": []
+    },
+    {
+      "attempt": 5,
+      "note": "Cold child SIGABRT observed but fixed thread text classifier false. Over-specific diagnostic assertion rejected success; no libuv cause claimed.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": true,
+      "console_bundle_sha256": "4a5144838a87bd6b8a140d28b49d9373d0f2ffb9825542caf19cc50cf87cc368",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [
+        "filesystem_start",
+        "first_target_observed",
+        "second_target_completed",
+        "memory_start"
+      ],
+      "observed_target_release": [
+        {
+          "mode": "filesystem",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "hold",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "oom",
+          "phase": 1,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "diagnose-pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        }
+      ],
+      "containment_result_frames": [],
+      "cold_control": [
+        {
+          "cold_target_aborted": true,
+          "cold_target_exit_code": null,
+          "late_thread_creation_error": false
+        }
+      ]
+    },
+    {
+      "attempt": 6,
+      "note": "Seven cases with atomic proof publishing passed; no gateway or SDK claim.",
+      "accepted_as_final_source_validation": false,
+      "guest_started": true,
+      "console_bundle_sha256": "d7a9d2e87bbab90746b136bece1b79b02b2b60c8260981210c52e57bcbf1b8ff",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [
+        "filesystem_start",
+        "first_target_observed",
+        "second_target_completed",
+        "memory_start",
+        "pids_start",
+        "cancel_start",
+        "deadline_start"
+      ],
+      "observed_target_release": [
+        {
+          "mode": "filesystem",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "hold",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "oom",
+          "phase": 1,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "diagnose-pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        }
+      ],
+      "containment_result_frames": [
+        {
+          "version": "sun-world-linux-containment-result/1",
+          "cases": 7,
+          "memory_max_bytes": 536870912,
+          "pids_max": 64,
+          "memory_oom_kills": 4,
+          "pids_limit_events": 1,
+          "cold_pid_abort_signal_observed": true,
+          "cold_pids_limit_events": 2,
+          "filesystem_and_capabilities": true,
+          "cross_run_visibility": true,
+          "cancel_tree_reaped": true,
+          "deadline_tree_reaped": true,
+          "cgroups_removed": true,
+          "workspaces_removed": true,
+          "gateway_allow_path_verified": false,
+          "sdk_stack_verified": false
+        }
+      ],
+      "cold_control": [
+        {
+          "cold_target_aborted": true,
+          "cold_target_exit_code": null,
+          "late_thread_creation_error": false,
+          "resource_unavailable_text": false,
+          "standard_system_error_text": false,
+          "stderr_bytes_captured": 0
+        }
+      ]
+    },
+    {
+      "attempt": 7,
+      "note": "Final nine cases include refusal of unknown leaf and live tree by restarted factory; all stop/removal predicates verified.",
+      "accepted_as_final_source_validation": true,
+      "guest_started": true,
+      "console_bundle_sha256": "864f0150c1951c1bd6865b7bcfea99708b879aa4f0ab6e7e8d77ebd47d5139a0",
+      "host": {
+        "version": "sun-world-linux-host-result/1",
+        "started": true,
+        "stopped": true,
+        "reason": "completed"
+      },
+      "protocol_pass_footers": [49],
+      "observed_phases": [
+        "filesystem_start",
+        "first_target_observed",
+        "second_target_completed",
+        "memory_start",
+        "pids_start",
+        "cancel_start",
+        "deadline_start"
+      ],
+      "observed_target_release": [
+        {
+          "mode": "filesystem",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "hold",
+          "phase": 6,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "oom",
+          "phase": 1,
+          "proof_observed": false,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "diagnose-pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "pids",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        },
+        {
+          "mode": "escape",
+          "phase": 1,
+          "proof_observed": true,
+          "populated": 0,
+          "pids_current": 0
+        }
+      ],
+      "containment_result_frames": [
+        {
+          "version": "sun-world-linux-containment-result/1",
+          "cases": 9,
+          "memory_max_bytes": 536870912,
+          "pids_max": 64,
+          "memory_oom_kills": 4,
+          "pids_limit_events": 1,
+          "cold_pid_abort_signal_observed": true,
+          "cold_pids_limit_events": 2,
+          "unknown_leaf_refused": true,
+          "restarted_factory_refused_live_tree": true,
+          "filesystem_and_capabilities": true,
+          "cross_run_visibility": true,
+          "cancel_tree_reaped": true,
+          "deadline_tree_reaped": true,
+          "cgroups_removed": true,
+          "workspaces_removed": true,
+          "gateway_allow_path_verified": false,
+          "sdk_stack_verified": false
+        }
+      ],
+      "cold_control": [
+        {
+          "cold_target_aborted": true,
+          "cold_target_exit_code": null,
+          "late_thread_creation_error": false,
+          "resource_unavailable_text": false,
+          "standard_system_error_text": false,
+          "stderr_bytes_captured": 0
+        }
+      ]
+    }
+  ],
+  "pre_attempt_partial_source_snapshots": {
+    "1": {
+      "apps/agent-worker/src/linux-launcher.mjs": "be3c17dd00780d163b2bea4f2cbc0b1c650cfd3b57d599d7314d764af04b6d18",
+      "apps/agent-worker/src/linux-launch-exec.mjs": "757f08199ae703677454dea94b7bce36b5887781129cac8a8f753ac3c0a2a322",
+      "apps/agent-worker/src/linux-containment-paths.mjs": "018c810383405071589d1636439398b1dd883f2d0c6f5d7217d2ecfc4500b5a4",
+      "apps/agent-worker/src/process-runner.mjs": "238f5d999c9581cf4e9e0ea30b1061cae0cf9c04d35d27490caff6fd2a7cfb34",
+      "apps/agent-worker/src/cleanup-diagnostics.mjs": "5aa035d84fe2b70f20f015103ea45ea5115a7e064994f9ebec5c93f1c4f9ff69",
+      "tools/agent-linux-vm/containment-suite.mjs": "5b86080abd601e31444d221125b9764b33a53329f6cb1033758037df7cd6da22",
+      "apps/agent-worker/tests/fixtures/linux-contained.mjs": "e93a109b6a7372740abf206b98a4762dbbb811b504dfbfdf6864616a7975db70",
+      "scripts/prepare-agent-linux-guest.py": "8b0a6f1eb75ba246b940e9b242381dc00b89a723cb1bb3e468e4669f3809bef2",
+      "scripts/test-agent-linux-vm.py": "f8e2fe79dfb1f759c3d63a565461dd6a461f46d69060dbb84e17076848748483",
+      "tools/agent-linux-vm/Host.swift": "cfc8b31b09ac6a80bbed19cb3298f6571193b40d7fc27babccc8b7f5e9812745",
+      "tools/agent-linux-vm/guest-init.sh": "8fa80003806a0b8beeb2c902fe715ef89d36bf3f78e4d122f8382c3b7d228936",
+      "tools/agent-linux-vm/guest-run.sh": "42e26c731cc797db3d791860cc786115a124e06624dda2cb2441a037b2468a1c"
+    },
+    "2": {
+      "apps/agent-worker/src/linux-launcher.mjs": "be3c17dd00780d163b2bea4f2cbc0b1c650cfd3b57d599d7314d764af04b6d18",
+      "apps/agent-worker/src/linux-launch-exec.mjs": "757f08199ae703677454dea94b7bce36b5887781129cac8a8f753ac3c0a2a322",
+      "apps/agent-worker/src/linux-containment-paths.mjs": "018c810383405071589d1636439398b1dd883f2d0c6f5d7217d2ecfc4500b5a4",
+      "apps/agent-worker/src/process-runner.mjs": "238f5d999c9581cf4e9e0ea30b1061cae0cf9c04d35d27490caff6fd2a7cfb34",
+      "apps/agent-worker/src/cleanup-diagnostics.mjs": "5aa035d84fe2b70f20f015103ea45ea5115a7e064994f9ebec5c93f1c4f9ff69",
+      "tools/agent-linux-vm/containment-suite.mjs": "5b86080abd601e31444d221125b9764b33a53329f6cb1033758037df7cd6da22",
+      "apps/agent-worker/tests/fixtures/linux-contained.mjs": "e93a109b6a7372740abf206b98a4762dbbb811b504dfbfdf6864616a7975db70",
+      "scripts/prepare-agent-linux-guest.py": "46b20d3f71ed6457b6cba605749c4e5a5b7b2d25cc292fbf5700685a4f7d55c5",
+      "scripts/test-agent-linux-vm.py": "f8e2fe79dfb1f759c3d63a565461dd6a461f46d69060dbb84e17076848748483",
+      "tools/agent-linux-vm/Host.swift": "cfc8b31b09ac6a80bbed19cb3298f6571193b40d7fc27babccc8b7f5e9812745",
+      "tools/agent-linux-vm/guest-init.sh": "8fa80003806a0b8beeb2c902fe715ef89d36bf3f78e4d122f8382c3b7d228936",
+      "tools/agent-linux-vm/guest-run.sh": "42e26c731cc797db3d791860cc786115a124e06624dda2cb2441a037b2468a1c"
+    }
+  },
+  "cold_pid_fixture_partial_snapshot": {
+    "fixture_sha256": "fa2128896f29a42b12fba1829d5d5d2fc21913ca7d187357c6218940b2582a34",
+    "control": "same pids target without early async phase-file write; all kernel assertions unchanged"
+  },
+  "old_source_snapshots_complete": false,
+  "raw_consoles_published": false,
+  "original_second_attempt_exact_cause_known": false,
+  "vm_private_roots_at_final_checkpoint": 0,
+  "supplier_requests": 0
+}

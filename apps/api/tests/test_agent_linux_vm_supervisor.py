@@ -38,6 +38,33 @@ def sample():
 
 
 class LinuxVmProofTests(unittest.TestCase):
+    def test_containment_requires_exact_positive_resource_proof_without_claiming_network_or_sdk(self):
+        raw, control, *_ = sample()
+        proof = {'version': 'sun-world-linux-containment-result/1', 'cases': 9,
+            'memory_max_bytes': 536870912, 'pids_max': 64, 'memory_oom_kills': 1, 'pids_limit_events': 2,
+            'filesystem_and_capabilities': True, 'cross_run_visibility': True,
+            'cancel_tree_reaped': True, 'deadline_tree_reaped': True, 'cgroups_removed': True,
+            'workspaces_removed': True, 'gateway_allow_path_verified': False, 'sdk_stack_verified': False}
+        proof['cold_pid_abort_signal_observed'] = True
+        proof['cold_pids_limit_events'] = 1
+        proof['unknown_leaf_refused'] = True
+        proof['restarted_factory_refused_live_tree'] = True
+        framed = frame('SW_LINUX_CONTAINMENT_RESULT', proof)
+        result = vm.verify_console(raw + framed, control, containment=True)
+        self.assertTrue(result['linux_resource_filesystem_containment_verified'])
+        self.assertFalse(result['linux_per_run_isolation_verified'])
+        with self.assertRaises(Exception):
+            vm.verify_console(raw + framed, control)
+        with self.assertRaises(Exception):
+            vm.verify_console(raw, control, containment=True)
+        for changes in ({'memory_oom_kills': 0}, {'pids_limit_events': True}, {'cases': True},
+                        {'gateway_allow_path_verified': True}, {'sdk_stack_verified': True},
+                        {'filesystem_and_capabilities': False}, {'unreviewed': True}):
+            with self.subTest(changes=changes), self.assertRaises(Exception):
+                vm.verify_console(raw + frame('SW_LINUX_CONTAINMENT_RESULT', {**proof, **changes}), control, containment=True)
+        with self.assertRaises(Exception):
+            vm.verify_console(raw + framed + framed, control, containment=True)
+
     def test_exact_result_is_environment_only_and_guest_cannot_supply_host_control(self):
         raw, control, *_ = sample()
         result = vm.verify_console(raw, control)

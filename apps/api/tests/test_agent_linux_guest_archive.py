@@ -313,7 +313,7 @@ class AgentLinuxGuestArchiveTests(unittest.TestCase):
         self.assertTrue(self.output.exists())
         self.assertFalse(manifest.exists())
 
-    def test_cli_bad_arguments_are_fixed_and_builder_has_only_stdlib_imports(self):
+    def test_cli_bad_arguments_are_fixed_and_builder_imports_only_stdlib_and_explicit_optional_codec(self):
         for arguments in ([], ['--cache'], ['--asset-url', PRIVATE], ['--output', 'relative']):
             result = subprocess.run([sys.executable, '-S', str(SCRIPT), *arguments], capture_output=True,
                                     text=True, timeout=5, env={'PATH': os.defpath})
@@ -328,4 +328,51 @@ class AgentLinuxGuestArchiveTests(unittest.TestCase):
             elif isinstance(node, ast.ImportFrom):
                 imports.add(node.module.split('.')[0])
         self.assertLessEqual(imports, {'argparse', 'gzip', 'hashlib', 'io', 'json', 'os', 'pathlib',
-                                      'posixpath', 're', 'stat', 'sys', 'tarfile'})
+                                      'posixpath', 're', 'stat', 'sys', 'tarfile', 'zstandard'})
+
+    def test_additional_zstd_deb_is_bounded_single_known_size_frame_without_host_extraction(self):
+        import zstandard
+        source = tar([('usr/bin/bwrap', tarfile.REGTYPE, b'SYNTHETIC_BWRAP')])
+        encoded = zstandard.ZstdCompressor().compress(source)
+        package = lambda body: ar([('debian-binary', b'2.0\n'), ('data.tar.zst', body)])
+        self.assertEqual(self.builder.bubblewrap_archive(package(encoded)), source)
+        bad = [encoded[:-2], encoded + b'trailing', encoded + encoded,
+               zstandard.ZstdCompressor(write_content_size=False).compress(source),
+               zstandard.ZstdCompressor().compress(b'A' * (2 * 1024**2 + 1))]
+        for index, raw in enumerate(bad):
+            with self.subTest(index=index), self.assertRaises(Exception):
+                self.builder.bubblewrap_archive(package(raw))
+
+    def test_explicit_containment_asset_and_sources_are_pinned_and_never_added_to_default(self):
+        raw = ar([('debian-binary', b'2.0\n'), ('data.tar.gz', tar([
+            ('./usr/bin/bwrap', tarfile.REGTYPE, b'FIXED_BWRAP'),
+            ('./usr/bin/unused-bwrap-tool', tarfile.REGTYPE, b'NOT_INCLUDED')], compressed=True))])
+        asset = self.cache / 'bubblewrap.deb'
+        asset.write_bytes(raw)
+        asset.chmod(0o600)
+        contract = self.project / 'containment-assets.json'
+        data = {'version': 'sun-world-linux-containment-assets/1',
+            'base_assets_sha256': hashlib.sha256(self.builder.ASSETS.read_bytes()).hexdigest(),
+            'assets': [{'filename': 'bubblewrap.deb', 'sha256': hashlib.sha256(raw).hexdigest(),
+                        'max_bytes': 1048576}]}
+        contract.write_text(json.dumps(data))
+        for name in self.builder.CONTAINMENT_SOURCES:
+            path = self.project / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'// synthetic containment source\n')
+        with patch.object(self.builder, 'CONTAINMENT_ASSETS', contract):
+            report = self.builder.build(self.cache, self.output, containment=True)
+            self.assertEqual(len(report['assets']), 6)
+            self.assertEqual(set(report['payload_sha256']), set(self.builder.SOURCES + self.builder.CONTAINMENT_SOURCES))
+            entries = self.entries()
+            self.assertEqual(entries['sw-root/usr/local/bin/bwrap'][1], b'FIXED_BWRAP')
+            self.assertNotIn('sw-root/usr/bin/unused-bwrap-tool', entries)
+            data['base_assets_sha256'] = '0' * 64
+            contract.write_text(json.dumps(data))
+            with self.assertRaises(ValueError):
+                self.builder.build(self.cache, self.root / 'bad-containment', containment=True)
+            # The additional binary/contract is not read on the default path.
+            asset.write_bytes(b'INVALID_IGNORED_EXTRA')
+            original = self.builder.build(self.cache, self.root / 'default-initrd')
+            self.assertEqual(len(original['assets']), 5)
+            self.assertEqual(set(original['payload_sha256']), set(self.builder.SOURCES))

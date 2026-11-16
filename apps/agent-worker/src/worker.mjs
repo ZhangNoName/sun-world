@@ -78,7 +78,8 @@ export async function createSdkWorker({
   const runner = new ProcessRunner({
     workspaceRoot,
     onCleanupDiagnostic,
-    launchSpec: ({ workspace }) => launchSpec({ workspace, runtimeDirectory }),
+    launchSpec: ({ workspace, registerContainment }) =>
+      launchSpec({ workspace, runtimeDirectory, registerContainment }),
     input: (run) => ({
       run,
       gateway_origin: url.origin,

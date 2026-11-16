@@ -38,7 +38,9 @@ final class GuestDelegate: NSObject, VZVirtualMachineDelegate {
     }
 }
 
-guard CommandLine.arguments.count == 3, VZVirtualMachine.isSupported else {
+guard [3, 4].contains(CommandLine.arguments.count),
+      CommandLine.arguments.count == 3 || CommandLine.arguments[3] == "containment",
+      VZVirtualMachine.isSupported else {
     finish("configuration_invalid", false)
     exit(1)
 }
@@ -49,7 +51,8 @@ configuration.platform = VZGenericPlatformConfiguration()
 let boot = VZLinuxBootLoader(kernelURL: URL(fileURLWithPath: CommandLine.arguments[1]))
 boot.initialRamdiskURL = URL(fileURLWithPath: CommandLine.arguments[2])
 let epoch = Int(Date().timeIntervalSince1970)
-boot.commandLine = "console=hvc0 rdinit=/init panic=0 loglevel=3 sw_epoch=\(epoch)"
+let containment = CommandLine.arguments.count == 4 ? 1 : 0
+boot.commandLine = "console=hvc0 rdinit=/init panic=0 loglevel=3 sw_epoch=\(epoch) sw_containment=\(containment)"
 configuration.bootLoader = boot
 let console = VZVirtioConsoleDeviceSerialPortConfiguration()
 console.attachment = VZFileHandleSerialPortAttachment(fileHandleForReading: nil, fileHandleForWriting: .standardOutput)

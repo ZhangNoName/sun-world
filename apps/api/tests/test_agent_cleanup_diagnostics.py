@@ -98,6 +98,14 @@ class WorkerDiagnosticFileTests(unittest.TestCase):
                 self.assertEqual(dict(events=[first], complete=False), result)
                 self.assertNotIn(marker, json.dumps(result))
 
+    def test_containment_cleanup_stages_preserve_only_fixed_worker_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            first = {**self.event(), 'stage': 'containment_stop', 'category': 'permission_denied'}
+            second = {**first, 'sequence': 2, 'stage': 'containment_release', 'category': 'io_failed'}
+            self.write(root, (json.dumps(first) + '\n' + json.dumps(second) + '\n').encode())
+            self.assertEqual(dict(events=[first, second], complete=True), diagnostics.read_worker_diagnostics(root))
+
     def test_duplicate_keys_nonfinite_utf8_and_truncated_records_are_rejected(self):
         raw_values = [b'{"version":"one","version":"two"}\n', b'{"private":NaN}\n',
                       b'{"private":"\xff"}\n', b'{"private":"truncated"]',

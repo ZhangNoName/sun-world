@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：Linux 逐任务组件通过
+
+- 基点7b90679，继续原目标：迭代/review/本地验证/中文提交/博客。新`linux-launcher`+exec+paths三个模块，ProcessRunner/worker接同步registerContainment与可选stop/release；所有清理成功才settle/删workspace，预spawn未知也保句柄/槽。未知cgroup根子树或新factory遇旧活跃树拒绝，不接管PID/旧锁。
+- 显式VZ `--containment`，固定额外bubblewrap0.9.0-1ubuntu0.3官方security SHA，不退旧版；data.tar.zst以现有锁定zstandard0.25.0有界单帧内存decode，默认原5资产/31源不读它。最终37源/六资产，第七次原生Linux6.8/Node24.17：49协议零skip+九情景全过，host独立completed/started/stopped，owned组gone/root删除。实际512MiB OOMkill4、64task pids事件1/EAGAIN、冷对子SIGABRT/pids2/OOM0、跨run FS/7ns与cap全0/NNP1、readonly/ownwrite、setsid取消/deadline、unknown/restarted拒绝均核。完整gateway/SDK标志仍false。
+- 第一构建Zstd不支持、第二未定位执行失败、第四冷PID定位、第五过强线程分类失败均保留；第3六情景/第6七情景是中间源，最终第7九情景。冷对照多一个父Node，stderr0/线程文本false，不反推native2或声称UV初因。两个P2已修：无效containment必须spawn前检查、proof改共享pending完整写→rename并有真实半写gate；复审无剩余确认阻塞。
+- API818/31.119秒、Worker116/9.318秒通过；新增Worker16、Python4项。独立判官分别lifecycle8/proof1/archive13/supervisor8/reader11及37源/native9核对通过；源码53摘要与source-only树见[清单](../../evaluations/agent-linux-containment-2026-11-17/validation-manifest.json)。Python AST6、shell2、定向Prettier/root-script/scoped diff通过；根format仍原素材manifest失败，不称root/Web全绿。未重跑SDK/三库/供应商生成，不借旧macOS实证放行Linux。
+- [协议与命令](../../development/agent-linux-containment.md)、[实证及失败记录](../../evaluations/agent-linux-containment-2026-11-17/README.md)。已核资产/Swift cache保留，无当前VM运行根；现有3030/8032/3033保留。默认Worker/API门禁不会启动VM，不安装主机daemon、不修改目录/模型配置，不读/打印密钥。
+- 博客04按sun-world-blog→design补整树与进程组、准备失败也要保所有权，后端/架构笔记、Agent、DeepSeek Harness原标签，7稳定章节/29重点，1280/390正文和两透明图视觉/DOM通过；不新增重复图，未发布。预览仍用原dirty renderer/CSS。
+- 下一步在该实际launcher提供限定合法网关通道，验证允许API与拒任意外网，再做固定真实SDK/Linux容量/取消组合。512MiB/64只是当前合成目标的本地值，不能当实际SDK容量承诺。人工四题pending、模型版本生产决策/生产TLS/目标库结构备份等仍独立待，P1/A–D未完成；旧80dirty与主handoff210加/1删保留，只中文本地提交，不推送部署。后续Claude Code/claude-ds先读新协议及此checkpoint。
+
 ### 2026-11-17 最新 checkpoint：原生 Linux 环境通过
 
 - 当前目标仍为按计划迭代/审查/本地验证与中文提交；P1/A–D未整体完成。本轮在当前Mac自建一次性原生VZ Linux，不安装全局Docker，不用生产服务器；无需本地部署模型，现有官方API profile保持。

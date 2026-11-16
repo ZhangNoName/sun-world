@@ -24,7 +24,8 @@ CATEGORIES = frozenset({
 })
 WORKER_VERSION = 'sun-world-cleanup-diagnostics/1'
 WORKER_FIELDS = frozenset({'version', 'run_id', 'execution_id', 'generation', 'sequence', 'operation', 'stage', 'category'})
-WORKER_STAGES = frozenset({'group_probe', 'signal_term', 'signal_kill', 'group_present', 'workspace_remove', 'recovery_confirmed'})
+WORKER_STAGES = frozenset({'group_probe', 'signal_term', 'signal_kill', 'group_present', 'workspace_remove',
+                           'containment_stop', 'containment_release', 'recovery_confirmed'})
 WORKER_CATEGORIES = frozenset({'permission_denied', 'group_present', 'io_failed', 'unknown', 'none'})
 UUID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
 MAX_WORKER_BYTES = 65536

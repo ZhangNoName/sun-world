@@ -10,7 +10,7 @@
 
 可信 loopback 桥把 SDK 的 Messages 请求转发到本地 API 并加服务/运行双凭据；API 代理使用既有固定地址出站限制调用真实 OpenAI 兼容模型，再映射为 Messages 数据。停止原因和工具参数保留，未知终态、截断、跨 turn、重复终态拒绝成功。模型、来源正文与凭据不写普通日志。
 
-macOS 沙盒只允许回环网络并拒绝项目/用户主目录读取（Node 安装目录只读例外）；允许回环不等于生产网关端口白名单。尚未提供 Linux 容器、PID/地址硬隔离、TLS、正式调度服务和生产资源验收，不能以本地通过开放生产内测。
+macOS 沙盒只允许回环网络并拒绝项目/用户主目录读取（Node 安装目录只读例外）；允许回环不等于生产网关端口白名单。已新增显式[Linux隔离工厂](../../docs/development/agent-linux-containment.md)，资源/文件/PID与允许网关的网络路径分开验收；目前不提供生产镜像或默认监听，不能以本地通过开放生产内测。
 
 协议回归：`corepack pnpm test:agent-worker`。真实模型、浏览器与负向探测见[本地验证说明](../../tools/dsh-blog-local/README.md)。
 
@@ -25,4 +25,4 @@ macOS 沙盒只允许回环网络并拒绝项目/用户主目录读取（Node �
 
 确认终态的观察详情已支持三十天留存清理，永久身份摘要继续阻止重跑；未知进程、在途操作和既有控制器锁不会被自动清除，容量满时拒绝新身份。规则见[留存协议](../../docs/development/agent-journal-retention.md)，实际控制器崩溃的验证范围见[故障矩阵](../../docs/development/agent-worker-crash-validation.md)。
 
-本地真实Redis准入、正式MySQL与固定SDK的整栈以及官方模型四题已有独立实证，详见[整栈验证](../../docs/development/agent-sdk-stack-validation.md)；人工语义、Linux memory/PID/地址硬隔离、未知孤儿/旧锁的生产恢复授权及TLS签发轮换仍需独立验收。当前没有生产镜像或生产监听入口，生产准入保持关闭。
+本地真实Redis准入、正式MySQL与固定SDK的整栈以及官方模型四题已有独立实证，详见[整栈验证](../../docs/development/agent-sdk-stack-validation.md)。Linux实际cgroup2/bubblewrap/ProcessRunner的512MiB、64项进程线程、文件只读与跨run不可见/取消超时整树回收已通过九情景；真实SDK在该启动器的容量、允许网关/拒任意外网仍未验收。人工语义、未知孤儿/旧锁的生产恢复授权及TLS签发轮换继续独立验收。当前没有生产镜像或生产监听入口，生产准入保持关闭。

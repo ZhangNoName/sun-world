@@ -9,6 +9,8 @@ const stages = new Set([
   'signal_kill',
   'group_present',
   'workspace_remove',
+  'containment_stop',
+  'containment_release',
   'recovery_confirmed',
 ])
 const categories = new Set([
@@ -40,7 +42,9 @@ export function cleanupErrorCategory(error, stage) {
   }
   if (code === 'EPERM' || code === 'EACCES') return 'permission_denied'
   if (
-    stage === 'workspace_remove' &&
+    ['workspace_remove', 'containment_stop', 'containment_release'].includes(
+      stage
+    ) &&
     typeof code === 'string' &&
     ioCodes.has(code)
   )

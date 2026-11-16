@@ -2,6 +2,8 @@
 
 2026-11-17，基点150c15e。PATH/常见容器入口缺失不代表本机无法运行Linux。本轮只在ignored私有目录准备自有验证环境，不安装全局Docker/虚拟机软件、不用生产服务器、不改现有站点或准入。人工四题仍待用户实际结论。
 
+后续已实现显式[逐任务资源/文件/PID工厂](agent-linux-containment.md)，在同一VM中另以`--containment`真实验证九情景；默认仍只跑原49协议，旧报告保持历史范围。逐run整体门槛仍false，因为允许合法网关/任意外网拒绝及真实SDK在Linux组合尚未验收，不能把资源/文件组件通过改写为完整放行。
+
 ## 已观察能力
 
 本机Darwin arm64、32GiB内存、10逻辑CPU，检查时可用盘约112GiB，kern.hv_support=1。用系统Swift编译并对自己的新可执行文件ad-hoc签名，只有com.apple.security.virtualization entitlement；VZVirtualMachine.isSupported与2CPU/2GiB配置validate均true，未启动guest。依据[Apple Linux示例](https://developer.apple.com/documentation/virtualization/running-linux-in-a-virtual-machine)与[entitlement说明](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.virtualization)，可以继续验证原生VZ路线，不能仅凭硬件标志宣称guest已运行。

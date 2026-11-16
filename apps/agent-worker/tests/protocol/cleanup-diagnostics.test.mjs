@@ -277,18 +277,19 @@ test('failed spawn reports a fixed start cleanup error without raw filesystem di
     if (path === workspace) return Promise.reject(fault('EIO'))
     return realRm(path, options)
   })
-  let error
-  try {
-    await bounded(runner.start(runInput()))
-  } catch (caught) {
-    error = caught
-  }
+  const handle = await bounded(runner.start(runInput()))
+  const error = await rejectedStop(handle)
+  await pending(handle.done)
   assert.equal(error?.message, 'AGENT_PROCESS_UNCONFIRMED')
   safe(error.cleanupDiagnostics)
   assert.equal(error.cleanupDiagnostics.events[0].operation, 'start')
   assert.equal(error.cleanupDiagnostics.events[0].stage, 'workspace_remove')
   assert.equal(error.cleanupDiagnostics.events[0].category, 'io_failed')
   assert.equal(JSON.stringify(error).includes(root), false)
+  t.mock.restoreAll()
+  await bounded(handle.stop())
+  await assert.rejects(handle.done, { message: 'AGENT_EXECUTION_FAILED' })
+  assert.deepEqual(await fs.readdir(root), [])
 })
 
 test('first automatic finalize probe failure survives failed stop and eventual recovery', async (t) => {

@@ -117,6 +117,8 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 
 ## 迁移与回滚清单
 
+2026-11-17后续已补[逐run资源/文件/PID隔离](../development/agent-linux-containment.md)：固定cgroup2与bubblewrap、实际ProcessRunner新同步containment所有权、整树stop/原组gone/release后删workspace，预spawn清理失败保pending/并发槽。原生37源/六资产九情景与原49协议零skip通过，含真实512MiB OOM/64task EAGAIN、cross-run FS/7ns/capability、setsid cancel/deadline及未知叶子/新factory拒旧树。API818/31.119秒、Worker116/9.318秒及判官复审通过，P2无效handle晚校验/fixture半写可见已修，开发失败与cold SIGABRT不误作UV定因。[证据](../evaluations/agent-linux-containment-2026-11-17/README.md)绑定53源；下一步合法网关通道及真实固定SDK在Linux组合/容量验证，完整B仍false，无NIC不是允许策略。人工四题/版本生产策略/TLS/目标库备份等继续独立待验收，P1/A–D未完成；博客04同题更新/1280-390预览、未发布，其他80dirty/旧handoff与现有服务保留，不推送部署。
+
 1. 新增兼容 schema，单独记录真实结构检查与 DDL 部分成功恢复办法；不开功能、不收缩旧列。
 2. 发布 API 的 registry、查询和运行控制代码，Worker 部署到隔离环境，报告协议和 bundle hash。
 3. 模型与 Linux 验证通过后接入 Web 能力探测，再启用指定账户；观测冷启动/峰值内存/公开博客延迟，不以 P0 单机样本作容量保证。
