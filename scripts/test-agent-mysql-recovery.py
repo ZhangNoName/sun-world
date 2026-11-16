@@ -29,18 +29,26 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mysqld', required=True, type=Path)
     parser.add_argument('--report', type=Path)
+    parser.add_argument('--suite', choices=('lifecycle', 'pool'), default='lifecycle')
     args = parser.parse_args(argv)
     if args.report is not None and args.report.exists():
         raise ValueError('Report must be a new file')
-    report = {'format': 'sun-world-agent-mysql-recovery/1', 'synthetic_data': True,
+    report = {'format': 'sun-world-agent-mysql-recovery/1', 'suite': args.suite, 'synthetic_data': True,
               'real_provider_called': False, 'host_power_loss_tested': False,
               'production_snapshot_tested': False}
     with owned_mysql(args.mysqld) as server:
         directory = server.directory
         with patch.dict(os.environ, server.environment):
-            from mysql_recovery import RecoveryTests
-            names = sorted(name for name in RecoveryTests.__dict__ if name.startswith('test_recovery_'))
-            if set(names) != EXPECTED_SCENARIOS:
+            if args.suite == 'pool':
+                from mysql_pool_recovery import PoolRecoveryTests as RecoveryTests, EXPECTED_POOL_SCENARIOS
+                expected, prefix = EXPECTED_POOL_SCENARIOS, 'test_pool_'
+                if len(expected) != 4 or sorted(expected.values()) != [1, 1, 1, 2]:
+                    raise RuntimeError('The complete fixed recovery matrix is required')
+            else:
+                from mysql_recovery import RecoveryTests
+                expected, prefix = dict.fromkeys(EXPECTED_SCENARIOS, 1), 'test_recovery_'
+            names = sorted(name for name in RecoveryTests.__dict__ if name.startswith(prefix))
+            if not expected or set(names) != set(expected):
                 raise RuntimeError('The complete fixed recovery matrix is required')
             RecoveryTests.server = server
             suite = unittest.TestSuite(RecoveryTests(name) for name in names)
@@ -52,8 +60,8 @@ def main(argv=None):
     report['owned_process_stopped'] = server.process.poll() is not None
     report['owned_directory_removed'] = not directory.exists()
     success = (result.wasSuccessful() and not result.skipped
-               and result.testsRun == len(EXPECTED_SCENARIOS)
-               and len(server.crashes) == len(EXPECTED_SCENARIOS)
+               and result.testsRun == len(expected)
+               and len(server.crashes) == sum(expected.values())
                and report['owned_process_stopped'] and report['owned_directory_removed'])
     report['passed'] = success
     if args.report is not None:

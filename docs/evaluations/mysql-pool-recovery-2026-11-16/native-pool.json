@@ -1,0 +1,69 @@
+{
+  "format": "sun-world-agent-mysql-recovery/1",
+  "suite": "pool",
+  "synthetic_data": true,
+  "real_provider_called": false,
+  "host_power_loss_tested": false,
+  "production_snapshot_tested": false,
+  "scenarios": [
+    "test_pool_committed_ack_loss_preserves_one_admission",
+    "test_pool_input_commit_ack_loss_keeps_budget_without_generation",
+    "test_pool_repeated_outage_same_manager_and_concurrent_capacity",
+    "test_pool_uncommitted_admission_is_not_replayed_after_outage"
+  ],
+  "mysql_version": "8.4.13",
+  "crashes": [
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    },
+    {
+      "signal": "SIGKILL",
+      "exit_confirmed": true,
+      "same_server_uuid": true,
+      "same_datadir": true,
+      "same_socket": true,
+      "tcp_disabled": true,
+      "flush_log_at_trx_commit": 1
+    }
+  ],
+  "tests_run": 4,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "owned_process_stopped": true,
+  "owned_directory_removed": true,
+  "passed": true
+}

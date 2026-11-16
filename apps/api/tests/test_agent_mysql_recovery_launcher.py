@@ -15,13 +15,13 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class RecoveryLauncherTests(unittest.TestCase):
-    def invoke(self, *, omit=None, skipped=False, zero_run=False):
+    def invoke(self, *, omit=None, skipped=False, zero_run=False, pool=False):
         with tempfile.TemporaryDirectory(prefix='sw-mysql-oracle-') as temporary:
             directory = Path(temporary)
             @contextmanager
             def owned(_binary):
                 yield SimpleNamespace(environment={}, directory=directory / 'absent-runtime',
-                    version='synthetic', crashes=[{}] * 8,
+                    version='synthetic', crashes=[{}] * (5 if pool else 8),
                     process=SimpleNamespace(poll=lambda: 0))
             with patch.dict(sys.modules, {'fixture_mysql': SimpleNamespace(owned_mysql=owned)}):
                 original_path = sys.path[:]
@@ -32,24 +32,34 @@ class RecoveryLauncherTests(unittest.TestCase):
                     spec.loader.exec_module(module)
                 finally:
                     sys.path[:] = original_path
-            methods = {name: (lambda _self: None) for name in module.EXPECTED_SCENARIOS
+            expected = ({'test_pool_repeated_outage_same_manager_and_concurrent_capacity': 2,
+                         'test_pool_uncommitted_admission_is_not_replayed_after_outage': 1,
+                         'test_pool_committed_ack_loss_preserves_one_admission': 1,
+                         'test_pool_input_commit_ack_loss_keeps_budget_without_generation': 1}
+                        if pool else dict.fromkeys(module.EXPECTED_SCENARIOS, 1))
+            methods = {name: (lambda _self: None) for name in expected
                        if omit != 'all' and name != omit}
             case = type('SyntheticRecovery', (unittest.TestCase,), methods)
             if skipped:
                 case = unittest.skip('Synthetic skipped matrix')(case)
             report = directory / 'report.json'
-            with patch.dict(sys.modules, {'mysql_recovery': SimpleNamespace(RecoveryTests=case)}), redirect_stderr(io.StringIO()):
+            dependency = ({'mysql_pool_recovery': SimpleNamespace(PoolRecoveryTests=case,
+                           EXPECTED_POOL_SCENARIOS=expected)} if pool else
+                          {'mysql_recovery': SimpleNamespace(RecoveryTests=case)})
+            arguments = ['--mysqld', 'synthetic-unused', '--report', str(report),
+                         '--suite', 'pool' if pool else 'lifecycle']
+            with patch.dict(sys.modules, dependency), redirect_stderr(io.StringIO()):
                 if omit is not None:
                     with self.assertRaisesRegex(RuntimeError, 'complete fixed recovery matrix'):
-                        module.main(['--mysqld', 'synthetic-unused', '--report', str(report)])
+                        module.main(arguments)
                     self.assertFalse(report.exists())
                     return
                 if zero_run:
                     result = SimpleNamespace(testsRun=0, failures=[], errors=[], skipped=[], wasSuccessful=lambda: True)
                     with patch.object(module.unittest.TextTestRunner, 'run', return_value=result):
-                        status = module.main(['--mysqld', 'synthetic-unused', '--report', str(report)])
+                        status = module.main(arguments)
                 else:
-                    status = module.main(['--mysqld', 'synthetic-unused', '--report', str(report)])
+                    status = module.main(arguments)
             self.assertEqual(status, 1)
             self.assertFalse(json.loads(report.read_text())['passed'])
 
@@ -64,3 +74,12 @@ class RecoveryLauncherTests(unittest.TestCase):
 
     def test_actual_cli_rejects_successful_runner_with_zero_tests(self):
         self.invoke(zero_run=True)
+
+    def test_pool_cli_rejects_empty_or_missing_scenarios(self):
+        for missing in ('all', 'test_pool_input_commit_ack_loss_keeps_budget_without_generation'):
+            with self.subTest(missing=missing):
+                self.invoke(pool=True, omit=missing)
+
+    def test_pool_cli_rejects_skipped_or_zero_run_matrix(self):
+        self.invoke(pool=True, skipped=True)
+        self.invoke(pool=True, zero_run=True)

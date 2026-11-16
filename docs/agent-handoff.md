@@ -1,5 +1,11 @@
 ﻿## Current Handoff
 
+## 2026-11-16 既有MySQL连接池失联恢复
+
+- 修前offline/真实MySQL均确认补建失败丢空位，DB重启后同manager永久等待；现固定位置/PendingClose/集中登记，SQL前最多一次受控factory，已发SQL/COMMIT不重放。close拒新但不夺已借UOW，未知close保归属；见[恢复契约](development/mysql-pool-recovery.md)。未改业务schema/配置或当前SQLite页面。
+- 修三个清理中断P2；原lifecycle首轮unknown结算失败保留oracle，通过预SQL修复后全过。最终API758、pool4/5kill+原lifecycle8/8kill、MySQL29、Auth/HTTP栈19、fresh SDK/真实三库/mTLS六合成情景及独立35+6通过；[安全实证](evaluations/mysql-pool-recovery-2026-11-16/README.md)与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)区分原生/driver faults，不追认历史warning初因。
+- 博客04同题补边界、两图保留、1280/390预览通过未发布。fresh runtime与owned DB/SDK根已回收，现有问答/预览保留；根format仍仅既有内容manifest失败。下一步账本长期容量/永久去重上限；Linux/未知锁/目标库/账号政策/人工/版本/生产TLS仍待，P1/A–D未完成，其他80项dirty保留，不推送部署。
+
 ## 2026-11-16 正式问答历史删除与账号停用
 
 - owner/family终态DELETE同事务移除AI问答/反馈/标题与Agent详情，保留原键/终态/身份摘要/累计预算；公开GET404、重复删除成功、旧键409不收费不重跑、late回调拒绝。active须先停止，停用账号仍为status0，不称全账号抹除；见[删除协议](development/agent-history-erasure.md)。未切换现有SQLite页面或操作业务库。

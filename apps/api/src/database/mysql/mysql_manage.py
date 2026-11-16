@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import queue
+import threading
 import time
 from contextlib import contextmanager
 from typing import Any, Iterator, List, Optional, Tuple
@@ -19,6 +20,13 @@ def _param_count(params) -> int:
     if isinstance(params, (list, tuple)):
         return len(params)
     return 1
+
+
+class _PendingClose:
+    """One occupied position whose old physical handle is not yet released."""
+
+    def __init__(self, connection):
+        self.connection = connection
 
 
 class MySQLManager:
@@ -66,6 +74,10 @@ class MySQLManager:
         self.pool_size = max(1, min(configured_size, 4))
         self._pool: queue.Queue[Any] = queue.Queue(maxsize=self.pool_size)
         self._connections: set[Any] = set()
+        self._closed_pending: set[Any] = set()
+        self._state = threading.Condition()
+        self._borrowers = self._waiters = 0
+        self._resetting = False
         self._closed = False
         self.cnx = None
         self.cursor = None
@@ -82,7 +94,8 @@ class MySQLManager:
         return value
 
     def _create_connection(self):
-        connection = pymysql.connect(
+        # Factory hooks return a handle only; lifecycle registration is central.
+        return pymysql.connect(
             host=self.host,
             port=self.port,
             user=self.user,
@@ -95,67 +108,230 @@ class MySQLManager:
             read_timeout=self.read_timeout,
             write_timeout=self.write_timeout,
         )
-        self._connections.add(connection)
-        return connection
 
     def connect(self):
-        self._closed = False
-        for _ in range(self.pool_size):
-            connection = self._create_connection()
-            self._pool.put(connection)
-        logger.info("Connected to MySQL with pool size {}", self.pool_size)
+        self._reset_pool(attempts=1)
 
-    def _discard_connection(self, connection) -> None:
-        self._connections.discard(connection)
+    def _close_handles(self, handles):
+        """Attempt the whole owned batch, retain unknowns, return its first error."""
+        pending, first_error = [], None
+        for connection in handles:
+            confirmed = False
+            try:
+                connection.close()
+                confirmed = True
+            except BaseException as exc:
+                if first_error is None:
+                    first_error = exc
+                # Only an explicit driver fact can confirm close after an
+                # exception. Unknown test/adapter objects are never guessed.
+                try:
+                    confirmed = (isinstance(connection, pymysql.connections.Connection)
+                                 and connection.open is False)
+                except BaseException:
+                    confirmed = False
+            with self._state:
+                if confirmed:
+                    self._connections.discard(connection)
+                else:
+                    self._connections.add(connection)
+                    pending.append(connection)
+        return pending, first_error
+
+    def _reset_pool(self, *, attempts):
+        with self._state:
+            if self._closed:
+                raise ConnectionError("MySQL manager is closed")
+            if self._resetting or self._borrowers or self._waiters:
+                raise ConnectionError("MySQL pool is busy")
+            self._resetting = True
+            previous = []
+            while not self._pool.empty():
+                slot = self._pool.get_nowait()
+                if slot is not None:
+                    previous.append(slot.connection if isinstance(slot, _PendingClose) else slot)
+        created, pending = [], []
         try:
-            connection.close()
-        except Exception:
-            pass
+            pending, error = self._close_handles(previous)
+            if error is not None:
+                raise error
+            for attempt in range(attempts):
+                try:
+                    for _ in range(self.pool_size):
+                        with self._state:
+                            if self._closed:
+                                raise ConnectionError("MySQL manager is closed")
+                        connection = self._create_connection()
+                        created.append(connection)
+                        with self._state:
+                            self._connections.add(connection)
+                    with self._state:
+                        if self._closed:
+                            raise ConnectionError("MySQL manager is closed")
+                        for connection in created:
+                            self._pool.put_nowait(connection)
+                        created = []
+                    return
+                except pymysql.Error:
+                    pending, error = self._close_handles(created)
+                    created = []
+                    if error is not None:
+                        raise error
+                    if attempt + 1 == attempts:
+                        raise
+                    with self._state:
+                        if not self._closed:
+                            self._state.wait(timeout=max(0, self.retry_interval))
+        finally:
+            remaining, cleanup_error = self._close_handles(created)
+            pending.extend(remaining)
+            # Batch cleanup never prevents state finalization, even when a
+            # driver raises KeyboardInterrupt before physically closing.
+            with self._state:
+                if self._closed:
+                    self._closed_pending.update(pending)
+                elif self._pool.empty():
+                    for connection in pending:
+                        self._pool.put_nowait(_PendingClose(connection))
+                    for _ in range(self.pool_size - len(pending)):
+                        self._pool.put_nowait(None)
+                self._resetting = False
+                self._state.notify_all()
+            if cleanup_error is not None:
+                raise cleanup_error
+
+    def _take_slot(self):
+        deadline = time.monotonic() + max(1, self.retry_interval)
+        with self._state:
+            self._waiters += 1
+            try:
+                while True:
+                    if self._closed:
+                        raise ConnectionError("MySQL manager is closed")
+                    if self._resetting:
+                        raise ConnectionError("MySQL pool is busy")
+                    try:
+                        connection = self._pool.get_nowait()
+                    except queue.Empty:
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            raise ConnectionError("No MySQL connection available") from None
+                        self._state.wait(timeout=remaining)
+                    else:
+                        self._borrowers += 1
+                        return connection
+            finally:
+                self._waiters -= 1
 
     @contextmanager
     def _borrow(self) -> Iterator[tuple[Any, Any]]:
-        if self._closed:
-            raise ConnectionError("MySQL manager is closed")
+        slot = self._take_slot()
+        connection = slot.connection if isinstance(slot, _PendingClose) else slot
+        cursor, healthy, close_attempted = None, False, False
+        created = False
         try:
-            connection = self._pool.get(timeout=max(1, self.retry_interval))
-        except queue.Empty as exc:
-            raise ConnectionError("No MySQL connection available") from exc
-        cursor = None
-        healthy = True
-        try:
-            connection.ping(reconnect=True)
-            cursor = connection.cursor()
-            yield connection, cursor
-        except pymysql.Error:
+            if isinstance(slot, _PendingClose):
+                close_attempted = True
+                pending, error = self._close_handles([connection])
+                if not pending:
+                    connection = None
+                if error is not None:
+                    raise error
+                close_attempted = False
+            if connection is None:
+                created = True
+                connection = self._create_connection()
+                with self._state:
+                    self._connections.add(connection)
+                    if self._closed:
+                        raise ConnectionError("MySQL manager is closed")
             try:
                 connection.ping(reconnect=False)
             except pymysql.Error:
-                healthy = False
-                self._discard_connection(connection)
+                # No caller SQL has run yet. One controlled replacement is
+                # permitted only after the previous handle is confirmed gone.
+                if created:
+                    raise
+                close_attempted = True
+                pending, error = self._close_handles([connection])
+                if not pending:
+                    connection = None
+                if error is not None:
+                    raise error
+                close_attempted = False
+                with self._state:
+                    if self._closed:
+                        raise ConnectionError("MySQL manager is closed")
+                created = True
+                connection = self._create_connection()
+                with self._state:
+                    self._connections.add(connection)
+                    if self._closed:
+                        raise ConnectionError("MySQL manager is closed")
+                connection.ping(reconnect=False)
+            healthy = True
+            cursor = connection.cursor()
+            with self._state:
+                if self._closed:
+                    raise ConnectionError("MySQL manager is closed")
+            yield connection, cursor
+        except pymysql.Error:
+            if healthy:
+                try:
+                    connection.ping(reconnect=False)
+                except BaseException as exc:
+                    healthy = False
+                    if not isinstance(exc, Exception):
+                        raise
             raise
         finally:
-            # Connections use autocommit=False. Always end any implicit read
-            # transaction before returning a pooled connection so Repeatable
-            # Read snapshots and locks never leak across requests/UoWs.
+            cleanup_error = None
+            # autocommit=False: end implicit snapshots/locks before reuse.
             if healthy:
                 try:
                     connection.rollback()
-                except pymysql.Error:
+                except BaseException as exc:
                     healthy = False
-                    self._discard_connection(connection)
+                    if not isinstance(exc, Exception):
+                        cleanup_error = exc
             if cursor is not None:
                 try:
                     cursor.close()
-                except Exception:
-                    pass
-            if healthy and not self._closed:
-                self._pool.put(connection)
-            elif not self._closed:
-                try:
-                    replacement = self._create_connection()
-                    self._pool.put(replacement)
-                except pymysql.Error as exc:
-                    logger.warning("Failed to replace unhealthy MySQL connection: {}", exc)
+                except BaseException as exc:
+                    healthy = False
+                    if cleanup_error is None and not isinstance(exc, Exception):
+                        cleanup_error = exc
+            with self._state:
+                keep = healthy and not self._closed
+            pending = []
+            if not keep and connection is not None:
+                if close_attempted:
+                    pending = [connection]
+                else:
+                    pending, error = self._close_handles([connection])
+                    if cleanup_error is None:
+                        cleanup_error = error
+            # close may race the healthy decision. Publishing or transferring
+            # ownership to closed cleanup is atomic with that lifecycle check.
+            late_close = None
+            with self._state:
+                if self._closed:
+                    self._closed_pending.update(pending)
+                    if keep:
+                        late_close = connection
+                else:
+                    self._pool.put_nowait(connection if keep else
+                                          _PendingClose(pending[0]) if pending else None)
+                self._borrowers -= 1
+                self._state.notify_all()
+            if late_close is not None:
+                pending, error = self._close_handles([late_close])
+                with self._state:
+                    self._closed_pending.update(pending)
+                if cleanup_error is None:
+                    cleanup_error = error
+            if cleanup_error is not None:
+                raise cleanup_error
 
     def is_alive(self) -> bool:
         try:
@@ -167,19 +343,10 @@ class MySQLManager:
             return False
 
     def reconnect(self):
-        for connection in list(self._connections):
-            self._discard_connection(connection)
-        self._pool = queue.Queue(maxsize=self.pool_size)
-        for attempt in range(1, self.max_retry_times + 1):
-            try:
-                self.connect()
-                if self.is_alive():
-                    return
-            except pymysql.Error as exc:
-                logger.warning("MySQL reconnect attempt {} failed: {}", attempt, exc)
-            if attempt < self.max_retry_times:
-                time.sleep(self.retry_interval)
-        raise ConnectionError("Unable to reconnect to MySQL")
+        try:
+            self._reset_pool(attempts=max(1, self.max_retry_times))
+        except pymysql.Error:
+            raise ConnectionError("Unable to reconnect to MySQL") from None
 
     def execute(self, sql: str, params: Optional[Tuple[Any, ...]] = None) -> Optional[int]:
         try:
@@ -239,17 +406,23 @@ class MySQLManager:
             return int(result["count"]) if result else 0
 
     def close(self):
-        self._closed = True
-        while True:
-            try:
-                self._pool.get_nowait()
-            except queue.Empty:
-                break
-        for connection in list(self._connections):
-            self._discard_connection(connection)
-        self._connections.clear()
-        self.cnx = None
-        self.cursor = None
+        with self._state:
+            self._closed = True
+            idle = list(self._closed_pending)
+            self._closed_pending.clear()
+            while not self._pool.empty():
+                slot = self._pool.get_nowait()
+                if slot is not None:
+                    idle.append(slot.connection if isinstance(slot, _PendingClose) else slot)
+            self.cnx = self.cursor = None
+            self._state.notify_all()
+        # Never seize a borrowed/reset-owned handle. Unknown idle closes stay
+        # registered and are explicitly retryable by another close call.
+        pending, error = self._close_handles(idle)
+        with self._state:
+            self._closed_pending.update(pending)
+        if error is not None:
+            raise error
 
     def __enter__(self):
         if not self.is_alive():

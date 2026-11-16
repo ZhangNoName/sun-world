@@ -1,0 +1,8 @@
+{
+  "before_fix": true,
+  "vacant_queue_size_after_failed_replacement": 0,
+  "factory_calls": 2,
+  "restored_connection_attempted": false,
+  "next_request": "still_unavailable",
+  "old_connection_closed": true
+}

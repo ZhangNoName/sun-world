@@ -1,0 +1,11 @@
+{
+  "mysql_version": "8.4.13",
+  "same_manager_used": true,
+  "actual_sigkill_confirmed": true,
+  "offline_checkout_failures": 2,
+  "queue_size_after_failures": 0,
+  "same_datadir_uuid_socket_verified_on_restart": true,
+  "recovered": false,
+  "owned_directory_removed": true,
+  "owned_process_stopped": true
+}

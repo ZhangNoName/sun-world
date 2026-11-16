@@ -1,0 +1,173 @@
+{
+  "format": "sun-world-mysql-pool-recovery-validation/1",
+  "base_commit": "402b14d",
+  "execution_source_tree": "ddb018ea1d80f09531e569e0a1781facf7e60b24",
+  "runtime": {
+    "os": "macOS arm64",
+    "python": "3.12.13",
+    "node": "24.17.0",
+    "pnpm": "10.15.1",
+    "mysql": "8.4.13",
+    "redis": "7.2.17",
+    "mongodb": "8.0.38",
+    "sdk": "0.2.2-rc.1"
+  },
+  "checks": {
+    "api": {
+      "passed": true,
+      "tests": 758,
+      "seconds": 28.414
+    },
+    "pool_native": {
+      "passed": true,
+      "tests": 4,
+      "same_manager": true,
+      "same_ledger": true,
+      "actual_sigkill_restarts": 5,
+      "seconds": 6.384
+    },
+    "original_lifecycle_native": {
+      "passed": true,
+      "tests": 8,
+      "actual_sigkill_restarts": 8,
+      "seconds": 10.191
+    },
+    "mysql_native_regression": {
+      "passed": true,
+      "tests": 29,
+      "seconds": 4.086
+    },
+    "browser_stack_native": {
+      "passed": true,
+      "tests": 19,
+      "seconds": 15.89
+    },
+    "sdk_stack_native": {
+      "passed": true,
+      "scenarios": 6,
+      "actual_fixed_sdk": true,
+      "actual_three_databases": true,
+      "mutual_tls": true,
+      "model_and_articles": "synthetic",
+      "provider_called": false
+    },
+    "independent_review": {
+      "passed": true,
+      "mysql_offline_tests": 35,
+      "launcher_gate_tests": 6,
+      "confirmed_cleanup_faults_reproduced_before": 3,
+      "same_faults_passed_after": 3,
+      "remaining_confirmed_blockers": 0
+    },
+    "changed_python_ast": {
+      "passed": true,
+      "files": 7
+    },
+    "root_script_protocol": true,
+    "api_deploy_schema_protocol": true,
+    "root_format": {
+      "passed": false,
+      "unrelated_file": "docs/content-sources/csdn-qq-42345136/manifest.json"
+    },
+    "scoped_diff": true
+  },
+  "sdk_resources": {
+    "worker_source_files_matched_index": 17,
+    "cache_packages_reused": 592,
+    "packages_downloaded": 0,
+    "prepared_runtime_removed": true,
+    "owned_db_and_sdk_roots_remaining": 0
+  },
+  "blog": {
+    "draft": "docs/blog/2026-11-15-agent-run-history-transaction.md",
+    "published": false,
+    "widths": [1280, 390],
+    "headings": 7,
+    "strong_count": 25,
+    "indent": "0px",
+    "overflow": false,
+    "existing_transparent_figures": 2,
+    "new_figure_added": false
+  },
+  "limits": {
+    "close_interruptions": "offline driver faults; no claim of native failure frequency",
+    "close_drains_inflight_uow": false,
+    "sql_or_commit_replayed": false,
+    "business_data_modified": false,
+    "real_provider_called": false,
+    "linux_tested": false,
+    "power_loss_tested": false,
+    "cross_version_tested": false,
+    "production_deployed": false,
+    "historical_warning_root_cause_inferred": false
+  },
+  "source_sha256": {
+    "apps/agent-worker/src/blog-tools.mjs": "c281cd57aa52cbeb8b51d4447fd0c8943ffae72c191c7e51ea16573788df5178",
+    "apps/agent-worker/src/cleanup-diagnostics.mjs": "ed38c59ebe490b59b3eda58d5932745c26bf781876c1e92c1252e2f518307abe",
+    "apps/agent-worker/src/execution-http.mjs": "6231eab4e075a982ed19f5fbefd3920a7cb44630e89afc39939c80ad0cfaf98f",
+    "apps/agent-worker/src/execution-journal.mjs": "ba916ce12a34a28359f616ce40faae53730b8aca7559aae0372e38f3e3a4a484",
+    "apps/agent-worker/src/execution-service.mjs": "06e51a598f60166880b054ec1d973eb2173c1408e019497fcaebe390c028fd03",
+    "apps/agent-worker/src/gateway-client.mjs": "0c0e9c07f630e576c625a74cbc390cdcb1d5e80d0b07e79c9928df5deb02eb77",
+    "apps/agent-worker/src/local-runner.mjs": "4cf884de4a21bedf86378590ae04389a6baf2a84ca77925790a63f1d0ca49bce",
+    "apps/agent-worker/src/process-runner.mjs": "117b0c527607d4015ea3dca3c29dd17d15beaa739d966cdf56f2f11609caadb6",
+    "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+    "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+    "apps/agent-worker/src/root-result.mjs": "1f8d54942e2b099b1b04921dd424d582487060aa73ada5e249dcd69a0a4098d8",
+    "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+    "apps/agent-worker/src/sdk-execution.mjs": "59c660727089b15dab781030f4ac1f84ae8e06288f48045d6fe0864ae99ca327",
+    "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+    "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+    "apps/agent-worker/src/verify-tools.mjs": "c8179438605cbb446c59402ebae21f4a7ba6152ecda76ff61102bd71d6666d8e",
+    "apps/agent-worker/src/worker.mjs": "b6d216171079e38eb4ab1061dbe30e5e55ebaf3ded91ff199822911c20cb2edd",
+    "apps/api/src/controller/user_manage.py": "7635ac4cd27e26b31c42303c02e13fd03a4f6145a719124bdb11753f94ec0147",
+    "apps/api/src/core/auth/session.py": "479a0960e1ce50bedbe2147552e9792ec692b4069cac3915501008cf2c0f1246",
+    "apps/api/src/core/error_codes.py": "d3d62c9c0416b3c400534b07033844bc399522bd28394261bd48cd6cbd96c32d",
+    "apps/api/src/database/mysql/mysql_manage.py": "24a65876e2098e68d45e6a846348a91c99e6f387be5836627aeb965ab7b2b8ef",
+    "apps/api/src/database/mysql/schema_migration.py": "1c11f384462dcdc8c1318538020d3de1ebb7074562b77c6528e476bc89ea671d",
+    "apps/api/src/database/mysql/unit_of_work.py": "eb7725d36b7118ede76d3573eb110412693f32c77c7b402ea781773d6d4ab143",
+    "apps/api/src/modules/agent_runtime/__init__.py": "dd5b3c225af631eea3c1c8d379189df03636735317111a60e7a72d0695dfcc66",
+    "apps/api/src/modules/agent_runtime/admission.py": "cd9b26096484a7a92cf31464f16fad417e7f66f4f944d39ee18edac4121b5ac2",
+    "apps/api/src/modules/agent_runtime/application.py": "6293229d3f3531ddbe23c57b17ef5947eedfb856822b757c6f9e55e9cf95cb73",
+    "apps/api/src/modules/agent_runtime/cleanup.py": "e0ca86e25f3f00d5a59e4efd351a8e166c7bd828bb972f89bc5d9c84864b3e73",
+    "apps/api/src/modules/agent_runtime/dispatcher.py": "27d7b7b5dc9f2d54b79364d50515a5dec7e662eecd555959d5279eeef4801728",
+    "apps/api/src/modules/agent_runtime/gateway.py": "0decf398167c120c243e14b77f3a0eda6277ab2c5a4e6550b449861f6d0918ee",
+    "apps/api/src/modules/agent_runtime/journal.py": "9b6c474318db5545e2cbd5a1484f2924cebf3eeba6d33af33a9efbb70bbccef2",
+    "apps/api/src/modules/agent_runtime/ledger.py": "29a4ac725df6586232d8571859f9773f888accda9d4c6c8454067c732160fa92",
+    "apps/api/src/modules/agent_runtime/local_model_budget.py": "ecb34f6e24415364bf188b15e51c5264b896316f74446b99a2a4b4f584c3c0fd",
+    "apps/api/src/modules/agent_runtime/model_budget.py": "064fca5e28365a704a9ce6ede4e541599d2174007ef606a55e1491d5d479806e",
+    "apps/api/src/modules/agent_runtime/private_router.py": "a899304cf08978769318636393abdea0f0874fd23b6d9a0319c60839e514b9a0",
+    "apps/api/src/modules/agent_runtime/public_router.py": "be4f29737eaab55e6d3eac702e1a3f21dc3d61d310bb2292ea1fceb815abbe24",
+    "apps/api/src/modules/agent_runtime/router.py": "0ca68771e303f48606375374a11a80d284d322f534279bf43fda9c6a9b85c35c",
+    "apps/api/src/modules/agent_runtime/rpc.py": "3f16b55536761dc98ca8d470c8c6a1716d825aaf7983196a0ab961fbb6b12813",
+    "apps/api/src/modules/agent_runtime/run_view.py": "985ae3bcd96fe98e83cb60cdd6c5de35fdb6c9be519478a2a285d01b542a8b3d",
+    "apps/api/src/modules/agent_runtime/runtime.py": "a2f51a26597b2dfe9d42590378df1cc626f1d3c9bddefbd77b05e8aff0989544",
+    "apps/api/src/modules/agent_runtime/schemas.py": "92c8644531dee9293d5aad7a37b43720b7f47fdc0361daea5da0e04f9db65bf8",
+    "apps/api/src/modules/agent_runtime/session_authorizer.py": "07b92abf954b5e6dfbb453ceadcedea3bafd5cf53139cae73ca4ec6409528446",
+    "apps/api/src/modules/agent_runtime/store.py": "7a1a131b1f042534db04c530d7910a9f0d99ee00a34b901fc220c7da6b972f51",
+    "apps/api/src/modules/agent_runtime/worker_transport.py": "39e52e2123bb7f20bed63ab6ea5b243975aafa5d5216eab3ea73418574a23f3c",
+    "apps/api/src/modules/ai/agent_history.py": "6707f506b6ef97252f15bed32df4cbf8ac784bd3b5b32a4713c85b5b196025b3",
+    "apps/api/src/modules/ai/public.py": "b160619939d73e293756896691a18f8176ccab9fa97b440060e37c6c1c3bf7df",
+    "apps/api/tests/integration/fixture_mysql.py": "6cc81879a7ccdd80297165a4547abc5a98e2f4a852c886fb2bf5094b702d0bff",
+    "apps/api/tests/integration/fixture_signals.py": "17359f9fd5e67fd1ff8ab7977d99f4a613225b9f2eb340da0e1a730851deff44",
+    "apps/api/tests/integration/mysql_pool_recovery.py": "10e1d0c80fc9ec113f1e373bcc1a7a1f8acd86da7d140674266e51a530e745a7",
+    "apps/api/tests/integration/mysql_recovery.py": "095db14e143ffefb6f9ebd66d8ba128c3497672f3b426735e65e8295518b2ab2",
+    "apps/api/tests/integration/sdk_stack.py": "6060f3ce9a48a31e9fffb47debb8bd88869bd303a16279588342958ee4087a18",
+    "apps/api/tests/integration/test_agent_history_stack.py": "c059367cb69f95e8032d18b0eaf8789530d091636ae57c7c11b16bb1d1baa401",
+    "apps/api/tests/integration/test_agent_mysql.py": "d89936ea5bcf66a878275343ef76a0705d1c948f6defd44d94d7de0c5684ffeb",
+    "apps/api/tests/integration/test_agent_mysql_upgrade.py": "8d9af86846763697903234106748d33769fee7c7b570dbc18fd05ca07ed32d87",
+    "apps/api/tests/integration/test_agent_stack.py": "f3798845e4a7cc87f513a48c0bf656ef2c8bb104ae519d1f32ec3fa3488fcffd",
+    "apps/api/tests/test_agent_history_erasure.py": "6c4564dbbd373c572afd0198eba9d8d7137e05fa4df3a30e750529d46f8bf0e6",
+    "apps/api/tests/test_agent_mysql_recovery_launcher.py": "d4a8b93a9d7ad7ae5bb312b450d44659f3c4aa647baec9c4bd393d74eb6288e9",
+    "apps/api/tests/test_agent_public_router.py": "841c7060d9ad0943db3b21c7e64d1c03aa12506af38e2d6f00b4178fe4f03739",
+    "apps/api/tests/test_agent_run_ledger.py": "6939bb9b35b14603ab7f12dcd02e7123b42f798d968a2067cee22fff2849356f",
+    "apps/api/tests/test_mysql_manager.py": "50a1b3f20b8ffa25fb7a5482cf7f5bef8bbd72af84bda9e7b4102b6922c8499c",
+    "apps/api/tests/test_mysql_pool_recovery.py": "ad0976a2c5372756b04c8e0cfe0718d8680db8ef9b2f9b9c20c2be52e7e3bef2",
+    "scripts/prepare-agent-worker.mjs": "04d26ae968bd3afd1febba32c2a98f6a6b3fe0b9c887c1c1f442c6f275d2f513",
+    "scripts/test-agent-mongo.py": "597291235ae82d2fd76e56d7a94d30750d4d62bd53d73439780476ff8a146559",
+    "scripts/test-agent-mysql-recovery.py": "7822369a8ebda7471cf9cdabbc4263d92f3658b428d41a5f2f06322d0f73f1f3",
+    "scripts/test-agent-mysql.py": "b30fcf127c776e4f00bc911d9312f9b5f61c47d0ff59f0a6a31841ea2309b5b0",
+    "scripts/test-agent-redis.py": "00dde6710f7ef494e21f51e16727bc365b95880bd8532efa72d7276851368fc1",
+    "scripts/test-agent-sdk-stack.py": "1997476dcb1a2bce445f0efad71a739b8261c18c74fc70168b1e4ec04defa298",
+    "scripts/test-agent-stack.py": "b59b76d17e966d6de3f9ec9753731bb18e4eef56674bfd52597c271c5f619ae9"
+  }
+}

@@ -612,3 +612,33 @@ sun-world-blog→design同题更新博客04：删详情不授予重跑、时间�
 按sun-world-blog→design同题更新博客04第五节：删内容/保留去重/停用账号三者边界，回滚、旧键及迟到回调；后端分类、架构笔记/Agent/DeepSeek Harness标签保留。新增透明SVG agent-history-erasure-boundary.svg把内容与去重记录的分支关系画清，沿用旧图字体/配色/线宽；桌面360px、手机342px、原Redis图360/约342px均可读，未加图下小字。1280/390视觉/DOM检查通过，7稳定ID、24处strong、0px缩进、无残留双星或横向溢出。未发布；预览仍用dirty renderer/CSS，非完整文章页验收，既有问答与3033正文预览保留。
 
 下一步本地核验数据库短暂不可用后的既有连接池恢复，追踪旧replacement warning但不替历史故障补定因。全账号/备份/日志/自动TTL/跨family管理、未知孤儿/cgroup/旧锁、Linux、目标业务库与备份恢复、人工语义、上游版本策略、生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty和主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手必须读取历史删除协议及可信/公开读取分离、索引候选+BINARY和同锁竞争这些增量，不能物理删去重行后允许旧请求重跑。
+
+## 2026-11-16 数据库恢复后的既有连接池
+
+### 已确认故障与实现
+
+基点402b14d，按[连接池恢复契约](../../development/mysql-pool-recovery.md)先写文档再同步coding/判官。修前纯离线pool_size1验证factory仅2次、恢复连接从未调用；实际owned MySQL8.4.13 SIGKILL、两条旧连接失效/补建拒绝后queue0，同datadir/socket/UUID重启、同manager仍失败。只确认失效+补建失败导致位置永久丢失的因果，不替历史warning、代理或其他清理失败补定因。
+
+MySQLManager改固定Queue位置、None空位、PendingClose与Condition同步登记。_create_connection hook只返回handle，owned SocketManager相应删自行登记一行；每checkout最多一次factory，禁驱动隐式重连，SQL已发出后不重放。close终态、唤醒等待者、晚handle不发布，但不抢已借UOW，归还再close；close返回不代表已排空。显式connect/reconnect只idle允许，部分初始化/重连清理不漏位置，网络IO不占状态锁。未知close仍保原handle/slot/registry，先确认再建新，不能铸额外物理容量。
+
+主要变更七个Python源：mysql_manage.py、test_mysql_pool_recovery.py、test_mysql_manager.py、integration/test_agent_mysql.py、新mysql_pool_recovery.py、recovery CLI与其门禁tests。未改UOW、业务schema、会话/模型协议或Worker代码；源码433行、新纯测试475行，未新增依赖或worktree。显式recovery CLI增加--suite pool固定4题/5kill，default lifecycle原8题保持；矩阵缺/空/skip/零执行均拒误绿。
+
+### 中间发现与修复
+
+- 首轮正常原生pool4/5kill通过后，判官离线确认三个close抛BaseException的P2：close漏后续handle并丢登记、partial reset状态finally不执行永久busy、borrow未知关闭归还None可增加物理handle。先补契约再交coding修；批次保首错继续清其他handle、独立状态收尾后传播，PendingClose保归属并允许后续确认。判官同三路径修后均通过，持续KI仍不factory，不冒称真实MySQL常见故障频率。
+- 原lifecycle首轮8题有1fail：attempt实际提交、DB立即重启后，新的unknown结算遇排队旧idle ping失败仍留reserved。未放宽旧unknown oracle，改为SQL尚未执行前确认旧close后同checkout一次受控factory；新factory后的ping失败不得二次建连，yield仅一处，SQL/COMMIT错误不回准备分支。持续停机pool输入题仍明确reserved结算不可用、预算16384不退且generation0。最终原八题全过。
+- coding MySQL相关35项（新pool23+旧manager5+UOW7）、编译/diff通过；判官独立35+launcher6及原三条fault复验通过，无剩余确认阻塞。角色通过followup复用，不以排消息代替启动，不另建agent。
+
+### 最终验证与资源
+
+`corepack pnpm check:api`758/28.414秒通过；实际pool4/6.384秒、5次SIGKILL同manager/ledger恢复通过；原lifecycle8/10.191秒、8次真实SIGKILL通过。pool首题两轮恢复后8线程32次查询只见两条物理session，未提交UOW仍回滚；admission提交前无半历史，真实COMMIT后ACK丢失按原键唯一，输入commit丢ACK且持续停机无生成/不退款，恢复后过期只中断。
+
+中央MySQL29/4.086秒及MySQL/Redis/Auth/ASGI栈19/15.890秒回归通过，包含实际锁等待、历史删除和Redis槽释放。另fresh SDK0.2.2-rc.1+真实MySQL/Redis/Mongo+双向mTLS默认六合成情景通过；17项Worker源/运行资源/index逐字一致，592缓存包/下载0。prepared runtime已删，三个DB与sun-world-sdk-stack私有根归零、context确认停止，原站点必要资源与verified binary缓存保留；未调用供应商或重跑官方四题，未验证Linux或断电。
+
+执行源树ddb018ea1d80f09531e569e0a1781facf7e60b24，67项selected source SHA与index一致，七个变更Python AST通过。root-script/api:deploy-schema、scoped diff及本轮JSON格式通过；根format仍只报既有内容manifest，不改该dirty、不称root/Web全绿。[安全实证](../../evaluations/mysql-pool-recovery-2026-11-16/README.md)包含修前offline/native与最终pool/lifecycle投影、source manifest；原始日志/监督driver仅在ignored .tmp/mysql-pool-recovery，不含业务库/账号资料。
+
+### 写作与后续
+
+sun-world-blog→design同题补博客04第六节，说明可借位置与物理handle、SQL前修复与已发事务不重放、关闭未确认仍保归属。分类后端与原架构笔记/Agent/DeepSeek Harness标签保留，新增为少量状态规则，原两张透明图已经提供整体保存/删除关系，无需第三张重复图。1280/390视觉/DOM预览通过，7稳定ID、25处strong、0px缩进、无残留双星/横向溢出，原图桌面360、手机约342px，未发布；预览仍用dirty renderer/CSS，非整页验收。3030/8032旧SQLite问答与3033正文预览保留。
+
+下一步核对账本长期容量与永久去重保留上限，不能删身份后准许旧请求重跑。Linux硬隔离/未知孤儿/陈旧锁、目标业务库与备份/断电跨版本、全账号/自动TTL/备份日志政策、人工语义、上游版本策略及生产TLS仍独立未完成，P1/A–D与持续goal未完成。其他80项dirty及主handoff原210加/1删保留，不推送部署发布。Claude Code/claude-ds接手须同步fixed slots/PendingClose、factory集中登记、close并非drain、SQL前一次建连/已发语句不重放及pool/default矩阵范围这些增量。

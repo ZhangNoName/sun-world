@@ -135,8 +135,10 @@ class MySQLManagerTests(unittest.TestCase):
         replacement = BrokenConnection()
         with patch("pymysql.connect", side_effect=[unhealthy, healthy, replacement]):
             manager = MySQLManager("localhost", 3306, "test", pool_size=2, retry_interval=1)
-            with self.assertRaises(pymysql.err.OperationalError):
-                manager.fetch_all("SELECT 1")
+            with patch.object(replacement.cursor_obj, "execute", wraps=replacement.cursor_obj.execute) as execute:
+                self.assertEqual(manager.fetch_all("SELECT 1"), [])
+            execute.assert_called_once_with("SELECT 1", ())
+            self.assertTrue(unhealthy.closed)
             self.assertEqual(manager._pool.qsize(), 2)
             manager.close()
 

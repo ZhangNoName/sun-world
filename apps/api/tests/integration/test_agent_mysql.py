@@ -40,7 +40,6 @@ class SocketManager(MySQLManager):
         connection = pymysql.connect(unix_socket=self.socket, user='root', password='', database=self.db,
             autocommit=False, cursorclass=pymysql.cursors.DictCursor, connect_timeout=2, read_timeout=5,
             write_timeout=5, init_command='SET SESSION innodb_lock_wait_timeout=3')
-        self._connections.add(connection)
         return connection
 
 
