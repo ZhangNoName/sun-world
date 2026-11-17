@@ -259,7 +259,7 @@ class AuthManager:
         """为指定用户创建 token（公共方法）"""
         return self._create_tokens(str(user_id), device_id)
 
-    def register_user(self, user: User) -> bool:
+    def register_user(self, user: User, *, audit=None) -> bool:
         """注册用户"""
         try:
             user.username = normalize_username(user.username or user.name)
@@ -274,7 +274,8 @@ class AuthManager:
             if identifier and self.user_manager.get_user_by_login_identifier(identifier):
                 return False
         user.password = self.hash_password(user.password)
-        return self.user_manager.create_user(user)
+        return (self.user_manager.create_user(user, audit=audit) if audit is not None
+                else self.user_manager.create_user(user))
 
     def authenticate_user(self, username_or_email_or_phone: str, password: str, device_id: str) -> Optional[TokenModel]:
         """验证用户身份并生成 token"""

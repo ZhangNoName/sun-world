@@ -150,8 +150,8 @@ class AdminRecentHttpTests(unittest.TestCase):
             app.include_router(router)
         self.recent = Mock(return_value=context)
         self.writes = Mock()
-        def register(user):
-            self.writes.register()
+        def register(user, *, audit):
+            self.writes.register(audit=audit)
             user.id = 9
             return True
         auth = SimpleNamespace(get_recent_session_context=self.recent, register_user=register)

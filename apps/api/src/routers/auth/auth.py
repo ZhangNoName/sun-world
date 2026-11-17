@@ -14,6 +14,10 @@ from app_instance import app
 from src.controller.auth_manager import AuthManager
 from src.core.auth.admin_shadow import observe_admin_policy
 from src.core.auth.recent import step_up_max_age_seconds
+from src.core.auth.admin_audit import (
+    AdminAuditTargetError, AdminAuditUnavailableError, create_admin_audit_context,
+)
+from src.core.request_context import get_request_id
 from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
@@ -256,7 +260,36 @@ def require_recent_admin(
         raise HTTPException(status_code=403, detail=_error_detail(
             "AUTH_STEP_UP_REQUIRED", "此安全操作需要近期登录，请退出后重新登录再试。",
         ))
+    request.state.admin_recent_context = context
     return current_user
+
+
+def require_admin_audit(request: Request, current_user=Depends(require_recent_admin)):
+    """Carry verified server references; translate only typed endpoint failures."""
+    try:
+        context = getattr(request.state, 'admin_recent_context', None)
+        user_id = current_user.get('id') if isinstance(current_user, dict) else getattr(current_user, 'id', None)
+        canonical_id = AuthManager._validated_user_id(user_id)
+        if (type(context) is not tuple or len(context) != 2 or type(context[0]) is not int
+                or canonical_id is None or str(context[0]) != canonical_id):
+            raise AdminAuditUnavailableError()
+        audit = create_admin_audit_context(
+            actor_user_id=context[0], session_family_id=context[1], request_id=get_request_id(),
+        )
+    except Exception:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            AdminAuditUnavailableError.code, AdminAuditUnavailableError.message,
+        )) from None
+    try:
+        yield audit
+    except AdminAuditTargetError:
+        raise HTTPException(status_code=422, detail=_error_detail(
+            AdminAuditTargetError.code, AdminAuditTargetError.message,
+        )) from None
+    except AdminAuditUnavailableError:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            AdminAuditUnavailableError.code, AdminAuditUnavailableError.message,
+        )) from None
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])

@@ -730,9 +730,13 @@ class AuthManagerTests(unittest.TestCase):
                 self.insert_values = None
 
             def fetch_all(self, *_args):
+                if 'FROM information_schema.TABLES' in _args[0]:
+                    from src.core.auth.admin_audit import AUDIT_TRANSACTION_TABLES
+                    return [{'table_name': name, 'engine': 'InnoDB'} for name in AUDIT_TRANSACTION_TABLES]
                 return []
 
-            def unit_of_work(self):
+            def unit_of_work(self, *, isolation_level=None):
+                self.isolation_level = isolation_level
                 return self
 
             def __enter__(self):

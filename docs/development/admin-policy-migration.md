@@ -6,6 +6,8 @@
 
 随后按[近期认证协议](admin-recent-authentication.md)明确切换9项用户/角色/resource维护写入（2+4+3）。它们仍先经过旧require_admin，再检查同一活动access Cookie的初次认证时间，默认600秒/配置60–3600；陈旧403、配置/校验异常固定503，管理读取与其余31项保持原规则。普通refresh有效整数原样继承，缺失/畸形/超未来proof归0，不能生成新初次认证。门禁同时锁定40+9集合，真实两库/认证/HTTP及客户端拒绝重放测试见[实证](../evaluations/admin-step-up-2026-11-17/README.md)。这9项的时间校验已本地验证，不将它当作目标生产账号恢复、可授予范围或完整审计。
 
+再按[同事务审计协议](admin-transaction-audit.md)为同9写显式传server audit context，新增兼容admin_change_audit表；六表存在/InnoDB、业务与audit INSERT及适用的最后管理员保护共同提交，记录失败固定503回滚，commit确认未知不自动重试。实际变化/绑定动作与历史失联关联清理计数验证，内部None仍未审计、context不是权限凭证、request_ref只关联。门禁现精确40+9+9，API991/native16和Linux源码包兼容见[实证](../evaluations/admin-audit-2026-11-17/README.md)。仅本地，服务层capability/可授予范围、拒绝记录与完整审计读取保留/生产恢复仍待。
+
 ## 源码盘点
 
 本轮只检查源码和无运行时初始化的路由组合，不读取数据库账户或凭据，也不代表生产角色数据已核对。

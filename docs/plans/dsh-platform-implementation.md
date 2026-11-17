@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17补A的[9项管理变更同事务审计](../development/admin-transaction-audit.md)：新兼容表与server引用，六表InnoDB/DML前核验，业务/audit共同commit、插入失败九路回滚，commit未知不自动重试。内部None/拒绝/完整历史与保留仍未迁移，context不是新授权。最终API991、新原生审计16、近期12/原24/恢复16/原MySQL33、schema/deploy及OpenAPI无漂移过，见[实证](../evaluations/admin-audit-2026-11-17/README.md)。集成发现Linux源码白名单漏3auth，补为226及直接导入/initializer/转导出来源门禁；复审顺序与namespace/自证测试/检查器问题已修，最终archive13过。两次无official实际Linux49/9/5/组件SDK/正式三库六场景通过且供应商0、273payload/67资产一致；最终host gate另对同字节226源通过，不假称VM运行后来host代码，旧per_run=false不补真。原案例同题6ID10重点/新增透明审计关系图双尺寸明暗过未发布；原80/123状态/服务保持，仅中文本地保存。服务层capability/可授予范围/生产恢复与完整审计运营仍待，A/P1/A–D未完成；无代理/付费复跑。
+
 2026-11-17补A的[9项管理写近期认证](../development/admin-recent-authentication.md)：用户2/角色4/resource3先旧require_admin再活动Cookie严格初次认证，默认600秒且复用identity既有配置；40+9精确schema门禁，读及其余31项未切换。复审P2旧refresh把null取now/str,float转int已修为无效proof归0，有效整数/陈旧时间原继承；真实owned两库/Auth/Cookie/HTTP12、旧stack24、最终API967与工作区Web310单元过，见[实证](../evaluations/admin-step-up-2026-11-17/README.md)。完整API首跑因新schema测试污染父模块失败，隔离子进程后通过，保留失败及旧refresh内存负对照6子例失败；新导出OpenAPI无漂移。原博客案例同题补第4节，5稳定ID/8strong、双尺寸明暗过未发布；原80/123dirty与main210/1/现有服务保持，仅中文本地保存。时间门槛不替代可授予集合/细粒度能力/完整审计或生产恢复，A/P1/A–D未整体完成；不配置Clash或恢复付费复跑。
 
 2026-11-17补阶段A的[最后启用管理员事务保护](../development/admin-recovery-invariant.md)：统一用户status/delete/角色替换、角色code/delete，单连接RC和角色目录锁，最终归零则整笔回滚。原HEAD临时MySQL复现四类漏洞；最终完整API953、native16、原MySQL33及MySQL/Redis/认证HTTP24过，原13并发组保实际LOCK WAIT断言连续三次过。shadow40/旧管理员守卫保持，未新增用户维护HTTP/Agent写能力，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。案例稿与透明流程图双尺寸明暗过未发布；原80/123dirty/服务保留，仅中文本地提交。此处只保护启用角色不归零，近期认证、可授予集合、审计、生产目标盘点及真实恢复仍待，阶段A/P1/A–D未整体完成；Clash配置与官方付费复跑不在范围内。

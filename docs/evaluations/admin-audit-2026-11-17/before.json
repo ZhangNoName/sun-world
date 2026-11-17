@@ -1,0 +1,71 @@
+{
+  "head": "2dc4d58e3749f0e0ad49b45e9111ab73ec715044",
+  "sources": {
+    "apps/api/src/database/mysql/schema_migration.py": "3ac6bdd25ad85b0b6c1668e0bdb997ddae91a0b481b9f58d8dba5fa5ea02f4a1",
+    "apps/api/src/controller/user_manage.py": "c4f8e1b76509daa369bc83c872185c0343952df09b7650144c498edfee81e660",
+    "apps/api/src/controller/role_manager.py": "b0a8344654751b8edf72618468ccd5c8f6f8e8dea2589edf617c7420a0de47ee",
+    "apps/api/src/controller/resource_manager.py": "4b152cb740a20786caf5b7dbf6cd5964a256e3adefc9e25538bd38cd3ddb7ac7",
+    "apps/api/src/routers/auth/auth.py": "2b2970d5f00edd67e6dc52a13077dc52cae01af8dc43cdbfd49fcdae3fd62739",
+    "apps/api/src/routers/user/user.py": "da7680224ba598e9c051dacdd73d6e9c37e05ecbd7defe31ccc024d61e3edbb7",
+    "apps/api/src/routers/role/role.py": "0eb724a80da53c3e1f54f815b619f159e17650d40eeb27819a85982b8609fd6d",
+    "apps/api/src/routers/resource/resource.py": "8738db672f26ba8069d3b044705ed9d668400646763418250bd380f8917dcbf6"
+  },
+  "audit_table_absent": true,
+  "nine_writes": [
+    {
+      "method": "POST",
+      "path": "/user/",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/user/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/role/",
+      "status": 201
+    },
+    {
+      "method": "PUT",
+      "path": "/role/3",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/role/3",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/role/4/bind_resources",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/resource/",
+      "status": 201
+    },
+    {
+      "method": "PUT",
+      "path": "/resource/1",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/resource/2",
+      "status": 200
+    }
+  ],
+  "malformed_target": {
+    "path": "/user/2oops",
+    "status": 500,
+    "actual_user_2_status": 1
+  },
+  "mysql_root": "/private/tmp/sunworld-agent-mysql-bpjqkc8v",
+  "mysql_root_removed": true,
+  "redis_root": "/private/tmp/sunworld-agent-redis-wfeba8zj",
+  "redis_root_removed": true,
+  "synthetic_only": true
+}

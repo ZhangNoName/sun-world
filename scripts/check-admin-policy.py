@@ -49,16 +49,17 @@ def main():
     spec.loader.exec_module(module)
     app = module.build_schema_app()
     verify_admin_policy(app.routes)
-    print("Admin policy baseline matches 40 guarded HTTP operations and 9 recent-authentication writes (schema-only).")
+    print("Admin policy baseline matches 40 guarded HTTP operations and 9 recent-authentication writes; 9 transactional-audit writes (schema-only).")
 
 
 def verify_admin_policy(routes):
-    from src.routers.auth.auth import require_admin, require_recent_admin
+    from src.routers.auth.auth import require_admin, require_recent_admin, require_admin_audit
     from src.core.auth.admin_shadow import ADMIN_OPERATIONS
     from src.core.auth.recent import ADMIN_STEP_UP_OPERATIONS
 
     for guard, expected in ((require_admin, ADMIN_OPERATIONS),
-                            (require_recent_admin, ADMIN_STEP_UP_OPERATIONS)):
+                            (require_recent_admin, ADMIN_STEP_UP_OPERATIONS),
+                            (require_admin_audit, ADMIN_STEP_UP_OPERATIONS)):
         actual = guarded_operations(routes, guard)
         if actual != expected:
             raise ValueError("Admin policy operation set mismatch")

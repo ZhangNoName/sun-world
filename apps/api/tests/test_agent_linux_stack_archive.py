@@ -2,6 +2,7 @@
 
 import importlib.util
 import io
+import json
 from pathlib import Path
 import stat
 import tarfile
@@ -37,6 +38,133 @@ def tar(rows):
 
 
 class LinuxStackArchiveTests(unittest.TestCase):
+    def test_actual_declared_source_manifest_has_direct_python_import_closure(self):
+        contract = json.loads(builder.read_source(stack.SOURCES))
+        self.assertEqual(stack.source_paths(builder.read_source), contract['paths'])
+
+    def test_actual_imports_reject_each_missing_auth_module_before_packaging(self):
+        contract = json.loads(builder.read_source(stack.SOURCES))
+        for module in ('admin_recovery', 'recent', 'admin_audit'):
+            missing = f'apps/api/src/core/auth/{module}.py'
+            paths = [path for path in contract['paths'] if path != missing]
+            self.assertEqual(len(paths), len(contract['paths']) - 1)
+            def read(name, **kwargs):
+                if name == stack.SOURCES:
+                    return json.dumps({**contract, 'paths': paths}).encode()
+                return builder.read_source(name, **kwargs)
+            with self.subTest(module=module), self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+                stack.source_paths(read)
+
+    def test_actual_auth_initializer_cannot_be_removed_while_members_are_imported(self):
+        contract = json.loads(builder.read_source(stack.SOURCES))
+        paths = [path for path in contract['paths'] if path != 'apps/api/src/core/auth/__init__.py']
+        self.assertEqual(len(paths), len(contract['paths']) - 1)
+        def read(name, **kwargs):
+            if name == stack.SOURCES:
+                return json.dumps({**contract, 'paths': paths}).encode()
+            return builder.read_source(name, **kwargs)
+        with self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+            stack.source_paths(read)
+
+    def test_relative_packages_namespaces_and_attributes_are_not_guessed_submodules(self):
+        sources = {
+            'apps/api/src/__init__.py': b'',
+            'apps/api/src/pkg/__init__.py': b'Principal = object\n',
+            'apps/api/src/pkg/entry.py': b'from . import Principal\nfrom .child import VALUE\nfrom ..type import leaf\nimport src.type.leaf\n',
+            'apps/api/src/pkg/child.py': b'VALUE = 1\n',
+            # Only the real maintained namespace locations are permitted.
+            'apps/api/src/type/leaf.py': b'VALUE = 2\n',
+        }
+        opened = []
+        def read(name, **kwargs):
+            opened.append(name)
+            if name == stack.SOURCES:
+                return json.dumps({'version': 'sun-world-linux-stack-sources/1', 'paths': sorted(sources)}).encode()
+            return sources[name]
+        self.assertEqual(stack.source_paths(read), sorted(sources))
+        self.assertEqual(set(opened), {stack.SOURCES, *sources})
+        for body in (b'from .missing import thing\n', b'import src.type.missing\n',
+                     b'from ....outside import thing\n', b'from . import missing\n',
+                     b'from ..type import thing\n', b'from .child import UNKNOWN\n'):
+            sources['apps/api/src/pkg/entry.py'] = body
+            with self.subTest(body=body), self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+                stack.source_paths(read)
+        sources['apps/api/src/unknown_namespace/leaf.py'] = b'VALUE = 3\n'
+        sources['apps/api/src/pkg/entry.py'] = b'import src.unknown_namespace.leaf\n'
+        with self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+            stack.source_paths(read)
+
+    def test_source_ast_or_read_failure_has_only_the_fixed_error(self):
+        path = 'apps/api/src/entry.py'
+        for raw in (b'PRIVATE SYNTAX INVALID', None):
+            def read(name, **kwargs):
+                if name == stack.SOURCES:
+                    return json.dumps({'version': 'sun-world-linux-stack-sources/1', 'paths': ['apps/api/src/__init__.py', path]}).encode()
+                if name == 'apps/api/src/__init__.py':
+                    return b''
+                if raw is None:
+                    raise OSError('PRIVATE filesystem details')
+                return raw
+            with self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$') as caught:
+                stack.source_paths(read)
+            self.assertNotIn('PRIVATE', str(caught.exception))
+
+    def test_from_members_use_only_real_top_level_bindings_or_declared_children(self):
+        sources = {
+            'apps/api/src/__init__.py': b'',
+            'apps/api/src/pkg/__init__.py': (
+                b'class Principal: pass\ndef factory(): pass\nasync def async_factory(): pass\n'
+                b'VALUE = 1\nANNOTATED: int = 2\nimport json as json_alias\n'
+                b'from .child import CHILD_VALUE as alias\n'
+                b'annotation_only: int\nundefined_owner.attribute = 1\n'
+            ),
+            'apps/api/src/pkg/child.py': b'CHILD_VALUE = 3\n',
+            'apps/api/src/pkg/entry.py': (
+                b'from . import Principal, factory, async_factory, VALUE, ANNOTATED, json_alias, alias, child\n'
+            ),
+        }
+        def read(name, **kwargs):
+            if name == stack.SOURCES:
+                return json.dumps({'version': 'sun-world-linux-stack-sources/1', 'paths': sorted(sources)}).encode()
+            return sources[name]
+        self.assertEqual(stack.source_paths(read), sorted(sources))
+        for member in ('annotation_only', 'undefined_owner', 'UNKNOWN'):
+            sources['apps/api/src/pkg/entry.py'] = f'from . import {member}\n'.encode()
+            with self.subTest(member=member), self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+                stack.source_paths(read)
+
+    def test_from_alias_cannot_prove_its_own_missing_or_circular_source(self):
+        for mode in ('self', 'mutual'):
+            sources = {'apps/api/src/__init__.py': b''}
+            if mode == 'self':
+                sources['apps/api/src/pkg/__init__.py'] = b'from . import missing\n'
+            else:
+                sources.update({
+                    'apps/api/src/pkg/__init__.py': b'from .left import missing\n',
+                    'apps/api/src/pkg/left.py': b'from .right import missing\n',
+                    'apps/api/src/pkg/right.py': b'from .left import missing\n',
+                })
+            def read(name, **kwargs):
+                if name == stack.SOURCES:
+                    return json.dumps({'version': 'sun-world-linux-stack-sources/1', 'paths': sorted(sources)}).encode()
+                return sources[name]
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, '^AGENT_LINUX_GUEST_PREPARE_FAILED$'):
+                stack.source_paths(read)
+
+    def test_reexports_resolve_to_an_independent_class_or_declared_child(self):
+        sources = {
+            'apps/api/src/__init__.py': b'',
+            'apps/api/src/pkg/__init__.py': b'from .middle import Exported\nfrom . import leaf as Child\n',
+            'apps/api/src/pkg/middle.py': b'from .leaf import Original as Exported\n',
+            'apps/api/src/pkg/leaf.py': b'class Original: pass\n',
+            'apps/api/src/pkg/entry.py': b'from src.pkg import Exported, Child\n',
+        }
+        def read(name, **kwargs):
+            if name == stack.SOURCES:
+                return json.dumps({'version': 'sun-world-linux-stack-sources/1', 'paths': sorted(sources)}).encode()
+            return sources[name]
+        self.assertEqual(stack.source_paths(read), sorted(sources))
+
     def test_only_explicit_mysql_recipe_accepts_identical_directory_headers(self):
         directory = ('fixed/bin', tarfile.DIRTYPE, b'', 0o755)
         raw = tar([directory, directory, ('fixed/bin/program', tarfile.REGTYPE, b'body', 0o755)])

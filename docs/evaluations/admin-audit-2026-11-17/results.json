@@ -1,0 +1,205 @@
+{
+  "baseline_head": "2dc4d58e3749f0e0ad49b45e9111ab73ec715044",
+  "final_source_tree": "2b3426264d34563a9ddfd7888e6a6c2c8e404989",
+  "mac_native_source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+  "audit_17_source_bytes_unchanged_after_linux_package_fixes": true,
+  "runs": [
+    {
+      "log": "stack-initial.log",
+      "sha256": "6c1cc29f1055cebab605f339dd3b70bc2ac066d39b1b506b81d5baa3d7e5515e",
+      "source_tree": null,
+      "scope": "first native16: migration-test tuple unpacking failed; production cases passed",
+      "tests": 16,
+      "seconds": 3.213,
+      "result": "failed",
+      "failure_detail": "failures=1"
+    },
+    {
+      "log": "stack-corrected.log",
+      "sha256": "003795c52bae7874212c2ed50439f4533938bd621556f713ec5e92e3a5f111f8",
+      "source_tree": null,
+      "scope": "native16 after fixing only migration harness",
+      "tests": 16,
+      "seconds": 3.411,
+      "result": "passed"
+    },
+    {
+      "log": "stack-final.log",
+      "sha256": "066e86dbaba3243cc0f9d07f63e60a53356ada1cd3e5a430b3ae3749dcc6b303",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "frozen native16 MySQL/Redis/Auth/Cookie/HTTP",
+      "tests": 16,
+      "seconds": 2.542,
+      "result": "passed"
+    },
+    {
+      "log": "recent-stack-final.log",
+      "sha256": "d1cc0e3ebcf3fcf8c56ece9b54273687224c297e70604ed7abe2f44ab53aa659",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "previous recent-auth native12",
+      "tests": 12,
+      "seconds": 2.425,
+      "result": "passed"
+    },
+    {
+      "log": "original-stack-final.log",
+      "sha256": "7a1b18bc23561218afbd0eb06cbe90bbb3a736ad675d71d0924d19fe9ea1aa21",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "original two-database/Auth/HTTP24; synthetic Worker/model/articles",
+      "tests": 24,
+      "seconds": 17.347,
+      "result": "passed"
+    },
+    {
+      "log": "recovery-mysql-final.log",
+      "sha256": "93ed26caf261efb357f9c82a81808b713054b4d1424b573168d9d7507d243544",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "previous last-administrator MySQL16, unaudited internal compatibility",
+      "tests": 16,
+      "seconds": 0.596,
+      "result": "passed"
+    },
+    {
+      "log": "original-mysql-final.log",
+      "sha256": "97d74ec2689748c17a47169371d856ebcf323af156b3de54c66e885d9706a789",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "original MySQL33 with the new canonical schema",
+      "tests": 33,
+      "seconds": 6.104,
+      "result": "passed"
+    },
+    {
+      "log": "api-final.log",
+      "sha256": "6cd02b3f8bf75cf76478ad052e66ccf10cacf99dcabe4a428fe11b44305ef274",
+      "source_tree": "dbbb1e493f76a67c21f974520c04efb591a0ea80",
+      "scope": "full API before Linux package additions",
+      "tests": 983,
+      "seconds": 35.943,
+      "result": "passed"
+    },
+    {
+      "log": "api-commit-final.log",
+      "sha256": "baa6d5a19e4fe34c1daef83bbb5fda34e64b9816684d7a59f8477da95b5c4f6d",
+      "source_tree": "2b3426264d34563a9ddfd7888e6a6c2c8e404989",
+      "scope": "final full API including corrected local export-provenance gate",
+      "tests": 991,
+      "seconds": 37.071,
+      "result": "passed"
+    }
+  ],
+  "new_offline_audit_cases": 16,
+  "new_archive_cases_final": 13,
+  "known_native_roots": [
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-0vz41h4g",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-y0c5v1mg",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-91wht5gk",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-gz916acu",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-rcu5az_s",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-riq2h6gy",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-xhd_srez",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-3w0odxbm",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-uzjhkcm3",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-v9gi7fcy",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-vxkinxvq",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-bpjqkc8v",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-wfeba8zj",
+      "removed": true,
+      "process_reference": false
+    }
+  ],
+  "existing_services": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033": 200
+  },
+  "schema": {
+    "tables": 31,
+    "columns": 279,
+    "deployment_protocol_passed": true,
+    "fresh_openapi_matches_existing": true,
+    "actual_additive_migration": "one CREATE TABLE only, original data unchanged, second plan empty"
+  },
+  "native_linux": {
+    "first_source_tree": "1c58cd46db87facb74c5d6655d1c89023af82deb",
+    "second_source_tree": "058f06fcd5a57770cb08117ee257bab8947b42ba",
+    "final_host_gate_source_tree": "2b3426264d34563a9ddfd7888e6a6c2c8e404989",
+    "protocol_cases": 49,
+    "containment_cases": 9,
+    "gateway_cases": 5,
+    "formal_sdk_stack_cases": 6,
+    "supplier_requests": 0,
+    "guest_legacy_per_run_flag": false,
+    "resource_filesystem_containment_verified": true,
+    "gateway_egress_verified": true,
+    "sdk_synthetic_verified": true,
+    "formal_stack_synthetic_verified": true,
+    "groups_gone": true,
+    "private_run_root_removed": true,
+    "final_host_gate_verified_against_identical_native_payload": true
+  },
+  "review_corrections": [
+    "nondeterministic frozenset route registration in a new negative test; sorted, old gate unchanged",
+    "missing three real auth modules in the explicit Linux source contract",
+    "host direct-import gate accepted missing initializer/unknown namespace member; corrected",
+    "host from-import aliases self-proved missing members; provenance and visited guard added"
+  ],
+  "vm_preflight_relative_path_attempt": "rejected before admission/resources, absolute-path retry succeeded",
+  "commit_failure_scope": "before-commit injection rolls back both; actual commit followed by injected acknowledgment error preserves both and returns503, no automatic retry",
+  "dependency_failure_scope": "real audit INSERT failure uses owned MySQL trigger; table-rename/MyISAM tests only in owned database",
+  "csrf_or_live_browser_auth_e2e": false,
+  "web_production_source_changed": false,
+  "external_model_used": false,
+  "proxy_config_changed": false,
+  "published": false,
+  "pushed": false,
+  "deployed": false
+}

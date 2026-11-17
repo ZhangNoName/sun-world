@@ -40,6 +40,9 @@ class SqliteUow:
         return self.connection.execute(sql.replace('%s', '?'), params or ())
 
     def fetch_all(self, sql, params=None):
+        if 'FROM information_schema.TABLES' in sql:
+            from src.core.auth.admin_audit import AUDIT_TRANSACTION_TABLES
+            return [{'table_name': name, 'engine': 'InnoDB'} for name in AUDIT_TRANSACTION_TABLES]
         return [dict(row) for row in self.query(sql, params).fetchall()]
 
     def fetch_one(self, sql, params=None):
@@ -47,7 +50,8 @@ class SqliteUow:
         return dict(row) if row else None
 
     def execute(self, sql, params=None):
-        return self.query(sql, params).rowcount
+        cursor = self.query(sql, params)
+        return cursor.lastrowid if sql.strip().upper().startswith('INSERT') else cursor.rowcount
 
     def commit(self):
         if self.db.fail_commit:
@@ -80,6 +84,9 @@ class Database:
                     role_id INTEGER REFERENCES roles(id), PRIMARY KEY(user_id,role_id));
                 CREATE TABLE role_resources(role_id INTEGER REFERENCES roles(id),
                     resource_id INTEGER REFERENCES resources(id), PRIMARY KEY(role_id,resource_id));
+                CREATE TABLE admin_change_audit(id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    actor_user_id INTEGER, session_ref TEXT, request_ref TEXT, action TEXT,
+                    target_type TEXT, target_id INTEGER, affected_rows INTEGER, recorded_at TIMESTAMP);
                 INSERT INTO users VALUES(1,1,'administrator',''),(2,1,'normal',''),(3,0,'disabled','');
                 INSERT INTO roles VALUES(1,'admin','Admin',''),(2,'normal','Normal',''),
                     (3,'  AdMiN' || char(9),'Alternate','');

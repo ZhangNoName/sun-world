@@ -1,5 +1,6 @@
 """Fixed, bounded full-stack guest assets. No installers or host extraction."""
 
+import ast
 import hashlib
 import io
 import json
@@ -16,6 +17,7 @@ PYTHON = 'tools/agent-linux-vm/stack-python.json'
 SOURCES = 'tools/agent-linux-vm/stack-sources.json'
 GATEWAY = 'tools/agent-linux-vm/gateway-assets.json'
 FAILED = 'AGENT_LINUX_GUEST_PREPARE_FAILED'
+SOURCE_NAMESPACES = frozenset({'src.llm.model', 'src.test', 'src.type', 'src.util'})
 
 
 def fail():
@@ -58,7 +60,127 @@ def source_paths(read_source):
             fail()
         if path not in exact and not path.endswith(('.py', '.json', '.mjs')):
             fail()
+    _check_direct_imports(value['paths'], read_source)
     return value['paths']
+
+
+def _check_direct_imports(paths, read_source):
+    """Only declared src modules, not dynamic imports or third-party closure.
+
+    Import members need a static top-level binding or a declared submodule.
+    Ordinary package initializers must be declared. Only the four maintained
+    initializer-free directories may act as namespace packages.
+    """
+    try:
+        modules = {}
+        packages = set()
+        for path in paths:
+            if not path.startswith('apps/api/src/') or not path.endswith('.py'):
+                continue
+            parts = path.removeprefix('apps/api/').removesuffix('.py').split('/')
+            package = parts[-1] == '__init__'
+            if package:
+                parts.pop()
+            if not parts or any(not part.isidentifier() for part in parts):
+                fail()
+            name = '.'.join(parts)
+            if name in modules:
+                fail()
+            modules[name] = (path, parts if package else parts[:-1])
+            if package:
+                packages.add(name)
+        namespaces = {name for name in SOURCE_NAMESPACES
+                      if any(module.startswith(name + '.') for module in modules)}
+        available = set(modules) | namespaces
+        def local(name):
+            return name == 'src' or name.startswith('src.')
+
+        def import_base(node, package):
+            if not node.level:
+                return node.module or ''
+            if node.level > len(package):
+                fail()
+            prefix = package[:len(package) - node.level + 1]
+            return '.'.join(prefix + (node.module.split('.') if node.module else []))
+
+        trees, bindings, reexports = {}, {}, {}
+        for name, (path, package) in modules.items():
+            if any('.'.join(package[:index]) not in packages | namespaces
+                   for index in range(1, len(package) + 1)):
+                fail()
+            raw = read_source(path, allow_empty=True)
+            if type(raw) is not bytes or len(raw) > 1048576:
+                fail()
+            tree = ast.parse(raw, filename='<declared-module>')
+            trees[name] = tree
+            names, aliases = set(), {}
+            for statement in tree.body:
+                if isinstance(statement, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                    names.add(statement.name)
+                elif isinstance(statement, (ast.Assign, ast.AnnAssign)):
+                    if isinstance(statement, ast.AnnAssign) and statement.value is None:
+                        continue
+                    targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+                    for target in targets:
+                        names.update(node.id for node in ast.walk(target)
+                                     if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store))
+                elif isinstance(statement, ast.Import):
+                    for alias in statement.names:
+                        bound = alias.asname or alias.name.split('.')[0]
+                        aliases.setdefault(bound, []).append((alias.name if local(alias.name) else None, None))
+                elif isinstance(statement, ast.ImportFrom):
+                    base = import_base(statement, package)
+                    for alias in statement.names:
+                        if alias.name != '*':
+                            aliases.setdefault(alias.asname or alias.name, []).append((base, alias.name) if local(base) else (None, None))
+            bindings[name] = names
+            reexports[name] = aliases
+
+        resolved = {}
+        def member_available(base, member):
+            key = (base, member)
+            if key in resolved:
+                return resolved[key]
+            pending, visited = [key], set()
+            while pending:
+                current_base, current_member = pending.pop()
+                current = (current_base, current_member)
+                if current in visited:
+                    continue
+                visited.add(current)
+                if (current_member in bindings.get(current_base, set())
+                        or (current_base in packages | namespaces
+                            and current_base + '.' + current_member in available)):
+                    resolved[key] = True
+                    return True
+                for source, original in reexports.get(current_base, {}).get(current_member, []):
+                    if source is None or (original is None and source in available):
+                        # External import names are outside this local-source
+                        # gate; ordinary local imports point to real modules.
+                        resolved[key] = True
+                        return True
+                    if original is not None:
+                        pending.append((source, original))
+            resolved[key] = False
+            return False
+
+        for name, (_, package) in modules.items():
+            for node in ast.walk(trees[name]):
+                if isinstance(node, ast.Import):
+                    required = [alias.name for alias in node.names if local(alias.name)]
+                elif isinstance(node, ast.ImportFrom):
+                    base = import_base(node, package)
+                    required = [base] if local(base) else []
+                else:
+                    continue
+                if any(name not in available for name in required):
+                    fail()
+                if isinstance(node, ast.ImportFrom) and required:
+                    base = required[0]
+                    if any(not member_available(base, alias.name) for alias in node.names):
+                        fail()
+    except Exception:
+        fail()
 
 
 def load(cache, read_owned, read_source):

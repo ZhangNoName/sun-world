@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any, Tuple
 from loguru import logger
 from src.database.mysql.mysql_manage import MySQLManager
+from src.core.auth.admin_audit import admin_audit_target, admin_audit_transaction, record_admin_change
 
 
 class ResourceManager:
@@ -21,7 +22,7 @@ class ResourceManager:
         """获取全部字段字符串，用于SQL查询"""
         return ",".join(self.all_attr)
 
-    def create_resource(self, resource: Dict[str, Any]) -> int:
+    def create_resource(self, resource: Dict[str, Any], *, audit=None) -> int:
         """
         创建资源
 
@@ -41,24 +42,39 @@ class ResourceManager:
             resource.get("path", ""),
             resource.get("description", ""),
         )
-        return self.db.execute(sql, params)
+        if audit is None:
+            return self.db.execute(sql, params)
+        with admin_audit_transaction(self.db, audit) as uow:
+            resource_id = uow.execute(sql, params)
+            record_admin_change(uow, audit, action='resource.create', target_id=resource_id, affected_rows=1)
+        return resource_id
 
-    def update_resource(self, resource_id: int, **kwargs) -> int:
+    def update_resource(self, resource_id: int, *, audit=None, **kwargs) -> int:
         """更新资源"""
         if not kwargs:
             raise ValueError("At least one resource field is required")
         invalid = set(kwargs) - self.writable_attr
         if invalid:
             raise ValueError(f"Unsupported resource fields: {sorted(invalid)}")
+        if audit is not None:
+            resource_id = admin_audit_target(resource_id)
         set_clause = ", ".join(f"{key}=%s" for key in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id=%s"
         params = tuple(kwargs.values()) + (resource_id,)
-        return self.db.execute(sql, params)
+        if audit is None:
+            return self.db.execute(sql, params)
+        with admin_audit_transaction(self.db, audit) as uow:
+            changed = uow.execute(sql, params)
+            if changed > 0:
+                record_admin_change(uow, audit, action='resource.update', target_id=resource_id, affected_rows=changed)
+        return changed
 
-    def delete_resource(self, resource_id: int) -> bool:
+    def delete_resource(self, resource_id: int, *, audit=None) -> bool:
         """Delete a resource and its role associations atomically."""
-        with self.db.unit_of_work() as uow:
-            uow.execute(
+        if audit is not None:
+            resource_id = admin_audit_target(resource_id)
+        with admin_audit_transaction(self.db, audit) as uow:
+            associations = uow.execute(
                 "DELETE FROM role_resources WHERE resource_id=%s",
                 (resource_id,),
             )
@@ -66,7 +82,8 @@ class ResourceManager:
                 f"DELETE FROM {self.table_name} WHERE id=%s",
                 (resource_id,),
             )
-            uow.commit()
+            if audit is not None and associations + deleted > 0:
+                record_admin_change(uow, audit, action='resource.delete', target_id=resource_id, affected_rows=associations + deleted)
         return deleted > 0
 
     def get_resource_by_id(self, resource_id: int) -> Optional[Dict[str, Any]]:

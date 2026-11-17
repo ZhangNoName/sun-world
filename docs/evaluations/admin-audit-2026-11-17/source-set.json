@@ -1,0 +1,26 @@
+{
+  "tree": "2b3426264d34563a9ddfd7888e6a6c2c8e404989",
+  "paths": {
+    "apps/api/src/controller/auth_manager.py": "02d28563e5b63977476bb53b87413a4243175c87c3984387099740876a73b2ff",
+    "apps/api/src/controller/resource_manager.py": "897fbef401a2c7df02f368c62cd12efaaa199832c0f9881b274c141ebccbd535",
+    "apps/api/src/controller/role_manager.py": "0046473a48bf6b53b3019df54b35e3e75bd96f81d769a4a8e40e2ebca65b97d6",
+    "apps/api/src/controller/user_manage.py": "641c3a70379c4e2fd35043e10bb19e0ea9cc2b447be04ccdf04cf580c945903f",
+    "apps/api/src/core/auth/admin_audit.py": "0b482a748af3b39dc69826c5fa8ce5b27988a2a974c7760c437db4144662f89b",
+    "apps/api/src/database/mysql/schema_migration.py": "6e210ad1c643ed96ce90053c958d6e3527a455ca17c7b59b30b6e2cc801883a6",
+    "apps/api/src/routers/auth/auth.py": "eaeb536c8f522aa66c45850e005dc421b6a6f28fe9e210af8a22a572f4d28273",
+    "apps/api/src/routers/resource/resource.py": "649ffdbe20d70d4bca60fa698cd4935acca8d20e9d2b10c5aa2bafe58fb5b1ec",
+    "apps/api/src/routers/role/role.py": "e244e35ffbea755106e195624247dcc5202e3e0a6819c799a055197217e817d7",
+    "apps/api/src/routers/user/user.py": "6cd54c2aafa5253e883b74a4ace03a89c30807b24d47ad461616ad71f9f4412f",
+    "apps/api/tests/integration/test_admin_audit_stack.py": "a3c04149d1ece3a2963cc6bc5b2b55f0b1db8039b2504674036e332d3ccf83f0",
+    "apps/api/tests/test_admin_audit.py": "1bec18822c7e479f76a89fb95708a84217e242b52d63fceaafcef45f241017f0",
+    "apps/api/tests/test_admin_recent_auth.py": "e4dac58014707002353b212009923a25eb6a6ce96c0fb113a9187f2a6b1c81b7",
+    "apps/api/tests/test_admin_recovery.py": "df3d02a00ce6d52a42018318f2e94ca0ea5a497a4bd2f7a36e7e0e8089f5ced2",
+    "apps/api/tests/test_agent_linux_stack_archive.py": "31492aaf6295e3768f6654a060fe070b6dce895849fc5f528a253ab9d1cd7b08",
+    "apps/api/tests/test_auth_manager.py": "8e725de2a362d8dcfb2ee1b70df56cab300dc9b9c9762a0f4f5c51d3c7254966",
+    "scripts/agent-linux-vm-stack.py": "ece7f89641a06617e7e55b97c406f23ccbe9fb9bf607c050f0e9f5e96d37a426",
+    "scripts/check-admin-policy.py": "5a11e498733a21332bbd76a996924e9c9f5de1b1cd1728dc853d81529a7effe9",
+    "scripts/test-admin-audit-stack.py": "ce6bd3f71f08354fe265b25ee198a15acb2fc3eb52fda3e5589db0608f3f8e30",
+    "tools/agent-linux-vm/stack-assets.json": "8ddd3f4de4288456028a75bdfc101b025222bcec1144633bfc64eb14a325136d",
+    "tools/agent-linux-vm/stack-sources.json": "3380b8ee4859c93d77f4b6df8935e1816239d75a3bd0cce4580b011399416569"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "strayBoldMarkers": false,
+  "strongCount": 10,
+  "headings": 6,
+  "ids": [
+    "withdrawal-paths",
+    "shared-transaction",
+    "concurrent-withdrawals",
+    "recent-primary-authentication",
+    "transactional-admin-audit",
+    "verification-boundaries"
+  ],
+  "width": 1280,
+  "bodyWidth": 1280,
+  "indents": ["0px"],
+  "fontSize": "16px"
+}

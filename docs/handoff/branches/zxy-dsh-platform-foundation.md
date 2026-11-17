@@ -8,6 +8,18 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：同事务管理审计与Linux源码导入兼容
+
+- 持续目标开发/review/验证/中文本地保存，基点2dc4d58。按[协议](../../development/admin-transaction-audit.md)为9已近期维护写显式传server AdminAuditContext，actor ID与sid/request摘要引用；新兼容admin_change_audit表只动作/目标/影响行/UTC，不存原参数/敏感值。40+9+9依赖精确gate，context非服务授权凭证/request_ref非身份。内部None路径未迁移，拒绝/读取/保留/完整前后快照仍待。
+- 主要源：新core/auth/admin_audit、schema、AuthManager.register_user、三manager/三router/auth依赖、gate、新test_admin_audit及三个旧fake最小适配；root维护native16/CLI。显式audit单连接RC、六表齐全InnoDB才写，适用lastadmin最终检查，真实变更与记录共同提交。缺表/SQL/commit错误typed503不bool吞，User目标先正ASCII整数归一/非法422；usercreate计2，删除失联关联虽主体0也记，绑定空动作计0，普通零变更不伪记。commit已成再ACK异常两者同在且503/不重试，不声称全部失败都rollback。
+- 原HEAD九写成功无审计表；/user/2oops严格DML500而user2未停，不编成误停用。native16实际trigger令九audit INSERT错全部业务回滚、table rename九拒/恢复、真实MyISAM拒、双Cookie/双actor在业务SQL后barrier并发实际UOW、伪造payload/Header不入audit、pool1、最后admin409、commit前/后ACK注入、旧结构仅CREATE TABLE且二次计划空，全过。初native唯一失败是root错解build_plan tuple，修宿主后16过；新离线frozenset路由顺序P2排序且多hashseed过，原guard不动。
+- 最终21 source/tree2b3426264d34563a9ddfd7888e6a6c2c8e404989、完整API991/37.071秒；Mac审计16/2.542秒、近期12/2.425、原两库24/17.347、恢复16/0.596、原MySQL33/6.104全exit0（17源树dbbb1e493f76a67c21f974520c04efb591a0ea80，此后17字节保持）。schema31表279列、deploy协议和新OpenAPI无漂移，见[实证](../../evaluations/admin-audit-2026-11-17/README.md)。无Web生产源/测试变更，不重跑前轮310或完整Web，原两dirty UI及素材format问题保持。
+- 集成发现stack-sources223漏admin_recovery/recent/admin_audit，显式加3至226、stack-assets仅source合同SHA变化，二进制/其他合同/SDK版本未改。新host AST门禁复审纠正任意namespace/遗漏initializer、未知from成员及alias空自/互循环；普通包init需声明、四namespace白名单、转导出溯源/visited，最终archive13及判官原反例过，不执行源码/不读未声明/不称完整动态Python语义。生产及最终gate无剩余确认阻断。
+- 两次真实cached非official --stack源树1c58cd46db87facb74c5d6655d1c89023af82deb/058f06fcd5a57770cb08117ee257bab8947b42ba：协议49/资源9/网关5/组件SDK/正式三库mTLS6过、supplier0；两次273payloadSHA/67资产相同，最终226声明bytes全匹配native，再用最后host gate对同bytes过。host gate/test不在guest，不能称早VM执行后来host修复；旧per_run flag=false保留。首次相对参数admission拒无资源，绝对路径后才运行；两次host completed/groupsgone/私有root清理确认。没跑新official或独立API-restart，不补四题绿。
+- sun-world-blog→case-study同题[案例](../../blog/2026-11-17-last-administrator-transaction.md)新增audit节保原5ID、共6章10重点，新透明关系图说明共同事务/保存/回滚/待核对，旧图原样，博客03补边界。后端/架构笔记、权限管理、数据库事务，1280/390明暗人工查看/无缩进溢出/双星、双图360/342；预览 http://127.0.0.1:3033/.tmp/admin-audit-blog-rt8gsmsg/index.html 自有非Git稿件目录留查看，dirty renderer/CSS非完整Web，未发布。
+- 报告可定位13 owned MySQL/Redis根终态移除/ps无引用，原3030/8032/3033均200，旧live/failed roots/缓存/密钥/Clash不删改。原80/123与main210加1删保持，仅中文本地提交，不推送部署。新表上线先DDL；回滚到无审计版本须停9写/核在途或最低版本约束，不能仅保表却继续未审计写。
+- 后续A服务层capability/可授予范围、完整审计查询/保留/独立DB权限与生产目标/恢复/备份等仍待；P1/A–D未完成，官方Linux四题失败/停付费复跑保持。只复用Clash不配置代理。Claude Code/claude-ds先读上述协议，传同连接/6表engine/commit未知/内部None边界，以及Linux显式3源/普通init/本地转导出来源与VM-host分层实证。
+
 ### 2026-11-17 最新 checkpoint：9项管理写近期认证与刷新proof不升级
 
 - 持续目标开发/review/验证/中文本地保存，基点319b527。按[新协议](../../development/admin-recent-authentication.md)切换用户2/角色4/resource3维护写，原require_admin依赖40项全保留；近期9集合由schema-only gate精确核。默认600秒/60–3600沿用identity共用parser，旧身份关联错误保持；陈旧403 AUTH_STEP_UP_REQUIRED，配置/校验异常固定503，Cookie与旧守卫user一致，body/Header不替代证明。读取及其余31项未切换，无新HTTP/Agent写能力。

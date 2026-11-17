@@ -24,6 +24,25 @@ from typing import Any, Iterable
 
 
 MYSQL_SCHEMA: dict[str, dict[str, Any]] = {
+    'admin_change_audit': {
+        'columns': [
+            {'name': 'id', 'definition': 'BIGINT NOT NULL AUTO_INCREMENT', 'type': 'bigint'},
+            {'name': 'actor_user_id', 'definition': 'BIGINT NOT NULL', 'type': 'bigint'},
+            {'name': 'session_ref', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'request_ref', 'definition': 'CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'action', 'definition': 'VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'target_type', 'definition': 'VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL', 'type': 'varchar'},
+            {'name': 'target_id', 'definition': 'BIGINT NOT NULL', 'type': 'bigint'},
+            {'name': 'affected_rows', 'definition': 'BIGINT NOT NULL', 'type': 'bigint'},
+            {'name': 'recorded_at', 'definition': 'DATETIME(6) NOT NULL', 'type': 'datetime'},
+        ],
+        'primary_key': ['id'],
+        'indexes': [
+            'KEY `idx_admin_audit_actor_time` (`actor_user_id`, `recorded_at`)',
+            'KEY `idx_admin_audit_target_time` (`target_type`, `target_id`, `recorded_at`)',
+            'KEY `idx_admin_audit_request` (`request_ref`)',
+        ],
+    },
     "agent_ledger_capacity": {
         "columns": [
             {'name': 'id', 'definition': 'INT NOT NULL', 'type': 'int'},

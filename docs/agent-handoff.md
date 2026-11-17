@@ -1,5 +1,13 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜管理变更同事务审计与Linux源码包闭合
+
+- 按[协议](development/admin-transaction-audit.md)为9维护写显式传server context、同UOW写兼容audit表，六表InnoDB/DML前核验，typed503不吞错；缺表/插入失败九路回滚，commit确认未知不自动重试，原最后admin409保持。内部None、完整审计运营/服务授权仍待，request_ref非身份。
+- 最终21源树2b3426264d34563a9ddfd7888e6a6c2c8e404989，API991/native审计16/近期12/原24/恢复16/原MySQL33/schema31表279列/deploy/OpenAPI无漂移过，见[实证](evaluations/admin-audit-2026-11-17/README.md)。新test顺序、Linux包漏3auth和host gate namespace/转导出自证问题已修，archive13/判官反例通过，无剩余确认阻断。
+- 两次无official实际Linux协议49/资源9/网关5/组件SDK/正式三库6过、supplier0、273payload/67资产相同；最终226声明源逐字匹配native，再由最后host gate对同bytes通过。VM执行树与后来host gate分列，不假称前VM执行新host代码，旧per_run=false保留。两次VM资源回收确认，报告可定位13个Mac owned根终态删除/ps无引用，原3030/8032/3033保持。
+- [同题案例](blog/2026-11-17-last-administrator-transaction.md)6稳定ID/10重点、两透明图双尺寸明暗过，后端/原三标签未发布；预览 http://127.0.0.1:3033/.tmp/admin-audit-blog-rt8gsmsg/index.html 。原80/123dirty与main210加1删、原素材format及2处UI门禁问题保留，无Web生产源变化不重跑310/完整Web。
+- 仅中文本地提交、不推送部署/发布，不配置Clash或恢复官方付费四题。后续A服务capability/可授予范围、完整审计查询/保留/独立DB权限与生产目标/恢复/备份等仍待，P1/A–D未完成。生产先DDL、低于审计版本回滚须停九写/核在途或最低版本约束。Claude Code/claude-ds先读新协议、同连接/commit未知/内部None及Linux静态门禁/VM分层证据。详情见[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜9项管理写近期认证与刷新证明不升级
 
 - 按[协议](development/admin-recent-authentication.md)切换用户2/角色4/resource3维护写：原40项旧guard保持、9项活动Cookie/初次认证窗口默认600秒、陈旧403，管理读取及其余31项不切换。签名proof严格类型/绑定，普通refresh无效proof归0、合法旧时间原样，重新登录才建新时间；无新增HTTP/Agent写能力。

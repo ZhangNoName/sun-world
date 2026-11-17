@@ -3,7 +3,7 @@
   "architecture": "arm64",
   "gateway_assets_sha256": "59acec17334c10c23732f2fa15f7b3f61b85d5302315632669e0d3ffe0aca529",
   "python_contract_sha256": "4119de137055355624bfb0d09c3e3109ded8670965b8613eeee83e067689e99f",
-  "sources_contract_sha256": "acffeddf6b2937eac4a2557957f05b3992a9abec209104da9bb8294434c5f2f0",
+  "sources_contract_sha256": "3380b8ee4859c93d77f4b6df8935e1816239d75a3bd0cce4580b011399416569",
   "assets": [
     {
       "filename": "mysql.tar.xz",

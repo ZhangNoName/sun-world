@@ -6,12 +6,13 @@ from pydantic import BaseModel
 from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
 from src.core.auth.admin_recovery import LastAdministratorError
+from src.core.auth.admin_audit import AdminAuditContext
 from app_instance import app
 from src.type.user_type import User, UserCreateResult, UserPage, UserPublic
 from src.core.response import ok, fail
 from src.core.response import ApiResponse
 from src.core.error_codes import COMMON_INTERNAL_ERROR, COMMON_NOT_FOUND
-from src.routers.auth.auth import get_auth_manager, get_current_user, require_admin, require_recent_admin
+from src.routers.auth.auth import get_auth_manager, get_current_user, require_admin, require_admin_audit
 
 
 # 创建用户 API 路由
@@ -28,10 +29,11 @@ def get_user_manager() -> UserManager:
 
 
 # 创建新用户
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult], dependencies=[Depends(require_recent_admin)])
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult], dependencies=[Depends(require_admin_audit)])
 async def create_user(
     user: User,
     auth_manager: AuthManager = Depends(get_auth_manager),
+    audit: AdminAuditContext = Depends(require_admin_audit),
 ):
     """
     创建新的用户
@@ -42,7 +44,7 @@ async def create_user(
     Returns:
         dict: 包含新用户 ID 的字典
     """
-    res = auth_manager.register_user(user)
+    res = auth_manager.register_user(user, audit=audit)
     if res:
         return ok(data={"id": user.id}, msg="创建成功")
     else:
@@ -119,8 +121,9 @@ async def get_users_paginated(
 
 
 # 删除指定用户
-@router.delete("/{user_id}", response_model=ApiResponse[bool], dependencies=[Depends(require_recent_admin)])
-async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
+@router.delete("/{user_id}", response_model=ApiResponse[bool], dependencies=[Depends(require_admin_audit)])
+async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user_manager),
+                      audit: AdminAuditContext = Depends(require_admin_audit)):
     """
     停用指定 ID 的用户
 
@@ -131,7 +134,7 @@ async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user
         dict: 包含停用成功消息的字典
     """
     try:
-        res = user_manager.delete_user(user_id)
+        res = user_manager.delete_user(user_id, audit=audit)
     except LastAdministratorError as error:
         return JSONResponse(status_code=409, content={
             "code": error.code, "data": None, "msg": error.message,
