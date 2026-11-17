@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { ThemeProvider } from '@/shared/design/theme'
+import { AppPageContributions } from '@/app/extensions/AppPageContributions'
 import { useAiChat } from '../composables/useAiChat'
 import { AigcPage } from './AigcPage'
 
@@ -47,15 +48,16 @@ describe('AigcPage', () => {
     render(
       <MemoryRouter>
         <ThemeProvider>
-          <AigcPage />
+          <AppPageContributions>
+            <AigcPage />
+          </AppPageContributions>
         </ThemeProvider>
       </MemoryRouter>
     )
 
-    expect(screen.getByRole('link', { name: '博客问答' })).toHaveAttribute(
-      'href',
-      '/aigc/blog-qa'
-    )
+    expect(
+      await screen.findByRole('link', { name: '博客问答' })
+    ).toHaveAttribute('href', '/aigc/blog-qa')
     expect(
       screen.getByRole('region', { name: 'Sun World AI 工作区' })
     ).toBeInTheDocument()

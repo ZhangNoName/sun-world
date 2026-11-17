@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：首个静态页面贡献与独立挂载
+
+- 基点dc32f26，沿[新协议](../../development/page-contributions.md)补D首个实际slot：AppModule静态贡献/版本依赖，应用组合根收集，shared不import业务；blog声明原博客问答公开入口，AI决定sidebar/rail位置，不传聊天/正文或跨模块store。Web id仍blog/ai；公开requires=[]只导航，不授予Agent运行能力，不增加能力服务或生产准入。
+- 注册22项/React17项，覆盖未知slot/schema/version、重复/依赖/环/数量/排序、能力unknown/loading/缺失/撤销、贡献模块停用、account/project/session/context切换、迟到/abort、错误重试、SSR/StrictMode。root发现接受React.lazy但缺独立Suspense，3项先红后绿后加每项Suspense；判官独立Slot17确认解除，无新增确认阻断。固定错误只指UI，不保证React开发console无异常；UI模块开关不是后端停运。
+- AuthStore仅增sessionRevision镜像原epoch，使同账号重登即使中间状态被React批处理也换scope，普通到期同步不重挂。root实际registry/宿主/AI页及Auth/HTTP29过，判官先前45过；纯源码非Git快照113+typecheck过，source-only树7db2ec81eaf77dac09f70b6182084e65476ba13b/22源摘要见[实证](../../evaluations/page-contributions-2026-11-17/README.md)。check:web新增实际注册4项构建前检查；contracts6/AI UI25/Web309/类型/构建/SSG/manifest过，最后CSS gzip18资产预算失败，整体不通过；根format仅原素材manifest失败，未调预算/改其他任务素材。
+- 实际AigcPage/Hook/AuthStore/注册在1280/390各展开、折叠、贡献停用、失败重试8场景过，仅合成GET provider响应，无其他HTTP/供应商；非在线API E2E。修ignored预览的宿主高度/viewport命中/手机drawer与过渡等待，不把DOM存在当像素通过；博客预览根宽度/SVG URL修复未放宽Markdown安全策略。旧harness失败均保留。源码快照原inode/无打开文件核后删，3030/8032/3033均200，旧live/失败根和67缓存不动。
+- 博客03按sun-world-blog→design增页面与工具授权边界，后端/原三标签、原5章节ID保持并增1；新增透明装配图，粗体标点与本地/生产说明修正；1280/390、6重点、无缩进/溢出、图360/342px目视/DOM过，未发布。像素仍用既有dirty renderer/CSS。原80/123dirty/main原210加1删保持，仅中文本地提交，不推送/部署/发布。
+- 用户最新回复只用Clash Verge现有转发、不单独配置代理，代理配置不在范围。已更新官方接入与Linux官方协议，不再等另一节点/代理资料，不新增项目代理设置/改系统或节点；原Linux四题失败与停止paid保持，未据此冒称网络稳定。后续Claude Code/claude-ds先读新协议与范围补充。
+- 仅首个公开view slot交付，其他host/action和新显示能力服务按实际需求再做；生产/目标库/备份/TLS、未知孤儿/旧锁、断电/多副本、官方Linux四题和人工/版本仍独立待，P1/A–D未整体完成。
+
 ### 2026-11-17 最新 checkpoint：正式问答前端消费与异步恢复
 
 - 基点61608ea，核总计划确认A的40项管理员影子基线与本地聚合盘点已做；不重复实现或读取业务配置。沿[新协议](../../development/agent-formal-web.md)补D真实消费者缺口：formal/site使用正常AuthStore，陌生/矛盾模式失败关闭；仅fixtures使用合成入口。SSE/GET/cancel共用来源归一化，可信站点绝对原文链接转站内路径，拒不匹配ID/外链/歧义URL，错误映射中文。
@@ -109,7 +119,7 @@
 1. A 已有40项管理员基线/影子差异和本地profile角色/resource只读聚合核对；生产目标、恢复路径及旧写入口逐项迁移尚待，不自动赋予Agent写权限。
 2. B 已有原生Linux隔离、网关、固定SDK/三库组合与API进程崩溃验收；官方Linux四题失败并停止付费复跑，人工/不可变模型版本、生产容量和凭据策略仍待。旧环境不可用结论已过时。
 3. C 账本、准入、撤销、预算、来源回执、终态事务及多种真实MySQL/进程故障验证已实现，生产组合根未开放；未知孤儿/旧锁恢复、宿主断电、多副本和目标库/备份/TLS仍待。
-4. D 已有只读问答页面与正式合同消费/会话恢复，本轮合同回放不等于生产接线。有限slot/contribution及卸载、错误隔离和能力加载继续实施；不重建通用插件框架。
+4. D 已有只读问答页面/正式合同消费与首个AI公开view slot，静态校验、独立加载/Suspense/错误重试、卸载与能力拒绝路径本地验证。其他host/write action与显示能力服务按真实需求逐项接入，不把合成投影/范围切换或合同回放当生产、多租户接线，不重建插件框架。
 5. 合并前另处理全局Web预算/素材格式失败；不以定向通过代替根检查全绿。以上是截至本轮的剩余摘要，历史checkpoint保留当时边界。
 
 ## Writing / publication

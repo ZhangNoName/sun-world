@@ -1,6 +1,6 @@
 # 模块与跨项目扩展契约
 
-日期：2026-11-12。状态：设计规范，未开发。用于 Sun World 内部业务模块及未来其他项目的接入。[实现规范](dsh-implementation-standard.md)定义后端与运行时，[工程文件规范](../repository-conventions.md)定义命名、格式和测试位置。本文定义模块如何注册、鉴权与插入页面，不表示已有运行时插件系统。
+日期：2026-11-12，2026-11-17补首个页面贡献实现。状态：设计规范；有限静态页面贡献已本地实现，其余扩展按下文区分。用于 Sun World 内部业务模块及未来其他项目的接入。[实现规范](dsh-implementation-standard.md)定义后端与运行时，[工程文件规范](../repository-conventions.md)定义命名、格式和测试位置。本文定义模块如何注册、鉴权与插入页面，不表示已有运行时插件市场。
 
 具体项目落地见[Stars 首页与全项目接入方案](project-federation-plan.md)及[项目台账](../product/project-integration-inventory.md)。公开项目目录/外链只属于入口互通，不等于业务服务已启用第二项目；本文件的多项目数据迁移门槛适用于实际接受多项目业务数据的服务。
 
@@ -58,7 +58,7 @@
 
 ## 4. 页面插入的四种方式
 
-现有 `AppModule` 已支持 routes/nav/seo/preload，但没有通用页面插槽。以下 slot/contribution 是拟新增设计，不应描述成当前接口。
+现有 `AppModule` 支持 routes/nav/seo/preload。2026-11-17新增有限静态贡献：首个`ai.workspace.tools` v1只接现有公开博客问答入口，见[实际接口与验收](../development/page-contributions.md)。其他候选slot、写action及完整跨项目授权仍是设计，不应描述成已实现接口。
 
 | 类型 | 注册位置 / owner | 适用内容 |
 | --- | --- | --- |
@@ -69,17 +69,17 @@
 
 宿主拥有布局、可见区域和传入上下文，贡献模块拥有组件与数据适配。应用组合根收集各模块的贡献，注入通用 registry；`shared` 不扫描或 import 业务模块，宿主不深入 import 插件内部组件。
 
-建议的首批扩展点（仅按实际页面需要创建）：
+首批扩展点（仅按实际页面需要创建；当前仅AI工作区的公开入口已实现）：
 
 | slot ID | 宿主 | 最小上下文 | 约束 |
 | --- | --- | --- | --- |
 | `home.sidebar.cards` | home | 主题、语言、当前项目 | 可选卡片独立失败；移动端由宿主排序；ICP 保留为宿主固定内容 |
 | `blog.detail.aside` | blog | article ID、公开版本（若有）、项目 | 不默认传整篇正文或私有作者资料；桌面/移动位置由宿主决定 |
 | `blog.editor.actions` | blog | draft ID、expected version、项目、受控保存回调 | 写操作走模块服务；不能直接写编辑器 store 或绕过确认 |
-| `ai.workspace.tools` | ai | 场景、当前项目、可展示的能力投影 | 博客问答独立会话；不把聊天历史直接交给所有插件 |
+| `ai.workspace.tools`（已本地实现v1） | ai | chat场景、sidebar/rail展示；独立scope及显示能力投影 | 当前只挂公开导航，不传聊天/正文；受限能力路径仅合成投影测试，不新增运行授权 |
 | `manage.overview.panels` | admin | 项目及资源范围 | 服务端授权统计；未授权不拉取数据；单卡失败不破坏后台 |
 
-贡献声明的设计示例（字段待实现，非可直接调用代码）：
+贡献声明的后续设计示例（非当前接口的可直接调用代码；实际注册有显式项目列表、模块依赖与严格版本字符串，以上述开发说明为准）：
 
 ```ts
 const blogQaContribution = {
@@ -96,6 +96,8 @@ const blogQaContribution = {
 `requires` 采用全部满足语义，若需要任一能力须另声明 `anyOf`，禁止模糊解释。slot 定义可接受的贡献类型、props schema、版本、最大数量及排序；同 order 以稳定 contribution ID 排序。未知 slot、重复 ID、依赖环或不兼容 slotVersion 在构建时拒绝，不静默显示错误组件。
 
 运行时先检查模块启用、项目准入与能力投影，再 lazy 加载；每个贡献独立加载态、错误边界和重试。权限加载中或未知时不展示受限内容。模块关闭/账户或项目切换时卸载组件、取消请求并清理缓存；迟到响应必须校验原上下文，不得显示到新项目。
+
+当前首个slot采用构建时静态代码，由应用组合根收集AppModule.contributions，shared不import业务模块。保留既有Web模块ID（blog/ai），不自动把它们映射成后端blog-content或授权身份。UI模块开关只控制贡献装配，不声称已停掉后端运行；真实模块停运仍遵守第2节的准入/撤销顺序。公开入口requires=[]用于发现页面，能力投影未知也可显示；受限声明要求全部能力满足才加载，实际API继续授权。新的显示能力服务尚未实现，不能借普通聊天persona/Skill加载状态授予Agent能力。首个view上下文没有受控写回调，不能直接拿来接编辑器写action。
 
 组件通过类型化 props、回调和模块 API 通信；不操作外部 DOM、不监听无命名全局事件、不写其他模块 store。确有跨模块事件时由 app 声明版本化事件和生命周期，禁止任意字符串广播。CSS 使用 tokens 和作用域样式，不覆盖宿主通用选择器；键盘顺序、焦点恢复、空态和响应式由 slot 契约覆盖。
 

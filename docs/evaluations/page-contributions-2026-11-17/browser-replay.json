@@ -1,0 +1,184 @@
+{
+  "version": "sun-world-page-contributions-browser/1",
+  "data_kind": "actual-page-with-synthetic-http-adapter",
+  "live_api_e2e": false,
+  "observations": [
+    {
+      "device": "desktop",
+      "scenario": "expanded",
+      "width": 1280,
+      "bodyWidth": 1280,
+      "workspace": true,
+      "entryLinks": [
+        {
+          "text": "博客问答",
+          "href": "/aigc/blog-qa"
+        }
+      ],
+      "allEntryCount": 2,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "desktop",
+      "scenario": "collapsed",
+      "width": 1280,
+      "bodyWidth": 1280,
+      "workspace": true,
+      "entryLinks": [
+        {
+          "text": "问答",
+          "href": "/aigc/blog-qa"
+        }
+      ],
+      "allEntryCount": 2,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "desktop",
+      "scenario": "disabled",
+      "width": 1280,
+      "bodyWidth": 1280,
+      "workspace": true,
+      "entryLinks": [],
+      "allEntryCount": 0,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "desktop",
+      "scenario": "retry",
+      "width": 1280,
+      "bodyWidth": 1280,
+      "workspace": true,
+      "entryLinks": [
+        {
+          "text": "博客问答",
+          "href": "/aigc/blog-qa"
+        }
+      ],
+      "allEntryCount": 1,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 3
+    },
+    {
+      "device": "mobile",
+      "scenario": "expanded",
+      "width": 390,
+      "bodyWidth": 390,
+      "workspace": true,
+      "entryLinks": [
+        {
+          "text": "博客问答",
+          "href": "/aigc/blog-qa"
+        }
+      ],
+      "allEntryCount": 2,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "mobile",
+      "scenario": "collapsed",
+      "width": 390,
+      "bodyWidth": 390,
+      "workspace": true,
+      "entryLinks": [],
+      "allEntryCount": 2,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "mobile",
+      "scenario": "disabled",
+      "width": 390,
+      "bodyWidth": 390,
+      "workspace": true,
+      "entryLinks": [],
+      "allEntryCount": 0,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 2
+    },
+    {
+      "device": "mobile",
+      "scenario": "retry",
+      "width": 390,
+      "bodyWidth": 390,
+      "workspace": true,
+      "entryLinks": [
+        {
+          "text": "博客问答",
+          "href": "/aigc/blog-qa"
+        }
+      ],
+      "allEntryCount": 1,
+      "errorVisible": false,
+      "rawDiagnosticVisible": false,
+      "calls": [
+        {
+          "path": "/ai/v1/providers",
+          "method": "get"
+        }
+      ],
+      "errors": [],
+      "loadAttempts": 3
+    }
+  ]
+}

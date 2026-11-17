@@ -7,6 +7,7 @@ const page = () =>
 export const aiModule: AppModule = {
   id: 'ai',
   name: 'AI',
+  version: '1',
   routes: [
     {
       path: '/aigc/blog-qa',

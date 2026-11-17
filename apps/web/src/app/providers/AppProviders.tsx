@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/shared/design/theme'
 import { useAuthStore } from '@/store/auth'
 import { installDeviceListener } from '@/store/tg'
 import { AppErrorBoundary } from '../errors/AppErrorBoundary'
+import { AppPageContributions } from '../extensions/AppPageContributions'
 
 export function AppProviders({ children }: PropsWithChildren) {
   const restoreSession = useAuthStore((state) => state.restoreSession)
@@ -31,7 +32,7 @@ export function AppProviders({ children }: PropsWithChildren) {
     <AppErrorBoundary>
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
-          {children}
+          <AppPageContributions>{children}</AppPageContributions>
           <ToastProvider />
         </ThemeProvider>
       </I18nextProvider>

@@ -1,0 +1,18 @@
+{
+  "snapshot_tests_terminal": true,
+  "snapshot_typecheck_terminal": true,
+  "snapshot_identity_matched": true,
+  "snapshot_no_open_files": true,
+  "snapshot_removed": true,
+  "final_ui_browser_terminal": true,
+  "services": {
+    "3030": 200,
+    "8032": 200,
+    "3033": 200
+  },
+  "supplier_requests": 0,
+  "sdk_db_vm_reruns": 0,
+  "existing_live_and_failed_runtime_roots_untouched": true,
+  "linux_cache_untouched": true,
+  "source_hashes_matched": 22
+}

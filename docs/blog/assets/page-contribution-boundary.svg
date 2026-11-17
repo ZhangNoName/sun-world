@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="374" viewBox="0 0 360 374" role="img" aria-labelledby="title desc">
+<title id="title">页面贡献的装配边界</title><desc id="desc">模块声明与宿主约定由应用组装检查，再根据显示条件独立加载；实际请求仍由服务端检查权限。</desc>
+<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="#64748b"/></marker></defs>
+<g fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#arrow)"><path d="M88 72V91H180V107"/><path d="M272 72V91H180"/><path d="M180 157V188"/><path d="M180 238V269"/><path d="M180 319V342" stroke-dasharray="4 4"/></g>
+<g font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="13" text-anchor="middle" fill="#172033">
+<rect x="12" y="14" width="152" height="58" rx="9" fill="#eff6ff" stroke="#60a5fa"/><text x="88" y="38">模块声明</text><text x="88" y="57">提供组件与依赖</text>
+<rect x="196" y="14" width="152" height="58" rx="9" fill="#f8fafc" stroke="#94a3b8"/><text x="272" y="38">宿主约定</text><text x="272" y="57">布局与最小上下文</text>
+<rect x="55" y="107" width="250" height="50" rx="9" fill="#f8fafc" stroke="#94a3b8"/><text x="180" y="136">应用组装与冲突检查</text>
+<rect x="55" y="188" width="250" height="50" rx="9" fill="#fffaf0" stroke="#d8ad55"/><text x="180" y="217">账号、项目与显示能力检查</text>
+<rect x="55" y="269" width="250" height="50" rx="9" fill="#f0fdf4" stroke="#65a583"/><text x="180" y="298">独立加载 · 出错重试 · 卸载</text>
+<text x="180" y="362">实际请求继续由服务端授权</text>
+</g></svg>

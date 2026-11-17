@@ -121,7 +121,9 @@ New module routes, navigation, page slots, action contributions and external
 project adapters follow [the module extension contract](architecture/module-extension-contract.md).
 Capability checks belong to the owning backend service; frontend visibility
 is not authorization. Multiple projects require explicit resource isolation
-before activation. These are design rules; slot infrastructure is not yet implemented.
+before activation. A first static AI workspace contribution is implemented locally;
+see [its bounded contract](development/page-contributions.md). Other slots,
+write actions and multi-project activation remain separate implementation gates.
 
 ## DSH implementation additions
 

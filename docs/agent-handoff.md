@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜静态页面贡献与卸载隔离
+
+- 按[新协议](development/page-contributions.md)交付D首个AI工作区公开view slot：blog声明原博客问答入口，宿主决定sidebar/rail，应用显式装配/构建前校验，shared不import业务，不传对话或正文；公开requires=[]不授予运行能力，其他slot/write action/新能力服务仍按真实需求逐项做。
+- 注册22/React17、root29、纯源码非Git快照113+typecheck过；root发现缺独立Suspense，3项真实lazy修前失败/修后通过，判官45及delta17复验无剩余确认阻断。AuthStore sessionRevision覆盖同账号重登的批处理边界。完整Web309及类型/构建/SSG/manifest过，最后CSS预算整体失败，根原素材格式失败保留。[实证](evaluations/page-contributions-2026-11-17/README.md)存22源/tree与真实结果。
+- 实际AI页1280/390展开/折叠/贡献停用/重试8个合成HTTP场景过，校验真实viewport命中，非在线API E2E；源码快照按inode/无打开文件清理，3030/8032/3033均200。博客03后端/原三标签、5原章节ID+1新章节、一透明装配图，双尺寸实渲通过未发布。原80/123dirty/main原210加1删保持，仅中文本地提交，不推送部署发布。
+- 用户最新确认只走Clash Verge现有转发，代理配置不在范围；[官方接入范围](development/agent-openai-validation.md)已记录，不增项目代理设置或调节点/系统，不再等待另一代理资料。不是网络稳定证明，官方Linux四题失败/停止paid保持。生产/目标库/备份/TLS、未知孤儿/旧锁、断电/多副本、人工/版本策略仍待，P1/A–D未整体完成。后续Claude Code/claude-ds先读新协议checkpoint与[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜正式问答前端消费与异步恢复
 
 - 在 `zxy/dsh-platform-foundation` 按[协议](development/agent-formal-web.md)修复formal/site正常会话分流、SSE/GET/cancel来源统一归一化；认证与运行世代防旧账号或同账号旧恢复/刷新/取消覆盖新问题，发送失败也不重新接纳旧回执。A影子40项/本地盘点已有，不重复。判官两P2修复后18hook及五交错复验过，无剩余确认阻断。

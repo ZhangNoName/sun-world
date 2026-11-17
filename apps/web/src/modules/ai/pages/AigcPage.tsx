@@ -1,10 +1,9 @@
 import { AiWorkspace } from '@sun-world/ai-ui'
-import { Link } from 'react-router'
-import { buttonVariants } from '@sun-world/base-ui/button'
 
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { AiCapabilitySettings } from '../components/AiCapabilitySettings'
 import { AiMcpSettings } from '../components/AiMcpSettings'
+import { AiWorkspaceTools } from '../components/AiWorkspaceTools'
 import { useAiChat } from '../composables/useAiChat'
 import { composerCommands } from '../composer-commands'
 import './ai.css'
@@ -27,24 +26,10 @@ export function AigcPage() {
       railBrand={
         <img src="/logo.svg" alt="" width={22} height={22} aria-hidden="true" />
       }
-      sidebarNavigation={
-        <Link
-          to="/aigc/blog-qa"
-          className={buttonVariants({ variant: 'ghost' })}
-        >
-          博客问答
-        </Link>
-      }
+      sidebarNavigation={<AiWorkspaceTools presentation="sidebar" />}
       railFooter={
         <>
-          <Link
-            to="/aigc/blog-qa"
-            aria-label="博客问答"
-            title="博客问答"
-            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-          >
-            问答
-          </Link>
+          <AiWorkspaceTools presentation="rail" />
           <ThemeSwitch />
         </>
       }

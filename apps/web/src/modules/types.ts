@@ -1,5 +1,8 @@
 import type { RouteObject } from 'react-router'
 
+import type { Contribution } from '@/shared/extensions'
+import type { AiToolsContext } from './ai/extension-contract'
+
 export interface RouteMeta extends Record<string, unknown> {
   module?: string
   title?: string
@@ -35,6 +38,9 @@ export interface ModuleNavItem {
 export interface AppModule {
   id: string
   name: string
+  version?: string
+  dependencies?: readonly { id: string; version: string }[]
+  contributions?: readonly Contribution<AiToolsContext>[]
   routes: AppRouteObject[]
   nav?: ModuleNavItem[]
   seo?: ModuleSeoDefaults

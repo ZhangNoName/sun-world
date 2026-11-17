@@ -12,6 +12,23 @@ const editor = () =>
 export const blogModule: AppModule = {
   id: 'blog',
   name: '博客',
+  version: '1',
+  dependencies: [{ id: 'ai', version: '1' }],
+  contributions: [
+    {
+      id: 'blog.qa-entry',
+      moduleId: 'blog',
+      slot: 'ai.workspace.tools',
+      slotVersion: '1',
+      order: 200,
+      requires: [],
+      projectIds: ['sun-world'],
+      load: () =>
+        import('./ui/BlogQaEntry').then(({ BlogQaEntry }) => ({
+          default: BlogQaEntry,
+        })),
+    },
+  ],
   routes: [
     {
       path: '/blog/:id',

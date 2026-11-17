@@ -95,6 +95,16 @@ run('AI public entry visible check', 'node', [
   'scripts/check-ai-public-entry-visible.mjs',
 ])
 
+run('Static page contribution registry check', 'corepack', [
+  'pnpm',
+  '-C',
+  'apps/web',
+  'exec',
+  'vitest',
+  'run',
+  'src/app/extensions/registry.test.ts',
+])
+
 run('Contracts tests', 'corepack', [
   'pnpm',
   '-F',

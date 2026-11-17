@@ -27,6 +27,8 @@ export type AuthStatus = 'unknown' | 'restoring' | 'authenticated' | 'anonymous'
 
 interface AuthState {
   status: AuthStatus
+  // A fresh login to the same account must still replace mounted client work.
+  sessionRevision: number
   accessTokenExpire: number | null
   refreshTokenExpire: number | null
   deviceId: string
@@ -72,6 +74,7 @@ function requireCurrentSession(epoch: number) {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   status: 'unknown',
+  sessionRevision: sessionEpoch,
   accessTokenExpire: getAccessTokenExpire(),
   refreshTokenExpire: getRefreshTokenExpire(),
   deviceId: getDeviceId(),
@@ -102,6 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     restorePromise = null
     refreshPromise = null
     set({
+      sessionRevision: sessionEpoch,
       accessTokenExpire: null,
       refreshTokenExpire: null,
       user: null,
