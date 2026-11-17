@@ -1,0 +1,428 @@
+{
+  "version": "sun-world-cursor-pixel-equality/1",
+  "browser": {
+    "version": "sun-world-native-cursor-check/1",
+    "passed": true,
+    "observations": [
+      {
+        "device": "desktop",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "version": "sun-world-native-cursor-pixels/1",
+        "decoder": "Chrome native Image/Canvas",
+        "passed": true,
+        "cssomRules": 12,
+        "cssomEqual": true,
+        "observations": [
+          {
+            "name": "sw-cursor-default",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "b974ddf5e9e442b424b8d08ee94819367f0c12ef7a13659331b6c4755b075c9d",
+              "white": "90d00f23c8d0545de1e35f98bd83de2e529e3a08e5bf092c2bc0b5e7955bcd36",
+              "black": "ffbb155f0ac83377d6828b53c6505a874bd7cd08a86c8323e87014b0960a45ea",
+              "checker": "1a95057091f72e7c9baf4c8022e3e270d7708bc5d30d17dbc6ad21ec107540b4"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "d9009fd6511af0338b12b4f15b44bf8900de2a30f29f210ffbdf7cd5502930eb",
+              "white": "245da34e881dcfc2572af87b858ba0c78036e252f55fd657ff820d70e49a16b8",
+              "black": "0bee42a23ee07af2b4f4d532b39a4b3f1ec7c3acf591e4f4b06218bf44184ab0",
+              "checker": "97a00815db3ddeb5b0a674551328a5ec76e3a6d5c3fcedcd33502f4691037b48"
+            },
+            "hotspot": [16, 16],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "ad239843626697a0e54936b78afe9587c0b01eeadff9810719b2f2d70c724f69",
+              "white": "f97c3a9548de4de5db6a0d1aa1087928e345b4c4c6eea511476dbffd6a498bf0",
+              "black": "d6dbdf3f38bba57b640a30ea76622d80ae4dfeff3e3445c3b46a37ab1910fdf7",
+              "checker": "e97b77b848a1dcde97ef81bdb1cb0bb3f565341e6f036fdc00f63be611f4aa03"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-close",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "94cc2fac1d7b1e04bb6ea9da7f7a4fc7e394cc80e00a85f08cfbd3b7b19422a3",
+              "white": "e8963b8f9071ab514e495943c765258db4b57ddf245bda9d37ba061d5ca0f355",
+              "black": "6a8d153e441214fb97ea38dcda91f8fbee299b07ef66203bca4211e01690059b",
+              "checker": "4e91b0f32339ad3e5570d0a61bb83550ea3c0ebcf1b1e0873c812b7aae8748cb"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-anchor-add",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "b1b0e748748674553828a8f8251243f4db8623282b44010ddaed8160aa84dabd",
+              "white": "f8fc49e2470c22e6824972751dc3a0f35d780e849bd789f589ecfff342a1f859",
+              "black": "43a62369d5169343892f93dc2dcfdb550493ff8f668c0eed934c9d219b1413c6",
+              "checker": "0d72d686069204a5703d46596dab7eb44eef85d90275a4655dc2c5072376f5a7"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-anchor-remove",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "c509adbcc1bda017fc89265238fa68ed4e2cd78464cfd2e58bb65ab0e8e7c818",
+              "white": "356f940ee8bb9d42bdb8ca55529b7a3185d04c6f347ca7958087052c0d706454",
+              "black": "6ec83087697b09581b96f4559ba8daa37b747916abddc881001bb4411d7d2199",
+              "checker": "d506a0063d90a4e6c2bdb43f65e274daec03bb926e54f18c097e2fba40595b95"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-crosshair",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "48d8cc2cc733782baad233920662dbfc28632a752b66251ab33905ddbaa20a3f",
+              "white": "2d4278dfc48b127923c6b38ac2187daa214fdf2d4152d372a7f40326e40407f7",
+              "black": "e92b366029a79770c157f3510eb4697c7cbe65027d86373e03453352069c3cfa",
+              "checker": "e42309aabf9157b0248ac205feb9f74675e0cb8464cf6abe2f0252bbbe717fe6"
+            },
+            "hotspot": [15, 15],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move-ns",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "3b1613229cbbbb9c34b2a3aa1302c4a32e2755f65b113862868fca9ce9ec5ad4",
+              "white": "5e39a7252db46668f86033b3176dfd507658eb921e1c8cc3bd68e19076356614",
+              "black": "737418723af20789eb16742fc1bacb991af8c51bf538428735d64b68b5976c8d",
+              "checker": "19f8ba7bf529f9e559422fba505fad1906f30dec75d32b38a147a98e922275c4"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move-ew",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "a026130866d7d7cb9262e1c2724c6840a6389a7e9b7a5420e47ab044780ec883",
+              "white": "ad904aec7e6f453eb654ef9c673efc1d482b8056614d42abc07315118e3e3ba5",
+              "black": "005947aafd270cadd769741f11c560b07b5f6de6288d48a829e0e5e163a8032d",
+              "checker": "7ad5e6cc3b21437a1558a99b154d02a8c0b06f7f1e23e31c032ce2d03222e4dc"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pencil",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "8331569126332ef2695e9ac4ffdc6fa0b5052011b5b3ff976fd42b102faed45c",
+              "white": "56ce0dc2e9c7329e1e7fc483ba950e65d4cf9643282b35b111f9a740f38215f9",
+              "black": "df9fb78c4f964e4602605942fc3afc7db6c27221c9d62f4b05f19157567b8937",
+              "checker": "87f46110cf012bd5aff730e87236d5f6d393b5eb70de016397cc2623752219f5"
+            },
+            "hotspot": [8, 24],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          }
+        ]
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "bodyWidth": 390,
+        "version": "sun-world-native-cursor-pixels/1",
+        "decoder": "Chrome native Image/Canvas",
+        "passed": true,
+        "cssomRules": 12,
+        "cssomEqual": true,
+        "observations": [
+          {
+            "name": "sw-cursor-default",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "b974ddf5e9e442b424b8d08ee94819367f0c12ef7a13659331b6c4755b075c9d",
+              "white": "90d00f23c8d0545de1e35f98bd83de2e529e3a08e5bf092c2bc0b5e7955bcd36",
+              "black": "ffbb155f0ac83377d6828b53c6505a874bd7cd08a86c8323e87014b0960a45ea",
+              "checker": "1a95057091f72e7c9baf4c8022e3e270d7708bc5d30d17dbc6ad21ec107540b4"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "d9009fd6511af0338b12b4f15b44bf8900de2a30f29f210ffbdf7cd5502930eb",
+              "white": "245da34e881dcfc2572af87b858ba0c78036e252f55fd657ff820d70e49a16b8",
+              "black": "0bee42a23ee07af2b4f4d532b39a4b3f1ec7c3acf591e4f4b06218bf44184ab0",
+              "checker": "97a00815db3ddeb5b0a674551328a5ec76e3a6d5c3fcedcd33502f4691037b48"
+            },
+            "hotspot": [16, 16],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "ad239843626697a0e54936b78afe9587c0b01eeadff9810719b2f2d70c724f69",
+              "white": "f97c3a9548de4de5db6a0d1aa1087928e345b4c4c6eea511476dbffd6a498bf0",
+              "black": "d6dbdf3f38bba57b640a30ea76622d80ae4dfeff3e3445c3b46a37ab1910fdf7",
+              "checker": "e97b77b848a1dcde97ef81bdb1cb0bb3f565341e6f036fdc00f63be611f4aa03"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-close",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "94cc2fac1d7b1e04bb6ea9da7f7a4fc7e394cc80e00a85f08cfbd3b7b19422a3",
+              "white": "e8963b8f9071ab514e495943c765258db4b57ddf245bda9d37ba061d5ca0f355",
+              "black": "6a8d153e441214fb97ea38dcda91f8fbee299b07ef66203bca4211e01690059b",
+              "checker": "4e91b0f32339ad3e5570d0a61bb83550ea3c0ebcf1b1e0873c812b7aae8748cb"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-anchor-add",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "b1b0e748748674553828a8f8251243f4db8623282b44010ddaed8160aa84dabd",
+              "white": "f8fc49e2470c22e6824972751dc3a0f35d780e849bd789f589ecfff342a1f859",
+              "black": "43a62369d5169343892f93dc2dcfdb550493ff8f668c0eed934c9d219b1413c6",
+              "checker": "0d72d686069204a5703d46596dab7eb44eef85d90275a4655dc2c5072376f5a7"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pen-anchor-remove",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "c509adbcc1bda017fc89265238fa68ed4e2cd78464cfd2e58bb65ab0e8e7c818",
+              "white": "356f940ee8bb9d42bdb8ca55529b7a3185d04c6f347ca7958087052c0d706454",
+              "black": "6ec83087697b09581b96f4559ba8daa37b747916abddc881001bb4411d7d2199",
+              "checker": "d506a0063d90a4e6c2bdb43f65e274daec03bb926e54f18c097e2fba40595b95"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-crosshair",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "48d8cc2cc733782baad233920662dbfc28632a752b66251ab33905ddbaa20a3f",
+              "white": "2d4278dfc48b127923c6b38ac2187daa214fdf2d4152d372a7f40326e40407f7",
+              "black": "e92b366029a79770c157f3510eb4697c7cbe65027d86373e03453352069c3cfa",
+              "checker": "e42309aabf9157b0248ac205feb9f74675e0cb8464cf6abe2f0252bbbe717fe6"
+            },
+            "hotspot": [15, 15],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move-ns",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "3b1613229cbbbb9c34b2a3aa1302c4a32e2755f65b113862868fca9ce9ec5ad4",
+              "white": "5e39a7252db46668f86033b3176dfd507658eb921e1c8cc3bd68e19076356614",
+              "black": "737418723af20789eb16742fc1bacb991af8c51bf538428735d64b68b5976c8d",
+              "checker": "19f8ba7bf529f9e559422fba505fad1906f30dec75d32b38a147a98e922275c4"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-move-ew",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "a026130866d7d7cb9262e1c2724c6840a6389a7e9b7a5420e47ab044780ec883",
+              "white": "ad904aec7e6f453eb654ef9c673efc1d482b8056614d42abc07315118e3e3ba5",
+              "black": "005947aafd270cadd769741f11c560b07b5f6de6288d48a829e0e5e163a8032d",
+              "checker": "7ad5e6cc3b21437a1558a99b154d02a8c0b06f7f1e23e31c032ce2d03222e4dc"
+            },
+            "hotspot": [5, 5],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          },
+          {
+            "name": "sw-cursor-pencil",
+            "width": 32,
+            "height": 32,
+            "nativeRgbaEqual": true,
+            "compositesEqual": ["white", "black", "checker"],
+            "sha256": {
+              "transparent": "8331569126332ef2695e9ac4ffdc6fa0b5052011b5b3ff976fd42b102faed45c",
+              "white": "56ce0dc2e9c7329e1e7fc483ba950e65d4cf9643282b35b111f9a740f38215f9",
+              "black": "df9fb78c4f964e4602605942fc3afc7db6c27221c9d62f4b05f19157567b8937",
+              "checker": "87f46110cf012bd5aff730e87236d5f6d393b5eb70de016397cc2623752219f5"
+            },
+            "hotspot": [8, 24],
+            "fallback": "auto",
+            "cssCursorMatches": true
+          }
+        ]
+      }
+    ]
+  },
+  "apple_imageio": {
+    "decoder": "ImageIO, normalized sRGB RGBA8 CGBitmapContext, premultiplied alpha",
+    "observations": [
+      {
+        "height": 32,
+        "name": "sw-cursor-default",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "bd8661ed38e312537cb04aa9292f8bbe928add50f471323e61cce87fb8953fc1",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-move",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "7fa14766406987df69a75fa0f3adbc83296e6ea9fef86546ca8f998ab1c8d233",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-pen",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "33fa8f85101720199b2bb074d73f106725522380599fb24d2acc843ea179c6a3",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-pen-close",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "dc45926a7df7331722d50ce49626239d97c6d6409f6a648ba63dcdb484a9fc09",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-pen-anchor-add",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "381d2dd47e2f970339c9b553cf8b48d21971e27342ef6391cf9f960bad3b1791",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-pen-anchor-remove",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "79fd104d6404deec39be65a1e285a38e751a75074dc52219331a51733bbb851a",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-crosshair",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "eaa01ad9c3749c07bbe2f324764de572757c36914fbe3a6f2e1d72d8dbc708ab",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-move-ns",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "c06abf7e74a456161b5490e25a88c5f29a1ff6f77a45c8fdc342c1335a4dfe5b",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-move-ew",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "add158a1ef06a3b48373a896d06508637f0eef50c490dcbbdf318359faeefbd9",
+        "width": 32
+      },
+      {
+        "height": 32,
+        "name": "sw-cursor-pencil",
+        "nativeRgbaEqual": true,
+        "rgbaSha256": "08e2cee9eee9f526daad4d0120b015e19b5ddae62e01e5153cf20344bf1b886f",
+        "width": 32
+      }
+    ]
+  }
+}

@@ -1,0 +1,635 @@
+{
+  "version": "sun-world-css-budget-comparison/1",
+  "cases": [
+    {
+      "case": "working-tree",
+      "gzip_level": 9,
+      "budget_bytes": 51200,
+      "before_css_gzip_bytes": 52362,
+      "after_css_gzip_bytes": 50104,
+      "saved_bytes": 2258,
+      "identical_css_asset_count": 17,
+      "asset_count_before": 18,
+      "asset_count_after": 18,
+      "observations": [
+        {
+          "version": "before",
+          "css_raw_bytes": 229341,
+          "css_gzip_bytes": 52362,
+          "assets": [
+            {
+              "path": "assets/admin.v0.0.1.YRj2F5MJ.css",
+              "extension": ".css",
+              "rawBytes": 2281,
+              "gzipBytes": 735,
+              "isInitial": false,
+              "sha256": "05d24c05d861eef8da8607e2e996e9d58a6a30fc7e8c7df36775f04f9443dd22"
+            },
+            {
+              "path": "assets/AigcPage.v0.0.1.DMmUOzb-.css",
+              "extension": ".css",
+              "rawBytes": 29772,
+              "gzipBytes": 5953,
+              "isInitial": false,
+              "sha256": "8651b8a1f097b6d290f7e418144f37b2c452d8154f19196ba1a669c928606d66"
+            },
+            {
+              "path": "assets/AuthPageShell.v0.0.1.B3eyjHLR.css",
+              "extension": ".css",
+              "rawBytes": 6111,
+              "gzipBytes": 1826,
+              "isInitial": false,
+              "sha256": "ae1903d2d0f1ec5ef7836c898b3e38f223b5e328514da9b37114afc56e487fd1"
+            },
+            {
+              "path": "assets/blog-experience.v0.0.1.BpVWv6nV.css",
+              "extension": ".css",
+              "rawBytes": 10524,
+              "gzipBytes": 2900,
+              "isInitial": false,
+              "sha256": "ee7f55d92757547a0e450fb4c3c0d75687a8463209eb6a0a082397ed7a50f8bf"
+            },
+            {
+              "path": "assets/BlogQaPage.v0.0.1.B6yWhkur.css",
+              "extension": ".css",
+              "rawBytes": 1677,
+              "gzipBytes": 647,
+              "isInitial": false,
+              "sha256": "3214c8259154ebe479cfe418c9287f1a762bceb11192da2b3aee640fd1c6399d"
+            },
+            {
+              "path": "assets/EditorCanvasPage.v0.0.1.dn20-mPT.css",
+              "extension": ".css",
+              "rawBytes": 13534,
+              "gzipBytes": 8244,
+              "isInitial": false,
+              "sha256": "5e6c01f0f98e3fbc114e0c22b622cfe76d3b455be834a8bf1571dceea1492f0b"
+            },
+            {
+              "path": "assets/HomePage.v0.0.1.BnYr0NzV.css",
+              "extension": ".css",
+              "rawBytes": 2701,
+              "gzipBytes": 953,
+              "isInitial": false,
+              "sha256": "12648588c45069ac00bbd2fcb749dd9eddcb8b8cc6153a65c9e2baa8001b317c"
+            },
+            {
+              "path": "assets/index.v0.0.1.Bk4GcoZJ.css",
+              "extension": ".css",
+              "rawBytes": 100844,
+              "gzipBytes": 17404,
+              "isInitial": true,
+              "sha256": "750f42169d5636bac28fe0ffe476c41e34eb6a4f7bc5c52245e4e3cadb999e5f"
+            },
+            {
+              "path": "assets/index.v0.0.1.ByIRP5cP.css",
+              "extension": ".css",
+              "rawBytes": 1524,
+              "gzipBytes": 548,
+              "isInitial": false,
+              "sha256": "a089c09a6d965bae65789bb45c908445d1bc53cbd49e92d5d25b34da62ee5412"
+            },
+            {
+              "path": "assets/index.v0.0.1.yO8O3QdD.css",
+              "extension": ".css",
+              "rawBytes": 33795,
+              "gzipBytes": 5925,
+              "isInitial": false,
+              "sha256": "132324b49bba391a2686964e6540c27ce1d36dc320b69f3a913fe5516dac5be0"
+            },
+            {
+              "path": "assets/keep.v0.0.1.Dxzbt_a5.css",
+              "extension": ".css",
+              "rawBytes": 523,
+              "gzipBytes": 277,
+              "isInitial": false,
+              "sha256": "05f293f6c41664d62d1be7d035e3e3bc3ea095e183cb12960f0f6aeafac81c10"
+            },
+            {
+              "path": "assets/manage-editors.v0.0.1.q7BlBY2A.css",
+              "extension": ".css",
+              "rawBytes": 534,
+              "gzipBytes": 295,
+              "isInitial": false,
+              "sha256": "df973958c8c8b27f86158e311d6dd9c8b331ccb3efa26c3d1b7ae60548292307"
+            },
+            {
+              "path": "assets/ManageDataPage.v0.0.1.Do5JbQc0.css",
+              "extension": ".css",
+              "rawBytes": 6859,
+              "gzipBytes": 1642,
+              "isInitial": false,
+              "sha256": "ed5af1185a73121b863fa67acd48b3c05a30b6e3a4c318881d5954b8e7acc1f6"
+            },
+            {
+              "path": "assets/ManageLayout.v0.0.1.CLUMGHx_.css",
+              "extension": ".css",
+              "rawBytes": 6487,
+              "gzipBytes": 1570,
+              "isInitial": false,
+              "sha256": "aef1e3fd11ae4493dd102e7156062be4349ff0dc0f31ccc48a02b7543265055c"
+            },
+            {
+              "path": "assets/me.v0.0.1.CzkM3OSu.css",
+              "extension": ".css",
+              "rawBytes": 8521,
+              "gzipBytes": 2027,
+              "isInitial": false,
+              "sha256": "d3db401f248d0f46d1d283b0a3834b9a20a6fb74506a5f862810a95258efdca0"
+            },
+            {
+              "path": "assets/PrivacyPolicyPage.v0.0.1.CIjr6ryW.css",
+              "extension": ".css",
+              "rawBytes": 1764,
+              "gzipBytes": 574,
+              "isInitial": false,
+              "sha256": "28e020ede54e1d179640c1eb52c9559c2ebc3da769e27bd20b79f891e5b22371"
+            },
+            {
+              "path": "assets/tools.v0.0.1.yj0kHD_o.css",
+              "extension": ".css",
+              "rawBytes": 969,
+              "gzipBytes": 419,
+              "isInitial": false,
+              "sha256": "228dc3bc101f28a2e67dce88c6993ca8d4db3f738179494f53062cd13786567e"
+            },
+            {
+              "path": "assets/VideoPage.v0.0.1.f9Y2hKL1.css",
+              "extension": ".css",
+              "rawBytes": 921,
+              "gzipBytes": 423,
+              "isInitial": false,
+              "sha256": "f6024d964a0530d7f308c5176c6f0375ff517b201e8e1eb9d4dc025e6ab3277f"
+            }
+          ]
+        },
+        {
+          "version": "after",
+          "css_raw_bytes": 226369,
+          "css_gzip_bytes": 50104,
+          "assets": [
+            {
+              "path": "assets/admin.v0.0.1.YRj2F5MJ.css",
+              "extension": ".css",
+              "rawBytes": 2281,
+              "gzipBytes": 735,
+              "isInitial": false,
+              "sha256": "05d24c05d861eef8da8607e2e996e9d58a6a30fc7e8c7df36775f04f9443dd22"
+            },
+            {
+              "path": "assets/AigcPage.v0.0.1.DMmUOzb-.css",
+              "extension": ".css",
+              "rawBytes": 29772,
+              "gzipBytes": 5953,
+              "isInitial": false,
+              "sha256": "8651b8a1f097b6d290f7e418144f37b2c452d8154f19196ba1a669c928606d66"
+            },
+            {
+              "path": "assets/AuthPageShell.v0.0.1.B3eyjHLR.css",
+              "extension": ".css",
+              "rawBytes": 6111,
+              "gzipBytes": 1826,
+              "isInitial": false,
+              "sha256": "ae1903d2d0f1ec5ef7836c898b3e38f223b5e328514da9b37114afc56e487fd1"
+            },
+            {
+              "path": "assets/blog-experience.v0.0.1.BpVWv6nV.css",
+              "extension": ".css",
+              "rawBytes": 10524,
+              "gzipBytes": 2900,
+              "isInitial": false,
+              "sha256": "ee7f55d92757547a0e450fb4c3c0d75687a8463209eb6a0a082397ed7a50f8bf"
+            },
+            {
+              "path": "assets/BlogQaPage.v0.0.1.B6yWhkur.css",
+              "extension": ".css",
+              "rawBytes": 1677,
+              "gzipBytes": 647,
+              "isInitial": false,
+              "sha256": "3214c8259154ebe479cfe418c9287f1a762bceb11192da2b3aee640fd1c6399d"
+            },
+            {
+              "path": "assets/EditorCanvasPage.v0.0.1.CNpxe9PG.css",
+              "extension": ".css",
+              "rawBytes": 10562,
+              "gzipBytes": 5986,
+              "isInitial": false,
+              "sha256": "8e8984e38200551fab55bac58b4d512d8c43a6ca8954df5aa9e30459a1bcb5a4"
+            },
+            {
+              "path": "assets/HomePage.v0.0.1.BnYr0NzV.css",
+              "extension": ".css",
+              "rawBytes": 2701,
+              "gzipBytes": 953,
+              "isInitial": false,
+              "sha256": "12648588c45069ac00bbd2fcb749dd9eddcb8b8cc6153a65c9e2baa8001b317c"
+            },
+            {
+              "path": "assets/index.v0.0.1.Bk4GcoZJ.css",
+              "extension": ".css",
+              "rawBytes": 100844,
+              "gzipBytes": 17404,
+              "isInitial": true,
+              "sha256": "750f42169d5636bac28fe0ffe476c41e34eb6a4f7bc5c52245e4e3cadb999e5f"
+            },
+            {
+              "path": "assets/index.v0.0.1.ByIRP5cP.css",
+              "extension": ".css",
+              "rawBytes": 1524,
+              "gzipBytes": 548,
+              "isInitial": false,
+              "sha256": "a089c09a6d965bae65789bb45c908445d1bc53cbd49e92d5d25b34da62ee5412"
+            },
+            {
+              "path": "assets/index.v0.0.1.yO8O3QdD.css",
+              "extension": ".css",
+              "rawBytes": 33795,
+              "gzipBytes": 5925,
+              "isInitial": false,
+              "sha256": "132324b49bba391a2686964e6540c27ce1d36dc320b69f3a913fe5516dac5be0"
+            },
+            {
+              "path": "assets/keep.v0.0.1.Dxzbt_a5.css",
+              "extension": ".css",
+              "rawBytes": 523,
+              "gzipBytes": 277,
+              "isInitial": false,
+              "sha256": "05f293f6c41664d62d1be7d035e3e3bc3ea095e183cb12960f0f6aeafac81c10"
+            },
+            {
+              "path": "assets/manage-editors.v0.0.1.q7BlBY2A.css",
+              "extension": ".css",
+              "rawBytes": 534,
+              "gzipBytes": 295,
+              "isInitial": false,
+              "sha256": "df973958c8c8b27f86158e311d6dd9c8b331ccb3efa26c3d1b7ae60548292307"
+            },
+            {
+              "path": "assets/ManageDataPage.v0.0.1.Do5JbQc0.css",
+              "extension": ".css",
+              "rawBytes": 6859,
+              "gzipBytes": 1642,
+              "isInitial": false,
+              "sha256": "ed5af1185a73121b863fa67acd48b3c05a30b6e3a4c318881d5954b8e7acc1f6"
+            },
+            {
+              "path": "assets/ManageLayout.v0.0.1.CLUMGHx_.css",
+              "extension": ".css",
+              "rawBytes": 6487,
+              "gzipBytes": 1570,
+              "isInitial": false,
+              "sha256": "aef1e3fd11ae4493dd102e7156062be4349ff0dc0f31ccc48a02b7543265055c"
+            },
+            {
+              "path": "assets/me.v0.0.1.CzkM3OSu.css",
+              "extension": ".css",
+              "rawBytes": 8521,
+              "gzipBytes": 2027,
+              "isInitial": false,
+              "sha256": "d3db401f248d0f46d1d283b0a3834b9a20a6fb74506a5f862810a95258efdca0"
+            },
+            {
+              "path": "assets/PrivacyPolicyPage.v0.0.1.CIjr6ryW.css",
+              "extension": ".css",
+              "rawBytes": 1764,
+              "gzipBytes": 574,
+              "isInitial": false,
+              "sha256": "28e020ede54e1d179640c1eb52c9559c2ebc3da769e27bd20b79f891e5b22371"
+            },
+            {
+              "path": "assets/tools.v0.0.1.yj0kHD_o.css",
+              "extension": ".css",
+              "rawBytes": 969,
+              "gzipBytes": 419,
+              "isInitial": false,
+              "sha256": "228dc3bc101f28a2e67dce88c6993ca8d4db3f738179494f53062cd13786567e"
+            },
+            {
+              "path": "assets/VideoPage.v0.0.1.f9Y2hKL1.css",
+              "extension": ".css",
+              "rawBytes": 921,
+              "gzipBytes": 423,
+              "isInitial": false,
+              "sha256": "f6024d964a0530d7f308c5176c6f0375ff517b201e8e1eb9d4dc025e6ab3277f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "source-only",
+      "gzip_level": 9,
+      "budget_bytes": 51200,
+      "before_css_gzip_bytes": 51836,
+      "after_css_gzip_bytes": 49578,
+      "saved_bytes": 2258,
+      "identical_css_asset_count": 17,
+      "asset_count_before": 18,
+      "asset_count_after": 18,
+      "observations": [
+        {
+          "version": "before",
+          "css_raw_bytes": 227697,
+          "css_gzip_bytes": 51836,
+          "assets": [
+            {
+              "path": "assets/admin.v0.0.1.R9UeQ8Ke.css",
+              "extension": ".css",
+              "rawBytes": 3123,
+              "gzipBytes": 906,
+              "isInitial": false,
+              "sha256": "53db6e7e62d8d81cac822a947e2165b143ec13cb77e264df289c9c8f268bbf8d"
+            },
+            {
+              "path": "assets/AigcPage.v0.0.1.DMmUOzb-.css",
+              "extension": ".css",
+              "rawBytes": 29772,
+              "gzipBytes": 5953,
+              "isInitial": false,
+              "sha256": "8651b8a1f097b6d290f7e418144f37b2c452d8154f19196ba1a669c928606d66"
+            },
+            {
+              "path": "assets/AuthPageShell.v0.0.1.B3eyjHLR.css",
+              "extension": ".css",
+              "rawBytes": 6111,
+              "gzipBytes": 1826,
+              "isInitial": false,
+              "sha256": "ae1903d2d0f1ec5ef7836c898b3e38f223b5e328514da9b37114afc56e487fd1"
+            },
+            {
+              "path": "assets/blog-experience.v0.0.1.BJUfmHbP.css",
+              "extension": ".css",
+              "rawBytes": 8318,
+              "gzipBytes": 2257,
+              "isInitial": false,
+              "sha256": "cd83309c084bf23d1b580eb9c19077eb856de80d01d8192ebc7eae125d3191c1"
+            },
+            {
+              "path": "assets/BlogQaPage.v0.0.1.B6yWhkur.css",
+              "extension": ".css",
+              "rawBytes": 1677,
+              "gzipBytes": 647,
+              "isInitial": false,
+              "sha256": "3214c8259154ebe479cfe418c9287f1a762bceb11192da2b3aee640fd1c6399d"
+            },
+            {
+              "path": "assets/EditorCanvasPage.v0.0.1.dn20-mPT.css",
+              "extension": ".css",
+              "rawBytes": 13534,
+              "gzipBytes": 8244,
+              "isInitial": false,
+              "sha256": "5e6c01f0f98e3fbc114e0c22b622cfe76d3b455be834a8bf1571dceea1492f0b"
+            },
+            {
+              "path": "assets/HomePage.v0.0.1.BnYr0NzV.css",
+              "extension": ".css",
+              "rawBytes": 2701,
+              "gzipBytes": 953,
+              "isInitial": false,
+              "sha256": "12648588c45069ac00bbd2fcb749dd9eddcb8b8cc6153a65c9e2baa8001b317c"
+            },
+            {
+              "path": "assets/index.v0.0.1.B_qZTbVh.css",
+              "extension": ".css",
+              "rawBytes": 100564,
+              "gzipBytes": 17350,
+              "isInitial": true,
+              "sha256": "f648bb871cf534647c3c898c5cd02b4785c4bd1a4e25ca6e4127d95e29aa963d"
+            },
+            {
+              "path": "assets/index.v0.0.1.ByIRP5cP.css",
+              "extension": ".css",
+              "rawBytes": 1524,
+              "gzipBytes": 548,
+              "isInitial": false,
+              "sha256": "a089c09a6d965bae65789bb45c908445d1bc53cbd49e92d5d25b34da62ee5412"
+            },
+            {
+              "path": "assets/index.v0.0.1.yO8O3QdD.css",
+              "extension": ".css",
+              "rawBytes": 33795,
+              "gzipBytes": 5925,
+              "isInitial": false,
+              "sha256": "132324b49bba391a2686964e6540c27ce1d36dc320b69f3a913fe5516dac5be0"
+            },
+            {
+              "path": "assets/keep.v0.0.1.Dxzbt_a5.css",
+              "extension": ".css",
+              "rawBytes": 523,
+              "gzipBytes": 277,
+              "isInitial": false,
+              "sha256": "05f293f6c41664d62d1be7d035e3e3bc3ea095e183cb12960f0f6aeafac81c10"
+            },
+            {
+              "path": "assets/manage-editors.v0.0.1.q7BlBY2A.css",
+              "extension": ".css",
+              "rawBytes": 534,
+              "gzipBytes": 295,
+              "isInitial": false,
+              "sha256": "df973958c8c8b27f86158e311d6dd9c8b331ccb3efa26c3d1b7ae60548292307"
+            },
+            {
+              "path": "assets/ManageDataPage.v0.0.1.Do5JbQc0.css",
+              "extension": ".css",
+              "rawBytes": 6859,
+              "gzipBytes": 1642,
+              "isInitial": false,
+              "sha256": "ed5af1185a73121b863fa67acd48b3c05a30b6e3a4c318881d5954b8e7acc1f6"
+            },
+            {
+              "path": "assets/ManageLayout.v0.0.1.CLUMGHx_.css",
+              "extension": ".css",
+              "rawBytes": 6487,
+              "gzipBytes": 1570,
+              "isInitial": false,
+              "sha256": "aef1e3fd11ae4493dd102e7156062be4349ff0dc0f31ccc48a02b7543265055c"
+            },
+            {
+              "path": "assets/me.v0.0.1.CzkM3OSu.css",
+              "extension": ".css",
+              "rawBytes": 8521,
+              "gzipBytes": 2027,
+              "isInitial": false,
+              "sha256": "d3db401f248d0f46d1d283b0a3834b9a20a6fb74506a5f862810a95258efdca0"
+            },
+            {
+              "path": "assets/PrivacyPolicyPage.v0.0.1.CIjr6ryW.css",
+              "extension": ".css",
+              "rawBytes": 1764,
+              "gzipBytes": 574,
+              "isInitial": false,
+              "sha256": "28e020ede54e1d179640c1eb52c9559c2ebc3da769e27bd20b79f891e5b22371"
+            },
+            {
+              "path": "assets/tools.v0.0.1.yj0kHD_o.css",
+              "extension": ".css",
+              "rawBytes": 969,
+              "gzipBytes": 419,
+              "isInitial": false,
+              "sha256": "228dc3bc101f28a2e67dce88c6993ca8d4db3f738179494f53062cd13786567e"
+            },
+            {
+              "path": "assets/VideoPage.v0.0.1.f9Y2hKL1.css",
+              "extension": ".css",
+              "rawBytes": 921,
+              "gzipBytes": 423,
+              "isInitial": false,
+              "sha256": "f6024d964a0530d7f308c5176c6f0375ff517b201e8e1eb9d4dc025e6ab3277f"
+            }
+          ]
+        },
+        {
+          "version": "after",
+          "css_raw_bytes": 224725,
+          "css_gzip_bytes": 49578,
+          "assets": [
+            {
+              "path": "assets/admin.v0.0.1.R9UeQ8Ke.css",
+              "extension": ".css",
+              "rawBytes": 3123,
+              "gzipBytes": 906,
+              "isInitial": false,
+              "sha256": "53db6e7e62d8d81cac822a947e2165b143ec13cb77e264df289c9c8f268bbf8d"
+            },
+            {
+              "path": "assets/AigcPage.v0.0.1.DMmUOzb-.css",
+              "extension": ".css",
+              "rawBytes": 29772,
+              "gzipBytes": 5953,
+              "isInitial": false,
+              "sha256": "8651b8a1f097b6d290f7e418144f37b2c452d8154f19196ba1a669c928606d66"
+            },
+            {
+              "path": "assets/AuthPageShell.v0.0.1.B3eyjHLR.css",
+              "extension": ".css",
+              "rawBytes": 6111,
+              "gzipBytes": 1826,
+              "isInitial": false,
+              "sha256": "ae1903d2d0f1ec5ef7836c898b3e38f223b5e328514da9b37114afc56e487fd1"
+            },
+            {
+              "path": "assets/blog-experience.v0.0.1.BJUfmHbP.css",
+              "extension": ".css",
+              "rawBytes": 8318,
+              "gzipBytes": 2257,
+              "isInitial": false,
+              "sha256": "cd83309c084bf23d1b580eb9c19077eb856de80d01d8192ebc7eae125d3191c1"
+            },
+            {
+              "path": "assets/BlogQaPage.v0.0.1.B6yWhkur.css",
+              "extension": ".css",
+              "rawBytes": 1677,
+              "gzipBytes": 647,
+              "isInitial": false,
+              "sha256": "3214c8259154ebe479cfe418c9287f1a762bceb11192da2b3aee640fd1c6399d"
+            },
+            {
+              "path": "assets/EditorCanvasPage.v0.0.1.CNpxe9PG.css",
+              "extension": ".css",
+              "rawBytes": 10562,
+              "gzipBytes": 5986,
+              "isInitial": false,
+              "sha256": "8e8984e38200551fab55bac58b4d512d8c43a6ca8954df5aa9e30459a1bcb5a4"
+            },
+            {
+              "path": "assets/HomePage.v0.0.1.BnYr0NzV.css",
+              "extension": ".css",
+              "rawBytes": 2701,
+              "gzipBytes": 953,
+              "isInitial": false,
+              "sha256": "12648588c45069ac00bbd2fcb749dd9eddcb8b8cc6153a65c9e2baa8001b317c"
+            },
+            {
+              "path": "assets/index.v0.0.1.B_qZTbVh.css",
+              "extension": ".css",
+              "rawBytes": 100564,
+              "gzipBytes": 17350,
+              "isInitial": true,
+              "sha256": "f648bb871cf534647c3c898c5cd02b4785c4bd1a4e25ca6e4127d95e29aa963d"
+            },
+            {
+              "path": "assets/index.v0.0.1.ByIRP5cP.css",
+              "extension": ".css",
+              "rawBytes": 1524,
+              "gzipBytes": 548,
+              "isInitial": false,
+              "sha256": "a089c09a6d965bae65789bb45c908445d1bc53cbd49e92d5d25b34da62ee5412"
+            },
+            {
+              "path": "assets/index.v0.0.1.yO8O3QdD.css",
+              "extension": ".css",
+              "rawBytes": 33795,
+              "gzipBytes": 5925,
+              "isInitial": false,
+              "sha256": "132324b49bba391a2686964e6540c27ce1d36dc320b69f3a913fe5516dac5be0"
+            },
+            {
+              "path": "assets/keep.v0.0.1.Dxzbt_a5.css",
+              "extension": ".css",
+              "rawBytes": 523,
+              "gzipBytes": 277,
+              "isInitial": false,
+              "sha256": "05f293f6c41664d62d1be7d035e3e3bc3ea095e183cb12960f0f6aeafac81c10"
+            },
+            {
+              "path": "assets/manage-editors.v0.0.1.q7BlBY2A.css",
+              "extension": ".css",
+              "rawBytes": 534,
+              "gzipBytes": 295,
+              "isInitial": false,
+              "sha256": "df973958c8c8b27f86158e311d6dd9c8b331ccb3efa26c3d1b7ae60548292307"
+            },
+            {
+              "path": "assets/ManageDataPage.v0.0.1.Do5JbQc0.css",
+              "extension": ".css",
+              "rawBytes": 6859,
+              "gzipBytes": 1642,
+              "isInitial": false,
+              "sha256": "ed5af1185a73121b863fa67acd48b3c05a30b6e3a4c318881d5954b8e7acc1f6"
+            },
+            {
+              "path": "assets/ManageLayout.v0.0.1.CLUMGHx_.css",
+              "extension": ".css",
+              "rawBytes": 6487,
+              "gzipBytes": 1570,
+              "isInitial": false,
+              "sha256": "aef1e3fd11ae4493dd102e7156062be4349ff0dc0f31ccc48a02b7543265055c"
+            },
+            {
+              "path": "assets/me.v0.0.1.CzkM3OSu.css",
+              "extension": ".css",
+              "rawBytes": 8521,
+              "gzipBytes": 2027,
+              "isInitial": false,
+              "sha256": "d3db401f248d0f46d1d283b0a3834b9a20a6fb74506a5f862810a95258efdca0"
+            },
+            {
+              "path": "assets/PrivacyPolicyPage.v0.0.1.CIjr6ryW.css",
+              "extension": ".css",
+              "rawBytes": 1764,
+              "gzipBytes": 574,
+              "isInitial": false,
+              "sha256": "28e020ede54e1d179640c1eb52c9559c2ebc3da769e27bd20b79f891e5b22371"
+            },
+            {
+              "path": "assets/tools.v0.0.1.yj0kHD_o.css",
+              "extension": ".css",
+              "rawBytes": 969,
+              "gzipBytes": 419,
+              "isInitial": false,
+              "sha256": "228dc3bc101f28a2e67dce88c6993ca8d4db3f738179494f53062cd13786567e"
+            },
+            {
+              "path": "assets/VideoPage.v0.0.1.f9Y2hKL1.css",
+              "extension": ".css",
+              "rawBytes": 921,
+              "gzipBytes": 423,
+              "isInitial": false,
+              "sha256": "f6024d964a0530d7f308c5176c6f0375ff517b201e8e1eb9d4dc025e6ab3277f"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

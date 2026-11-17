@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：CSS预算通过与源码完整Web门禁
+
+- 基点d45d32d，沿[协议](../../development/web-css-budget.md)独立定位：原工作区CSS gzip52362B，HEAD同production Vite也51836B，均超51200，不能只归因原dirty。编辑器10个32×32 RGBA8指针所有RGB相等，维护Node标准库CLI转gray+alpha，保alpha/pHYs/sRGB/gAMA/尺寸/inline/热点；不删资产、换扩展名、改预算或增加依赖。PNG7893→5662B。
+- 最终产物两组均减2258B：工作区50104B，干净源码49578B；18份CSS中17份SHA原样，唯一EditorCanvasPage8244→5986B gzip。CLI源码gzip默认level6与产物level9区分，原源码7529→转换中间5285，最后Prettier5291；不是延迟实测。source-only树7f92cf95ba195296e547392201aced9d789801bd/四源摘要、全部测量见[实证](../../evaluations/web-css-budget-2026-11-17/README.md)。
+- Chrome10对×4底色×1280/390、Apple ImageIO10对独立像素通过，CRC/IHDR与3类metadata独立核；格式化CSS的原生CSSOM12条selector/声明/热点/回退一致，最终PNG字节同已验样本。优化器前非PNG字节相同；不声称格式后非PNG字节不变。库build仍内联10图，41项编辑器测试过，保API Extractor/TS版本非阻断warning。判官编码/纯内存拒绝/两UI delta复审无确认阻断；rename前失败保原，rename后同步失败可能已替换，不加不可靠回滚。
+- CSS过关后UI门禁新露4处，窄修任务BlogQaPage label与Slot retry为BaseUI Label/Button（25+typecheck/真实QA与AI各8回放过），原dirty BlogComments label/Markdown table两处保持。最终源码快照完整check:web exit0：注册4/contracts6/AI UI25/Web292、类型/构建/SSG/全部预算/UI/Markdown/包与chunk全过；当前工作区Web309与预算过，但仍因上述原dirty UI2处整体失败。root format仅原素材manifest失败，不豁免/暂存原实现。
+- 实际编辑器两尺寸选择/拖动/矩形光标检查过、无业务API请求；矩形原本无cursor覆盖沿默认箭头，先前crosshair错误假设只修ignored观察器。CSSOM早期探针误读Vite JS，最终要求direct CSS/至少10非空规则，得到12相等。两份非Git源码快照终态后原inode/所有者/无打开文件核后删，3030/8032/3033均200；旧live/失败根与67资产缓存保持，无SDK/独占三库/VM/供应商重跑。
+- 按sun-world-blog→case-study新增前端稿inline-cursor-css-budget，标签架构笔记/性能优化/前端工程；5稳定章节/7重点，一张ECharts6.1.0 SSR透明数据图，1280/390明暗实渲/无缩进溢出/图360-342px过，未发布。原Stars/pnpm等dirty稿不动。原80/123dirty/main原210加1删保持，只中文本地提交，无push/deploy/publication。
+- CSS预算已解除；原dirty UI/素材与生产/官方Linux四题/人工/版本/目标库/备份/TLS、未知孤儿/旧锁/断电多副本仍独立待，P1/A–D未整体完成。用户Clash Verge仅复用既有转发、不配置代理的边界保持。后续Claude Code/claude-ds先读新协议checkpoint，下一步按总计划继续核对A恢复边界等真实本地缺口，不重跑已成原生验收或付费采样。
+
 ### 2026-11-17 最新 checkpoint：首个静态页面贡献与独立挂载
 
 - 基点dc32f26，沿[新协议](../../development/page-contributions.md)补D首个实际slot：AppModule静态贡献/版本依赖，应用组合根收集，shared不import业务；blog声明原博客问答公开入口，AI决定sidebar/rail位置，不传聊天/正文或跨模块store。Web id仍blog/ai；公开requires=[]只导航，不授予Agent运行能力，不增加能力服务或生产准入。
@@ -120,7 +130,7 @@
 2. B 已有原生Linux隔离、网关、固定SDK/三库组合与API进程崩溃验收；官方Linux四题失败并停止付费复跑，人工/不可变模型版本、生产容量和凭据策略仍待。旧环境不可用结论已过时。
 3. C 账本、准入、撤销、预算、来源回执、终态事务及多种真实MySQL/进程故障验证已实现，生产组合根未开放；未知孤儿/旧锁恢复、宿主断电、多副本和目标库/备份/TLS仍待。
 4. D 已有只读问答页面/正式合同消费与首个AI公开view slot，静态校验、独立加载/Suspense/错误重试、卸载与能力拒绝路径本地验证。其他host/write action与显示能力服务按真实需求逐项接入，不把合成投影/范围切换或合同回放当生产、多租户接线，不重建插件框架。
-5. 合并前另处理全局Web预算/素材格式失败；不以定向通过代替根检查全绿。以上是截至本轮的剩余摘要，历史checkpoint保留当时边界。
+5. CSS预算本轮已通过、最终源码完整Web292全绿；当前工作区2处原dirty UI消费者和原素材格式仍失败，保留另行处理。合并前按最终提交集验证全部门禁，不以源码快照覆盖工作区失败。历史checkpoint保留当时边界。
 
 ## Writing / publication
 

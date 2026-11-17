@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17解除本分支CSS预算问题，[协议与维护](../development/web-css-budget.md)/[实证](../evaluations/web-css-budget-2026-11-17/README.md)：原工作区52362B、独立HEAD51836B均超原51200B，并非仅dirty。10张内联PNG无损RGB合并保alpha/metadata/热点，Chrome两尺寸四底色与ImageIO逐像素、CSSOM12规则/库inline均过；工作区降50104B、最终源码49578B，18 CSS中17 SHA原样，未改预算/资产范围。新露UI门禁的2任务源改BaseUI；最终source-only树完整Web292/所有后续门禁通过，当前工作区309/预算过但原dirty UI2处仍失败，原素材format失败保持。新增前端案例与ECharts透明数据图双尺寸明暗过未发布；两自有源码快照安全清理，原80/123dirty/服务保持，仅中文本地保存。后续继续A恢复边界等剩余本地核对；生产/官方四题/人工等门槛不自动放行，不配置Clash/付费复跑。
+
 2026-11-17完成D首个[有限页面贡献](../development/page-contributions.md)：blog静态声明原公开博客问答入口，AI宿主控制sidebar/rail、最小上下文与scope，应用根收集并做构建前真实注册检查；公开入口不授予运行权限，未知能力拒受限加载。注册22/挂载17、root29、纯源码快照113+typecheck过，真实页面双尺寸8个合成HTTP场景过；独立Suspense的3项修前失败/修后通过，判官复验无剩余确认阻断。完整Web309及类型/构建/SSG/manifest过，最后CSS预算整体失败/原素材格式失败保持，[实证](../evaluations/page-contributions-2026-11-17/README.md)记录22源/清理。其他slot/write action、显示能力服务与多项目仍按实际需求验收；生产/官方四题/人工等门槛未放行。博客03增边界与一透明图、双尺寸未发布；原80/123dirty保持，仅中文本地保存。用户确认只复用Clash Verge现有转发，不配置代理或调整节点，不再等另一代理资料，也不据此付费复跑。
 
 2026-11-17补齐D的[正式问答前端消费](../development/agent-formal-web.md)：formal/site沿正常登录，SSE/GET/cancel共用可信原文链接归一化；认证世代及每次发送立即生效的运行世代拒绝旧恢复/刷新/取消覆盖新账号或同账号新题。真实固定SDK/三库原路由导出成功和取消安全合同（供应商0、9.263秒、ACK全过），实际组件桌面/手机8场景合同回放通过，明确不是浏览器在线三库全链路。API938、纯源码快照64项及类型检查通过，Web264等通过但CSS预算使整个gate仍失败；根素材格式问题保留。[实证](../evaluations/agent-formal-web-2026-11-17/README.md)记录源码与清理。A的影子基线/本地盘点已交付，不重复；下一步D有限slot/contribution与卸载/错误隔离仍待，生产、官方Linux四题及人工/模型版本策略等门槛保持。博客04同题补恢复边界、两透明图及双尺寸预览通过未发布，原80dirty保持，仅中文本地保存。

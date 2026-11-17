@@ -1,0 +1,385 @@
+{
+  "version": "sun-world-css-budget-ui-replays/1",
+  "live_api_e2e": false,
+  "ai_workspace": {
+    "version": "sun-world-page-contributions-browser/1",
+    "data_kind": "actual-page-with-synthetic-http-adapter",
+    "live_api_e2e": false,
+    "observations": [
+      {
+        "device": "desktop",
+        "scenario": "expanded",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "workspace": true,
+        "entryLinks": [
+          {
+            "text": "博客问答",
+            "href": "/aigc/blog-qa"
+          }
+        ],
+        "allEntryCount": 2,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "desktop",
+        "scenario": "collapsed",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "workspace": true,
+        "entryLinks": [
+          {
+            "text": "问答",
+            "href": "/aigc/blog-qa"
+          }
+        ],
+        "allEntryCount": 2,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "desktop",
+        "scenario": "disabled",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "workspace": true,
+        "entryLinks": [],
+        "allEntryCount": 0,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "desktop",
+        "scenario": "retry",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "workspace": true,
+        "entryLinks": [
+          {
+            "text": "博客问答",
+            "href": "/aigc/blog-qa"
+          }
+        ],
+        "allEntryCount": 1,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 3
+      },
+      {
+        "device": "mobile",
+        "scenario": "expanded",
+        "width": 390,
+        "bodyWidth": 390,
+        "workspace": true,
+        "entryLinks": [
+          {
+            "text": "博客问答",
+            "href": "/aigc/blog-qa"
+          }
+        ],
+        "allEntryCount": 2,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "mobile",
+        "scenario": "collapsed",
+        "width": 390,
+        "bodyWidth": 390,
+        "workspace": true,
+        "entryLinks": [],
+        "allEntryCount": 2,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "mobile",
+        "scenario": "disabled",
+        "width": 390,
+        "bodyWidth": 390,
+        "workspace": true,
+        "entryLinks": [],
+        "allEntryCount": 0,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 2
+      },
+      {
+        "device": "mobile",
+        "scenario": "retry",
+        "width": 390,
+        "bodyWidth": 390,
+        "workspace": true,
+        "entryLinks": [
+          {
+            "text": "博客问答",
+            "href": "/aigc/blog-qa"
+          }
+        ],
+        "allEntryCount": 1,
+        "errorVisible": false,
+        "rawDiagnosticVisible": false,
+        "calls": [
+          {
+            "path": "/ai/v1/providers",
+            "method": "get"
+          }
+        ],
+        "errors": [],
+        "loadAttempts": 3
+      }
+    ]
+  },
+  "blog_qa": {
+    "version": "sun-world-formal-web-browser-replay/1",
+    "data_kind": "captured-formal-contract-replay",
+    "live_api_e2e": false,
+    "observations": [
+      {
+        "device": "desktop",
+        "scenario": "anonymous",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": "/login?return_to=%2Faigc%2Fblog-qa",
+        "sourceHrefs": [],
+        "header": null,
+        "answerMatches": false,
+        "localRequests": 0,
+        "streamPosts": 0,
+        "cancelPosts": 0
+      },
+      {
+        "device": "desktop",
+        "scenario": "completed",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": ["/blog/1"],
+        "header": "回答已完成",
+        "answerMatches": true,
+        "localRequests": 0,
+        "streamPosts": 0,
+        "cancelPosts": 0
+      },
+      {
+        "device": "desktop",
+        "scenario": "success-flow",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": ["/blog/1"],
+        "header": "回答已完成",
+        "answerMatches": true,
+        "localRequests": 0,
+        "streamPosts": 1,
+        "cancelPosts": 0
+      },
+      {
+        "device": "desktop",
+        "scenario": "cancel-flow",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": [],
+        "header": "已取消",
+        "answerMatches": false,
+        "localRequests": 0,
+        "streamPosts": 1,
+        "cancelPosts": 1
+      },
+      {
+        "device": "mobile",
+        "scenario": "anonymous",
+        "width": 390,
+        "bodyWidth": 390,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": "/login?return_to=%2Faigc%2Fblog-qa",
+        "sourceHrefs": [],
+        "header": null,
+        "answerMatches": false,
+        "localRequests": 0,
+        "streamPosts": 0,
+        "cancelPosts": 0
+      },
+      {
+        "device": "mobile",
+        "scenario": "completed",
+        "width": 390,
+        "bodyWidth": 390,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": ["/blog/1"],
+        "header": "回答已完成",
+        "answerMatches": true,
+        "localRequests": 0,
+        "streamPosts": 0,
+        "cancelPosts": 0
+      },
+      {
+        "device": "mobile",
+        "scenario": "success-flow",
+        "width": 390,
+        "bodyWidth": 390,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": ["/blog/1"],
+        "header": "回答已完成",
+        "answerMatches": true,
+        "localRequests": 0,
+        "streamPosts": 1,
+        "cancelPosts": 0
+      },
+      {
+        "device": "mobile",
+        "scenario": "cancel-flow",
+        "width": 390,
+        "bodyWidth": 390,
+        "fixtureLoginVisible": false,
+        "rawCodeVisible": false,
+        "loginHref": null,
+        "sourceHrefs": [],
+        "header": "已取消",
+        "answerMatches": false,
+        "localRequests": 0,
+        "streamPosts": 1,
+        "cancelPosts": 1
+      }
+    ]
+  },
+  "editor": {
+    "version": "sun-world-editor-cursor-browser/1",
+    "live_api_e2e": false,
+    "observations": [
+      {
+        "device": "desktop",
+        "width": 1280,
+        "bodyWidth": 1280,
+        "errors": [],
+        "rows": [
+          {
+            "tool": "选择",
+            "className": "sw-cursor-default",
+            "cursorHasInlinePng": true,
+            "cursorTail": "5 5, auto",
+            "width": 798,
+            "height": 1000
+          },
+          {
+            "tool": "拖动画布",
+            "className": "sw-cursor-grab",
+            "cursorHasInlinePng": false,
+            "cursorTail": "grab",
+            "width": 798,
+            "height": 1000
+          },
+          {
+            "tool": "矩形",
+            "className": "sw-cursor-default",
+            "cursorHasInlinePng": true,
+            "cursorTail": "5 5, auto",
+            "width": 798,
+            "height": 1000
+          }
+        ]
+      },
+      {
+        "device": "mobile",
+        "width": 390,
+        "bodyWidth": 390,
+        "errors": [],
+        "rows": [
+          {
+            "tool": "选择",
+            "className": "sw-cursor-default",
+            "cursorHasInlinePng": true,
+            "cursorTail": "5 5, auto",
+            "width": 390,
+            "height": 844
+          },
+          {
+            "tool": "拖动画布",
+            "className": "sw-cursor-grab",
+            "cursorHasInlinePng": false,
+            "cursorTail": "grab",
+            "width": 390,
+            "height": 844
+          },
+          {
+            "tool": "矩形",
+            "className": "sw-cursor-default",
+            "cursorHasInlinePng": true,
+            "cursorTail": "5 5, auto",
+            "width": 390,
+            "height": 844
+          }
+        ]
+      }
+    ]
+  }
+}

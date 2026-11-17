@@ -1,0 +1,242 @@
+{
+  "version": "sun-world-web-css-budget-validation/1",
+  "date": "2026-11-17",
+  "iteration_base_commit": "d45d32d6236f800099dd6011ff5846c528c076f0",
+  "source_only_index_tree": "7f92cf95ba195296e547392201aced9d789801bd",
+  "selected_source_count": 4,
+  "selected_source_sha256": {
+    "packages/editor/src/cursor/cursor.css": "7cc1e11cede040ab01fde63adcd22bb8e52ec196ad1a2cd7f8bd4001adbc1b77",
+    "scripts/optimize-editor-cursors.mjs": "d97b67ec64d10ece40d344270bb0a2ea44b5548ae6ff7c0caed6be059600fcf3",
+    "apps/web/src/modules/ai/pages/BlogQaPage.tsx": "0f71745767712c2bfb7631234f5f6daab9858f6dbcee70c042c2be280de1d8f7",
+    "apps/web/src/shared/extensions/Slot.tsx": "15766f1a785b089a97883d7f0b50e3d31305a519e4ad745228666b7e65f4fb82"
+  },
+  "runtime": {
+    "node": "24.17.0",
+    "zlib": "1.3.1-e00f703",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "budget": {
+    "bytes": 51200,
+    "gzip_level": 9,
+    "file_sha256": "528c2dd425e43ce3bafd4bd42d74d6629bec01989574c55b5af73385c768c331",
+    "file_unchanged": true
+  },
+  "verification": {
+    "source_only_web": {
+      "passed": true,
+      "command": "corepack pnpm check:web",
+      "actual_registry_tests": 4,
+      "contracts": 6,
+      "ai_ui": 25,
+      "web_tests": 292,
+      "all_gate_stages_passed": true
+    },
+    "working_tree_web": {
+      "passed": false,
+      "web_tests": 309,
+      "typecheck_build_ssg_budgets_passed": true,
+      "remaining_failures": [
+        "apps/web/src/modules/blog/ui/BlogComments.tsx raw label",
+        "apps/web/src/shared/markdown/SunMarkdownPreview.tsx raw table"
+      ],
+      "original_dirty_ui_files_modified": false
+    },
+    "root_format": {
+      "passed": false,
+      "remaining_failure": "docs/content-sources/csdn-qq-42345136/manifest.json"
+    },
+    "implementer_targeted_reported": {
+      "tests": 25,
+      "typecheck_passed": true
+    },
+    "editor_library": {
+      "build_passed": true,
+      "inline_png_count": 10,
+      "inline_png_bytes_match_source": true,
+      "tests": 41,
+      "warning": "API Extractor bundled TypeScript older than project 5.9.3; no dependency changes"
+    },
+    "png": {
+      "pairs": 10,
+      "before_bytes": 7893,
+      "after_bytes": 5662,
+      "native_chrome_pairs_per_width": 10,
+      "chrome_widths": [1280, 390],
+      "chrome_backgrounds": ["transparent", "white", "black", "checker"],
+      "native_imageio_pairs": 10,
+      "cssom_rules": 12,
+      "cssom_equal": true
+    },
+    "ui_replays": {
+      "ai_workspace_cases": 8,
+      "blog_qa_cases": 8,
+      "editor_devices": 2,
+      "editor_tool_switches_per_device": 3,
+      "live_api_e2e": false
+    },
+    "review": {
+      "blocking_findings": 0,
+      "scope": "encoder, malformed-input memory checks, formatting and two BaseUI changes; no write/fullWeb by reviewer"
+    },
+    "blog": {
+      "article_type": "case-study",
+      "category": "前端",
+      "tags": ["架构笔记", "性能优化", "前端工程"],
+      "sections": 5,
+      "strong_count": 7,
+      "figures": 1,
+      "plot_engine": "ECharts 6.1.0 SSR SVG",
+      "render_widths": [1280, 390],
+      "themes": ["light", "dark"],
+      "published": false
+    }
+  },
+  "optimizer_recalculation": {
+    "version": "sun-world-editor-cursor-recalculation/1",
+    "provenance": "read-only recalculation from frozen original CSS, not the original write invocation",
+    "gzip_level": 6,
+    "images": [
+      {
+        "index": 0,
+        "before": 966,
+        "after": 656
+      },
+      {
+        "index": 1,
+        "before": 959,
+        "after": 656
+      },
+      {
+        "index": 2,
+        "before": 650,
+        "after": 484
+      },
+      {
+        "index": 3,
+        "before": 810,
+        "after": 596
+      },
+      {
+        "index": 4,
+        "before": 784,
+        "after": 575
+      },
+      {
+        "index": 5,
+        "before": 766,
+        "after": 559
+      },
+      {
+        "index": 6,
+        "before": 521,
+        "after": 347
+      },
+      {
+        "index": 7,
+        "before": 923,
+        "after": 694
+      },
+      {
+        "index": 8,
+        "before": 906,
+        "after": 699
+      },
+      {
+        "index": 9,
+        "before": 608,
+        "after": 396
+      }
+    ],
+    "changed": true,
+    "png_bytes_before": 7893,
+    "png_bytes_after": 5662,
+    "css_bytes_before": 12377,
+    "css_bytes_after": 9405,
+    "css_gzip_before": 7529,
+    "css_gzip_after": 5285,
+    "css_sha256_before": "f141562ff1930021feac21aabb478c476249bace259250487de805ccbf836907",
+    "css_sha256_after": "eed211b94e5953046572a65f633b86f7a33b5ec3637289a48b18eb0d4bb10c8d",
+    "optimizer_non_png_bytes_equal": true,
+    "final_formatted_css_bytes": 9435,
+    "final_formatted_css_gzip_level6": 5291,
+    "final_formatted_css_sha256": "7cc1e11cede040ab01fde63adcd22bb8e52ec196ad1a2cd7f8bd4001adbc1b77"
+  },
+  "ignored_evidence_sha256": {
+    ".tmp/css-budget/blog-dark-desktop.png": "7e88a0eddf70ef5fc7ba51d152238d4399bd222d3ca6633468ae3c1fe3319064",
+    ".tmp/css-budget/blog-dark-mobile.png": "fa886c94391a73d63e889936257858fb8e7308e8f36a40bb29b2b3b0744ea6ad",
+    ".tmp/css-budget/blog-dark.log": "0f322ab1a14e61fb5d0da655d040304ce76a3a37da446416294a7644dbd2cd07",
+    ".tmp/css-budget/blog-desktop.png": "086c0671db009f48ec75bd7f074278d29261628cd3e129218e6ead1caaf02f17",
+    ".tmp/css-budget/blog-figure-desktop.png": "cb19d7f1972fdf10e52078fb719048231d10f54bf8f37a58ca79fc326e548517",
+    ".tmp/css-budget/blog-figure-mobile.png": "70df118914655ecbe59a56dbd77c89b94f9cc29131ebfaf55070bce665d1ebfe",
+    ".tmp/css-budget/blog-mobile.png": "a46987147d140994d0cc3d33e2a927a3597db2025ba6dcaf63e1f7a8458a5432",
+    ".tmp/css-budget/blog-preview-final.log": "45ffc52290f63a127c818a63ef80dd3b5697dcdb1556be0502c2ae6356cd4eb9",
+    ".tmp/css-budget/blog-preview.log": "45ffc52290f63a127c818a63ef80dd3b5697dcdb1556be0502c2ae6356cd4eb9",
+    ".tmp/css-budget/blog-prose-desktop.png": "b2fd8ce8d804bf55f4998add953b85e4097e9f592666f3ea930861db2c9b98b1",
+    ".tmp/css-budget/blog-prose-mobile.png": "21b936a5f4d0103142fc1ebcbc05cb47e1b7002834acc499112fcab0b78c6c49",
+    ".tmp/css-budget/browser-pixels-cssom-final.log": "22fad1cab0009fbb2c74d46b729b996ddbb9f0a5a912ed3cb8dce1b400cff618",
+    ".tmp/css-budget/browser-pixels-final.log": "22fad1cab0009fbb2c74d46b729b996ddbb9f0a5a912ed3cb8dce1b400cff618",
+    ".tmp/css-budget/browser-pixels.log": "22fad1cab0009fbb2c74d46b729b996ddbb9f0a5a912ed3cb8dce1b400cff618",
+    ".tmp/css-budget/browser-pixels.mjs": "fbbe30b6c65f5e66f6a85abd67393a8e30bd5e52a50cc1420f0466ff5330a756",
+    ".tmp/css-budget/chart.log": "dd5c1525968cdac122a25133660d348e1027e738a6e1570639d0f916bf9ffb66",
+    ".tmp/css-budget/chart.mjs": "c6cded1ee8e9dd75bd7b045d4a0eee15bd4738bfd3d30db4327f782d9d8d6062",
+    ".tmp/css-budget/clean-web-gate-1.log": "9cd5ec288827f23140ed9e9b4df0f07548a48a7e8530876549ec7ff602cbe361",
+    ".tmp/css-budget/editor-desktop.png": "8ec8c242adcfe9dc3d5803d043d2076b6a7bfc199d5b37a92800c79f484d9e2d",
+    ".tmp/css-budget/editor-lib-build.log": "366ae99974b143c0c5fd105586c5a29b7ba9ba7711463964eefa6a35ae1fd562",
+    ".tmp/css-budget/editor-mobile.png": "59e81d9ca03972ddb9621da94c783e9df30f078e266b3c12e940186b0520c44b",
+    ".tmp/css-budget/editor-preview-2.log": "5c94eb269f3769297eeb38e46f127862f0f550c154c91d0f14dd98e66a3c40ba",
+    ".tmp/css-budget/editor-preview-3.log": "e6ee60d35e04bfb4814e82e9fcad1c3a02d40df68b12c57dd24fb2a9c0bb339c",
+    ".tmp/css-budget/editor-preview.log": "b18d3517876b8d02a8997325dc499a00d618c54e9be7df4809be8f16715d568e",
+    ".tmp/css-budget/editor-tests.log": "1c1529e7a98062e3167dcff11131e7253f93655a03352af72e5a4c4c46a7a36e",
+    ".tmp/css-budget/final-snapshot.json": "8703a7a30db50022c47c29164751e46df2f0fbb8158c09a1fec4a7e1ee68d195",
+    ".tmp/css-budget/format-cursor.log": "dfc4cfc05811033843ea7338ba0e80e8305fd8fa2a0cdf329807a7df6805168f",
+    ".tmp/css-budget/format-first.log": "830e93673f07ac976b62f68bd8a8e1091c01c33f56e081f4f61ce4958f2f420f",
+    ".tmp/css-budget/head-build.log": "73d2aa0b79c817064233792a7a051ec9c74eb6fc33740dc4f1d1356f01143d09",
+    ".tmp/css-budget/head-snapshot.json": "20b9b4a27c2ca0d0d3cbbd46b00209ec3deef4acac93c909dd19b6d4458c2d8c",
+    ".tmp/css-budget/imageio-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".tmp/css-budget/imageio-check.swift": "29975ac831e4251f7f9677ef835b9eda2c8e5bd681d440890af144fa5f842d41",
+    ".tmp/css-budget/imageio-pixels.log": "b68e1481836e34e60641a8bd65df7a6111fa55b275657007902b45c4a5d35684",
+    ".tmp/css-budget/optimizer-check-formatted.log": "f358ad43022dff03cb9b5cbe6b2d66fe7a9fc98df33f40604b72e38b3c76ee71",
+    ".tmp/css-budget/optimizer-check.log": "43daa1ea9076ebaf5d81bf16e63dd6bf36c929cf37a586798527beeb9134599b",
+    ".tmp/css-budget/optimizer-recalculation.json": "a70e01111fbfcdba71b403b06b1ae47683da6bcdf71d131ec8bb2934f895cdd9",
+    ".tmp/css-budget/pixels-desktop.png": "fc4ed4543c48fbabb86b42b9277c0a846c8fa40398f64172e057aa4f2cbe40ef",
+    ".tmp/css-budget/pixels-mobile.png": "b194afebae3ceaaf6adae06b9ace13e91cfc9842911955123a6d413e8358896a",
+    ".tmp/css-budget/qa-preview/browser-desktop-anonymous.png": "4b472d2257c2eaad2a427bb26eae1e166de70af8f8dc206e5ecf0d4d5ac87d66",
+    ".tmp/css-budget/qa-preview/browser-desktop-cancel-flow.png": "c80be7be22609c8a1e87ca386307f9123d44a921bc21b75b2735906259b3af2d",
+    ".tmp/css-budget/qa-preview/browser-desktop-completed.png": "7afc826d3e602ae34415048172555fb6fb8cc4f4e12a41005de8ccc63766f473",
+    ".tmp/css-budget/qa-preview/browser-desktop-success-flow.png": "b153192c63aa8d51bf01785876712abbd4f0694ce73aa3f3eb9a83c73b07cf72",
+    ".tmp/css-budget/qa-preview/browser-mobile-anonymous.png": "e588b620ed39095f849f97bb9f7fb7e0b6b912ffbcd90b2a45929380e4f62254",
+    ".tmp/css-budget/qa-preview/browser-mobile-cancel-flow.png": "98537aae5aa977fec44f88caf0f25ce031ba2a9e2d1ac660865e8f0a9a933af3",
+    ".tmp/css-budget/qa-preview/browser-mobile-completed.png": "8c77d4971b9b6adc2cace28cc7683fb73bf97ad3031e2e15fbd688ca140853a6",
+    ".tmp/css-budget/qa-preview/browser-mobile-success-flow.png": "812fa3aa9612c5e3aa9af51970b62f07c16acd6df3f806fb80bb8dd75a1cd3b8",
+    ".tmp/css-budget/qa-preview.log": "343316610e49d83635ea4ff898f44e96f1b9f555f6fe4da020c597361ca5aace",
+    ".tmp/css-budget/recompute.log": "34718e2fead8b58ddf524d6cec0db07f9cf01c5bdc72a99a6765ad38c2d4cb93",
+    ".tmp/css-budget/recompute.mjs": "131859a3a6f981ddd176ca92a3fbfac2f16daa89c423c548a009734addd97e67",
+    ".tmp/css-budget/root-format.log": "16d4fe81dd478fc03f06d0c3f7f319b2374f3e20a9eb36b8bafb5fa5b833b281",
+    ".tmp/css-budget/root-script.log": "3b0df3c0f6f26fc3ef880d737e165ecd8ea31508709506df5a0f8af062e9c49e",
+    ".tmp/css-budget/ui-preview/ui-desktop-collapsed.png": "425b5ee3683bc8d891ba1303867aa3670f0b4e02522de5ec109b1397d55e0615",
+    ".tmp/css-budget/ui-preview/ui-desktop-disabled.png": "e7410768271239c65cc24ceca3fd3364e9e7aab65a7bcffd5bba16950e7a2307",
+    ".tmp/css-budget/ui-preview/ui-desktop-expanded.png": "e1a5c824b863d714e2376c53b2bfc11e553d378c440a4b6bf67d51ed3000971e",
+    ".tmp/css-budget/ui-preview/ui-desktop-failure.png": "0ae356acf95fed4cf1e860acc3f1e7cb8d8d284dc8118c0a39bca196dd57ffad",
+    ".tmp/css-budget/ui-preview/ui-desktop-retry.png": "e1a5c824b863d714e2376c53b2bfc11e553d378c440a4b6bf67d51ed3000971e",
+    ".tmp/css-budget/ui-preview/ui-mobile-collapsed.png": "96806c5e2f489d11f5475817fa3bbc485f0df5576ee9a2b7dc44f016419d4b89",
+    ".tmp/css-budget/ui-preview/ui-mobile-disabled.png": "ba84bec8282ba3b35b789500f314e2fafc996dc9b055352ac5715713be1a2399",
+    ".tmp/css-budget/ui-preview/ui-mobile-expanded.png": "213a350075d9c35286c54caa3afe0347d06be06c4d6d922570a7835c0dde8254",
+    ".tmp/css-budget/ui-preview/ui-mobile-failure.png": "cd5e799944e595dad2d7a34ab65db6cbc3e5e051ee5a353b16f706d10c5109fc",
+    ".tmp/css-budget/ui-preview/ui-mobile-retry.png": "213a350075d9c35286c54caa3afe0347d06be06c4d6d922570a7835c0dde8254",
+    ".tmp/css-budget/ui-preview.log": "cda81742dacf33ef4cf81a883f1db86f5120b35e7c10abe407945c25c2eb5dc5",
+    ".tmp/css-budget/web-gate-1.log": "37ef30b3b72343a07d4cdc0dba9123be75e361728ad310e6154ecd93eb5cd70a",
+    ".tmp/css-budget/web-gate-final.log": "87e0b6890563866de9d67c7b5c1b7f007a9b2f6e4c7e722f99df99e279a7fc33",
+    ".tmp/css-budget/root-format-final.log": "aff993ad4f23c49811f435406a94170088d01f7be638a8d8c30f917a05a23d69"
+  },
+  "supplier_requests": 0,
+  "sdk_owned_database_vm_suite_reruns": 0,
+  "worktrees_created": 0,
+  "limits": [
+    "Working-tree UI gate and original material format still fail; source-only success does not override them",
+    "No production entry mounting, deployment, push or publication",
+    "No latency or first-paint timing claim from byte savings",
+    "Clash Verge reused as-is; no proxy/node/DNS/system setup or paid official retry",
+    "Full P1/A–D, human review, official Linux four-case and production policy remain independent"
+  ]
+}

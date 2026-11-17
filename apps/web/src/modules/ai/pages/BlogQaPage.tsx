@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Button, buttonVariants } from '@sun-world/base-ui/button'
+import { Label } from '@sun-world/base-ui/label'
 import { Textarea } from '@sun-world/base-ui/textarea'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import {
@@ -123,7 +124,7 @@ export function BlogQaPage() {
             void qa.send(question)
           }}
         >
-          <label htmlFor="blog-qa-question">你想了解什么？</label>
+          <Label htmlFor="blog-qa-question">你想了解什么？</Label>
           <Textarea
             id="blog-qa-question"
             value={question}

@@ -1,0 +1,217 @@
+{
+  "version": "sun-world-cursor-encoding-inventory/1",
+  "png_bytes_before": 7893,
+  "png_bytes_after": 5662,
+  "observations": [
+    {
+      "name": "sw-cursor-default",
+      "before_bytes": 966,
+      "after_bytes": 656,
+      "before_sha256": "7337e78bd85f3f2fadd6f76d05d57f082f058d33d923142f9f3e848631630f5c",
+      "after_sha256": "4b3b2c805dc0b7483b15d5b7ba059736a8c74dd0f07f66bb0c1b812a1bd7832a",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-move",
+      "before_bytes": 959,
+      "after_bytes": 656,
+      "before_sha256": "61931655819b972217d7e284d7bf6a62dbb78cded2651452e9e39991608480da",
+      "after_sha256": "50af185f8a0db269748a7bec3cc5b932fa71c89c8557c2d8384fa1b6bdce0223",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [16, 16],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-pen",
+      "before_bytes": 650,
+      "after_bytes": 484,
+      "before_sha256": "37609110938af2335a9f8242a019aeef877983b5d7e078c77b5d84ba306fd59b",
+      "after_sha256": "ba079ebf466e8f4cc8b864d874d5b2323fb4188fbb20acdf3e1a3a5450cb9cd3",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-pen-close",
+      "before_bytes": 810,
+      "after_bytes": 596,
+      "before_sha256": "39bdca06fb4e66e2d1431d295f72e06fd71b015cff6049f4fbba2730be859f7d",
+      "after_sha256": "5cf3d82172b160f571f37915625699bd2d589ba35120bd3b35cc2e8ef88011fa",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-pen-anchor-add",
+      "before_bytes": 784,
+      "after_bytes": 575,
+      "before_sha256": "53bf845bdf1d87e7ea8601589bb54dfac3983b2d2ee601e4dae0122e2e8e21ce",
+      "after_sha256": "1eee75e2268d0977e5ab58342a6e626f8e9335034d3feca6c98768712cfc871e",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-pen-anchor-remove",
+      "before_bytes": 766,
+      "after_bytes": 559,
+      "before_sha256": "4e81931429224443323e497f811b1b3fe4a14feb7d0aafdfd66e4494bd006e66",
+      "after_sha256": "9504d346eadb98ff406e8073c95c0c348fae89e5a694861a4f0191ff36be7a19",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-crosshair",
+      "before_bytes": 521,
+      "after_bytes": 347,
+      "before_sha256": "5097445bd3a6e85b8029778d07c784f6f8772cc5f196ee30bb432a5a3f047f26",
+      "after_sha256": "3d40d472a87272f36d9a858dfda4ae4332775b50663248649238a7ea4e9cf8ce",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [15, 15],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-move-ns",
+      "before_bytes": 923,
+      "after_bytes": 694,
+      "before_sha256": "ac035ea907d189cadb502acbfd5b427acdd0cd932f2714ff78f63377b29dbf01",
+      "after_sha256": "73d9c02e1d60a153888ece77d72b85a945154039a9bded1da1c32bb07e40ec1a",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-move-ew",
+      "before_bytes": 906,
+      "after_bytes": 699,
+      "before_sha256": "055c56cf7eefeee7e505ce86506632bf288a2b307bdc71723550b7ac4e3bc07b",
+      "after_sha256": "82f624686d25c5fbf250d69fbf5bb82ef1d9a0c730248357f4d5d30014cd59d6",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [5, 5],
+      "fallback": "auto"
+    },
+    {
+      "name": "sw-cursor-pencil",
+      "before_bytes": 608,
+      "after_bytes": 396,
+      "before_sha256": "abc292671c98ac4f90c5c0c5d1f698bb4603fb7a85c36ca6fcad145fdeb1bb34",
+      "after_sha256": "d8769c683e9f46df79f8443ce10c4b35f57781611ca66eead12d4bd551161c80",
+      "width": 32,
+      "height": 32,
+      "bit_depth": 8,
+      "before_color_type": 6,
+      "after_color_type": 4,
+      "metadata_sha256": {
+        "pHYs": "d47eea60e343a47b6277f7fd2ef043b2b6918291074acdad799822573fa607b6",
+        "sRGB": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "gAMA": "96256bc24f55fcd0b110db9a423c70063b27ea9e62c16789674d212fffa56f27"
+      },
+      "metadata_unchanged": true,
+      "crc_valid": true,
+      "hotspot": [8, 24],
+      "fallback": "auto"
+    }
+  ]
+}

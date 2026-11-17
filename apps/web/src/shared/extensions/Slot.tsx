@@ -6,6 +6,7 @@ import {
   type ComponentType,
   type ReactNode,
 } from 'react'
+import { Button } from '@sun-world/base-ui/button'
 import type { ContributionRegistry } from './registry'
 import type {
   CapabilityState,
@@ -21,9 +22,9 @@ function Failure({ retry }: { retry: () => void }) {
   return (
     <div role="alert">
       此功能暂时无法显示。
-      <button type="button" onClick={retry}>
+      <Button type="button" variant="ghost" size="sm" onClick={retry}>
         重试
-      </button>
+      </Button>
     </div>
   )
 }

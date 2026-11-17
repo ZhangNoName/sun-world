@@ -1,0 +1,21 @@
+{
+  "version": "sun-world-css-budget-plot/1",
+  "engine": "ECharts 6.1.0 SSR SVG, animation disabled",
+  "width": 360,
+  "height": 246,
+  "units": "B, gzip level9 CSS assets sum",
+  "budget": 51200,
+  "series": [
+    {
+      "scope": "working-tree",
+      "before": 52362,
+      "after": 50104
+    },
+    {
+      "scope": "source-only",
+      "before": 51836,
+      "after": 49578
+    }
+  ],
+  "svg_sha256": "5ebcb3a004388977dc213fa8b376d191839292d353797027f62e0ae59ef7fdbf"
+}

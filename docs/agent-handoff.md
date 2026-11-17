@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜CSS预算解除与完整源码Web验证
+
+- 按[协议](development/web-css-budget.md)独立确认工作区52362B/HEAD51836B均超原51200B，定位到内联指针可无损合并RGB。10张32×32保alpha/metadata/尺寸/热点与inline，PNG7893→5662B；最终工作区CSS50104B、源码49578B，均减2258B，17/18 CSS SHA原样，预算与检查器不变。
+- Chrome10对×4底色×1280/390及ImageIO10对独立像素、PNG metadata/CRC、CSSOM12规则/库inline过；41编辑器测试/25 UI窄测及type过，实际编辑器两尺寸光标切换过。source-only树7f92cf95ba195296e547392201aced9d789801bd完整Web exit0（292、所有预算/UI/边界过），见[实证](evaluations/web-css-budget-2026-11-17/README.md)。CSS通过后暴露的2任务UI源已改BaseUI；当前工作区309/预算过但原dirty label/table仍失败，原素材format失败保留，不以源码快照覆盖它们。
+- 两自有非Git源码快照终态后原inode/无打开文件核后清理，3030/8032/3033均200。新增前端case-study与ECharts透明数据图，架构笔记/性能优化/前端工程、5章节/7重点，双尺寸明暗渲染过未发布。原80/123dirty/main原210加1删保持，只中文本地提交，无push/deploy/publication。
+- 用户Clash Verge只复用不配置的范围保持，无供应商/SDK/独占三库/VM重跑。生产/官方Linux四题/人工/模型版本/目标库/备份/TLS与恢复等仍待，P1/A–D未整体放行。后续Claude Code/claude-ds读新协议checkpoint及[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)，按总计划继续核对A恢复等剩余本地缺口，不重复把CSS失败当未定位阻塞。
+
 ### 2026-11-17｜静态页面贡献与卸载隔离
 
 - 按[新协议](development/page-contributions.md)交付D首个AI工作区公开view slot：blog声明原博客问答入口，宿主决定sidebar/rail，应用显式装配/构建前校验，shared不import业务，不传对话或正文；公开requires=[]不授予运行能力，其他slot/write action/新能力服务仍按真实需求逐项做。
