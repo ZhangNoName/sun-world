@@ -84,8 +84,21 @@ def groups_gone_once(groups):
     return True
 
 
-def linux_fixture_class(base):
-    if sys.platform != 'linux':
+def normal_samples(evidence, recovered, groups, execution_count):
+    if type(execution_count) is not int or execution_count not in (0, 1):
+        raise unavailable()
+    samples = evidence['executions']
+    if (recovered['had_processes'] or recovered['executions']
+            or len(samples) != execution_count or len(groups) != execution_count):
+        raise unavailable()
+    if any(row['gateway']['accepted_connections'] < 1 or row['gateway']['bytes_forwarded'] < 1
+           for row in samples):
+        raise unavailable()
+    return samples
+
+
+def linux_fixture_class(base, *, execution_count=1):
+    if sys.platform != 'linux' or type(execution_count) is not int or execution_count not in (0, 1):
         raise unavailable()
 
     class LinuxFixture(base):
@@ -133,25 +146,24 @@ def linux_fixture_class(base):
                     'remaining_leaf_snapshots': len(recovered['executions']),
                     'recorded_group_count': len(groups),
                 }), flush=True)
-                if (self.worker_process.returncode != -signal.SIGKILL or not recovered['had_processes']
+                if (execution_count != 1 or self.worker_process.returncode != -signal.SIGKILL or not recovered['had_processes']
                         or not recovered['survivor_was_live'] or not recovered['survivor_cgroup_killed']
                         or len(recovered['executions']) != 1 or len(groups) != 1):
                     raise unavailable()
                 samples = recovered['executions']
             else:
                 evidence = read_worker_kernel(self.root / 'fixture-kernel-observations.json')
-                if recovered['had_processes'] or recovered['executions'] or len(evidence['executions']) != 1:
-                    raise unavailable()
-                samples = evidence['executions']
-                if any(row['gateway']['accepted_connections'] < 1 or row['gateway']['bytes_forwarded'] < 1
-                       for row in samples):
-                    raise unavailable()
+                samples = normal_samples(evidence, recovered, groups, execution_count)
+            model_requests = int(self.pool.fetch_one('SELECT COALESCE(SUM(model_count),0) n FROM agent_runs')['n'])
+            tool_calls = int(self.pool.fetch_one('SELECT COALESCE(SUM(tool_count),0) n FROM agent_runs')['n'])
+            if execution_count == 0 and (model_requests != 0 or tool_calls != 0):
+                raise unavailable()
             self._linux_summary = {
                 'crashed': self.expected_worker_crash,
                 'executions': len(samples),
-                'maximum_memory_peak_bytes': max(row['memory_peak_bytes'] for row in samples),
-                'model_requests': int(self.pool.fetch_one('SELECT COALESCE(SUM(model_count),0) n FROM agent_runs')['n']),
-                'tool_calls': int(self.pool.fetch_one('SELECT COALESCE(SUM(tool_count),0) n FROM agent_runs')['n']),
+                'maximum_memory_peak_bytes': max((row['memory_peak_bytes'] for row in samples), default=0),
+                'model_requests': model_requests,
+                'tool_calls': tool_calls,
                 'parent_cgroup_reaped': recovered['had_processes'],
                 'parent_recovery_positive_control': recovered['survivor_was_live'] and recovered['survivor_cgroup_killed'],
                 'sdk_group_already_gone_before_parent': group_gone_before_parent,
@@ -162,6 +174,10 @@ def linux_fixture_class(base):
         async def close_owned_containment(self):
             exited = self.worker_process is None or self.worker_process.returncode is not None
             errors = []
+            try:
+                await super().close_owned_containment()
+            except BaseException as error:
+                errors.append(error)
             for operation in (
                 lambda: private_directory(self.root, self._root_identity),
                 lambda: self.containment.stop_tree(worker_exited=exited),

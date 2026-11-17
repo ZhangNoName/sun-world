@@ -61,4 +61,14 @@ if [ "$status" -eq 0 ] && [ "${sw_official:-0}" = 1 ]; then
   status=$?
   /usr/local/bin/busybox rm -rf "$official_report_root" || status=1
 fi
+if [ "$status" -eq 0 ] && [ "${sw_api_restart:-0}" = 1 ]; then
+  process_report_root="$(/usr/local/bin/busybox mktemp -d /run/sun-world-api-process-report-XXXXXX)" || exit 1
+  /opt/python/bin/python3.12 -I scripts/test-agent-sdk-stack.py \
+    --mysqld /opt/mysql/bin/mysqld --redis-server /usr/local/bin/redis-server \
+    --mongod /opt/mongo/bin/mongod --sdk-runtime /runtime-sdk \
+    --node /usr/local/bin/node --linux-stack --api-process-recovery \
+    --report "$process_report_root/evaluation.json"
+  status=$?
+  /usr/local/bin/busybox rm -rf "$process_report_root" || status=1
+fi
 exit "$status"

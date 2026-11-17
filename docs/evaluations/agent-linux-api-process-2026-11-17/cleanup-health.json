@@ -1,0 +1,13 @@
+{
+  "mac_runtime_identity_verified": true,
+  "all_invocations_terminal": true,
+  "no_open_runtime_files": true,
+  "mac_runtime_removed": true,
+  "owned_vm_roots_remaining": 0,
+  "existing_local_service_status": {
+    "3030": 200,
+    "8032": 200,
+    "3033": 200
+  },
+  "previous_failed_fixture_evidence_not_modified_by_this_iteration": true
+}

@@ -164,8 +164,10 @@ def valid_host(value):
                                'startup_failed', 'guest_error'})
 
 
-def verify_console(raw, control, *, containment=False, gateway=False, stack=False, official=False):
-    stack = stack or official
+def verify_console(raw, control, *, containment=False, gateway=False, stack=False, official=False, api_restart=False):
+    if api_restart and official:
+        fail()
+    stack = stack or official or api_restart
     gateway = gateway or stack
     containment = containment or gateway
     host = only_json(control, 'SW_LINUX_HOST_RESULT')
@@ -311,6 +313,27 @@ def verify_console(raw, control, *, containment=False, gateway=False, stack=Fals
         result['official_stack'] = only_json(raw, 'SW_LINUX_OFFICIAL_STACK_RESULT')
     elif any(line.startswith(b'SW_LINUX_OFFICIAL_') for line in raw.splitlines()):
         fail()
+    if api_restart:
+        allowed = {b'SW_LINUX_API_PROCESS_RESULT', b'SW_LINUX_API_PROCESS_RESOURCES_RESULT'}
+        if any(line.split(b' ', 1)[0] not in allowed for line in raw.splitlines()
+               if line.startswith(b'SW_LINUX_API_PROCESS_')):
+            fail()
+        report = only_json(raw, 'SW_LINUX_API_PROCESS_RESULT')
+        spec = importlib.util.spec_from_file_location('linux_api_process_proof', ROOT / 'scripts/agent-linux-api-process-proof.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        crosscheck = module.verify(report)
+        resources = only_json(raw, 'SW_LINUX_API_PROCESS_RESOURCES_RESULT')
+        expected = {'version': 'sun-world-linux-stack-resources/1', 'database_processes_stopped': True,
+            'database_roots_removed': True, 'owned_test_group_gone': True}
+        if (type(resources) is not dict or set(resources) != set(expected)
+                or any(type(resources[k]) is not type(v) or resources[k] != v for k, v in expected.items())):
+            fail()
+        result.update(version='sun-world-linux-native-validation/6', api_process_recovery=report,
+            api_process_crosscheck=crosscheck, api_process_resources=resources,
+            linux_api_process_recovery_verified=True)
+    elif any(line.startswith(b'SW_LINUX_API_PROCESS_') for line in raw.splitlines()):
+        fail()
     return result
 
 
@@ -345,15 +368,16 @@ def main(argv=None):
     parser.add_argument('--gateway', action='store_true')
     parser.add_argument('--stack', action='store_true')
     parser.add_argument('--official', action='store_true')
+    parser.add_argument('--api-restart', action='store_true')
     arguments = parser.parse_args(argv)
     admitted, stage = False, 'admission'
     confirmations, build, run = None, None, None
     try:
-        if (sum((arguments.gateway, arguments.containment, arguments.stack, arguments.official)) > 1 or sys.platform != 'darwin' or not arguments.cache.is_absolute()
+        if (sum((arguments.gateway, arguments.containment, arguments.stack, arguments.official, arguments.api_restart)) > 1 or sys.platform != 'darwin' or not arguments.cache.is_absolute()
                 or not arguments.report.is_absolute() or not arguments.report.parent.is_dir()
                 or any(os.path.lexists(str(arguments.report)+suffix) for suffix in ('','.console.log','.broker.json','.evaluation.json'))):
             fail()
-        stack = arguments.stack or arguments.official
+        stack = arguments.stack or arguments.official or arguments.api_restart
         admitted = True
         confirmations = {'guest_stopped': True, 'groups_gone': True}
         with owned_interrupts() as state:
@@ -396,8 +420,8 @@ def main(argv=None):
                         stage = 'vm'
                         console, control = execute([str(run / 'host'), str(image), str(run / 'guest.initrd'),
                             *(['official', *(str(fd) for fd in descriptors)] if arguments.official else
-                              ['stack'] if stack else ['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
-                            state=state, directory=run, timeout=630 if arguments.official else 330 if stack else 110,
+                              ['api-restart'] if arguments.api_restart else ['stack'] if stack else ['gateway'] if arguments.gateway else ['containment'] if arguments.containment else [])],
+                            state=state, directory=run, timeout=630 if arguments.official else 450 if arguments.api_restart else 330 if stack else 110,
                             is_vm=True, confirmations=confirmations, pass_fds=descriptors)
                 finally:
                     log = run / 'console.log'
@@ -417,7 +441,7 @@ def main(argv=None):
                                     target.flush()
                                     os.fsync(target.fileno())
                 stage = 'verify_console'
-                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway, stack=stack, official=arguments.official)
+                result = verify_console(console, control, containment=arguments.containment, gateway=arguments.gateway, stack=stack, official=arguments.official, api_restart=arguments.api_restart)
                 if arguments.official:
                     stage = 'verify_official'
                     summary, evaluation = broker.results()

@@ -42,10 +42,11 @@ def event_value(raw):
 
 
 class ProcessFixture(stack.Fixture):
-    def __init__(self, cut):
-        if sys.platform != 'darwin' or cut not in ('accepted', 'model_hold', 'completed'):
+    def __init__(self, cut, *, linux=False):
+        if (type(linux) is not bool or sys.platform != ('linux' if linux else 'darwin')
+                or cut not in ('accepted', 'model_hold', 'completed')):
             raise fail()
-        super().__init__('hold' if cut == 'model_hold' else 'complete')
+        super().__init__('hold' if cut == 'model_hold' else 'complete', linux=linux)
         self.cut, self.api_process, self.api_reader = cut, None, None
         self.api_events, self.callback = asyncio.Queue(maxsize=64), None
         self.api_close_failed = False
@@ -75,6 +76,7 @@ class ProcessFixture(stack.Fixture):
         self.api_events = asyncio.Queue(maxsize=64)
         self.api_process = await asyncio.create_subprocess_exec(sys.executable,
             str(Path(__file__).with_name('api_process_host.py')),
+            *(['--linux-stack'] if self.linux else []),
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL, pass_fds=(self.listener.fileno(),),
             env={'PATH': '/usr/bin:/bin', 'HOME': str(self.root), 'TMPDIR': str(self.root),

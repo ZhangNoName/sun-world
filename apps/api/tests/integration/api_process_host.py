@@ -57,6 +57,14 @@ def fail():
     return RuntimeError(ERROR)
 
 
+def linux_mode(arguments):
+    if arguments == [] and sys.platform == 'darwin':
+        return False
+    if arguments == ['--linux-stack'] and sys.platform == 'linux':
+        return True
+    raise fail()
+
+
 def _configuration(value):
     fields = {'version', 'root', 'database', 'namespace', 'auth_secret', 'gateway_secret',
         'worker_secret', 'origin', 'worker_origin', 'bundle_hash', 'phase', 'listener_fd', 'owned_env'}
@@ -278,8 +286,7 @@ def main():
     global _STAGE, _FAILURE
     _STAGE, _FAILURE = 'configuration', None
     try:
-        if len(sys.argv) != 1 or sys.platform != 'darwin':
-            raise fail()
+        linux_mode(sys.argv[1:])
         raw = read_configuration()
         sys.path.insert(0, str(Path(__file__).parent))
         from official_channel_codec import strict_json

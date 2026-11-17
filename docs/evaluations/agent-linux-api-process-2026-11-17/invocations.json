@@ -1,0 +1,18 @@
+{
+  "native": {
+    "exit_code": 0,
+    "profile": "api-restart",
+    "elapsed_seconds": null,
+    "selected_sources": 306,
+    "payload_sources": 270,
+    "assets": 67,
+    "source_unchanged": true,
+    "original_assets_unchanged": true
+  },
+  "mac": {
+    "mode": "recovery",
+    "exit_code": 0,
+    "elapsed_seconds": 75.671,
+    "source_unchanged": true
+  }
+}

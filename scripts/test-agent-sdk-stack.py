@@ -97,10 +97,11 @@ def main(argv=None):
         sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
         from model_evaluation import validate_options
         recovery = arguments.api_process_recovery
-        if recovery and (sys.platform != 'darwin' or arguments.real_model or arguments.real_model_profile
-                or arguments.interrupt_probe or arguments.linux_stack or arguments.linux_official
+        if recovery and (sys.platform != ('linux' if arguments.linux_stack else 'darwin')
+                or arguments.real_model or arguments.real_model_profile
+                or arguments.interrupt_probe or arguments.linux_official
                 or arguments.report is None):
-            raise ValueError('Explicit synthetic macOS API-process fixture only')
+            raise ValueError('Explicit synthetic API-process fixture only')
         profile = validate_options(arguments.real_model, None if recovery else arguments.report,
                                    arguments.real_model_profile, interrupt=arguments.interrupt_probe)
         if recovery:
@@ -143,7 +144,7 @@ def main(argv=None):
                                   '--report', str(arguments.report.resolve())] if arguments.real_model else [])]
             if recovery:
                 command = [sys.executable, str(ROOT / 'apps/api/tests/integration/api_process_recovery.py'),
-                           '--report', str(destination)]
+                           '--report', str(destination), *(['--linux-stack'] if arguments.linux_stack else [])]
             if not linux:
                 return mysql.run(arguments.mysqld, extra_env=environment, test_runner=owned_test_process,
                     test_command=command, test_timeout_seconds=300 if arguments.real_model else 180)
@@ -155,7 +156,8 @@ def main(argv=None):
         if any(Path(environment['SUN_WORLD_AGENT_' + kind + '_ROOT']).exists() for kind in ('REDIS', 'MONGO')):
             raise RuntimeError('Owned database root remains')
         if status == 0:
-            print(('SW_LINUX_OFFICIAL_RESOURCES_RESULT ' if arguments.linux_official else 'SW_LINUX_STACK_RESOURCES_RESULT ') + json.dumps({
+            print(('SW_LINUX_API_PROCESS_RESOURCES_RESULT ' if recovery else
+                   'SW_LINUX_OFFICIAL_RESOURCES_RESULT ' if arguments.linux_official else 'SW_LINUX_STACK_RESOURCES_RESULT ') + json.dumps({
                 'version': 'sun-world-linux-stack-resources/1', 'database_processes_stopped': True,
                 'database_roots_removed': True, 'owned_test_group_gone': True}), flush=True)
         return status

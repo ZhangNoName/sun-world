@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17 / 原生 Linux 独立 API 进程三切点通过
+
+- 基点54b3490，当前继续开发/审查/中文本地保存目标，P1/A–D未完成。首轮新--api-restart保原49/九隔离/五网关/组件SDK/正式六场景，再三个实际API SIGKILL/wait同TLS/fd/会话/Worker重启，均通过；306源/270payload/67原资产与判官严格V6复核一致，source-only树31ad035f2d3791bb9d6d225b85230a683a238c2a。
+- accepted45481ms自然failed且0SDK/model/tool/peak；hold旧真token余9592ms有效租约内403、10523ms interrupted；complete原GET/历史/来源/调用行不变。SDK0/1/1、ACK3，预算/幂等/物理回收与独立外层资源/VM completed-stopped/own组/root全核；不当官方计数或生产通过。API935、Worker164、新Mac三cut75.671秒兼容过。
+- [协议](development/agent-api-process-recovery.md)、[完整实证](evaluations/agent-linux-api-process-2026-11-17/README.md)及[分支checkpoint](handoff/branches/zxy-dsh-platform-foundation.md)记录命令/范围/清理。成功fixture/CG/relay/VM/root和准备runtime均收回，旧两个失败证据根及旧live runtime不动，缓存保留。原80dirty及本文件原210加1删保持，3030/8032/3033均200。
+- 博客04后端与原三标签/两透明图、7稳定ID保持，补Linux实测/零执行不能缺证，1280/390预览通过未发布。官方Linux四题仍失败且停止paid，人工/版本生产决策、未知孤儿/旧锁、宿主断电/多副本、目标库/备份/TLS仍待；下一步按计划核A权限/资源/影子差异等本地缺口。不推送部署发布，不改模型/Clash/业务配置，后续Claude Code先读协议。
+
 ### 2026-11-17 / 独立 API 进程故障三切点通过
 
 - 当前目标继续按计划开发/审查/中文本地保存，P1/A–D未完成；基点41839d6。本轮仅测试组合/CLI/hooks，无付费请求、推送、部署或发布。原80项dirty与本文件原210加1删保留。

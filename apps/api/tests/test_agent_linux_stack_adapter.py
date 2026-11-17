@@ -81,6 +81,23 @@ class LinuxStackAdapterTests(unittest.TestCase):
             adapter.linux_fixture_class(base)
         base.assert_not_called()
 
+    def test_execution_count_is_explicit_strict_zero_or_one(self):
+        with patch.object(adapter.sys, 'platform', 'linux'):
+            for count in (True, False, -1, 2, 0.0, None, '0'):
+                with self.assertRaisesRegex(RuntimeError, '^AGENT_LINUX_STACK_FAILED$'):
+                    adapter.linux_fixture_class(object, execution_count=count)
+
+    def test_zero_execution_expectation_rejects_any_extra_row_group_or_parent_rescue(self):
+        # Pure observation-consumer checks; these dictionaries prove no kernel.
+        recovered = {'had_processes': False, 'executions': []}
+        self.assertEqual(adapter.normal_samples({'executions': []}, recovered, [], 0), [])
+        for evidence, rescue, groups in (({'executions': [{}]}, recovered, []),
+                ({'executions': []}, recovered, [123]),
+                ({'executions': []}, {'had_processes': True, 'executions': []}, []),
+                ({'executions': []}, {'had_processes': False, 'executions': [{}]}, [])):
+            with self.assertRaisesRegex(RuntimeError, '^AGENT_LINUX_STACK_FAILED$'):
+                adapter.normal_samples(evidence, rescue, groups, 0)
+
     def test_bad_pid_evidence_still_attempts_the_independently_owned_cgroup(self):
         with patch.object(adapter.sys, 'platform', 'linux'):
             kind = adapter.linux_fixture_class(object)
@@ -107,3 +124,24 @@ class LinuxStackCleanupHookTests(unittest.IsolatedAsyncioTestCase):
             await instance.close_owned_containment()
         instance.containment.stop_tree.assert_called_once_with(worker_exited=True)
         instance.containment.finish.assert_called_once_with(worker_exited=True)
+
+    async def test_base_api_failure_barrier_is_preserved_and_cgroup_cleanup_is_independent(self):
+        events = []
+        class Base:
+            async def close_owned_containment(self):
+                events.append('base')
+                raise RuntimeError('SYNTHETIC_API_CLOSE_UNKNOWN')
+        with patch.object(adapter.sys, 'platform', 'linux'):
+            kind = adapter.linux_fixture_class(Base, execution_count=0)
+        instance = kind.__new__(kind)
+        instance.root, instance._root_identity = Path('/unused-fixture'), (1, 2)
+        instance.worker_process = SimpleNamespace(returncode=0)
+        def stop(**_):
+            events.append('stop')
+            raise PermissionError
+        instance.containment = SimpleNamespace(stop_tree=Mock(side_effect=stop),
+            finish=Mock(side_effect=lambda **_: events.append('finish')))
+        with patch.object(adapter, 'private_directory', side_effect=lambda *args: events.append('identity')):
+            with self.assertRaisesRegex(RuntimeError, '^AGENT_LINUX_STACK_FAILED$'):
+                await instance.close_owned_containment()
+        self.assertEqual(events, ['base', 'identity', 'stop', 'finish'])

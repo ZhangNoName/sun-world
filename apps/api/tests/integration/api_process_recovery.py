@@ -33,7 +33,9 @@ def require(value):
 
 
 class Report:
-    def __init__(self, path):
+    def __init__(self, path, *, linux=False):
+        if type(linux) is not bool:
+            raise fail()
         path = Path(path)
         parent = path.parent.lstat()
         if (not path.is_absolute() or path.parent.resolve() != path.parent
@@ -48,7 +50,8 @@ class Report:
             os.close(self.fd)
             raise
         self.value = {'version': 'sun-world-api-process-recovery/1', 'passed': False,
-            'platform': 'macos-sandbox', 'linux_verified': False, 'cases': []}
+            'platform': 'linux-cgroup-bubblewrap' if linux else 'macos-sandbox',
+            'linux_verified': False, 'cases': []}
 
     def save(self):
         raw = json.dumps(self.value, allow_nan=False, separators=(',', ':')).encode()
@@ -78,7 +81,8 @@ def observation(cut):
         redis_lease_retained=None, completed_quiescent_before_kill=None,
         callback_lease_remaining_ms=None, terminal_elapsed_ms=None,
         budget_mode='synthetic-reservation-only', model_count_before=None, model_count_after=None,
-        cleanup_confirmed=False, failure_stage='prepare', error_type=None, child_failure=None)
+        cleanup_confirmed=False, failure_stage='prepare', error_type=None, child_failure=None,
+        linux_observation=None, worker_start_count=None, worker_acknowledged=False)
 
 
 def safe_error_type(error):
@@ -88,6 +92,14 @@ def safe_error_type(error):
         if isinstance(error, kind):
             return name
     return 'OtherError'
+
+
+def worker_observation(fixture, record):
+    stopped = fixture.worker_stopped
+    record['worker_start_count'] = stopped['start_count'] if stopped is not None else None
+    diagnostics = fixture.worker_cleanup_diagnostics
+    record['worker_acknowledged'] = (stopped is not None
+        and diagnostics['complete'] is True and diagnostics['acknowledged'] is True)
 
 
 async def exercise(fixture, record):
@@ -124,6 +136,7 @@ async def exercise(fixture, record):
     require(rate == '1')
     require(before['status'] == {'accepted': 'accepted', 'model_hold': 'running', 'completed': 'completed'}[cut])
     require(before['model_count'] == {'accepted': 0, 'model_hold': 1, 'completed': 3}[cut])
+    require(before['tool_count'] == {'accepted': 0, 'model_hold': 0, 'completed': 2}[cut])
     require(len(messages) == (2 if cut == 'completed' else 1))
     require(before['model_input_tokens_reserved'] == 0)  # Synthetic proxy has no official preflight.
     require(len(calls) == before['model_count'])
@@ -214,14 +227,21 @@ async def exercise(fixture, record):
     record['budget_preserved'] = record['history_preserved'] = True
 
 
-async def run_matrix(report):
+async def run_matrix(report, *, linux=False):
+    if type(linux) is not bool or sys.platform != ('linux' if linux else 'darwin'):
+        raise fail()
     stack.AgentStackTests.setUpClass()
     try:
         for cut in ('accepted', 'model_hold', 'completed'):
             record = observation(cut)
             report.value['cases'].append(record)
             report.save()
-            fixture = ProcessFixture(cut)
+            kind = ProcessFixture
+            expected_executions = 0 if cut == 'accepted' else 1
+            if linux:
+                from linux_sdk_stack import linux_fixture_class
+                kind = linux_fixture_class(ProcessFixture, execution_count=expected_executions)
+            fixture = kind(cut)
             failed = False
             try:
                 await fixture.start()
@@ -239,10 +259,21 @@ async def run_matrix(report):
                     record['cleanup_confirmed'] = (not fixture.root.exists()
                         and fixture.api_cleanup_confirmed()
                         and (fixture.worker_process is None or fixture.worker_process.returncode == 0))
+                    worker_observation(fixture, record)
+                    if not failed:
+                        require(record['worker_acknowledged'] and type(record['worker_start_count']) is int
+                            and record['worker_start_count'] == expected_executions)
+                    if linux:
+                        record['linux_observation'] = fixture.linux_summary()
+                        summary = record['linux_observation']
+                        require(summary['executions'] == expected_executions
+                            and summary['model_requests'] == {'accepted': 0, 'model_hold': 1, 'completed': 3}[cut]
+                            and summary['tool_calls'] == {'accepted': 0, 'model_hold': 0, 'completed': 2}[cut])
                 except BaseException as error:
                     record['cleanup_confirmed'] = False
                     if record['error_type'] is None:
                         record['failure_stage'], record['error_type'] = 'cleanup', safe_error_type(error)
+                worker_observation(fixture, record)
                 record['passed'] = not failed and record['cleanup_confirmed']
                 record['child_failure'] = fixture.child_failure
                 if record['passed']:
@@ -251,6 +282,7 @@ async def run_matrix(report):
             if not record['cleanup_confirmed']:
                 raise fail()  # Do not create more resources after unknown cleanup.
         report.value['passed'] = len(report.value['cases']) == 3 and all(row['passed'] for row in report.value['cases'])
+        report.value['linux_verified'] = linux and report.value['passed']
         report.save()
         require(report.value['passed'])
     finally:
@@ -261,14 +293,16 @@ def main():
     class Parser(argparse.ArgumentParser):
         def error(self, _message):
             raise fail()
-    report = None
+    report, linux, code = None, False, 1
     try:
         parser = Parser(allow_abbrev=False)
         parser.add_argument('--report', type=Path, required=True)
+        parser.add_argument('--linux-stack', action='store_true')
         options = parser.parse_args()
-        if sys.platform != 'darwin':
+        linux = options.linux_stack
+        if sys.platform != ('linux' if linux else 'darwin'):
             raise fail()
-        report = Report(options.report)
+        report = Report(options.report, linux=linux)
         report.save()
         async def owned():
             task = asyncio.current_task()
@@ -276,20 +310,27 @@ def main():
             for signum in (signal.SIGINT, signal.SIGTERM):
                 loop.add_signal_handler(signum, task.cancel)
             try:
-                await run_matrix(report)
+                await run_matrix(report, linux=linux)
             finally:
                 for signum in (signal.SIGINT, signal.SIGTERM):
                     loop.remove_signal_handler(signum)
         asyncio.run(owned())
-        return 0
+        code = 0
     except (KeyboardInterrupt, asyncio.CancelledError):
-        return 130
+        code = 130
     except BaseException:
         print(ERROR, file=sys.stderr)
-        return 1
     finally:
         if report:
-            report.close()
+            try:
+                report.close()
+            except Exception:
+                if code != 130:
+                    code = 1
+                print(ERROR, file=sys.stderr)
+    if code == 0 and linux:
+        print('SW_LINUX_API_PROCESS_RESULT ' + json.dumps(report.value, allow_nan=False, separators=(',', ':')), flush=True)
+    return code
 
 
 if __name__ == '__main__':

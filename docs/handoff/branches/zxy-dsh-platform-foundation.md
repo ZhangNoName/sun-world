@@ -8,6 +8,15 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：原生 Linux 独立 API 进程三切点通过
+
+- 基点54b3490，沿[新协议](../../development/agent-api-process-recovery.md)追加可信VM --api-restart，仍先原49/九隔离/五网关/组件SDK/正式六场景，再原samefd/原认证/三库/真实SDK三切点。SDK CLI显式--api-process-recovery --linux-stack，子API仅可信固定argv选择Linux，不接受HTTP/环境切换，原Mac默认及旧Linux模式保持。无供应商/broker/串口2/网络/磁盘/share/key，不部署本地模型或改生产入口。
+- 首轮native V6通过，source-only树31ad035f2d3791bb9d6d225b85230a683a238c2a；306源/270 payload逐项匹配，67资产metadata原样复用，actual expanded2944657482/selected1800082026/initrd774637659B。guest2CPU/8GiB、任务512MiB/64；新时限420/450、准备300，旧时限不改。新API切点accepted45481ms failed且0 SDK/model/tool/peak；hold余9592ms合法旧token/service/hash+租约窗口同mTLS严格403、10523ms interrupted、1SDK1model/peak81547264；complete1SDK3model2tool/peak114552832、原GET/两消息/来源/calls不变。每case实际SIGKILL/wait、同Worker活/新APIready、ACK3/start0/1/1、幂等/预算/历史/fixture清理确认；未完成旧Redis槽保留，不当官方计数通过。
+- LinuxFixture显式execution_count0/1（旧默认1），0分支核实际kernel文件空/原group空/无遗留叶或代偿、SQL0/peak0，不能空观察冒绿；合作close保API失败屏障且独立尝试CG。宿主完整typed marker/适用null/原时间/0+1+1等严格proof与独立resources，旧模式拒新prefix，原six Workercrash/父活进程cgroup正对照保持。VZ独立completed/stopped、own组/root移除全真，owned VM roots0；Mac runtime原inode/终态/无打开文件核后删，旧两个failedfixture证据根与旧live runtime不动。67资产缓存保留。
+- 命令：维护VM CLI --api-restart；API935/35.978秒、Worker164/9.15541秒、新process/adapter26+host7+旧MacCLI4+archive5/AST/sh过，新Mac三cut75.671秒/306源稳定过、linuxobs null/verifiedfalse；判官离线27及最终306/270/67、console严格V6、Mac报告复核无确认阻断。见[实证](../../evaluations/agent-linux-api-process-2026-11-17/README.md)与ignored .tmp/linux-api-process日志。原六Linux依然全过，不能把离线frames当native；root/Web全绿不作声明，根format原素材manifest问题独立保留。
+- 博客04按sun-world-blog→design补同题Linux三切点/零执行边界，后端与架构笔记/Agent/DeepSeek Harness、两透明图/7稳定ID保持，1280/390预览通过未发布；3030/8032/3033均200，模型/Clash/业务配置不变。原80dirty及主handoff原210加1删保持，只中文本地提交，不推送/部署/发布。
+- Linux同API切点已完成；官方Linux四题失败/停止paid保持，人工/不可变版本生产策略、未知孤儿/旧锁生产恢复、宿主断电/多副本、目标库/备份/TLS仍待，P1/A–D未整体完成。下一步按总计划继续A权限/资源只读盘点与影子差异或其他可本地实施缺口，不把验收资料当人工批准。后续Claude Code/claude-ds先读新协议checkpoint。
+
 ### 2026-11-17 最新 checkpoint：Mac API 独立进程三切点通过
 
 - 基点41839d6；按计划补实际API SIGKILL/restart，不调用供应商。新协议[API进程恢复](../../development/agent-api-process-recovery.md)，三个api_process测试模块、sdk_stack两默认兼容async hooks/auth_secret、维护CLI显式--api-process-recovery及两窄测文件。父持有三库/Worker stdin/同TLS listener，API原组合根/routes在独立Python进程；继承同origin/fd/证书/服务secret/JWTsecret/Redis会话/库，不造父shadow application或改生产入口。登录覆盖为原AuthManager令牌与真实JWT/Redis验证，非新增HTTP登录路由。

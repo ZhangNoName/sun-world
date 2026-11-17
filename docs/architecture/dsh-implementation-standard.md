@@ -204,6 +204,8 @@ docs/plans/                      # 分阶段交付与验收
 
 [固定SDK整栈验证](../development/agent-sdk-stack-validation.md)已连接正式public/private API、真实MySQL/Redis/Mongo与双向mTLS；模型与文章数据仍为合成。测试宿主以私有PID日志回收崩溃Worker遗留SDK，不等于生产自动接管锁或恢复执行；Linux隔离、真实模型语义/资源预算及持久留存关停策略仍须独立验收。
 
+[独立API进程故障](../development/agent-api-process-recovery.md)已进一步在Mac与原生Linux合成整栈验证：实际SIGKILL/wait后同监听/认证配置重启，旧回调在有效租约内拒绝、原记录不重派、预算和历史不丢失。Linux未派发切点明确核0执行/0调用/0资源观察，另两切点沿原512MiB/64隔离启动和回收；不把空观察当通过。宿主断电、多副本、未知孤儿/旧锁生产恢复及真实供应商Linux四题仍未完成，这组通过不放行整个P1。
+
 API 重启不自动派发旧 accepted：保留原受理记录，至原截止时间由对账置为 failed；旧 running 在租约或总时限到期后收敛为 interrupted。派发确认丢失时，仍活的原控制上下文允许向原 Worker 查询已有 execution_id，但不能重新发送启动请求；无法确认则中断。采用“宁可明确中断，也不盲目重放”的首期策略，不承诺分布式 exactly-once。用户主动重试使用新幂等键。
 
 - 接收事务创建会话、用户消息和运行，命中相同幂等键返回 409 + 原 run ID；同键不同请求 hash 返回独立冲突码。键按账户隔离；保留期至少覆盖可查询的运行记录，过期策略在迁移 PR 明确，避免过早复用。

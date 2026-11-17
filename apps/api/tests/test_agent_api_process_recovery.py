@@ -144,6 +144,45 @@ class ProtocolTests(unittest.TestCase):
             host.remember_failure(OSError(MARKER))
             self.assertEqual(host._FAILURE, {'stage': 'application', 'error_type': 'TypeError', 'line': 0})
 
+    def test_explicit_linux_mode_never_selects_platform_from_input_or_environment(self):
+        with patch.object(host.sys, 'platform', 'linux'):
+            self.assertTrue(host.linux_mode(['--linux-stack']))
+            for arguments in ([], ['--linux-stack', MARKER], [MARKER]):
+                with self.assertRaisesRegex(RuntimeError, ERROR):
+                    host.linux_mode(arguments)
+        with patch.object(host.sys, 'platform', 'darwin'):
+            self.assertFalse(host.linux_mode([]))
+            with self.assertRaisesRegex(RuntimeError, ERROR):
+                host.linux_mode(['--linux-stack'])
+        for platform, linux in (('linux', False), ('darwin', True), ('darwin', 1)):
+            with patch.object(fixture_module.sys, 'platform', platform), \
+                    patch.object(fixture_module.stack.Fixture, '__init__') as base:
+                with self.assertRaisesRegex(RuntimeError, ERROR):
+                    fixture_module.ProcessFixture('accepted', linux=linux)
+                base.assert_not_called()
+        with patch.object(fixture_module.sys, 'platform', 'linux'), \
+                patch.object(fixture_module.stack.Fixture, '__init__', return_value=None) as base:
+            fixture_module.ProcessFixture('accepted', linux=True)
+            base.assert_called_once_with('complete', linux=True)
+
+    def test_linux_report_starts_unverified_and_ack_projection_uses_actual_observation(self):
+        report = recovery.Report(self.root / 'linux.json', linux=True)
+        try:
+            self.assertEqual(report.value['platform'], 'linux-cgroup-bubblewrap')
+            self.assertFalse(report.value['linux_verified'])
+            record = recovery.observation('accepted')
+            self.assertIsNone(record['linux_observation'])
+            fixture = SimpleNamespace(worker_stopped={'start_count': 0},
+                worker_cleanup_diagnostics={'complete': True, 'acknowledged': False})
+            recovery.worker_observation(fixture, record)
+            self.assertEqual(record['worker_start_count'], 0)
+            self.assertFalse(record['worker_acknowledged'])
+            fixture.worker_cleanup_diagnostics['acknowledged'] = True
+            recovery.worker_observation(fixture, record)
+            self.assertTrue(record['worker_acknowledged'])
+        finally:
+            report.close()
+
     def test_portable_probe_accepts_owned_empty_listener_and_preserves_it(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
             listener.bind(('127.0.0.1', 0))
@@ -257,6 +296,7 @@ class OwnedApiChildTests(unittest.IsolatedAsyncioTestCase):
         report = SimpleNamespace(value={'cases': []}, save=lambda: (_ for _ in ()).throw(OSError(MARKER)))
         with patch.object(recovery.stack.AgentStackTests, 'setUpClass'), \
                 patch.object(recovery.stack.AgentStackTests, 'tearDownClass') as close, \
+                patch.object(recovery.sys, 'platform', 'darwin'), \
                 patch.object(recovery, 'ProcessFixture') as create:
             with self.assertRaises(OSError):
                 await recovery.run_matrix(report)

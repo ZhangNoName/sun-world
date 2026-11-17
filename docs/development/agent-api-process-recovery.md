@@ -33,3 +33,25 @@ root负责协议、CLI接线、验证/证据、博客及中文本地提交；cod
 失败的两份私有fixture证据根按失败规则保留，成功native3三个fixture清理确认；准备runtime经原inode/句柄终态/无打开文件核对移除，不声称历史根全0。见[完整实证](../evaluations/agent-api-process-recovery-2026-11-17/README.md)。标准旧accepted恢复描述同步为现实现，不引入自动重派。博客04同题补机制和Mac实测边界、原两透明图够用，1280/390预览通过未发布。
 
 下一步可在既有Linux合成整栈接相同独立API进程切点；本轮未运行该Linux模式，不把原Linux六场景中的同进程重建冒认为已覆盖。官方Linux四题失败结论及停止付费复跑保持，未知孤儿/旧锁生产恢复、多副本/断电、目标库/TLS/人工/版本策略等仍待；P1/A–D未完成。只中文本地保存，原dirty和现有服务保持，不推送部署。
+
+## Linux 同切点实施约束
+
+2026-11-17从54b3490继续。新VM显式--api-restart，互斥official/stack/gateway/containment，内部复用完整stack资产与原49/九隔离/五网关/组件SDK/六合成场景，再运行相同API三切点。只增三份已维护api_process源到明确payload合同，67资产保持；无第二特权串口、供应商连接、网卡/磁盘/共享目录或key。guest仍2CPU/8GiB，任务512MiB/64；该模式VM总限420秒、外层450秒，准备300秒，不改变旧模式时限。
+
+SDK CLI为--api-process-recovery --linux-stack --report新私有路径，禁用real/official/interrupt。原--linux-stack单用仍原六场景。子API仅可信固定--linux-stack选择Linux启动，默认Mac必须仍拒Linux、Linux显式模式在Mac也拒，不由HTTP问题或环境自动切换。三库、原TLS监听与独立Worker、三个真实时间门/旧凭据/幂等/预算/历史oracle均原样保持。
+
+LinuxFixture显式可信execution_count只允许0或1，旧调用默认1不变；accepted明确预期0 SDK/0模型/0工具/0peak，另两切点各1 SDK。正常ACK、空cgroup/closed relay/PGID不存在、私有root身份与移除都独立核验；有额外执行或不符预期即失败。包装器清理必须继续调用被包装fixture的失败屏障，并独立尝试所有已owned CG清理，不能用Linux覆盖掉API未确认关闭标志。
+
+报告继续有界固定schema，按platform区分Mac与Linux，Linux只有三切点和所有物理观察完成后才能verified；每case保实际Worker ACK/start_count与Linux内核summary，accepted零执行不是缺失观察。guest成功后只发严格安全JSON SW_LINUX_API_PROCESS_RESULT，再由原外层CLI在三库/测试组确认关闭后发独立SW_LINUX_API_PROCESS_RESOURCES_RESULT。失败不发成功标志；宿主严格检查完整schema/类型、原三case/实际等待/剩余有效租约/0+1+1执行与0+1+3模型/0+0+2工具/限额峰值，旧模式遇到新标志拒绝，不能只信一个passed/verified布尔。guest最终退出、VZ独立停止与own组/root移除仍保留原监督器验证。
+
+root负责VM/Swift/guest/SDK CLI、payload合同、宿主严格proof和故障测试、实际运行/证据/博客/交接与中文本地保存；coding只负责ProcessFixture/child/run_matrix Linux适配、LinuxFixture零执行与合作清理及对应窄测；判官在实现后只读复审。协议先写入后广播，后续Claude Code/claude-ds先读本段。任何未知保留证据并失败，不采用旧失败root/锁/PID；上一轮两份失败证据根及旧live runtime保持。生产、官方四题、人审/版本策略等其余未完成项不因此自动通过。
+
+## Linux checkpoint
+
+首轮原生V6完整通过：原49零skip/九隔离/五网关/组件SDK/正式六场景保持，新增三切点actual SIGKILL/wait及独立Worker存活/新APIready、真实三库与同TLS/认证配置重启均通过。accepted45481ms自然failed、0SDK/0model/0tool/0peak；hold旧token/service/DB hash及有效租约核对后余9592ms同mTLS精确403，10523ms后interrupted、1SDK/1model/peak81547264；complete1SDK/3model/2tool/peak114552832，历史/来源与调用行不重写，Worker ACK3/start0/1/1，所有fixture/CG/relay/PGID/root清理确认。VZ独立completed/stopped、外层own组gone/root移除及资源frame全真；VM销毁不替代内部证明。
+
+306源及270 payload逐项等working/source-only暂存树31ad035f2d3791bb9d6d225b85230a683a238c2a，67资产完整metadata与旧native4相同，不推导官方成功。guest_build实际来源字段为payload_sha256，解析2944657482/选中1800082026/initrd774637659字节。新Mac三切点75.671秒/306源稳定再过，linux_verifiedfalse/observations null；API935/35.978秒、Worker164/9.15541秒，新26+宿主7+CLI4+archive5与判官最终源/console/V6复核通过。详见[Linux实证](../evaluations/agent-linux-api-process-2026-11-17/README.md)。
+
+准备Mac runtime按原inode/所有调用终态/无打开文件核后移除，owned VM roots0；旧两失败证据根/live runtime未改，67缓存资产保留。现有3030/8032/3033均200。博客04同题补Linux实测/零执行不能缺证，后端与原三标签/两透明图保持，1280/390预览通过未发布。生产、供应商、Clash配置不变，原80dirty与主handoff210/1保持，仅中文本地保存，不推送部署。
+
+Linux同API切点已完成，不再作为阻塞；官方Linux四题仍失败且停止付费复跑，人工/版本生产决策、宿主死亡/断电/多副本、未知孤儿/旧锁生产恢复及目标库/备份/TLS等仍待，P1/A–D未完成。下一步继续按总计划核对剩余可本地实施项及A权限/资源盘点、影子差异缺口，不用完成的验证代替真实生产/人工决策。
