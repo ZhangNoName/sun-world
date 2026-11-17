@@ -291,7 +291,9 @@ class ManagementPolicyTests(unittest.TestCase):
         registry = create_module_registry()
         self.assertEqual(set(registry.tools), {'blog.search_public', 'blog.read_public'})
         self.assertEqual(registry.modules['identity-management'], MANAGEMENT_MANIFEST)
-        self.assertEqual(len(MANAGEMENT_MANIFEST.http_entries), 9)
+        from src.core.auth.recent import ADMIN_STEP_UP_OPERATIONS
+        self.assertEqual({(entry.method, entry.path) for entry in MANAGEMENT_MANIFEST.http_entries},
+                         ADMIN_STEP_UP_OPERATIONS | {('GET', '/auth/capabilities')})
         self.assertEqual(len(MANAGEMENT_MANIFEST.capabilities), 9)
         self.assertEqual(MANAGEMENT_MANIFEST.tools, ())
         self.assertEqual(MANAGEMENT_MANIFEST.skills, ())

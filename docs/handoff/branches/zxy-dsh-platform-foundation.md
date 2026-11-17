@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：当前会话显示能力投影
+
+- 基点8cb6305，继续计划D能力探测；先落[协议](../../development/capability-projection.md)并同步复用coding/判官。只读GET由management模块拥有，真实Auth/当前role及同一写policy，匿名无存储公开read、坏Cookie401/依赖503不降级，身份字段成对、匿名能力子集、十键/0..15秒与access/近期寿命限制，no-store。非授权租约，无新Grant API/Agent工具/管理产品入口。
+- Web Provider/controller/hook/typed API/真实Slot按consumer/可见性启停，project/account/auth epoch/server family隔离；单调请求开始TTL、getter同步裁剪、同值续查保挂载、零TTL新family换隔离、过期后同值ready通知、失败撤销卸载abort。探测不触发登录刷新/toast，原公开导航及普通聊天保持。主要31源含management projection/policy/read、Web controller/hook与Provider、契约导出十键、schema/gate/native测试及Linux显式包合同。
+- 冻结树d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8：API1032/41.092秒、Worker164、native16/2.652秒与旧binding20/management19/audit16/recent12/recovery16/MySQL33/原stack24过；独立11/Web27/旧16及gate40+9+9+9+read1/十键/摘要无剩余确认阻断。OpenAPI只新增GET/两schema，全部旧path/schema一致；catalog只管理module依赖/读声明+bundle，原blog/two tools/Skill保持。
+- 判官开发中P2反例为匿名null身份携identity.role.create会展示受限贡献；真实project不产此值/实际写服务仍拒，不写成生产越权。DTO/client配对与匿名公开子集修正，修前DTO三subcase/client三项红、修后11/33绿。root时钟重采样/同步过期/通知边界均补回归。浏览器首harness阻断静态ai资源失败仅修regex保日志，最终1280/390共12实际Provider/Hook/transport/Slot合成GET场景过，未取消signal数量与当前受限DOM数量相等、已卸载均取消；旧XHR被Chrome取消，忽略abort由单元证明，不称在线API E2E。
+- 工作区75文件337项过，原两dirty UI问题保持；干净跟踪源码非Git快照完整Web72文件320项/注册4/contracts6/AI UI25/类型构建SSG/全部门禁与预算过，CSS49578/51200B/18资产。快照archiveSHA/inode/自有无打开文件后清理，未建worktree/安装；原root format仅内容素材manifest失败，不豁免。
+- 实际Linux234源逐字绑定281payload/67资产，原49协议零skip/9隔离/5网关/固定SDK/正式三库mTLS原6场景过，SDK6/合成模型10/工具4、supplier0，legacyper_run=false保留。新projection16在Mac owned库，不称guest新动作验收。catalog变化需SDK原配方离线重封，38522成员仅catalog变，四固定Linux二进制/其余66资产/原缓存不动；旧包+新目录拒、旧包+旧目录/新包+新目录过，未宿主执行Linux ELF/联网模型。详[实证](../../evaluations/capability-projection-2026-11-17/README.md)。
+- sun-world-blog→design修订[博客03](../../blog/2026-11-12-dsh-skill-boundaries.md)，后端/架构笔记、Agent、DeepSeek Harness，六稳定ID/十重点，沿原透明装配图、正文三时序无需重复图；实际深色发现末行对比不足补底框后1280/390明暗过，未发布。预览 http://127.0.0.1:3033/.tmp/capability-projection-blog-l4xykzbh/index.html 。17可定位owned DB根删/ps无引用、VM组/root与源码快照回收，3030/8032/3033/旧指定根缓存与原80/123/main210加1删保持。
+- 只中文本地保存，不push/deploy/pub/代理配置/供应商/官方付费重跑。下一步按总计划处理真实本地可验的细粒度授权/可授予范围与剩余D入口，先写独立协议；生产目标/实际恢复备份/审计运营/官方完整四题/人工与模型版本/容量仍待，A/P1/A–D未整体完成。Claude Code/claude-ds先读新协议，保显示快照非凭据、同policy、身份配对匿名子集、scope/family/单调TTL、真实API最终授权、新16与guest/浏览器合成分范围及SDK按源重封边界。
+
 ### 2026-11-17 最新 checkpoint：整组角色资源引用检查
 
 - 继续目标开发/review/验证/中文本地保存，基点8d72504，上一turn已产代码/验证与commit属progress。[协议](../../development/admin-binding-references.md)先落盘同步coding/判官。真实owned基线已授权HTTP对missingrole/res999/0/-1及bool/string coercion可保存，非匿名绕过；resource目录用于菜单，不当成capability grant。

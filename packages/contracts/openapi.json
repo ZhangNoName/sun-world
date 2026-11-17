@@ -2173,6 +2173,38 @@
         "title": "ApiResponse[BlogStats]",
         "type": "object"
       },
+      "ApiResponse_CapabilityProjection_": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityProjection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "msg": {
+            "title": "Msg",
+            "type": "string"
+          }
+        },
+        "required": ["code", "msg"],
+        "title": "ApiResponse[CapabilityProjection]",
+        "type": "object"
+      },
       "ApiResponse_CommentPage_": {
         "properties": {
           "code": {
@@ -3848,6 +3880,78 @@
         },
         "required": ["file"],
         "title": "Body_upload_video_file_video_upload_post",
+        "type": "object"
+      },
+      "CapabilityProjection": {
+        "additionalProperties": false,
+        "properties": {
+          "account_id": {
+            "anyOf": [
+              {
+                "maxLength": 19,
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Id"
+          },
+          "app_id": {
+            "const": "sun-world",
+            "default": "sun-world",
+            "title": "App Id",
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "enum": [
+                "blog.article.read_public",
+                "identity.resource.create",
+                "identity.resource.delete",
+                "identity.resource.update",
+                "identity.role.bind_resources",
+                "identity.role.create",
+                "identity.role.delete",
+                "identity.role.update",
+                "identity.user.create",
+                "identity.user.disable"
+              ],
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "max_age_seconds": {
+            "maximum": 15.0,
+            "minimum": 0.0,
+            "title": "Max Age Seconds",
+            "type": "integer"
+          },
+          "session_ref": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 64,
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Ref"
+          }
+        },
+        "required": [
+          "account_id",
+          "session_ref",
+          "capabilities",
+          "max_age_seconds"
+        ],
+        "title": "CapabilityProjection",
         "type": "object"
       },
       "Category": {
@@ -8118,6 +8222,25 @@
         ],
         "summary": "Update Skill",
         "tags": ["ai-v1"]
+      }
+    },
+    "/auth/capabilities": {
+      "get": {
+        "operationId": "capabilities_auth_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CapabilityProjection_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Capabilities",
+        "tags": ["auth"]
       }
     },
     "/auth/connections": {

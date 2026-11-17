@@ -170,6 +170,7 @@
     "apps/api/src/modules/management/__init__.py",
     "apps/api/src/modules/management/manifest.py",
     "apps/api/src/modules/management/policy.py",
+    "apps/api/src/modules/management/projection.py",
     "apps/api/src/modules/management/public.py",
     "apps/api/src/modules/management/schemas.py",
     "apps/api/src/modules/management/service.py",

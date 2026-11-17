@@ -16,6 +16,17 @@ import {
 } from '../extension-contract'
 import { AiWorkspaceTools } from './AiWorkspaceTools'
 
+vi.mock('@/modules/account/api', async (original) => ({
+  ...(await original<typeof import('@/modules/account/api')>()),
+  getCapabilityProjection: vi.fn(async () => ({
+    app_id: 'sun-world',
+    account_id: null,
+    session_ref: null,
+    capabilities: ['blog.article.read_public'],
+    max_age_seconds: 15,
+  })),
+}))
+
 const syntheticUser: UserInfo = {
   id: 1,
   name: '合成用户',

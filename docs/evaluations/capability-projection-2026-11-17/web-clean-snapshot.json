@@ -1,0 +1,12 @@
+{
+  "root": "/var/folders/18/5l2c4wxx3cn7157rb1whffsh0000gn/T/sun-world-capability-web-onpkn3d7",
+  "identity": [16777229, 120026318],
+  "source_tree": "d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8",
+  "archive_sha256": "f695373a014730b7cb9a5f59dc4887d30772c315fda922c8a3671c789fc003fa",
+  "source_paths_match": 31,
+  "tracked_source_snapshot_only": true,
+  "shared_preinstalled_dependencies": true,
+  "not_git_worktree": true,
+  "exit_code": 0,
+  "wall_seconds": 53.035
+}

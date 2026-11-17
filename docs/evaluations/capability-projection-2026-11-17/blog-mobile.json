@@ -1,0 +1,17 @@
+{
+  "strayBoldMarkers": false,
+  "strongCount": 10,
+  "headings": 6,
+  "ids": [
+    "skill-ownership",
+    "shared-service",
+    "versioned-execution",
+    "read-before-write",
+    "page-contributions",
+    "project-entry-and-tools"
+  ],
+  "width": 390,
+  "bodyWidth": 390,
+  "indents": ["0px"],
+  "fontSize": "16px"
+}

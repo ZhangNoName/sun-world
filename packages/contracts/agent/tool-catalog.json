@@ -59,7 +59,12 @@
       "id": "identity-management",
       "version": "1",
       "owner": "management",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module_id": "blog-content",
+          "version": "1"
+        }
+      ],
       "capabilities": [
         "identity.resource.create",
         "identity.resource.delete",
@@ -83,6 +88,10 @@
         {
           "method": "DELETE",
           "path": "/user/{user_id}"
+        },
+        {
+          "method": "GET",
+          "path": "/auth/capabilities"
         },
         {
           "method": "POST",
@@ -300,5 +309,5 @@
       "evaluation_set": "apps/api/tests/fixtures/agent-model-evaluation.json"
     }
   ],
-  "bundle_hash": "bea9a718e25ccd53841239d9e96604c8e751010b18b12970d5a8d5bab3257419"
+  "bundle_hash": "3d3864b008d7affecf7e0a74f912319894428da6240695e6d74106fefbc18ca5"
 }

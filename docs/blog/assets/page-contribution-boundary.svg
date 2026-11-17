@@ -8,5 +8,5 @@
 <rect x="55" y="107" width="250" height="50" rx="9" fill="#f8fafc" stroke="#94a3b8"/><text x="180" y="136">应用组装与冲突检查</text>
 <rect x="55" y="188" width="250" height="50" rx="9" fill="#fffaf0" stroke="#d8ad55"/><text x="180" y="217">账号、项目与显示能力检查</text>
 <rect x="55" y="269" width="250" height="50" rx="9" fill="#f0fdf4" stroke="#65a583"/><text x="180" y="298">独立加载 · 出错重试 · 卸载</text>
-<text x="180" y="362">实际请求继续由服务端授权</text>
+<rect x="55" y="347" width="250" height="26" rx="7" fill="#f8fafc" stroke="#94a3b8"/><text x="180" y="365">实际请求继续由服务端授权</text>
 </g></svg>

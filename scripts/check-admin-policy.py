@@ -52,7 +52,7 @@ def main():
     spec.loader.exec_module(module)
     app = module.build_schema_app()
     verify_admin_policy(app.routes)
-    print("Admin policy baseline matches 40 guarded HTTP operations and 9 recent-authentication writes; 9 transactional-audit writes; 9 management-service writes (schema-only).")
+    print("Admin policy baseline matches 40 guarded HTTP operations and 9 recent-authentication writes; 9 transactional-audit writes; 9 management-service writes; 1 read-only capability projection (schema-only).")
 
 
 def verify_admin_guards(routes):
@@ -82,9 +82,24 @@ def verify_admin_policy(routes):
             or set(MANAGEMENT_HTTP_ACTIONS.values()) != set(CAPABILITIES)
             or AdminManagementService.supported_actions != set(CAPABILITIES)
             or set(MANAGEMENT_MANIFEST.capabilities) != set(CAPABILITIES.values())
-            or {(entry.method, entry.path) for entry in MANAGEMENT_MANIFEST.http_entries} != ADMIN_STEP_UP_OPERATIONS
+            or {(entry.method, entry.path) for entry in MANAGEMENT_MANIFEST.http_entries} != ADMIN_STEP_UP_OPERATIONS | {('GET', '/auth/capabilities')}
             or MANAGEMENT_MANIFEST.tools or MANAGEMENT_MANIFEST.skills):
         raise ValueError('Management service manifest mismatch')
+    from src.routers.auth.auth import capabilities, get_capability_projection_service
+    reads = []
+    for route in routes:
+        contexts = route.effective_route_contexts() if hasattr(route, 'effective_route_contexts') else [route]
+        for context in contexts:
+            if getattr(getattr(context, 'dependant', None), 'call', None) is capabilities:
+                reads.extend((method, context.path) for method in context.methods)
+    if (reads != [('GET', '/auth/capabilities')]
+            or guarded_operations(routes, get_capability_projection_service) != {('GET', '/auth/capabilities')}):
+        raise ValueError('Capability projection wiring mismatch')
+    from fastapi.params import Depends as Dependency
+    parameter = inspect.signature(capabilities).parameters.get('service')
+    if (parameter is None or not isinstance(parameter.default, Dependency)
+            or parameter.default.dependency is not get_capability_projection_service):
+        raise ValueError('Capability projection service mismatch')
     for guard, prefix in ((get_user_management_service, '/user/'),
                           (get_role_management_service, '/role/'),
                           (get_resource_management_service, '/resource/')):

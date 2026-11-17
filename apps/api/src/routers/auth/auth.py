@@ -20,6 +20,7 @@ from src.core.auth.admin_audit import (
 from src.core.request_context import get_request_id
 from src.core.auth import AuthorizationDenied, AuthorizationUnavailable
 from src.modules.management.policy import ManagementDenied
+from src.modules.management.public import CapabilityProjection, CapabilityProjectionService
 from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
@@ -308,6 +309,42 @@ def require_admin_audit(request: Request, current_user=Depends(require_recent_ad
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+
+
+def get_optional_capability_auth(request: Request):
+    if 'access_token' not in request.cookies:
+        return None
+    try:
+        return get_auth_manager()
+    except Exception:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            'AUTH_SERVICE_UNAVAILABLE', '能力验证服务暂不可用，请稍后再试。'),
+            headers={'Cache-Control': 'no-store', 'Vary': 'Cookie'}) from None
+
+
+def get_capability_projection_service(auth=Depends(get_optional_capability_auth)):
+    return CapabilityProjectionService(auth)
+
+
+@router.get('/capabilities', response_model=ApiResponse[CapabilityProjection])
+def capabilities(request: Request, response: Response,
+                 service=Depends(get_capability_projection_service)):
+    headers = {'Cache-Control': 'no-store', 'Vary': 'Cookie'}
+    try:
+        token = request.cookies.get('access_token')
+        # Cookie presence, including an empty value, must never fall back to anonymous.
+        result = service.project(token)
+    except AuthorizationUnavailable:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            'AUTH_SERVICE_UNAVAILABLE', '能力验证服务暂不可用，请稍后再试。'), headers=headers) from None
+    except AuthorizationDenied:
+        raise HTTPException(status_code=401, detail=_error_detail(
+            AUTH_UNAUTHORIZED, '当前登录已失效，请重新登录。'), headers=headers) from None
+    except Exception:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            'AUTH_SERVICE_UNAVAILABLE', '能力验证服务暂不可用，请稍后再试。'), headers=headers) from None
+    response.headers.update(headers)
+    return ok(data=result)
 
 def _bounded_auth_limit(
     name: str,

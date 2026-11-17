@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜当前会话显示能力投影
+
+- 按[协议](development/capability-projection.md)补D只读GET与真实Provider/Hook：当前Auth/角色与原九写policy、十键、账号/family配对/匿名公开子集、最长15秒；consumer/可见性启停、账号/epoch/family隔离、单调TTL/同步过期裁剪，公开导航保持。显示快照非写权限凭据，无新Agent工具或管理产品入口。
+- 冻结31源树d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8，API1032/Worker164、新native16及旧20/19/16/12/16/33/24、独立review过；开发中匿名异常predicate显示P2双端修正，修前红修后绿，不称真实写越权。工作区Web337过但原两UI失败保持，干净非Git源码完整Web320/构建SSG/预算通过，双尺寸真实Provider/Slot合成GET12过，见[实证](evaluations/capability-projection-2026-11-17/README.md)。
+- Linux234源/281payload/67资产绑定、原49/9/5/正式三库SDK6合成链过supplier0、legacyper_run=false；新16在Mac而非guest，SDK离线重封38522成员仅catalog变、固定依赖保持。17 owned DB根/VM/源码快照回收，原3030/8032/3033及80/123/main210加1删保留；原素材format/两UI问题不改。
+- [博客03](blog/2026-11-12-dsh-skill-boundaries.md)同题修订六ID/十重点、原图深色末行底框修正，1280/390明暗过未发布；预览 http://127.0.0.1:3033/.tmp/capability-projection-blog-l4xykzbh/index.html 。中文本地保存，不push/deploy/pub/配置Clash/恢复官方付费；grant可授予集合/生产恢复等仍待，A/P1/A–D未完成。后续Claude Code/claude-ds保显示/操作授权、scope/family/单调TTL与Mac/guest/浏览器合成验收边界，详[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜角色资源绑定的整组引用边界
 
 - 按[协议](development/admin-binding-references.md)修复已授权绑定可存失联role/resource及非法值的本地复现；strict资源INT32/传入≤500/首次去重/空清空，原actor授权后同RC UOW锁读role及整组resources、缺任一404不删旧绑定/audit，manager共用冻结tuple。raw内部None/无FK/无新grant或Agent写能力边界保持。

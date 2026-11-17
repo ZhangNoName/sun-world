@@ -67,3 +67,7 @@ export type OAuthStart = NonNullable<
 export type AccountConnections = NonNullable<
   ApiSuccessData<'/auth/connections', 'get'>
 >
+
+export type CapabilityProjection = NonNullable<
+  ApiSuccessData<'/auth/capabilities', 'get'>
+>

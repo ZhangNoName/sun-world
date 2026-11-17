@@ -1,0 +1,103 @@
+{
+  "changed_top_level_fields": ["modules", "bundle_hash"],
+  "module_set_unchanged": true,
+  "blog_module_unchanged": true,
+  "management_delta": {
+    "dependencies": {
+      "before": [],
+      "after": [
+        {
+          "module_id": "blog-content",
+          "version": "1"
+        }
+      ]
+    },
+    "http_entries": {
+      "before": [
+        {
+          "method": "DELETE",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/role/{role_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/user/{user_id}"
+        },
+        {
+          "method": "POST",
+          "path": "/resource/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/{role_id}/bind_resources"
+        },
+        {
+          "method": "POST",
+          "path": "/user/"
+        },
+        {
+          "method": "PUT",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "PUT",
+          "path": "/role/{role_id}"
+        }
+      ],
+      "after": [
+        {
+          "method": "DELETE",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/role/{role_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/user/{user_id}"
+        },
+        {
+          "method": "GET",
+          "path": "/auth/capabilities"
+        },
+        {
+          "method": "POST",
+          "path": "/resource/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/{role_id}/bind_resources"
+        },
+        {
+          "method": "POST",
+          "path": "/user/"
+        },
+        {
+          "method": "PUT",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "PUT",
+          "path": "/role/{role_id}"
+        }
+      ]
+    }
+  },
+  "tools_schemas_skills_unchanged": true,
+  "before_bundle_hash": "bea9a718e25ccd53841239d9e96604c8e751010b18b12970d5a8d5bab3257419",
+  "after_bundle_hash": "3d3864b008d7affecf7e0a74f912319894428da6240695e6d74106fefbc18ca5",
+  "generated_capability_keys": 10,
+  "export_check_exit_code": 0
+}

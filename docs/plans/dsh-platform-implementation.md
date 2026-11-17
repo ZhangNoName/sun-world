@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17补D的[当前会话能力投影](../development/capability-projection.md)：新增只读GET /auth/capabilities，真实会话/当前账号与角色、复用九维护policy；匿名仅公开read，坏Cookie401/依赖503不降级。十登记predicate/成对账号与family摘要、0..15秒受access及近期寿命限制，no-store，非写权限凭据。Provider按消费者/可见性启停，共享请求、账号/epoch/family隔离、请求开始单调TTL/同步过期裁剪、同值续查不重挂、失败撤销移除，公开导航保持。开发中匿名携管理predicate显示P2经DTO/client配对与子集约束修正、修前红修后绿，真实project不产此值且写服务仍独立拒绝。31源树d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8，API1032/Worker164、新native16及旧20/19/16/12/16/33/24通过；工作区Web337单元过但原两UI失败保持，干净非Git源码完整Web320/类型/构建/SSG/全部预算过，CSS49578/51200B。浏览器双尺寸12为真实Provider/Slot+合成GET/受限贡献，不称在线三库E2E。Linux234源/281payload/67资产绑定、原49/9/5/三库SDK6合成链过supplier0、legacy per_run=false；SDK离线重封38522成员仅catalog变，固定依赖不动，新16在Mac而非guest。见[实证](../evaluations/capability-projection-2026-11-17/README.md)。博客03同题修订六ID/十重点/原图末行深色对比修正、双尺寸明暗过未发布；17 owned DB根/VM/源码快照回收、原服务/80/123/main210加1删保持。中文本地保存，不push/deploy/pub/配置代理/付费复跑。无新Agent工具/受限产品入口或grant，生产/官方四题/细粒度授予/恢复等仍待，A/P1/A–D未整体完成。
+
 2026-11-17补A的[角色资源引用边界](../development/admin-binding-references.md)：真实owned基线确认旧管理员HTTP可写失联role/resource及0/负值、bool/string coercion，重复ID503。现strict资源INT32正整数/传入最多500/首次去重/空清空，server frozen tuple在原actor授权后同RC UOW锁读role及升序全部resources，任一缺失404且旧集合/audit不变，manager用同tuple；raw内部None和无FK限制明确保留。首次signed64 OpenAPI舍入经最小反例确认，按实际signed INT列改2147483647；真实边界成功/next值422，OpenAPI仅绑定bounds/description与TS注释改变，catalog/两工具/Skill/bundle逐字不变。最终12源树21f875c552028d7401b8cade5e8d8ae2aec19d49，API1021/新native20与旧19/16/12/16/33/24、contracts6及独立review通过；三种并发指定thread实际LOCK WAIT，真实中途INSERT/audit/final注销/过期回滚及commit未知不重放保持。Linux233源/280payload绑定、67资产及固定SDK与上轮完全相同，原49/9/5/三库SDK6过且supplier0、legacy per_run=false；新20在Mac owned库而非guest。见[实证](../evaluations/admin-binding-2026-11-17/README.md)。新引用案例四ID/一透明图/1280与390明暗过未发布，15可定位DB根与VM组/root清理、原80/123/main210加1删/服务保持。仅中文本地保存，不推送部署/配置Clash/恢复付费；完整grant可授予集合和生产恢复等仍待，A/P1/A–D未完成。
 
 2026-11-17补A的[九项管理服务当前授权](../development/admin-management-service.md)：旧40/近期9/audit9守卫保留，九HTTP改调用真实access service，固定本站能力/类型，实际单连接RC锁角色目录→actor账号/绑定后重读当前授权，实际commit前再验Redis与认证时间；合法自降权及最后管理员409保持，内部raw None与Redis至commit窗口明确保留。精确40+9+9+9及execute实际注入receiver门禁、原两工具/Skill/schema不变，无Agent写权限。最终33源树faab9674b3c4c6e2e9020f7e6cdd5a43cfb7bac6、API1007/新owned19及旧16/12/16/33/24过；首次锁等待观测失败原因为未确证，宿主采样对齐原测试后19和三类各三次过，生产锁未改。Linux232源/279payload逐字绑定、原49/9/5/三库SDK6场景过且供应商0；新catalog使旧SDK封包正确拒绝，原配方离线重封且固定二进制/其余资产及旧缓存不变，legacy per_run=false。见[实证](../evaluations/admin-management-2026-11-17/README.md)。管理员案例七稳定ID/两原透明图双尺寸明暗过未发布，19可定位DB根及VM组/根回收、原80/123/main210加1删/服务保持。未推送部署/配置Clash或恢复付费评测；完整授权可授予范围/生产恢复等仍待，A/P1/A–D未完成。
@@ -149,7 +151,7 @@ P0 实验复跑用 `./tools/dsh-blog-p0/run-local.sh`，仅支持说明中的 ma
 
 1. 新增兼容 schema，单独记录真实结构检查与 DDL 部分成功恢复办法；不开功能、不收缩旧列。
 2. 发布 API 的 registry、查询和运行控制代码，Worker 部署到隔离环境，报告协议和 bundle hash。
-3. 模型与 Linux 验证通过后接入 Web 能力探测，再启用指定账户；观测冷启动/峰值内存/公开博客延迟，不以 P0 单机样本作容量保证。
+3. 本地只读显示能力探测已实现，不能据此开放Agent；模型与 Linux 正式验证通过后再独立启用指定账户；观测冷启动/峰值内存/公开博客延迟，不以 P0 单机样本作容量保证。
 4. 关停演练先停止准入，拒绝新工具/模型请求，取消运行并回收 Worker；API 旧业务继续可用。
 5. P2 发布前清点所有旧入口（管理页面、HTTP、SSG、CLI、开发发布 Skill）；任何绕过版本发布服务的入口未迁移，发布开关保持关闭。
 6. 每次交接保存本阶段范围、变更、命令、实测结果、阻塞及下一步；Claude Code / `claude-ds` 接手必须读取本规范与本计划。

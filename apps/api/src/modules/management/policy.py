@@ -73,6 +73,10 @@ class ManagementPolicy:
 
     def require(self, principal, action, scope, target_id, *, now, max_age):
         self.require_scope(action, scope, target_id)
+        self.require_actor(principal, now=now, max_age=max_age)
+
+    def require_actor(self, principal, *, now, max_age):
+        """Shared actor predicate for write authorization and read projections."""
         if type(principal) is not Principal or principal.kind != 'user':
             raise ManagementLoginRequired()
         if 'admin' not in principal.roles:

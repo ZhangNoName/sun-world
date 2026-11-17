@@ -1,0 +1,404 @@
+[
+  {
+    "device": "desktop",
+    "scenario": "stable-family",
+    "stableRenewalKeptMount": true,
+    "newFamilyReplacedMount": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 1,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "aborted": false
+        }
+      ]
+    },
+    "projection": {
+      "status": "ready",
+      "sessionRef": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "revoke-deny",
+    "revocationUnmounted": true,
+    "unauthorizedNoRefresh": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "account-race",
+    "accountChangedSafely": true,
+    "oldNetworkAborted": true,
+    "mismatchedAccountRejected": true,
+    "apiCalls": 4,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 2,
+      "status": "authenticated",
+      "revision": 2,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "2",
+          "session": "2:authenticated:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "expiry",
+    "expiryUnmountedWhileRenewalPending": true,
+    "requestStartDeadlineApplied": true,
+    "apiCalls": 2,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "unknown",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "visibility-demand",
+    "syntheticVisibilityStoppedRequests": true,
+    "noConsumerStoppedRequests": true,
+    "reacquireWorked": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 1,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": false
+        }
+      ]
+    },
+    "projection": {
+      "status": "ready",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "desktop",
+    "scenario": "anonymous-invalid",
+    "anonymousManagementPayloadRejected": true,
+    "apiCalls": 2,
+    "blockedRequests": [],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": null,
+      "status": "anonymous",
+      "revision": 2,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": null
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "stable-family",
+    "stableRenewalKeptMount": true,
+    "newFamilyReplacedMount": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 1,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "aborted": false
+        }
+      ]
+    },
+    "projection": {
+      "status": "ready",
+      "sessionRef": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "revoke-deny",
+    "revocationUnmounted": true,
+    "unauthorizedNoRefresh": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "account-race",
+    "accountChangedSafely": true,
+    "oldNetworkAborted": true,
+    "mismatchedAccountRejected": true,
+    "apiCalls": 4,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 2,
+      "status": "authenticated",
+      "revision": 2,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "2",
+          "session": "2:authenticated:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "expiry",
+    "expiryUnmountedWhileRenewalPending": true,
+    "requestStartDeadlineApplied": true,
+    "apiCalls": 2,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "unknown",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "visibility-demand",
+    "syntheticVisibilityStoppedRequests": true,
+    "noConsumerStoppedRequests": true,
+    "reacquireWorked": true,
+    "apiCalls": 3,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 1,
+    "publicEntry": true,
+    "state": {
+      "accountId": 1,
+      "status": "authenticated",
+      "revision": 1,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        },
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": false
+        }
+      ]
+    },
+    "projection": {
+      "status": "ready",
+      "sessionRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "device": "mobile",
+    "scenario": "anonymous-invalid",
+    "anonymousManagementPayloadRejected": true,
+    "apiCalls": 2,
+    "blockedRequests": [],
+    "width": 390,
+    "bodyWidth": 390,
+    "privateCount": 0,
+    "publicEntry": true,
+    "state": {
+      "accountId": null,
+      "status": "anonymous",
+      "revision": 2,
+      "refreshes": 0,
+      "preflights": 0,
+      "mounts": [
+        {
+          "account": "1",
+          "session": "1:authenticated:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "aborted": true
+        }
+      ]
+    },
+    "projection": {
+      "status": "error",
+      "sessionRef": null
+    }
+  }
+]

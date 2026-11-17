@@ -22,6 +22,7 @@ export const API_ROUTES = {
     logout: '/auth/logout',
     refreshToken: '/auth/refresh_token',
     session: '/auth/session',
+    capabilities: '/auth/capabilities',
     resetPasswordRequest: '/auth/reset_password/request',
     resetPassword: '/auth/reset_password',
     methods: '/auth/methods',
@@ -103,6 +104,7 @@ export const API_ROUTE_GROUPS = {
     API_ROUTES.blog.detail,
     API_ROUTES.blog.comments,
     API_ROUTES.auth.methods,
+    API_ROUTES.auth.capabilities,
     API_ROUTES.auth.verificationRequest,
     API_ROUTES.auth.verificationComplete,
     API_ROUTES.auth.oauthStart,
@@ -257,6 +259,10 @@ export const API_ROUTE_METHODS = {
   },
   'auth.oauthCallback': {
     path: API_ROUTES.auth.oauthCallback,
+    method: 'GET',
+  },
+  'auth.capabilities': {
+    path: API_ROUTES.auth.capabilities,
     method: 'GET',
   },
   'auth.session': {

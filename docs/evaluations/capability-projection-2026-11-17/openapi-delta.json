@@ -1,0 +1,14 @@
+{
+  "added_paths": ["/auth/capabilities"],
+  "removed_paths": [],
+  "all_existing_paths_unchanged": true,
+  "added_schemas": [
+    "ApiResponse_CapabilityProjection_",
+    "CapabilityProjection"
+  ],
+  "all_existing_schemas_unchanged": true,
+  "all_other_top_level_fields_unchanged": true,
+  "fresh_export_equal": true,
+  "fresh_export_sha256": "5ec39736f7de721c732e633b9bb727eaef175daae994bbc17db8bb3a74937492",
+  "committed_contract_sha256": "7601d62a06eb07b6bcfb9ae638180e84d20815cd76ec6c0f7161886ea57c3773"
+}

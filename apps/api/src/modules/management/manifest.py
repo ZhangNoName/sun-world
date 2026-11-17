@@ -1,5 +1,5 @@
 from src.core.auth.recent import ADMIN_STEP_UP_OPERATIONS
-from src.core.module_registry import HttpEntry, ModuleManifest
+from src.core.module_registry import HttpEntry, ModuleManifest, ModuleDependency
 from .policy import CAPABILITIES
 
 
@@ -15,8 +15,9 @@ MANAGEMENT_HTTP_ACTIONS = {
 
 MANAGEMENT_MANIFEST = ModuleManifest(
     id='identity-management', version='1', owner='management',
+    dependencies=(ModuleDependency('blog-content', '1'),),
     capabilities=tuple(CAPABILITIES.values()),
-    http_entries=tuple(HttpEntry(method, path) for method, path in sorted(ADMIN_STEP_UP_OPERATIONS)),
+    http_entries=tuple(HttpEntry(method, path) for method, path in sorted(ADMIN_STEP_UP_OPERATIONS | {('GET', '/auth/capabilities')})),
     data_owners=tuple('mysql.' + name for name in (
         'users', 'roles', 'user_roles', 'resources', 'role_resources', 'admin_change_audit')),
 )

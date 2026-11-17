@@ -1,0 +1,11 @@
+{
+  "head": "8cb63051e7ad28e28954fa7094e4fe15b251107b",
+  "guest_get": 404,
+  "admin_get": 404,
+  "provider_fixed_unknown_in_HEAD": true,
+  "capability_hint_not_yet_connected": true,
+  "mysql_root": "/private/tmp/sunworld-agent-mysql-4uk2o99z",
+  "redis_root": "/private/tmp/sunworld-agent-redis-m2xdkxr0",
+  "mysql_removed": true,
+  "redis_removed": true
+}

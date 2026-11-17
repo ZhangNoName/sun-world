@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "app": "@sun-world/blog",
+  "generatedAt": "2026-11-17T08:58:53.398Z",
+  "sourceManifest": "apps/web/dist/build-manifest.json",
+  "totals": {
+    "assetCount": 90,
+    "jsGzipBytes": 1334090,
+    "cssGzipBytes": 49578,
+    "initialGzipBytes": 207832,
+    "lazyJsGzipBytes": 1143608
+  },
+  "topAssets": [
+    {
+      "path": "assets/index.v0.0.1.CZzIZRGp.js",
+      "extension": ".js",
+      "gzipBytes": 306734,
+      "rawBytes": 897190,
+      "isInitial": false
+    },
+    {
+      "path": "assets/VideoPage.v0.0.1.C6i0WRjq.js",
+      "extension": ".js",
+      "gzipBytes": 213609,
+      "rawBytes": 741582,
+      "isInitial": false
+    },
+    {
+      "path": "assets/index.v0.0.1.BAhTU7fN.js",
+      "extension": ".js",
+      "gzipBytes": 171874,
+      "rawBytes": 544477,
+      "isInitial": true
+    },
+    {
+      "path": "assets/charts.v0.0.1.DOGeoJAF.js",
+      "extension": ".js",
+      "gzipBytes": 85089,
+      "rawBytes": 263018,
+      "isInitial": false
+    },
+    {
+      "path": "assets/Axis.v0.0.1.C7-DbvXC.js",
+      "extension": ".js",
+      "gzipBytes": 83579,
+      "rawBytes": 243380,
+      "isInitial": false
+    },
+    {
+      "path": "assets/components.v0.0.1.AbqRzuFl.js",
+      "extension": ".js",
+      "gzipBytes": 81778,
+      "rawBytes": 258262,
+      "isInitial": false
+    },
+    {
+      "path": "assets/graphic.v0.0.1.Ds-k84bF.js",
+      "extension": ".js",
+      "gzipBytes": 49550,
+      "rawBytes": 148348,
+      "isInitial": false
+    },
+    {
+      "path": "assets/customGraphicKeyframeAnimation.v0.0.1.DDik9nM9.js",
+      "extension": ".js",
+      "gzipBytes": 49231,
+      "rawBytes": 145882,
+      "isInitial": false
+    },
+    {
+      "path": "assets/index.v0.0.1.B1iWKMql.js",
+      "extension": ".js",
+      "gzipBytes": 45199,
+      "rawBytes": 155309,
+      "isInitial": false
+    },
+    {
+      "path": "assets/jszip.min.v0.0.1.BoAh0Gdh.js",
+      "extension": ".js",
+      "gzipBytes": 28301,
+      "rawBytes": 96677,
+      "isInitial": false
+    }
+  ],
+  "budgetResults": [
+    {
+      "name": "total-js-gzip",
+      "type": "total",
+      "actualGzipBytes": 1334090,
+      "limitGzipBytes": 1392640,
+      "ok": true,
+      "detail": "72 assets"
+    },
+    {
+      "name": "total-css-gzip",
+      "type": "total",
+      "actualGzipBytes": 49578,
+      "limitGzipBytes": 51200,
+      "ok": true,
+      "detail": "18 assets"
+    },
+    {
+      "name": "largest-asset-gzip",
+      "type": "largest",
+      "actualGzipBytes": 306734,
+      "limitGzipBytes": 460800,
+      "ok": true,
+      "detail": "assets/index.v0.0.1.CZzIZRGp.js"
+    },
+    {
+      "name": "entry-module-gzip",
+      "type": "entry",
+      "actualGzipBytes": 171874,
+      "limitGzipBytes": 184320,
+      "ok": true,
+      "detail": "assets/index.v0.0.1.BAhTU7fN.js"
+    },
+    {
+      "name": "video-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 213609,
+      "limitGzipBytes": 225280,
+      "ok": true,
+      "detail": "assets/VideoPage.v0.0.1.C6i0WRjq.js"
+    },
+    {
+      "name": "tile-export-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 28301,
+      "limitGzipBytes": 30720,
+      "ok": true,
+      "detail": "assets/jszip.min.v0.0.1.BoAh0Gdh.js"
+    },
+    {
+      "name": "article-editor-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 1301,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/ArticleEditorPage.v0.0.1.9DUFvW4E.js"
+    },
+    {
+      "name": "admin-charts-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 1132,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/AdminChartsPage.v0.0.1.ByzATPYe.js"
+    },
+    {
+      "name": "admin-metrics-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 1244,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/AdminMetricsPage.v0.0.1.Zr2hEKpd.js"
+    },
+    {
+      "name": "admin-logs-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 975,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/ManageLogsDataPage.v0.0.1.CCerBY4y.js"
+    },
+    {
+      "name": "login-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 2812,
+      "limitGzipBytes": 3072,
+      "ok": true,
+      "detail": "assets/login.v0.0.1.DRQN9wvS.js"
+    },
+    {
+      "name": "register-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 1256,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/register.v0.0.1.ChrzOfqv.js"
+    },
+    {
+      "name": "account-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 3831,
+      "limitGzipBytes": 4096,
+      "ok": true,
+      "detail": "assets/me.v0.0.1.H4N8sy0i.js"
+    },
+    {
+      "name": "keep-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 1436,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/keep.v0.0.1.Bprz0YtC.js"
+    },
+    {
+      "name": "tools-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 659,
+      "limitGzipBytes": 1024,
+      "ok": true,
+      "detail": "assets/tools.page.v0.0.1.WpNocr0E.js"
+    },
+    {
+      "name": "qq-callback-page-gzip",
+      "type": "pattern",
+      "actualGzipBytes": 2006,
+      "limitGzipBytes": 2048,
+      "ok": true,
+      "detail": "assets/qqCb.v0.0.1.GXkCVs5T.js"
+    }
+  ]
+}

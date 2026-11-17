@@ -1,0 +1,457 @@
+{
+  "baseline_head": "8cb63051e7ad28e28954fa7094e4fe15b251107b",
+  "source_tree": "d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8",
+  "source_files": 31,
+  "final_runs": [
+    {
+      "log": "projection-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 7.19,
+      "sha256": "1658f1fc7bc405c68ddfe0a2973499fb2cfc93d86678eee9d3c1b72ce2dfa1d2",
+      "unittest_count": 16,
+      "unittest_seconds": 2.652
+    },
+    {
+      "log": "binding-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 8.049,
+      "sha256": "9332120238d8759c9ffeba170bef2c6ccf11e3c2681a0076ccd99523f24a3d76",
+      "unittest_count": 20,
+      "unittest_seconds": 4.301
+    },
+    {
+      "log": "management-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 7.088,
+      "sha256": "20a5f4aad3b75a29f7bb3bece2798877a3149f5a05fcf8dd9df00018cdfab0e6",
+      "unittest_count": 19,
+      "unittest_seconds": 3.4
+    },
+    {
+      "log": "audit-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 7.151,
+      "sha256": "0041ece9886c039bb587b53793b298b4b8fe0e13a6630919ab37075877c0c506",
+      "unittest_count": 16,
+      "unittest_seconds": 3.096
+    },
+    {
+      "log": "recent-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 5.954,
+      "sha256": "d37e99b4de63e69455b4d42690895790cdd204163ce311ed5ba270f898be5c97",
+      "unittest_count": 12,
+      "unittest_seconds": 2.334
+    },
+    {
+      "log": "recovery-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 3.785,
+      "sha256": "cddbc52c32c85d6e64e1c58b74fd4883be7d800b42a1121415d405b6f8d6da4d",
+      "unittest_count": 16,
+      "unittest_seconds": 0.65
+    },
+    {
+      "log": "original-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 8.88,
+      "sha256": "dc1f1eabb3b20e4f8f04f43d6d18ffbdd0054ac99e1022f0958a9e705c8a1d38",
+      "unittest_count": 33,
+      "unittest_seconds": 5.989
+    },
+    {
+      "log": "original-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 20.108,
+      "sha256": "1fd3ee23690b3f80278e1be68790fbd6476b6c2b4e0cdb6a94acb28fc8b67b7d",
+      "unittest_count": 24,
+      "unittest_seconds": 17.177
+    },
+    {
+      "log": "api-final.log",
+      "exit_code": 0,
+      "wall_seconds": 46.471,
+      "sha256": "0dc9dd0c02e1d2f913ffd534e828274fbefeef1b9630f9e29fa357cd6018a48b",
+      "unittest_count": 1032,
+      "unittest_seconds": 41.092
+    },
+    {
+      "log": "worker-final.log",
+      "exit_code": 0,
+      "wall_seconds": 9.99,
+      "sha256": "298147021ffbc53b7f5222bf4af22c88abbd2354896dc5717dc6295a080e62c3",
+      "unittest_count": null,
+      "unittest_seconds": null
+    }
+  ],
+  "worker": {
+    "tests": 164,
+    "passed": 164,
+    "skipped": 0,
+    "duration_ms": 9948.109
+  },
+  "web": {
+    "working_tests": {
+      "files": 75,
+      "tests": 337,
+      "passed": true
+    },
+    "working_ui_boundary": {
+      "exit_code": 1,
+      "preexisting_failures": [
+        "apps/web/src/modules/blog/ui/BlogComments.tsx:66 uses raw <label>",
+        "apps/web/src/shared/markdown/SunMarkdownPreview.tsx:57 uses raw <table>"
+      ]
+    },
+    "clean_tracked_source_full_check": {
+      "files": 72,
+      "tests": 320,
+      "exit_code": 0,
+      "registration": 4,
+      "contracts": 6,
+      "ai_ui": 25,
+      "css_gzip_bytes": 49578,
+      "css_budget_bytes": 51200,
+      "not_git_worktree": true,
+      "snapshot_removed": true
+    }
+  },
+  "browser": {
+    "scenarios": 12,
+    "widths": [1280, 390],
+    "real_provider_hook_typed_transport_slot": true,
+    "get_responses_and_restricted_contributions_synthetic": true,
+    "external_and_other_api_requests_blocked": true,
+    "actual_unmounted_signals_aborted": true,
+    "browser_aborts_old_xhr": true,
+    "ignored_abort_proven_by_unit_tests_not_browser": true,
+    "initial_harness_failure": "overbroad API regex blocked /src/modules/ai static resources; harness corrected; product unchanged"
+  },
+  "review": {
+    "backend_tests": 11,
+    "frontend_tests": 27,
+    "old_management_tests": 16,
+    "gate": "40+9+9+9 and exact new read entry",
+    "frozen_source_hashes_verified": 31,
+    "remaining_confirmed_blockers": 0,
+    "scope": "independent narrow offline tests, schema/catalog/key/hash review; not full or native rerun"
+  },
+  "in_development_p2": {
+    "before": "anonymous null account/ref plus identity.role.create accepted by DTO/client/controller; real server project never emitted it; actual write policy unchanged",
+    "after": "paired identity and anonymous public-read subset checked in both DTO/client; Slot rejects malformed projection",
+    "red_green_logs": {
+      "client-after.log": {
+        "sha256": "e8ae954014cf00f889f5fad6914c682b7c34cfb346ecb40a14c86070ecde8433",
+        "size": 958
+      },
+      "client-before.log": {
+        "sha256": "8a5e68f8df0ebca959ebe6396295e7f580cf6fef683b060fc1c305b1c3d456de",
+        "size": 3887
+      },
+      "dto-after.log": {
+        "sha256": "67f6c64c2cbc50815789e6373a6f0567751a6c9cfe24eaf172a20b7cc5b824f3",
+        "size": 1905
+      },
+      "dto-before.log": {
+        "sha256": "46f1510cf09157a095675f914f44fd77379d77faf34bbf49c45e9a558fb3cdff",
+        "size": 4229
+      }
+    },
+    "dto_after_tests": 11,
+    "client_after_tests": 33
+  },
+  "owned_native_database_cleanup": [
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-4uk2o99z",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-5fkrtu53",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-9m9od43j",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-e0lw9kg4",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-gdcj1i_m",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-tg30ivh0",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-vll05i3v",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-xdkp5jfk",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-xvo8oulb",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-z4maf9p4",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-2q0_8txm",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-5ufnf4m0",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-7taepf_p",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-i2pn7bw5",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-iuy79_bq",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-m2xdkxr0",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-wzf3drqy",
+      "removed": true,
+      "no_process_reference": true
+    }
+  ],
+  "services_preserved": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033/": 200
+  },
+  "linux": {
+    "final_source_tree": "d6f9a8a3b7fa95e6a8f6690ccd4405f5a9e727a8",
+    "manifest_paths": 234,
+    "guest_payload_files": 281,
+    "assets": 67,
+    "all_declared_source_bytes_match_native_payload": true,
+    "final_host_gate_accepts_same_bytes": true,
+    "old_and_missing_module_negative_controls": [
+      {
+        "contract": "previous_233_manifest",
+        "rejected": true
+      },
+      {
+        "contract": "apps/api/src/modules/management/projection.py",
+        "rejected": true
+      }
+    ],
+    "changed_asset_only": ["sdk-runtime.tar.gz"],
+    "sdk_resealed_with_fixed_dependency_binaries": true,
+    "guest_legacy_per_run_flag": false,
+    "formal_stack_synthetic_verified": true,
+    "supplier_requests": 0,
+    "groups_gone": true,
+    "private_run_root_removed": true,
+    "scope": "guest payload byte binding and original formal API/SDK synthetic scenarios; new capability snapshot16 tested on owned macOS MySQL/Redis, not claimed as guest tests"
+  },
+  "blog": {
+    "path": "docs/blog/2026-11-12-dsh-skill-boundaries.md",
+    "type": "design",
+    "category": "后端",
+    "tags": ["架构笔记", "Agent", "DeepSeek Harness"],
+    "published": false,
+    "preview": "http://127.0.0.1:3033/.tmp/capability-projection-blog-l4xykzbh/index.html",
+    "stable_heading_ids": 6,
+    "strong_elements": 10,
+    "image_assessment": "reuse existing SVG; add pale backing to terminal label after dark preview contrast failure; no duplicate diagram"
+  },
+  "log_bindings": {
+    "api-final.log": {
+      "sha256": "0dc9dd0c02e1d2f913ffd534e828274fbefeef1b9630f9e29fa357cd6018a48b",
+      "size": 28840
+    },
+    "audit-stack-final.log": {
+      "sha256": "0041ece9886c039bb587b53793b298b4b8fe0e13a6630919ab37075877c0c506",
+      "size": 3295
+    },
+    "baseline.log": {
+      "sha256": "8dadf0fde608def93da8cb5cb974af715f002ffa61d35eab1fbd285f90efe4e1",
+      "size": 528
+    },
+    "binding-stack-final.log": {
+      "sha256": "9332120238d8759c9ffeba170bef2c6ccf11e3c2681a0076ccd99523f24a3d76",
+      "size": 4116
+    },
+    "blog-dark.log": {
+      "sha256": "0f322ab1a14e61fb5d0da655d040304ce76a3a37da446416294a7644dbd2cd07",
+      "size": 199
+    },
+    "blog-preview.log": {
+      "sha256": "ca0b725bf6290ce4dd75ed2c1dd113b74bebb5f89d036a90d7ad66cf37ae1665",
+      "size": 957
+    },
+    "browser-check-corrected.log": {
+      "sha256": "4facf6b44c90ec35a613b91af491f9e48d9eee5bd0342824743cc54c6fca9c07",
+      "size": 1572
+    },
+    "browser-check-final.log": {
+      "sha256": "4facf6b44c90ec35a613b91af491f9e48d9eee5bd0342824743cc54c6fca9c07",
+      "size": 1572
+    },
+    "browser-check-initial.log": {
+      "sha256": "7e35feec646a7aed374577545b4e946d215d4b5dc07dc443c31f4c35cd8cca13",
+      "size": 1085
+    },
+    "browser-check.log": {
+      "sha256": "7e35feec646a7aed374577545b4e946d215d4b5dc07dc443c31f4c35cd8cca13",
+      "size": 1085
+    },
+    "catalog-check.log": {
+      "sha256": "1a314db748f2d7373c0921c04e71c30a2bcacad62da5da0f13baca89ada1d201",
+      "size": 28
+    },
+    "contracts-format-final.log": {
+      "sha256": "c658396975731eb5d11cfc6ce326a0ea03ba825f4907ebe60b625a79596407b8",
+      "size": 88
+    },
+    "contracts-generate-final.log": {
+      "sha256": "952aa8d0a13d088a680904126424a574d514c7f1766b5d3267df73bac167500c",
+      "size": 608
+    },
+    "contracts-generate.log": {
+      "sha256": "0d0886f0b894ca309ef9d3fdba46284ac9c79412b74b3acdf16c9177c59bf388",
+      "size": 608
+    },
+    "final-runner.log": {
+      "sha256": "249d26c6b861b2c705683c90cb78abd49dfa055345307ae2df80713b3b6ed735",
+      "size": 2000
+    },
+    "linux-stack-final.json.console.log": {
+      "sha256": "d8d8ad67229d725dea881cddf7fec63971ba5410f9f26123fe7b51445197811b",
+      "size": 21435
+    },
+    "linux-stack-final.log": {
+      "sha256": "45ee5e8bbbc68b6a18841980679eb3dd07e214ed1bbce70e238a55c092b30447",
+      "size": 25
+    },
+    "management-stack-final.log": {
+      "sha256": "20a5f4aad3b75a29f7bb3bece2798877a3149f5a05fcf8dd9df00018cdfab0e6",
+      "size": 4908
+    },
+    "openapi-fresh.log": {
+      "sha256": "96ebe9f6a2d44761037040e4f05be03b4230f3c66994d40ee8b96ede09e32ff3",
+      "size": 73
+    },
+    "original-mysql-final.log": {
+      "sha256": "dc1f1eabb3b20e4f8f04f43d6d18ffbdd0054ac99e1022f0958a9e705c8a1d38",
+      "size": 6067
+    },
+    "original-stack-final.log": {
+      "sha256": "1fd3ee23690b3f80278e1be68790fbd6476b6c2b4e0cdb6a94acb28fc8b67b7d",
+      "size": 12206
+    },
+    "projection-stack-final.log": {
+      "sha256": "1658f1fc7bc405c68ddfe0a2973499fb2cfc93d86678eee9d3c1b72ce2dfa1d2",
+      "size": 4232
+    },
+    "recent-stack-final.log": {
+      "sha256": "d37e99b4de63e69455b4d42690895790cdd204163ce311ed5ba270f898be5c97",
+      "size": 2828
+    },
+    "recovery-mysql-final.log": {
+      "sha256": "cddbc52c32c85d6e64e1c58b74fd4883be7d800b42a1121415d405b6f8d6da4d",
+      "size": 2873
+    },
+    "sdk-reseal.log": {
+      "sha256": "475972a04a161cac9aa47065efed4a7e51faf00383aa2642310931afe0c93a9d",
+      "size": 33
+    },
+    "stack-initial.log": {
+      "sha256": "1f8142ccd206fd03c219f5a99cffdc6959d501cd4518106b2d374fef78991249",
+      "size": 3713
+    },
+    "web-clean-runner.log": {
+      "sha256": "d12d8e3620d044ee11d11d58e1ef4d648869c113d6babf9cd878d124b579f35e",
+      "size": 447
+    },
+    "web-clean.log": {
+      "sha256": "278d6d0450a455ca113871ef0282c7e1e953e1b3144d9f37d0a15e36978cce44",
+      "size": 28595
+    },
+    "web-original-ui-boundary.log": {
+      "sha256": "df354136b22657c615bbd72d5b32c4a2056ce4b86bfbf3885253d9baba075030",
+      "size": 138
+    },
+    "web-working-tests.log": {
+      "sha256": "75fd0e08a43235b71726bc790c9698fe89135d9d0fa3343895c743140d5decc6",
+      "size": 9762
+    },
+    "worker-final.log": {
+      "sha256": "298147021ffbc53b7f5222bf4af22c88abbd2354896dc5717dc6295a080e62c3",
+      "size": 17931
+    }
+  },
+  "supplier_requests": 0,
+  "proxy_configuration_changes": 0,
+  "pushed": false,
+  "deployed": false,
+  "published": false,
+  "official_paid_four_cases_restarted": false,
+  "scope_limitations": [
+    "new projection native16 executed on macOS owned MySQL/Redis, not in Linux guest",
+    "browser GET and restricted contribution fixtures are synthetic; no online product E2E claim",
+    "display snapshot is not operation authority or cross-storage linearized revocation",
+    "original working UI two failures and content-source format failure remain",
+    "no new Agent tools/grants/admin product entry; full P1/A-D/production and official four cases remain incomplete"
+  ],
+  "root_format": {
+    "exit_code": 1,
+    "only_preexisting_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+    "task_supported_files_passed": true,
+    "log_sha256": "d5f81cded5ebb91005468d252462136ee98ece89e40a8993d4b461e6b9277155"
+  },
+  "commands": {
+    "native_final": [
+      "apps/api/.venv/bin/python scripts/test-capability-projection-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>",
+      "apps/api/.venv/bin/python scripts/test-admin-binding-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>",
+      "apps/api/.venv/bin/python scripts/test-admin-management-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>",
+      "apps/api/.venv/bin/python scripts/test-admin-audit-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>",
+      "apps/api/.venv/bin/python scripts/test-admin-recent-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>",
+      "apps/api/.venv/bin/python scripts/test-admin-recovery-mysql.py --mysqld <owned-mysqld>",
+      "apps/api/.venv/bin/python scripts/test-agent-mysql.py --mysqld <owned-mysqld>",
+      "apps/api/.venv/bin/python scripts/test-agent-stack.py --mysqld <owned-mysqld> --redis-server <owned-redis>"
+    ],
+    "api": "node scripts/run-api-check.mjs",
+    "worker": "node --test apps/agent-worker/tests/protocol/*.test.mjs",
+    "clean_web": "node scripts/check-web.mjs (in frozen tracked-source snapshot)",
+    "fresh_openapi": "apps/api/.venv/bin/python scripts/export-openapi.py --output .tmp/capability-projection/openapi-fresh.json",
+    "catalog_check": "apps/api/.venv/bin/python scripts/export-agent-contracts.py --check",
+    "format": "corepack pnpm format:check",
+    "browser": "node .tmp/capability-projection/browser-check.mjs",
+    "blog": "node .tmp/capability-projection/blog-preview.mjs; node .tmp/capability-projection/blog-dark.mjs"
+  }
+}

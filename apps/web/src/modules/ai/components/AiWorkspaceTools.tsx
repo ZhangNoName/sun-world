@@ -25,7 +25,7 @@ export function AiWorkspaceTools({
           status === 'authenticated' && userId !== null
             ? String(userId)
             : 'anonymous',
-        sessionKey: `${revision}:${status}`,
+        sessionKey: `${revision}:${status}:${environment.sessionRef ?? 'unverified'}`,
       }}
     />
   )

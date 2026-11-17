@@ -1,3 +1,4 @@
+import { CAPABILITY_KEYS } from '@sun-world/contracts'
 import { appModules } from '@/modules/registry'
 import { aiWorkspaceToolsSlot } from '@/modules/ai/extension-contract'
 import type { AiToolsContext } from '@/modules/ai/extension-contract'
@@ -17,7 +18,7 @@ export function createPageContributionRegistry(
       contributions: module.contributions ?? [],
     })),
     // This declares supported display predicates; it grants no permission.
-    knownCapabilities: ['blog.article.read_public'],
+    knownCapabilities: CAPABILITY_KEYS,
   })
 }
 

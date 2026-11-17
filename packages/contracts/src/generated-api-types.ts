@@ -698,6 +698,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/auth/capabilities': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Capabilities */
+    get: operations['capabilities_auth_capabilities_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/auth/connections': {
     parameters: {
       query?: never
@@ -2296,6 +2313,14 @@ export interface components {
       /** Msg */
       msg: string
     }
+    /** ApiResponse[CapabilityProjection] */
+    ApiResponse_CapabilityProjection_: {
+      /** Code */
+      code: number | string
+      data?: components['schemas']['CapabilityProjection'] | null
+      /** Msg */
+      msg: string
+    }
     /** ApiResponse[CommentPage] */
     ApiResponse_CommentPage_: {
       /** Code */
@@ -2918,6 +2943,34 @@ export interface components {
     Body_upload_video_file_video_upload_post: {
       /** File */
       file: string
+    }
+    /** CapabilityProjection */
+    CapabilityProjection: {
+      /** Account Id */
+      account_id: string | null
+      /**
+       * App Id
+       * @default sun-world
+       * @constant
+       */
+      app_id: 'sun-world'
+      /** Capabilities */
+      capabilities: (
+        | 'blog.article.read_public'
+        | 'identity.resource.create'
+        | 'identity.resource.delete'
+        | 'identity.resource.update'
+        | 'identity.role.bind_resources'
+        | 'identity.role.create'
+        | 'identity.role.delete'
+        | 'identity.role.update'
+        | 'identity.user.create'
+        | 'identity.user.disable'
+      )[]
+      /** Max Age Seconds */
+      max_age_seconds: number
+      /** Session Ref */
+      session_ref: string | null
     }
     /** Category */
     Category: {
@@ -5544,6 +5597,26 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  capabilities_auth_capabilities_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApiResponse_CapabilityProjection_']
         }
       }
     }

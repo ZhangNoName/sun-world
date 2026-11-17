@@ -39,3 +39,6 @@ export type {
   AiTableBlock,
   AiTextBlock,
 } from './ai'
+
+export { CAPABILITY_KEYS } from './capability-keys'
+export type { CapabilityKey } from './capability-keys'
