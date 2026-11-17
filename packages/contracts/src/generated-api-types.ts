@@ -2595,7 +2595,10 @@ export interface components {
     }
     /** BindResourcesModel */
     BindResourcesModel: {
-      /** Resource Ids */
+      /**
+       * Resource Ids
+       * @description 正整数资源ID；重复项按首次出现去重，空列表清空绑定
+       */
       resource_ids?: number[]
     }
     /** BlogBase */

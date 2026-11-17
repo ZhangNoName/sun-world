@@ -1,0 +1,6 @@
+{
+  "fresh_openapi_equals_current_contract": true,
+  "fresh_sha256": "7351591d5d512dcc1a39c2ff7670b93acb2b22085b7b957a44f9388ceefd0394",
+  "semantic_delta_from_baseline_only_bind_resources_model": true,
+  "deploy_schema_protocol_passed": true
+}

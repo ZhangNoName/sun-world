@@ -1,0 +1,39 @@
+{
+  "baseline_head": "8d7250496740ab06c07149bf05ea0dc48dba97ab",
+  "only_semantic_delta": "components.schemas.BindResourcesModel",
+  "before": {
+    "properties": {
+      "resource_ids": {
+        "items": {
+          "type": "integer"
+        },
+        "maxItems": 500,
+        "title": "Resource Ids",
+        "type": "array"
+      }
+    },
+    "title": "BindResourcesModel",
+    "type": "object"
+  },
+  "after": {
+    "properties": {
+      "resource_ids": {
+        "description": "正整数资源ID；重复项按首次出现去重，空列表清空绑定",
+        "items": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 2147483647.0,
+          "type": "integer"
+        },
+        "maxItems": 500,
+        "title": "Resource Ids",
+        "type": "array"
+      }
+    },
+    "title": "BindResourcesModel",
+    "type": "object"
+  },
+  "other_paths_and_schemas_unchanged": true,
+  "agent_catalog_bytes_unchanged": true,
+  "catalog_sha256": "674d9074b65e8595a2d86c59fd66a6ef0b9e150f4d8643cc62c946a348e36985",
+  "initial_generated_int64_rounding_corrected_to_actual_signed_int32": true
+}

@@ -173,6 +173,7 @@
     "apps/api/src/modules/management/public.py",
     "apps/api/src/modules/management/schemas.py",
     "apps/api/src/modules/management/service.py",
+    "apps/api/src/modules/management/targets.py",
     "apps/api/src/routers/__init__.py",
     "apps/api/src/routers/admin/__init__.py",
     "apps/api/src/routers/admin/admin.py",

@@ -1,0 +1,26 @@
+{
+  "final_source_tree": "21f875c552028d7401b8cade5e8d8ae2aec19d49",
+  "manifest_paths": 233,
+  "guest_payload_files": 280,
+  "assets": 67,
+  "all_declared_source_bytes_match_native_payload": true,
+  "final_host_gate_accepts_same_bytes": true,
+  "old_and_missing_module_negative_controls": [
+    {
+      "contract": "previous_232_manifest",
+      "rejected": true
+    },
+    {
+      "contract": "apps/api/src/modules/management/targets.py",
+      "rejected": true
+    }
+  ],
+  "changed_asset_only": [],
+  "previous_sdk_archive_and_all_assets_byte_identical": true,
+  "guest_legacy_per_run_flag": false,
+  "formal_stack_synthetic_verified": true,
+  "supplier_requests": 0,
+  "groups_gone": true,
+  "private_run_root_removed": true,
+  "scope": "guest payload byte binding and original formal API/SDK synthetic scenarios; new binding mutations and LOCK WAIT tested on owned macOS MySQL/Redis, not claimed as guest tests"
+}

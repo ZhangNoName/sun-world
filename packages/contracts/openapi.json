@@ -3324,7 +3324,10 @@
       "BindResourcesModel": {
         "properties": {
           "resource_ids": {
+            "description": "正整数资源ID；重复项按首次出现去重，空列表清空绑定",
             "items": {
+              "exclusiveMinimum": 0.0,
+              "maximum": 2147483647.0,
               "type": "integer"
             },
             "maxItems": 500,

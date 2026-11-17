@@ -139,11 +139,17 @@ class AdminAuditStackTests(previous.AdminRecentStackTests):
         self.install()
         self.pool.execute('INSERT INTO role_resources(role_id,resource_id) VALUES(4,2)')
         before = self.state()
-        # Real primary-key failure after DELETE and one successful INSERT.
-        response = self.http.post('/role/4/bind_resources', json={'resource_ids': [1, 1]})
-        self.assert_unavailable(response)
-        self.assertEqual(self.state(), before)
-        self.assertEqual(self.events(), [])
+        # Inputs are now a deduplicated valid set. Preserve the original real
+        # second-INSERT failure after DELETE and one successful INSERT.
+        self.pool.execute("CREATE TRIGGER binding_mid_failure BEFORE INSERT ON role_resources FOR EACH ROW "
+                          "BEGIN IF NEW.resource_id=2 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic-binding-mid'; END IF; END")
+        try:
+            response = self.http.post('/role/4/bind_resources', json={'resource_ids': [1, 2]})
+            self.assert_unavailable(response)
+            self.assertEqual(self.state(), before)
+            self.assertEqual(self.events(), [])
+        finally:
+            self.pool.execute('DROP TRIGGER binding_mid_failure')
 
     def test_client_actor_headers_and_business_values_never_enter_audit(self):
         pair = self.install()

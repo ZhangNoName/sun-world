@@ -22,13 +22,15 @@ from .policy import (
     ManagementLoginRequired, ManagementUnavailable, ManagementInputInvalid,
 )
 from .schemas import PARAMETER_SCHEMAS
+from .targets import BindingReferences
 
 
 class _WriteAuthorization:
-    def __init__(self, service, token, action, scope, target_id, audit, initial):
+    def __init__(self, service, token, action, scope, target_id, audit, initial, references=None):
         self.service, self.token = service, token
         self.action, self.scope, self.target_id = action, scope, target_id
         self.audit, self.initial, self.locked = audit, initial, None
+        self.references = references
 
     def before(self, uow):
         uow.fetch_all('SELECT id, code FROM roles FORCE INDEX (PRIMARY) ORDER BY id FOR UPDATE')
@@ -40,6 +42,8 @@ class _WriteAuthorization:
             raise ManagementLoginRequired()
         self.service._require(current, self.action, self.scope, self.target_id)
         self.service._audit_for(current, self.audit)
+        if self.references is not None:
+            self.references.require_existing(uow)
         self.locked = current
 
     def before_commit(self, uow):
@@ -135,7 +139,8 @@ class AdminManagementService:
                 raise ManagementInputInvalid() from None
             if action in {'role.update', 'resource.update'} and not params.model_dump(exclude_none=True):
                 raise ManagementInputInvalid()
-            authorization = _WriteAuthorization(self, access_token, action, scope, target_id, audit, principal)
+            references = BindingReferences(target_id, tuple(params.resource_ids)) if action == 'role.bind_resources' else None
+            authorization = _WriteAuthorization(self, access_token, action, scope, target_id, audit, principal, references)
             kwargs = {'audit': audit, 'authorization': authorization}
             if action == 'user.create':
                 created = self.auth_manager.register_user(params, **kwargs)
@@ -151,7 +156,7 @@ class AdminManagementService:
             if action == 'role.delete':
                 return self.roles.delete_role(target_id, **kwargs)
             if action == 'role.bind_resources':
-                return self.roles.bind_resources(target_id, params.resource_ids, **kwargs)
+                return self.roles.bind_resources(target_id, references.resource_ids, **kwargs)
             if action == 'resource.create':
                 return self.resources.create_resource(params.model_dump(), **kwargs)
             if action == 'resource.update':

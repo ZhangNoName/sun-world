@@ -1,0 +1,89 @@
+{
+  "baseline_head": "8d7250496740ab06c07149bf05ea0dc48dba97ab",
+  "scope": "authenticated owned fixture input/reference baseline, not anonymous bypass",
+  "cases": [
+    {
+      "role": 999,
+      "resource_ids": [1],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 999,
+          "resource_id": 1
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": [999],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 4,
+          "resource_id": 999
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": [0],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 4,
+          "resource_id": 0
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": [-1],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 4,
+          "resource_id": -1
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": [true],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 4,
+          "resource_id": 1
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": ["1"],
+      "http_status": 200,
+      "code": 1,
+      "stored": [
+        {
+          "role_id": 4,
+          "resource_id": 1
+        }
+      ]
+    },
+    {
+      "role": 4,
+      "resource_ids": [1, 1],
+      "http_status": 503,
+      "code": "ADMIN_AUDIT_UNAVAILABLE",
+      "stored": []
+    }
+  ],
+  "mysql_root": "/private/tmp/sunworld-agent-mysql-pifpullx",
+  "redis_root": "/private/tmp/sunworld-agent-redis-j3capld_",
+  "mysql_removed": true,
+  "redis_removed": true
+}

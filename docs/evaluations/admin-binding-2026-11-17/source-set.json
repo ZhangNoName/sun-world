@@ -1,0 +1,18 @@
+{
+  "baseline_head": "8d7250496740ab06c07149bf05ea0dc48dba97ab",
+  "source_tree": "21f875c552028d7401b8cade5e8d8ae2aec19d49",
+  "paths": {
+    "apps/api/src/modules/management/policy.py": "35430a0b01ec29c1c6698499b0a21bcbd7130fa01396d749747350243b2a3768",
+    "apps/api/src/modules/management/service.py": "62f8d2817454566fdb229a4aca8698b4db78658176bb9a55b1c3e31b8bd3e1d5",
+    "apps/api/src/modules/management/targets.py": "1646d2abf645ccf32276bd5e83d958af2b8ef01d87fc07b4aa75a553d51b2369",
+    "apps/api/src/type/management_type.py": "687e5abe0d37b29c03299370b046e686162710b6099298aa6fa5b9462fe9a6d9",
+    "apps/api/tests/integration/test_admin_audit_stack.py": "aaf1457d059963ccf41e34d9b41b615358cf2a6f689afbcb475ce0efdf819fd4",
+    "apps/api/tests/integration/test_admin_binding_stack.py": "b05e7c816a2b763aa8743d81478ae19c75b8e301c4b5d8715728b3034de2b95c",
+    "apps/api/tests/test_admin_binding_references.py": "fa26f19453d9438043a73ecf6981b9146edee497eaa82832920a5af4cc7d4d66",
+    "packages/contracts/openapi.json": "11a5a11d3c654af5f05df8a4b6bf81d36858d88a5adba0035c08ebbb7f60ff42",
+    "packages/contracts/src/generated-api-types.ts": "f5a57f7b8019a9486bbfa3063ebda68e72684be8fd8a2465f4e2ee7703b460d2",
+    "scripts/test-admin-binding-stack.py": "426e7392b062c1700c3b02df6046129944c90fa0d3f74143e44f5ccf1edd9695",
+    "tools/agent-linux-vm/stack-assets.json": "981e288fffeb0241feab1c7a865bbcb58115f35f707c3a5a26c5c0282eb1db36",
+    "tools/agent-linux-vm/stack-sources.json": "ae9b6d8accd3370ac1c6f8205f984e5214d5314da241a25d8e44afeaa681dbab"
+  }
+}

@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜角色资源绑定的整组引用边界
+
+- 按[协议](development/admin-binding-references.md)修复已授权绑定可存失联role/resource及非法值的本地复现；strict资源INT32/传入≤500/首次去重/空清空，原actor授权后同RC UOW锁读role及整组resources、缺任一404不删旧绑定/audit，manager共用冻结tuple。raw内部None/无FK/无新grant或Agent写能力边界保持。
+- 最终12源树21f875c552028d7401b8cade5e8d8ae2aec19d49，API1021、新native20及旧19/16/12/16/33/24、contracts6和独立新14/原service16/gate/hash review过；三真实threadLOCKWAIT/中途触发器/最终撤销回滚/commit未知不重放保持，见[实证](evaluations/admin-binding-2026-11-17/README.md)。生成时捕获signed64舍入，改资源实际INT32后边界实测通过，OpenAPI仅绑定bounds/description/TS注释变化，catalog/two tools/Skill/bundle字节不变。
+- 实际Linux233源/280payload绑定、原49/9/5/三库SDK6过supplier0、legacyper_run=false；67资产与上轮完全相同，新binding20在Mac而非guest。15可定位DB根与VM组/root清理，旧服务3030/8032/3033和原80/123/main210加1删保留；原素材format/两dirty UI问题不动，无Web生产源变化不重跑全Web。
+- [引用案例](blog/2026-11-17-role-resource-reference-validation.md)新稿四ID/一透明图、1280/390明暗过未发布；预览 http://127.0.0.1:3033/.tmp/admin-binding-blog-kh44o9tx/index.html 。仅中文本地保存，不push/deploy/pub、配置Clash/供应商/付费复跑；细粒度可授予集合/生产恢复等仍待，A/P1/A–D未完成。Claude Code/claude-ds带新协议的INT32/同tuple/引用锁时点/无FK/raw兼容约束，详[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜九项管理服务与事务授权复验
 
 - 按[协议](development/admin-management-service.md)迁移九维护写至真实access管理服务，保40旧/近期9/audit9守卫；同RC连接锁角色目录→actor账号/绑定后复验，实际commit前再验Redis与近期时间，合法本人降权/最后管理员409保持。audit非授权，raw内部None与Redis至commit窗口保留；九能力只映射本站admin，无Agent写工具/完整授予集合。

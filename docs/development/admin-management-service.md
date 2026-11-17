@@ -4,6 +4,8 @@
 
 承接[近期认证](admin-recent-authentication.md)和[事务审计](admin-transaction-audit.md)，本轮迁移9个既有HTTP维护写入至统一管理服务。原require_admin/近期/audit守卫保持下界，管理读取与其余31项未迁移；不新增HTTP、授权授予API、Agent写工具或生产角色数据。
 
+角色资源替换的严格INT32输入、集合化和同事务引用检查见[专门协议](admin-binding-references.md)；保持本文原授权/审计/提交边界。
+
 ## 服务与能力
 
 - 新`modules/management`拥有service/policy/manifest（普通包显式initializer）。注册`identity-management@1`，9个HTTP声明、6张维护表data owner，tools/skills为空。原博客两工具与输入/输出定义必须原样，不因模块capability登记获得Agent写权限。

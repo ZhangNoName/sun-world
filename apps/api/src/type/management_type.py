@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class RoleCreateModel(BaseModel):
@@ -16,7 +16,15 @@ class RoleUpdateModel(BaseModel):
 
 
 class BindResourcesModel(BaseModel):
-    resource_ids: List[int] = Field(default_factory=list, max_length=500)
+    resource_ids: List[Annotated[int, Field(strict=True, gt=0, le=2_147_483_647)]] = Field(
+        default_factory=list, strict=True, max_length=500,
+        description='正整数资源ID；重复项按首次出现去重，空列表清空绑定',
+    )
+
+    @field_validator('resource_ids')
+    @classmethod
+    def unique_resource_ids(cls, values):
+        return list(dict.fromkeys(values))
 
 
 class ResourceCreateModel(BaseModel):

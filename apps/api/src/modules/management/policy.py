@@ -52,6 +52,12 @@ class ManagementInputInvalid(ManagementDenied):
     status_code = 422
 
 
+class ManagementReferenceNotFound(ManagementDenied):
+    code = 'MANAGEMENT_REFERENCE_NOT_FOUND'
+    message = '管理操作引用不存在。'
+    status_code = 404
+
+
 class ManagementPolicy:
     def require_scope(self, action, scope, target_id):
         if (type(action) is not str or action not in CAPABILITIES

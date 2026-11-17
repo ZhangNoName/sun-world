@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：整组角色资源引用检查
+
+- 继续目标开发/review/验证/中文本地保存，基点8d72504，上一turn已产代码/验证与commit属progress。[协议](../../development/admin-binding-references.md)先落盘同步coding/判官。真实owned基线已授权HTTP对missingrole/res999/0/-1及bool/string coercion可保存，非匿名绕过；resource目录用于菜单，不当成capability grant。
+- 改type/management_type、management policy/service及新targets.py；strict资源正INT32≤2147483647/原始list≤500/首次去重/空清空，role target仍旧统一signed64格式及存在核。server frozen tuple在原hook actor授权后、DELETE前同一RC UOW核role与升序锁全部resources，缺任一统一404/无业务/audit；manager用同tuple。原rawNone不动、未加FK/GrantAPI/Agent写工具，外部绕协议SQL不作全局完整性承诺。
+- 初次生成发现signed64上限经FastAPI/OpenAPI浮点舍入，与runtime不符；核实际resource列为signedINT后只收紧资源上界，独立最小反例保十进制字符串，真实MySQL2147483647成功/2147483648拒绝。OpenAPI只BindResourcesModel bounds/description改，TS只注释，其他path/schema与catalog/2tools/Skill/bundle原字节。原audit重复ID中途失败测试换合法[1,2]+真实第二INSERT trigger，原回滚oracle不降。
+- 最终12 source-only tree21f875c552028d7401b8cade5e8d8ae2aec19d49；API1021/38.541秒，新native20/3.692、旧management19/3.431、audit16/3.160、recent12/2.243、recovery16/.555、MySQL33/5.775、原stack24/16.866全exit0，contracts6。判官独立新14/原service16/gate40+9+9+9和摘要/契约/包无剩余确认阻断；新诊断19在INT32收尾前3.737过但无最大ID断言，最终20为权威，见[实证](../../evaluations/admin-binding-2026-11-17/README.md)。
+- native20含全部坏引用/类型/范围/500/501/去重/empty、HTTP/direct/匿名非admin陈旧仍先拒、caller突变/pool1、firstINSERT已完成后真实secondtrigger失败/audit失败/finallogout/time/commit前后确认。三跨连接指定thread实际LOCKWAIT分别核引用读后DELETE前资源行锁（直接UPDATE）、参与resource及role删除后清新关联无orphan；不能拿后续INSERT锁或role目录锁替代引用锁证明。
+- Linux仅加targets source 232→233/asset source SHA；复用.tmp/admin-management/linux-assets固定SDK封包，catalog没变，67资产与上轮逐字一致无需重封/下载。实际VZ原49/9/5/组件SDK/正式三库mTLS原6合成场景过，233源逐字绑定280payload、旧232/缺target拒；supplier0和legacyper_run=false保留，新binding20在Mac而非guest，不冒称新guest动作测试。VM三库/组/root已回收。
+- sun-world-blog→case-study新增[引用案例](../../blog/2026-11-17-role-resource-reference-validation.md)而非重复扩旧七章；后端/架构笔记、权限管理、数据库事务，四稳定ID/六重点，一透明整组分支图，1280/390明暗/anchor/无缩进溢出裸星过，未发布。预览 http://127.0.0.1:3033/.tmp/admin-binding-blog-kh44o9tx/index.html 。15可定位owned DB根删且ps无引用；3030/8032/3033保持200，原80/123/main210加1删、指定根/原缓存/旧稿件保留，root素材manifest格式问题和两dirty UI问题不改。无Web生产源变化，不重跑全Web。
+- 中文本地保存，不push/deploy/pub/代理/供应商/官方付费复跑/新worktree；完整capability grant与可授予范围、生产目标/恢复/备份/审计运营仍待，A/P1/A–D未完成。Claude Code/claude-ds必须读新协议，保引用验证在actor授权后且DML前/同tuple/锁次序/资源INT32/角色target旧格式/raw兼容/未加FK及原Rediscommit窗口。
+
 ### 2026-11-17 最新 checkpoint：九项管理服务与事务内授权
 
 - 目标继续开发/review/本地验证/中文版本保存，基点dd71144；[新协议](../../development/admin-management-service.md)先落盘并同步coding/判官。新增management普通包service/policy/schema/public/manifest，九既有HTTP写改调用；保40旧/近期9/audit9守卫，capability仅映射本站admin的九维护能力，不新增HTTP/Grant API/Agent写工具。原raw manager无audit路径仍受信任内部持久化，不声称原来存在外部绕过。

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="346" viewBox="0 0 360 346" role="img" aria-labelledby="title desc">
+  <title id="title">整组角色资源引用检查</title>
+  <desc id="desc">同一事务锁读目标角色和全部目标资源，任一缺失保留原绑定，全部存在才整体替换并连同审计提交。</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-size: 15px; fill: #25364a; text-anchor: middle; dominant-baseline: middle; }
+    .node { fill: #edf3fa; stroke: #8098b1; stroke-width: 1.3; }
+    .group { fill: none; stroke: #8098b1; stroke-width: 1.3; stroke-dasharray: 5 4; }
+    .line { fill: none; stroke: #7087a0; stroke-width: 1.5; marker-end: url(#arrow); }
+    .success { fill: #e3f3ed; stroke: #588674; }
+    .failure { fill: #f9eceb; stroke: #ae7874; }
+    @media (prefers-color-scheme: dark) { text { fill: #e3ebf4; } .node { fill: #26394b; stroke: #93abc2; } .group { stroke: #93abc2; } .line { stroke: #9db1c6; } .success { fill: #25463d; stroke: #84b49f; } .failure { fill: #503837; stroke: #cf9b96; } }
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 8 4 0 8" fill="#8098b1"/></marker></defs>
+  <rect class="group" x="12" y="8" width="336" height="326" rx="9"/>
+  <text x="180" y="30">同一数据库事务</text>
+  <rect class="node" x="30" y="54" width="132" height="42" rx="7"/><text x="96" y="75">目标角色</text>
+  <rect class="node" x="198" y="54" width="132" height="42" rx="7"/><text x="264" y="75">全部目标资源</text>
+  <path class="line" d="M96 96V112H180V132"/><path class="line" d="M264 96V112H180V132"/>
+  <rect class="node" x="76" y="134" width="208" height="42" rx="7"/><text x="180" y="155">锁读并核对整组引用</text>
+  <path class="line" d="M128 176V210H96V238"/><path class="line" d="M232 176V210H264V238"/>
+  <text x="96" y="201">任一缺失</text><text x="264" y="201">全部存在</text>
+  <rect class="node failure" x="30" y="240" width="132" height="70" rx="7"/><text x="96" y="264">拒绝替换</text><text x="96" y="287">保留原绑定</text>
+  <rect class="node success" x="198" y="240" width="132" height="70" rx="7"/><text x="264" y="264">整体替换</text><text x="264" y="287">审计与提交</text>
+</svg>

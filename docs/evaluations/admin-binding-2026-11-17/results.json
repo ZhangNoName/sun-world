@@ -1,0 +1,198 @@
+{
+  "baseline_head": "8d7250496740ab06c07149bf05ea0dc48dba97ab",
+  "final_source_tree": "21f875c552028d7401b8cade5e8d8ae2aec19d49",
+  "source_paths": 12,
+  "runs": [
+    {
+      "log": "stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 8.238,
+      "sha256": "380bb1908da1fe48af9e9e9289c9d6acfe75e0e6f4d7547a4bf647e29928b9e2",
+      "unittest_count": 20,
+      "unittest_seconds": 3.692
+    },
+    {
+      "log": "management-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 6.858,
+      "sha256": "ef4c129f6d9dec8f34cbf4168979f801d1622170e02058d3bcd4693e033be033",
+      "unittest_count": 19,
+      "unittest_seconds": 3.431
+    },
+    {
+      "log": "audit-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 6.941,
+      "sha256": "77753dd2447b25534745d65fae6351a7dda0b51596a416d66e31c56d0bab3a0d",
+      "unittest_count": 16,
+      "unittest_seconds": 3.16
+    },
+    {
+      "log": "recent-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 6.024,
+      "sha256": "470c4e6c00dedcf1856aeba62e172fe66b2695641810c4bf298effa4d021661e",
+      "unittest_count": 12,
+      "unittest_seconds": 2.243
+    },
+    {
+      "log": "recovery-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 2.83,
+      "sha256": "3d4e282db946ffb0408c453a99a13f639b87105014586e45ecc187d47ba11039",
+      "unittest_count": 16,
+      "unittest_seconds": 0.555
+    },
+    {
+      "log": "original-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 8.682,
+      "sha256": "4b58d2778cda4d8f1faa297ea5f478725d5c6ac7645e861ed62b1a318e96f357",
+      "unittest_count": 33,
+      "unittest_seconds": 5.775
+    },
+    {
+      "log": "original-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 19.83,
+      "sha256": "1be16792b088fe59daaea12d7205fd2a212e6f02f1d3a75b8ae12dc4cca274dd",
+      "unittest_count": 24,
+      "unittest_seconds": 16.866
+    },
+    {
+      "log": "api-final.log",
+      "exit_code": 0,
+      "wall_seconds": 43.872,
+      "sha256": "758252bc9fe197c243b1bfe89cb4de72517819d4bb9603fc86b680000d330f28",
+      "unittest_count": 1021,
+      "unittest_seconds": 38.541
+    }
+  ],
+  "initial_diagnostic": {
+    "log": "stack-initial.log",
+    "tests": 19,
+    "seconds": 3.737,
+    "sha256": "788833c9737dddd48cdc1cb457e3a4444958f7c11c8ac025f030405b22bb9d4d",
+    "scope": "pre-INT32 native19 diagnostic, no maximum-boundary assertion; final native20 is authoritative"
+  },
+  "new_offline_tests": 14,
+  "independent_review_tests": "14 binding +16 original service and policy gate passed; no remaining confirmed blocker",
+  "strict_resource_id_maximum": 2147483647,
+  "role_target_id_format": "unchanged signed64 plus role existence check",
+  "initial_contract_correction": "observed signed64 OpenAPI rounding; narrowed resource IDs to actual signed INT column max, preserved minimal independent counterexample with decimal strings",
+  "openapi_semantic_delta": "only BindResourcesModel resource_ids item bounds and description; TypeScript only that comment",
+  "catalog_tools_skill_bundle_bytes_unchanged": true,
+  "contracts_tests": 6,
+  "schema_tables": 31,
+  "schema_columns": 279,
+  "known_native_roots": [
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-7qflg1i3",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-9gkltsg5",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-cmx4vxzs",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-fn94ma00",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-ftauxmk5",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-mzw2vjyi",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-pifpullx",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-prde4emb",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-r9lck3_0",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-6ghfk3h1",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-8qymysy0",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-_4hwir46",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-_dyxau6a",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-brp819cm",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-j3capld_",
+      "removed": true,
+      "process_reference": false
+    }
+  ],
+  "existing_services": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033": 200
+  },
+  "new_native_scope": "owned macOS MySQL8.4.13/Redis7.2.17/Auth/Cookie/HTTP/direct service, including exact INT upper boundary and three actual thread-specific LOCK WAIT cases",
+  "linux_scope": "payload packaging and original formal API/three-database/SDK six scenarios; new binding20 not executed in guest",
+  "linux": {
+    "protocol_cases": 49,
+    "containment_cases": 9,
+    "gateway_cases": 5,
+    "formal_cases": 6,
+    "source_manifest_paths": 233,
+    "payload_files": 280,
+    "assets": 67,
+    "all_cached_assets_and_sdk_unchanged": true,
+    "supplier_requests": 0,
+    "legacy_per_run_flag": false,
+    "groups_gone": true,
+    "private_run_root_removed": true
+  },
+  "database_foreign_keys_added": false,
+  "raw_internal_manager_paths_globally_disabled": false,
+  "resource_menu_is_capability_grant_store": false,
+  "agent_write_tools_added": false,
+  "web_production_source_changed": false,
+  "external_model_used": false,
+  "proxy_config_changed": false,
+  "published": false,
+  "pushed": false,
+  "deployed": false,
+  "deploy_schema_protocol_passed": true,
+  "root_format_failure": "original docs/content-sources/csdn-qq-42345136/manifest.json only"
+}

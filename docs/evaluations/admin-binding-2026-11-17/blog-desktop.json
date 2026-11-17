@@ -1,0 +1,15 @@
+{
+  "strayBoldMarkers": false,
+  "strongCount": 6,
+  "headings": 4,
+  "ids": [
+    "orphan-binding-baseline",
+    "strict-reference-set",
+    "reference-check-transaction",
+    "reference-failure-verification"
+  ],
+  "width": 1280,
+  "bodyWidth": 1280,
+  "indents": ["0px"],
+  "fontSize": "16px"
+}

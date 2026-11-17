@@ -1,0 +1,9 @@
+{
+  "scope": "minimal independent reconstruction of the first observed schema rounding, not a preserved full old OpenAPI artifact",
+  "fastapi_openapi_maximum_repr": "9.223372036854776e+18",
+  "runtime_rejects_that_exposed_upper_value": true,
+  "current_resource_column_maximum": 2147483647,
+  "current_generated_maximum_exact": true,
+  "original_pydantic_maximum_decimal": "9223372036854775807",
+  "integer_value_exposed_decimal": "9223372036854775808"
+}
