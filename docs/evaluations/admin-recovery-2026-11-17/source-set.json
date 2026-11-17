@@ -1,0 +1,13 @@
+{
+  "tree": "03d570f349aaffac722e5f46465996fff22b87b4",
+  "paths": {
+    "apps/api/src/controller/role_manager.py": "b0a8344654751b8edf72618468ccd5c8f6f8e8dea2589edf617c7420a0de47ee",
+    "apps/api/src/controller/user_manage.py": "c4f8e1b76509daa369bc83c872185c0343952df09b7650144c498edfee81e660",
+    "apps/api/src/core/auth/admin_recovery.py": "b14016e7b06dab4458476fb7e382fc3a947ab7d1f1a338bae9f6f240a7173ff1",
+    "apps/api/src/routers/role/role.py": "198a0d0b154f6ad04c878e3a55d12f0fd96c2fbb7a3b7a4a2b217ddb0520a308",
+    "apps/api/src/routers/user/user.py": "220d04fe876b31242aa44934afd89d5cd687ae5ef4f553d5ac5f1902e22139bd",
+    "apps/api/tests/integration/test_admin_recovery_mysql.py": "9136038c890c71f06465a8f5597e9e5db19ae5b9e53ddcf8643b5a765b149bac",
+    "apps/api/tests/test_admin_recovery.py": "b00b8712c0a35876f1c72af7a672a3472f37a71a55efb3ac29335c08355a94c1",
+    "scripts/test-admin-recovery-mysql.py": "e8d704c6c05670adaad18e4d99f13b4fa445c956528a994123e06a5afcf5eced"
+  }
+}

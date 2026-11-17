@@ -1,9 +1,11 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import BaseModel
 from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
+from src.core.auth.admin_recovery import LastAdministratorError
 from app_instance import app
 from src.type.user_type import User, UserCreateResult, UserPage, UserPublic
 from src.core.response import ok, fail
@@ -128,7 +130,12 @@ async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user
     Returns:
         dict: 包含停用成功消息的字典
     """
-    res = user_manager.delete_user(user_id)
+    try:
+        res = user_manager.delete_user(user_id)
+    except LastAdministratorError as error:
+        return JSONResponse(status_code=409, content={
+            "code": error.code, "data": None, "msg": error.message,
+        })
     # logger.info(f'停用用户的结果:{res}')
     if not res:
         return fail(msg="用户不存在", data=False, code=COMMON_NOT_FOUND)

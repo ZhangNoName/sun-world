@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17补阶段A的[最后启用管理员事务保护](../development/admin-recovery-invariant.md)：统一用户status/delete/角色替换、角色code/delete，单连接RC和角色目录锁，最终归零则整笔回滚。原HEAD临时MySQL复现四类漏洞；最终完整API953、native16、原MySQL33及MySQL/Redis/认证HTTP24过，原13并发组保实际LOCK WAIT断言连续三次过。shadow40/旧管理员守卫保持，未新增用户维护HTTP/Agent写能力，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。案例稿与透明流程图双尺寸明暗过未发布；原80/123dirty/服务保留，仅中文本地提交。此处只保护启用角色不归零，近期认证、可授予集合、审计、生产目标盘点及真实恢复仍待，阶段A/P1/A–D未整体完成；Clash配置与官方付费复跑不在范围内。
+
 2026-11-17解除本分支CSS预算问题，[协议与维护](../development/web-css-budget.md)/[实证](../evaluations/web-css-budget-2026-11-17/README.md)：原工作区52362B、独立HEAD51836B均超原51200B，并非仅dirty。10张内联PNG无损RGB合并保alpha/metadata/热点，Chrome两尺寸四底色与ImageIO逐像素、CSSOM12规则/库inline均过；工作区降50104B、最终源码49578B，18 CSS中17 SHA原样，未改预算/资产范围。新露UI门禁的2任务源改BaseUI；最终source-only树完整Web292/所有后续门禁通过，当前工作区309/预算过但原dirty UI2处仍失败，原素材format失败保持。新增前端案例与ECharts透明数据图双尺寸明暗过未发布；两自有源码快照安全清理，原80/123dirty/服务保持，仅中文本地保存。后续继续A恢复边界等剩余本地核对；生产/官方四题/人工等门槛不自动放行，不配置Clash/付费复跑。
 
 2026-11-17完成D首个[有限页面贡献](../development/page-contributions.md)：blog静态声明原公开博客问答入口，AI宿主控制sidebar/rail、最小上下文与scope，应用根收集并做构建前真实注册检查；公开入口不授予运行权限，未知能力拒受限加载。注册22/挂载17、root29、纯源码快照113+typecheck过，真实页面双尺寸8个合成HTTP场景过；独立Suspense的3项修前失败/修后通过，判官复验无剩余确认阻断。完整Web309及类型/构建/SSG/manifest过，最后CSS预算整体失败/原素材格式失败保持，[实证](../evaluations/page-contributions-2026-11-17/README.md)记录22源/清理。其他slot/write action、显示能力服务与多项目仍按实际需求验收；生产/官方四题/人工等门槛未放行。博客03增边界与一透明图、双尺寸未发布；原80/123dirty保持，仅中文本地保存。用户确认只复用Clash Verge现有转发，不配置代理或调整节点，不再等另一代理资料，也不据此付费复跑。

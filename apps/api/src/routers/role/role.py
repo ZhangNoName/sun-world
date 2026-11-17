@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 
 from src.controller.role_manager import RoleManager
+from src.core.auth.admin_recovery import LastAdministratorError
 from app_instance import app
 from src.core.response import ok, fail
 from src.routers.auth.auth import require_admin
@@ -55,12 +57,22 @@ async def update_role(role_id: int, data: RoleUpdateModel, manager: RoleManager 
     changes = data.model_dump(exclude_none=True)
     if not changes:
         raise HTTPException(status_code=422, detail="At least one field is required")
-    res = manager.update_role(role_id, **changes)
+    try:
+        res = manager.update_role(role_id, **changes)
+    except LastAdministratorError as error:
+        return JSONResponse(status_code=409, content={
+            "code": error.code, "data": None, "msg": error.message,
+        })
     return ok(data=res, msg="更新成功")
 
 @router.delete("/{role_id}")
 async def delete_role(role_id: int, manager: RoleManager = Depends(get_role_manager)):
-    res = manager.delete_role(role_id)
+    try:
+        res = manager.delete_role(role_id)
+    except LastAdministratorError as error:
+        return JSONResponse(status_code=409, content={
+            "code": error.code, "data": None, "msg": error.message,
+        })
     if not res:
         return fail(msg="角色不存在", data=False)
     return ok(data=True, msg="删除成功")

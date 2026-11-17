@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：最后启用管理员事务不变量
+
+- 持续目标按计划开发/review/验证/中文本地保存，基点8d62886。本轮回到A恢复边界，[协议](../../development/admin-recovery-invariant.md)统一五类manager写：用户status/delete/角色替换、角色code/delete。单连接RC，按roles主键锁前后目录，最终仍至少一名status1且Python规范化admin用户才commit；固定LastAdministratorError、现有user DELETE/role PUT/DELETE409，无账号身份。原40shadow与require_admin保持，无新HTTP/Agent写入口。
+- 主要源：core/auth/admin_recovery.py、两manager、两router；角色替换验证用户/全角色并去重、整体回滚，删除角色清user_roles/role_resources。同名code、禁用账号、多个/Unicode空白规范化、pool1、空目录/零管理员修复均按最终检查。外部SQL/旧服务/凭据有效性不在不变量内，不冒称恢复账号已验。
+- 原HEAD真实owned MySQL四例已复现：最后停用/role改名/删除放行，删除留dangling，重复role插入失败返回false却已丢admin绑定。最终8源/source-only树03d570f349aaffac722e5f46465996fff22b87b4，完整API953/36.022秒，native16、旧MySQL33/6.133秒、真实MySQL/Redis/认证HTTP24/17.371秒全部exit0，见[实证](../../evaluations/admin-recovery-2026-11-17/README.md)。Worker/model/article明确合成，无供应商调用。
+- 并发oracle保实际LOCK WAIT+later未完成+先成功后拒绝/最终状态。首轮20ms观测没捕获保留失败，不认定源码锁坏；150ms采样后原13三次独立owned过，扩展/最终16各过。元数据刷新只是假设，根因未确认。并发未绑定admin新建不放行最后停用也有真实两连接用例。判官独立离线15及边界补验、两轮源码复审无确认阻断；博客两处HTTP/方法措辞已修闭合。
+- 按sun-world-blog→case-study新增[案例](../../blog/2026-11-17-last-administrator-transaction.md)，后端/架构笔记、权限管理、数据库事务，博客03补链接。多入口与commit/rollback分支新增透明SVG，1280/390明暗截图人工看过，4稳定ID/6strong/无缩进溢出，图360/342px。预览 http://127.0.0.1:3033/.tmp/admin-recovery-blog-norhds6u/index.html ，自有非Git稿件目录留供查看；dirty renderer/CSS非完整Web验收，未发布。
+- 本轮日志定位10个owned MySQL根均终态删除/独立ps无引用，原3030/8032/3033均200，旧live/failed roots与Linux缓存未动。diff通过，根format仍仅原素材manifest失败；前轮source-only完整Web过、当前工作区原2UI失败保留，本轮无前端源故不重跑Web。原80/123状态和main原210加1删保留，仅本地提交，不推送部署。
+- 下一步继续A的最小管理能力、近期认证/审计与可本地验证的授权边界，生产目标/恢复/人工/版本等决策不替用户放行。P1/A–D未整体完成；官方Linux四题失败和停付费复跑保持。用户只复用Clash Verge，不配置代理/节点/DNS/系统。Claude Code/claude-ds接手先读上述事务协议与未迁移边界。
+
 ### 2026-11-17 最新 checkpoint：CSS预算通过与源码完整Web门禁
 
 - 基点d45d32d，沿[协议](../../development/web-css-budget.md)独立定位：原工作区CSS gzip52362B，HEAD同production Vite也51836B，均超51200，不能只归因原dirty。编辑器10个32×32 RGBA8指针所有RGB相等，维护Node标准库CLI转gray+alpha，保alpha/pHYs/sRGB/gAMA/尺寸/inline/热点；不删资产、换扩展名、改预算或增加依赖。PNG7893→5662B。

@@ -1,0 +1,142 @@
+{
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "mysql": "8.4.13",
+  "frozen_source_tree": "03d570f349aaffac722e5f46465996fff22b87b4",
+  "full_api_production_and_unit_bytes_frozen": true,
+  "runs": [
+    {
+      "log": "mysql-initial.log",
+      "sha256": "c835a7372a5e1a6ff670e573cc87d3ce6d774f25d0b9db6ec8ba64e6a012466f",
+      "tests": 13,
+      "seconds": 2.512,
+      "result": "failed"
+    },
+    {
+      "log": "mysql-diagnostic.log",
+      "sha256": "a2a1fa8e93bb4c1a37ba54f0e65a3227a064c681a7c0cf9758d73391d6d73c53",
+      "tests": 13,
+      "seconds": 0.435,
+      "result": "passed"
+    },
+    {
+      "log": "mysql-final-1.log",
+      "sha256": "3f0736e5eec398ba18f900d2bea1807efb06975260bbdc22e78ff7b00dffb270",
+      "tests": 13,
+      "seconds": 0.302,
+      "result": "passed"
+    },
+    {
+      "log": "mysql-final-2.log",
+      "sha256": "67330ff407f087163094ba8d5dac734dc4f39d26129879501fc336db073ae276",
+      "tests": 13,
+      "seconds": 0.659,
+      "result": "passed"
+    },
+    {
+      "log": "mysql-final-3.log",
+      "sha256": "3efe33ca34093fd7049fc7e8ca0a854f05e429f3e50244274219639af11b0895",
+      "tests": 13,
+      "seconds": 0.567,
+      "result": "passed"
+    },
+    {
+      "log": "mysql-extended.log",
+      "sha256": "c16018ef7f07846935884dc3d43bd0ab817d8770230bc319f705705152baaadc",
+      "tests": 16,
+      "seconds": 0.472,
+      "result": "passed"
+    },
+    {
+      "log": "mysql-frozen-final.log",
+      "sha256": "b7f3e0e9e415c769c74219cbf9501ec9a359e3d6facab731533116d6c24f5952",
+      "tests": 16,
+      "seconds": 0.657,
+      "result": "passed"
+    },
+    {
+      "log": "agent-mysql-final.log",
+      "sha256": "980cf20fbff4aeebc4f34aeefa0c9faec4622f4293eb9843a2a0ae85e279ee4e",
+      "tests": 33,
+      "seconds": 6.133,
+      "result": "passed"
+    },
+    {
+      "log": "stack-final.log",
+      "sha256": "c563864d51ccd9692422f6ab6322d76b83dc7487489e6978840b837af510ebfe",
+      "tests": 24,
+      "seconds": 17.371,
+      "result": "passed"
+    },
+    {
+      "log": "api-frozen-final.log",
+      "sha256": "f0629d7bbbac1423875c586d6b707df9da1e1c273641774db305f0c0f7fd34a4",
+      "tests": 953,
+      "seconds": 36.022,
+      "result": "passed"
+    }
+  ],
+  "initial_wait_observation_failed": true,
+  "oracle_retained": "LOCK WAIT > 0, second future pending, first succeeds then second rejected, final state preserved",
+  "sampling_ms": 150,
+  "initial_cause": "not established; transaction-metadata refresh timing is a hypothesis",
+  "owned_cleanup": [
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-islmg2nl",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-80pe151b",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-yozmih7k",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-xkvr1bxv",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-pibusd_u",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-ec4bxlfo",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-5fhfetk_",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-a0ffybx5",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-vj5ikp1w",
+      "removed": true,
+      "referenced_by_process": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-6ru1djze",
+      "removed": true,
+      "referenced_by_process": false
+    }
+  ],
+  "existing_services": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033": 200
+  },
+  "no_business_database_or_external_model_used": true,
+  "no_proxy_changes": true,
+  "publication": "local draft only"
+}

@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜最后启用管理员事务保护
+
+- 按[协议](development/admin-recovery-invariant.md)统一用户status/delete/角色替换、角色code/delete：单连接RC与前后角色目录锁，最终无启用admin则整笔回滚；角色替换去重/验证与两关联删除原子，三个已有HTTP操作固定409。原40 shadow/require_admin保持，无新增用户维护HTTP或Agent写入口。
+- 原HEAD临时MySQL四例漏洞复现；最终8源树03d570f349aaffac722e5f46465996fff22b87b4，API953、native16、原MySQL33和MySQL/Redis/认证HTTP24均过。首轮锁等待观测失败保留，150ms保原oracle后原13三次/扩展16通过；判官无确认阻断，见[实证](evaluations/admin-recovery-2026-11-17/README.md)。10 owned根终态清理、现有3030/8032/3033保持；原80/123dirty、素材format与工作区原2UI问题未动。
+- [案例草稿](blog/2026-11-17-last-administrator-transaction.md)后端/架构笔记、权限管理、数据库事务，透明流程图1280/390明暗过；博客03加链接，未发布。预览 http://127.0.0.1:3033/.tmp/admin-recovery-blog-norhds6u/index.html 。仅中文本地提交、不推送部署；保留原main handoff210加1删。
+- 下一步A最小管理能力/近期认证/审计与可本地验证的授权边界；生产目标/人工恢复/版本等仍待，启用角色不归零不等于凭据可恢复。P1/A–D未整体完成，官方Linux四题失败/停付费复跑保持；只复用Clash Verge、不配置代理。Claude Code/claude-ds先读新协议，详情见[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜CSS预算解除与完整源码Web验证
 
 - 按[协议](development/web-css-budget.md)独立确认工作区52362B/HEAD51836B均超原51200B，定位到内联指针可无损合并RGB。10张32×32保alpha/metadata/尺寸/热点与inline，PNG7893→5662B；最终工作区CSS50104B、源码49578B，均减2258B，17/18 CSS SHA原样，预算与检查器不变。

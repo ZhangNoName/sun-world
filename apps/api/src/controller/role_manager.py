@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, List
 from loguru import logger
 from src.database.mysql.mysql_manage import MySQLManager
 from src.type.user_type import User
+from src.core.auth.admin_recovery import admin_recovery_transaction
 
 class RoleManager:
     """
@@ -52,11 +53,15 @@ class RoleManager:
         set_clause = ", ".join(f"{k}=%s" for k in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id=%s"
         params = tuple(kwargs.values()) + (role_id,)
+        if 'code' in kwargs:
+            with admin_recovery_transaction(self.db) as uow:
+                return uow.execute(sql, params)
         return self.db.execute(sql, params)
 
     def delete_role(self, role_id: int) -> bool:
         """删除角色，并清理关联资源"""
-        with self.db.unit_of_work() as uow:
+        with admin_recovery_transaction(self.db) as uow:
+            uow.execute("DELETE FROM user_roles WHERE role_id=%s", (role_id,))
             uow.execute(
                 f"DELETE FROM {self.role_resource_table} WHERE role_id=%s",
                 (role_id,),
@@ -65,7 +70,6 @@ class RoleManager:
                 f"DELETE FROM {self.table_name} WHERE id=%s",
                 (role_id,),
             )
-            uow.commit()
         return deleted > 0
 
     def get_role_by_id(self, role_id: int) -> Optional[Dict[str, Any]]:

@@ -2,6 +2,8 @@
 
 日期：2026-11-15。当前分支本地实现，未切换鉴权、未部署。阶段 A 的后续范围见[分阶段计划](../plans/dsh-platform-implementation.md)。
 
+2026-11-17本地增量：按[管理员事务协议](admin-recovery-invariant.md)统一保护 UserManager status/delete/角色替换、RoleManager code/delete。单连接 RC、角色目录锁、提交前检查，最后启用管理员冲突返回固定409；角色替换及角色/两关联表删除原子。真实 owned MySQL 验证回滚、并发等待与重新判断、零目录修复/拒绝和并发新增未绑定角色，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。保留原40项 shadow 基线与旧 require_admin，不新增用户更新/角色分配HTTP入口或Agent写权限；近期认证、可授予集合、审计与真实恢复演练仍待。
+
 ## 源码盘点
 
 本轮只检查源码和无运行时初始化的路由组合，不读取数据库账户或凭据，也不代表生产角色数据已核对。

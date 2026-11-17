@@ -1,0 +1,35 @@
+{
+  "baseline_head": "8d62886860406ceb5829438ad9f8ca95cf309b83",
+  "sources": {
+    "apps/api/src/controller/user_manage.py": "7635ac4cd27e26b31c42303c02e13fd03a4f6145a719124bdb11753f94ec0147",
+    "apps/api/src/controller/role_manager.py": "0e8f4556c520fee378f4fc38210d1a329213f8d706cc2bd15636094cc56572cd"
+  },
+  "mysql": "8.4.13",
+  "pid": 13131,
+  "runtime": "/private/tmp/sunworld-agent-mysql-6ru1djze",
+  "process_exited": true,
+  "runtime_removed": true,
+  "synthetic_only": true,
+  "cases": {
+    "disable_last_admin": {
+      "result": true,
+      "status_after": 0
+    },
+    "rename_last_admin_role": {
+      "result": 1,
+      "code_after": "former-admin"
+    },
+    "delete_last_admin_role": {
+      "result": true,
+      "dangling_bindings": 1
+    },
+    "duplicate_role_failure": {
+      "result": false,
+      "bindings_after": [
+        {
+          "role_id": 2
+        }
+      ]
+    }
+  }
+}

@@ -4,6 +4,7 @@ from loguru import logger
 from src.database.mysql.mysql_manage import MySQLManager
 from src.type.auth_type import normalize_login_identifier
 from src.type.user_type import User
+from src.core.auth.admin_recovery import admin_recovery_transaction
 
 
 class UserManager:
@@ -403,6 +404,9 @@ class UserManager:
         set_clause = ', '.join(f"{key} = %s" for key in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id = %s"
         values = tuple(kwargs.values()) + (user_id,)
+        if 'status' in kwargs:
+            with admin_recovery_transaction(self.db) as uow:
+                return uow.execute(sql, values)
         return self.db.execute(sql, values)
 
     def delete_user(self, user_id: str) -> bool:
@@ -430,15 +434,24 @@ class UserManager:
             bool: 分配成功返回 True，否则 False
         """
 
-        try:
-            # 先删除该用户已有的角色关联
-            delete_sql = "DELETE FROM user_roles WHERE user_id = %s"
-            self.db.execute(delete_sql, (user_id,))
-            # 再插入新的角色关联
-            insert_sql = "INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)"
+        if (not isinstance(role_ids, list)
+                or any(type(role_id) is not int or role_id <= 0 for role_id in role_ids)):
+            raise ValueError("Invalid role identifiers")
+        role_ids = list(dict.fromkeys(role_ids))
+        with admin_recovery_transaction(self.db) as uow:
+            if not uow.fetch_one("SELECT id FROM users WHERE id = %s FOR UPDATE", (user_id,)):
+                raise ValueError("User does not exist")
+            if role_ids:
+                placeholders = ", ".join(["%s"] * len(role_ids))
+                found = uow.fetch_all(
+                    f"SELECT id FROM roles WHERE id IN ({placeholders})", tuple(role_ids)
+                )
+                if {row['id'] for row in found} != set(role_ids):
+                    raise ValueError("Role does not exist")
+            uow.execute("DELETE FROM user_roles WHERE user_id = %s", (user_id,))
             for role_id in role_ids:
-                self.db.execute(insert_sql, (user_id, role_id))
-            return True
-        except Exception as e:
-            logger.error(f"为用户分配角色失败: {e}")
-            return False
+                uow.execute(
+                    "INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)",
+                    (user_id, role_id),
+                )
+        return True
