@@ -1,0 +1,5 @@
+{
+  "root_star_can_reach_private_schema_in_python": true,
+  "no_application_bootstrap": true,
+  "scope": "Python namespace observation; static checker now rejects publishing this source; not runtime sandbox"
+}

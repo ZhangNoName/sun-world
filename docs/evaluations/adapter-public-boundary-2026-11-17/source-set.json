@@ -1,0 +1,25 @@
+{
+  "baseline_head": "4873ed1af9989a7b7b519b901b72b76768b14fa7",
+  "source_tree": "775aa9b132c49053d048c7d2e0a1ce613449b552",
+  "paths": {
+    "apps/api/src/controller/blog_manage.py": "5f0135cf9705fd8c3bf6e55908d535d5a0346a18e700877e1078d9f98df23038",
+    "apps/api/src/controller/user_manage.py": "0b93fa58b53dcf1672695f0a81dde348aaa8bd7a75549b7d10fe3729d2e3ddfb",
+    "apps/api/src/module_composition.py": "fa59db72e9b320d8ee15129ef8595cd7fde470bc62466de00e5227d64cb9c171",
+    "apps/api/src/modules/ai/public.py": "2ad549f773d6da23e0778ac22edb15c8acfb801bb1208b0002d976516c45719b",
+    "apps/api/src/modules/files/public.py": "fcde86dc42ce772373e3b1bea65e3995fbd543390d96aba2d94d0a1c8ecba4ea",
+    "apps/api/src/modules/identity/public.py": "b287f29591262d4a9b1b93309e169241afed9e55f33aad71c504b950def1339e",
+    "apps/api/src/modules/management/public.py": "3e4d1693e69d457a325027f600987176f5aa7b234f83b2a708454826b59efdc1",
+    "apps/api/src/routers/admin/admin.py": "70a50f1870ba4ea22b48656c1255b3a5305a7eaa4b0638d3f376b993438bf3c1",
+    "apps/api/src/routers/ai/__init__.py": "fdf19bc52485c9040bf154e994c06f31bbd615259f56b518f0909a92c2a12a5a",
+    "apps/api/src/routers/auth/auth.py": "bad925733e10bee3ba90527befdea7101854757931beac7e935d8c6bb8498d56",
+    "apps/api/src/routers/file/file.py": "574d2b20e4044f13c8e8aa9b3b05674b45f191fb3ff4327043ab835e150e4f2a",
+    "apps/api/src/type/auth_type.py": "e4eb598ce2e7850ce5ec499652163eefa6d00d9f319f2b274e9adb1bf87d3a6c",
+    "apps/api/tests/test_adapter_http_boundary.py": "b29394a590ca076447124c4d94205bd4941e9dc39085057ca75962fd3b948761",
+    "apps/api/tests/test_adapter_public_boundary.py": "55d9ab99ab865984a47d08f38b6abec4f735474367867a1305ef61247fe00d96",
+    "apps/api/tests/test_module_import_boundary.py": "bb7d4f4da1af4bae0e88790bd3da18fb6bd3e24e7bfc3b2d995dd4d38d2a7db2",
+    "scripts/check-blog-list-query.py": "02d9b687a9c2d289b830cfd837f86487c704e52640d50935c791875d77e67f1b",
+    "scripts/check-module-imports.py": "cad2a4965f485a1fb612b44ac6294ddc7f1c662dae5d111e07edf7d4b464d8f7",
+    "tools/agent-linux-vm/stack-assets.json": "22fc85a4d0fc7710f0237c3484142b381bb32cd39fa8b750c5e417ccd323ccf2",
+    "tools/agent-linux-vm/stack-sources.json": "9d49a760efeb43912236ba1d20d754305dd49736ae78bb9febe3b9db27a6eff6"
+  }
+}

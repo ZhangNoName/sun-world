@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AST architecture lint for backend modules/core; does not execute application code."""
+"""AST architecture lint for the entire backend src tree; does not execute application code."""
 
 import ast
 from dataclasses import dataclass
@@ -26,20 +26,23 @@ class Boundary:
         self.root = Path(source_root)
         self.trees, self.paths, self.bindings, self.exports = {}, {}, {}, {}
         self.errors = set()
+        files = sorted(self.root.rglob('*.py'))
         for directory in ('modules', 'core'):
-            files = sorted((self.root / directory).rglob('*.py'))
-            if not files:
+            if not any(path.is_relative_to(self.root / directory) for path in files):
                 self.errors.add(Violation(directory, 1, 'SOURCE_TREE_REQUIRED'))
-            for path in files:
-                relative = path.relative_to(self.root)
-                module = '.'.join(('src', *relative.with_suffix('').parts))
-                if module.endswith('.__init__'):
-                    module = module[:-9]
-                self.paths[module] = path
-                try:
-                    self.trees[module] = ast.parse(path.read_bytes(), filename=str(relative))
-                except (SyntaxError, ValueError, UnicodeError):
-                    self.error(module, 1, 'INVALID_AST')
+        for path in files:
+            relative = path.relative_to(self.root)
+            module = '.'.join(('src', *relative.with_suffix('').parts))
+            if module.endswith('.__init__'):
+                module = module[:-9]
+            if module in self.paths:
+                self.errors.add(Violation(str(relative), 1, 'DUPLICATE_CANONICAL_MODULE'))
+                continue
+            self.paths[module] = path
+            try:
+                self.trees[module] = ast.parse(path.read_bytes(), filename=str(relative))
+            except (SyntaxError, ValueError, UnicodeError):
+                self.error(module, 1, 'INVALID_AST')
         for module, tree in self.trees.items():
             self.bindings[module] = self.declarations(module, tree.body)
 
@@ -184,16 +187,23 @@ class Boundary:
         if parts[0] in ('modules', 'core'):
             self.error(source, line, 'LOCAL_NAMESPACE_REQUIRED')
         owner = source.split('.')[2] if source.startswith('src.modules.') else None
-        if target in ('src.module_composition', 'module_composition') or target.startswith('src.module_composition.'):
-            self.error(source, line, 'COMPOSITION_BACKFLOW')
-            return
         if not self.exists(target):
             self.error(source, line, 'UNKNOWN_MODULE')
+        restricted = (source == 'src.core' or source.startswith('src.core.')
+                      or source == 'src.modules' or source.startswith('src.modules.'))
+        if target in ('src.module_composition', 'module_composition') or target.startswith('src.module_composition.'):
+            if restricted or target == 'module_composition':
+                self.error(source, line, 'COMPOSITION_BACKFLOW')
+            return
+        # This exact module is the sole private assembly entrypoint. The target
+        # existence check above applies to it too; similarly named files do not qualify.
+        if source == 'src.module_composition':
+            return
         if target == 'src.modules' or target.startswith('src.modules.'):
             other = parts[2] if len(parts) >= 3 else None
-            if source.startswith('src.core'):
+            if source == 'src.core' or source.startswith('src.core.'):
                 self.error(source, line, 'CORE_BUSINESS_IMPORT')
-            elif other != owner:
+            elif owner is None or other != owner:
                 if owner == 'ai' and other == 'agent_runtime':
                     self.error(source, line, 'AI_RUNTIME_BACKFLOW')
                 if len(parts) != 4 or parts[3] != 'public':
@@ -204,8 +214,11 @@ class Boundary:
                     self.error(source, line, 'NON_PUBLIC_EXPORT')
 
     def access(self, source, path, line):
-        if path.startswith('src.module_composition'):
+        if path == 'src.module_composition' or path.startswith('src.module_composition.'):
             self.target(source, 'src.module_composition', line)
+        if path == 'src.modules':
+            self.target(source, path, line)
+            return
         if not path.startswith('src.modules.'):
             return
         parts = path.split('.')
@@ -219,7 +232,7 @@ class Boundary:
 
     def run(self):
         for module in self.trees:
-            if module.endswith('.public'):
+            if module.startswith('src.modules.') and len(module.split('.')) == 4 and module.endswith('.public'):
                 self.facade(module)
         for module, tree in self.trees.items():
             Imports(self, module).visit(tree)
@@ -249,6 +262,10 @@ class Imports(ast.NodeVisitor):
         if not target:
             return
         for alias in node.names:
+            # Local stars can leak already-loaded package namespaces without a
+            # statically declared alias. No runtime namespace simulation here.
+            if alias.name == '*' and (target == 'src' or target.startswith('src.')):
+                self.boundary.error(self.module, node.lineno, 'LOCAL_STAR_IMPORT')
             self.boundary.target(self.module, target, node.lineno, alias.name)
             if target == 'src' and alias.name in ('modules', 'module_composition'):
                 self.boundary.target(self.module, target + '.' + alias.name, node.lineno)
@@ -361,7 +378,7 @@ def main():
     if errors:
         print(f'Module import boundary failed: {len(errors)} violations')
         return 1
-    print('Module import boundary passed (modules/core AST; no application imports)')
+    print('Module import boundary passed (entire src AST; no application imports)')
     return 0
 
 

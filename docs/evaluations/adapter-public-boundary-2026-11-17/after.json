@@ -1,0 +1,46 @@
+{
+  "source_tree": "775aa9b132c49053d048c7d2e0a1ce613449b552",
+  "source_files": 200,
+  "private_non_composition_edges": [],
+  "declared_composition_private_edges": [
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 4,
+      "target": "src.modules.blog.manifest",
+      "members": ["BLOG_MANIFEST", "BLOG_SCHEMAS"]
+    },
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 5,
+      "target": "src.modules.management.manifest",
+      "members": ["MANAGEMENT_MANIFEST"]
+    },
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 14,
+      "target": "src.modules.ai.router",
+      "members": ["router"]
+    },
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 33,
+      "target": "src.modules.agent_runtime.admission",
+      "members": ["RedisRunAdmission"]
+    },
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 34,
+      "target": "src.modules.agent_runtime.application",
+      "members": ["RunApplication"]
+    },
+    {
+      "path": "apps/api/src/module_composition.py",
+      "line": 35,
+      "target": "src.modules.agent_runtime.ledger",
+      "members": ["MySqlRunLedger"]
+    }
+  ],
+  "gate_scope": "all src Python, exact composition private assembly exception; indirect legacy/reflective access not proved",
+  "all_200_source_hashes_bound_to_frozen_tree": true,
+  "independent_cli_cases": 41
+}

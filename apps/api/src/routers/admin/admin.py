@@ -4,7 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app_instance import app
 from src.core.admin_alerts import get_admin_alerts_snapshot
-from src.modules.ai.run_metrics import AiRunMetricsSnapshot, ai_run_metrics
+from src.modules.ai.public import (
+    AiRunMetricsSnapshot, get_ai_run_metrics_snapshot,
+    AiDomainError, AiProviderCatalog, AiProviderCatalogInput, AiService,
+)
 from src.core.audit_log import get_audit_log_snapshot
 from src.core.metrics import get_request_metrics_snapshot
 from src.core.metrics_history import get_metrics_history_snapshot
@@ -19,9 +22,6 @@ from src.type.admin_type import (
 )
 from src.type.telemetry_type import RumMetricsSnapshot
 from src.type.user_type import User
-from src.modules.ai.errors import AiDomainError
-from src.modules.ai.schemas import AiProviderCatalog, AiProviderCatalogInput
-from src.modules.ai.service import AiService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -162,4 +162,4 @@ async def get_admin_logs(
 
 @router.get("/ai/metrics", response_model=ApiResponse[AiRunMetricsSnapshot])
 def get_ai_run_metrics(_current_user=Depends(require_admin)):
-    return ok(data=ai_run_metrics.snapshot())
+    return ok(data=get_ai_run_metrics_snapshot())

@@ -262,7 +262,7 @@ class UserManager:
         normalized_contact = ""
         contact_syntax = "@" in value
         try:
-            from src.modules.identity.normalization import (
+            from src.modules.identity.public import (
                 normalize_email,
                 normalize_phone,
             )

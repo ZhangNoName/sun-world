@@ -1,0 +1,46 @@
+{
+  "source_tree": "775aa9b132c49053d048c7d2e0a1ce613449b552",
+  "manifest_paths": 236,
+  "guest_payload_files": 283,
+  "assets": 67,
+  "all_declared_bytes_match_native_payload": true,
+  "changed_declared_production_sources": [
+    "apps/api/src/controller/blog_manage.py",
+    "apps/api/src/controller/user_manage.py",
+    "apps/api/src/module_composition.py",
+    "apps/api/src/modules/ai/public.py",
+    "apps/api/src/modules/files/public.py",
+    "apps/api/src/modules/identity/public.py",
+    "apps/api/src/modules/management/public.py",
+    "apps/api/src/routers/admin/admin.py",
+    "apps/api/src/routers/ai/__init__.py",
+    "apps/api/src/routers/auth/auth.py",
+    "apps/api/src/routers/file/file.py",
+    "apps/api/src/type/auth_type.py"
+  ],
+  "source_closure_negative_controls": [
+    {
+      "manifest": "old234",
+      "rejected": true
+    },
+    {
+      "manifest": "apps/api/src/modules/files/public.py",
+      "rejected": true
+    },
+    {
+      "manifest": "apps/api/src/modules/identity/public.py",
+      "rejected": true
+    }
+  ],
+  "all_assets_and_fixed_sdk_archive_equal_previous_native": true,
+  "sdk_resealed": false,
+  "strict_console_and_separate_control_fields_recomputed": 19,
+  "console_sha256": "17c88fd3acefb2bf8b9eb692752e8daac42c280e67872769158cf943badd74a4",
+  "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+  "legacy_per_run_verified": false,
+  "formal_synthetic_verified": true,
+  "supplier_requests": 0,
+  "owned_groups_gone": true,
+  "private_run_root_removed": true,
+  "scope": "original six formal guest synthetic scenarios and updated source byte binding; new whole-src gate20/public3/HTTP3 and upload/legacy assembly exercised on macOS, not claimed as guest tests"
+}

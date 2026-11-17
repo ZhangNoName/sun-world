@@ -1,0 +1,8 @@
+{
+  "packages/contracts/openapi.json": "7601d62a06eb07b6bcfb9ae638180e84d20815cd76ec6c0f7161886ea57c3773",
+  "packages/contracts/agent/tool-catalog.json": "94f1166a6aecf8aebbac62f30feef1208c1adb052984efe4365e31000006906e",
+  "head_working_bytes_equal": true,
+  "fresh_complete_json_equal": true,
+  "fresh_raw_format_bytes_equal": false,
+  "fresh_raw_sha256": "5ec39736f7de721c732e633b9bb727eaef175daae994bbc17db8bb3a74937492"
+}

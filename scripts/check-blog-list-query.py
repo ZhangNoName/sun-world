@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps" / "api"))
 
-from src.controller.blog_manage import build_blog_list_query
+from src.modules.blog.repository import build_blog_list_query
 
 
 def assert_contains(value: str, expected: str) -> None:

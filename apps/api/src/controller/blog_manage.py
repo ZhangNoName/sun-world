@@ -10,9 +10,6 @@ from src.database.mysql.mysql_manage import MySQLManager
 from src.type.blog_type import Blog, BlogBase, BlogCreate, BlogDetail, TagNew
 
 
-# Compatibility exports for callers and SQL protocol checks.
-from src.modules.blog.repository import build_blog_list_query, build_blog_list_count_query
-
 
 class BlogManager:
     def __init__(self,baseDB:MySQLManager, contentDB: MongoDBManager):

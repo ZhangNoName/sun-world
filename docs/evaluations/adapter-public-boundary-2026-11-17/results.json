@@ -1,0 +1,502 @@
+{
+  "baseline_head": "4873ed1af9989a7b7b519b901b72b76768b14fa7",
+  "source_tree": "775aa9b132c49053d048c7d2e0a1ce613449b552",
+  "frozen_files": 19,
+  "api_src_files": 200,
+  "old_private_adapter_edges": 11,
+  "new_private_non_composition_edges": 0,
+  "old_private_adapter_files": 7,
+  "permitted_composition_private_edges": 6,
+  "new_public_facades": ["identity", "files"],
+  "final_runs": [
+    {
+      "log": "projection-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-capability-projection-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 7.319,
+      "sha256": "4c22c665429db22142a0969de52869bdc05baaf689ec1d404329fc2131cdb9bd",
+      "unittest_count": 17,
+      "unittest_seconds": 3.187
+    },
+    {
+      "log": "original-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-agent-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 20.08,
+      "sha256": "2ffcdd907eaf5318b4352d51c11c4d24564bf9d73899792a6bc201999c5fe326",
+      "unittest_count": 24,
+      "unittest_seconds": 16.953
+    },
+    {
+      "log": "sdk-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-agent-sdk-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server",
+        "--mongod",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mongo-test-runtime/mongodb-macos-aarch64--8.0.38/bin/mongod",
+        "--sdk-runtime",
+        "/private/tmp/sun-world-adapter-public-sdk-936pa8ep/runtime",
+        "--node",
+        "/Users/zxy/.nvm/versions/node/v24.17.0/bin/node"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 34.281,
+      "sha256": "4d5fef9021515ae82bf186ac9833239a2367e51c25f13143055fa8e784867501",
+      "unittest_count": null,
+      "unittest_seconds": null
+    },
+    {
+      "log": "api-final.log",
+      "command": [
+        "/Users/zxy/.nvm/versions/node/v24.17.0/bin/node",
+        "scripts/run-api-check.mjs"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 76.341,
+      "sha256": "648cfb4798845c069ab97b1ffe814a7f521a738e82e05e2ec3d09c4f463fd5f1",
+      "unittest_count": 1059,
+      "unittest_seconds": 71.057
+    }
+  ],
+  "sdk_original_synthetic_cases": 6,
+  "independent_cli_cases": 41,
+  "independent_review": {
+    "gate_tests": 20,
+    "fresh_process_tests": 3,
+    "http_tests": 3,
+    "working_index_tree_hashes_verified": 19,
+    "remaining_confirmed_blockers": 0,
+    "scope": "narrow offline and real ASGI temporary IO; synthetic principals/faults; not owned/full API/SDK/VM rerun"
+  },
+  "http_verification": {
+    "new_tests": 3,
+    "anonymous_401_and_non_admin_403_before_service_storage_metrics": true,
+    "real_temporary_upload_magic_rejection_and_bytes_uuid_filename": true,
+    "metrics_actual_collector_snapshot": true,
+    "provider_real_dto_422_and_typed_fault_404": true,
+    "provider_success_mock_used": false,
+    "principal_override_scope": "synthetic server principals; real signed-cookie/database scope covered separately by native17 and old24",
+    "test_audit_profile": "fresh import tests audit network connect/DNS, process launch, writable file open and controller/database manager construction; no arbitrary syscall or runtime sandbox claim"
+  },
+  "contract": {
+    "packages/contracts/openapi.json": "7601d62a06eb07b6bcfb9ae638180e84d20815cd76ec6c0f7161886ea57c3773",
+    "packages/contracts/agent/tool-catalog.json": "94f1166a6aecf8aebbac62f30feef1208c1adb052984efe4365e31000006906e",
+    "head_working_bytes_equal": true,
+    "fresh_complete_json_equal": true,
+    "fresh_raw_format_bytes_equal": false,
+    "fresh_raw_sha256": "5ec39736f7de721c732e633b9bb727eaef175daae994bbc17db8bb3a74937492"
+  },
+  "linux": {
+    "source_tree": "775aa9b132c49053d048c7d2e0a1ce613449b552",
+    "manifest_paths": 236,
+    "guest_payload_files": 283,
+    "assets": 67,
+    "all_declared_bytes_match_native_payload": true,
+    "changed_declared_production_sources": [
+      "apps/api/src/controller/blog_manage.py",
+      "apps/api/src/controller/user_manage.py",
+      "apps/api/src/module_composition.py",
+      "apps/api/src/modules/ai/public.py",
+      "apps/api/src/modules/files/public.py",
+      "apps/api/src/modules/identity/public.py",
+      "apps/api/src/modules/management/public.py",
+      "apps/api/src/routers/admin/admin.py",
+      "apps/api/src/routers/ai/__init__.py",
+      "apps/api/src/routers/auth/auth.py",
+      "apps/api/src/routers/file/file.py",
+      "apps/api/src/type/auth_type.py"
+    ],
+    "source_closure_negative_controls": [
+      {
+        "manifest": "old234",
+        "rejected": true
+      },
+      {
+        "manifest": "apps/api/src/modules/files/public.py",
+        "rejected": true
+      },
+      {
+        "manifest": "apps/api/src/modules/identity/public.py",
+        "rejected": true
+      }
+    ],
+    "all_assets_and_fixed_sdk_archive_equal_previous_native": true,
+    "sdk_resealed": false,
+    "strict_console_and_separate_control_fields_recomputed": 19,
+    "console_sha256": "17c88fd3acefb2bf8b9eb692752e8daac42c280e67872769158cf943badd74a4",
+    "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+    "legacy_per_run_verified": false,
+    "formal_synthetic_verified": true,
+    "supplier_requests": 0,
+    "owned_groups_gone": true,
+    "private_run_root_removed": true,
+    "scope": "original six formal guest synthetic scenarios and updated source byte binding; new whole-src gate20/public3/HTTP3 and upload/legacy assembly exercised on macOS, not claimed as guest tests"
+  },
+  "root_format": {
+    "exit_code": 1,
+    "only_existing_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+    "log_sha256": "ae5498cd60954395ad9a55e1ebbbc299e50effa84a68958e2b42e44a8df3a78e",
+    "final_log_sha256": "27af0e2bb22ec44ac4774f747b4e22ba5f87bce45812ec12fb2b2d73daf59943"
+  },
+  "web": {
+    "production_source_files_changed": 0,
+    "full_web_and_worker_not_repeated": true,
+    "existing_dirty_ui_failures_preserved": [
+      "BlogComments.tsx raw label",
+      "SunMarkdownPreview.tsx raw table"
+    ]
+  },
+  "locatable_database_roots": [
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-6c_eequu",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-6mxpjjmt",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-off6hc1m",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-vkyyn04a",
+      "removed": true,
+      "no_process_reference": true
+    }
+  ],
+  "current_sunworld_agent_directories": [],
+  "mac_sdk_cleanup": {
+    "root": "/private/tmp/sun-world-adapter-public-sdk-936pa8ep",
+    "identity": [16777229, 120246328],
+    "identity_uid_verified": true,
+    "no_open_paths": true,
+    "lsof_exit_code": 1,
+    "removed": true,
+    "old_live_failed_roots_untouched": true
+  },
+  "old_live_and_three_failed_sdk_roots_retained": {
+    "/private/tmp/sun-world-blog-qa-7XtElw": true,
+    "/private/tmp/sun-world-sdk-stack-8y7mvqvz": true,
+    "/private/tmp/sun-world-sdk-stack-87zs_mx6": true,
+    "/private/tmp/sun-world-sdk-stack-effdbhnv": true
+  },
+  "services_preserved": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033/": 200,
+    "http://127.0.0.1:3033/.tmp/adapter-public-blog-iv5ma8le/index.html": 200
+  },
+  "blog": {
+    "path": "docs/blog/2026-11-12-dsh-skill-boundaries.md",
+    "category": "后端",
+    "tags": ["架构笔记", "Agent", "DeepSeek Harness"],
+    "article_type": "design",
+    "heading_ids": 6,
+    "strong_count": 10,
+    "preview": "http://127.0.0.1:3033/.tmp/adapter-public-blog-iv5ma8le/index.html",
+    "image_assessment": "reuse existing shared-service text diagram and assembly SVG; interface read-only and assembly examples fit three paragraphs; no duplicate image; SVG unchanged",
+    "renderer_scope": "existing shared dirty draft renderer, not published or whole-web acceptance",
+    "screenshot_sha256": {
+      "blog-dark-desktop.png": "a18c47b91803974768898c45457682e8a97be238730c13e523be3db4689930fa",
+      "blog-dark-mobile.png": "574272c0f143e2b4441d5208fc4efb54166bf97b918bf23875dfa1e1c1959dfa",
+      "blog-desktop.png": "b80ae2d2d86c32f3cb3705e3312c05e1d725984b299e861dee4a7e2a15942809",
+      "blog-figure-desktop.png": "18cab9e69727d09082f25aa8ef0dce829f16530db9bb560c99cfe8dc01d32673",
+      "blog-figure-mobile.png": "6304680b76f9bee5f31b73140c184200cecbf452b3cf4ba5522eb071cca31ba5",
+      "blog-mobile.png": "9f6e72524acded731bdbbd46e693b8cd4a2734ca8ced35611f5113ff18fe1f99",
+      "blog-prose-desktop.png": "6044a3eaefd7c9b26cebb2ca281b6505001f07ef60dafc0e96d41ab0d441658a",
+      "blog-prose-mobile.png": "73707a3e6352a1fb0510d7b746c9191a496350e3ac96d1967ff7ba13f9edb024"
+    },
+    "published": false
+  },
+  "log_bindings": {
+    "adapter-http-initial.log": {
+      "sha256": "88420e7067f05df2db75a541590519f2db64fbd6a9dc27edf9321a4012ff9126",
+      "size": 249
+    },
+    "api-final.log": {
+      "sha256": "648cfb4798845c069ab97b1ffe814a7f521a738e82e05e2ec3d09c4f463fd5f1",
+      "size": 29242
+    },
+    "blog-dark.log": {
+      "sha256": "0f322ab1a14e61fb5d0da655d040304ce76a3a37da446416294a7644dbd2cd07",
+      "size": 199
+    },
+    "blog-preview.log": {
+      "sha256": "25892f536e8b0031c6e17f8b8dccab9e20017899e6bf9c361fb458419ec06579",
+      "size": 943
+    },
+    "catalog-check.log": {
+      "sha256": "1a314db748f2d7373c0921c04e71c30a2bcacad62da5da0f13baca89ada1d201",
+      "size": 28
+    },
+    "control-adapter_composition_factory.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-adapter_src_star_namespace.log": {
+      "sha256": "d062330f30063d93395a946c7a9444d9c6d58a5ef6051f627965480be26c7906",
+      "size": 86
+    },
+    "control-adapter_unknown_public_value.log": {
+      "sha256": "b50719bd62b772d46dd6b9195f8ba0f064e8fcf9648e3a2d7d897a1155647ad7",
+      "size": 95
+    },
+    "control-ai_to_runtime.log": {
+      "sha256": "1e40730da2eb8d00cc44b15aacbdaa6aafda93495dc08b77d22e483e0cabfbf7",
+      "size": 97
+    },
+    "control-bare_business_import.log": {
+      "sha256": "c26e6e3dbc5acf99d07f559d581657c71cf507fbe4474ff93f24d5fc37ca717d",
+      "size": 113
+    },
+    "control-baseline-with-final-gate.log": {
+      "sha256": "d46ff36fc049a4fd798a61d325b5dc74fd524c7275a66c1d2c1c92d48c07b4d1",
+      "size": 575
+    },
+    "control-composition_package_collision.log": {
+      "sha256": "cac25db17ac6e274f322e51bf2fb20ed284b5ae1cc090ac8a8e4e14553441055",
+      "size": 96
+    },
+    "control-composition_similar_name_is_not_exempt.log": {
+      "sha256": "8e0abcfafb00ce3ffdee6cc1c4d75db6621ed35c45dd9a944c92074b601e15fe",
+      "size": 97
+    },
+    "control-composition_unknown_target.log": {
+      "sha256": "3f428978659b2158452abc764c4522272284d6ae6de7785e677a88130373d860",
+      "size": 85
+    },
+    "control-controller_private_edge.log": {
+      "sha256": "9b62910731f6a2341c0e3e8ecc000a15d2704d919565891e350981360550cb87",
+      "size": 99
+    },
+    "control-core_to_business.log": {
+      "sha256": "a02cc39f9caab2165e57058803173d1b4eccccc10fbeae79902d81564c81da0d",
+      "size": 92
+    },
+    "control-cross_star.log": {
+      "sha256": "cc7af217f6c9fd7f5f4735fe2828f50175408e0c23309a31888344dd49881caa",
+      "size": 168
+    },
+    "control-current_tree.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-dynamic_external_constant.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-dynamic_local_alias.log": {
+      "sha256": "069293c35fb377d267cccfbd8a16246435b850ff1575861e46001f9123eea480",
+      "size": 103
+    },
+    "control-dynamic_unknown_target.log": {
+      "sha256": "69cf87ae55370155ca45d97dd083978e2dcc25f0baaadb8745864c994e7e7a8b",
+      "size": 103
+    },
+    "control-facade_mutates_all.log": {
+      "sha256": "61d1cc950415e33cab7e34315b8acae945e3aa1020edc5f08cfa6e6d60dfa6f1",
+      "size": 89
+    },
+    "control-function_local_export_declaration.log": {
+      "sha256": "c618016a62bad9965dbc33070282dbd7aa287011b395501b79d4647ecf9f06ee",
+      "size": 814
+    },
+    "control-keyword_dynamic_module_alias.log": {
+      "sha256": "069293c35fb377d267cccfbd8a16246435b850ff1575861e46001f9123eea480",
+      "size": 103
+    },
+    "control-missing_all_source.log": {
+      "sha256": "32de64106fbae02590f0840012d737906081624001786598e3043792dbecebef",
+      "size": 105
+    },
+    "control-missing_core_tree.log": {
+      "sha256": "1bcaccf80750b109a98deda44af20e1af8aa96762f77292a5b214ab12ad288da",
+      "size": 4517
+    },
+    "control-module_alias_private_attribute.log": {
+      "sha256": "ccb13ae620aebc942ff7a7eae647b76dce96ff5fc60115519e698d5a4b7d7601",
+      "size": 106
+    },
+    "control-module_object_export.log": {
+      "sha256": "a0cd3001c834926d9065a7bae7b092efe284c41c2ceacf5ac37b025708bed142",
+      "size": 94
+    },
+    "control-module_to_composition.log": {
+      "sha256": "3f00f238f27ae4384779f5357f2c77eef0453b0b5d1c209279308c5a555b9932",
+      "size": 109
+    },
+    "control-nested_late_import_alias.log": {
+      "sha256": "69cf87ae55370155ca45d97dd083978e2dcc25f0baaadb8745864c994e7e7a8b",
+      "size": 103
+    },
+    "control-new_src_directory_private_edge.log": {
+      "sha256": "2be2b9385bbab674f32f860ec54e4f62ef1bb1dc764cb903ef68a1f10a44bbf0",
+      "size": 90
+    },
+    "control-new_src_from_package_root.log": {
+      "sha256": "2be2b9385bbab674f32f860ec54e4f62ef1bb1dc764cb903ef68a1f10a44bbf0",
+      "size": 90
+    },
+    "control-new_src_package_root.log": {
+      "sha256": "2be2b9385bbab674f32f860ec54e4f62ef1bb1dc764cb903ef68a1f10a44bbf0",
+      "size": 90
+    },
+    "control-ordinary_facade_has_no_router.log": {
+      "sha256": "b50719bd62b772d46dd6b9195f8ba0f064e8fcf9648e3a2d7d897a1155647ad7",
+      "size": 95
+    },
+    "control-ordinary_facade_has_no_sql.log": {
+      "sha256": "b50719bd62b772d46dd6b9195f8ba0f064e8fcf9648e3a2d7d897a1155647ad7",
+      "size": 95
+    },
+    "control-package_bridge.log": {
+      "sha256": "28ee26fdff9eff86da40d43b4397315fe7cedbd6bf7667f422b3f3bf24828490",
+      "size": 110
+    },
+    "control-private_absolute.log": {
+      "sha256": "28ee26fdff9eff86da40d43b4397315fe7cedbd6bf7667f422b3f3bf24828490",
+      "size": 110
+    },
+    "control-private_relative_nested.log": {
+      "sha256": "09d48b7572ecf3df087a6673db0bd9314765bfd2ace62b6e0d179a29b26ed2da",
+      "size": 110
+    },
+    "control-private_type_checking.log": {
+      "sha256": "86130e4127e86adaf03c48873e9428bb6ab475e629902297ba4e3d52871cc919",
+      "size": 110
+    },
+    "control-public_module_alias.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-public_named_alias.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-router_private_alias.log": {
+      "sha256": "719c812279c611901ae3dabfb843f2927092813eae336fd02ce4fc7bb3499386",
+      "size": 96
+    },
+    "control-shared_export_assignment_alias.log": {
+      "sha256": "f40557428f4a690fb48f4d07176e845737619f46ecb571f1fdd276b5079c6d81",
+      "size": 87
+    },
+    "control-static_not_application_execution.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    },
+    "control-type_relative_private_edge.log": {
+      "sha256": "c1cdfa8a585206bf2ad292426ec25fe4a2f72c20eeed44cf3d118acf903588f0",
+      "size": 93
+    },
+    "control-unknown_public_symbol.log": {
+      "sha256": "7f65b54a123a273e1caf207fe6a009f9d79d8f1c07e3c7134da70d98d4c23de1",
+      "size": 106
+    },
+    "evidence-format.log": {
+      "sha256": "91aec1bc802228e13d7b672e4657228a8aec0f08262a6db64a69b14986eafe2e",
+      "size": 1367
+    },
+    "final-runner.log": {
+      "sha256": "3fff8afe443e29447b6412cf2be057837404071e3d6e8a65ed50357a53027969",
+      "size": 2199
+    },
+    "independent-controls-final.log": {
+      "sha256": "24227aa3e0fe790b6b7ad2187d873f4e292e49e85a368624831c9ae1161ca18d",
+      "size": 7712
+    },
+    "independent-controls-initial.log": {
+      "sha256": "04f7a2171fb6b7253374af5baad9f8959eae8d928aba6cc91e6ce6601809e6d5",
+      "size": 7515
+    },
+    "independent-controls-star-red.log": {
+      "sha256": "b7b6872a1e7f57f02e7a06237fa5428c2a8291a44b0c28087adc834245f286e1",
+      "size": 8037
+    },
+    "linux-stack-final.json.console.log": {
+      "sha256": "6a53268d4775a23d6ed30f683227b0d195502c2ec6dd24635f19400121d9730c",
+      "size": 21440
+    },
+    "linux-stack-final.log": {
+      "sha256": "45ee5e8bbbc68b6a18841980679eb3dd07e214ed1bbce70e238a55c092b30447",
+      "size": 25
+    },
+    "mac-sdk-lsof.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "mac-sdk-prepare.log": {
+      "sha256": "5fc7d02425cbf5c889e786eed291271c0de875f264f48e895d0f4f07aca6d903",
+      "size": 975
+    },
+    "old-gate-baseline.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "openapi-check.log": {
+      "sha256": "ab6a5da4bd8a4ab3d6506599294bb565073686fd8b6c287927506b180816ee8b",
+      "size": 75
+    },
+    "original-stack-final.log": {
+      "sha256": "2ffcdd907eaf5318b4352d51c11c4d24564bf9d73899792a6bc201999c5fe326",
+      "size": 11536
+    },
+    "projection-stack-final.log": {
+      "sha256": "4c22c665429db22142a0969de52869bdc05baaf689ec1d404329fc2131cdb9bd",
+      "size": 4461
+    },
+    "root-format-final.log": {
+      "sha256": "27af0e2bb22ec44ac4774f747b4e22ba5f87bce45812ec12fb2b2d73daf59943",
+      "size": 378
+    },
+    "root-format.log": {
+      "sha256": "ae5498cd60954395ad9a55e1ebbbc299e50effa84a68958e2b42e44a8df3a78e",
+      "size": 378
+    },
+    "sdk-stack-final.log": {
+      "sha256": "4d5fef9021515ae82bf186ac9833239a2367e51c25f13143055fa8e784867501",
+      "size": 715
+    },
+    "source-contract-format.log": {
+      "sha256": "aa0a135c521d03d121c321398718ef814e07e709df7f25d21f91350056418c1c",
+      "size": 112
+    },
+    "src-star-before.log": {
+      "sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "size": 71
+    }
+  },
+  "scope_limitations": [
+    "direct entry into business modules across all API src; main bootstrap/tests/scripts and indirect legacy Auth/controller/type calls not claimed eliminated",
+    "not a Python security sandbox or proof of arbitrary reflective/dataflow absence",
+    "new full-src gate/public import/upload HTTP tests execute on macOS; guest original formal synthetic chain only",
+    "production/official four cases/human/model version/capacity/granular grants remain incomplete"
+  ],
+  "supplier_requests": 0,
+  "proxy_changes": 0,
+  "pushed": false,
+  "deployed": false,
+  "published": false
+}

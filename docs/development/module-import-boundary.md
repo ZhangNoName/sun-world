@@ -41,3 +41,7 @@ root首轮owned原生16中唯一失败为旧fixture仍在service已构造后patc
 实际Linux234源逐字对应281payload/67资产，恰七生产Python变动；原49/9/5/三库SDK6合成过supplier0/legacyfalse，console/control严格19字段和双SHA重算相等。SDK封包与其余66资产均原样，无需重封；新checker在host、17在Mac，不跨范围冒称guest。Web源/契约无变化，不重跑上轮完整Web/Worker；root format仍仅原素材manifest，原UI两失败保持。
 
 详[实证](../evaluations/module-import-boundary-2026-11-17/README.md)。SDK首次新准备目录误在HOME导致配置拒，移自有private/tmp后六场景过，原ACK未确认与新失败TLS证据根保留；自有成功SDK根核inode/uid/无打开文件后删、7日志定位DB根/VM回收，原指定根/缓存/3030/8032/3033保持。博客03同题两段解释、六ID/十重点/原图不变，1280/390明暗过未发布。仅中文本地保存，无push/deploy/pub/代理/付费复跑，原80/123/main210加1删保持。旧适配11私有、间接Auth/controller/type、细粒度授权及原生产/官方/人工门槛仍待，P1/A–D及持续goal未完成；后续CC必须保本文scope与真实/合成/跨平台验收区分。
+
+## 后续规则入口
+
+4873ed1的114源/11适配私有数据为上轮checkpoint；当前门禁已由[适配公开边界](adapter-public-boundary.md)扩展到全部API src200，除唯一组合根外的直接私有入边归0，src星号一律拒。按新协议执行，不把历史范围当当前规则；间接旧Auth/controller/type、main bootstrap与运行时反射仍未由静态门禁证明。

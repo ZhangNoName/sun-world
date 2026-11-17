@@ -263,7 +263,7 @@ P1 Worker 默认只部署隔离测试环境；是否放现有 Lighthouse 由峰�
 2. 覆盖授权拒绝、跨账号、资源变化、重复请求、取消竞争、失联和旧代次；不能仅测试 mock 返回成功。
 3. 新增架构检查：模块 ID/路由重复、依赖环、未登记能力、工具映射冲突、schema/bundle 漂移、Skill hash、非法跨模块 import。**模块重复 ID/HTTP 路由/能力/工具映射、依赖环和生成 schema 漂移已由 API gate 检查；Skill hash、完整跨模块 import 与 bundle 运行握手仍待实现。**
 
-   2026-11-17已补[后端modules/core直接导入门禁](../development/module-import-boundary.md)，public静态导出与组合根注入纳入API runner；四私有边和一回流已迁移。旧适配层/间接依赖及前端等完整跨模块范围仍待，不能把本轮静态直接边当全仓或运行时沙箱完成。
+   2026-11-17已补[后端直接导入门禁](../development/module-import-boundary.md)，后续[适配公开边界](../development/adapter-public-boundary.md)将它扩至全部API src200，11适配私有边迁出；public静态导出/组合根注入/唯一组装例外纳入API runner。间接旧Auth/controller/type、根main bootstrap及前端等完整范围仍待，不能把src直接边当全仓或运行时沙箱完成。
 4. 按 [实施计划](../plans/dsh-platform-implementation.md) 运行对应现有命令与新增测试；文档记录实测和缺口，不能把设计门槛写成通过。
 5. 有兼容迁移、关停/回滚说明和 handoff；涉及写权限与发布的 PR 单独审查，不与 P1 只读问答合并放行。
 

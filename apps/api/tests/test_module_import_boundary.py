@@ -214,6 +214,79 @@ load('src_external')
         shutil.rmtree(self.source / 'core')
         self.assertIn('SOURCE_TREE_REQUIRED', self.codes())
 
+    def test_all_eleven_old_adapter_edges_are_rejected_in_actual_source_copies(self):
+        cases = [
+            ('controller/blog_manage.py', 'from src.modules.blog.repository import build_blog_list_query'),
+            ('controller/user_manage.py', 'from src.modules.identity.normalization import normalize_phone'),
+            ('routers/admin/admin.py', 'from src.modules.ai.run_metrics import ai_run_metrics'),
+            ('routers/admin/admin.py', 'from src.modules.ai.errors import AiDomainError'),
+            ('routers/admin/admin.py', 'from src.modules.ai.schemas import AiProviderCatalog'),
+            ('routers/admin/admin.py', 'from src.modules.ai.service import AiService'),
+            ('routers/ai/__init__.py', 'from src.modules.ai.router import router'),
+            ('routers/auth/auth.py', 'from src.modules.management.policy import ManagementDenied'),
+            ('routers/file/file.py', 'from src.modules.files.storage import store_image'),
+            ('type/auth_type.py', 'from src.modules.identity.errors import IdentityDomainError'),
+            ('type/auth_type.py', 'from src.modules.identity.normalization import normalize_email'),
+        ]
+        for relative, code in cases:
+            path = self.source / relative
+            original = path.read_text()
+            with self.subTest(relative=relative, code=code):
+                self.append(code, path)
+                self.assertIn('PRIVATE_MODULE_IMPORT', self.codes())
+            path.write_text(original)
+
+    def test_adapters_and_new_src_directories_cannot_bypass_public_with_aliases_or_package_roots(self):
+        directory = self.source / 'new_adapter'
+        directory.mkdir()
+        adapter = directory / 'entry.py'
+        for code, expected in [
+            ('import src.modules', 'PRIVATE_MODULE_IMPORT'),
+            ('from src.modules import ai', 'PRIVATE_MODULE_IMPORT'),
+            ('from src.modules.ai import *', 'PRIVATE_MODULE_IMPORT'),
+            ('from src.modules.ai.public import *', 'NON_PUBLIC_EXPORT'),
+            ('import src.modules.ai.public as api\napi.schemas', 'NON_PUBLIC_EXPORT'),
+            ('from ..modules.ai.service import AiService', 'PRIVATE_MODULE_IMPORT'),
+            ('from importlib import import_module as load\nload("src.modules.ai.public")', 'DYNAMIC_IMPORT'),
+            ('import src\npackage = src.modules', 'PRIVATE_MODULE_IMPORT'),
+        ]:
+            with self.subTest(code=code):
+                adapter.write_text(code + '\n')
+                self.assertIn(expected, self.codes())
+        adapter.write_text('from src.modules.ai.public import AiService\nfrom src.module_composition import get_ai_v1_router\n')
+        self.assertEqual(self.codes(), set())
+
+    def test_only_the_exact_composition_root_can_assemble_existing_private_implementations(self):
+        self.assertEqual(self.codes(), set())
+        similar = self.source / 'module_composition_extra.py'
+        similar.write_text('from src.modules.ai.router import router\n')
+        self.assertIn('PRIVATE_MODULE_IMPORT', self.codes())
+        similar.unlink()
+        composition = self.source / 'module_composition.py'
+        self.append('from src.modules.ai.not_present import missing', composition)
+        self.assertIn('UNKNOWN_MODULE', self.codes())
+
+    def test_canonical_file_package_duplicates_are_rejected_without_overwriting_an_ast(self):
+        for relative in ('modules/blog/repository', 'core/response', 'controller/blog_manage'):
+            duplicate = self.source / relative
+            duplicate.mkdir()
+            (duplicate / '__init__.py').write_text('')
+            self.assertIn('DUPLICATE_CANONICAL_MODULE', self.codes())
+            shutil.rmtree(duplicate)
+
+    def test_local_src_stars_cannot_leak_previously_loaded_business_namespaces(self):
+        directory = self.source / 'new_adapter'
+        directory.mkdir()
+        adapter = directory / 'entry.py'
+        for code in ('from src import *\ninternal = modules.ai.schemas.AiStreamEvent',
+                     'from .. import *\ninternal = modules.ai.schemas.AiStreamEvent',
+                     'from src.core import *'):
+            with self.subTest(code=code):
+                adapter.write_text(code + '\n')
+                self.assertIn('LOCAL_STAR_IMPORT', self.codes())
+        adapter.write_text('from math import *\nfrom src.module_composition import get_ai_v1_router\n')
+        self.assertEqual(self.codes(), set())
+
 
 if __name__ == '__main__':
     unittest.main()

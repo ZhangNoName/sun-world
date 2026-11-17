@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜旧适配公开接口与全src导入边界
+
+- 按[协议](development/adapter-public-boundary.md)将七旧适配文件11私有入边迁出，全API src200门禁除唯一组装根六接线边外私有入边0；public只读值/原异常DTO/归一化与存储身份、原AI路由singleton和次序保持，不公开collector/repo/router/SQL。间接Auth/controller/type及根main等仍待，非Python沙箱。
+- 19源树775aa9b132c49053d048c7d2e0a1ce613449b552，API1059/native17/原24/Mac固定SDK三库六合成、独立20/3/3/root41与摘要过；star根命名空间假绿保红修拒，fresh原JSON等价且OpenAPI/catalog字节未改，见[实证](evaluations/adapter-public-boundary-2026-11-17/README.md)。新HTTP是合成身份/真实ASGI和临时IO，不冒称上传真实JWT/DB链。
+- Linux236源/283payload十二生产变化逐字绑、原49/9/5/SDK6合成过supplier0/legacyfalse，原67资产及SDK封包不变，新20/3/3在Mac而非guest；四DB根/成功SDK根/VM回收，旧live/三失败根缓存、原80/123/main210加1删/三服务保持。无Web源变不重跑Web/Worker，原UI/素材失败不动。
+- [博客03](blog/2026-11-12-dsh-skill-boundaries.md)同题三段/六ID/十重点/原图，1280/390明暗过未发布；预览 http://127.0.0.1:3033/.tmp/adapter-public-blog-iv5ma8le/index.html 。中文本地保存，无push/deploy/pub/配置Clash/付费复跑；完整grant与原生产等门槛仍待，A/P1/A–D未完成。CC按新全src/唯一组装规则和验收范围接手，详[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜后端公开接口与静态导入边界
 
 - 按[协议](development/module-import-boundary.md)补modules/core直接AST门禁：九业务目录89+core25，四私有边和一组合根回流迁为public显式导出/registry注入；SSE原对象/两工具v1及OpenAPI/catalog字节保持。旧适配11私有与间接Auth/controller/type未迁，非全仓或Python沙箱保证。

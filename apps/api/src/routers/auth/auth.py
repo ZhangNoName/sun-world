@@ -19,8 +19,7 @@ from src.core.auth.admin_audit import (
 )
 from src.core.request_context import get_request_id
 from src.core.auth import AuthorizationDenied, AuthorizationUnavailable
-from src.modules.management.policy import ManagementDenied
-from src.modules.management.public import CapabilityProjection
+from src.modules.management.public import CapabilityProjection, ManagementDenied
 from src.module_composition import create_capability_projection_service
 from src.core.audit_log import audit_log
 from src.core.error_codes import (

@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新checkpoint：旧适配层公开接口与全src门禁
+
+- 基点4873ed1，上一turn功能/真实验收/本地版本保存属progress；[协议](../../development/adapter-public-boundary.md)先写再同步coding/判官。盘点旧198源七adapter共11私有入边且旧gate实际0；迁至identity/files public原值、AI Service/DTO/error/snapshot+只读getter、ManagementDenied同类；组合根惰性原AI router singleton及legacy→v1次序。移除BlogManager未被业务用的SQL两别名，唯一SQL检查直接白盒所属repo，不公开SQL/collector/repo/router给普通facade。
+- checker扩全部API src200，唯一exact module_composition六私有装配边、其它业务私有入边0；未知模块/新目录/ownerNone包根/相似组装名及canonical文件包冲突均拒，业务/core回流、core→business/ai→runtime及旧声明规则保持。root-star假绿由真实copy CLI与无bootstrap Python命名空间观察证实，补所有本站src绝对/相对star拒LOCAL_STAR_IMPORT，外部math star/真实组装正例保留；不是业务越权或Python沙箱，间接Auth/controller/type仍待。
+- 最终19源775aa9b132c49053d048c7d2e0a1ce613449b552（生产12/测试3/脚本2/Linux合同2）；API1059/71.057秒、MySQL/Redis/Auth/Cookie native17/3.187、原24/16.953、Mac固定SDK三库mTLS六合成34.281过。root41真树CLI及200源向量、判官20/fresh3/HTTP3/19摘要过无确认阻断，见[实证](../../evaluations/adapter-public-boundary-2026-11-17/README.md)。新HTTP用合成principal+真实ASGI/临时上传IO，禁止分支throw spy、Provider fake仅抛typed fault无成功stub，不声称上传路径真实JWT/DB全链。
+- fresh过程测原类/函数身份、无app_instance/AI router、关键连接/进程/文件写open及manager构造审计，惰性装配保原singleton；初-I忽略ENV pycache标志只改显式-B。schema测试初误比json.dumps/Prettier raw bytes，整JSON实际等同只修测试，原OpenAPI/catalog字节保持，40+9+9+9+read1/SQL/catalog gate过；无完整错误日志不伪称已归档。
+- Linux两新public显式234→236及asset source SHA；实际283payload十二生产py变逐字匹配、console/control严格V4 19字段双SHA，原49协议零skip/9隔离/5网关/SDK/正式三库原6合成过supplier0、legacyfalse。旧234/缺任一新public三负例拒，67资产含固定SDK封包原样无需重封/升级/下载。新gate/fresh/上传HTTP在Mac，guest非新上传/main bootstrap验收。
+- 原锁--offline Mac SDK自有/private/tmp HOME外准备，成功后核inode/uid/lsof无打开文件删；四可定位DB根删/ps无引用、当前sunworld-agent-*无目录、VM三库/组/root回收，原live/三失败根及缓存保持。本轮无新原生失败根。root collector首误猜3根实际4，改按实际清单核，不改验证结果。
+- 按sun-world-blog→design修[博客03](../../blog/2026-11-12-dsh-skill-boundaries.md)三段公开接口/只读统计/路由装配；后端/架构笔记、Agent、DeepSeek Harness，六ID十重点，原文本图/SVG沿用无需重复图，1280/390明暗过未发布。预览 http://127.0.0.1:3033/.tmp/adapter-public-blog-iv5ma8le/index.html 。无Web源/合同变化不重跑Web/Worker，原UI两问题/素材format保持，原80/123/main210加1删/三服务保持。
+- 只中文本地保存，无push/deploy/pub/代理/供应商/官方付费复跑/新worktree。后续按总计划继续间接身份/持久化边界与完整授权可授予集合等可本地项，生产目标/恢复备份/官方四题/人工/版本/容量仍待，A/P1/A–D未完成。Claude Code/claude-ds带本协议全src直接/唯一组装/explicit public/metrics只读/无SQL路由导出/主目录隔离与跨平台范围；勿按前轮114/11历史范围执行当前gate。
+
 ### 2026-11-17 最新checkpoint：后端公开接口与静态导入边界
 
 - 基点6728308，上一turn功能/验证/版本保存属progress；[协议](../../development/module-import-boundary.md)先写再同步coding/判官。盘点198 API源，agent_runtime四私有引用与management→组合根一回流迁为ai.public原SSE对象、既有博客工具工厂及显式registry注入；auth getter构造故障仍固定503/no-store/Vary。main本来有module_registry未触原dirty main，local server及相关构造测试最小接线。

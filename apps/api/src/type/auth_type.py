@@ -35,8 +35,7 @@ def normalize_login_identifier(value: object) -> str:
     candidate = str(value or "").strip()
     if not candidate:
         raise ValueError("username must not be blank")
-    from src.modules.identity.errors import IdentityDomainError
-    from src.modules.identity.normalization import normalize_email, normalize_phone
+    from src.modules.identity.public import IdentityDomainError, normalize_email, normalize_phone
 
     if "@" in candidate:
         try:

@@ -9,6 +9,12 @@ def create_module_registry() -> ModuleRegistry:
     return ModuleRegistry((BLOG_MANIFEST, MANAGEMENT_MANIFEST), BLOG_SCHEMAS)
 
 
+def get_ai_v1_router():
+    """Resolve the existing singleton only when the host assembles HTTP routes."""
+    from src.modules.ai.router import router
+    return router
+
+
 def create_capability_projection_service(auth_manager=None, **kwargs):
     from src.modules.management.public import CapabilityProjectionService
     return CapabilityProjectionService(auth_manager, registry=create_module_registry(), **kwargs)

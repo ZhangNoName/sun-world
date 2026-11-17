@@ -1,0 +1,63 @@
+{
+  "facades": {
+    "blog": {
+      "names": [
+        "BlogPublicQueryService",
+        "create_public_queries",
+        "create_public_tools"
+      ],
+      "sha256": "1eb3103389f40a30ecdd4a4390de5fb5d4f061af3880464933355f8a2c2786ef"
+    },
+    "identity": {
+      "names": ["IdentityDomainError", "normalize_email", "normalize_phone"],
+      "sha256": "b287f29591262d4a9b1b93309e169241afed9e55f33aad71c504b950def1339e"
+    },
+    "files": {
+      "names": [
+        "StoredUpload",
+        "UploadValidationError",
+        "store_image",
+        "store_video"
+      ],
+      "sha256": "fcde86dc42ce772373e3b1bea65e3995fbd543390d96aba2d94d0a1c8ecba4ea"
+    },
+    "ai": {
+      "names": [
+        "AgentHistoryTransactions",
+        "agent_answer_blocks",
+        "StructuredModelProxy",
+        "STRUCTURED_MODEL_LIMITS",
+        "MODEL_INPUT_LIMITS",
+        "ModelInputMetadata",
+        "ProviderConfig",
+        "AiStreamEvent",
+        "encode_sse_event",
+        "is_counted_model_proxy",
+        "create_keyless_validation_proxy",
+        "create_blog_qa_proxy",
+        "AiService",
+        "AiProviderCatalog",
+        "AiProviderCatalogInput",
+        "AiDomainError",
+        "AiRunMetricsSnapshot",
+        "get_ai_run_metrics_snapshot"
+      ],
+      "sha256": "2ad549f773d6da23e0778ac22edb15c8acfb801bb1208b0002d976516c45719b"
+    },
+    "management": {
+      "names": [
+        "AdminManagementService",
+        "ManagementScope",
+        "ManagementDenied",
+        "CapabilityProjection",
+        "CapabilityProjectionService"
+      ],
+      "sha256": "3e4d1693e69d457a325027f600987176f5aa7b234f83b2a708454826b59efdc1"
+    }
+  },
+  "route_getter_owner": "src.module_composition",
+  "mutable_metrics_collector_not_exported": true,
+  "sql_builder_compatibility_aliases_removed_from_controller": true,
+  "sql_protocol_check_uses_owner_repository_whitebox": true,
+  "same_class_function_identities_and_lazy_assembly_verified_by_fresh_process_tests": 3
+}

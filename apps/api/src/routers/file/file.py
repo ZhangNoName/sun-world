@@ -16,7 +16,7 @@ from loguru import logger
 from app_instance import app
 from src.controller.file_manager import FileManager
 from src.core.response import ok
-from src.modules.files.storage import (
+from src.modules.files.public import (
     UploadValidationError,
     store_image,
     store_video,

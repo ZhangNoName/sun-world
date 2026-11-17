@@ -1,0 +1,41 @@
+{
+  "star_false_green": {
+    "record_sha256": "9be8da150db943b531cda7a75cddb9ee5d0bbbff2f528ec066f1efd620fd2708",
+    "checker_sha256": "b8099e1ebcc3b0f5ac9748bffe675d7d66e913597b2cf24736b9ea93b2cb54a6",
+    "failed_expected_rejection": {
+      "case": "adapter_src_star_namespace",
+      "expected_exit": 1,
+      "exit_code": 0,
+      "passed": false,
+      "log_sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+      "wall_seconds": 0.27
+    },
+    "before_log_sha256": "665705ae78c478bb148bc8b277f08985f80dfbd09aa3298877121a4c23c3266f",
+    "final_same_control_rejected": true,
+    "interpretation": "static src-root namespace leak, not runtime or business write bypass"
+  },
+  "python_star_namespace_observation": {
+    "root_star_can_reach_private_schema_in_python": true,
+    "no_application_bootstrap": true,
+    "scope": "Python namespace observation; static checker now rejects publishing this source; not runtime sandbox"
+  },
+  "fresh_schema_test_correction": {
+    "reason": "raw json.dumps pretty layout differs from repository Prettier bytes; full JSON equal",
+    "probe": {
+      "packages/contracts/openapi.json": "7601d62a06eb07b6bcfb9ae638180e84d20815cd76ec6c0f7161886ea57c3773",
+      "packages/contracts/agent/tool-catalog.json": "94f1166a6aecf8aebbac62f30feef1208c1adb052984efe4365e31000006906e",
+      "head_working_bytes_equal": true,
+      "fresh_complete_json_equal": true,
+      "fresh_raw_format_bytes_equal": false,
+      "fresh_raw_sha256": "5ec39736f7de721c732e633b9bb727eaef175daae994bbc17db8bb3a74937492"
+    },
+    "original_first_failed_test_log_not_archived_by_root": true,
+    "contract_not_reformatted_or_changed": true
+  },
+  "isolated_python_bytecode_probe_correction": {
+    "reason": "-I ignores PYTHONDONTWRITEBYTECODE environment; explicit -B stops Python pycache write attempts",
+    "io_audit_not_weakened": true,
+    "original_first_failed_test_log_not_archived_by_root": true
+  },
+  "verification_failures_after_frozen_source": 0
+}
