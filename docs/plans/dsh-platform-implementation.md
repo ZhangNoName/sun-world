@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17补A的[9项管理写近期认证](../development/admin-recent-authentication.md)：用户2/角色4/resource3先旧require_admin再活动Cookie严格初次认证，默认600秒且复用identity既有配置；40+9精确schema门禁，读及其余31项未切换。复审P2旧refresh把null取now/str,float转int已修为无效proof归0，有效整数/陈旧时间原继承；真实owned两库/Auth/Cookie/HTTP12、旧stack24、最终API967与工作区Web310单元过，见[实证](../evaluations/admin-step-up-2026-11-17/README.md)。完整API首跑因新schema测试污染父模块失败，隔离子进程后通过，保留失败及旧refresh内存负对照6子例失败；新导出OpenAPI无漂移。原博客案例同题补第4节，5稳定ID/8strong、双尺寸明暗过未发布；原80/123dirty与main210/1/现有服务保持，仅中文本地保存。时间门槛不替代可授予集合/细粒度能力/完整审计或生产恢复，A/P1/A–D未整体完成；不配置Clash或恢复付费复跑。
+
 2026-11-17补阶段A的[最后启用管理员事务保护](../development/admin-recovery-invariant.md)：统一用户status/delete/角色替换、角色code/delete，单连接RC和角色目录锁，最终归零则整笔回滚。原HEAD临时MySQL复现四类漏洞；最终完整API953、native16、原MySQL33及MySQL/Redis/认证HTTP24过，原13并发组保实际LOCK WAIT断言连续三次过。shadow40/旧管理员守卫保持，未新增用户维护HTTP/Agent写能力，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。案例稿与透明流程图双尺寸明暗过未发布；原80/123dirty/服务保留，仅中文本地提交。此处只保护启用角色不归零，近期认证、可授予集合、审计、生产目标盘点及真实恢复仍待，阶段A/P1/A–D未整体完成；Clash配置与官方付费复跑不在范围内。
 
 2026-11-17解除本分支CSS预算问题，[协议与维护](../development/web-css-budget.md)/[实证](../evaluations/web-css-budget-2026-11-17/README.md)：原工作区52362B、独立HEAD51836B均超原51200B，并非仅dirty。10张内联PNG无损RGB合并保alpha/metadata/热点，Chrome两尺寸四底色与ImageIO逐像素、CSSOM12规则/库inline均过；工作区降50104B、最终源码49578B，18 CSS中17 SHA原样，未改预算/资产范围。新露UI门禁的2任务源改BaseUI；最终source-only树完整Web292/所有后续门禁通过，当前工作区309/预算过但原dirty UI2处仍失败，原素材format失败保持。新增前端案例与ECharts透明数据图双尺寸明暗过未发布；两自有源码快照安全清理，原80/123dirty/服务保持，仅中文本地保存。后续继续A恢复边界等剩余本地核对；生产/官方四题/人工等门槛不自动放行，不配置Clash/付费复跑。

@@ -1,0 +1,139 @@
+{
+  "baseline_head": "319b527eab676857ecceb41ecc711355423c2daa",
+  "source_tree": "04211c8b34de3e5f492f2fe37b68194537d857c4",
+  "runs": [
+    {
+      "log": "stack-initial.log",
+      "sha256": "dccd4847c313600281c86150cf1967b97cafdd8bb8008769f2400322edbde8e6",
+      "source_tree": null,
+      "scope": "exploratory before freeze; 11 cases before malformed-refresh roundtrip was added",
+      "tests": 11,
+      "seconds": 1.979,
+      "result": "passed"
+    },
+    {
+      "log": "stack-final.log",
+      "sha256": "55408aa9b860c7b29086bae8e5129e54f52a0bc1ba1172badd5923131d080ee2",
+      "source_tree": "7b697ec21f878e2bc9b3ea2269e7e32fb3e20faf",
+      "scope": "real owned MySQL/Redis/AuthManager/Cookie/HTTP, 12 cases",
+      "tests": 12,
+      "seconds": 1.864,
+      "result": "passed"
+    },
+    {
+      "log": "original-stack-final.log",
+      "sha256": "3e1c38e3baf52ac8a7f884963b8526d76bdfc36326c7a3737699a8bc6df2451d",
+      "source_tree": "7b697ec21f878e2bc9b3ea2269e7e32fb3e20faf",
+      "scope": "original owned stack, synthetic Worker/model/articles",
+      "tests": 24,
+      "seconds": 16.893,
+      "result": "passed"
+    },
+    {
+      "log": "refresh-negative-control.log",
+      "sha256": "f6c709b90d0d65cd15c6fbb11d5e9943164738685b613ebc7e354c727f2bd163",
+      "source_tree": "7b697ec21f878e2bc9b3ea2269e7e32fb3e20faf",
+      "scope": "only previous HEAD refresh method substituted in child memory; expected failing regression",
+      "tests": 1,
+      "seconds": 0.188,
+      "result": "failed",
+      "failure_detail": "failures=6",
+      "expected_failure": true,
+      "suite_exit": 1,
+      "driver_exit": 0
+    },
+    {
+      "log": "api-final.log",
+      "sha256": "ae63215bfe3c0370bce6d4e9282bdfc524a4bb5263190028078a8bea243a98eb",
+      "source_tree": "7b697ec21f878e2bc9b3ea2269e7e32fb3e20faf",
+      "scope": "first full API run; new schema-test namespace pollution",
+      "tests": 967,
+      "seconds": 36.908,
+      "result": "failed",
+      "failure_detail": "failures=2, errors=9"
+    },
+    {
+      "log": "api-frozen-final.log",
+      "sha256": "6639abd6066c787017edabc372c8470f819c73470edca92e0e0707728d4a20f7",
+      "source_tree": "04211c8b34de3e5f492f2fe37b68194537d857c4",
+      "scope": "final complete API after isolated schema-test subprocess",
+      "tests": 967,
+      "seconds": 39.667,
+      "result": "passed"
+    }
+  ],
+  "web_units": {
+    "files": 72,
+    "tests": 310,
+    "seconds": 15.76,
+    "result": "passed",
+    "log_sha256": "6ec6499f7beedb84296aa3afbeb16d30ea4aefe86e808eff33bd1f8c5cf46d74",
+    "scope": "working-tree Web units; production HTTP source unchanged, not full Web gate or live browser/auth E2E"
+  },
+  "baseline_setup_errors": {
+    "count": 2,
+    "issue": "wrong Redis fixture helper name before business tests; corrected to verified_client(environment)"
+  },
+  "verified_named_owned_roots": [
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-slwnjpib",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-iyvdkzr4",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-woj_31w9",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-gd1f8e7t",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-kuxdgo_3",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-b8k9pgny",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-9o9wmkte",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-wg2h0bn2",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-kgtlc0fn",
+      "removed": true,
+      "process_reference": false
+    }
+  ],
+  "existing_services": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033": 200
+  },
+  "read_compatibility_operations": 6,
+  "recent_write_operations": 9,
+  "legacy_admin_operations": 40,
+  "dependency_outage_tests": "injected boundary errors; real Redis/MySQL were not stopped",
+  "csrf_middleware_tested": false,
+  "external_model_used": false,
+  "proxy_config_changed": false,
+  "published": false,
+  "pushed": false,
+  "deployed": false
+}

@@ -756,6 +756,9 @@ class AuthManagerTests(unittest.TestCase):
         db = Db()
         user_manager = UserManager(db)
         auth_manager = AuthManager(user_manager, FakeRedis(), secret_key="test-secret")
+        # This password-persistence test supplies an explicit synthetic recent
+        # session; the real dependency still runs before the business write.
+        auth_manager.get_recent_session_context = lambda token, **kwargs: (1, "synthetic-family")
         test_app = FastAPI()
         test_app.include_router(router)
         test_app.dependency_overrides[get_current_user] = lambda: {
@@ -766,6 +769,7 @@ class AuthManagerTests(unittest.TestCase):
         test_app.dependency_overrides[get_auth_manager] = lambda: auth_manager
 
         with TestClient(test_app, raise_server_exceptions=False) as client:
+            client.cookies.set("access_token", "synthetic-access-cookie")
             response = client.post(
                 "/user/",
                 json={

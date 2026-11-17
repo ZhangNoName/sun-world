@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -247,16 +248,20 @@ class AdminRecoveryTests(unittest.TestCase):
         self.assertEqual(self.db.borrows, 0)
 
     def test_http_conflicts_are_fixed_and_nonadmins_remain_denied(self):
-        from src.routers.auth.auth import get_current_user
+        from src.routers.auth.auth import get_auth_manager, get_current_user
         from src.routers.role.role import get_role_manager, router as role_router
         from src.routers.user.user import get_user_manager, router as user_router
         app = FastAPI()
         app.include_router(role_router)
         app.include_router(user_router)
         app.dependency_overrides[get_current_user] = lambda: {'id': 1, 'roles': [{'code': 'admin'}]}
+        app.dependency_overrides[get_auth_manager] = lambda: SimpleNamespace(
+            get_recent_session_context=lambda token, **kwargs: (1, 'synthetic-family')
+        )
         app.dependency_overrides[get_role_manager] = lambda: self.roles
         app.dependency_overrides[get_user_manager] = lambda: self.users
         client = TestClient(app, raise_server_exceptions=False)
+        client.cookies.set('access_token', 'synthetic-access-cookie')
         for method, url, data in [('DELETE', '/user/1', None), ('DELETE', '/role/1', None),
                                   ('PUT', '/role/1', {'code': 'editor'})]:
             response = client.request(method, url, json=data)

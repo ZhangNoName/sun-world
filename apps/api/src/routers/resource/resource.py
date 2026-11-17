@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from src.controller.resource_manager import ResourceManager
 from app_instance import app
 from src.core.response import ok, fail
-from src.routers.auth.auth import require_admin
+from src.routers.auth.auth import require_admin, require_recent_admin
 from src.type.management_type import ResourceCreateModel, ResourceUpdateModel
 
 # ------------------------------
@@ -28,7 +28,7 @@ def get_resource_manager() -> ResourceManager:
 # Resource 路由
 # ------------------------------
 
-@resource_router.post("/", status_code=status.HTTP_201_CREATED)
+@resource_router.post("/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_recent_admin)])
 async def create_resource(resource: ResourceCreateModel, manager: ResourceManager = Depends(get_resource_manager)):
     resource_id = manager.create_resource(resource.model_dump())
     return ok(data={"id": resource_id}, msg="创建成功")
@@ -49,7 +49,7 @@ async def list_resources(
     res_list = manager.list_resources(page=page, per_page=page_size)
     return ok(data=res_list, msg="获取成功")
 
-@resource_router.put("/{resource_id}")
+@resource_router.put("/{resource_id}", dependencies=[Depends(require_recent_admin)])
 async def update_resource(resource_id: int, data: ResourceUpdateModel, manager: ResourceManager = Depends(get_resource_manager)):
     changes = data.model_dump(exclude_none=True)
     if not changes:
@@ -57,7 +57,7 @@ async def update_resource(resource_id: int, data: ResourceUpdateModel, manager: 
     res = manager.update_resource(resource_id, **changes)
     return ok(data=res, msg="更新成功")
 
-@resource_router.delete("/{resource_id}")
+@resource_router.delete("/{resource_id}", dependencies=[Depends(require_recent_admin)])
 async def delete_resource(resource_id: int, manager: ResourceManager = Depends(get_resource_manager)):
     res = manager.delete_resource(resource_id)
     if not res:

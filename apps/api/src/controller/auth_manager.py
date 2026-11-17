@@ -329,11 +329,18 @@ class AuthManager:
                     + hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()
                 )
             )
+            # Refresh can extend the session, never create primary-login proof
+            # from a missing, malformed or excessively future claim.
+            auth_time = payload.get("auth_time")
+            current_time = int(datetime.now(timezone.utc).timestamp())
+            if (type(auth_time) is not int or auth_time <= 0
+                    or auth_time > current_time + 60):
+                auth_time = 0
             tokens = self._build_tokens(
                 str(user_id),
                 device_id,
                 session_family_id=session_family_id,
-                auth_time=payload.get("auth_time", 0),
+                auth_time=auth_time,
             )
             now = datetime.now(timezone.utc)
             rotation_status = self.db.rotate_session_tokens(
@@ -533,11 +540,14 @@ class AuthManager:
         max_age_seconds: int,
     ) -> tuple[int, str] | None:
         """Return (user_id, session family) after a recent primary login."""
-        if not access_token or not self.verify_token(
+        if type(max_age_seconds) is not int or not 60 <= max_age_seconds <= 3600:
+            raise ValueError("Invalid recent authentication window")
+        verified_user_id = self.verify_token(
             access_token,
             "access",
             check_redis=True,
-        ):
+        ) if access_token else None
+        if not verified_user_id:
             return None
         try:
             payload = jwt.decode(
@@ -545,20 +555,26 @@ class AuthManager:
                 self.secret_key,
                 algorithms=[ALGORITHM],
             )
-            user_id = int(payload["sub"])
-            session_family_id = str(payload["sid"])
-            auth_time = int(payload["auth_time"])
+            user_id = payload["sub"]
+            session_family_id = payload["sid"]
+            auth_time = payload["auth_time"]
             now = int(datetime.now(timezone.utc).timestamp())
         except (JWTError, KeyError, TypeError, ValueError, OSError):
             return None
         if (
-            user_id <= 0
-            or not session_family_id
+            type(user_id) is not str
+            or self._validated_user_id(user_id) != user_id
+            or user_id != verified_user_id
+            or type(session_family_id) is not str
+            or not session_family_id.strip()
+            or len(session_family_id) > 128
+            or type(auth_time) is not int
+            or auth_time <= 0
             or auth_time > now + 60
-            or now - auth_time > max(1, int(max_age_seconds))
+            or now - auth_time > max_age_seconds
         ):
             return None
-        return user_id, session_family_id
+        return int(user_id), session_family_id
 
     def logout(self, token: str, all_devices: bool = False) -> bool:
         """退出登录：单设备 or 所有设备"""

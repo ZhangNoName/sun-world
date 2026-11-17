@@ -1,0 +1,18 @@
+[
+  {
+    "device": "desktop",
+    "width": 1280,
+    "bodyWidth": 1280,
+    "background": "rgb(29, 41, 61)",
+    "scheme": "dark",
+    "loaded": true
+  },
+  {
+    "device": "mobile",
+    "width": 390,
+    "bodyWidth": 390,
+    "background": "rgb(29, 41, 61)",
+    "scheme": "dark",
+    "loaded": true
+  }
+]

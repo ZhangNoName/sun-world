@@ -1,0 +1,25 @@
+{
+  "tree": "04211c8b34de3e5f492f2fe37b68194537d857c4",
+  "paths": {
+    "apps/api/src/controller/auth_manager.py": "573b37872c483019e98849e9b3303900c76e3ecb13577de0ef204030bc5fb090",
+    "apps/api/src/core/auth/recent.py": "a4a3088db85ff7787ce6c8c9d1c2ecdb4689b26d87f036a3b479813a838365e9",
+    "apps/api/src/modules/identity/router.py": "e46884d9a91406048422955dc5e3b77658f93a0c3b836cfed261006d7db367e9",
+    "apps/api/src/routers/auth/auth.py": "2b2970d5f00edd67e6dc52a13077dc52cae01af8dc43cdbfd49fcdae3fd62739",
+    "apps/api/src/routers/resource/resource.py": "8738db672f26ba8069d3b044705ed9d668400646763418250bd380f8917dcbf6",
+    "apps/api/src/routers/role/role.py": "0eb724a80da53c3e1f54f815b619f159e17650d40eeb27819a85982b8609fd6d",
+    "apps/api/src/routers/user/user.py": "da7680224ba598e9c051dacdd73d6e9c37e05ecbd7defe31ccc024d61e3edbb7",
+    "apps/api/tests/integration/test_admin_recent_stack.py": "9e403e33d8f896a359cee588418d44d282451e1e2f2b4e3395791d815218ad27",
+    "apps/api/tests/test_admin_recent_auth.py": "5aedde03b2e4c1ab4e183d80339e19660786e8b265d4482bc0b3fa2d346bdcce",
+    "apps/api/tests/test_admin_recovery.py": "965606a1235b79aee578fe17e7281fd2e7294313b103278c8dfc35622cd6d87b",
+    "apps/api/tests/test_auth_manager.py": "6a72f90146596abae9dba5aa9cfdeb82af1bd9f0e081034cd07830a7f862b6da",
+    "apps/api/tests/test_management_boundaries.py": "2f5cfd24c25ded06add9c737e812d797e5faecaddd1803b9c8f39efb6668aa02",
+    "apps/web/src/service/http.test.ts": "7c4a569b6a50effad7eafb0cef7e5f385535921430b4e545228551b59f74dd93",
+    "scripts/check-admin-policy.py": "195b33fb78a4ba529bc3b2552b68922dc73c732eddbf9a55d795880dfa6f7618",
+    "scripts/test-admin-recent-stack.py": "75303968b837c460e72cfdfd328d997ed885a9c4f465983d4cc6700f48c2c1f3"
+  },
+  "unchanged_dependencies": {
+    "apps/web/src/service/http.ts": "543e1dea65060547706db111a358f9797d28afb01109f9d4c0977694e9e9b565",
+    "scripts/export-openapi.py": "83615a49c45b0230c8e11567e3e5d7f87584be2db22186d136124aeecb38f040",
+    "apps/api/src/core/auth/admin_recovery.py": "b14016e7b06dab4458476fb7e382fc3a947ab7d1f1a338bae9f6f240a7173ff1"
+  }
+}

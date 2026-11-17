@@ -13,6 +13,7 @@ from starlette.concurrency import run_in_threadpool
 from app_instance import app
 from src.controller.auth_manager import AuthManager
 from src.core.auth.admin_shadow import observe_admin_policy
+from src.core.auth.recent import step_up_max_age_seconds
 from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
@@ -227,6 +228,34 @@ def require_admin(request: Request, current_user=Depends(get_current_user)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_error_detail(AUTH_FORBIDDEN, "需要管理员权限"),
         )
+    return current_user
+
+
+def require_recent_admin(
+    request: Request,
+    current_user=Depends(require_admin),
+    auth_manager: AuthManager = Depends(get_auth_manager),
+):
+    """Keep the legacy admin gate and require the same active access cookie."""
+    try:
+        max_age = step_up_max_age_seconds()
+        token = request.cookies.get("access_token", "")
+        context = auth_manager.get_recent_session_context(
+            token, max_age_seconds=max_age,
+        ) if token else None
+    except Exception:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            "AUTH_CONFIGURATION_ERROR", "安全验证服务暂不可用，请稍后再试。",
+        )) from None
+    user_id = current_user.get("id") if isinstance(current_user, dict) else getattr(current_user, "id", None)
+    canonical_id = AuthManager._validated_user_id(user_id)
+    if (not isinstance(context, tuple) or len(context) != 2
+            or type(context[0]) is not int or context[0] <= 0
+            or type(context[1]) is not str or not context[1].strip() or len(context[1]) > 128
+            or canonical_id is None or str(context[0]) != canonical_id):
+        raise HTTPException(status_code=403, detail=_error_detail(
+            "AUTH_STEP_UP_REQUIRED", "此安全操作需要近期登录，请退出后重新登录再试。",
+        ))
     return current_user
 
 

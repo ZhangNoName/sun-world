@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜9项管理写近期认证与刷新证明不升级
+
+- 按[协议](development/admin-recent-authentication.md)切换用户2/角色4/resource3维护写：原40项旧guard保持、9项活动Cookie/初次认证窗口默认600秒、陈旧403，管理读取及其余31项不切换。签名proof严格类型/绑定，普通refresh无效proof归0、合法旧时间原样，重新登录才建新时间；无新增HTTP/Agent写能力。
+- 判官P2旧refresh null→now/str,float→int已修，真实镜像access+refresh八类前403→刷新200/proof0→后403/五表不变，旧函数独立内存负对照按预期6子例失败。最终15源树04211c8b34de3e5f492f2fe37b68194537d857c4，API967/native12/旧stack24/Web310单元过，40+9及新OpenAPI无漂移，见[实证](evaluations/admin-step-up-2026-11-17/README.md)。首次API污染父schema模块失败保留，改新测试子进程后全过；复审无剩余确认阻断。
+- [同题案例](blog/2026-11-17-last-administrator-transaction.md)补近期认证和合成签名前提，后端/原三标签、5稳定ID/8strong，原透明图沿用，1280/390明暗过未发布。预览 http://127.0.0.1:3033/.tmp/admin-recent-blog-r4iyo_3q/index.html 。可定位9 owned根终态清理/ps无引用，原3030/8032/3033和80/123dirty、main210加1删保持；原素材format与2处UI门禁问题不动，310不当完整Web过。
+- 下一步A服务层最小管理能力/可授予范围/完整审计等本地边界，生产目标/真实恢复/人工与版本决策独立待，P1/A–D未整体完成。官方Linux四题失败/停付费复跑保持，只复用Clash Verge、不配置代理。仅中文本地提交、不推送部署；Claude Code/claude-ds先读新协议，保refresh无效proof归0/schema工具独立进程/9项切换范围。详情见[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜最后启用管理员事务保护
 
 - 按[协议](development/admin-recovery-invariant.md)统一用户status/delete/角色替换、角色code/delete：单连接RC与前后角色目录锁，最终无启用admin则整笔回滚；角色替换去重/验证与两关联删除原子，三个已有HTTP操作固定409。原40 shadow/require_admin保持，无新增用户维护HTTP或Agent写入口。

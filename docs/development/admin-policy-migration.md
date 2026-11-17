@@ -2,7 +2,9 @@
 
 日期：2026-11-15。当前分支本地实现，未切换鉴权、未部署。阶段 A 的后续范围见[分阶段计划](../plans/dsh-platform-implementation.md)。
 
-2026-11-17本地增量：按[管理员事务协议](admin-recovery-invariant.md)统一保护 UserManager status/delete/角色替换、RoleManager code/delete。单连接 RC、角色目录锁、提交前检查，最后启用管理员冲突返回固定409；角色替换及角色/两关联表删除原子。真实 owned MySQL 验证回滚、并发等待与重新判断、零目录修复/拒绝和并发新增未绑定角色，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。保留原40项 shadow 基线与旧 require_admin，不新增用户更新/角色分配HTTP入口或Agent写权限；近期认证、可授予集合、审计与真实恢复演练仍待。
+2026-11-17本地增量：按[管理员事务协议](admin-recovery-invariant.md)统一保护 UserManager status/delete/角色替换、RoleManager code/delete。单连接 RC、角色目录锁、提交前检查，最后启用管理员冲突返回固定409；角色替换及角色/两关联表删除原子。真实 owned MySQL 验证回滚、并发等待与重新判断、零目录修复/拒绝和并发新增未绑定角色，见[实证](../evaluations/admin-recovery-2026-11-17/README.md)。保留原40项 shadow 基线与旧 require_admin，不新增用户更新/角色分配HTTP入口或Agent写权限；可授予集合、审计与真实恢复演练仍待。
+
+随后按[近期认证协议](admin-recent-authentication.md)明确切换9项用户/角色/resource维护写入（2+4+3）。它们仍先经过旧require_admin，再检查同一活动access Cookie的初次认证时间，默认600秒/配置60–3600；陈旧403、配置/校验异常固定503，管理读取与其余31项保持原规则。普通refresh有效整数原样继承，缺失/畸形/超未来proof归0，不能生成新初次认证。门禁同时锁定40+9集合，真实两库/认证/HTTP及客户端拒绝重放测试见[实证](../evaluations/admin-step-up-2026-11-17/README.md)。这9项的时间校验已本地验证，不将它当作目标生产账号恢复、可授予范围或完整审计。
 
 ## 源码盘点
 

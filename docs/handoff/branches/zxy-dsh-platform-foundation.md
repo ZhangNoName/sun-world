@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：9项管理写近期认证与刷新proof不升级
+
+- 持续目标开发/review/验证/中文本地保存，基点319b527。按[新协议](../../development/admin-recent-authentication.md)切换用户2/角色4/resource3维护写，原require_admin依赖40项全保留；近期9集合由schema-only gate精确核。默认600秒/60–3600沿用identity共用parser，旧身份关联错误保持；陈旧403 AUTH_STEP_UP_REQUIRED，配置/校验异常固定503，Cookie与旧守卫user一致，body/Header不替代证明。读取及其余31项未切换，无新HTTP/Agent写能力。
+- 主要源：core/auth/recent.py、auth_manager两个方法、auth/user/role/resource routers、identity配置wrapper、check-admin-policy.py；新test_admin_recent_auth、两旧管理fake与密码哈希单例只加明确recent stub/cookie；root维护native12/launcher与Web http403不refresh/replay单例。严格proof非bool正int、canonical sub、sid非空有界、age<=窗口/future<=60。普通refresh无效proof归0，有效原样；重新primary login才取新时间。
+- 原HEAD真实两库/Auth/Cookie/HTTP验证700秒仍可POST角色201+1行，signed str/float proof亦accepted。判官确认P2：原refresh null→now、str/float→int可洗白；已修且真实镜像access+refresh八类前403→refresh200/proof0→后403/五表原样。独立owned子进程只恢复旧refresh AST，新case1按预期6子例失败，库清理、仓库无回改；不能把全部6例都说成得到权限。
+- 最终15源/source-only树04211c8b34de3e5f492f2fe37b68194537d857c4，完整API967/39.667秒、native12/1.864秒、旧真实两库Auth/HTTP24/16.893秒、工作区Web72文件310/15.76秒全过，实证在[报告](../../evaluations/admin-step-up-2026-11-17/README.md)。native/旧stack执行树7b697ec21f878e2bc9b3ea2269e7e32fb3e20faf仅新schema单测不同，生产/native字节原样。Web生产HTTP源未变，仅实际client回调单测；不冒称live browser/SDK/完整Web E2E。
+- 完整API967首跑2fail/9error系新schema测试父进程build_schema_app替sys.modules，污染应用配置/关闭/上传；仅改新测试为sys.executable固定gate子进程/30s/40+9与父模块identity断言，相关同进程34/34、判官14/namespace与最终full过。初期Mock依赖422/PublicUser stub500和基线Redis helper误名两次仅宿主错误；最终实证保本轮有影响的失败。新OpenAPI导出与既有JSON完全一致，不覆盖原契约。
+- sun-world-blog→case-study同题修订[管理员案例](../../blog/2026-11-17-last-administrator-transaction.md)及博客03边界链接，后端/架构笔记、权限管理、数据库事务。沿用原透明事务图、无重复新图，原4ID保留/新增近期1ID，共5章8重点；合成已签名且活动Redis前提明确。1280/390明暗图文及新段落人工查看、无缩进溢出/双星，图360/342。初截图滚动后空白只修ignored observer为instant/双帧/viewport断言再拍，未改产品。预览 http://127.0.0.1:3033/.tmp/admin-recent-blog-r4iyo_3q/index.html ，自有非Git目录留查看，旧预览不覆盖，未发布。
+- 报告可定位9 owned根终态移除/ps无引用；原3030/8032/3033均200，旧live/failed roots/Linux缓存/密钥/模型目录/Clash不动。diff过，根format仍仅原素材manifest；当前原2 UI门禁问题保持，本轮仅Web测试变动/无生产前端源，不用310单元声称完整Web过。原80/123状态与main原210加1删保留，仅中文本地提交、不推送部署。
+- 下一步A的最小可授予集合、服务层管理能力/完整审计等可本地验证边界，生产账号/目标库/恢复/人工与版本决策独立待；P1/A–D未整体完成，官方Linux四题失败/停付费复跑保持。用户只复用Clash Verge，不新增代理。Claude Code/claude-ds接手先读上述协议，特别保refresh无效proof归0、schema工具须独立进程和9项切换范围。
+
 ### 2026-11-17 最新 checkpoint：最后启用管理员事务不变量
 
 - 持续目标按计划开发/review/验证/中文本地保存，基点8d62886。本轮回到A恢复边界，[协议](../../development/admin-recovery-invariant.md)统一五类manager写：用户status/delete/角色替换、角色code/delete。单连接RC，按roles主键锁前后目录，最终仍至少一名status1且Python规范化admin用户才commit；固定LastAdministratorError、现有user DELETE/role PUT/DELETE409，无账号身份。原40shadow与require_admin保持，无新HTTP/Agent写入口。

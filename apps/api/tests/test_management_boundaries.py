@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -62,7 +63,7 @@ class ManagementBoundaryTests(unittest.TestCase):
         self.assertEqual(roles[1]["resource_ids"], [])
 
     def test_partial_updates_are_optional_but_empty_payloads_are_rejected(self):
-        from src.routers.auth.auth import get_current_user
+        from src.routers.auth.auth import get_auth_manager, get_current_user
         from src.routers.resource.resource import (
             get_resource_manager,
             resource_router,
@@ -76,9 +77,13 @@ class ManagementBoundaryTests(unittest.TestCase):
             "id": 1,
             "roles": [{"code": "admin"}],
         }
+        app.dependency_overrides[get_auth_manager] = lambda: SimpleNamespace(
+            get_recent_session_context=lambda token, **kwargs: (1, 'synthetic-family')
+        )
         app.dependency_overrides[get_role_manager] = lambda: object()
         app.dependency_overrides[get_resource_manager] = lambda: object()
         client = TestClient(app, raise_server_exceptions=False)
+        client.cookies.set('access_token', 'synthetic-access-cookie')
 
         self.assertEqual(client.put("/role/1", json={}).status_code, 422)
         self.assertEqual(client.put("/resource/1", json={}).status_code, 422)

@@ -48,18 +48,20 @@ def main():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     app = module.build_schema_app()
-    from src.routers.auth.auth import require_admin
-    from src.core.auth.admin_shadow import ADMIN_OPERATIONS
+    verify_admin_policy(app.routes)
+    print("Admin policy baseline matches 40 guarded HTTP operations and 9 recent-authentication writes (schema-only).")
 
-    actual = guarded_operations(app.routes, require_admin)
-    missing, stale = actual - ADMIN_OPERATIONS, ADMIN_OPERATIONS - actual
-    if missing or stale:
-        for operation in sorted(missing):
-            print("Unreviewed admin operation:", *operation)
-        for operation in sorted(stale):
-            print("Missing admin guard or removed operation:", *operation)
-        raise SystemExit(1)
-    print(f"Admin policy baseline matches {len(actual)} guarded HTTP operations (schema-only).")
+
+def verify_admin_policy(routes):
+    from src.routers.auth.auth import require_admin, require_recent_admin
+    from src.core.auth.admin_shadow import ADMIN_OPERATIONS
+    from src.core.auth.recent import ADMIN_STEP_UP_OPERATIONS
+
+    for guard, expected in ((require_admin, ADMIN_OPERATIONS),
+                            (require_recent_admin, ADMIN_STEP_UP_OPERATIONS)):
+        actual = guarded_operations(routes, guard)
+        if actual != expected:
+            raise ValueError("Admin policy operation set mismatch")
 
 
 if __name__ == "__main__":

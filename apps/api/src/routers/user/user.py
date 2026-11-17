@@ -11,7 +11,7 @@ from src.type.user_type import User, UserCreateResult, UserPage, UserPublic
 from src.core.response import ok, fail
 from src.core.response import ApiResponse
 from src.core.error_codes import COMMON_INTERNAL_ERROR, COMMON_NOT_FOUND
-from src.routers.auth.auth import get_auth_manager, get_current_user, require_admin
+from src.routers.auth.auth import get_auth_manager, get_current_user, require_admin, require_recent_admin
 
 
 # 创建用户 API 路由
@@ -28,7 +28,7 @@ def get_user_manager() -> UserManager:
 
 
 # 创建新用户
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult], dependencies=[Depends(require_admin)])
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ApiResponse[UserCreateResult], dependencies=[Depends(require_recent_admin)])
 async def create_user(
     user: User,
     auth_manager: AuthManager = Depends(get_auth_manager),
@@ -119,7 +119,7 @@ async def get_users_paginated(
 
 
 # 删除指定用户
-@router.delete("/{user_id}", response_model=ApiResponse[bool], dependencies=[Depends(require_admin)])
+@router.delete("/{user_id}", response_model=ApiResponse[bool], dependencies=[Depends(require_recent_admin)])
 async def delete_user(user_id: str, user_manager: UserManager = Depends(get_user_manager)):
     """
     停用指定 ID 的用户

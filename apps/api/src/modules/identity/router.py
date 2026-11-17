@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app_instance import app
 from src.core.response import ApiResponse, ok
+from src.core.auth.recent import step_up_max_age_seconds
 from src.routers.auth.auth import (
     get_cookie_settings,
     get_current_user,
@@ -99,20 +100,13 @@ def _require_access_cookie_user_id(
 
 def _step_up_max_age_seconds() -> int:
     try:
-        value = int(os.getenv("AUTH_STEP_UP_MAX_AGE_SECONDS", "600"))
+        return step_up_max_age_seconds()
     except (TypeError, ValueError) as exc:
         raise IdentityDomainError(
             "AUTH_CONFIGURATION_ERROR",
             "安全验证配置无效。",
             status_code=503,
         ) from exc
-    if value < 60 or value > 3600:
-        raise IdentityDomainError(
-            "AUTH_CONFIGURATION_ERROR",
-            "安全验证配置无效。",
-            status_code=503,
-        )
-    return value
 
 
 def _enforce_oauth_start_rate_limit(request: Request, service: IdentityService) -> None:

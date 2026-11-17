@@ -137,6 +137,28 @@ describe('HTTP auth recovery', () => {
     expect(harness.refreshSession).not.toHaveBeenCalled()
   })
 
+  it('does not refresh or replay a write requiring a new primary login', async () => {
+    await expect(
+      rejectResponse({
+        response: {
+          status: 403,
+          data: {
+            code: 'AUTH_STEP_UP_REQUIRED',
+            msg: '此安全操作需要近期登录，请退出后重新登录再试。',
+          },
+          headers: {},
+        },
+        config: { url: '/role/', method: 'post' },
+      })
+    ).rejects.toMatchObject({
+      code: 'AUTH_STEP_UP_REQUIRED',
+      status: 403,
+    })
+
+    expect(harness.refreshSession).not.toHaveBeenCalled()
+    expect(harness.serviceRequest).not.toHaveBeenCalled()
+  })
+
   it('refreshes and replays a business envelope token-expired response', async () => {
     harness.refreshSession.mockResolvedValue(undefined)
     harness.serviceRequest.mockResolvedValue({ status: 200, data: 'ok' })
