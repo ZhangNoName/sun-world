@@ -18,7 +18,7 @@ def _lock_roles(uow):
 
 
 @contextmanager
-def admin_recovery_transaction(db):
+def admin_recovery_transaction(db, *, before_commit=None):
     """Commit only if the final state has an enabled administrator.
 
     Directory row locks serialize participating writers across processes. The
@@ -44,4 +44,6 @@ def admin_recovery_transaction(db):
         )
         if not enabled:
             raise LastAdministratorError()
+        if before_commit is not None:
+            before_commit(uow)
         uow.commit()

@@ -1,0 +1,812 @@
+{
+  "version": "sun-world-linux-native-validation/4",
+  "host": {
+    "version": "sun-world-linux-host-result/1",
+    "started": true,
+    "stopped": true,
+    "reason": "completed"
+  },
+  "guest_probe": {
+    "version": "sun-world-linux-guest-probe/1",
+    "platform": "linux",
+    "architecture": "arm64",
+    "node": "v24.17.0",
+    "kernel": "6.8.0-147-generic",
+    "cpu_count": 2,
+    "memory_bytes": 8310104064,
+    "test_host_clock_seed_applied": true,
+    "clock_before_seed_seconds": 5,
+    "cgroup2_mounted": true,
+    "required_controllers": ["memory", "pids"],
+    "namespace_probe_succeeded": true,
+    "network_devices_other_than_loopback": 0,
+    "per_run_isolation_verified": false
+  },
+  "protocol_tests": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "linux_environment_boot_verified": true,
+  "linux_per_run_isolation_verified": false,
+  "supplier_requests": 0,
+  "console_sha256": "0fc1497a614f3fc5080be9b6784860fd70911f39b59b640b9f7c396f7ee02c4f",
+  "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+  "containment": {
+    "version": "sun-world-linux-containment-result/1",
+    "cases": 9,
+    "memory_max_bytes": 536870912,
+    "pids_max": 64,
+    "memory_oom_kills": 4,
+    "pids_limit_events": 1,
+    "cold_pid_abort_signal_observed": true,
+    "cold_pids_limit_events": 2,
+    "unknown_leaf_refused": true,
+    "restarted_factory_refused_live_tree": true,
+    "filesystem_and_capabilities": true,
+    "cross_run_visibility": true,
+    "cancel_tree_reaped": true,
+    "deadline_tree_reaped": true,
+    "cgroups_removed": true,
+    "workspaces_removed": true,
+    "gateway_allow_path_verified": false,
+    "sdk_stack_verified": false
+  },
+  "linux_resource_filesystem_containment_verified": true,
+  "gateway": {
+    "version": "sun-world-linux-gateway-result/1",
+    "cases": 5,
+    "approved_heartbeat_requests": 3,
+    "mutual_tls_verified": true,
+    "server_name_rejected": true,
+    "missing_client_certificate_rejected": true,
+    "raw_ipv4_denied": true,
+    "raw_ipv6_denied": true,
+    "root_loopback_denied": true,
+    "udp_dns_denied": true,
+    "own_loopback_allowed": true,
+    "cross_run_socket_hidden": true,
+    "active_stream_cancelled": true,
+    "relay_listener_and_connections_closed": true,
+    "cgroups_removed": true,
+    "workspaces_removed": true,
+    "supplier_requests": 0,
+    "database_requests": 0
+  },
+  "sdk": {
+    "version": "sun-world-linux-sdk-result/1",
+    "fixed_sdk_version": "0.2.2-rc.1",
+    "synthetic_model_responses": 3,
+    "sdk_wait_cancel_model_responses": 1,
+    "idempotent_single_start": true,
+    "cancel_before_start": true,
+    "active_sdk_cancel": true,
+    "cleanup_failure_retained_slot": true,
+    "root_uuid_receipts_result": true,
+    "mutual_tls_and_gateway_socket": true,
+    "real_supplier_requests": 0,
+    "real_database_requests": 0,
+    "memory_max_bytes": 536870912,
+    "pids_max": 64,
+    "maximum_memory_peak_bytes": 113364992,
+    "executions_reaped": 2,
+    "relay_connections_closed": true,
+    "cgroups_empty": true
+  },
+  "linux_gateway_egress_verified": true,
+  "linux_sdk_synthetic_verified": true,
+  "stack_assets": {
+    "version": "sun-world-linux-stack-assets-result/1",
+    "python": "3.12.13",
+    "architecture": "aarch64",
+    "mysql": "8.4.13",
+    "mongo": "8.0.38",
+    "redis": "7.0.15",
+    "locked_wheels": 36,
+    "native_imports_loaded": true
+  },
+  "formal_stack": {
+    "version": "sun-world-linux-formal-stack-result/1",
+    "cases": 6,
+    "sdk_executions": 6,
+    "synthetic_model_requests": 10,
+    "tool_calls": 4,
+    "formal_api_and_three_databases": true,
+    "mutual_tls": true,
+    "success_and_recovery": true,
+    "explicit_cancel": true,
+    "tls_disconnect": true,
+    "live_session_revocation": true,
+    "withdraw_before_commit": true,
+    "worker_crash_frozen_cgroup_reaped": true,
+    "unknown_ack_quota_retained": true,
+    "parent_recovery_positive_control": true,
+    "sdk_group_already_gone_before_parent": true,
+    "normal_worker_acks": 5,
+    "parent_cgroup_recoveries": 1,
+    "memory_max_bytes": 536870912,
+    "pids_max": 64,
+    "maximum_memory_peak_bytes": 113446912,
+    "relays_closed": true,
+    "cgroups_removed": true,
+    "workspaces_removed": true,
+    "real_supplier_requests": 0
+  },
+  "stack_resources": {
+    "version": "sun-world-linux-stack-resources/1",
+    "database_processes_stopped": true,
+    "database_roots_removed": true,
+    "owned_test_group_gone": true
+  },
+  "linux_formal_stack_synthetic_verified": true,
+  "guest_build": {
+    "assets": {
+      "PyJWT-2.10.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb",
+        "size": 22997
+      },
+      "annotated_doc-0.0.5-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101",
+        "size": 5302
+      },
+      "annotated_types-0.7.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
+        "size": 13643
+      },
+      "anyio-4.12.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "d405828884fc140aa80a3c667b8beed277f1dfedec42ba031bd6ac3db606ab6c",
+        "size": 113592
+      },
+      "bubblewrap.deb": {
+        "sha256": "dce3a2e5f0302eab717a64fe9c9411fe2d40469e2a7946e0f2ce1420a61025c3",
+        "size": 49976
+      },
+      "certifi-2026.1.4-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c",
+        "size": 152900
+      },
+      "cffi-2.0.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "b21e08af67b8a103c71a250401c78d5e0893beff75e28c53c98f4de42f774062",
+        "size": 220097
+      },
+      "click-8.3.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6",
+        "size": 108274
+      },
+      "cryptography-46.0.3-cp311-abi3-manylinux_2_28_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "6eae65d4c3d33da080cff9c4ab1f711b15c1d9760809dad6ea763f3812d254cb",
+        "size": 4299615
+      },
+      "dnspython-2.8.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af",
+        "size": 331094
+      },
+      "ecdsa-0.19.1-py2.py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "30638e27cf77b7e15c4c4cc1973720149e1033827cfd00661ca5c8cc0cdb24c3",
+        "size": 150607
+      },
+      "email_validator-2.3.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4",
+        "size": 35604
+      },
+      "fastapi-0.141.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "bfb91aa2d334c61cb35ba9a116fc123b3d3df31640b801cf57a7a78ec3f603b3",
+        "size": 131954
+      },
+      "h11-0.16.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+        "size": 37515
+      },
+      "httpcore-1.0.9-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55",
+        "size": 78784
+      },
+      "httpx-0.28.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad",
+        "size": 73517
+      },
+      "idna-3.19-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "815e7be7a7806d54abb586dc943addc79e8b2ee16915059658cbeff4b1b43bf4",
+        "size": 68550
+      },
+      "kernel": {
+        "sha256": "353bab8eeaad9caf931dd85fd7a7bf8800d2669d759c0369ffaba7abc03a7aff",
+        "size": 18600927
+      },
+      "libaio1.deb": {
+        "kind": "library",
+        "sha256": "1bcb0d9c08aa35298741b1c68904844e9b71ebf64f15b3e05e6ec6f3fa01d93b",
+        "size": 7018
+      },
+      "libatomic1.deb": {
+        "kind": "library",
+        "sha256": "fdeab74e7ad8572cf69c7024e8040c7ac851f6e667d35f0d429e7a0352840f73",
+        "size": 11604
+      },
+      "libbrotli1.deb": {
+        "kind": "library",
+        "sha256": "911411fb6fdfb4ab91dd4242f5a0a5e1f47b38e003a25c8dc7730238cb323e18",
+        "size": 339950
+      },
+      "libcurl4t64.deb": {
+        "kind": "library",
+        "sha256": "41fa5964da7f422e0729d2355317254e3ee1a28eda9eba70423ed43f77cc7477",
+        "size": 337276
+      },
+      "libgssapi-krb5-2.deb": {
+        "kind": "library",
+        "sha256": "7a13651d117e3b8f06139f4aac2184d4efaa8b5d375954b5229f0a332b3d6aeb",
+        "size": 141730
+      },
+      "libjemalloc2.deb": {
+        "kind": "library",
+        "sha256": "f7f2bc5b78a8cd6cdcadc8e6b48b4055171e97d368ea84070b73c0c0d4807885",
+        "size": 204324
+      },
+      "libk5crypto3.deb": {
+        "kind": "library",
+        "sha256": "f05865643982afcec53b08c20e5e69be364f632dd63342009eec99f2ceb180c9",
+        "size": 85774
+      },
+      "libkeyutils1.deb": {
+        "kind": "library",
+        "sha256": "d141e94ed3b32ea6540f2e927a83b3d42cd4378256a1aad60cda583ffdbd78af",
+        "size": 9654
+      },
+      "libkrb5-3.deb": {
+        "kind": "library",
+        "sha256": "0ba099c96bfe18c168e0c12f92408c7a389566692db959be4afc88bd23466963",
+        "size": 349720
+      },
+      "libkrb5support0.deb": {
+        "kind": "library",
+        "sha256": "62d276c37b371c0d48de636d14f55d12f93aa18164ffe16d6fa66a81caeacf74",
+        "size": 35356
+      },
+      "libldap2.deb": {
+        "kind": "library",
+        "sha256": "60893ca2782c2e52dc3b7b192be0169228beb91f7c87e93abaeca5871c5f16ee",
+        "size": 195858
+      },
+      "liblzf1.deb": {
+        "kind": "library",
+        "sha256": "13aa9cd5a4e8db06f2ae79eaad2d8876b3a59b0906de200ad792ad585ca31f7a",
+        "size": 7426
+      },
+      "libnghttp2-14.deb": {
+        "kind": "library",
+        "sha256": "ec812e0b82dfb315b140020f4c8434191a89cf42c49dbb82605d0892b6783b59",
+        "size": 74758
+      },
+      "libnuma1.deb": {
+        "kind": "library",
+        "sha256": "fb1de2dbe2a22cb59753c2ec622575a408d1ade28a9b090acc4c59d247462eb4",
+        "size": 23710
+      },
+      "libpsl5t64.deb": {
+        "kind": "library",
+        "sha256": "886d485c74567b855bcd19b6f353a769a08b58c111b2d8275a908a469c15d4bf",
+        "size": 57436
+      },
+      "librtmp1.deb": {
+        "kind": "library",
+        "sha256": "fb771b2743120d9d44ee9989fd485205680976f7bf89f2f1ac5df50238ea1db7",
+        "size": 57804
+      },
+      "libsasl2-2.deb": {
+        "kind": "library",
+        "sha256": "05da24adf2b95285ce7eaf9a2ea902fbf4f756a796c8adbfd221d746035df44b",
+        "size": 54660
+      },
+      "libsasl2-modules-db.deb": {
+        "kind": "library",
+        "sha256": "ee8237dfd0d26df4d5fbfd3a9b132ae9f34f05b4508176b8bd1839f12739d94c",
+        "size": 21552
+      },
+      "libssh-4.deb": {
+        "kind": "library",
+        "sha256": "f1b8da917a3d65ca77918027206b55b69d62795df2676c39828d4439bc97e68f",
+        "size": 192306
+      },
+      "loguru-0.7.3-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c",
+        "size": 61595
+      },
+      "mongo.tar.gz": {
+        "kind": "mongo",
+        "sha256": "178f6a9ef70637626f44f9edda779848bb8c72000cd5f8f46c9eb5b2aa1d26d7",
+        "size": 99529198
+      },
+      "mysql.tar.xz": {
+        "kind": "mysql",
+        "sha256": "6531bb50f64c986a2abdab6b647cbd553e8740b3e5d3867f5415e33568879fc9",
+        "size": 823781920
+      },
+      "node.tar.xz": {
+        "sha256": "67324b9e515e7d13da72571a5dd522bb23145a820f7dde15497897e466759ab3",
+        "size": 30386680
+      },
+      "openssl.deb": {
+        "sha256": "07fa666e2dfe758e5c4e19ccc695a19e8a56fb512fa55bd7de89219a1e65d372",
+        "size": 985334
+      },
+      "original-initrd": {
+        "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+        "size": 29297293
+      },
+      "orjson-3.11.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "ed24250e55efbcb0b35bed7caaec8cedf858ab2f9f2201f17b8938c618c8ca6f",
+        "size": 132074
+      },
+      "pyasn1-0.6.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629",
+        "size": 83135
+      },
+      "pycparser-2.23-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934",
+        "size": 118140
+      },
+      "pydantic-2.12.5-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d",
+        "size": 463580
+      },
+      "pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "e96cea19e34778f8d59fe40775a7a574d95816eb150850a85a7a4c8f4b94ac69",
+        "size": 1919200
+      },
+      "pygments-2.19.2-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b",
+        "size": 1225217
+      },
+      "pymongo-4.15.5-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "b8c6813110c0d9fde18674b7262f47a2270ae46c0ddd05711e6770caa3c9a3fb",
+        "size": 1726089
+      },
+      "pymysql-1.1.2-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "e6b1d89711dd51f8f74b1631fe08f039e7d76cf67a42a323d3178f0f25762ed9",
+        "size": 45300
+      },
+      "python.tar.gz": {
+        "kind": "python",
+        "sha256": "36ddba171f170664c0b8f254be9c60a10d6319d922f115cf6b913e8d4cdfc200",
+        "size": 29575140
+      },
+      "python_jose-3.5.0-py2.py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "abd1202f23d34dfad2c3d28cb8617b90acf34132c7afd60abd0b0b7d3cb55771",
+        "size": 34624
+      },
+      "python_multipart-0.0.21-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "cf7a6713e01c87aa35387f4774e812c4361150938d20d232800f75ffcf266090",
+        "size": 24541
+      },
+      "redis-5.3.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "dc1909bd24669cc31b5f67a039700b16ec30571096c5f1f0d9d2324bff31af97",
+        "size": 272833
+      },
+      "redis-tools.deb": {
+        "kind": "redis",
+        "sha256": "c74a99662a91d85e6acd01c5352c276384ac5075d316a687f45a721168fecbca",
+        "size": 1170186
+      },
+      "rsa-4.9.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762",
+        "size": 34696
+      },
+      "sdk-runtime.tar.gz": {
+        "manifest": {
+          "architecture": "arm64",
+          "archive": {
+            "sha256": "da83388f7c78818310c21cc4ffdcf994eb8f01a3159e761970ea7d6d3763a526",
+            "size": 141383186
+          },
+          "entries": 38522,
+          "expanded_bytes": 515585727,
+          "install_scripts": false,
+          "libc": "glibc",
+          "linux_binary_sha256": {
+            "node_modules/.pnpm/@deepseek-ai+node-addon-system-linux-arm64@0.1.2/node_modules/@deepseek-ai/node-addon-system-linux-arm64/bin/glibc/system.node": "63cb959a0efc1802f670ad92d2acfa4c72555d62dee998bd89e978861b7b1bec",
+            "node_modules/.pnpm/@deepseek-ai+node-addon-system-linux-arm64@0.1.2/node_modules/@deepseek-ai/node-addon-system-linux-arm64/bin/landlock-run": "f6ae2ad5893e3123f45329ade5518b33c3ac3b102978001ff1c6a6a8ebe2ad9b",
+            "node_modules/.pnpm/@deepseek-ai+node-addon-system-linux-arm64@0.1.2/node_modules/@deepseek-ai/node-addon-system-linux-arm64/bin/musl/system.node": "5a30225892269c7b9a6cf8db568fe8497e417dd8c4e163375784768c072427f0",
+            "node_modules/.pnpm/node-addon-require-builtin-linux-arm64-gnu@0.1.9/node_modules/node-addon-require-builtin-linux-arm64-gnu/prebuilt/linux-arm64-gnu-napi-v9.node": "d5637c73de2af4ce4d0ddd783444d0acc741c1a43ceede3ce7cba7bdda9b5b62"
+          },
+          "node": "24.17.0",
+          "portable_cli_link": true,
+          "sdk_version": "0.2.2-rc.1",
+          "selected_source_sha256": {
+            "apps/agent-worker/src/gateway-client.mjs": "99565e775c5284db2ae721dd8f3d8d65fc38baa1ec42ea9cd2590f314d0c3ceb",
+            "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+            "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+            "apps/agent-worker/src/root-result.mjs": "8924080fed37aab70de0c13557fa0c5d8b2044f0221087eaa422920c568cb5d8",
+            "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+            "apps/agent-worker/src/sdk-execution.mjs": "d29ae5df111bf38f963b30e46695d3e1d6f159417a40c0b6e190d5a883312ad3",
+            "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+            "apps/api/src/modules/blog/agent/skills/blog-qa-v2/SKILL.md": "f7c66619e26aef7eb27e73929d512b3c55eb1b0632cd8ff3ecfcd5a25a9033df",
+            "packages/contracts/agent/rpc-v2.json": "4039d3801d618848ac52112db51022e0a11852b960cce171e29821acfd271f62",
+            "packages/contracts/agent/tool-catalog.json": "674d9074b65e8595a2d86c59fd66a6ef0b9e150f4d8643cc62c946a348e36985",
+            "tools/dsh-blog-p0/package.json": "a04da34db5776523b082d3f7a2857360cd6e2b0c326117b116760aff24fb1ef2",
+            "tools/dsh-blog-p0/pnpm-lock.yaml": "08b4c4630848a1715e3fd2b46d523429f55c2d451c928a63c269e7c76ebe2500"
+          },
+          "version": "sun-world-linux-sdk-archive/1"
+        },
+        "sha256": "da83388f7c78818310c21cc4ffdcf994eb8f01a3159e761970ea7d6d3763a526",
+        "size": 141383186
+      },
+      "six-1.17.0-py2.py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+        "size": 11050
+      },
+      "sniffio-1.3.1-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2",
+        "size": 10235
+      },
+      "starlette-1.6.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c",
+        "size": 75969
+      },
+      "tini.deb": {
+        "sha256": "4846e4f601a17110f67e0128d41b6003217a2e55cd43286697229d2acd4f8cda",
+        "size": 211920
+      },
+      "typing_extensions-4.15.0-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548",
+        "size": 44614
+      },
+      "typing_inspection-0.4.2-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7",
+        "size": 14611
+      },
+      "ubuntu-base.tar.gz": {
+        "sha256": "a91d5a93010193712d346d761372b7c9db6dfcf093893161c64ca107f05914f2",
+        "size": 29936675
+      },
+      "uvicorn-0.52.4-py3-none-any.whl": {
+        "kind": "wheel",
+        "sha256": "f86e41a149d7d05a9969337e3946a9c171c06a5d42680896daaba624aeac8da1",
+        "size": 79871
+      },
+      "zstandard-0.25.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl": {
+        "kind": "wheel",
+        "sha256": "6dffecc361d079bb48d7caef5d673c88c8988d3d33fb74ab95b7ee6da42652ea",
+        "size": 5063012
+      }
+    },
+    "derived_initrd": {
+      "sha256": "f357685d0e92cbdcbcc9fedfa7ea3d6900df6e1064633b3672e40219d0df2708",
+      "size": 774637758
+    },
+    "expanded_bytes": 2944698620,
+    "guest_entries": 49445,
+    "original_initrd": {
+      "sha256": "86e1b682fc0655e7b6d455c44f8ea2d7f0d35a8ff097e292da6ee46a206041fd",
+      "size": 29297293
+    },
+    "payload_sha256": {
+      ".nvmrc": "98182b41c9ce3357797985cf12dc3b0124490ef88bc918a905373e7688e6aec9",
+      "apps/agent-worker/src/blog-tools.mjs": "c281cd57aa52cbeb8b51d4447fd0c8943ffae72c191c7e51ea16573788df5178",
+      "apps/agent-worker/src/cleanup-diagnostics.mjs": "5aa035d84fe2b70f20f015103ea45ea5115a7e064994f9ebec5c93f1c4f9ff69",
+      "apps/agent-worker/src/execution-http.mjs": "6231eab4e075a982ed19f5fbefd3920a7cb44630e89afc39939c80ad0cfaf98f",
+      "apps/agent-worker/src/execution-journal.mjs": "ba916ce12a34a28359f616ce40faae53730b8aca7559aae0372e38f3e3a4a484",
+      "apps/agent-worker/src/execution-service.mjs": "06e51a598f60166880b054ec1d973eb2173c1408e019497fcaebe390c028fd03",
+      "apps/agent-worker/src/gateway-client.mjs": "99565e775c5284db2ae721dd8f3d8d65fc38baa1ec42ea9cd2590f314d0c3ceb",
+      "apps/agent-worker/src/gateway-relay.mjs": "ee3259a49ce3add5aaa0c9f78107c956fd6f56da7fe0dff752c51133981c3141",
+      "apps/agent-worker/src/linux-containment-paths.mjs": "018c810383405071589d1636439398b1dd883f2d0c6f5d7217d2ecfc4500b5a4",
+      "apps/agent-worker/src/linux-containment-state.mjs": "0d070021b819c6e4727e1bd7d1eb47f48ca866f0c350e88543c7ceabfa9aea5c",
+      "apps/agent-worker/src/linux-gateway.mjs": "af8fd02d5ad08196116c907cdb946ec5d53f85814072c9955be48ef7224c3963",
+      "apps/agent-worker/src/linux-launch-exec.mjs": "757f08199ae703677454dea94b7bce36b5887781129cac8a8f753ac3c0a2a322",
+      "apps/agent-worker/src/linux-launcher.mjs": "7747c6527e095c18124e8429fa60540ad888bc58a6a4a6f88ef4df3150e640e7",
+      "apps/agent-worker/src/local-runner.mjs": "4cf884de4a21bedf86378590ae04389a6baf2a84ca77925790a63f1d0ca49bce",
+      "apps/agent-worker/src/process-runner.mjs": "788f482e2bb48aa7b3adbe452c2cf422fa5123fdcabf73e49255ab3975fb421b",
+      "apps/agent-worker/src/profile.mjs": "d76f5ff675d0f3c17d9bc27a2c8329764ff8257b5fed4ab07d73dc2949459498",
+      "apps/agent-worker/src/protocol.mjs": "872d7bedb51677a218cdb279e87b17c1f2986cb6b6ee926fa6c6e79387de2ccf",
+      "apps/agent-worker/src/root-result.mjs": "8924080fed37aab70de0c13557fa0c5d8b2044f0221087eaa422920c568cb5d8",
+      "apps/agent-worker/src/rpc-validation.mjs": "bc99170689361633e6b0673d87bf5a8c448d379888578c7c8d87faff2bf86154",
+      "apps/agent-worker/src/sdk-execution.mjs": "d29ae5df111bf38f963b30e46695d3e1d6f159417a40c0b6e190d5a883312ad3",
+      "apps/agent-worker/src/sdk-tools.mjs": "a6672bf927de29ce3979c8a76a0fc4b8d630a415cc4622679a6132718e2365d8",
+      "apps/agent-worker/src/verify-sandbox.mjs": "897b88d6fedaefd87aa2d0c92091490f4d41a69cd31be342d3e9dd060578f75e",
+      "apps/agent-worker/src/verify-tools.mjs": "c8179438605cbb446c59402ebae21f4a7ba6152ecda76ff61102bd71d6666d8e",
+      "apps/agent-worker/src/worker.mjs": "4e9225bb19fec344a822d907084d38b18962804a682fb7ca3841f7c25701d295",
+      "apps/agent-worker/tests/fixtures/controller-crash.mjs": "ab50b60607d3745e2121838a6f424b6c8f9473ed00076622cd36601849589cbb",
+      "apps/agent-worker/tests/fixtures/crash-owned.mjs": "02562d2dbda0a257717c9428d14e169d344c949a9a06f175db880ef8a1991b71",
+      "apps/agent-worker/tests/fixtures/linux-contained.mjs": "1c63c7f154e8a96dd933cd92ac1ff396734ef8da992bd59bd6a02aee5f31b07b",
+      "apps/agent-worker/tests/fixtures/linux-gateway-probe.mjs": "f2ce4d4ec6a0e7b86999b5fd28ccdfc016463aef9e3412b6c950d8af88cf2855",
+      "apps/agent-worker/tests/fixtures/publish-proof.mjs": "dcf01842b13a59a934b1826855bd9cb8b69171fabfa2e85841fedb2fddad9c95",
+      "apps/agent-worker/tests/integration/fixture-input.mjs": "ac02d7c022b89ffec5a479a67e6cb23ecdd8964b0559efd729c103c0b4a44759",
+      "apps/agent-worker/tests/integration/linux-sdk-fixture.mjs": "5b1e8485b5cbbc424326d7a257deeba2109f900d2f8e60d1519d1e4a40353d8d",
+      "apps/agent-worker/tests/integration/official-device-suite.mjs": "e5f4f232f42e8f7fe3784975ec3c48fac68faeb9831ed0fcd225e91202b5936d",
+      "apps/agent-worker/tests/integration/sdk-run.mjs": "abe8f66fab0a96ed15a7eacf54106030f686d52806c0ce68a1a48c1243426a82",
+      "apps/agent-worker/tests/integration/stack-linux-launcher.mjs": "715e755cdf0320c859edf96977e64e75cfd0b7a9e62470d875c13db076e5a21a",
+      "apps/agent-worker/tests/integration/stack-linux-observations.mjs": "f6adbbceb61a217ca7a0c800671e815f97b950f52671b1437b96441c4f094bea",
+      "apps/agent-worker/tests/integration/stack-worker.mjs": "9e4f6cdce54722fdaf48ad4baa8debaf6600f88d591134df75908757eed98e44",
+      "apps/agent-worker/tests/protocol/execution-crash.test.mjs": "77058ef684302ca68400a3f3cd2f2e6568f4b338914f0d5cdbad997a6a1e4dc7",
+      "apps/agent-worker/tests/protocol/execution-journal.test.mjs": "dd03e07d05926c513e049b832edf4ac50a7c4054b6af781620297db837b76dc8",
+      "apps/agent-worker/tests/protocol/execution-service.test.mjs": "6257b567ef5e1477af3f085ce4f035b8be4f6d4bcac7e31766b754950cacee6f",
+      "apps/agent-worker/tests/protocol/journal-maintenance.test.mjs": "45d10516c94d8646af967576e027bf7e1adadc020786d462c3019cf83c4577ed",
+      "apps/agent-worker/tests/protocol/process-runner.test.mjs": "cb86dfad3cf03a937eaa3bc1abda9d1618d667b600a229302292320c17d856a4",
+      "apps/agent-worker/tests/protocol/test-helpers.mjs": "554d41e006c6c82628509b624a671d04f5c9072e0f57d60a880a83761a3d2ee0",
+      "apps/api/main.py": "9beb2062bf34737d9fbcca6db747478681606bd21389e87e8fbeb3b81a83b5c9",
+      "apps/api/poetry.lock": "80c770b8c36cd7e6214d6d64a704ef8a3512b761208ce97f2eb7a4c04254c1b2",
+      "apps/api/pyproject.toml": "84756fe7effed9f4bdcaba239052454dd4c879f99cb35b9aa9658f491a6cdbfe",
+      "apps/api/src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/conf/error.json": "5241946b7e3017e4eba27d38e216daf35b1ed9b94daa4eaa94cf08f37bb3785a",
+      "apps/api/src/config.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/controller/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/controller/ai_manager.py": "26fec8ca9b15a61eaf5854e37956ad443c050df1d0a76723f5882e438f3fcb4a",
+      "apps/api/src/controller/auth_manager.py": "2f2903865260d6125dfdf3d307f23055c9414e1562bb0a05d978a8982f1f1d93",
+      "apps/api/src/controller/base_manage.py": "6c186adf42a5a1a1238b8f2233e194edf82312838ada1778e1cfe1b998410bbf",
+      "apps/api/src/controller/blog_manage.py": "9515b4db8a7f71d3b4faf6c81f78428e3bc1f145ed50f0fd4715410e901ba673",
+      "apps/api/src/controller/file_manager.py": "b89b65f891dea95602df18aa6dc33cec18fe87af3110128691d03dc8a6cfb18a",
+      "apps/api/src/controller/log_manage.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/controller/resource_manager.py": "fd6e42daa64f475ce607d7fc51a7789d2573b2a74def62a3a7e75e1d7a5c3a4c",
+      "apps/api/src/controller/role_manager.py": "2bf2abd7cb96be61f1558d3915a8cdd6308f2349a399d8d20cb9b76702e39810",
+      "apps/api/src/controller/tag_manage.py": "482a40b4e8f48f94f66408bd275f6d064a467ecb0bb0bf9940fbf0f050da42e8",
+      "apps/api/src/controller/user_manage.py": "4e8d04f3dfb323b3dd5e78d7c2d91608f9b3662346f56e8cb1e215f9c7f60db1",
+      "apps/api/src/core/__init__.py": "8412037aa2840c189fdad7bc4c74febf0402cd5ad76be8ea9dced9d5b404ddb9",
+      "apps/api/src/core/admin_alerts.py": "4b9646d9a57900d559a15aa011dd02bd226825a0d9fbdbbe6ba04058b3aacdb8",
+      "apps/api/src/core/audit_log.py": "02d12e6b45ddc183600c974cf853886c8da594750d3d73f1642d4c1d92b8f8eb",
+      "apps/api/src/core/auth/__init__.py": "0e5e3c6da9047d819db6182ae77145950eaf1f3081e145f68912dcaa63352009",
+      "apps/api/src/core/auth/admin_audit.py": "aebee488eef8d47d80c4b75b6d5d79d746e7919b9d14dc27ec6aba84b1f6c8e1",
+      "apps/api/src/core/auth/admin_recovery.py": "4f4028d959355fc8011496faebb31f9e5f3006b678d2604ce0ff19f1609fe4ce",
+      "apps/api/src/core/auth/admin_shadow.py": "9f24eaf953f18f07d7be6aa8cdb3b21d16354b9ed876ddfdf477ae98840e9676",
+      "apps/api/src/core/auth/permissions_inventory.py": "0c1dd591775889b9980a085a1409b006441c48dfebe1ac67b1ee196658940f3b",
+      "apps/api/src/core/auth/recent.py": "a4a3088db85ff7787ce6c8c9d1c2ecdb4689b26d87f036a3b479813a838365e9",
+      "apps/api/src/core/auth/session.py": "5596d5e4f00f7ee2ef5c019e0201f99a3b796920b9e046f1cfe50a14e76680a5",
+      "apps/api/src/core/csrf.py": "6373667a40c52cc24c6e792f5949e610e20cceb2a64ae0ae9f8f6488e0c1741c",
+      "apps/api/src/core/error_codes.py": "5d7d256f3b4966cd05fb66e62e5e3e22da8159d03f054f8f4b781638f54b7c76",
+      "apps/api/src/core/logging.py": "c10d12879d1302b93ede0ea62bae7e5b2177dec60994809700bbc429995a690a",
+      "apps/api/src/core/metrics.py": "0eb9146861fd6fe634bc7ac2ca1c1b31598d37b969599a410b4f84857cb32470",
+      "apps/api/src/core/metrics_alerts.py": "fdc8de53f241fdaee884b3d87ddfe91a86601ef664b1e614220ba7bed4bf1d5d",
+      "apps/api/src/core/metrics_history.py": "b7c5796da4c0a6326bc47a8d2dc122ee9538b0805f2c67106af6749f275cc6a1",
+      "apps/api/src/core/metrics_store.py": "edc9f0cdc395e412690b5b984e9d131375937d9aa2bbb8221a9a8a318992f0ea",
+      "apps/api/src/core/module_registry.py": "c868e5a91c0ca5ce6c58e4d12bc0c72dd3c91f141346579fbc807053535fea5c",
+      "apps/api/src/core/observability.py": "bb7899597d3c80671f025b1dd468d88966ee8021165a7ddd642fc300515580f6",
+      "apps/api/src/core/readiness.py": "4e71489dbf8347c10b03877e139bdb13e4b55d45f810a60042caf712d1cfa82a",
+      "apps/api/src/core/request_context.py": "79f5fbffd1dd9446654c95ea9e4f6ffeac7784dc2991474002924e04d748267d",
+      "apps/api/src/core/response.py": "504dab5df6a73b9c719f4c7d266ccc3c35c123a3290f714a5323ae1e9837f102",
+      "apps/api/src/core/rum_metrics.py": "550d739feeaf1d69238d27d5f218956d16f705d46e626e3111e52e2cb74fe8ce",
+      "apps/api/src/core/runtime_env.py": "e31b29e2e81db81ca53822ada4bfe123db057feea8d90e64013f4d1e6ff98257",
+      "apps/api/src/core/security_schemes.py": "729b5da2e490f620ef558a4ae502b2b8c9a0b4a51ca4d5585e28a12a2c41b122",
+      "apps/api/src/database/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/database/mongo/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/database/mongo/mongodb_manage.py": "417a01d488b99f6bb69cc0c47892c4e2ddab1590dfa0c021356174e2ff48f12a",
+      "apps/api/src/database/mysql/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/database/mysql/default_ai_provider_seed.py": "a2f11179503bd9f0c2b0555f9aedec2b0de323f1613aacf9d875f65d67e2297c",
+      "apps/api/src/database/mysql/identity_schema_migration.py": "b02470f3e54a3693c66d9e44641492142c96e94091d751bca89583eb0491fdb3",
+      "apps/api/src/database/mysql/mysql_manage.py": "24a65876e2098e68d45e6a846348a91c99e6f387be5836627aeb965ab7b2b8ef",
+      "apps/api/src/database/mysql/schema_migration.py": "6e210ad1c643ed96ce90053c958d6e3527a455ca17c7b59b30b6e2cc801883a6",
+      "apps/api/src/database/mysql/unit_of_work.py": "eb7725d36b7118ede76d3573eb110412693f32c77c7b402ea781773d6d4ab143",
+      "apps/api/src/database/mysql/username_index_migration.py": "9307d9aff5d4fc3715ce3d5abf54f1c0b41554aef10d02e8fb263df317c0674e",
+      "apps/api/src/database/postgresql/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/database/postgresql/postgresql_manager.py": "d44eacb57d89cf60f3387815682a2aa4021bd11eae2a1d7d31ecfbe0081fb06a",
+      "apps/api/src/database/redis/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/database/redis/redis_manage.py": "90c369feebccb2ce4e15cf007880a5b57578e82bd50ca22c04be027097036b7c",
+      "apps/api/src/dependencies.py": "dac72462ca923f3d22d9b26a554e53ea379379078bbc08c71167bee2d6933d08",
+      "apps/api/src/llm/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/llm/agent/__init__.py": "9a2ca0158980763edcf5f867e78a48c69aa3d81c10f91bea462652f940958b52",
+      "apps/api/src/llm/agent/respones.py": "32c67a34fdba0b4ea8120860369264fce5045bb404a3a2f235e8c671ff6f4d9a",
+      "apps/api/src/llm/agent/test.py": "21015e604ca56d105685564ba0f8a9379a1d9a3984afcf325ab9a49c56f09339",
+      "apps/api/src/llm/config.py": "35eba9ec75ed3dc47ef7112d748ed4d751a1776d712ea5e711483041c6ceb420",
+      "apps/api/src/llm/format/__init__.py": "992c06169ee5f0cfb552271f6ff6fcb2ac1ecd7c556fa6bd8ab853d692d5e3f7",
+      "apps/api/src/llm/format/format.py": "c88c5b7e455ea983353edcdd1b3006761c856498dabf070dff897d76f7257692",
+      "apps/api/src/llm/graph/__init__.py": "2cc318635885d069534f527b433acd5c622d483c4ab00f181f4c0eb9bed7b022",
+      "apps/api/src/llm/graph/test.py": "bb471cdcfc425d5aef2a0555830252155d14f8aaf3d081d8f25fa9c3bb5e7192",
+      "apps/api/src/llm/llm.py": "3b1ecb60df02233c267417a9f24b2e6fa9f0df44cae1568b26d80234d100695a",
+      "apps/api/src/llm/model/gemma.py": "6aa15110b2afe057ee8cd68fedbca2653354706601fa0653def75afbe7832fa5",
+      "apps/api/src/llm/model/mistral.py": "fe2fa9de072fa8c8b64d2630acfae6e5758d3325d37740d1544aaf3c6125bd9b",
+      "apps/api/src/llm/model/mistral_img.py": "9c24808a9545e9be41d2b94f95757861f0274ac1a87ac2cda19f308069185c44",
+      "apps/api/src/llm/model/qwen.py": "c538947b28161e5a8b5849c83b2dad6346612f26896c2491f2e2e3fb4a974e64",
+      "apps/api/src/llm/prompt/__init__.py": "b11719c478c1de120e629a93e5115335bff1ed4ca6ec020d819c2993e3ad61a9",
+      "apps/api/src/llm/prompt/system_prompt.py": "01b24dedce5d32da3ee3cdc2817ec273e1c6c1bb38f18710b70be1ff6a1515fc",
+      "apps/api/src/llm/test.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/llm/tools/__init__.py": "8fbe1c75b23f9506de5c68575108cef1963fe1e63756a3cdf3cef7e8b7f42ab8",
+      "apps/api/src/llm/tools/tool.py": "44cb31f2aff3f74ab63a3ae1336e8281b4354385a3c99653102408340a1a58b0",
+      "apps/api/src/module_composition.py": "b4ed250bbb804a397479004f05319d310621d5f2cc786c33649a0c0279601740",
+      "apps/api/src/modules/__init__.py": "f20915f9aca6ac3586f013bbf387a0723eb72adb3e4a9f313c538dee05c3e947",
+      "apps/api/src/modules/agent_runtime/__init__.py": "dd5b3c225af631eea3c1c8d379189df03636735317111a60e7a72d0695dfcc66",
+      "apps/api/src/modules/agent_runtime/admission.py": "cd9b26096484a7a92cf31464f16fad417e7f66f4f944d39ee18edac4121b5ac2",
+      "apps/api/src/modules/agent_runtime/application.py": "3faf7fcd4f3f038b9fd9332810bd8a21a2a37f41486cb94799c5aa5328023f1a",
+      "apps/api/src/modules/agent_runtime/capacity.py": "23469a44a39b6fa3bbf9edc6ceba1a8171d94bd57a53c79a4c5e5a225df56a9c",
+      "apps/api/src/modules/agent_runtime/cleanup.py": "e0ca86e25f3f00d5a59e4efd351a8e166c7bd828bb972f89bc5d9c84864b3e73",
+      "apps/api/src/modules/agent_runtime/dispatcher.py": "27d7b7b5dc9f2d54b79364d50515a5dec7e662eecd555959d5279eeef4801728",
+      "apps/api/src/modules/agent_runtime/gateway.py": "0decf398167c120c243e14b77f3a0eda6277ab2c5a4e6550b449861f6d0918ee",
+      "apps/api/src/modules/agent_runtime/journal.py": "9b6c474318db5545e2cbd5a1484f2924cebf3eeba6d33af33a9efbb70bbccef2",
+      "apps/api/src/modules/agent_runtime/ledger.py": "4dfd7ead797bf54bd7d85bbafc37aec1adb75f42fd3f0252651126a72f81e3f5",
+      "apps/api/src/modules/agent_runtime/local_model_budget.py": "ecb34f6e24415364bf188b15e51c5264b896316f74446b99a2a4b4f584c3c0fd",
+      "apps/api/src/modules/agent_runtime/model_budget.py": "064fca5e28365a704a9ce6ede4e541599d2174007ef606a55e1491d5d479806e",
+      "apps/api/src/modules/agent_runtime/private_router.py": "a899304cf08978769318636393abdea0f0874fd23b6d9a0319c60839e514b9a0",
+      "apps/api/src/modules/agent_runtime/public_router.py": "be4f29737eaab55e6d3eac702e1a3f21dc3d61d310bb2292ea1fceb815abbe24",
+      "apps/api/src/modules/agent_runtime/router.py": "0ca68771e303f48606375374a11a80d284d322f534279bf43fda9c6a9b85c35c",
+      "apps/api/src/modules/agent_runtime/rpc.py": "3f16b55536761dc98ca8d470c8c6a1716d825aaf7983196a0ab961fbb6b12813",
+      "apps/api/src/modules/agent_runtime/run_view.py": "985ae3bcd96fe98e83cb60cdd6c5de35fdb6c9be519478a2a285d01b542a8b3d",
+      "apps/api/src/modules/agent_runtime/runtime.py": "a2f51a26597b2dfe9d42590378df1cc626f1d3c9bddefbd77b05e8aff0989544",
+      "apps/api/src/modules/agent_runtime/schemas.py": "92c8644531dee9293d5aad7a37b43720b7f47fdc0361daea5da0e04f9db65bf8",
+      "apps/api/src/modules/agent_runtime/session_authorizer.py": "07b92abf954b5e6dfbb453ceadcedea3bafd5cf53139cae73ca4ec6409528446",
+      "apps/api/src/modules/agent_runtime/store.py": "7a1a131b1f042534db04c530d7910a9f0d99ee00a34b901fc220c7da6b972f51",
+      "apps/api/src/modules/agent_runtime/worker_transport.py": "39e52e2123bb7f20bed63ab6ea5b243975aafa5d5216eab3ea73418574a23f3c",
+      "apps/api/src/modules/ai/__init__.py": "8f48dece0c008e160ac1e3d04df63f116bf11d98683a1d4f126e800454aeec65",
+      "apps/api/src/modules/ai/agent_history.py": "6707f506b6ef97252f15bed32df4cbf8ac784bd3b5b32a4713c85b5b196025b3",
+      "apps/api/src/modules/ai/credentials.py": "843d0a4f8c44a0b288bde312c596aaf51e15bd33b4c1056513c63fad6af420c5",
+      "apps/api/src/modules/ai/errors.py": "4023fb72c4deeb42f85369119dc7c2801ff796e1c4737993feabc275967a79e2",
+      "apps/api/src/modules/ai/local_openai.py": "340839ae78c2e4b5c07c70647210910e42b8769685449e0a6d42a9cc514a5f2d",
+      "apps/api/src/modules/ai/local_openai_transport.py": "1abe60f04905bb09b6a8c6fab165d701bfe0901a0ff7f33365050d01afee971d",
+      "apps/api/src/modules/ai/mcp_gateway.py": "77ae927da4be7297e59eb5800880384dd31930fcb5a8120a1abd42019edc73cd",
+      "apps/api/src/modules/ai/mcp_repository.py": "79d256e0cf8a577670256be9e2b7752b099acd9c83f865ed9189471954708dd7",
+      "apps/api/src/modules/ai/mcp_router.py": "682d69c725087f9aeab43e3ea56a874767c6a7c90090f632a93730b1ba123896",
+      "apps/api/src/modules/ai/mcp_schemas.py": "d85ecb155d38737599bcea706d11f6160b3945f83326eae1a28420ac2639993d",
+      "apps/api/src/modules/ai/mcp_service.py": "f176b5458e2e742faf4179b832666dc9edcf7f908c6f98878c9ad7b201bfb82a",
+      "apps/api/src/modules/ai/model_input.py": "646094c96af3d14bf9d64a746ffb09b1f5138ce42102ab435d715df2b704420e",
+      "apps/api/src/modules/ai/model_proxy.py": "43f64f4d88ac579ef8964f4c7295638eb5fb09b6fe5af2dae209686062ee1486",
+      "apps/api/src/modules/ai/openai_responses.py": "41d34d02ddbb131c6d5cecf18a0f22456b67022973d91bee23b0b9b3bdea72a5",
+      "apps/api/src/modules/ai/providers.py": "58eeb1eae0d3718188f5aaddb1c4a49c211d719bf96aa674d3790104e8f69113",
+      "apps/api/src/modules/ai/public.py": "b160619939d73e293756896691a18f8176ccab9fa97b440060e37c6c1c3bf7df",
+      "apps/api/src/modules/ai/repositories.py": "ab62723c8fa561ece3337a03857e91eb088ba93ce084f1d60fed724a30d91788",
+      "apps/api/src/modules/ai/router.py": "25a5c181c2f4fdaed9e2999df9a2486ed93bf9f31dd06a91241ff9b83987f034",
+      "apps/api/src/modules/ai/run_metrics.py": "fa2ef673fd2b717161ac717e630f89b5a8c2b80c0a9372a67587a7c2d79ea1be",
+      "apps/api/src/modules/ai/schemas.py": "3441353d65a429fbe04ee4f5e12373eaf36377899f280206c2e1afa187735ee3",
+      "apps/api/src/modules/ai/service.py": "9a836ce6a19189f900fa46e445f0a6ed6c7dd70bb7ab736c1fff90940de218ba",
+      "apps/api/src/modules/blog/__init__.py": "b71b807b7cb8c395a56c08beb587d6c8929536fc2e59bb905a4624e54d9d755f",
+      "apps/api/src/modules/blog/agent/skills/blog-qa-v2/SKILL.md": "f7c66619e26aef7eb27e73929d512b3c55eb1b0632cd8ff3ecfcd5a25a9033df",
+      "apps/api/src/modules/blog/agent/skills/blog-qa-v2/manifest.json": "18e7be3239dcb612ef19d51bff79cd89c4d4161ecb5b2da1919d80a05ec9d3d1",
+      "apps/api/src/modules/blog/agent/skills/blog-qa/manifest.json": "0b1331fd2cc00ebcf039539c41e8cbd0b08ab3e460b80bff8341d9e4aa3d2823",
+      "apps/api/src/modules/blog/manifest.py": "90ecfc2da8a174e6af379be243475e7c04b25eaa99c0aa7e232a20d3b411e54e",
+      "apps/api/src/modules/blog/public.py": "1eb3103389f40a30ecdd4a4390de5fb5d4f061af3880464933355f8a2c2786ef",
+      "apps/api/src/modules/blog/repository.py": "e07e0dffce05f2d0750843cdad1f40e2727f01960ffe233ae23c6ad6b5595937",
+      "apps/api/src/modules/blog/schemas.py": "a7dde6b4cef07489a0001a6afc539dcb8c88eca52b92bae55edfef5acbe5b271",
+      "apps/api/src/modules/blog/service.py": "6139e7017dc8c89760385332c685a44496e282b54d027d44b556f15d6682e991",
+      "apps/api/src/modules/blog/tools.py": "7b0c89e4ba588a59c59ba3f56fc12b6b96d757476dbb1b7fe2a40e7b7fd8f7d0",
+      "apps/api/src/modules/comments/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/modules/comments/repository.py": "fc1c203af5405be265821bcab357fd675ae921fcc8c9bb093ef1f6e052611736",
+      "apps/api/src/modules/comments/router.py": "62b3fc7565b86593631e8e68b3d1378a9e039d67612e6c7410e5627090860ebd",
+      "apps/api/src/modules/comments/schemas.py": "438c7e354ded39f5f85215fd8e505f116d4d3da1eb99cfef93a23bc9d6894fd8",
+      "apps/api/src/modules/dictionaries/__init__.py": "10a0df220aa64e59c416fecb3a6449a20b07393b5f55ce9c2a2b2810439833db",
+      "apps/api/src/modules/dictionaries/errors.py": "3647dd4375fc474c679848667c81273445d91c9dee398b322774c7c7cecd9e68",
+      "apps/api/src/modules/dictionaries/repository.py": "ff2baf4dcacc6466d40867942eb8c5ee98b8b43e89455e8f06ca573e087bc020",
+      "apps/api/src/modules/dictionaries/router.py": "6e2a8ada48579f09f528607973a1736cea4b266f85f26c3aa0daf64ac135984e",
+      "apps/api/src/modules/dictionaries/schemas.py": "1a1b2225e78e72f1a858d02c80bcf67c93cd621ca942a912c3798b5ef89d0c10",
+      "apps/api/src/modules/dictionaries/service.py": "1b0f3b4862fd7aaaad4099a418594afc7b6180cbde2aa2ae8ab4d551f0365d3e",
+      "apps/api/src/modules/files/__init__.py": "f10662094c3ea49708fa2d772542a1d34bbbfa09ccb396eae9ed629d66e2f247",
+      "apps/api/src/modules/files/storage.py": "219734dacb030adc80a854273a05255c6d11562c4197acce9358251abbe58d0d",
+      "apps/api/src/modules/identity/__init__.py": "6541deac22e2db011a3aa9dca9337c5d2e6d26dc5b83cdf8204979db158b262c",
+      "apps/api/src/modules/identity/errors.py": "c441314fbb7b0605b624c312f55fc6c3ea5758c7216d6925b7ba32f5552b427a",
+      "apps/api/src/modules/identity/google_outbound_preflight.py": "dd030c9fb3da626503fe0301e84041bed03f9abc47dce7d993d072ef22991119",
+      "apps/api/src/modules/identity/normalization.py": "3e0fc48676d607ebf8dae527010e7c505925d05c147edc6694710c092172aff6",
+      "apps/api/src/modules/identity/providers.py": "f6be91931170c6c4fb1d0e8c7b44244df1e76cd69ce9b6f96570cf8009adcdf7",
+      "apps/api/src/modules/identity/qq_outbound_preflight.py": "d436eb848ad9bec9129ac7b7693ed0904149976eed89a332ab569c05d1b1dbd2",
+      "apps/api/src/modules/identity/redis_capability_preflight.py": "6d2aa12dd61db8be096a551ad62dd3218bd0889019fe81a1c0189a99a4ddc8a0",
+      "apps/api/src/modules/identity/repository.py": "fb480f4473abf54d9e380734dec12f1c5831d4b59fa8052aa22de292013ac7e8",
+      "apps/api/src/modules/identity/router.py": "e46884d9a91406048422955dc5e3b77658f93a0c3b836cfed261006d7db367e9",
+      "apps/api/src/modules/identity/schemas.py": "c0b784a6a97dd24af15112e4e9b99ed86a9ca481c13d5da0545a1710705b2c4f",
+      "apps/api/src/modules/identity/service.py": "dbbdef58882dab21d3eb4b45e8bdc974090a9cde3ef7d762a3d8b7b9d1e7f66e",
+      "apps/api/src/modules/identity/verification.py": "19e7322b9736be5b5f1a4b5a65f16380d90c186ccb4e9a6a97857fe36fce53ed",
+      "apps/api/src/modules/integrations/__init__.py": "595efc067973e85d933dc9708c36ce0378cc5eef8f10acfc593f15bcde2c0446",
+      "apps/api/src/modules/integrations/adapters/__init__.py": "1e731d5e1246ab58e91028dde1f5da0de6699f7f78bc12c4ff6ce206d6b3ea26",
+      "apps/api/src/modules/integrations/adapters/feishu.py": "f0bc3fcba446ac5359f63148e87839879f3ef89123cfe3c838c455879485f5db",
+      "apps/api/src/modules/integrations/adapters/zhihu.py": "c309169fb54434f4e2be6ff0df7bcfca39bc04fe326aba43fce46b7192e7091a",
+      "apps/api/src/modules/integrations/registry.py": "c6562288ab6437844e69147f41a77d02a6cf89fc2261a65edc14c249e9f7b13b",
+      "apps/api/src/modules/integrations/router.py": "57b5f586ea8e1e3a4815dc151605ea60725ee6948f103a174791f272ad0fc84a",
+      "apps/api/src/modules/integrations/schemas.py": "ef99575a4d3bf36e646355ac0675f9cee1273e573694577e9251a1a0ee357b47",
+      "apps/api/src/modules/management/__init__.py": "ee1ebc100148620ab509f514a781ff989e329eda83babde420a63ac37e409d0f",
+      "apps/api/src/modules/management/manifest.py": "ba07ce1a05754d6a495b9adb06963976a730f704927910089f673da666436742",
+      "apps/api/src/modules/management/policy.py": "01ceb6fa18768bae7413d24c573165487931406950eb47f9567fe2935511ead7",
+      "apps/api/src/modules/management/public.py": "235021cc5b975f60610506f148198ad0f80167198811ac5d97ea2f725a3194a3",
+      "apps/api/src/modules/management/schemas.py": "19f5c5f1048689d6a22ae1e18bc23c62768e1fb7002e7b50972ec8cca28b16cc",
+      "apps/api/src/modules/management/service.py": "28c161cdd6ef4c3a8135c152a0ab943c2190e1c61b431695708771dc28ef58e9",
+      "apps/api/src/routers/__init__.py": "11604a80fde9a3a51b1e1d309d46a68a1a5d9ecccc72cefa19d6db2602c1937a",
+      "apps/api/src/routers/admin/__init__.py": "fccb16eacbba5e644cff64a84e0d390e1bd4709b8f1a6a105811a10710667fd0",
+      "apps/api/src/routers/admin/admin.py": "9bafb6cbdf3c010ab76a550ac33fe7cca7137f7f26af76147879338c376eb9d4",
+      "apps/api/src/routers/ai/__init__.py": "9b7bc74dabfb45d6fa7948ac85840a3dcd0b61b973c05ebddf2e2ccfc0d458e1",
+      "apps/api/src/routers/ai/ai.py": "05547d73a98ef24b0635eab3c3ea4c97573dba88e6e3950c0834751c3d4cf7d6",
+      "apps/api/src/routers/auth/__init__.py": "2553c8373a7e2532170c12fd87da6969dc20992e7523a1728930391482a060e3",
+      "apps/api/src/routers/auth/auth.py": "08952f12d630727343b7213e89eb71c3111928ce7cadd1863ff87deacb4e51a2",
+      "apps/api/src/routers/base/__init__.py": "934deeffd72c185eae502f0f3828fe8acce65e9574bd52e9f21cfe81deab9d24",
+      "apps/api/src/routers/base/baseInfo.py": "91d7efd4e564e6b8fb8f347778effab9fea704ba151a4daa3e029d892c890cf0",
+      "apps/api/src/routers/blog/__init__.py": "07c54b1415492ae3c8ed76c40cdcc8bc47e2e2e5916fef2701c5cca30c73742a",
+      "apps/api/src/routers/blog/blog.py": "be156536c176269c7e6b39ee4e9c7c22b1c0987fd2a2c33c58de5e91e9bd658c",
+      "apps/api/src/routers/file/__init__.py": "62176abc6bbe50d570169a40ddb0253151df9616ee9919bd4ee583481a955057",
+      "apps/api/src/routers/file/file.py": "852aee236b5fa17835edd1e8bd367e8d67fe39d211e8962b73850f8565189d3a",
+      "apps/api/src/routers/health/__init__.py": "aa08d179058ae0c882f791ee10c34d6f65ad77a6f9bc411c2a321c3cead9142b",
+      "apps/api/src/routers/health/health.py": "513a679a0dbffdd594282405d22e9147c46e8137e1f0b41fbe2b8ea821536378",
+      "apps/api/src/routers/resource/__init__.py": "154b5380b62fc5797f5915a06d91d623eaaf76319ad49cc0d416a3ce054ccab0",
+      "apps/api/src/routers/resource/resource.py": "97c807b1efcf1b1dd9f20048dfe4e8c53d63d881e86392389f82ee6f6559fa0b",
+      "apps/api/src/routers/role/__init__.py": "5a522d7affcc9f999935455558dc92ec72a2eba25bef53868ab401378c70b414",
+      "apps/api/src/routers/role/role.py": "8b73bfe1871a50627eb07565bdecad34e6db593bc476fea67785dd2a953f3c0e",
+      "apps/api/src/routers/telemetry/__init__.py": "47c8183f23ffaea8c0758074a4438a83b72bfcb3eb396dd2f23a557b9a24e108",
+      "apps/api/src/routers/telemetry/telemetry.py": "36147f3aea2494bc9d0f90331a161fa7ea197a7e1f786a839b696a1614db1e14",
+      "apps/api/src/routers/user/__init__.py": "07a5b59f6ac442c79e485edacf73b905f248fbbba01ab4e4be11f1b748369220",
+      "apps/api/src/routers/user/user.py": "f8f865df83741d178c8879f3e0ec1c570d6a01311c01c6b02bf7fc2f680aa1b3",
+      "apps/api/src/test/redis.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/type/admin_type.py": "d795b5509a6b08b27d176ed3a3d2a30366fc7369535f69df0c9faaf53258f3c9",
+      "apps/api/src/type/auth_type.py": "557f2702bc192bf441ea6ea901be2aa6134bc634fef3ef1f52252b5dae82e173",
+      "apps/api/src/type/blog_type.py": "1ee803a570672063be1e00f5b0a7d6c23ff8927b42b669055189b6892013e2a3",
+      "apps/api/src/type/health_type.py": "585370a5bc574f6c5789336f20fcdf897efc8b294a44e429263b1fe3081dd4d9",
+      "apps/api/src/type/llm_type.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/api/src/type/management_type.py": "55db36b3527af3991b6e20d50e63e66c31c402998b45e40a7503266c833558d1",
+      "apps/api/src/type/tag_type.py": "53d0059df56dff2d57ff5a93c38935fa480622251f4f2da2f7de7d80b491a5e6",
+      "apps/api/src/type/telemetry_type.py": "6082e6cf3563725461bfc3bbee5b0790bb4b480d8e250029e297b1a23a3527fa",
+      "apps/api/src/type/type.py": "a01076ae72cc6cd1c6970ddbeed76f88725be8cdc939ffea35950a23bcec3b5d",
+      "apps/api/src/type/user_type.py": "3d4ff3528400fd7dfee8e254f6cbefc22589e2beffa9a2ddbaa4c8043bc7bbf8",
+      "apps/api/src/util/func.py": "b7f7e8e3dbfc7b5558cdeb652b189e7d6450492cb4b34b5f0b39bcde61515591",
+      "apps/api/src/util/video_processor.py": "116f451efa9805c09dc3749efc24d390687395448b273dbe04f79928142172a9",
+      "apps/api/tests/fixtures/agent-model-evaluation.json": "438a884c349a6aa25b964fe833eb6d3130691030e87733aa70cd69722c3041e7",
+      "apps/api/tests/integration/api_process_fixture.py": "e569c3858f023623dfb43f5c1e0fab277b998904df671d6c352c8fe4f7887deb",
+      "apps/api/tests/integration/api_process_host.py": "9f92f89e552d7df21f887d96d9835d128e5f8564284e66fc5402801f15f73e48",
+      "apps/api/tests/integration/api_process_recovery.py": "fbf251862f5f1efc3ade0bfb28ecc2d19da84326733dd18a0a6dc1a329f6df15",
+      "apps/api/tests/integration/cleanup_diagnostics.py": "3aa1a7b80d6aa0dcfc37f8106048eb90adfd02d9a6aa408c4753cc401e279ab2",
+      "apps/api/tests/integration/fixture_cleanup.py": "29b576d1939b8b4e5f374e3081970e4f3da4d5feed1f6fbace88d17dc8535cb8",
+      "apps/api/tests/integration/fixture_mysql.py": "ad3244b02ba7fc805c3119710e2da9b183ea97bdce770e6d88f35c40d097bc4c",
+      "apps/api/tests/integration/fixture_signals.py": "17359f9fd5e67fd1ff8ab7977d99f4a613225b9f2eb340da0e1a730851deff44",
+      "apps/api/tests/integration/linux_official_evaluation.py": "15b9432b09e88b0515c13c5556826aacb5a4656144b9ecba8c91e66bdb74b0ce",
+      "apps/api/tests/integration/linux_sdk_stack.py": "08180b49a03c35330f2bbda03314e01017f4759683b09897fec8cf5bf7c13684",
+      "apps/api/tests/integration/linux_stack_containment.py": "19c26ba8d4533ac7df5ba9314a6f9a7487454c97860a067e3ec617c89badfb9e",
+      "apps/api/tests/integration/model_evaluation.py": "eee920d595d42769431927358e6d46ebcbed30e05cd49bfef09f59f1513d15ad",
+      "apps/api/tests/integration/official_channel_broker.py": "32bc18ffa69c941217aa3d7c0ba651a3d6949d00bc1f454a40401b57018bb1a0",
+      "apps/api/tests/integration/official_channel_codec.py": "1eac52d7aa10a7831f1af34adf80de8e93386ccf976a8e56dfa6c3d52c8b1472",
+      "apps/api/tests/integration/official_channel_guest.py": "5c3c5c4d12ddda73825064b439735cfb83f32c2a84a174d99a302d9c39f0ff5f",
+      "apps/api/tests/integration/sdk_stack.py": "d285585fb820ce991aa21c90180d85d04dc9dd4076cf9b68a9e84745800e7f6e",
+      "apps/api/tests/integration/test_agent_mysql.py": "d89936ea5bcf66a878275343ef76a0705d1c948f6defd44d94d7de0c5684ffeb",
+      "apps/api/tests/integration/test_agent_stack.py": "f3798845e4a7cc87f513a48c0bf656ef2c8bb104ae519d1f32ec3fa3488fcffd",
+      "packages/contracts/agent/rpc-v2.json": "4039d3801d618848ac52112db51022e0a11852b960cce171e29821acfd271f62",
+      "packages/contracts/agent/tool-catalog.json": "674d9074b65e8595a2d86c59fd66a6ef0b9e150f4d8643cc62c946a348e36985",
+      "scripts/prune-agent-worker-journal.mjs": "49a82d9481456209b9e6b5619abb0f79061a4e2178f843fd8fe50e57e9600117",
+      "scripts/test-agent-mongo.py": "597291235ae82d2fd76e56d7a94d30750d4d62bd53d73439780476ff8a146559",
+      "scripts/test-agent-mysql.py": "b30fcf127c776e4f00bc911d9312f9b5f61c47d0ff59f0a6a31841ea2309b5b0",
+      "scripts/test-agent-redis.py": "00dde6710f7ef494e21f51e16727bc365b95880bd8532efa72d7276851368fc1",
+      "scripts/test-agent-sdk-stack.py": "b33498852a0a2a31c79f009605c80290e8607e9eb798655fdfc872a8971dd91e",
+      "tools/agent-linux-vm/containment-suite.mjs": "7758357f7fca2c2427f0d234f38a73581b99fb209e6be4bddd994647136d2af1",
+      "tools/agent-linux-vm/gateway-suite.mjs": "22ed1b29c520735579d44e8cdca659fb33ce01895afad77142df5f85cc7a03a0",
+      "tools/agent-linux-vm/guest-init.sh": "d629f64b1b0dd48d9f2ecfa2429b919a85afc40b7b6c5d678987309bb44f8afe",
+      "tools/agent-linux-vm/guest-probe.mjs": "07f44595fb2559648857fea780d7d414e458c799e6a91c564eed228431c07d7d",
+      "tools/agent-linux-vm/guest-run.sh": "dc0b6d3740627c3127e58c0b4354e2a2b8f9212882ea781f60c4aae0fefb3313",
+      "tools/agent-linux-vm/stack-probe.py": "934b6511764e6ff6915cd8755afab1d8343240487f6af5b2ac6dd8069bb197fb",
+      "tools/agent-linux-vm/stack-python.json": "4119de137055355624bfb0d09c3e3109ded8670965b8613eeee83e067689e99f",
+      "tools/dsh-blog-p0/package.json": "a04da34db5776523b082d3f7a2857360cd6e2b0c326117b116760aff24fb1ef2",
+      "tools/dsh-blog-p0/pnpm-lock.yaml": "08b4c4630848a1715e3fd2b46d523429f55c2d451c928a63c269e7c76ebe2500"
+    },
+    "stack_contract_sha256": {
+      "tools/agent-linux-vm/stack-assets.json": "c3f23b33255e7fc6d8c9dc7414709a564e5a6da4ba9ec5b55ee55bb81d597789",
+      "tools/agent-linux-vm/stack-python.json": "4119de137055355624bfb0d09c3e3109ded8670965b8613eeee83e067689e99f",
+      "tools/agent-linux-vm/stack-sources.json": "4fc8c8b0d9ffc739fdb494750f2a989423de0693a9f0fd05de441c8846e664f9"
+    },
+    "stack_selected_bytes": 1800123164,
+    "version": "sun-world-linux-guest-archive/1"
+  },
+  "kernel_image_sha256": "ce78832564a2705c98d474fe487f11dbd6823eb0c5f5c162ebf1e760089b504f",
+  "owned_groups_gone": true,
+  "private_run_root_removed": true
+}

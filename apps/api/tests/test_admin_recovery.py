@@ -256,8 +256,9 @@ class AdminRecoveryTests(unittest.TestCase):
 
     def test_http_conflicts_are_fixed_and_nonadmins_remain_denied(self):
         from src.routers.auth.auth import get_auth_manager, get_current_user
-        from src.routers.role.role import get_role_manager, router as role_router
-        from src.routers.user.user import get_user_manager, router as user_router
+        from src.routers.role.role import get_role_manager, get_role_management_service, router as role_router
+        from src.routers.user.user import get_user_manager, get_user_management_service, router as user_router
+        from management_service_stub import persistence_service
         app = FastAPI()
         app.include_router(role_router)
         app.include_router(user_router)
@@ -267,6 +268,9 @@ class AdminRecoveryTests(unittest.TestCase):
         )
         app.dependency_overrides[get_role_manager] = lambda: self.roles
         app.dependency_overrides[get_user_manager] = lambda: self.users
+        stub = persistence_service(users=self.users, roles=self.roles)
+        app.dependency_overrides[get_role_management_service] = lambda: stub
+        app.dependency_overrides[get_user_management_service] = lambda: stub
         client = TestClient(app, raise_server_exceptions=False)
         client.cookies.set('access_token', 'synthetic-access-cookie')
         for method, url, data in [('DELETE', '/user/1', None), ('DELETE', '/role/1', None),

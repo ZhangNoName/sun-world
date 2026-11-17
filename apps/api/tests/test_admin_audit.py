@@ -259,10 +259,11 @@ class AdminAuditTests(unittest.TestCase):
 
     def test_yield_dependency_maps_storage_failure_and_invalid_target_without_weak_fallback(self):
         from src.routers.auth.auth import get_auth_manager
-        from src.routers.user.user import get_user_manager
+        from src.routers.user.user import get_user_management_service
+        from management_service_stub import persistence_service
         helper = recent_tests.AdminRecentHttpTests()
         client, app = helper.client()
-        app.dependency_overrides[get_user_manager] = lambda: self.users
+        app.dependency_overrides[get_user_management_service] = lambda: persistence_service(users=self.users)
         app.dependency_overrides[get_auth_manager] = lambda: SimpleNamespace(
             get_recent_session_context=lambda *args, **kwargs: (2, 'family'))
         response = client.delete('/user/2oops')
@@ -302,10 +303,10 @@ class AdminAuditTests(unittest.TestCase):
                     guard = require_admin_audit
                 app.add_api_route(path, lambda: True, methods=[method], dependencies=[Depends(guard)])
             if fault is None:
-                checker.verify_admin_policy(app.routes)
+                checker.verify_admin_guards(app.routes)
             else:
                 with self.assertRaises(ValueError):
-                    checker.verify_admin_policy(app.routes)
+                    checker.verify_admin_guards(app.routes)
                 self.assertEqual(checker.guarded_operations(app.routes, require_admin), ADMIN_OPERATIONS)
                 self.assertNotEqual(checker.guarded_operations(app.routes, require_admin_audit), ADMIN_STEP_UP_OPERATIONS)
                 if fault == 'missing':

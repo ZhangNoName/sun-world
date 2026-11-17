@@ -18,6 +18,8 @@ from src.core.auth.admin_audit import (
     AdminAuditTargetError, AdminAuditUnavailableError, create_admin_audit_context,
 )
 from src.core.request_context import get_request_id
+from src.core.auth import AuthorizationDenied, AuthorizationUnavailable
+from src.modules.management.policy import ManagementDenied
 from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
@@ -289,6 +291,18 @@ def require_admin_audit(request: Request, current_user=Depends(require_recent_ad
     except AdminAuditUnavailableError:
         raise HTTPException(status_code=503, detail=_error_detail(
             AdminAuditUnavailableError.code, AdminAuditUnavailableError.message,
+        )) from None
+    except AuthorizationUnavailable:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            'AUTH_SERVICE_UNAVAILABLE', '管理授权服务暂不可用，请稍后再试。',
+        )) from None
+    except ManagementDenied as error:
+        raise HTTPException(status_code=error.status_code, detail=_error_detail(
+            error.code, error.message,
+        )) from None
+    except AuthorizationDenied:
+        raise HTTPException(status_code=403, detail=_error_detail(
+            AUTH_FORBIDDEN, '当前账号无权执行此管理操作。',
         )) from None
 
 

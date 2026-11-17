@@ -142,9 +142,10 @@ class RecentConfigurationTests(unittest.TestCase):
 class AdminRecentHttpTests(unittest.TestCase):
     def client(self, *, actor=None, context=(2, 'synthetic-family')):
         from src.routers.auth.auth import get_auth_manager, get_current_user
-        from src.routers.role.role import get_role_manager, router as roles
-        from src.routers.resource.resource import get_resource_manager, resource_router
-        from src.routers.user.user import get_user_manager, router as users
+        from src.routers.role.role import get_role_manager, get_role_management_service, router as roles
+        from src.routers.resource.resource import get_resource_manager, get_resource_management_service, resource_router
+        from src.routers.user.user import get_user_manager, get_user_management_service, router as users
+        from management_service_stub import persistence_service
         app = FastAPI()
         for router in (roles, resource_router, users):
             app.include_router(router)
@@ -175,6 +176,9 @@ class AdminRecentHttpTests(unittest.TestCase):
             getattr(self.writes, name).return_value = True
         for dependency in (get_role_manager, get_resource_manager, get_user_manager):
             app.dependency_overrides[dependency] = lambda: manager
+        stub = persistence_service(auth=auth, users=manager, roles=manager, resources=manager)
+        for dependency in (get_role_management_service, get_resource_management_service, get_user_management_service):
+            app.dependency_overrides[dependency] = lambda: stub
         client = TestClient(app, raise_server_exceptions=False)
         client.cookies.set('access_token', 'synthetic-same-access-cookie')
         return client, app

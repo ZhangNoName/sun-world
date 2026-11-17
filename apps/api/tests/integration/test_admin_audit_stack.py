@@ -236,12 +236,17 @@ class AdminAuditStackTests(previous.AdminRecentStackTests):
         def pause(uow, audit, **kwargs):
             with lock:
                 entered.append(audit.actor_user_id)
-            rendezvous.wait()
             return original(uow, audit, **kwargs)
 
+        def submit_actor(client, code):
+            # Authorization locks deliberately serialize actual DML; rendezvous
+            # before entering HTTP verifies simultaneous independent callers.
+            rendezvous.wait()
+            return client.post('/role/', json={'name': code, 'code': code})
+
         with patch.object(roles, 'record_admin_change', pause), ThreadPoolExecutor(max_workers=2) as executor:
-            one = executor.submit(self.http.post, '/role/', json={'name': 'actor-one', 'code': 'actor-one'})
-            two = executor.submit(other.post, '/role/', json={'name': 'actor-three', 'code': 'actor-three'})
+            one = executor.submit(submit_actor, self.http, 'actor-one')
+            two = executor.submit(submit_actor, other, 'actor-three')
             self.assertEqual(one.result(timeout=10).status_code, 201)
             self.assertEqual(two.result(timeout=10).status_code, 201)
         self.assertCountEqual(entered, [1, 3])

@@ -2,10 +2,11 @@
 
 from src.core.module_registry import ModuleRegistry
 from src.modules.blog.manifest import BLOG_MANIFEST, BLOG_SCHEMAS
+from src.modules.management.manifest import MANAGEMENT_MANIFEST
 
 
 def create_module_registry() -> ModuleRegistry:
-    return ModuleRegistry((BLOG_MANIFEST,), BLOG_SCHEMAS)
+    return ModuleRegistry((BLOG_MANIFEST, MANAGEMENT_MANIFEST), BLOG_SCHEMAS)
 
 
 def create_blog_qa_application(database, content_database, *, auth_manager, redis_client,

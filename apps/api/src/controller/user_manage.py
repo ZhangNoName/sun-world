@@ -5,6 +5,7 @@ from src.database.mysql.mysql_manage import MySQLManager
 from src.type.auth_type import normalize_login_identifier
 from src.type.user_type import User
 from src.core.auth.admin_recovery import admin_recovery_transaction
+from src.core.auth import AuthorizationDenied
 from src.core.auth.admin_audit import (
     AdminAuditUnavailableError, admin_audit_target, admin_audit_transaction, record_admin_change,
 )
@@ -52,7 +53,7 @@ class UserManager:
             )
         return ",".join(self.credential_attr)
 
-    def create_user(self, user: User, *, audit=None) -> bool:
+    def create_user(self, user: User, *, audit=None, authorization=None) -> bool:
         """
         创建用户
 
@@ -69,7 +70,7 @@ class UserManager:
         """
         val = (user.username or user.name, user.name, user.sex, user.age, user.phone, user.email, user.password, user.birth_day)
         try:
-            with admin_audit_transaction(self.db, audit) as uow:
+            with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
                 role = uow.fetch_one(
                     "SELECT id FROM roles WHERE code = %s LIMIT 1 FOR UPDATE",
                     ("normal",),
@@ -88,7 +89,7 @@ class UserManager:
             user.id = res
             logger.info(f"用户创建成功 {res}")
             return True
-        except AdminAuditUnavailableError:
+        except (AdminAuditUnavailableError, AuthorizationDenied):
             raise
         except Exception as e:
             logger.error(f"创建用户失败: {e}")
@@ -391,7 +392,7 @@ class UserManager:
 
         return users
 
-    def update_user(self, user_id: str, *, audit=None, **kwargs) -> int:
+    def update_user(self, user_id: str, *, audit=None, authorization=None, **kwargs) -> int:
         """
         更新用户信息
 
@@ -416,14 +417,14 @@ class UserManager:
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id = %s"
         values = tuple(kwargs.values()) + (user_id,)
         if 'status' in kwargs:
-            with admin_audit_transaction(self.db, audit, protect_admin=True) as uow:
+            with admin_audit_transaction(self.db, audit, protect_admin=True, authorization=authorization) as uow:
                 changed = uow.execute(sql, values)
                 if audit is not None and changed > 0:
                     record_admin_change(uow, audit, action='user.disable', target_id=user_id, affected_rows=changed)
                 return changed
         return self.db.execute(sql, values)
 
-    def delete_user(self, user_id: str, *, audit=None) -> bool:
+    def delete_user(self, user_id: str, *, audit=None, authorization=None) -> bool:
         """
         逻辑删除用户（停用账号），通过设置 is_active=0
 
@@ -433,7 +434,7 @@ class UserManager:
         Returns:
             bool: 成功返回 True，否则 False
         """
-        result = self.update_user(user_id, audit=audit, status=0)
+        result = self.update_user(user_id, audit=audit, authorization=authorization, status=0)
         return result > 0
 
     def set_role_by_id(self, user_id: str, role_ids: List[int]) -> bool:

@@ -723,7 +723,8 @@ class AuthManagerTests(unittest.TestCase):
         from src.controller.auth_manager import AuthManager
         from src.controller.user_manage import UserManager
         from src.routers.auth.auth import get_auth_manager, get_current_user
-        from src.routers.user.user import get_user_manager, router
+        from src.routers.user.user import get_user_manager, get_user_management_service, router
+        from management_service_stub import persistence_service
 
         class Db:
             def __init__(self):
@@ -771,6 +772,8 @@ class AuthManagerTests(unittest.TestCase):
         }
         test_app.dependency_overrides[get_user_manager] = lambda: user_manager
         test_app.dependency_overrides[get_auth_manager] = lambda: auth_manager
+
+        test_app.dependency_overrides[get_user_management_service] = lambda: persistence_service(auth=auth_manager)
 
         with TestClient(test_app, raise_server_exceptions=False) as client:
             client.cookies.set("access_token", "synthetic-access-cookie")

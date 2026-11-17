@@ -1,5 +1,13 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜九项管理服务与事务授权复验
+
+- 按[协议](development/admin-management-service.md)迁移九维护写至真实access管理服务，保40旧/近期9/audit9守卫；同RC连接锁角色目录→actor账号/绑定后复验，实际commit前再验Redis与近期时间，合法本人降权/最后管理员409保持。audit非授权，raw内部None与Redis至commit窗口保留；九能力只映射本站admin，无Agent写工具/完整授予集合。
+- 最终33源树faab9674b3c4c6e2e9020f7e6cdd5a43cfb7bac6，API1007、新owned19及旧16/12/16/33/24过，独立service16/gate40+9+9+9/摘要review无剩余确认阻断；新OpenAPI相等/schema31表279列/deploy过，见[实证](evaluations/admin-management-2026-11-17/README.md)。首次19锁等待观测失败初因未确证，只改宿主采样节奏后19及三类各三次过，生产锁未改。
+- 实际Linux232源/279payload逐字绑定，原49/9/5/正式三库SDK6场景过且supplier0、legacy per_run=false；新九维护验收在macOS owned库，未冒称guest已跑。新catalog使旧SDK摘要拒绝，原配方离线重封，固定二进制/其余资产及旧67cache不动；新cache .tmp/admin-management/linux-assets保留，VM/19可定位DB根清理确认。
+- [同题案例](blog/2026-11-17-last-administrator-transaction.md)七稳定ID/14重点、沿用两透明图，1280/390明暗过未发布；预览 http://127.0.0.1:3033/.tmp/admin-management-blog-ode1l4ma/index.html 。原80/123/main210加1删和3030/8032/3033保留，原素材format/两dirty UI问题不动，无Web生产源变更不重跑全Web。
+- 仅中文本地保存，不推送部署/发布、不配置Clash或恢复官方付费复跑；生产目标/可授予范围/完整审计与真实恢复等仍待，A/P1/A–D未完成。Claude Code/claude-ds带新协议的私有hook/提交位置/合法自降权/Redis窗口及SDK按源重封约束。详见[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜管理变更同事务审计与Linux源码包闭合
 
 - 按[协议](development/admin-transaction-audit.md)为9维护写显式传server context、同UOW写兼容audit表，六表InnoDB/DML前核验，typed503不吞错；缺表/插入失败九路回滚，commit确认未知不自动重试，原最后admin409保持。内部None、完整审计运营/服务授权仍待，request_ref非身份。

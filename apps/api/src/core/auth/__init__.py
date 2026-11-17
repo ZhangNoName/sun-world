@@ -11,6 +11,10 @@ class AuthorizationDenied(PermissionError):
     pass
 
 
+class AuthorizationUnavailable(AuthorizationDenied):
+    pass
+
+
 @dataclass(frozen=True)
 class Principal:
     kind: Literal["anonymous", "user", "service"] = "anonymous"

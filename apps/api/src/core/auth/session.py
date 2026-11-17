@@ -5,7 +5,7 @@ import hmac
 
 from jose import jwt
 
-from . import AuthorizationDenied, Principal
+from . import AuthorizationDenied, AuthorizationUnavailable, Principal
 
 
 class SessionAuthenticator:
@@ -19,8 +19,11 @@ class SessionAuthenticator:
                 user = self.auth_manager.get_user_from_token(access_token, check_redis=True)
             else:
                 if getattr(uow, "isolation_level", None) != "READ COMMITTED":
-                    raise ValueError("Current authorization requires READ COMMITTED")
+                    raise AuthorizationUnavailable("Current authorization unavailable")
                 user = self.auth_manager.get_user_from_token(access_token, check_redis=True, uow=uow)
+        except Exception:
+            raise AuthorizationUnavailable("Current authorization unavailable") from None
+        try:
             if not user:
                 raise ValueError("Inactive session")
             payload = jwt.decode(access_token, self.auth_manager.secret_key, algorithms=["HS256"])

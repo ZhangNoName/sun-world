@@ -22,7 +22,7 @@ class ResourceManager:
         """获取全部字段字符串，用于SQL查询"""
         return ",".join(self.all_attr)
 
-    def create_resource(self, resource: Dict[str, Any], *, audit=None) -> int:
+    def create_resource(self, resource: Dict[str, Any], *, audit=None, authorization=None) -> int:
         """
         创建资源
 
@@ -42,14 +42,14 @@ class ResourceManager:
             resource.get("path", ""),
             resource.get("description", ""),
         )
-        if audit is None:
+        if audit is None and authorization is None:
             return self.db.execute(sql, params)
-        with admin_audit_transaction(self.db, audit) as uow:
+        with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
             resource_id = uow.execute(sql, params)
             record_admin_change(uow, audit, action='resource.create', target_id=resource_id, affected_rows=1)
         return resource_id
 
-    def update_resource(self, resource_id: int, *, audit=None, **kwargs) -> int:
+    def update_resource(self, resource_id: int, *, audit=None, authorization=None, **kwargs) -> int:
         """更新资源"""
         if not kwargs:
             raise ValueError("At least one resource field is required")
@@ -61,19 +61,19 @@ class ResourceManager:
         set_clause = ", ".join(f"{key}=%s" for key in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id=%s"
         params = tuple(kwargs.values()) + (resource_id,)
-        if audit is None:
+        if audit is None and authorization is None:
             return self.db.execute(sql, params)
-        with admin_audit_transaction(self.db, audit) as uow:
+        with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
             changed = uow.execute(sql, params)
             if changed > 0:
                 record_admin_change(uow, audit, action='resource.update', target_id=resource_id, affected_rows=changed)
         return changed
 
-    def delete_resource(self, resource_id: int, *, audit=None) -> bool:
+    def delete_resource(self, resource_id: int, *, audit=None, authorization=None) -> bool:
         """Delete a resource and its role associations atomically."""
         if audit is not None:
             resource_id = admin_audit_target(resource_id)
-        with admin_audit_transaction(self.db, audit) as uow:
+        with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
             associations = uow.execute(
                 "DELETE FROM role_resources WHERE resource_id=%s",
                 (resource_id,),

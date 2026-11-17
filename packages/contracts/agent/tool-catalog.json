@@ -54,6 +54,71 @@
         "mysql.blog_tag",
         "mongo.blogs"
       ]
+    },
+    {
+      "id": "identity-management",
+      "version": "1",
+      "owner": "management",
+      "dependencies": [],
+      "capabilities": [
+        "identity.resource.create",
+        "identity.resource.delete",
+        "identity.resource.update",
+        "identity.role.bind_resources",
+        "identity.role.create",
+        "identity.role.delete",
+        "identity.role.update",
+        "identity.user.create",
+        "identity.user.disable"
+      ],
+      "http_entries": [
+        {
+          "method": "DELETE",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/role/{role_id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "/user/{user_id}"
+        },
+        {
+          "method": "POST",
+          "path": "/resource/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/"
+        },
+        {
+          "method": "POST",
+          "path": "/role/{role_id}/bind_resources"
+        },
+        {
+          "method": "POST",
+          "path": "/user/"
+        },
+        {
+          "method": "PUT",
+          "path": "/resource/{resource_id}"
+        },
+        {
+          "method": "PUT",
+          "path": "/role/{role_id}"
+        }
+      ],
+      "tools": [],
+      "skills": [],
+      "data_owners": [
+        "mysql.users",
+        "mysql.roles",
+        "mysql.user_roles",
+        "mysql.resources",
+        "mysql.role_resources",
+        "mysql.admin_change_audit"
+      ]
     }
   ],
   "schemas": {
@@ -235,5 +300,5 @@
       "evaluation_set": "apps/api/tests/fixtures/agent-model-evaluation.json"
     }
   ],
-  "bundle_hash": "8ea34c5ca724d9648827e2d3f1fafe5e70b3e49fb26385441389947ec8967d10"
+  "bundle_hash": "bea9a718e25ccd53841239d9e96604c8e751010b18b12970d5a8d5bab3257419"
 }

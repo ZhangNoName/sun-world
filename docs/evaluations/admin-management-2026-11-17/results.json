@@ -1,0 +1,239 @@
+{
+  "baseline_head": "dd71144aa0986c1815223648b909e8e5f6b24605",
+  "final_source_tree": "faab9674b3c4c6e2e9020f7e6cdd5a43cfb7bac6",
+  "source_paths": 33,
+  "runs": [
+    {
+      "log": "stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 7.395,
+      "sha256": "27cc132bd14b685c62d5ddc3319e52461a9591dcc2b9a6a8244ecc84f4b15d26",
+      "unittest_count": 19,
+      "unittest_seconds": 3.347
+    },
+    {
+      "log": "audit-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 6.825,
+      "sha256": "2f1d0bf2643239cdc763f63a9b4f5538c93af9dffd717d36c36bb4b62da7879b",
+      "unittest_count": 16,
+      "unittest_seconds": 3.444
+    },
+    {
+      "log": "recent-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 6.05,
+      "sha256": "91c5d6dbea659dd3f7a643f90706338d7ee987da1f95d2652d0aa96acc396520",
+      "unittest_count": 12,
+      "unittest_seconds": 2.286
+    },
+    {
+      "log": "recovery-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 3.688,
+      "sha256": "37706cc99a2d6cb1b104e2b27e08ab654ce697ebcce737e5e1d98a1420dd6dcf",
+      "unittest_count": 16,
+      "unittest_seconds": 0.555
+    },
+    {
+      "log": "original-mysql-final.log",
+      "exit_code": 0,
+      "wall_seconds": 7.711,
+      "sha256": "144e5a796596b94a6ad75ebcf35a87ddcc4c74f61fd2b3ed60f224ccaf16b9d1",
+      "unittest_count": 33,
+      "unittest_seconds": 5.59
+    },
+    {
+      "log": "original-stack-final.log",
+      "exit_code": 0,
+      "wall_seconds": 20.002,
+      "sha256": "c156eb8a03ba89b770f30a359f681ae9252abcb22042303a242f04efd8af0c4a",
+      "unittest_count": 24,
+      "unittest_seconds": 16.666
+    },
+    {
+      "log": "api-final.log",
+      "exit_code": 0,
+      "wall_seconds": 43.319,
+      "sha256": "58ac4e0a84ad4edd749f8e67efee5871bc69b3959eeecdbc8be28bfcf30907f7",
+      "unittest_count": 1007,
+      "unittest_seconds": 38.676
+    }
+  ],
+  "diagnostic_and_repeated_runs": [
+    {
+      "log": "stack-initial.log",
+      "sha256": "f24b4952b59b82e0ecf35b55a0b3a1fd105c9b48ff698a8a4922bfe3524640b2",
+      "tests": 17,
+      "seconds": 3.138,
+      "result": "passed"
+    },
+    {
+      "log": "stack-final.log.initial-failed",
+      "sha256": "1a735e06f8e0141e354c07e4a4ea2d1cb2da18d5864ff0049bf362762ad1dbd6",
+      "tests": 19,
+      "seconds": 7.664,
+      "result": "failed"
+    },
+    {
+      "log": "stack-corrected.log",
+      "sha256": "b835d16b2a5fa55e9dc07b8a9cc266d44909370b19cde6116352c7a7528523f4",
+      "tests": 19,
+      "seconds": 3.167,
+      "result": "passed"
+    },
+    {
+      "log": "lock-repeat.log",
+      "sha256": "0bd90d6680659375257cc8dbec6def2f6b6435a0799356d70c4d5ec47c3500ea",
+      "tests": 9,
+      "seconds": 1.531,
+      "result": "passed"
+    }
+  ],
+  "first_native_failure_scope": "single actor-status LOCK WAIT not observed at 0.03s cadence; root changed observer to established native recovery 0.15s cadence and added diagnostics; production locking unchanged; exact intermittent cause not established",
+  "repeat_scope": "three actual revocation kinds each repeated three times, same thread-specific LOCK WAIT and commit/rejection oracles; nine passed",
+  "known_native_roots": [
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-1qozwnch",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-3vgyb8wv",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-4lo_ipwt",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-a4ojz0db",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-esuiv3un",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-fu1gybls",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-j50v6yf2",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-m9znot0s",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-so1grwes",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-wtujzgjn",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-mysql-xzz85xal",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-4tf2e2nb",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-6q137d6k",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-9rek62n0",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-d6uy5bbo",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-ggbhtl4s",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-k1ndfq4c",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-krdbw0r7",
+      "removed": true,
+      "process_reference": false
+    },
+    {
+      "runtime": "/private/tmp/sunworld-agent-redis-on_xpx9y",
+      "removed": true,
+      "process_reference": false
+    }
+  ],
+  "existing_services": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033": 200
+  },
+  "native_mysql": "8.4.13 macos15 arm64",
+  "native_redis": "7.2.17 macOS arm64",
+  "offline_service_tests": 16,
+  "policy_gate": "40 legacy +9 recent +9 audit +9 management service, fixed action and actual injected receiver",
+  "openapi_unchanged": true,
+  "schema_tables": 31,
+  "schema_columns": 279,
+  "deploy_schema_protocol_passed": true,
+  "review": "independent service16/gate/hash/catalog/package checks; no remaining confirmed blocker",
+  "linux": {
+    "protocol49": true,
+    "containment_cases": 9,
+    "gateway_cases": 5,
+    "formal_stack_cases": 6,
+    "actual_sdk_executions": 6,
+    "sdk_version": "0.2.2-rc.1",
+    "payload_files": 279,
+    "manifest_paths": 232,
+    "assets": 67,
+    "supplier_requests": 0,
+    "legacy_per_run_flag": false,
+    "scope": "original synthetic guest chain, not nine new guest management mutation tests",
+    "groups_gone": true,
+    "private_run_root_removed": true
+  },
+  "sdk_prepare_failure": "old sealed catalog SHA rejected at prepare, no VM started; old baseline catalog control passes, new catalog only resealed offline with unchanged fixed native binaries and other assets; original cache preserved",
+  "host_harness_corrections": [
+    "blog script global path rename accidentally renamed old anchor; corrected to new semantic anchor",
+    "payload negative-control helper caught RuntimeError instead of gate ValueError; corrected helper only",
+    "source snapshot helper initially omitted already staged paths; fixed to diff HEAD, source tree unchanged"
+  ],
+  "redis_to_mysql_commit_atomic": false,
+  "agent_write_tools_added": false,
+  "raw_internal_manager_paths_globally_disabled": false,
+  "web_production_source_changed": false,
+  "external_model_used": false,
+  "proxy_config_changed": false,
+  "published": false,
+  "pushed": false,
+  "deployed": false,
+  "format_scoped_passed": true,
+  "root_format_status": "failed only at original docs/content-sources/csdn-qq-42345136/manifest.json; preserved"
+}

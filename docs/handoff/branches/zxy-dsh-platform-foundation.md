@@ -8,6 +8,18 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：九项管理服务与事务内授权
+
+- 目标继续开发/review/本地验证/中文版本保存，基点dd71144；[新协议](../../development/admin-management-service.md)先落盘并同步coding/判官。新增management普通包service/policy/schema/public/manifest，九既有HTTP写改调用；保40旧/近期9/audit9守卫，capability仅映射本站admin的九维护能力，不新增HTTP/Grant API/Agent写工具。原raw manager无audit路径仍受信任内部持久化，不声称原来存在外部绕过。
+- 实际活动access→初次短RC权威Principal；严格参数/scope/target，audit需actor/session匹配，不接caller Principal/owner/callback作证明。实际write UOW六表InnoDB、roles目录→actor users→现有绑定锁后同连接再读status=1与当前角色；before_commit在实际commit前，保护型位于lastadmin检查后。锁定Principal允许有其他admin时本人停用/角色改码/删除，仍复验Redis/时间；last409、audit回滚、commit未知不重放保留。Redis至MySQL仍有窗口，没有授权版本表/完整可授予集合。
+- 主要源新modules/management六文件、core/auth/session/errors/audit/recovery、AuthManager和三manager/三router、组合根、host gate、catalog/Linux显式合同；新离线service16/集中旧fake substitute、root native19/launcher。gate固定40+9+9+9、execute action/真实注入receiver，四否定对照防假接线。原两blog工具/schema/Skill原样，目录只添无工具管理模块。
+- 最终33 source-only tree faab9674b3c4c6e2e9020f7e6cdd5a43cfb7bac6；完整API1007/38.676秒、新MySQL8.4.13/Redis7.2.17/Auth/Cookie/HTTP与direct19/3.347、原audit16/3.444、recent12/2.286、lastadmin16/.555、原MySQL33/5.590、原stack24/16.666全exit0；schema31/279/deploy与新OpenAPI相等。判官独立16+gate/摘要/包对照过，无剩余确认阻断，见[实证](../../evaluations/admin-management-2026-11-17/README.md)。
+- 首17诊断通过；扩19首次仅status LOCKWAIT观测失败，初因未确证。只将测试采样.03改为原native恢复测试的.15并补失败诊断，生产锁不变；纠正19、冻结19及三种撤权各三次指定thread实际LOCKWAIT均过。原audit actor barrier移HTTP前以适配刻意串行DML，仍两真实请求/两actor精确审计。root初次preview anchor全局替换、payload helper异常类型与快照未计已暂存路径均仅验收脚本修正，失败记录保留。
+- Linux新增六src显式232，asset合同只source SHA变化；实际VZ旧49/9/5/组件SDK/正式三库mTLS原6场景通过，SDK六执行/合成模型10工具4、supplier0，formal peak113446912，原legacy per_run=false保持。279payload/67资产与232源逐字绑定，旧226或缺任一新模块均拒；guest未跑新九维护动作/LOCKWAIT，不跨平台冒称。
+- 新catalog使旧SDK封包prepare正确拒绝，原配方从既有Linux依赖离线reseal，只catalog源摘要变化、固定SDK0.2.2-rc.1/二进制/其余资产不变。原67cache不动，新ignored .tmp/admin-management/linux-assets保留供下轮；旧包+原catalog与新包+新catalog均通过，旧包+新catalog拒绝。未执行宿主Linux ELF/联网/安装/供应商调用，失败prepare未启动VM且组/root回收。
+- [管理员案例](../../blog/2026-11-17-last-administrator-transaction.md)同题增加服务复验共七稳定ID/14重点，后端/原三标签；原两透明图沿用，新锁顺序编号解释，博客03同步。1280/390明暗查看、无缩进/溢出/裸星、两图360/约342px，未发布；预览 http://127.0.0.1:3033/.tmp/admin-management-blog-ode1l4ma/index.html 。19可定位DB根删除/ps无引用、VM三库/组/根回收，既有3030/8032/3033均200；原80/123和main210加1删保持。无Web生产源变动不重跑全Web，原素材format/两dirty UI问题不动。
+- 仅中文本地提交，不推送部署/发布、不改Clash/恢复官方付费四题；生产目标/细粒度grant/授予范围、完整审计运营与实际恢复/备份等仍待，A/P1/A–D未完成。Claude Code/claude-ds先读新协议及实证，保持私有hook/锁定前置身份与自降权/单连接/提交位置/Redis窗口/无写工具/SDK按源重封等约束。
+
 ### 2026-11-17 最新 checkpoint：同事务管理审计与Linux源码导入兼容
 
 - 持续目标开发/review/验证/中文本地保存，基点2dc4d58。按[协议](../../development/admin-transaction-audit.md)为9已近期维护写显式传server AdminAuditContext，actor ID与sid/request摘要引用；新兼容admin_change_audit表只动作/目标/影响行/UTC，不存原参数/敏感值。40+9+9依赖精确gate，context非服务授权凭证/request_ref非身份。内部None路径未迁移，拒绝/读取/保留/完整前后快照仍待。

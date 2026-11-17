@@ -24,7 +24,7 @@ class RoleManager:
         """获取全部字段字符串，用于SQL查询"""
         return ",".join(self.all_attr)
 
-    def create_role(self, role: Dict[str, Any], *, audit=None) -> int:
+    def create_role(self, role: Dict[str, Any], *, audit=None, authorization=None) -> int:
         """
         创建角色
 
@@ -42,14 +42,14 @@ class RoleManager:
             role["code"],
             role.get("description", "")
         )
-        if audit is None:
+        if audit is None and authorization is None:
             return self.db.execute(sql, params)
-        with admin_audit_transaction(self.db, audit) as uow:
+        with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
             role_id = uow.execute(sql, params)
             record_admin_change(uow, audit, action='role.create', target_id=role_id, affected_rows=1)
         return role_id
 
-    def update_role(self, role_id: int, *, audit=None, **kwargs) -> int:
+    def update_role(self, role_id: int, *, audit=None, authorization=None, **kwargs) -> int:
         """更新角色"""
         if not kwargs:
             raise ValueError("At least one role field is required")
@@ -61,19 +61,19 @@ class RoleManager:
         set_clause = ", ".join(f"{k}=%s" for k in kwargs)
         sql = f"UPDATE {self.table_name} SET {set_clause} WHERE id=%s"
         params = tuple(kwargs.values()) + (role_id,)
-        if 'code' in kwargs or audit is not None:
-            with admin_audit_transaction(self.db, audit, protect_admin='code' in kwargs) as uow:
+        if 'code' in kwargs or audit is not None or authorization is not None:
+            with admin_audit_transaction(self.db, audit, protect_admin='code' in kwargs, authorization=authorization) as uow:
                 changed = uow.execute(sql, params)
                 if audit is not None and changed > 0:
                     record_admin_change(uow, audit, action='role.update', target_id=role_id, affected_rows=changed)
                 return changed
         return self.db.execute(sql, params)
 
-    def delete_role(self, role_id: int, *, audit=None) -> bool:
+    def delete_role(self, role_id: int, *, audit=None, authorization=None) -> bool:
         """删除角色，并清理关联资源"""
         if audit is not None:
             role_id = admin_audit_target(role_id)
-        with admin_audit_transaction(self.db, audit, protect_admin=True) as uow:
+        with admin_audit_transaction(self.db, audit, protect_admin=True, authorization=authorization) as uow:
             associations = uow.execute("DELETE FROM user_roles WHERE role_id=%s", (role_id,))
             associations += uow.execute(
                 f"DELETE FROM {self.role_resource_table} WHERE role_id=%s",
@@ -107,11 +107,11 @@ class RoleManager:
     # 角色-资源关联操作
     # ---------------------------
 
-    def bind_resources(self, role_id: int, resource_ids: List[int], *, audit=None):
+    def bind_resources(self, role_id: int, resource_ids: List[int], *, audit=None, authorization=None):
         """绑定角色到多个资源"""
         if audit is not None:
             role_id = admin_audit_target(role_id)
-        with admin_audit_transaction(self.db, audit) as uow:
+        with admin_audit_transaction(self.db, audit, authorization=authorization) as uow:
             changed = uow.execute(
                 f"DELETE FROM {self.role_resource_table} WHERE role_id=%s",
                 (role_id,),

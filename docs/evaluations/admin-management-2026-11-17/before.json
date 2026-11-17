@@ -1,0 +1,18 @@
+{
+  "baseline_head": "dd71144aa0986c1815223648b909e8e5f6b24605",
+  "raw_internal_manager_accepts_no_proof": true,
+  "format_valid_audit_is_not_authorization": true,
+  "events": [
+    {
+      "actor_user_id": 2,
+      "action": "role.create",
+      "target_id": 6
+    }
+  ],
+  "scope": "trusted internal persistence baseline; no external endpoint bypass demonstrated",
+  "no_public_service_yet": true,
+  "mysql_root": "/private/tmp/sunworld-agent-mysql-1qozwnch",
+  "redis_root": "/private/tmp/sunworld-agent-redis-krdbw0r7",
+  "mysql_removed": true,
+  "redis_removed": true
+}

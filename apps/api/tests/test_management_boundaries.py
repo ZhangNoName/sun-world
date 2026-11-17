@@ -66,9 +66,11 @@ class ManagementBoundaryTests(unittest.TestCase):
         from src.routers.auth.auth import get_auth_manager, get_current_user
         from src.routers.resource.resource import (
             get_resource_manager,
+            get_resource_management_service,
             resource_router,
         )
-        from src.routers.role.role import get_role_manager, router as role_router
+        from src.routers.role.role import get_role_manager, get_role_management_service, router as role_router
+        from management_service_stub import persistence_service
 
         app = FastAPI()
         app.include_router(role_router)
@@ -82,6 +84,8 @@ class ManagementBoundaryTests(unittest.TestCase):
         )
         app.dependency_overrides[get_role_manager] = lambda: object()
         app.dependency_overrides[get_resource_manager] = lambda: object()
+        app.dependency_overrides[get_role_management_service] = lambda: persistence_service(roles=object())
+        app.dependency_overrides[get_resource_management_service] = lambda: persistence_service(resources=object())
         client = TestClient(app, raise_server_exceptions=False)
         client.cookies.set('access_token', 'synthetic-access-cookie')
 

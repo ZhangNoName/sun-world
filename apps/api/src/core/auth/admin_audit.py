@@ -8,6 +8,7 @@ import re
 from uuid import uuid4
 
 from .admin_recovery import LastAdministratorError, admin_recovery_transaction
+from . import AuthorizationDenied
 
 
 ADMIN_AUDIT_ACTIONS = frozenset({
@@ -116,15 +117,19 @@ def _require_transactional_tables(uow):
 
 
 @contextmanager
-def admin_audit_transaction(db, audit=None, *, protect_admin=False):
+def admin_audit_transaction(db, audit=None, *, protect_admin=False, authorization=None):
     """No nested borrowing; both business and audit share the commit owner."""
     if audit is not None:
         validate_admin_audit_context(audit)
+    if authorization is not None and audit is None:
+        raise AuthorizationDenied('Management authorization requires audit')
     try:
         if protect_admin:
-            with admin_recovery_transaction(db) as uow:
+            with admin_recovery_transaction(db, before_commit=(authorization.before_commit if authorization is not None else None)) as uow:
                 if audit is not None:
                     _require_transactional_tables(uow)
+                if authorization is not None:
+                    authorization.before(uow)
                 yield uow
         else:
             transaction = (db.unit_of_work(isolation_level='READ COMMITTED')
@@ -134,9 +139,13 @@ def admin_audit_transaction(db, audit=None, *, protect_admin=False):
                     raise AdminAuditUnavailableError()
                 if audit is not None:
                     _require_transactional_tables(uow)
+                if authorization is not None:
+                    authorization.before(uow)
                 yield uow
+                if authorization is not None:
+                    authorization.before_commit(uow)
                 uow.commit()
-    except (LastAdministratorError, AdminAuditTargetError):
+    except (LastAdministratorError, AdminAuditTargetError, AuthorizationDenied):
         raise
     except Exception:
         if audit is None:
