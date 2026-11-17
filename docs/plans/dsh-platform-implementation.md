@@ -12,6 +12,8 @@
 
 ## 设计约束与阶段映射
 
+2026-11-17补齐D的[正式问答前端消费](../development/agent-formal-web.md)：formal/site沿正常登录，SSE/GET/cancel共用可信原文链接归一化；认证世代及每次发送立即生效的运行世代拒绝旧恢复/刷新/取消覆盖新账号或同账号新题。真实固定SDK/三库原路由导出成功和取消安全合同（供应商0、9.263秒、ACK全过），实际组件桌面/手机8场景合同回放通过，明确不是浏览器在线三库全链路。API938、纯源码快照64项及类型检查通过，Web264等通过但CSS预算使整个gate仍失败；根素材格式问题保留。[实证](../evaluations/agent-formal-web-2026-11-17/README.md)记录源码与清理。A的影子基线/本地盘点已交付，不重复；下一步D有限slot/contribution与卸载/错误隔离仍待，生产、官方Linux四题及人工/模型版本策略等门槛保持。博客04同题补恢复边界、两透明图及双尺寸预览通过未发布，原80dirty保持，仅中文本地保存。
+
 文件命名、缩进、测试布局以[工程文件规范](../repository-conventions.md)为准；模块权限、页面贡献及跨项目接入以[扩展契约](../architecture/module-extension-contract.md)为准。P0 是历史原型，A–D 对应 P1，E–F 对应 P2，G 对应 P3，不混用优先级 P1 与阶段编号。
 
 阶段 A 首批已在本地实现模块注册、严格工具 schema、公开读取策略和 HTTP/工具共用查询；完整范围及验证见[分支交接](../handoff/branches/zxy-dsh-platform-foundation.md)。管理员入口源码盘点、40项显式基线及旧/新影子比较已在本地实现，见[迁移说明](../development/admin-policy-migration.md)；本地profile的真实角色/resource只读快照核对已完成（单启用管理员、resource目录为空，无重复/失联绑定），生产目标核对、恢复路径和逐入口能力迁移仍未完成，阶段 A 未整体验收；Worker/运行准入保持关闭。任务归属：A 增加模块权限和声明验证；D 按实际页面引入有限 slot/contribution，覆盖卸载、错误隔离和能力加载；G 在第二项目启用前完成项目隔离与 adapter 契约测试。格式配置统一作为独立维护任务，不与功能改造混做。

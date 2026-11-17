@@ -60,6 +60,16 @@ async function withAuthRefreshLock<T>(work: () => Promise<T>): Promise<T> {
   return navigator.locks.request('sun-world-auth-refresh', work)
 }
 
+let sessionEpoch = 0
+let logoutEpoch: number | null = null
+let restorePromise: Promise<UserInfo | null> | null = null
+let refreshPromise: Promise<void> | null = null
+
+function requireCurrentSession(epoch: number) {
+  if (epoch !== sessionEpoch || logoutEpoch === epoch)
+    throw new Error('登录状态已变化，请重试')
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   status: 'unknown',
   accessTokenExpire: getAccessTokenExpire(),
@@ -88,6 +98,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   clearTokens() {
+    sessionEpoch += 1
+    restorePromise = null
+    refreshPromise = null
     set({
       accessTokenExpire: null,
       refreshTokenExpire: null,
@@ -126,61 +139,75 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async restoreSession() {
+    if (logoutEpoch === sessionEpoch) return null
     if (get().status === 'authenticated' && get().user) return get().user
     if (restorePromise) return restorePromise
 
+    const epoch = sessionEpoch
     set({ status: 'restoring' })
     get().syncExpireFromCookie()
     const restoreFromCookies = async () => {
       if (get().isAccessTokenExpired() && !get().isRefreshTokenExpired()) {
         await withAuthRefreshLock(async () => {
+          requireCurrentSession(epoch)
           try {
             const remoteSession = await getSessionStatus({
               suppressErrorToast: true,
               skipAuthPreflight: true,
               _authRetry: true,
             })
+            requireCurrentSession(epoch)
             get().updateTokenExpire(remoteSession)
             return
           } catch {
             // The shared API-host cookie is still stale; this tab owns refresh.
           }
+          requireCurrentSession(epoch)
           const session = await accountRefreshToken({
             suppressErrorToast: true,
           })
+          requireCurrentSession(epoch)
           get().updateTokenExpire(session as AuthSession)
         })
       }
+      requireCurrentSession(epoch)
       return getCurrentUser({ suppressErrorToast: true })
     }
-    restorePromise = restoreFromCookies()
+    const operation = restoreFromCookies()
       .then((user) => {
+        if (epoch !== sessionEpoch) return null
         set({ user, status: 'authenticated' })
+        if (epoch !== sessionEpoch) return null
         get().syncExpireFromCookie()
-        return user
+        return epoch === sessionEpoch ? user : null
       })
       .catch(() => {
-        get().clearTokens()
+        if (epoch === sessionEpoch) get().clearTokens()
         return null
       })
       .finally(() => {
-        restorePromise = null
+        if (restorePromise === operation) restorePromise = null
       })
 
-    return restorePromise
+    restorePromise = operation
+    return operation
   },
 
   async refreshSession(config) {
+    const epoch = sessionEpoch
+    requireCurrentSession(epoch)
     if (refreshPromise) return refreshPromise
 
     const observedExpiry = get().accessTokenExpire
-    refreshPromise = withAuthRefreshLock(async () => {
+    const operation = withAuthRefreshLock(async () => {
+      requireCurrentSession(epoch)
       try {
         const remoteSession = await getSessionStatus({
           suppressErrorToast: true,
           skipAuthPreflight: true,
           _authRetry: true,
         })
+        requireCurrentSession(epoch)
         const remoteExpiry = expiryFromSession(
           remoteSession.access_token_expire
         )
@@ -193,47 +220,70 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch {
         // Expired access is expected here; the refresh cookie is still HttpOnly.
       }
+      requireCurrentSession(epoch)
       const session = await accountRefreshToken(config)
+      requireCurrentSession(epoch)
       get().updateTokenExpire(session as AuthSession)
     })
-      .then(() => undefined)
+      .then(() => {
+        requireCurrentSession(epoch)
+      })
       .catch((error) => {
-        get().clearTokens()
+        if (epoch === sessionEpoch) get().clearTokens()
         throw error
       })
       .finally(() => {
-        refreshPromise = null
+        if (refreshPromise === operation) refreshPromise = null
       })
 
-    return refreshPromise
+    refreshPromise = operation
+    return operation
   },
 
   async login(username, password) {
+    get().clearTokens()
+    const epoch = sessionEpoch
     const session = await accountLogin({ username, password })
+    requireCurrentSession(epoch)
     get().updateTokenExpire(session)
     await get().restoreSession()
+    requireCurrentSession(epoch)
     return session
   },
 
   async loginWithVerification(data) {
+    get().clearTokens()
+    const epoch = sessionEpoch
     const session = await completeVerificationLogin(data)
+    requireCurrentSession(epoch)
     get().updateTokenExpire(session)
     await get().restoreSession()
+    requireCurrentSession(epoch)
     return session
   },
 
   async register(data) {
+    get().clearTokens()
+    const epoch = sessionEpoch
     const session = await accountRegister(data)
+    requireCurrentSession(epoch)
     get().updateTokenExpire(session as AuthSession)
     await get().restoreSession()
+    requireCurrentSession(epoch)
     return session
   },
 
   async logout() {
+    get().clearTokens()
+    const epoch = sessionEpoch
+    logoutEpoch = epoch
     try {
       await accountLogout()
     } finally {
-      get().clearTokens()
+      if (epoch === sessionEpoch) {
+        logoutEpoch = null
+        get().clearTokens()
+      }
     }
   },
 
@@ -241,6 +291,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return get().restoreSession()
   },
 }))
-
-let restorePromise: Promise<UserInfo | null> | null = null
-let refreshPromise: Promise<void> | null = null

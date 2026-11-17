@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜正式问答前端消费与异步恢复
+
+- 在 `zxy/dsh-platform-foundation` 按[协议](development/agent-formal-web.md)修复formal/site正常会话分流、SSE/GET/cancel来源统一归一化；认证与运行世代防旧账号或同账号旧恢复/刷新/取消覆盖新问题，发送失败也不重新接纳旧回执。A影子40项/本地盘点已有，不重复。判官两P2修复后18hook及五交错复验过，无剩余确认阻断。
+- 原正式路由/AuthManager/mTLS/独占三库/固定SDK实际导出成功与取消合同，1+1 SDK/3+1合成模型/ACK全过、9.263秒，供应商0；fixture与实际JSON值相同。318源与source-only树见[实证](evaluations/agent-formal-web-2026-11-17/README.md)，producer308运行后核对，不称运行前快照。API938过、纯源码快照64+typecheck过；Web264等过但最终CSS预算仍失败，根原素材manifest格式失败保留。
+- 实际组件1280/390匿名/恢复/发送/取消8场景合同回放过，明确非在线浏览器三库E2E；自有runtime/快照按inode/无打开文件清理，3030/8032/3033均200。博客04后端/原三标签、7稳定ID与两透明图保持，双尺寸实渲通过未发布。保原80dirty/main原210加1删，仅中文本地提交，不推送部署发布。
+- 下一步D有限slot/contribution与卸载/错误隔离；生产/目标库/备份/TLS、多副本/断电、官方Linux四题和人工/模型版本策略仍待，P1/A–D未整体通过。后续Claude Code/claude-ds先读新协议checkpoint及[分支交接](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17 / 原生 Linux 独立 API 进程三切点通过
 
 - 基点54b3490，当前继续开发/审查/中文本地保存目标，P1/A–D未完成。首轮新--api-restart保原49/九隔离/五网关/组件SDK/正式六场景，再三个实际API SIGKILL/wait同TLS/fd/会话/Worker重启，均通过；306源/270payload/67原资产与判官严格V6复核一致，source-only树31ad035f2d3791bb9d6d225b85230a683a238c2a。

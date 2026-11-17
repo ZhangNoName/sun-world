@@ -8,6 +8,16 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：正式问答前端消费与异步恢复
+
+- 基点61608ea，核总计划确认A的40项管理员影子基线与本地聚合盘点已做；不重复实现或读取业务配置。沿[新协议](../../development/agent-formal-web.md)补D真实消费者缺口：formal/site使用正常AuthStore，陌生/矛盾模式失败关闭；仅fixtures使用合成入口。SSE/GET/cancel共用来源归一化，可信站点绝对原文链接转站内路径，拒不匹配ID/外链/歧义URL，错误映射中文。
+- AuthStore恢复/续期/登录/退出加认证世代与promise所有权，旧成功/失败不能回填或清空新账号；问答每次send立即递增运行世代，旧恢复/刷新/cancel/流回调不能覆盖同账号新问题，发送失败亦保持边界。根6项Auth竞态修前全失败后通过；判官独立找出的旧cancel与旧restore两项P2先复现再修，18hook及五交错复核通过，无剩余确认阻断。仅约束客户端状态，不承诺撤回服务器Set-Cookie或跨请求全局事务。
+- 新显式维护CLI与producer沿原正式路由/AuthManager/mTLS/三库/真实固定SDK导出成功和取消合同；1+1 SDK、3+1合成模型请求、ACK/清理全过，9.263秒/供应商0。canonical site_origin构造时固定，fixture与实际JSON值相同，未事后改响应。producer308运行后摘要核对一致；最终318源及source-only树见[实证](../../evaluations/agent-formal-web-2026-11-17/README.md)，不冒称运行前快照或生产HTTP密码登录。
+- API938/36.746秒通过；Web contracts6/AI UI25/Web264/typecheck/build/SSG/manifest过，最终CSS gzip预算失败，整体gate仍失败；原素材manifest格式失败保持。非Git纯源码快照64项+typecheck通过，随后仅测试格式调整并16项复验；无CSS/预算/生产API/Worker变更，不重跑既成VM/供应商。判官复核318/308与合同/浏览器边界无阻断。
+- 桌面1280/手机390，匿名/恢复/发送/取消共8个实际组件合同回放通过，明确live_api_e2e=false；不调用local测试会话或外部HTTP，引用/blog/1、纯文本答案、无溢出。自有runtime与源码快照核inode/无打开文件后清理；原live/两个失败证据根和67资产缓存不动，3030/8032/3033均200。现站点profile/模型/Clash不变，不部署本地模型。
+- 按sun-world-blog→design更新博客04两段，解释会话与来源恢复、同账号新问题的迟到回执边界；后端/架构笔记、Agent、DeepSeek Harness，7稳定ID与两透明图保持，1280/390实渲通过未发布。原80dirty及main handoff原210加1删保持，仅中文本地提交，不推送/部署/发布。
+- D有限slot/contribution与卸载/错误隔离尚待；正式生产入口、目标库/恢复/备份/TLS、多副本、官方Linux四题及人工/版本策略仍独立待，P1/A–D未完成。后续Claude Code/claude-ds先读新协议与本checkpoint，不沿旧“Remaining”的历史表述重复实现已交付部分。
+
 ### 2026-11-17 最新 checkpoint：原生 Linux 独立 API 进程三切点通过
 
 - 基点54b3490，沿[新协议](../../development/agent-api-process-recovery.md)追加可信VM --api-restart，仍先原49/九隔离/五网关/组件SDK/正式六场景，再原samefd/原认证/三库/真实SDK三切点。SDK CLI显式--api-process-recovery --linux-stack，子API仅可信固定argv选择Linux，不接受HTTP/环境切换，原Mac默认及旧Linux模式保持。无供应商/broker/串口2/网络/磁盘/share/key，不部署本地模型或改生产入口。
@@ -96,10 +106,11 @@
 
 ## Remaining / next step
 
-1. A 尚需现有角色/resource只读盘点、管理员基线与旧/新策略影子差异机制，未迁移旧写入口。当前只登记并启用公开读取能力；不把管理员角色自动转成 Agent 写权限。
-2. B 验证固定SDK真实模型参数流/停止原因、Linux隔离与资源硬上限；确认部署位置和服务凭据。
-3. C 再实现运行账本、白名单准入、实时撤销、累计预算、来源交付回执和终态事务；D 才接只读内测。
-4. 合并前另处理全局Web预算/素材格式失败；不以定向通过代替根检查全绿。
+1. A 已有40项管理员基线/影子差异和本地profile角色/resource只读聚合核对；生产目标、恢复路径及旧写入口逐项迁移尚待，不自动赋予Agent写权限。
+2. B 已有原生Linux隔离、网关、固定SDK/三库组合与API进程崩溃验收；官方Linux四题失败并停止付费复跑，人工/不可变模型版本、生产容量和凭据策略仍待。旧环境不可用结论已过时。
+3. C 账本、准入、撤销、预算、来源回执、终态事务及多种真实MySQL/进程故障验证已实现，生产组合根未开放；未知孤儿/旧锁恢复、宿主断电、多副本和目标库/备份/TLS仍待。
+4. D 已有只读问答页面与正式合同消费/会话恢复，本轮合同回放不等于生产接线。有限slot/contribution及卸载、错误隔离和能力加载继续实施；不重建通用插件框架。
+5. 合并前另处理全局Web预算/素材格式失败；不以定向通过代替根检查全绿。以上是截至本轮的剩余摘要，历史checkpoint保留当时边界。
 
 ## Writing / publication
 

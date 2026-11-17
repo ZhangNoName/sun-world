@@ -4,12 +4,22 @@ import { MemoryRouter } from 'react-router'
 import { ThemeProvider } from '@/shared/design/theme'
 import { useBlogQa } from '../hooks/useBlogQa'
 import { BlogQaPage } from './BlogQaPage'
+import {
+  fetchLocalArticle,
+  normalizeBlogQaRun,
+  type BlogQaCapabilities,
+} from '../blog-qa-api'
+import formalContract from '../fixtures/formal-contract.json'
 
 vi.mock('../hooks/useBlogQa')
+vi.mock('../blog-qa-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../blog-qa-api')>()),
+  fetchLocalArticle: vi.fn(),
+}))
 const mockedHook = vi.mocked(useBlogQa)
-function renderPage() {
+function renderPage(entry = '/aigc/blog-qa') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[entry]}>
       <ThemeProvider>
         <BlogQaPage />
       </ThemeProvider>
@@ -94,5 +104,73 @@ describe('BlogQaPage', () => {
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: '停止回答' }))
     expect(value.stop).toHaveBeenCalledOnce()
+  })
+  it('offers normal login and public examples for the formal API', () => {
+    mockedHook.mockReturnValue({
+      ...state(),
+      capabilities: {
+        ...state().capabilities,
+        mode: 'formal',
+        local_validation: false,
+      },
+    })
+    renderPage()
+    expect(screen.getByRole('link', { name: '登录后提问' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '文章中如何处理权限与账号？' })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '使用本地测试账号' })
+    ).not.toBeInTheDocument()
+  })
+  it.each(formalContract.cases)(
+    'renders the actual formal $case contract with safe sources and account copy',
+    (record) => {
+      const run = normalizeBlogQaRun(record.get.body.data)
+      mockedHook.mockReturnValue({
+        ...state(),
+        user: { user_id: 7, display_name: '站点账号' },
+        capabilities: record.capabilities.body.data as BlogQaCapabilities,
+        run,
+      })
+      renderPage('/aigc/blog-qa?article=1')
+      expect(screen.getByText(run.question)).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: '退出登录' })
+      ).toBeInTheDocument()
+      expect(screen.queryByText('本地验证环境')).not.toBeInTheDocument()
+      expect(fetchLocalArticle).not.toHaveBeenCalled()
+      if (record.case === 'completed') {
+        expect(screen.getByText(run.answer!)).toBeInTheDocument()
+        expect(screen.getByRole('link', { name: '权限检查' })).toHaveAttribute(
+          'href',
+          '/blog/1'
+        )
+      } else {
+        expect(
+          screen.getByText('本次问答已取消，可以重新提问')
+        ).toBeInTheDocument()
+        expect(
+          screen.queryByText('AGENT_RUN_CANCELLED')
+        ).not.toBeInTheDocument()
+      }
+    }
+  )
+  it('shows an actionable formal authorization error and keeps submission disabled', async () => {
+    const value = state()
+    mockedHook.mockReturnValue({
+      ...value,
+      capabilities: {
+        ...formalContract.cases[0].anonymous_capabilities.body.data,
+        reason: 'AGENT_NOT_ALLOWLISTED',
+      } as BlogQaCapabilities,
+    })
+    renderPage()
+    expect(
+      screen.getByText('当前账号尚未获得博客问答权限，请联系管理员')
+    ).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('你想了解什么？'), '公开问题')
+    expect(screen.getByRole('button', { name: '开始提问' })).toBeDisabled()
+    expect(value.send).not.toHaveBeenCalled()
   })
 })

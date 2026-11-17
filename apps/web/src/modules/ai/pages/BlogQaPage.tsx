@@ -3,7 +3,12 @@ import { Link, useSearchParams } from 'react-router'
 import { Button, buttonVariants } from '@sun-world/base-ui/button'
 import { Textarea } from '@sun-world/base-ui/textarea'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
-import { fetchLocalArticle, type LocalArticle } from '../blog-qa-api'
+import {
+  blogQaMessage,
+  blogQaMode,
+  fetchLocalArticle,
+  type LocalArticle,
+} from '../blog-qa-api'
 import { useBlogQa } from '../hooks/useBlogQa'
 import './blog-qa.css'
 
@@ -23,38 +28,37 @@ const statuses = {
 
 export function BlogQaPage() {
   const qa = useBlogQa()
-  const examples =
-    qa.capabilities?.mode === 'site'
-      ? [
-          '博客里介绍了哪些 React 开发实践？',
-          '怎样配置 AI 模型？',
-          '文章中如何处理权限与账号？',
-        ]
-      : localExamples
+  const mode = blogQaMode(qa.capabilities)
+  const realSession = mode === 'formal' || mode === 'site'
+  const fixtures = mode === 'fixtures'
+  const examples = realSession
+    ? [
+        '博客里介绍了哪些 React 开发实践？',
+        '怎样配置 AI 模型？',
+        '文章中如何处理权限与账号？',
+      ]
+    : localExamples
   const running =
     qa.busy || qa.run?.status === 'running' || qa.run?.status === 'accepted'
   const reason = qa.capabilities?.reason
-  const availabilityMessage =
-    reason === 'active_session_required'
-      ? '登录后可在本地验证名单范围内提问'
-      : reason === 'blog_qa_not_allowlisted'
-        ? '当前账号尚未加入本地问答名单'
-        : reason === 'blog_qa_admin_required'
-          ? '此本地入口目前仅向管理员账号开放'
-          : reason === 'site_blog_qa_disabled'
-            ? '当前环境未开放博客问答'
-            : reason || '当前环境尚未开放博客问答'
+  const availabilityMessage = blogQaMessage(reason)
   const [question, setQuestion] = useState('')
   const [params] = useSearchParams()
-  const articleId = Number(params.get('article'))
+  const articleParam = params.get('article') || ''
+  const articleId =
+    /^[1-9]\d*$/.test(articleParam) &&
+    Number.isSafeInteger(Number(articleParam))
+      ? Number(articleParam)
+      : 0
   const [article, setArticle] = useState<LocalArticle | null>(null)
   const [articleError, setArticleError] = useState('')
   useEffect(() => {
     let mounted = true
+    const abort = new AbortController()
     setArticle(null)
     setArticleError('')
-    if (articleId > 0 && qa.capabilities?.local_validation)
-      void fetchLocalArticle(articleId)
+    if (articleId > 0 && fixtures)
+      void fetchLocalArticle(articleId, abort.signal)
         .then((value) => {
           if (mounted) setArticle(value)
         })
@@ -63,8 +67,9 @@ export function BlogQaPage() {
         })
     return () => {
       mounted = false
+      abort.abort()
     }
-  }, [articleId, qa.capabilities?.local_validation])
+  }, [articleId, fixtures])
   return (
     <main className="blog-qa-page">
       <header className="blog-qa-header">
@@ -75,14 +80,14 @@ export function BlogQaPage() {
         <p className="blog-qa-kicker">SUN WORLD · BLOG</p>
         <h1 id="blog-qa-title">问问博客</h1>
         <p>从文章中寻找答案，每条参考都可以打开原文核对。</p>
-        {qa.capabilities?.local_validation && (
+        {fixtures && qa.capabilities && (
           <div className="blog-qa-notice" role="note">
             <strong>本地验证环境</strong>
             <span>{qa.capabilities.dataset} · 不连接生产数据</span>
             <span>模型：{qa.capabilities.model}</span>
           </div>
         )}
-        {qa.capabilities?.mode === 'site' && (
+        {realSession && qa.capabilities && (
           <div className="blog-qa-notice" role="note">
             <strong>本站公开博客</strong>
             <span>使用当前站点账号，答案附文章原文链接。</span>
@@ -93,10 +98,10 @@ export function BlogQaPage() {
         {qa.capabilities && !qa.capabilities.enabled && (
           <p role="status">{availabilityMessage}</p>
         )}
-        {qa.capabilities?.local_validation && !qa.user && (
+        {fixtures && !qa.user && (
           <Button onClick={() => void qa.login()}>使用本地测试账号</Button>
         )}
-        {qa.capabilities?.mode === 'site' && !qa.user && (
+        {realSession && !qa.user && (
           <Link
             to="/login?return_to=%2Faigc%2Fblog-qa"
             className={buttonVariants()}
@@ -108,7 +113,7 @@ export function BlogQaPage() {
           <div className="blog-qa-account">
             <span>{qa.user.display_name}</span>
             <Button variant="ghost" onClick={() => void qa.logout()}>
-              {qa.capabilities?.mode === 'site' ? '退出登录' : '退出测试账号'}
+              {realSession ? '退出登录' : '退出测试账号'}
             </Button>
           </div>
         )}
@@ -142,7 +147,10 @@ export function BlogQaPage() {
               <Button
                 type="submit"
                 disabled={
-                  !qa.user || !qa.capabilities?.enabled || !question.trim()
+                  !mode ||
+                  !qa.user ||
+                  !qa.capabilities?.enabled ||
+                  !question.trim()
                 }
               >
                 开始提问
@@ -179,9 +187,7 @@ export function BlogQaPage() {
               <p className="blog-qa-answer-text">{qa.run.answer}</p>
             )}
             {qa.run.error_code && (
-              <p role="alert">
-                未能完成问答，请重新提问。诊断：{qa.run.error_code}
-              </p>
+              <p role="alert">{blogQaMessage(qa.run.error_code)}</p>
             )}
             {qa.run.sources.length > 0 && (
               <div className="blog-qa-sources">
@@ -197,7 +203,7 @@ export function BlogQaPage() {
             )}
           </section>
         )}
-        {articleId > 0 && qa.capabilities?.local_validation && (
+        {articleId > 0 && fixtures && (
           <article className="blog-qa-answer" aria-label="参考原文">
             <Link to="/aigc/blog-qa">关闭原文</Link>
             <h2>{article?.title || '参考原文'}</h2>

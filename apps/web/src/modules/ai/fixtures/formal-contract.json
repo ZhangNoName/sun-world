@@ -1,0 +1,230 @@
+{
+  "version": "sun-world-formal-web-contract/1",
+  "passed": true,
+  "data_kind": "synthetic-public-articles-and-model",
+  "public_site_origin": "https://sunworld.site",
+  "sdk_version": "0.2.2-rc.1",
+  "supplier_requests": 0,
+  "cases": [
+    {
+      "case": "completed",
+      "cleanup_confirmed": true,
+      "capabilities": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "enabled": true,
+            "mode": "formal",
+            "local_validation": false,
+            "dataset": "本站公开博客",
+            "model": "sdk-stack-synthetic-model",
+            "authenticated": true,
+            "reason": null
+          },
+          "msg": "获取成功"
+        }
+      },
+      "anonymous_capabilities": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "enabled": false,
+            "mode": "formal",
+            "local_validation": false,
+            "dataset": "本站公开博客",
+            "model": "sdk-stack-synthetic-model",
+            "authenticated": false,
+            "reason": "AGENT_ACTIVE_SESSION_REQUIRED"
+          },
+          "msg": "获取成功"
+        }
+      },
+      "events": [
+        {
+          "version": "1",
+          "event_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9:0",
+          "type": "run.started",
+          "conversation_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+          "message_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+          "sequence": 0,
+          "created_at": "2026-11-17T00:58:05.508988Z",
+          "data": {
+            "run_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+            "mode": "formal"
+          }
+        },
+        {
+          "version": "1",
+          "event_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9:1",
+          "type": "message.completed",
+          "conversation_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+          "message_id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+          "sequence": 1,
+          "created_at": "2026-11-17T00:58:07.171586Z",
+          "data": {
+            "id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+            "status": "completed",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": "合成文章说明：界面可见性不能代替后端权限检查。",
+            "sources": [
+              {
+                "article_id": 1,
+                "title": "权限检查",
+                "url": "https://sunworld.site/blog/1"
+              }
+            ],
+            "error_code": null
+          }
+        }
+      ],
+      "get": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+            "status": "completed",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": "合成文章说明：界面可见性不能代替后端权限检查。",
+            "sources": [
+              {
+                "article_id": 1,
+                "title": "权限检查",
+                "url": "https://sunworld.site/blog/1"
+              }
+            ],
+            "error_code": null
+          },
+          "msg": "获取成功"
+        }
+      },
+      "cancel": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "id": "c25dff9a-d9cc-4ba1-8ec7-c62e8f0fecd9",
+            "status": "completed",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": "合成文章说明：界面可见性不能代替后端权限检查。",
+            "sources": [
+              {
+                "article_id": 1,
+                "title": "权限检查",
+                "url": "https://sunworld.site/blog/1"
+              }
+            ],
+            "error_code": null
+          },
+          "msg": "获取成功"
+        }
+      },
+      "model_count": 3,
+      "worker_acknowledged": true,
+      "sdk_start_count": 1
+    },
+    {
+      "case": "cancelled",
+      "cleanup_confirmed": true,
+      "capabilities": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "enabled": true,
+            "mode": "formal",
+            "local_validation": false,
+            "dataset": "本站公开博客",
+            "model": "sdk-stack-synthetic-model",
+            "authenticated": true,
+            "reason": null
+          },
+          "msg": "获取成功"
+        }
+      },
+      "anonymous_capabilities": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "enabled": false,
+            "mode": "formal",
+            "local_validation": false,
+            "dataset": "本站公开博客",
+            "model": "sdk-stack-synthetic-model",
+            "authenticated": false,
+            "reason": "AGENT_ACTIVE_SESSION_REQUIRED"
+          },
+          "msg": "获取成功"
+        }
+      },
+      "cancel": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+            "status": "cancelled",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": null,
+            "sources": [],
+            "error_code": "AGENT_RUN_CANCELLED"
+          },
+          "msg": "获取成功"
+        }
+      },
+      "events": [
+        {
+          "version": "1",
+          "event_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20:0",
+          "type": "run.started",
+          "conversation_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+          "message_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+          "sequence": 0,
+          "created_at": "2026-11-17T00:58:07.969714Z",
+          "data": {
+            "run_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+            "mode": "formal"
+          }
+        },
+        {
+          "version": "1",
+          "event_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20:1",
+          "type": "run.failed",
+          "conversation_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+          "message_id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+          "sequence": 1,
+          "created_at": "2026-11-17T00:58:08.693847Z",
+          "data": {
+            "id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+            "status": "cancelled",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": null,
+            "sources": [],
+            "error_code": "AGENT_RUN_CANCELLED"
+          }
+        }
+      ],
+      "get": {
+        "status": 200,
+        "body": {
+          "code": 1,
+          "data": {
+            "id": "853e33b9-6b8d-4de8-8b6e-c51a8804ee20",
+            "status": "cancelled",
+            "question": "合成问题：文章怎样说明后端权限？",
+            "answer": null,
+            "sources": [],
+            "error_code": "AGENT_RUN_CANCELLED"
+          },
+          "msg": "获取成功"
+        }
+      },
+      "model_count": 1,
+      "worker_acknowledged": true,
+      "sdk_start_count": 1
+    }
+  ]
+}

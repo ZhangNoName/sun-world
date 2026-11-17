@@ -1,0 +1,22 @@
+{
+  "sdk_run_terminal": true,
+  "owned": {
+    "sdk_runtime": {
+      "identity_matched": true,
+      "no_open_files": true,
+      "removed": true
+    },
+    "source_snapshot": {
+      "identity_matched": true,
+      "no_open_files": true,
+      "removed": true
+    }
+  },
+  "services": {
+    "3030": 200,
+    "8032": 200,
+    "3033": 200
+  },
+  "old_live_and_failed_roots_untouched": true,
+  "linux_asset_cache_preserved": true
+}
