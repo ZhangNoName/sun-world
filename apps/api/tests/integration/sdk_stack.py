@@ -244,6 +244,7 @@ class Fixture(FixtureCleanupMixin):
         self.database = 'sunworld_sdk_' + uuid4().hex
         self.namespace = 'agent:sdk:' + uuid4().hex + ':{sun-world}'
         self.gateway_secret, self.worker_secret = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
+        self.auth_secret = secrets.token_urlsafe(32)
         self.host = Host()
 
     async def start(self):
@@ -266,7 +267,7 @@ class Fixture(FixtureCleanupMixin):
             self.mongo[self.database].blogs.insert_one({'blogId': article['id'], 'content': article['content']})
         self.session_store = OwnedSessionRedis(AgentStackTests.redis, self.namespace + ':auth')
         self.auth = AuthManager(UserManager(self.pool), self.session_store,
-            secret_key=secrets.token_urlsafe(32), refresh_reuse_grace_seconds=0)
+            secret_key=self.auth_secret, refresh_reuse_grace_seconds=0)
         self.device = str(uuid4())
         self.tokens = self.auth.create_tokens_for_user('1', self.device)
         self.token = self.tokens.access_token
@@ -292,18 +293,7 @@ class Fixture(FixtureCleanupMixin):
         listener.listen(32)
         listener.setblocking(False)
         self.origin = f'https://localhost:{listener.getsockname()[1]}'
-        settings = uvicorn.Config(self.host, host='127.0.0.1', port=0, http=PeerProtocol,
-            ssl_keyfile=str(self.key), ssl_certfile=str(self.cert), ssl_ca_certs=str(self.cert),
-            ssl_cert_reqs=ssl.CERT_REQUIRED, lifespan='off', access_log=False, log_level='warning',
-            proxy_headers=False, limit_concurrency=32, timeout_keep_alive=1, timeout_graceful_shutdown=3)
-        self.server = TestServer(settings)
-        self.server_task = asyncio.create_task(self.server.serve(sockets=[listener]))
-        async with asyncio.timeout(5):
-            while not self.server.started:
-                if self.server_task.done():
-                    await self.server_task
-                    raise RuntimeError('Owned TLS host did not start')
-                await asyncio.sleep(.01)
+        await self.start_api_service()
         self.worker_process = await asyncio.create_subprocess_exec(str(self.node),
             str(ROOT / 'apps/agent-worker/tests/integration/stack-worker.mjs'),
             *(['--linux-stack'] if self.linux else []),
@@ -323,7 +313,7 @@ class Fixture(FixtureCleanupMixin):
         ready = await self.worker_line()
         assert ready['event'] == 'ready' and ready['bundle_hash'] == self.bundle_hash and ready['model_id'] == self.model_id
         self.worker = WorkerHttpTransport(ready['origin'], service_credential=self.worker_secret, tls_context=self.tls)
-        self.rebuild_application()
+        await self.start_application(ready['origin'])
         self.client = httpx.AsyncClient(base_url=self.origin, verify=self.tls, trust_env=False,
             timeout=httpx.Timeout(55 if self.real_proxy is not None else 30, connect=2), follow_redirects=False)
         # A spoofed peer header without a TLS client certificate cannot reach
@@ -338,6 +328,23 @@ class Fixture(FixtureCleanupMixin):
             else:
                 raise AssertionError('Missing TLS client certificate was accepted')
         assert await self.worker.probe(bundle_hash=self.bundle_hash, model_id=self.model_id)
+
+    async def start_api_service(self):
+        settings = uvicorn.Config(self.host, host='127.0.0.1', port=0, http=PeerProtocol,
+            ssl_keyfile=str(self.key), ssl_certfile=str(self.cert), ssl_ca_certs=str(self.cert),
+            ssl_cert_reqs=ssl.CERT_REQUIRED, lifespan='off', access_log=False, log_level='warning',
+            proxy_headers=False, limit_concurrency=32, timeout_keep_alive=1, timeout_graceful_shutdown=3)
+        self.server = TestServer(settings)
+        self.server_task = asyncio.create_task(self.server.serve(sockets=[self.listener]))
+        async with asyncio.timeout(5):
+            while not self.server.started:
+                if self.server_task.done():
+                    await self.server_task
+                    raise RuntimeError('Owned TLS host did not start')
+                await asyncio.sleep(.01)
+
+    async def start_application(self, worker_origin):
+        self.rebuild_application()
 
     async def worker_line(self):
         async with asyncio.timeout(30):

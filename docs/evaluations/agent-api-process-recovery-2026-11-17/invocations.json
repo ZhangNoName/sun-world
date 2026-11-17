@@ -1,0 +1,38 @@
+{
+  "native-1": {
+    "mode": "recovery",
+    "exit_code": 1,
+    "elapsed_seconds": 6.205,
+    "source_unchanged": true,
+    "source_count": 304,
+    "source_sha256_mapping_sha256": "f15f1746ef67ce0b71c8d7c37a2a5be93fcf91f4ce7e0072691404199304e867",
+    "private_invocation_sha256": "619e7427e5b88619e5f5fc9b1e9a08610ad6eb269ff6a795a742777d1d2bd7f7"
+  },
+  "native-2": {
+    "mode": "recovery",
+    "exit_code": 1,
+    "elapsed_seconds": 6.021,
+    "source_unchanged": true,
+    "source_count": 304,
+    "source_sha256_mapping_sha256": "82aaca3f0e91b4fa071d555c02647121a3fa12d3e53b6d7b00d7ada2e139411d",
+    "private_invocation_sha256": "4bf106af84736a432d4dff6304e08921b5e6ac84ee7ee29d17273b0b03f84084"
+  },
+  "native-3": {
+    "mode": "recovery",
+    "exit_code": 0,
+    "elapsed_seconds": 74.444,
+    "source_unchanged": true,
+    "source_count": 304,
+    "source_sha256_mapping_sha256": "cf1d1f4566a185e442c826280064b044813ae30d061b2e516ac3d6c5d36dd869",
+    "private_invocation_sha256": "cda709425b1d99052319d5d4e442754775c4c535c91007b2140afaf5f128cdde"
+  },
+  "compatibility-1": {
+    "mode": "compatibility",
+    "exit_code": 0,
+    "elapsed_seconds": 34.449,
+    "source_unchanged": true,
+    "source_count": 300,
+    "source_sha256_mapping_sha256": "212f47e3fcfa1a4c5bec7bdee84c7c056fc7e5807f5297fce084a752dc29fd73",
+    "private_invocation_sha256": "2e795401ffd4c4feee7114af733a705ad0c1464915946dd9ecfd2862f2ac5193"
+  }
+}

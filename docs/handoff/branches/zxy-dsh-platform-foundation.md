@@ -8,6 +8,15 @@
 
 ## Implemented
 
+### 2026-11-17 最新 checkpoint：Mac API 独立进程三切点通过
+
+- 基点41839d6；按计划补实际API SIGKILL/restart，不调用供应商。新协议[API进程恢复](../../development/agent-api-process-recovery.md)，三个api_process测试模块、sdk_stack两默认兼容async hooks/auth_secret、维护CLI显式--api-process-recovery及两窄测文件。父持有三库/Worker stdin/同TLS listener，API原组合根/routes在独立Python进程；继承同origin/fd/证书/服务secret/JWTsecret/Redis会话/库，不造父shadow application或改生产入口。登录覆盖为原AuthManager令牌与真实JWT/Redis验证，非新增HTTP登录路由。
+- 最终native3 74.444秒、304源运行前后及source-only index树8235f008e1fe4bb0ac3009e8c444f9c6641a998c一致：accepted实际commit后门→SIGKILL/wait→新API、45563ms按原deadline failed，model0→0；SDK model hold后强杀，原tokenhash/service同值且新API时row仍running/lease有效，余8333ms同mTLS旧回调严格403 ACTIVE_SESSION_REQUIRED，10806ms interrupted，model1→1；completed确认quiet/槽已释后强杀，新GET exact答案/来源/两消息/model3→3不变。三case同key409/单run、真call rows/累计/历史/来源无变化、Worker独立存活/新APIready/fixture清理均确认；非适用项null。合成预算只证明1024输出/65536B预占及null usage保留，不是新增官方输入计数验收。
+- native1 6.205秒prepare失败无子诊断，原因未知；native2 6.021秒fixed诊断为listener/OSError/当轮host218，本机独立TCP同SO_ACCEPTCONN实测errno42，改精确AF_INET/loopback/原port/type+nonblocking accept（仅BlockingIOError空listen通过），其他错误/非监听/UDP/wildcard/错port拒，queued只ready前acceptclose，不改mTLS。前两均无业务credit，WorkerACK但API异常导致两个私有fixture证据根保留；native3全三fixture移除、外层原owned清理完成，准备runtime按原inode/终态/无打开文件移除。不称历史根全0、不接管旧PID/锁或碰旧live runtime。
+- 复审修APIchild独立Popen不脱离外层owned组、预期kill receipt仅精确同handle、TERM拒绝仍KILL/wait/drain、API失败也base.close、report.save先于fixture创建；诊断fixed阶段/类型/本文件整数line、只首错、无message/argv/凭据。API最终923/37.204秒、Worker164/9.126647秒、原Mac6兼容34.449秒稳定、新14+CLI4及判官最终报告/304SHA复验通过。证据见[实证](../../evaluations/agent-api-process-recovery-2026-11-17/README.md)，失败及日志存ignored .tmp/api-process-recovery。
+- 标准旧“恢复未领取accepted”与实现矛盾已统一不自动派发。博客04按sun-world-blog→design补查回历史/恢复执行分界与Mac实际实验；后端/架构笔记、Agent、DeepSeek Harness，保原两透明图、7稳定ID，1280/390预览通过未发布。原80dirty与主handoff原210加1删保持；只中文本地提交、不推送/部署/发布，不改3030/8032/3033、当前模型/Clash配置。
+- 下一步Linux同独立API三切点仍待，不能外推原Linux同进程重建或Mac结果；官方Linux四题失败/停止付费复跑保持。未知孤儿/旧锁生产恢复、宿主断电/多副本、目标库/备份/TLS、人工与版本生产决策仍待，P1/A–D未整体完成。Claude Code/claude-ds继续前先读本轮协议。
+
 ### 2026-11-17 最新 checkpoint：Linux 官方通道已实现，四题验收未通过
 
 - 当前目标按计划开发/复审/验证/中文本地保存，P1/A–D未整体完成。基点83d5d53；先独立提交594a3bf的本地官方DNS复用（新13+旧28=41通过），其余本轮实现为显式VZ official第二串口与匿名pipes、受监督host broker、strict base64 frame、guest原计数代理仅替_post、正式三库/SDK四题及host原wire/usage↔MySQL原rows交叉证明。无NIC/共享目录/key入guest，不改生产或站点入口/模型目录。

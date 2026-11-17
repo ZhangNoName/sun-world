@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -89,13 +90,31 @@ def main(argv=None):
     parser.add_argument('--report', type=Path)
     parser.add_argument('--linux-stack', action='store_true')
     parser.add_argument('--linux-official', action='store_true')
+    parser.add_argument('--api-process-recovery', action='store_true')
     arguments = parser.parse_args(argv)
     try:
         sys.path.insert(0, str(ROOT / 'apps/api'))
         sys.path.insert(0, str(ROOT / 'apps/api/tests/integration'))
         from model_evaluation import validate_options
-        profile = validate_options(arguments.real_model, arguments.report, arguments.real_model_profile,
-                                   interrupt=arguments.interrupt_probe)
+        recovery = arguments.api_process_recovery
+        if recovery and (sys.platform != 'darwin' or arguments.real_model or arguments.real_model_profile
+                or arguments.interrupt_probe or arguments.linux_stack or arguments.linux_official
+                or arguments.report is None):
+            raise ValueError('Explicit synthetic macOS API-process fixture only')
+        profile = validate_options(arguments.real_model, None if recovery else arguments.report,
+                                   arguments.real_model_profile, interrupt=arguments.interrupt_probe)
+        if recovery:
+            # Validate before any database/process setup. The child rechecks
+            # the same fresh report destination before writing bounded proof.
+            destination = arguments.report.expanduser().absolute()
+            if destination.is_symlink() or destination.exists():
+                raise ValueError('A fresh API-process report destination is required')
+            parent = destination.parent.resolve(strict=True)
+            info = parent.lstat()
+            if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid()
+                    or stat.S_IMODE(info.st_mode) != 0o700):
+                raise ValueError('An owned private API-process report directory is required')
+            destination = parent / destination.name
         if arguments.linux_stack and (sys.platform != 'linux' or arguments.real_model or arguments.interrupt_probe):
             raise ValueError('Explicit synthetic Linux stack fixture only')
         if arguments.linux_official and (sys.platform != 'linux' or arguments.linux_stack
@@ -122,6 +141,9 @@ def main(argv=None):
                               *(['--interrupt-probe'] if arguments.interrupt_probe else []),
                               *(['--real-model', '--real-model-profile', profile,
                                   '--report', str(arguments.report.resolve())] if arguments.real_model else [])]
+            if recovery:
+                command = [sys.executable, str(ROOT / 'apps/api/tests/integration/api_process_recovery.py'),
+                           '--report', str(destination)]
             if not linux:
                 return mysql.run(arguments.mysqld, extra_env=environment, test_runner=owned_test_process,
                     test_command=command, test_timeout_seconds=300 if arguments.real_model else 180)

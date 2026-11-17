@@ -1,0 +1,30 @@
+{
+  "version": "sun-world-api-process-recovery/1",
+  "passed": false,
+  "platform": "macos-sandbox",
+  "linux_verified": false,
+  "cases": [
+    {
+      "cut": "accepted",
+      "passed": false,
+      "api_sigkill_confirmed": false,
+      "worker_survived": false,
+      "restart_ready": false,
+      "idempotency_preserved": false,
+      "budget_preserved": false,
+      "history_preserved": false,
+      "old_callback_rejected": null,
+      "deadline_reconciled": null,
+      "redis_lease_retained": null,
+      "completed_quiescent_before_kill": null,
+      "callback_lease_remaining_ms": null,
+      "terminal_elapsed_ms": null,
+      "budget_mode": "synthetic-reservation-only",
+      "model_count_before": null,
+      "model_count_after": null,
+      "cleanup_confirmed": false,
+      "failure_stage": "prepare",
+      "error_type": "RuntimeError"
+    }
+  ]
+}

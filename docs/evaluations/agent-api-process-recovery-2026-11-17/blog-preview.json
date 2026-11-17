@@ -1,0 +1,62 @@
+{
+  "desktop": {
+    "strayBoldMarkers": false,
+    "strongCount": 32,
+    "headings": 7,
+    "ids": [
+      "atomic-admission",
+      "atomic-completion",
+      "terminal-races",
+      "source-delivery",
+      "history-isolation",
+      "current-authorization",
+      "verification-boundary"
+    ],
+    "width": 1280,
+    "bodyWidth": 1280,
+    "indents": ["0px"],
+    "fontSize": "16px",
+    "figures": [
+      {
+        "loaded": true,
+        "width": 360,
+        "naturalWidth": 360
+      },
+      {
+        "loaded": true,
+        "width": 360,
+        "naturalWidth": 360
+      }
+    ]
+  },
+  "mobile": {
+    "strayBoldMarkers": false,
+    "strongCount": 32,
+    "headings": 7,
+    "ids": [
+      "atomic-admission",
+      "atomic-completion",
+      "terminal-races",
+      "source-delivery",
+      "history-isolation",
+      "current-authorization",
+      "verification-boundary"
+    ],
+    "width": 390,
+    "bodyWidth": 390,
+    "indents": ["0px"],
+    "fontSize": "16px",
+    "figures": [
+      {
+        "loaded": true,
+        "width": 341.984375,
+        "naturalWidth": 360
+      },
+      {
+        "loaded": true,
+        "width": 342,
+        "naturalWidth": 360
+      }
+    ]
+  }
+}

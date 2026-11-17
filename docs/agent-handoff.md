@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17 / 独立 API 进程故障三切点通过
+
+- 当前目标继续按计划开发/审查/中文本地保存，P1/A–D未完成；基点41839d6。本轮仅测试组合/CLI/hooks，无付费请求、推送、部署或发布。原80项dirty与本文件原210加1删保留。
+- Mac真实三库/mTLS/固定SDK的API独立Popen三次SIGKILL/wait重启通过，同fd/origin/凭据/Redis会话/Worker保持；受理45563ms failed，调用中旧真token余8333ms租约内403、10806ms interrupted，已提交历史不重派/不重写；预算真实rows/累计均保持。source-only树8235f008e1fe4bb0ac3009e8c444f9c6641a998c，304源及判官报告复核通过；API923、Worker164、原Mac六场景兼容通过。
+- 前两仅bootstrap失败，第一未定因，第二本机SO_ACCEPTCONN不支持后改严格portable监听检查。两个失败fixture证据根保留，成功三个fixture/准备runtime已确认清理，不说历史根全0。详情与后续Claude Code入口见[协议](development/agent-api-process-recovery.md)、[实证](evaluations/agent-api-process-recovery-2026-11-17/README.md)及[分支checkpoint](handoff/branches/zxy-dsh-platform-foundation.md)。
+- 博客04保后端及原三标签、原两透明图，补恢复分界/实测，1280/390预览通过未发布。下一步Linux同API切点；官方Linux四题失败/停止付费复跑、未知孤儿/旧锁生产恢复、断电/多副本、目标库/TLS/备份、人工与版本决策仍待。3030/8032/3033及模型/Clash配置保持。
+
 ### 2026-11-17 Linux 官方通道实现与失败验收
 
 - 新特权串口/host broker已真实接通官方计数与生成，供应商key不入Linux/SDK，原计数预占/原wire保持；DNS有界复用先本地保存594a3bf。API905、Worker164、Mac原6及独立复审通过。**四次Linux官方四题均未整套通过**，前三题成功不能跨run拼4/4，D抗注入与人审未完成；最后复验后停止付费采样。未知请求保额，原Linux/合成6、设备隔离与所有权清理均保持。
