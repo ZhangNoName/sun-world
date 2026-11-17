@@ -1,0 +1,458 @@
+{
+  "baseline_head": "67283081b25771e9599dd557e50c8036e3d9c207",
+  "source_tree": "8afdeb06c4cc6db13513167387fe65ed81799224",
+  "frozen_source_files": 17,
+  "inventory_source_files": 198,
+  "checker_scope_files": {
+    "modules": 89,
+    "core": 25
+  },
+  "module_directories": 9,
+  "before_private_edges": 4,
+  "before_module_composition_back_edges": 1,
+  "after_private_edges": 0,
+  "after_module_composition_back_edges": 0,
+  "existing_adapter_private_edges_not_migrated": 11,
+  "final_runs": [
+    {
+      "log": "projection-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-capability-projection-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 7.277,
+      "sha256": "a0be26c19bd3d5a38222c166354d42c16729f30f56ab9cff6bfcab7be53e7ef5",
+      "unittest_count": 17,
+      "unittest_seconds": 3.163
+    },
+    {
+      "log": "original-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-agent-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 20.283,
+      "sha256": "73a1a467a5396a9c3b999a7709d1fa6259e40ddc2c685143e6def7f334b2305a",
+      "unittest_count": 24,
+      "unittest_seconds": 17.24
+    },
+    {
+      "log": "sdk-stack-final.log",
+      "command": [
+        "/Users/zxy/Documents/project/sun-world/apps/api/.venv/bin/python",
+        "scripts/test-agent-sdk-stack.py",
+        "--mysqld",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mysql-test-runtime/mysql-8.4.13-macos15-arm64/bin/mysqld",
+        "--redis-server",
+        "/Users/zxy/Documents/project/sun-world/.tmp/redis-test-runtime/redis-7.2.17/src/redis-server",
+        "--mongod",
+        "/Users/zxy/Documents/project/sun-world/.tmp/mongo-test-runtime/mongodb-macos-aarch64--8.0.38/bin/mongod",
+        "--sdk-runtime",
+        "/private/tmp/sun-world-module-import-sdk-9n2ezncj/runtime",
+        "--node",
+        "/Users/zxy/.nvm/versions/node/v24.17.0/bin/node"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 34.368,
+      "sha256": "da90494d9e752468f7ec4e768c9ae249e9c7167717f7cfcbab8d65e66da0a333",
+      "unittest_count": null,
+      "unittest_seconds": null
+    },
+    {
+      "log": "api-final.log",
+      "command": [
+        "/Users/zxy/.nvm/versions/node/v24.17.0/bin/node",
+        "scripts/run-api-check.mjs"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 63.021,
+      "sha256": "78093d65bf999a3fa4c7e195caa6e25196ff9a935325b1665f057d1f07953ff3",
+      "unittest_count": 1048,
+      "unittest_seconds": 57.144
+    }
+  ],
+  "sdk_synthetic_cases": 6,
+  "independent_cli_controls": 27,
+  "independent_review": {
+    "checker_tests": 15,
+    "projection_tests": 12,
+    "source_hashes_matched_working_index_tree": 17,
+    "sse_type_and_encoder_identity_preserved": true,
+    "original_BlogPublicTools_class_preserved": true,
+    "original_two_tool_versions": "1",
+    "remaining_confirmed_blockers": 0,
+    "scope": "offline narrow tests, source identity/delta and hash review; not full native/SDK/VM rerun"
+  },
+  "initial_api_diagnostic": {
+    "tests": 1047,
+    "seconds": 54.891,
+    "log_sha256": "c4c6d8a49cab63868d479f6bf34c9b0a74e199288dc6877b2c1f7fa0d07cc194",
+    "scope": "started before final checker negative cases; final1048 authoritative"
+  },
+  "root_format": {
+    "exit_code": 1,
+    "only_preexisting_failure": "docs/content-sources/csdn-qq-42345136/manifest.json",
+    "task_supported_source_files_passed": true,
+    "log_sha256": "3b0a5ae1196e88d39514220cf15bbd0c5d9c30f56e96199616b215bc20fade86",
+    "final_log_sha256": "a35959d53eab2a265243c8bd1c5b88b0e9adeb57f379bd2ba4476facdc36f2c9"
+  },
+  "web": {
+    "production_source_files_changed": 0,
+    "contracts_bytes_unchanged": true,
+    "full_web_not_repeated": true,
+    "preexisting_ui_failures_preserved": [
+      "BlogComments.tsx raw label",
+      "SunMarkdownPreview.tsx raw table"
+    ]
+  },
+  "linux": {
+    "source_tree": "8afdeb06c4cc6db13513167387fe65ed81799224",
+    "manifest_paths": 234,
+    "guest_payload_files": 281,
+    "assets": 67,
+    "all_declared_source_bytes_match_native_payload": true,
+    "changed_declared_payload_sources": [
+      "apps/api/src/module_composition.py",
+      "apps/api/src/modules/agent_runtime/public_router.py",
+      "apps/api/src/modules/agent_runtime/router.py",
+      "apps/api/src/modules/agent_runtime/runtime.py",
+      "apps/api/src/modules/ai/public.py",
+      "apps/api/src/modules/management/projection.py",
+      "apps/api/src/routers/auth/auth.py"
+    ],
+    "all_assets_and_fixed_sdk_archive_equal_previous_native": true,
+    "sdk_resealed": false,
+    "console_reverified_fields": 19,
+    "console_sha256": "b803f06c48594755b2e8c6eb2b471889871598180715602a1582936273dc2cc3",
+    "host_control_sha256": "54d6d8097df9a2add705c97cd04a91cf356aef03654eaa96514e53d826bfa8dc",
+    "strict_console_and_separate_host_control_match_complete_report": true,
+    "guest_legacy_per_run_flag": false,
+    "formal_stack_synthetic_verified": true,
+    "supplier_requests": 0,
+    "groups_gone": true,
+    "private_run_root_removed": true,
+    "scope": "original guest synthetic stack and updated seven Python-source payload binding; new static checker runs on host, native projection17 on owned macOS databases"
+  },
+  "owned_native_database_cleanup": [
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-0pivsjfd",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-_r6fxpn5",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-ibleszyr",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-vt5ieym7",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-mysql-x2loeeah",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-s6smh3j2",
+      "removed": true,
+      "no_process_reference": true
+    },
+    {
+      "root": "/private/tmp/sunworld-agent-redis-tp7j45au",
+      "removed": true,
+      "no_process_reference": true
+    }
+  ],
+  "current_private_tmp_sunworld_agent_directory_residuals": [],
+  "mac_sdk_runtime_cleanup": {
+    "root": "/private/tmp/sun-world-module-import-sdk-9n2ezncj",
+    "original_identity": [16777229, 120176048],
+    "identity_and_owner_verified": true,
+    "no_open_paths": true,
+    "lsof_exit_code": 1,
+    "removed": true,
+    "previous_live_and_failed_roots_untouched": true
+  },
+  "retained_original_and_new_failed_roots": {
+    "/private/tmp/sun-world-blog-qa-7XtElw": true,
+    "/private/tmp/sun-world-sdk-stack-8y7mvqvz": true,
+    "/private/tmp/sun-world-sdk-stack-87zs_mx6": true,
+    "/private/tmp/sun-world-sdk-stack-effdbhnv": true
+  },
+  "new_failed_root_contains_only_synthetic_tls_fixture_files": true,
+  "services_preserved": {
+    "http://127.0.0.1:3030/aigc/blog-qa": 200,
+    "http://127.0.0.1:8032/healthz": 200,
+    "http://127.0.0.1:3033/": 200,
+    "http://127.0.0.1:3033/.tmp/module-import-blog-och7n63y/index.html": 200
+  },
+  "blog": {
+    "path": "docs/blog/2026-11-12-dsh-skill-boundaries.md",
+    "article_type": "design",
+    "category": "后端",
+    "tags": ["架构笔记", "Agent", "DeepSeek Harness"],
+    "stable_heading_ids": 6,
+    "strong_count": 10,
+    "preview": "http://127.0.0.1:3033/.tmp/module-import-blog-och7n63y/index.html",
+    "image_assessment": "existing shared-service text diagram and page assembly SVG still explain ownership; two added interface/composition paragraphs need no duplicate diagram; SVG unchanged",
+    "published": false,
+    "renderer_scope": "existing local draft renderer on shared dirty working tree; not a whole-site or published-page acceptance",
+    "screenshot_sha256": {
+      "blog-dark-desktop.png": "62a7d6bc6523f18f5ee7fc0e0b066fa5dea90db84d3b228d83db42754d96e9be",
+      "blog-dark-mobile.png": "60d97fb6863336eee03a3d9a5360ba95a3c32b153c4fb812b14f9e7afcf9da56",
+      "blog-desktop.png": "f17b918c92da45143db3767b78327652f3377dee371b6f8af2048aa7d502077d",
+      "blog-figure-desktop.png": "bacc4e37c4b06fc0cc4c95e933792565f3c2bd78630f2050ef4397e8c0527fde",
+      "blog-figure-mobile.png": "a95d0715e593813a7991ef8c095d7e4b301247b5db059845a01f5b33d8ecd920",
+      "blog-mobile.png": "9f6e72524acded731bdbbd46e693b8cd4a2734ca8ced35611f5113ff18fe1f99",
+      "blog-prose-desktop.png": "478445bfc58bfab1b91f745b8a367544c0b51c4efb24139f43bfb5cdb02e59b4",
+      "blog-prose-mobile.png": "5e7bd2c0bb28e462582df48a924ebe5dd908236700eafda04b38825bdb4eceae"
+    }
+  },
+  "log_bindings": {
+    "api-final.log": {
+      "sha256": "78093d65bf999a3fa4c7e195caa6e25196ff9a935325b1665f057d1f07953ff3",
+      "size": 29804
+    },
+    "blog-dark.log": {
+      "sha256": "0f322ab1a14e61fb5d0da655d040304ce76a3a37da446416294a7644dbd2cd07",
+      "size": 199
+    },
+    "blog-preview.log": {
+      "sha256": "da952e4bcb717f832f4108e486a08e4b95eb7dc8f8d1d90ea45e72e6dfa51a78",
+      "size": 941
+    },
+    "catalog-check.log": {
+      "sha256": "1a314db748f2d7373c0921c04e71c30a2bcacad62da5da0f13baca89ada1d201",
+      "size": 28
+    },
+    "control-ai_to_runtime.log": {
+      "sha256": "1e40730da2eb8d00cc44b15aacbdaa6aafda93495dc08b77d22e483e0cabfbf7",
+      "size": 97
+    },
+    "control-bare_business_import.log": {
+      "sha256": "c26e6e3dbc5acf99d07f559d581657c71cf507fbe4474ff93f24d5fc37ca717d",
+      "size": 113
+    },
+    "control-baseline-with-final-gate.log": {
+      "sha256": "ec3bfb12d53e2f9d9ec9e853ddebc87a5ba707dff16ebf2948b9dd4e53c82622",
+      "size": 953
+    },
+    "control-core_to_business.log": {
+      "sha256": "a02cc39f9caab2165e57058803173d1b4eccccc10fbeae79902d81564c81da0d",
+      "size": 92
+    },
+    "control-cross_star.log": {
+      "sha256": "7f65b54a123a273e1caf207fe6a009f9d79d8f1c07e3c7134da70d98d4c23de1",
+      "size": 106
+    },
+    "control-current_tree.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "control-dynamic_external_constant.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "control-dynamic_local_alias.log": {
+      "sha256": "069293c35fb377d267cccfbd8a16246435b850ff1575861e46001f9123eea480",
+      "size": 103
+    },
+    "control-dynamic_unknown_target.log": {
+      "sha256": "69cf87ae55370155ca45d97dd083978e2dcc25f0baaadb8745864c994e7e7a8b",
+      "size": 103
+    },
+    "control-facade_mutates_all.log": {
+      "sha256": "61d1cc950415e33cab7e34315b8acae945e3aa1020edc5f08cfa6e6d60dfa6f1",
+      "size": 89
+    },
+    "control-function_local_export_declaration.log": {
+      "sha256": "862372ea86b807d9ae6928e1030d7a743e68a08b7030a647c4104c5282ae0c8a",
+      "size": 770
+    },
+    "control-keyword_dynamic_module_alias.log": {
+      "sha256": "069293c35fb377d267cccfbd8a16246435b850ff1575861e46001f9123eea480",
+      "size": 103
+    },
+    "control-missing_all_source.log": {
+      "sha256": "32de64106fbae02590f0840012d737906081624001786598e3043792dbecebef",
+      "size": 105
+    },
+    "control-missing_core_tree.log": {
+      "sha256": "9002fc3b98bb20d78b80da0b7157e62fbc827da9a4683dc7d416dbffe57a9e98",
+      "size": 2543
+    },
+    "control-module_alias_private_attribute.log": {
+      "sha256": "ccb13ae620aebc942ff7a7eae647b76dce96ff5fc60115519e698d5a4b7d7601",
+      "size": 106
+    },
+    "control-module_object_export.log": {
+      "sha256": "a0cd3001c834926d9065a7bae7b092efe284c41c2ceacf5ac37b025708bed142",
+      "size": 94
+    },
+    "control-module_to_composition.log": {
+      "sha256": "3f00f238f27ae4384779f5357f2c77eef0453b0b5d1c209279308c5a555b9932",
+      "size": 109
+    },
+    "control-nested_late_import_alias.log": {
+      "sha256": "69cf87ae55370155ca45d97dd083978e2dcc25f0baaadb8745864c994e7e7a8b",
+      "size": 103
+    },
+    "control-package_bridge.log": {
+      "sha256": "28ee26fdff9eff86da40d43b4397315fe7cedbd6bf7667f422b3f3bf24828490",
+      "size": 110
+    },
+    "control-private_absolute.log": {
+      "sha256": "28ee26fdff9eff86da40d43b4397315fe7cedbd6bf7667f422b3f3bf24828490",
+      "size": 110
+    },
+    "control-private_relative_nested.log": {
+      "sha256": "09d48b7572ecf3df087a6673db0bd9314765bfd2ace62b6e0d179a29b26ed2da",
+      "size": 110
+    },
+    "control-private_type_checking.log": {
+      "sha256": "86130e4127e86adaf03c48873e9428bb6ab475e629902297ba4e3d52871cc919",
+      "size": 110
+    },
+    "control-public_module_alias.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "control-public_named_alias.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "control-shared_export_assignment_alias.log": {
+      "sha256": "4724fa7b6416251dea741dd5f7a7398b197a7ba8cd8f39e6f6e0bcefca929e15",
+      "size": 87
+    },
+    "control-static_not_application_execution.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "control-unknown_public_symbol.log": {
+      "sha256": "7f65b54a123a273e1caf207fe6a009f9d79d8f1c07e3c7134da70d98d4c23de1",
+      "size": 106
+    },
+    "evidence-format.log": {
+      "sha256": "6fa32c050bbf7d72b7212a730a8a1d92d2c71ec024624c54a4020cac1abb065b",
+      "size": 1381
+    },
+    "facade-mutates-all-before.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "final-runner.log": {
+      "sha256": "563ed2d92edf3e9636dc41ee17137a59482a3cf2c2cfb60a37cc8567e3f0be1e",
+      "size": 1091
+    },
+    "function_local_export_declaration-before.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "independent-controls-alias-red.log": {
+      "sha256": "51685dad2270d71be42970af7e07cf37c64c5c864a9a204e9397585ff73c7077",
+      "size": 5102
+    },
+    "independent-controls-expanded.log": {
+      "sha256": "d34e0f41586679a8789f541ffe85d7edb536898cc5a1db43340c5fa16c334db7",
+      "size": 4491
+    },
+    "independent-controls-final.log": {
+      "sha256": "06d01a94647a21139feb0ef455274500aa2c72a25ab011aa095c551ba254a61c",
+      "size": 4955
+    },
+    "independent-controls-initial.log": {
+      "sha256": "59f6a553893a12bfbc56ed3969f038cf708fee5f2e0afa0255d012c0bf047ea4",
+      "size": 3409
+    },
+    "independent-controls-review-cases.log": {
+      "sha256": "46303bbbafc2b6c38b87b0bf75126295b0171cae6114489003aaecb451c98361",
+      "size": 4936
+    },
+    "keyword_dynamic_module_alias-before.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    },
+    "linux-stack-final.json.console.log": {
+      "sha256": "c4cf392a5b16040d8cc150693f9bbc1ca131c741fadc951eb1792f1ab00e021c",
+      "size": 21437
+    },
+    "linux-stack-final.log": {
+      "sha256": "45ee5e8bbbc68b6a18841980679eb3dd07e214ed1bbce70e238a55c092b30447",
+      "size": 25
+    },
+    "mac-sdk-lsof.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "mac-sdk-prepare.log": {
+      "sha256": "ccab7ce6ee5f16709cf39e61eca2fd44ac524f50f2357d60de1936cca7c5ab33",
+      "size": 1059
+    },
+    "openapi-check.log": {
+      "sha256": "f938b9c32b9a8190bc282e8255c57bd5b0506447e2d0d579b36571d77c1e5870",
+      "size": 74
+    },
+    "original-stack-final.log": {
+      "sha256": "73a1a467a5396a9c3b999a7709d1fa6259e40ddc2c685143e6def7f334b2305a",
+      "size": 12538
+    },
+    "projection-stack-final.log": {
+      "sha256": "a0be26c19bd3d5a38222c166354d42c16729f30f56ab9cff6bfcab7be53e7ef5",
+      "size": 4461
+    },
+    "projection-stack-initial.log": {
+      "sha256": "b60974894bc618406fcd78824aa7d7c0661ba762f236fb5a74a48fd6ec840286",
+      "size": 5020
+    },
+    "root-format-final.log": {
+      "sha256": "a35959d53eab2a265243c8bd1c5b88b0e9adeb57f379bd2ba4476facdc36f2c9",
+      "size": 378
+    },
+    "root-format.log": {
+      "sha256": "3b0a5ae1196e88d39514220cf15bbd0c5d9c30f56e96199616b215bc20fade86",
+      "size": 378
+    },
+    "sdk-stack-final.log": {
+      "sha256": "da90494d9e752468f7ec4e768c9ae249e9c7167717f7cfcbab8d65e66da0a333",
+      "size": 715
+    },
+    "sdk-stack-initial.log": {
+      "sha256": "36b1ad1be518638d9a4bebe1ad2bbde09da29c2bb4877dbad502462ddf30530a",
+      "size": 450
+    },
+    "shared_export_assignment_alias-before.log": {
+      "sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+      "size": 73
+    }
+  },
+  "scope_limitations": [
+    "modules/core direct AST imports only; legacy adapters and indirect controller/Auth/type access remain",
+    "not a sandbox or proof against arbitrary Python reflection/dataflow",
+    "static checker runs on host; projection17 runs on macOS owned stores; guest runs original synthetic chain with updated source payload",
+    "production/official four-case/human/granular grant and recovery gates remain incomplete"
+  ],
+  "supplier_requests": 0,
+  "proxy_changes": 0,
+  "pushed": false,
+  "deployed": false,
+  "published": false,
+  "new_failed_worker_ack_confirmed": false
+}

@@ -1,0 +1,23 @@
+{
+  "baseline_head": "67283081b25771e9599dd557e50c8036e3d9c207",
+  "source_tree": "8afdeb06c4cc6db13513167387fe65ed81799224",
+  "paths": {
+    "apps/api/src/module_composition.py": "da6c1080725fd86902cdedc68d7e3888f9c5587c6ac85ff1e98ea250fe322269",
+    "apps/api/src/modules/agent_runtime/public_router.py": "e8eb2829f801fe9f0926e983d402b9ff7c3edd1cf594ac73c7b07aa7592910da",
+    "apps/api/src/modules/agent_runtime/router.py": "e45aede154ae1ae4db683c32403d9068a9614f105ac8867452c822f6a30b8d03",
+    "apps/api/src/modules/agent_runtime/runtime.py": "b883bf57a0c262a0a5cda5a43adcd168af6fb2a033def4cfe307b74ee9734001",
+    "apps/api/src/modules/ai/public.py": "14bc53e9bbcdedb5d818152c62f3007deaca143ab518c6d77d1eba34689c9b1d",
+    "apps/api/src/modules/management/projection.py": "ef9709930f9f4e2f8674183ef5ea84460743ef800c47d563f941f390b06b7680",
+    "apps/api/src/routers/auth/auth.py": "707d50245e6a5f79efe48064e89820f07e64b226258bf73ef4f825cda906f053",
+    "apps/api/tests/integration/test_capability_projection_stack.py": "4d386f2c0148ae77e6f6246469617cc7678cdc3ac1404e52828a11da36495e55",
+    "apps/api/tests/test_blog_qa_authenticated.py": "374be54405269be688a5fc404fff8951a9af3a12f51c679d72995e747f7a07be",
+    "apps/api/tests/test_blog_qa_local.py": "43a2784e05f6309733a4fbebc39b4ccf28d7021cdc794c95cc1cb2b03b055e84",
+    "apps/api/tests/test_blog_qa_shutdown_process.py": "f1ff36ed021df52464be0ebe00fdc2422d9aca108e852b3baa32033b7fe75bd8",
+    "apps/api/tests/test_capability_projection.py": "e86aa7ab46a9a1f6adcfbbe799b2ac846944a3499577407a709e15677255b65f",
+    "apps/api/tests/test_local_model_budget.py": "de567791c3fbffb628f5a34303d8a9cc7db7cad03c17708170069685300d9765",
+    "apps/api/tests/test_module_import_boundary.py": "0c4e68708b6d7c771e15bfcaf53b9cfc26378e77a90072db9c7e10be7a98ad53",
+    "scripts/check-module-imports.py": "93d5724019046870e57e72c208e44f980ad01d23e5c60d440e3f5cdc6c14c5f9",
+    "scripts/run-api-check.mjs": "86c4b2cd64d93cfbc6b85f74943a2493d02282ad14f5cc145e0d82e376de2d5c",
+    "tools/dsh-blog-local/server.py": "59e92909e2f55a798c0867ec59b7f06cca7249429673af7de99f277db7031233"
+  }
+}

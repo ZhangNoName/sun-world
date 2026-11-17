@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.controller.auth_manager import AuthManager
 from src.controller.user_manage import UserManager
+from src.module_composition import create_module_registry
 from src.modules.management.projection import (
     CapabilityProjection, CapabilityProjectionService, PROJECTION_KEYS,
 )
@@ -33,14 +34,14 @@ class ProjectionTests(unittest.TestCase):
         self.auth = AuthManager(UserManager(self.db), self.redis, secret_key='synthetic-projection-secret')
         self.token = self.auth.create_tokens_for_user('1', TEST_DEVICE_ID).access_token
         self.now = time.time()
-        self.service = CapabilityProjectionService(self.auth, clock=lambda: self.now)
+        self.service = CapabilityProjectionService(self.auth, registry=create_module_registry(), clock=lambda: self.now)
 
     def mutate(self, statement):
         with sqlite3.connect(self.db.path) as connection:
             connection.execute(statement)
 
     def test_anonymous_has_public_read_without_auth_or_database(self):
-        result = CapabilityProjectionService().project()
+        result = CapabilityProjectionService(registry=create_module_registry()).project()
         self.assertIsNone(result.account_id)
         self.assertIsNone(result.session_ref)
         self.assertEqual(result.capabilities, ['blog.article.read_public'])
@@ -141,6 +142,22 @@ class ProjectionTests(unittest.TestCase):
                 response = client.get('/auth/capabilities', headers={'Cookie': 'access_token=' + self.token})
                 self.assertEqual(response.status_code, 503)
                 self.assertNotIn('private', response.text)
+
+    def test_registry_factory_dependency_failure_is_fixed_503_without_storage(self):
+        from src.routers.auth.auth import router, get_optional_capability_auth
+        application = FastAPI()
+        application.include_router(router)
+        application.dependency_overrides[get_optional_capability_auth] = lambda: self.auth
+        with (TestClient(application) as client,
+              patch('src.module_composition.create_module_registry', side_effect=ValueError('private')),
+              patch.object(self.db, 'unit_of_work') as storage):
+            response = client.get('/auth/capabilities')
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.headers['cache-control'], 'no-store')
+            self.assertEqual(response.headers['vary'], 'Cookie')
+            self.assertEqual(response.json()['detail']['code'], 'AUTH_SERVICE_UNAVAILABLE')
+            self.assertNotIn('private', response.text)
+            storage.assert_not_called()
 
     def test_schema_gate_runs_in_isolated_process(self):
         root = Path(__file__).resolve().parents[3]

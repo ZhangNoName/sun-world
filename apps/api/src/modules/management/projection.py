@@ -49,17 +49,16 @@ class CapabilityProjection(BaseModel):
 
 
 class CapabilityProjectionService:
-    def __init__(self, auth_manager=None, *, clock=time.time):
+    def __init__(self, auth_manager=None, *, registry, clock=time.time):
+        self.registry = registry
         self.auth = auth_manager
         self.clock = clock
 
     def project(self, access_token=None):
-        # Import the explicit composition only at call time to avoid cycles.
-        from src.module_composition import create_module_registry
         principal = Principal()
         age = 15
         try:
-            if create_module_registry().capabilities != frozenset(PROJECTION_KEYS):
+            if self.registry.capabilities != frozenset(PROJECTION_KEYS):
                 raise ManagementUnavailable()
             now = self.clock()
             if type(now) not in (int, float) or not math.isfinite(now):

@@ -1,0 +1,87 @@
+{
+  "confirmed_static_contract_false_green_classes": 5,
+  "red_records": [
+    {
+      "record": "independent-controls-red.json",
+      "sha256": "d52b9e936051bdc96fb1821a2ef5437ce8fc913d1a52d9eae111fd30733cbf89",
+      "checker_sha256": "58351da7b79d3ba50111add4a954684c39d796ae6890667fe9e2ea63dffb8814",
+      "failed_expected_rejections": [
+        {
+          "case": "facade_mutates_all",
+          "expected_exit": 1,
+          "exit_code": 0,
+          "passed": false,
+          "log_sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+          "wall_seconds": 0.182
+        }
+      ],
+      "scope": "in-development static checker CLI false greens, not business authorization or production bypass"
+    },
+    {
+      "record": "independent-controls-review-red.json",
+      "sha256": "a49d104e06237f31ca5c5ca5f1a3fa39a76401feabd9f6c60974152b1965e1bb",
+      "checker_sha256": "d4c2e0fb41bed33f9ee9ddb8ba95af05b2fd75ee6dcb4d3b05e387844d49069f",
+      "failed_expected_rejections": [
+        {
+          "case": "keyword_dynamic_module_alias",
+          "expected_exit": 1,
+          "exit_code": 0,
+          "passed": false,
+          "log_sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+          "wall_seconds": 0.185
+        },
+        {
+          "case": "function_local_export_declaration",
+          "expected_exit": 1,
+          "exit_code": 0,
+          "passed": false,
+          "log_sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+          "wall_seconds": 0.192
+        }
+      ],
+      "scope": "in-development static checker CLI false greens, not business authorization or production bypass"
+    },
+    {
+      "record": "independent-controls-alias-red.json",
+      "sha256": "6de1e3c94afc977b7c9abb18be2982135c1bc0ffe911f5014e57411a87ba5e74",
+      "checker_sha256": "340f8d762c580ee806cd039c8a8d020a495026be0b362a07a4de46fb46298c73",
+      "failed_expected_rejections": [
+        {
+          "case": "shared_export_assignment_alias",
+          "expected_exit": 1,
+          "exit_code": 0,
+          "passed": false,
+          "log_sha256": "7da0e338ae87ab108b5fe2aaa05955a3b5413e47ba37994dd7368321ca9707ff",
+          "wall_seconds": 0.177
+        }
+      ],
+      "scope": "in-development static checker CLI false greens, not business authorization or production bypass"
+    },
+    {
+      "record": ".tmp/module-import-boundary-coding/nested-alias-before.log",
+      "sha256": "941b0dc2ffb51b10fd208e65f0631ab9a7a4da5e94f41366f6350cc2f2d5e08a",
+      "test_count": 1,
+      "result": "FAILED failures=1; DYNAMIC_IMPORT missing for nested late import closure",
+      "scope": "coding diagnostic before final function-local binding fix; no frozen source version claim"
+    }
+  ],
+  "final_27_cli_controls_passed": true,
+  "native_fixture_initial": {
+    "source_tree": "458934cc2d84d06b748a07f5c83090207faab000",
+    "tests": 16,
+    "seconds": 2.619,
+    "failed": 1,
+    "reason": "old test patched global registry factory after service had already received its explicit registry; production remained unchanged",
+    "log_sha256": "b60974894bc618406fcd78824aa7d7c0661ba762f236fb5a74a48fd6ec840286",
+    "fixed": "inject BrokenRegistry for direct service and add real HTTP factory failure case; final17 passed"
+  },
+  "sdk_fixture_initial": {
+    "exit_code": 1,
+    "seconds": 5.309,
+    "log_sha256": "36b1ad1be518638d9a4bebe1ad2bbde09da29c2bb4877dbad502462ddf30530a",
+    "identified_invalid_precondition": "root prepared new SDK runtime under HOME, which existing stack-worker configuration rejects; source stderr was intentionally discarded, so no claim of exclusive low-level failure cause",
+    "worker_stop_ack_confirmed": false,
+    "retained_root": "/private/tmp/sun-world-sdk-stack-effdbhnv",
+    "correction": "move only own prepared runtime to private disposable non-HOME root; preserve guard; same-source SDK six synthetic cases then pass; successful runtime root removed"
+  }
+}

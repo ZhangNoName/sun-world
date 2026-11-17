@@ -1,0 +1,11 @@
+{
+  "root": "/private/tmp/sun-world-module-import-sdk-9n2ezncj",
+  "root_identity": [16777229, 120176048],
+  "runtime": "/private/tmp/sun-world-module-import-sdk-9n2ezncj/runtime",
+  "runtime_identity": [16777229, 120120922],
+  "uid": 501,
+  "mode": "0o700",
+  "under_home": false,
+  "prepared_offline_with_fixed_lock": true,
+  "initial_location_rejected_by_home_exclusion": true
+}

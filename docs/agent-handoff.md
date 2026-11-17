@@ -1,5 +1,12 @@
 ﻿## Current Handoff
 
+### 2026-11-17｜后端公开接口与静态导入边界
+
+- 按[协议](development/module-import-boundary.md)补modules/core直接AST门禁：九业务目录89+core25，四私有边和一组合根回流迁为public显式导出/registry注入；SSE原对象/两工具v1及OpenAPI/catalog字节保持。旧适配11私有与间接Auth/controller/type未迁，非全仓或Python沙箱保证。
+- 最终17源树8afdeb06c4cc6db13513167387fe65ed81799224，API1048/能力native17/原stack24/Mac固定SDK三库六合成、checker15/root27及独立review过。五类静态假绿保红修绿；旧native patch时点修正并补真实HTTP503，首次SDK runtime在HOME早拒后只迁自有目录复验，不改原失败ACK，见[实证](evaluations/module-import-boundary-2026-11-17/README.md)。
+- Linux234源/281payload七Python变动绑定，67资产/SDK封包原样，原49/9/5/三库SDK6过supplier0、legacyfalse；新15在host/17在Mac，未冒称guest。7可定位DB根/成功SDK根/VM回收，新失败TLS证据根保留，原服务/80/123/main210加1删保持，原UI/素材失败不动；无Web源变不重跑Web/Worker整套。
+- [博客03](blog/2026-11-12-dsh-skill-boundaries.md)同题两段修订，六ID/十重点/原图不变，1280/390明暗过未发布；预览 http://127.0.0.1:3033/.tmp/module-import-blog-och7n63y/index.html 。中文本地保存，无push/deploy/pub/Clash配置/付费复跑；旧适配/完整grant/生产恢复等仍待，A/P1/A–D未完成。CC接手保静态scope、registry注入/503、SDK HOME守卫与跨平台合成验收边界，详[分支handoff](handoff/branches/zxy-dsh-platform-foundation.md)。
+
 ### 2026-11-17｜当前会话显示能力投影
 
 - 按[协议](development/capability-projection.md)补D只读GET与真实Provider/Hook：当前Auth/角色与原九写policy、十键、账号/family配对/匿名公开子集、最长15秒；consumer/可见性启停、账号/epoch/family隔离、单调TTL/同步过期裁剪，公开导航保持。显示快照非写权限凭据，无新Agent工具或管理产品入口。

@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "apps/api"))
 sys.path.insert(0, str(ROOT / "tools/dsh-blog-local"))
 from dataset import create_dataset
+from src.module_composition import create_module_registry
 from runtime import Runtime
 from server import create_app, RunInput
 from store import Store
@@ -89,7 +90,7 @@ class BlogQaLocalRuntimeTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.store = Store(":memory:")
         self.repository, tools = create_dataset()
-        self.runtime = Runtime(self.store, tools, runner=empty_runner)
+        self.runtime = Runtime(self.store, tools, registry=create_module_registry(), runner=empty_runner)
         self.sid = self.runtime.login(1)
         self.run_id, _ = self.store.create(1, str(uuid4()), "来源测试")
         self.store.transition(self.run_id, "running")

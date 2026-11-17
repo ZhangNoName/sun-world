@@ -9,6 +9,11 @@ def create_module_registry() -> ModuleRegistry:
     return ModuleRegistry((BLOG_MANIFEST, MANAGEMENT_MANIFEST), BLOG_SCHEMAS)
 
 
+def create_capability_projection_service(auth_manager=None, **kwargs):
+    from src.modules.management.public import CapabilityProjectionService
+    return CapabilityProjectionService(auth_manager, registry=create_module_registry(), **kwargs)
+
+
 def create_blog_qa_application(database, content_database, *, auth_manager, redis_client,
                                worker, model_proxy, worker_credential, bundle_hash,
                                model_id, site_origin, user_ids, enabled,

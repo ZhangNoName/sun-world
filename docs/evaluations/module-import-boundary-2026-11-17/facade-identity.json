@@ -1,0 +1,10 @@
+{
+  "sse_type_same_object": true,
+  "sse_encoder_same_object": true,
+  "blog_factory_returns_original_class": true,
+  "tool_versions": {
+    "blog.search_public": "1",
+    "blog.read_public": "1"
+  },
+  "no_io_sentinel_databases_used": true
+}

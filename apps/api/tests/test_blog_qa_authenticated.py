@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT / "apps/api"))
 sys.path.insert(0, str(ROOT / "tools/dsh-blog-local"))
 from dataset import create_dataset
 from src.modules.agent_runtime.router import CredentialVault, create_blog_qa_router
+from src.module_composition import create_module_registry
 from src.modules.agent_runtime.runtime import Runtime
 from src.modules.agent_runtime.store import Store
 from src.modules.agent_runtime.schemas import ToolCall
@@ -95,7 +96,7 @@ class AuthenticatedBlogQaTests(unittest.TestCase):
             current.store.receipt(row["id"], "read", result["result_hash"])
             return {"finish": "completed", "session_id": "blog-qa-" + row["id"], "turn_id": "turn",
                     "answer": "公开博客引用链路经过核验。", "sourceIds": [1]}
-        self.app.include_router(create_blog_qa_router(self.app, runner=runner,
+        self.app.include_router(create_blog_qa_router(self.app, registry=create_module_registry(), runner=runner,
             database_path=self.database, tools_factory=lambda: self.tools))
         self.client = TestClient(self.app, base_url="http://127.0.0.1:8032", client=("127.0.0.1", 50000))
         self.headers = {"Origin": "http://127.0.0.1:3030"}
@@ -457,7 +458,7 @@ class CredentialAndShutdownTests(unittest.IsolatedAsyncioTestCase):
             finally:
                 await asyncio.sleep(.01)
                 worker_cleaned.set()
-        runtime = Runtime(Store(":memory:"), tools, runner=runner, model_proxy=proxy)
+        runtime = Runtime(Store(":memory:"), tools, registry=create_module_registry(), runner=runner, model_proxy=proxy)
         sid = runtime.login(1)
         run_id, _ = runtime.store.create(1, str(uuid4()), "shutdown")
         runtime.start(run_id, sid)

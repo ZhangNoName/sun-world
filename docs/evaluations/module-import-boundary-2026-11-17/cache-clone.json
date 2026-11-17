@@ -1,0 +1,9 @@
+{
+  "source": ".tmp/capability-projection/linux-assets",
+  "destination": ".tmp/module-import-boundary/linux-assets",
+  "files": 68,
+  "all_bytes_equal": true,
+  "apfs_clones": true,
+  "sdk_resealed": false,
+  "reason": "catalog and selected Worker sources unchanged; only API Python facade/import/injection changes"
+}

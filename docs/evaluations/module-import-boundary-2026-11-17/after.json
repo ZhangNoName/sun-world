@@ -1,0 +1,92 @@
+{
+  "head": "67283081b25771e9599dd557e50c8036e3d9c207",
+  "source_files_parsed": 198,
+  "direct_private_module_edges": [],
+  "module_composition_back_edges": [],
+  "existing_adapter_private_edges_not_migrated_this_iteration": [
+    {
+      "path": "apps/api/src/controller/blog_manage.py",
+      "line": 14,
+      "owner": null,
+      "target": "src.modules.blog.repository"
+    },
+    {
+      "path": "apps/api/src/controller/user_manage.py",
+      "line": 265,
+      "owner": null,
+      "target": "src.modules.identity.normalization"
+    },
+    {
+      "path": "apps/api/src/routers/admin/admin.py",
+      "line": 7,
+      "owner": null,
+      "target": "src.modules.ai.run_metrics"
+    },
+    {
+      "path": "apps/api/src/routers/admin/admin.py",
+      "line": 22,
+      "owner": null,
+      "target": "src.modules.ai.errors"
+    },
+    {
+      "path": "apps/api/src/routers/admin/admin.py",
+      "line": 23,
+      "owner": null,
+      "target": "src.modules.ai.schemas"
+    },
+    {
+      "path": "apps/api/src/routers/admin/admin.py",
+      "line": 24,
+      "owner": null,
+      "target": "src.modules.ai.service"
+    },
+    {
+      "path": "apps/api/src/routers/ai/__init__.py",
+      "line": 3,
+      "owner": null,
+      "target": "src.modules.ai.router"
+    },
+    {
+      "path": "apps/api/src/routers/auth/auth.py",
+      "line": 22,
+      "owner": null,
+      "target": "src.modules.management.policy"
+    },
+    {
+      "path": "apps/api/src/routers/file/file.py",
+      "line": 19,
+      "owner": null,
+      "target": "src.modules.files.storage"
+    },
+    {
+      "path": "apps/api/src/type/auth_type.py",
+      "line": 38,
+      "owner": null,
+      "target": "src.modules.identity.errors"
+    },
+    {
+      "path": "apps/api/src/type/auth_type.py",
+      "line": 39,
+      "owner": null,
+      "target": "src.modules.identity.normalization"
+    }
+  ],
+  "static_gate_present": true,
+  "interpretation": "architecture coupling observed, not business authorization bypass; adapter inventory is outside business-module/core gate scope",
+  "source_tree": "8afdeb06c4cc6db13513167387fe65ed81799224",
+  "checker_scope_files": {
+    "modules": 89,
+    "core": 25
+  },
+  "module_directories": [
+    "agent_runtime",
+    "ai",
+    "blog",
+    "comments",
+    "dictionaries",
+    "files",
+    "identity",
+    "integrations",
+    "management"
+  ]
+}

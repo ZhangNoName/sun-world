@@ -16,6 +16,7 @@ from test_agent_mysql import SocketManager
 from src.controller.user_manage import UserManager
 from src.core.auth import AuthorizationDenied, Principal
 from src.core.response import fail
+from src.module_composition import create_module_registry
 from src.modules.management.projection import CapabilityProjectionService, PROJECTION_KEYS
 from src.modules.management.public import AdminManagementService
 from src.routers.auth.auth import get_optional_capability_auth
@@ -195,7 +196,7 @@ class CapabilityProjectionStackTests(previous.AdminRecentStackTests):
             return initial if len(reads) == 1 else initial + 601
         # Controlled server clock models a long read, without sleeping or
         # changing signed-token verification's real system clock.
-        data = CapabilityProjectionService(self.auth, clock=elapsed_clock).project(pair.access_token).model_dump()
+        data = CapabilityProjectionService(self.auth, registry=create_module_registry(), clock=elapsed_clock).project(pair.access_token).model_dump()
         self.assertGreaterEqual(len(reads), 2)
         self.assertEqual(data['capabilities'], ['blog.article.read_public'])
         self.assert_no_business_writes(before)
@@ -223,15 +224,29 @@ class CapabilityProjectionStackTests(previous.AdminRecentStackTests):
         self.assert_no_business_writes(before)
 
     def test_direct_service_rejects_caller_principal_and_bad_registry_with_fixed_errors(self):
-        service = CapabilityProjectionService(self.auth)
+        service = CapabilityProjectionService(self.auth, registry=create_module_registry())
         before = self.state()
         with self.assertRaises(AuthorizationDenied):
             service.project(Principal(kind='user', user_id=1, roles=('admin',)))
-        with patch('src.module_composition.create_module_registry', side_effect=ValueError('private-manifest-sentinel')):
+        class BrokenRegistry:
+            @property
+            def capabilities(self):
+                raise ValueError('private-manifest-sentinel')
+        with patch.object(service, 'registry', BrokenRegistry()):
             with self.assertRaises(AuthorizationDenied) as caught:
                 service.project(None)
         self.assertEqual(caught.exception.status_code, 503)
         self.assertNotIn('private-manifest-sentinel', str(caught.exception))
+        self.assert_no_business_writes(before)
+
+
+    def test_registry_factory_failure_through_real_http_keeps_fixed_503_and_no_writes(self):
+        before = self.state()
+        with patch('src.module_composition.create_module_registry', side_effect=ValueError('private-manifest-sentinel')):
+            response = self.projection()
+        self.assertEqual(response.status_code, 503)
+        self.assertNotIn('private-manifest-sentinel', response.text)
+        self.assertEqual(response.json()['code'], 'AUTH_SERVICE_UNAVAILABLE')
         self.assert_no_business_writes(before)
 
 

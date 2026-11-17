@@ -10,7 +10,7 @@ from fastapi.routing import APIRoute
 from src.core.csrf import canonical_origin
 from src.core.response import ApiResponse, fail, ok
 from src.core.security_schemes import access_token_cookie
-from src.modules.ai.schemas import AiStreamEvent, encode_sse_event
+from src.modules.ai.public import AiStreamEvent, encode_sse_event
 from .application import RequestExists
 from .cleanup import finish_cleanup
 from .ledger import LedgerError, TERMINAL

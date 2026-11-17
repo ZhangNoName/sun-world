@@ -8,6 +8,17 @@
 
 ## Implemented
 
+### 2026-11-17 最新checkpoint：后端公开接口与静态导入边界
+
+- 基点6728308，上一turn功能/验证/版本保存属progress；[协议](../../development/module-import-boundary.md)先写再同步coding/判官。盘点198 API源，agent_runtime四私有引用与management→组合根一回流迁为ai.public原SSE对象、既有博客工具工厂及显式registry注入；auth getter构造故障仍固定503/no-store/Vary。main本来有module_registry未触原dirty main，local server及相关构造测试最小接线。
+- 新AST checker369行自动扫九模块89+core25，精确public/__all__值、绝对/相对/nested/TYPE_CHECKING/alias/getattr/动态导入、core/ai方向和缺树/bare命名空间门禁接API runner；public声明限module body单target且不能后续读写/别名逃逸。五类假绿（mutation、keyword alias、局部声明、链式target、后置闭包alias）保红修绿，不称生产鉴权漏洞。11适配私有及旧Auth/controller/type间接访问仍待，不是全仓分层或任意Python沙箱。
+- 最终17源树8afdeb06c4cc6db13513167387fe65ed81799224；API1048/57.144秒、真实MySQL/Redis/Auth/Cookie native17/3.163、原24/17.240、Mac固定SDK三库mTLS六合成34.368过。root27个缓存开始字节的实际源码CLI控制全过，独立checker15/projection12/17源及原类型/encoder/工具类和两工具v1复验过，无剩余确认阻断；OpenAPI/catalog字节相同，fresh schema/exporter过。详[实证](../../evaluations/module-import-boundary-2026-11-17/README.md)。
+- 初始458934cc原生16/2.619仅旧测试在service注入后仍patch全局factory而失败；生产不回退，只改真实BrokenRegistry注入、保direct503/sentinel不泄漏及无写，并增真实HTTP工厂503头/无写，最终17过。coding单次1047诊断保留，不替代后来的1048。
+- 首Mac SDK5.309秒失败为root新offline runtime置HOME，原路径守卫明确拒；stderr未保不称唯一底层初因，原Worker stop ACK保持未确认。仅移动自有同内容runtime到/private/tmp，原六合成通过；成功运行时核inode/uid/lsof无打开文件后删，新失败/private/tmp/sun-world-sdk-stack-effdbhnv只有合成TLS文件保留，不动原live及两失败根。7可定位DB根删/ps无引用，当前sunworld-agent-*无目录。
+- Linux234源/281payload逐字核且恰七生产Python变，67资产含SDK封包与上轮全同，新cache APFS clone原68文件，无重封/升级/下载/宿主Linux ELF。实际原49协议零skip/9隔离/5网关/固定SDK/正式三库mTLS六合成过supplier0、legacyper_run=false，console/control严格V4再核19字段双SHA；新15 checker在host、17在Mac，不称guest执行。VM三库/组/root回收，旧cache不动。
+- 按sun-world-blog→design修[博客03](../../blog/2026-11-12-dsh-skill-boundaries.md)两段公开接口/装配责任；后端/架构笔记、Agent、DeepSeek Harness，六稳定ID/十重点，原文本关系图和透明SVG沿用无需重复图，1280/390明暗实渲过未发布。预览 http://127.0.0.1:3033/.tmp/module-import-blog-och7n63y/index.html 。无Web生产源/契约变化不重跑完整Web/Worker，原两UI及素材format失败不动。
+- 原80/123/main210加1删、3030/8032/3033与旧指定根缓存保持；仅中文本地保存，不push/deploy/pub/代理/供应商/官方付费复跑。下一步继续旧适配层业务归属/公开服务边界、完整授权可授予集合及剩余可本地验证项；生产目标/恢复备份/审计运营/官方四题/人工/模型版本/容量仍待，A/P1/A–D未完成。后续Claude Code/claude-ds先读新协议，保直接静态scope、声明约束、registry注入/503、原业务规则、SDK HOME守卫及Mac/guest/合成范围。
+
 ### 2026-11-17 最新 checkpoint：当前会话显示能力投影
 
 - 基点8cb6305，继续计划D能力探测；先落[协议](../../development/capability-projection.md)并同步复用coding/判官。只读GET由management模块拥有，真实Auth/当前role及同一写policy，匿名无存储公开read、坏Cookie401/依赖503不降级，身份字段成对、匿名能力子集、十键/0..15秒与access/近期寿命限制，no-store。非授权租约，无新Grant API/Agent工具/管理产品入口。

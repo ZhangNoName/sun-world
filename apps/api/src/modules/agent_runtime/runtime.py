@@ -15,7 +15,7 @@ from pathlib import Path
 
 from fastapi import HTTPException
 from src.core.auth import Principal
-from src.modules.blog.manifest import BLOG_MANIFEST
+from src.core.module_registry import ModuleRegistry
 
 from .cleanup import finish_cleanup, run_sync
 from .store import TERMINAL
@@ -29,8 +29,11 @@ def digest(value):
 
 
 class Runtime:
-    def __init__(self, store, tools, *, runner=None, model_proxy=None, model_label="未配置真实模型",
+    def __init__(self, store, tools, *, registry, runner=None, model_proxy=None, model_label="未配置真实模型",
                  authenticate=None, article_url=None, api_origin="http://127.0.0.1:8011"):
+        if not isinstance(registry, ModuleRegistry):
+            raise ValueError("Explicit module registry required")
+        self.registry = registry
         self.authenticate = authenticate
         self.article_url = article_url or (lambda article_id: f"/aigc/blog-qa?article={article_id}")
         self.api_origin = api_origin
@@ -195,7 +198,7 @@ class Runtime:
 
     def tool(self, run_id, tool_id, body):
         run, _ = self.ensure_active(run_id)
-        tool = next((t for t in BLOG_MANIFEST.tools if t.id == tool_id), None)
+        tool = self.registry.tools.get(tool_id)
         if not tool or body.generation != 1 or body.tool_version != tool.version:
             raise HTTPException(400, "tool_contract_mismatch")
         argument_hash = digest({"tool_id": tool_id, "arguments": body.arguments})

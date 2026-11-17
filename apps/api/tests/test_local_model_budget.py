@@ -16,6 +16,7 @@ from fastapi import HTTPException
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_counted_model_budget import count_reply, make_proxy, messages
+from src.module_composition import create_module_registry
 from src.modules.agent_runtime.runtime import Runtime
 from src.modules.agent_runtime.store import Store
 
@@ -28,7 +29,7 @@ class LocalInputBudgetTests(unittest.IsolatedAsyncioTestCase):
         self.store = Store(self.path)
         self.addCleanup(self.store.close)
         self.proxy, self.factory = make_proxy()
-        self.runtime = Runtime(self.store, None, runner=lambda *_: None, model_proxy=self.proxy)
+        self.runtime = Runtime(self.store, None, registry=create_module_registry(), runner=lambda *_: None, model_proxy=self.proxy)
         sid = self.runtime.login(1)
         self.run_id, error = self.store.create(1, str(uuid4()), '合成问题')
         self.assertIsNone(error)

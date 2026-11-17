@@ -12,7 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.modules.ai.schemas import AiStreamEvent, encode_sse_event
+from src.module_composition import create_module_registry
+from src.modules.ai.public import AiStreamEvent, encode_sse_event
 from dataset import DATASET_LABEL, create_dataset
 from runtime import Runtime
 from store import Store, TERMINAL
@@ -58,7 +59,7 @@ def create_app(*, database_path=None, runner=None, model_proxy=None, model_label
     root = Path(__file__).resolve().parents[2]
     path = database_path or root / ".tmp/dsh-blog-local/ledger.sqlite3"
     store = Store(path)
-    runtime = Runtime(store, tools, runner=runner, model_proxy=model_proxy,
+    runtime = Runtime(store, tools, registry=create_module_registry(), runner=runner, model_proxy=model_proxy,
                       model_label=model_label or "未配置真实模型")
 
     @asynccontextmanager

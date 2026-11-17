@@ -20,7 +20,8 @@ from src.core.auth.admin_audit import (
 from src.core.request_context import get_request_id
 from src.core.auth import AuthorizationDenied, AuthorizationUnavailable
 from src.modules.management.policy import ManagementDenied
-from src.modules.management.public import CapabilityProjection, CapabilityProjectionService
+from src.modules.management.public import CapabilityProjection
+from src.module_composition import create_capability_projection_service
 from src.core.audit_log import audit_log
 from src.core.error_codes import (
     AUTH_FORBIDDEN,
@@ -323,7 +324,12 @@ def get_optional_capability_auth(request: Request):
 
 
 def get_capability_projection_service(auth=Depends(get_optional_capability_auth)):
-    return CapabilityProjectionService(auth)
+    try:
+        return create_capability_projection_service(auth)
+    except Exception:
+        raise HTTPException(status_code=503, detail=_error_detail(
+            'AUTH_SERVICE_UNAVAILABLE', '能力验证服务暂不可用，请稍后再试。'),
+            headers={'Cache-Control': 'no-store', 'Vary': 'Cookie'}) from None
 
 
 @router.get('/capabilities', response_model=ApiResponse[CapabilityProjection])

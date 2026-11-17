@@ -18,9 +18,8 @@ from src.core.csrf import canonical_origin
 from src.core.response import ApiResponse, fail, ok
 from src.core.runtime_env import is_local_runtime
 from src.core.security_schemes import access_token_cookie
-from src.modules.ai.schemas import AiStreamEvent, encode_sse_event
-from src.modules.blog.public import create_public_queries
-from src.modules.blog.tools import BlogPublicTools
+from src.modules.ai.public import AiStreamEvent, encode_sse_event
+from src.modules.blog.public import create_public_tools
 from .runtime import Runtime, finish_cleanup
 from .schemas import BlogQaCapabilities, BlogQaRun, Receipt, RunInput, ToolCall
 from .store import Store, TERMINAL
@@ -129,7 +128,7 @@ class BoundedRoute(APIRoute):
         return handler
 
 
-def create_blog_qa_router(application, *, runner=None, database_path=None, tools_factory=None):
+def create_blog_qa_router(application, *, registry=None, runner=None, database_path=None, tools_factory=None):
     router = APIRouter(tags=["blog-qa"], route_class=BoundedRoute)
     lock = asyncio.Lock()
     runtime = None
@@ -192,11 +191,11 @@ def create_blog_qa_router(application, *, runner=None, database_path=None, tools
             if proxy is None:
                 from src.modules.ai.public import create_blog_qa_proxy
                 proxy = await create_blog_qa_proxy(application.ai_service, local_model=os.getenv("DSH_SITE_BLOG_QA_MODEL") or None)
-            tools = tools_factory() if tools_factory else BlogPublicTools(create_public_queries(application.mysql, application.mongo))
+            tools = tools_factory() if tools_factory else create_public_tools(application.mysql, application.mongo)
             # Only this explicitly local path creates the independent development ledger.
             root = Path(__file__).resolve().parents[5]
             path = database_path or root / ".tmp/dsh-blog-site/ledger.sqlite3"
-            candidate = Runtime(Store(path), tools, runner=runner, model_proxy=proxy,
+            candidate = Runtime(Store(path), tools, registry=registry if registry is not None else application.module_registry, runner=runner, model_proxy=proxy,
                                 model_label=getattr(proxy, "model_label", getattr(application, "blog_qa_model_label", "本站默认模型")),
                                 authenticate=authenticate, article_url=lambda value: f"/blog/{value}",
                                 api_origin="http://127.0.0.1:8032")

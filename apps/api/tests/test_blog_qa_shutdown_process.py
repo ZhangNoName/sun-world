@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / 'apps/api'))
 sys.path.insert(0, str(ROOT / 'tools/dsh-blog-local'))
 from app_instance import Application
 from dataset import create_dataset
+from src.module_composition import create_module_registry
 from src.modules.agent_runtime.runtime import Runtime
 from src.modules.agent_runtime.store import Store
 
@@ -32,7 +33,7 @@ class BlogQaShutdownProcessTests(unittest.IsolatedAsyncioTestCase):
             )
             with patch.dict(os.environ, {'DSH_LOCAL_WORKER_DIR': directory, 'DSH_LOCAL_NODE': shutil.which('node')}):
                 _, tools = create_dataset()
-                runtime = Runtime(Store(':memory:'), tools)
+                runtime = Runtime(Store(':memory:'), tools, registry=create_module_registry())
                 run_id, _ = runtime.store.create(1, 'process-test', 'synthetic lifecycle probe')
                 runtime.start(run_id, runtime.login(1))
                 try:
