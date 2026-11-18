@@ -99,6 +99,12 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.blog-qa-history-actions {
+  margin-top: 24px;
+}
+.blog-qa-history-actions p {
+  margin-bottom: 8px;
+}
 @media (max-width: 600px) {
   .blog-qa-page {
     padding: 16px;

@@ -8,6 +8,13 @@
 
 ## Implemented
 
+### 2026-11-18｜正式博客问答页面支持删除当前历史
+
+- 从暂停交接恢复，按[前端删除协议](../../development/agent-history-erasure-web.md)接通正式模式的终态删除。页面要求确认，等待服务端明确回执后清除结果和同一运行的会话存储。失败在按钮旁提示重试并保留结果。后端继续按当前账号和原会话族授权。
+- `blog-qa-api.ts` 校验删除回执，`useBlogQa.ts` 订阅 AuthStore 会话世代并约束请求所属运行，`BlogQaPage.tsx` 处理确认和反馈。删除期间阻止重复操作，旧刷新、取消及原会话的迟到回执无法回填。SQLite 站点和合成环境沿用各自入口。
+- 工作区 Web 359 项测试、类型、生产构建及独立预算检查通过。完整 `check:web` 止于已有的 `BlogComments.tsx` 原生 label 和 `SunMarkdownPreview.tsx` 原生 table 检查。改动文件格式与 Git diff 检查通过，根格式检查仍报告已有素材 manifest。隔离 MySQL/Redis 正式 HTTP 集成 24 项通过。Chrome 用合成请求在 1280/390 两宽度验证取消确认、失败重试、成功清除及入口限制。
+- [博客04](../../blog/2026-11-15-agent-run-history-transaction.md)补页面删除和重试说明。分类「后端」，标签「架构笔记、Agent、DeepSeek Harness」。沿用两张图和七个章节 ID，桌面与手机明暗预览通过，稿件未发布。只保存本地版本，生产部署与整阶段验收仍待。
+
 ### 2026-11-17 暂停交接：本轮已收尾，等待用户恢复
 
 - 用户明确要求“迭代完本轮暂停一下”。功能版本为 `00f535a`（旧适配公开接口及全src导入门禁）；其API 1059项、原生Linux合成整栈及独立review结果见下方checkpoint与[实证](../../evaluations/adapter-public-boundary-2026-11-17/README.md)。这些是已完成验证，本次暂停收尾未重新运行整套。

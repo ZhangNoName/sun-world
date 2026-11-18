@@ -15,6 +15,7 @@ vi.mock('../blog-qa-api', async (importOriginal) => {
     loginLocalUser: vi.fn(),
     logoutLocalUser: vi.fn(),
     cancelBlogQaRun: vi.fn(),
+    deleteBlogQaHistory: vi.fn(),
     streamBlogQa: vi.fn(),
   }
 })
@@ -461,3 +462,178 @@ it.each(['restore', 'refresh'] as const)(
     expect(sessionStorage.getItem('blog-qa:1')).toBe('r1')
   }
 )
+
+async function restoreFormalRun(
+  savedRun: api.BlogQaRun = run,
+  capabilities = formal
+) {
+  authenticate(7)
+  vi.mocked(api.fetchBlogQaCapabilities).mockResolvedValue(capabilities)
+  sessionStorage.setItem('blog-qa:7', savedRun.id)
+  vi.mocked(api.fetchBlogQaRun).mockResolvedValueOnce(savedRun)
+  const hook = renderHook(useBlogQa)
+  await waitFor(() => expect(hook.result.current.run).toEqual(savedRun))
+  return hook
+}
+
+it('keeps the result on failure and clears it only when the same deletion is confirmed', async () => {
+  const { result } = await restoreFormalRun()
+  vi.mocked(api.deleteBlogQaHistory)
+    .mockRejectedValueOnce(new Error('request failed'))
+    .mockResolvedValueOnce(undefined)
+
+  await act(() => result.current.deleteHistory('r1'))
+  expect(result.current.run).toEqual(run)
+  expect(result.current.historyDeletionStatus).toBe('failed')
+  expect(sessionStorage.getItem('blog-qa:7')).toBe('r1')
+
+  await act(() => result.current.deleteHistory('r1'))
+  expect(result.current.run).toBeNull()
+  expect(result.current.error).toBe('')
+  expect(result.current.historyDeletionStatus).toBe('deleted')
+  expect(sessionStorage.getItem('blog-qa:7')).toBeNull()
+  expect(api.deleteBlogQaHistory).toHaveBeenCalledTimes(2)
+})
+
+it('blocks concurrent run operations and ignores refresh and cancel responses sent before deletion', async () => {
+  const { result } = await restoreFormalRun()
+  const refreshed = deferred<api.BlogQaRun>()
+  const cancelled = deferred<api.BlogQaRun>()
+  const deleted = deferred<void>()
+  vi.mocked(api.fetchBlogQaRun).mockReturnValue(refreshed.promise)
+  vi.mocked(api.cancelBlogQaRun).mockReturnValue(cancelled.promise)
+  vi.mocked(api.deleteBlogQaHistory).mockReturnValue(deleted.promise)
+  let refreshing!: Promise<void>
+  let stopping!: Promise<void>
+  let deleting!: Promise<void>
+  act(() => {
+    refreshing = result.current.refresh()
+    stopping = result.current.stop()
+    deleting = result.current.deleteHistory('r1')
+  })
+  expect(result.current.historyDeletionStatus).toBe('pending')
+  expect(result.current.run).toEqual(run)
+  expect(vi.mocked(api.fetchBlogQaRun).mock.lastCall?.[1]?.aborted).toBe(true)
+  expect(vi.mocked(api.cancelBlogQaRun).mock.lastCall?.[1]?.aborted).toBe(true)
+  await act(async () => {
+    await Promise.all([
+      result.current.deleteHistory('r1'),
+      result.current.send('新问题'),
+      result.current.refresh(),
+      result.current.stop(),
+    ])
+  })
+  expect(api.deleteBlogQaHistory).toHaveBeenCalledOnce()
+  expect(api.streamBlogQa).not.toHaveBeenCalled()
+  expect(api.fetchBlogQaRun).toHaveBeenCalledTimes(2)
+  expect(api.cancelBlogQaRun).toHaveBeenCalledOnce()
+
+  await act(async () => {
+    deleted.resolve()
+    await deleting
+    refreshed.resolve(run)
+    cancelled.resolve(run)
+    await Promise.all([refreshing, stopping])
+  })
+  expect(result.current.run).toBeNull()
+  expect(sessionStorage.getItem('blog-qa:7')).toBeNull()
+})
+
+it('keeps deletion available when new runs are unavailable and requires the displayed run ID', async () => {
+  const { result } = await restoreFormalRun(run, { ...formal, enabled: false })
+  vi.mocked(api.deleteBlogQaHistory).mockResolvedValue(undefined)
+  expect(result.current.canDeleteHistory).toBe(true)
+  await act(() => result.current.deleteHistory('older-run'))
+  expect(api.deleteBlogQaHistory).not.toHaveBeenCalled()
+  await act(() => result.current.deleteHistory(run.id))
+  expect(api.deleteBlogQaHistory).toHaveBeenCalledOnce()
+  expect(result.current.run).toBeNull()
+})
+
+it.each([
+  ['site', 'completed', true],
+  ['formal', 'running', true],
+  ['formal', 'accepted', true],
+  ['formal', 'completed', false],
+] as const)(
+  'refuses deletion for mode %s, status %s, authenticated %s',
+  async (mode, status, authenticated) => {
+    const { result } = await restoreFormalRun(
+      { ...run, status },
+      { ...formal, mode, authenticated }
+    )
+    expect(result.current.canDeleteHistory).toBe(false)
+    await act(() => result.current.deleteHistory('r1'))
+    expect(api.deleteBlogQaHistory).not.toHaveBeenCalled()
+  }
+)
+
+it('never enables history deletion in fixture mode', async () => {
+  sessionStorage.setItem('blog-qa:1', 'r1')
+  vi.mocked(api.fetchBlogQaRun).mockResolvedValueOnce(run)
+  const { result } = renderHook(useBlogQa)
+  await waitFor(() => expect(result.current.run).toEqual(run))
+  expect(result.current.canDeleteHistory).toBe(false)
+  await act(() => result.current.deleteHistory('r1'))
+  expect(api.deleteBlogQaHistory).not.toHaveBeenCalled()
+})
+
+it.each(['confirmed', 'failed'] as const)(
+  'isolates a %s deletion after a same-account session change',
+  async (outcome) => {
+    const { result } = await restoreFormalRun()
+    const deleted = deferred<void>()
+    vi.mocked(api.deleteBlogQaHistory).mockReturnValue(deleted.promise)
+    const previous = result.current
+    let deleting!: Promise<void>
+    act(() => {
+      deleting = previous.deleteHistory('r1')
+    })
+    const signal = vi.mocked(api.deleteBlogQaHistory).mock.calls[0][1]
+    const newRun = { ...run, answer: '当前会话重新查到的答案' }
+    vi.mocked(api.fetchBlogQaRun).mockResolvedValueOnce(newRun)
+    act(() =>
+      useAuthStore.setState((state) => ({
+        sessionRevision: state.sessionRevision + 1,
+      }))
+    )
+    expect(result.current.run).toBeNull()
+    expect(signal?.aborted).toBe(true)
+    await waitFor(() => expect(result.current.run).toEqual(newRun))
+    await act(() => previous.deleteHistory('r1'))
+    expect(api.deleteBlogQaHistory).toHaveBeenCalledOnce()
+    await act(async () => {
+      if (outcome === 'confirmed') deleted.resolve()
+      else deleted.reject(new Error('late error'))
+      await deleting
+    })
+    expect(result.current.run).toEqual(newRun)
+    expect(result.current.error).toBe('')
+    expect(result.current.historyDeletionStatus).toBe('idle')
+    expect(sessionStorage.getItem('blog-qa:7')).toBe('r1')
+  }
+)
+
+it('ignores a saved run arriving after same-account reauthentication', async () => {
+  authenticate(7)
+  vi.mocked(api.fetchBlogQaCapabilities).mockResolvedValue(formal)
+  sessionStorage.setItem('blog-qa:7', 'r1')
+  const old = deferred<api.BlogQaRun>()
+  vi.mocked(api.fetchBlogQaRun)
+    .mockReturnValueOnce(old.promise)
+    .mockRejectedValueOnce(new Error('not found in new session family'))
+  const { result } = renderHook(useBlogQa)
+  await waitFor(() => expect(api.fetchBlogQaRun).toHaveBeenCalledOnce())
+  const signal = vi.mocked(api.fetchBlogQaRun).mock.calls[0][1]
+  act(() =>
+    useAuthStore.setState((state) => ({
+      sessionRevision: state.sessionRevision + 1,
+    }))
+  )
+  expect(signal?.aborted).toBe(true)
+  await waitFor(() => expect(sessionStorage.getItem('blog-qa:7')).toBeNull())
+  await act(async () => old.resolve(run))
+  expect(result.current.run).toBeNull()
+  expect(result.current.canDeleteHistory).toBe(false)
+  expect(sessionStorage.getItem('blog-qa:7')).toBeNull()
+})

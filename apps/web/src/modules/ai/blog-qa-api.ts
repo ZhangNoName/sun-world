@@ -242,6 +242,24 @@ export const cancelBlogQaRun = async (id: string, signal?: AbortSignal) => {
     )
   )
 }
+export async function deleteBlogQaHistory(id: string, signal?: AbortSignal) {
+  if (!runIdValid(id)) throw new Error('问答状态格式不完整')
+  const response = await fetchWithSession(
+    API_ROUTES.ai.blogQaRun.replace('{run_id}', encodeURIComponent(id)),
+    { method: 'DELETE', signal }
+  )
+  const receipt: unknown = await response.json().catch(() => null)
+  if (
+    !response.ok ||
+    !receipt ||
+    typeof receipt !== 'object' ||
+    !('code' in receipt) ||
+    receipt.code !== 1 ||
+    !('data' in receipt) ||
+    receipt.data !== true
+  )
+    throw new Error('删除未确认，请重试')
+}
 export async function streamBlogQa(
   question: string,
   signal: AbortSignal,

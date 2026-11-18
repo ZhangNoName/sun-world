@@ -4,6 +4,7 @@ import {
   blogQaMessage,
   blogQaMode,
   cancelBlogQaRun,
+  deleteBlogQaHistory,
   normalizeBlogQaRun,
   fetchBlogQaCapabilities,
   fetchBlogQaRun,
@@ -16,8 +17,9 @@ import {
   type LocalUser,
 } from '../blog-qa-api'
 
-const accountFromStore = (): LocalUser | null => {
-  const state = useAuthStore.getState()
+const accountFromState = (
+  state = useAuthStore.getState()
+): LocalUser | null => {
   const id = Number(state.user?.id)
   return state.status === 'authenticated' &&
     state.user &&
@@ -27,6 +29,23 @@ const accountFromStore = (): LocalUser | null => {
     : null
 }
 
+function canEraseHistory(
+  capabilities: BlogQaCapabilities | null,
+  run: BlogQaRun | null,
+  busy: boolean
+) {
+  return (
+    blogQaMode(capabilities) === 'formal' &&
+    capabilities?.authenticated === true &&
+    run !== null &&
+    run.status !== 'accepted' &&
+    run.status !== 'running' &&
+    !busy
+  )
+}
+
+type HistoryDeletionStatus = 'idle' | 'pending' | 'failed' | 'deleted'
+
 export function useBlogQa() {
   const [capabilities, setCapabilities] = useState<BlogQaCapabilities | null>(
     null
@@ -34,22 +53,25 @@ export function useBlogQa() {
   const [user, setUser] = useState<LocalUser | null>(null)
   const [run, setRun] = useState<BlogQaRun | null>(null)
   const [busy, setBusy] = useState(false)
+  const [historyDeletionStatus, setHistoryDeletionStatus] =
+    useState<HistoryDeletionStatus>('idle')
   const [error, setError] = useState('')
   const generation = useRef(0)
   const runGeneration = useRef(0)
   const mounted = useRef(false)
   const mode = useRef<ReturnType<typeof blogQaMode>>(null)
   const caps = useRef<BlogQaCapabilities | null>(null)
-  const accountId = useRef<number | null>(null)
-  const activeRun = useRef<string | null>(null)
+  const activeAccount = useRef<LocalUser | null>(null)
+  const activeRun = useRef<BlogQaRun | null>(null)
   const busyRef = useRef(false)
   const requests = useRef(new Set<AbortController>())
   const stream = useRef<AbortController | null>(null)
+  const historyDeletion = useRef<AbortController | null>(null)
   const current = useCallback(
     (epoch: number, account?: LocalUser) =>
       mounted.current &&
       generation.current === epoch &&
-      (!account || accountId.current === account.user_id),
+      (!account || activeAccount.current === account),
     []
   )
   const request = useCallback(() => {
@@ -63,13 +85,15 @@ export function useBlogQa() {
     for (const abort of requests.current) abort.abort()
     requests.current.clear()
     stream.current = null
-    accountId.current = activeRun.current = null
+    historyDeletion.current = null
+    activeAccount.current = activeRun.current = null
     caps.current = null
     busyRef.current = false
     setCapabilities(null)
     setUser(null)
     setRun(null)
     setBusy(false)
+    setHistoryDeletionStatus('idle')
     setError('')
     return epoch
   }, [])
@@ -77,7 +101,7 @@ export function useBlogQa() {
     (value: BlogQaRun, account: LocalUser, epoch: number) => {
       if (!current(epoch, account)) return
       const next = normalizeBlogQaRun(value)
-      activeRun.current = next.id
+      activeRun.current = next
       sessionStorage.setItem(`blog-qa:${account.user_id}`, next.id)
       setRun(next)
     },
@@ -104,8 +128,6 @@ export function useBlogQa() {
   useEffect(() => {
     mounted.current = true
     let initializing = false
-    let observedId = accountFromStore()?.user_id ?? null
-    let observedStatus = useAuthStore.getState().status
     const load = async (epoch: number, initialize: boolean) => {
       const abort = request()
       try {
@@ -126,9 +148,7 @@ export function useBlogQa() {
           }
           if (!current(epoch)) return
           // The store identity wins over any delayed restore return value.
-          account = accountFromStore()
-          observedId = account?.user_id ?? null
-          observedStatus = useAuthStore.getState().status
+          account = accountFromState()
           value = await fetchBlogQaCapabilities(abort.signal)
           if (blogQaMode(value) !== nextMode) throw new Error('问答模式已变化')
         } else if (value.authenticated) {
@@ -136,7 +156,7 @@ export function useBlogQa() {
         }
         if (!current(epoch)) return
         caps.current = value
-        accountId.current = account?.user_id ?? null
+        activeAccount.current = account
         setCapabilities(value)
         setUser(account)
         if (account) await restore(account, epoch, abort.signal)
@@ -152,23 +172,24 @@ export function useBlogQa() {
         requests.current.delete(abort)
       }
     }
-    const unsubscribe = useAuthStore.subscribe((state) => {
+    const unsubscribe = useAuthStore.subscribe((state, previous) => {
       if (mode.current === 'fixtures') return
-      const nextId = accountFromStore()?.user_id ?? null
+      const nextId = accountFromState(state)?.user_id ?? null
+      const previousId = accountFromState(previous)?.user_id ?? null
+      const sessionChanged = state.sessionRevision !== previous.sessionRevision
       const changed =
-        nextId !== observedId ||
-        (state.status === 'anonymous' && observedStatus !== 'anonymous')
-      const previousId = observedId
-      observedId = nextId
-      observedStatus = state.status
+        sessionChanged ||
+        nextId !== previousId ||
+        (state.status === 'anonymous' && previous.status !== 'anonymous')
       if (!changed) return
       // A successful initial restore publishes synchronously. This load owns
       // its follow-up work rather than invalidating itself on that one event.
       if (
         initializing &&
+        !sessionChanged &&
         previousId === null &&
         nextId !== null &&
-        accountId.current === null
+        activeAccount.current === null
       )
         return
       initializing = false
@@ -179,7 +200,7 @@ export function useBlogQa() {
       unsubscribe()
       mounted.current = false
       generation.current++
-      accountId.current = null
+      activeAccount.current = null
       for (const abort of requests.current) abort.abort()
       requests.current.clear()
     }
@@ -195,7 +216,7 @@ export function useBlogQa() {
       const value = await fetchBlogQaCapabilities(abort.signal)
       if (!current(epoch) || blogQaMode(value) !== 'fixtures') return
       caps.current = value
-      accountId.current = account.user_id
+      activeAccount.current = account
       setCapabilities(value)
       setUser(account)
       await restore(account, epoch, abort.signal)
@@ -234,6 +255,7 @@ export function useBlogQa() {
       !user ||
       !current(epoch, user) ||
       busyRef.current ||
+      historyDeletion.current ||
       !caps.current?.enabled ||
       !question.trim()
     )
@@ -246,6 +268,7 @@ export function useBlogQa() {
     busyRef.current = true
     setRun(null)
     setBusy(true)
+    setHistoryDeletionStatus('idle')
     setError('')
     const isCurrent = () =>
       current(epoch, user) &&
@@ -288,16 +311,16 @@ export function useBlogQa() {
     }
   }
   const stop = async () => {
-    const id = activeRun.current,
+    const id = activeRun.current?.id,
       epoch = generation.current,
       revision = runGeneration.current,
       running = stream.current
-    if (!user || !current(epoch, user)) return
+    if (!user || !current(epoch, user) || historyDeletion.current) return
     const isCurrent = () =>
       current(epoch, user) &&
       runGeneration.current === revision &&
       stream.current === running &&
-      activeRun.current === id
+      activeRun.current?.id === id
     const abort = request()
     try {
       if (id) {
@@ -317,14 +340,14 @@ export function useBlogQa() {
     }
   }
   const refresh = async () => {
-    const id = activeRun.current,
+    const id = activeRun.current?.id,
       epoch = generation.current,
       revision = runGeneration.current
-    if (!user || !id || !current(epoch, user)) return
+    if (!user || !id || !current(epoch, user) || historyDeletion.current) return
     const isCurrent = () =>
       current(epoch, user) &&
       runGeneration.current === revision &&
-      activeRun.current === id
+      activeRun.current?.id === id
     const abort = request()
     try {
       const next = await fetchBlogQaRun(id, abort.signal)
@@ -339,16 +362,59 @@ export function useBlogQa() {
       requests.current.delete(abort)
     }
   }
+  const deleteHistory = async (id: string) => {
+    const epoch = generation.current
+    if (
+      !user ||
+      !current(epoch, user) ||
+      activeRun.current?.id !== id ||
+      !canEraseHistory(caps.current, activeRun.current, busyRef.current) ||
+      historyDeletion.current
+    )
+      return
+    const revision = ++runGeneration.current
+    for (const pending of requests.current) pending.abort()
+    requests.current.clear()
+    const abort = request()
+    historyDeletion.current = abort
+    stream.current = null
+    setHistoryDeletionStatus('pending')
+    setError('')
+    const isCurrent = () =>
+      current(epoch, user) &&
+      runGeneration.current === revision &&
+      historyDeletion.current === abort &&
+      activeRun.current?.id === id
+    try {
+      await deleteBlogQaHistory(id, abort.signal)
+      if (isCurrent()) {
+        activeRun.current = null
+        setRun(null)
+        setHistoryDeletionStatus('deleted')
+        const key = `blog-qa:${user.user_id}`
+        if (sessionStorage.getItem(key) === id) sessionStorage.removeItem(key)
+      }
+    } catch {
+      if (isCurrent() && !abort.signal.aborted)
+        setHistoryDeletionStatus('failed')
+    } finally {
+      requests.current.delete(abort)
+      if (historyDeletion.current === abort) historyDeletion.current = null
+    }
+  }
   return {
     capabilities,
     user,
     run,
     busy,
+    canDeleteHistory: user !== null && canEraseHistory(capabilities, run, busy),
+    historyDeletionStatus,
     error,
     login,
     logout,
     send,
     stop,
     refresh,
+    deleteHistory,
   }
 }

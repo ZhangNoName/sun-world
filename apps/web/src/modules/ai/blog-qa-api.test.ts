@@ -3,6 +3,7 @@ import {
   fetchBlogQaCapabilities,
   fetchBlogQaRun,
   cancelBlogQaRun,
+  deleteBlogQaHistory,
   blogQaMode,
   normalizeBlogQaRun,
   streamBlogQa,
@@ -210,6 +211,58 @@ it('does not expose backend diagnostic text in failures or fetch malformed run I
   vi.stubGlobal('fetch', fetch)
   await expect(fetchBlogQaRun('r1')).rejects.toThrow('问答服务暂不可用')
   await expect(cancelBlogQaRun('../r1')).rejects.toThrow('格式')
+  await expect(deleteBlogQaHistory('../r1')).rejects.toThrow('格式')
+  expect(fetch).toHaveBeenCalledOnce()
+})
+it('deletes only the selected run with a credentialed, empty request', async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValue(
+      new Response(JSON.stringify({ code: 1, data: true, msg: '历史已删除' }))
+    )
+  const { signal } = new AbortController()
+  vi.stubGlobal('fetch', fetch)
+
+  await deleteBlogQaHistory('r_1', signal)
+
+  expect(fetch).toHaveBeenCalledOnce()
+  expect(fetch).toHaveBeenCalledWith('/api/ai/v1/blog-qa/runs/r_1', {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: { 'content-type': 'application/json' },
+    signal,
+  })
+})
+it.each([
+  { status: 200, body: 'true' },
+  { status: 200, body: '{"code":1,"data":false}' },
+  { status: 200, body: '{"code":1,"data":"true"}' },
+  { status: 200, body: '{"code":0,"data":true}' },
+  { status: 200, body: '<html></html>' },
+  { status: 409, body: '{"code":"AGENT_HISTORY_NOT_TERMINAL","data":null}' },
+  { status: 503, body: '{"code":1,"data":true}' },
+])(
+  'refuses to confirm deletion on $status with $body',
+  async ({ status, body }) => {
+    const fetch = vi.fn().mockResolvedValue(new Response(body, { status }))
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(deleteBlogQaHistory('r1')).rejects.toThrow(
+      '删除未确认，请重试'
+    )
+    expect(fetch).toHaveBeenCalledOnce()
+  }
+)
+it('does not retry deletion after the original session changes during refresh', async () => {
+  const abort = new AbortController()
+  const fetch = vi.fn().mockResolvedValue(new Response('', { status: 401 }))
+  session.refresh.mockImplementationOnce(() => abort.abort())
+  vi.stubGlobal('fetch', fetch)
+
+  await expect(deleteBlogQaHistory('r1', abort.signal)).rejects.toMatchObject({
+    name: 'AbortError',
+  })
+  expect(session.refresh).toHaveBeenCalledOnce()
   expect(fetch).toHaveBeenCalledOnce()
 })
 it.each([{ model: {} }, { dataset: [] }, { reason: {} }])(

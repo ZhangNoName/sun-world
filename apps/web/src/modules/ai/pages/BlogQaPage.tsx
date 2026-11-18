@@ -32,6 +32,7 @@ export function BlogQaPage() {
   const mode = blogQaMode(qa.capabilities)
   const realSession = mode === 'formal' || mode === 'site'
   const fixtures = mode === 'fixtures'
+  const isDeletingHistory = qa.historyDeletionStatus === 'pending'
   const examples = realSession
     ? [
         '博客里介绍了哪些 React 开发实践？',
@@ -71,6 +72,15 @@ export function BlogQaPage() {
       abort.abort()
     }
   }, [articleId, fixtures])
+
+  const handleDeleteHistory = () => {
+    if (
+      qa.run &&
+      window.confirm('删除此问答？问题、回答和参考来源将从历史中移除。')
+    )
+      void qa.deleteHistory(qa.run.id)
+  }
+
   return (
     <main className="blog-qa-page">
       <header className="blog-qa-header">
@@ -96,6 +106,9 @@ export function BlogQaPage() {
           </div>
         )}
         {qa.error && <p role="alert">{qa.error}</p>}
+        {qa.historyDeletionStatus === 'deleted' && (
+          <p role="status">已删除此问答</p>
+        )}
         {qa.capabilities && !qa.capabilities.enabled && (
           <p role="status">{availabilityMessage}</p>
         )}
@@ -132,7 +145,7 @@ export function BlogQaPage() {
             rows={4}
             placeholder="例如：博客问答怎样核对参考来源？"
             onChange={(event) => setQuestion(event.target.value)}
-            disabled={running}
+            disabled={running || isDeletingHistory}
           />
           <div className="blog-qa-actions">
             <span>只读公开文章，不修改或发布内容</span>
@@ -151,6 +164,7 @@ export function BlogQaPage() {
                   !mode ||
                   !qa.user ||
                   !qa.capabilities?.enabled ||
+                  isDeletingHistory ||
                   !question.trim()
                 }
               >
@@ -164,7 +178,7 @@ export function BlogQaPage() {
             <Button
               key={text}
               variant="outline"
-              disabled={running}
+              disabled={running || isDeletingHistory}
               onClick={() => setQuestion(text)}
             >
               {text}
@@ -175,11 +189,15 @@ export function BlogQaPage() {
           <section
             className="blog-qa-answer"
             aria-label="问答结果"
-            aria-busy={qa.busy}
+            aria-busy={qa.busy || isDeletingHistory}
           >
             <div className="blog-qa-result-heading">
               <h2>{statuses[qa.run.status]}</h2>
-              <Button variant="ghost" onClick={() => void qa.refresh()}>
+              <Button
+                variant="ghost"
+                disabled={isDeletingHistory}
+                onClick={() => void qa.refresh()}
+              >
                 刷新状态
               </Button>
             </div>
@@ -200,6 +218,20 @@ export function BlogQaPage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+            {qa.canDeleteHistory && (
+              <div className="blog-qa-history-actions">
+                {qa.historyDeletionStatus === 'failed' && (
+                  <p role="alert">删除未确认，请重试</p>
+                )}
+                <Button
+                  variant="destructive"
+                  disabled={isDeletingHistory}
+                  onClick={handleDeleteHistory}
+                >
+                  {isDeletingHistory ? '正在删除…' : '删除此问答'}
+                </Button>
               </div>
             )}
           </section>
