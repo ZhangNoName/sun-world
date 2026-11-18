@@ -21,11 +21,18 @@ class FakeService:
         self.seen_user_id = "unset"
         self.seen_guest_session_id = None
         self.seen_request = None
+        self.guest_provider_factory = object()
 
-    async def list_providers(self):
+    async def list_providers(self, *, guest=False):
         from src.modules.ai.schemas import AiProviderDescriptor
 
-        return [AiProviderDescriptor(id="deepseek", name="DeepSeek")]
+        model = ("openai-guest", "OpenAI") if guest else ("deepseek", "DeepSeek")
+        return [AiProviderDescriptor(id=model[0], name=model[1])]
+
+    def validate_run_request(self, user_id, request):
+        from src.modules.ai.service import AiService
+
+        return AiService.validate_run_request(self, user_id, request)
 
     async def resolve_run_conversation_id(self, _user_id, request):
         self.event_loop_thread_id = threading.get_ident()
@@ -137,11 +144,41 @@ class AiRouterTests(unittest.TestCase):
     def tearDown(self):
         self.redis_patch.stop()
 
-    def test_lists_database_providers_without_authentication(self):
+    def test_lists_single_guest_model_and_separate_account_catalog(self):
+        from src.modules.ai.router import get_optional_ai_user_id
+
         response = self.client.get("/ai/v1/providers")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["data"][0]["id"], "deepseek")
+        self.assertEqual([row["id"] for row in response.json()["data"]], ["openai-guest"])
+        self.assertEqual(response.headers["Cache-Control"], "no-store")
+        self.assertIn("Cookie", response.headers["Vary"])
+        self.client.app.dependency_overrides[get_optional_ai_user_id] = lambda: 7
+        response = self.client.get("/ai/v1/providers")
+        self.assertEqual([row["id"] for row in response.json()["data"]], ["deepseek"])
+
+    def test_guest_disallowed_fields_and_disabled_provider_do_not_consume_quota(self):
+        for body, status, code in (
+            ({"model_id": "deepseek"}, 403, "AI_GUEST_MODEL_NOT_ALLOWED"),
+            ({"provider_profile_id": "my-model"}, 401, "AI_AUTH_REQUIRED"),
+            ({"parent_message_id": "my-message"}, 401, "AI_AUTH_REQUIRED"),
+        ):
+            with self.subTest(body=body):
+                response = self.client.post("/ai/v1/runs/stream", json={"message": "hello", **body})
+                self.assertEqual(response.status_code, status)
+                self.assertEqual(response.json()["detail"]["code"], code)
+
+        invalid_effort = self.client.post(
+            "/ai/v1/runs/stream", json={"message": "hello", "reasoning_effort": "max"}
+        )
+        self.assertEqual(invalid_effort.status_code, 422)
+        self.service.guest_provider_factory = None
+        response = self.client.post("/ai/v1/runs/stream", json={"message": "hello"})
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["detail"]["code"], "AI_GUEST_PROVIDER_UNAVAILABLE")
+        self.assertEqual(self.lease_redis.rate_consumed, 0)
+        self.assertEqual(self.lease_redis.acquired, 0)
+        self.assertIsNone(self.service.seen_request)
 
     def test_guest_stream_does_not_forge_a_persistent_user_id(self):
         response = self.client.post("/ai/v1/runs/stream", json={"message": "hello"})

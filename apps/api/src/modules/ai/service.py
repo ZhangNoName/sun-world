@@ -2,12 +2,19 @@ from __future__ import annotations
 
 import hashlib
 import time
-from typing import AsyncIterator
+from typing import AsyncIterator, Callable
 from uuid import uuid4
 
 from .errors import AiDomainError
 from .credentials import CredentialCipher
-from .providers import ProviderConfig, ProviderRegistry
+from .providers import (
+    AiProvider,
+    GUEST_OPENAI_MODEL,
+    GUEST_OPENAI_PROVIDER_ID,
+    OPENAI_API_BASE_URL,
+    ProviderConfig,
+    ProviderRegistry,
+)
 from .repositories import AiRepository
 from .schemas import (
     AiPersona,
@@ -15,6 +22,7 @@ from .schemas import (
     AiProviderCatalogInput,
     AiProviderDescriptor,
     AiProviderProfileInput,
+    AiReasoningEffort,
     AiRunRequest,
     AiSkill,
     AiSkillInput,
@@ -81,10 +89,13 @@ class AiService:
         repository: AiRepository,
         providers: ProviderRegistry,
         cipher: CredentialCipher | None = None,
+        *,
+        guest_provider_factory: Callable[[AiReasoningEffort], AiProvider] | None = None,
     ):
         self.repository = repository
         self.providers = providers
         self.cipher = cipher or CredentialCipher(None)
+        self.guest_provider_factory = guest_provider_factory
         self._guest_transcripts: dict[
             str,
             tuple[float, list[dict[str, str]], int],
@@ -145,7 +156,19 @@ class AiService:
         self._guest_transcripts[transcript_key] = (time.monotonic(), retained, size)
         self._prune_guest_transcripts(time.monotonic())
 
-    async def list_providers(self) -> list[AiProviderDescriptor]:
+    async def list_providers(self, *, guest: bool = False) -> list[AiProviderDescriptor]:
+        if guest:
+            if self.guest_provider_factory is None:
+                return []
+            return [
+                AiProviderDescriptor(
+                    id=GUEST_OPENAI_PROVIDER_ID,
+                    name="OpenAI",
+                    default_base_url=OPENAI_API_BASE_URL,
+                    default_model=GUEST_OPENAI_MODEL,
+                    is_default=True,
+                )
+            ]
         method = getattr(self.repository, "list_provider_catalog", None)
         catalog = await method() if method is not None else []
         return [
@@ -159,6 +182,39 @@ class AiService:
             for item in catalog
             if item.is_enabled
         ]
+
+    def validate_run_request(self, user_id: int | None, request: AiRunRequest) -> None:
+        if user_id is not None:
+            if request.reasoning_effort is not None:
+                raise AiDomainError(
+                    "AI_REASONING_UNSUPPORTED",
+                    "当前模型配置不支持修改思考程度。",
+                    status_code=422,
+                )
+            return
+        if (
+            request.provider_profile_id is not None
+            or request.persona_id is not None
+            or request.skill_ids
+            or request.parent_message_id is not None
+        ):
+            raise AiDomainError(
+                "AI_AUTH_REQUIRED",
+                "登录后可使用个人模型、角色、技能和已保存的消息。",
+                status_code=401,
+            )
+        if request.model_id not in (None, GUEST_OPENAI_PROVIDER_ID):
+            raise AiDomainError(
+                "AI_GUEST_MODEL_NOT_ALLOWED",
+                "游客只能使用 GPT-6.1 Sol。",
+                status_code=403,
+            )
+        if self.guest_provider_factory is None:
+            raise AiDomainError(
+                "AI_GUEST_PROVIDER_UNAVAILABLE",
+                "游客聊天暂不可用，请稍后再试。",
+                status_code=503,
+            )
 
     async def list_provider_catalog(self):
         method = getattr(self.repository, "list_provider_catalog", None)
@@ -508,6 +564,12 @@ class AiService:
         message_id = _id("msg")
         sequence = 0
         try:
+            self.validate_run_request(user_id, request)
+            guest_provider = (
+                self.guest_provider_factory(request.reasoning_effort or "medium")
+                if user_id is None and self.guest_provider_factory is not None
+                else None
+            )
             resolved_conversation_id = await self.resolve_run_conversation_id(
                 user_id,
                 request,
@@ -573,10 +635,12 @@ class AiService:
                 ),
                 *_bounded_provider_transcript(transcript_messages),
             ]
-            config = await self._resolve_provider_config(
-                user_id,
-                request.provider_profile_id,
-                request.model_id,
+            config = (
+                None
+                if guest_provider is not None
+                else await self._resolve_provider_config(
+                    user_id, request.provider_profile_id, request.model_id,
+                )
             )
         except AiDomainError as error:
             yield AiStreamEvent(
@@ -613,12 +677,17 @@ class AiService:
             conversation_id=conversation_id,
             message_id=message_id,
             sequence=sequence,
-            data={"provider": config.provider, "model": config.model},
+            data=(
+                {"provider": config.provider, "model": config.model}
+                if config is not None
+                else {"provider": "openai", "model": GUEST_OPENAI_MODEL}
+            ),
         )
 
         content = ""
         try:
-            provider = self.providers.create(config)
+            provider = self.providers.create(config) if config is not None else guest_provider
+            assert provider is not None
             async for delta in provider.stream(provider_messages):
                 content += delta
                 sequence += 1
@@ -632,6 +701,13 @@ class AiService:
                 )
         except AiDomainError as error:
             sequence += 1
+            message = error.message
+            if user_id is None:
+                message = (
+                    "公共模型请求过于频繁，请稍后重试。"
+                    if error.code == "AI_RATE_LIMITED"
+                    else "公共模型暂时无法完成回复，请稍后重试。"
+                )
             yield AiStreamEvent(
                 event_id=_id("evt"),
                 type="run.failed",
@@ -640,7 +716,7 @@ class AiService:
                 sequence=sequence,
                 data={
                     "code": error.code,
-                    "message": error.message,
+                    "message": message,
                     "retryable": error.status_code >= 429,
                 },
             )
@@ -655,7 +731,11 @@ class AiService:
                 sequence=sequence,
                 data={
                     "code": "AI_PROVIDER_UNAVAILABLE",
-                    "message": "The AI provider is temporarily unavailable. Please try again.",
+                    "message": (
+                        "公共模型暂时无法完成回复，请稍后重试。"
+                        if user_id is None
+                        else "The AI provider is temporarily unavailable. Please try again."
+                    ),
                     "retryable": True,
                 },
             )
@@ -707,6 +787,7 @@ class AiService:
             )
             return
 
+        usage = getattr(provider, "usage", None)
         sequence += 1
         yield AiStreamEvent(
             event_id=_id("evt"),
@@ -714,5 +795,8 @@ class AiService:
             conversation_id=conversation_id,
             message_id=message_id,
             sequence=sequence,
-            data={"blocks": [block.model_dump(mode="json")]},
+            data={
+                "blocks": [block.model_dump(mode="json")],
+                **({"usage": usage} if usage is not None else {}),
+            },
         )

@@ -72,7 +72,9 @@ async def configured_service(repository, registry):
         return catalog, encrypted_key
 
     repository.get_default_provider_record = get_default_provider_record
-    return AiService(repository, registry, cipher)
+    return AiService(
+        repository, registry, cipher, guest_provider_factory=lambda _effort: registry.provider,
+    )
 
 
 class AiServiceTests(unittest.IsolatedAsyncioTestCase):
@@ -136,7 +138,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(descriptors, [])
 
-    async def test_guest_run_uses_the_encrypted_global_provider_record(self):
+    async def test_account_run_uses_the_encrypted_global_provider_record(self):
         from cryptography.fernet import Fernet
 
         from src.modules.ai.credentials import CredentialCipher
@@ -164,7 +166,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         _events = [
             event
             async for event in service.stream_run(
-                user_id=None,
+                user_id=7,
                 request=AiRunRequest(message="Use global config"),
             )
         ]
@@ -172,7 +174,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(registry.created_config.provider, "deepseek")
         self.assertEqual(registry.created_config.api_key, "sk-global-secret")
 
-    async def test_guest_run_uses_keyless_public_default(self):
+    async def test_account_run_uses_keyless_catalog_default(self):
         from src.modules.ai.repositories import InMemoryAiRepository
         from src.modules.ai.schemas import AiProviderCatalogInput, AiRunRequest
         from src.modules.ai.service import AiService
@@ -202,7 +204,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         events = [
             event
             async for event in service.stream_run(
-                user_id=None,
+                user_id=7,
                 request=AiRunRequest(message="Use public Qwen"),
             )
         ]
@@ -246,7 +248,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         _events = [
             event
             async for event in service.stream_run(
-                user_id=None,
+                user_id=7,
                 request=AiRunRequest(
                     message="Use selected model",
                     model_id="selected-public",
@@ -278,7 +280,7 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         events = [
             event
             async for event in service.stream_run(
-                user_id=None,
+                user_id=7,
                 request=AiRunRequest(
                     message="Do not run this model",
                     model_id="disabled-public",
@@ -384,9 +386,11 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_guest_stream_emits_monotonic_events_and_one_terminal_event(self):
         from src.modules.ai.repositories import InMemoryAiRepository
         from src.modules.ai.schemas import AiRunRequest
-        from src.modules.ai.service import AiService
 
-        service = await configured_service(InMemoryAiRepository(), FakeRegistry())
+        registry = FakeRegistry()
+        usage = {"input_tokens": 16, "output_tokens": 20, "total_tokens": 36}
+        registry.provider.usage = usage
+        service = await configured_service(InMemoryAiRepository(), registry)
 
         events = [
             event
@@ -406,7 +410,40 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
             ],
         )
         self.assertEqual([event.sequence for event in events], [0, 1, 2, 3])
+        self.assertEqual(events[0].data, {"provider": "openai", "model": "gpt-6.1-sol"})
         self.assertEqual(events[-1].data["blocks"][0]["text"], "hello world")
+        self.assertEqual(events[-1].data["usage"], usage)
+        self.assertGreaterEqual(events[-1].data["duration_ms"], 0)
+
+    async def test_guest_catalog_and_stream_do_not_load_site_or_personal_credentials(self):
+        from unittest.mock import AsyncMock, Mock
+        from src.modules.ai.repositories import InMemoryAiRepository
+        from src.modules.ai.schemas import AiRunRequest
+        from src.modules.ai.service import AiService
+
+        repository = InMemoryAiRepository()
+        repository.get_default_provider_record = AsyncMock(side_effect=AssertionError)
+        repository.get_provider_profile_record = AsyncMock(side_effect=AssertionError)
+        registry = FakeRegistry()
+        guest_provider_factory = Mock(return_value=FakeProvider())
+        service = AiService(
+            repository, registry, guest_provider_factory=guest_provider_factory,
+        )
+        self.assertEqual(
+            [row.id for row in await service.list_providers(guest=True)], ["openai-guest"]
+        )
+        for model, effort in [(None, None), ("openai-guest", "high")]:
+            events = [event async for event in service.stream_run(
+                None, AiRunRequest(message="hello", model_id=model, reasoning_effort=effort),
+            )]
+            self.assertEqual(events[-1].type, "message.completed")
+        self.assertEqual(
+            [call.args for call in guest_provider_factory.call_args_list],
+            [("medium",), ("high",)],
+        )
+        repository.get_default_provider_record.assert_not_called()
+        repository.get_provider_profile_record.assert_not_called()
+        self.assertFalse(hasattr(registry, "created_config"))
 
     async def test_authenticated_stream_persists_user_and_assistant_messages(self):
         from src.modules.ai.repositories import InMemoryAiRepository

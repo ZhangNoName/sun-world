@@ -38,6 +38,9 @@ DEFAULT_MAX_STREAM_CHARACTERS = 1_000_000
 DEFAULT_MAX_OUTPUT_TOKENS = 4_096
 MAX_OUTPUT_TOKENS = 16_384
 MAX_STREAM_LIMIT = 16 * 1024 * 1024
+GUEST_OPENAI_MODEL = "gpt-6.1-sol"
+GUEST_OPENAI_PROVIDER_ID = "openai-guest"
+OPENAI_API_BASE_URL = "https://api.openai.com/v1"
 
 
 @dataclass(frozen=True)
@@ -166,6 +169,8 @@ def _policy_error(error: AiDomainError) -> AiDomainError:
 
 
 class OpenAiCompatibleProvider:
+    _require_done = False
+
     def __init__(
         self,
         config: ProviderConfig,
@@ -183,6 +188,7 @@ class OpenAiCompatibleProvider:
         max_output_tokens: int | None = None,
     ):
         self.config = config
+        self.usage: dict[str, int] | None = None
         self._allowed_hosts = _allowed_host_values(allowed_hosts)
         self._resolver = resolver
         self._dependency_loader = dependency_loader or _load_mcp_sdk_dependencies
@@ -384,7 +390,48 @@ class OpenAiCompatibleProvider:
             )
         return f"{canonical_base_url.rstrip('/')}/chat/completions"
 
+    def _stream_payload(self, messages: list[dict[str, str]]) -> dict:
+        payload = {
+            "model": self.config.model,
+            "messages": messages,
+            "stream": True,
+            "max_tokens": self._max_output_tokens,
+        }
+        if self.config.base_url.rstrip("/") == OPENAI_API_BASE_URL:
+            payload["stream_options"] = {"include_usage": True}
+        return payload
+
+    def _record_usage(self, usage: object, input_key: str, output_key: str) -> None:
+        if not isinstance(usage, dict):
+            return
+        input_tokens = usage.get(input_key)
+        output_tokens = usage.get(output_key)
+        total_tokens = usage.get("total_tokens")
+        if (
+            type(input_tokens) is int and input_tokens >= 0
+            and type(output_tokens) is int and output_tokens >= 0
+            and type(total_tokens) is int and total_tokens <= 2**53 - 1
+            and total_tokens == input_tokens + output_tokens
+        ):
+            self.usage = {
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": total_tokens,
+            }
+
+    def _stream_event(self, raw: str) -> tuple[bool, str | None]:
+        if raw == "[DONE]":
+            return True, None
+        try:
+            event = json.loads(raw)
+            self._record_usage(event.get("usage"), "prompt_tokens", "completion_tokens")
+            delta = event["choices"][0]["delta"].get("content")
+        except (AttributeError, KeyError, IndexError, TypeError, json.JSONDecodeError):
+            return False, None
+        return False, delta if isinstance(delta, str) else None
+
     async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+        self.usage = None
         if self.config.auth_mode not in {"none", "bearer"}:
             raise AiDomainError(
                 "AI_PROVIDER_CONFIGURATION_INVALID",
@@ -400,12 +447,7 @@ class OpenAiCompatibleProvider:
         endpoint = self._endpoint()
         options = await self._connection_options(endpoint)
         dependencies = self._load_dependencies()
-        payload = {
-            "model": self.config.model,
-            "messages": messages,
-            "stream": True,
-            "max_tokens": self._max_output_tokens,
-        }
+        payload = self._stream_payload(messages)
         emitted_characters = 0
         try:
             http_client = self._build_http_client(dependencies, options)
@@ -432,14 +474,12 @@ class OpenAiCompatibleProvider:
                             if not raw_line.startswith("data:"):
                                 continue
                             raw = raw_line.removeprefix("data:").strip()
-                            if raw == "[DONE]":
+                            done, delta = self._stream_event(raw)
+                            if done:
+                                if emitted_characters or not self._require_done:
+                                    return
                                 break
-                            try:
-                                body = json.loads(raw)
-                                delta = body["choices"][0]["delta"].get("content")
-                            except (KeyError, IndexError, TypeError, json.JSONDecodeError):
-                                continue
-                            if isinstance(delta, str) and delta:
+                            if delta:
                                 emitted_characters += len(delta)
                                 if emitted_characters > self._max_stream_characters:
                                     raise AiDomainError(
@@ -448,6 +488,12 @@ class OpenAiCompatibleProvider:
                                         status_code=502,
                                     )
                                 yield delta
+                        if self._require_done:
+                            raise AiDomainError(
+                                "AI_PROVIDER_PROTOCOL_ERROR",
+                                "AI 回复未完整生成，请重试。",
+                                status_code=502,
+                            )
         except AiDomainError:
             raise
         except Exception as exc:

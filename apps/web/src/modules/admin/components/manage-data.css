@@ -264,18 +264,6 @@
 
 .manage-table-page-size {
   min-width: 5.5rem;
-  min-height: 2rem;
-  padding: 0 1.75rem 0 0.6rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-default);
-  background: var(--bg-component);
-  font: inherit;
-}
-
-.manage-table-page-size:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
 }
 
 .manage-table-state {

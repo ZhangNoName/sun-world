@@ -9,7 +9,7 @@ import secrets
 import re
 from dataclasses import dataclass
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -383,8 +383,14 @@ def raise_http(error: AiDomainError) -> None:
 
 
 @router.get("/providers", response_model=ApiResponse[list[AiProviderDescriptor]])
-async def list_providers(service: AiService = Depends(get_ai_service)):
-    return ok(data=await service.list_providers(), msg="AI providers loaded")
+async def list_providers(
+    response: Response,
+    user_id: int | None = Depends(get_optional_ai_user_id),
+    service: AiService = Depends(get_ai_service),
+):
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Vary"] = "Cookie"
+    return ok(data=await service.list_providers(guest=user_id is None), msg="AI providers loaded")
 
 
 @router.get("/provider-profiles", response_model=ApiResponse[list[AiProviderProfile]])
@@ -605,6 +611,10 @@ async def stream_run(
     user_id: int | None = Depends(get_optional_ai_user_id),
     service: AiService = Depends(get_ai_service),
 ):
+    try:
+        service.validate_run_request(user_id, body)
+    except AiDomainError as error:
+        raise_http(error)
     # Paid-run budgets and concurrency both live inside the endpoint because
     # dependencies may execute before FastAPI validates the request body.
     # Malformed requests therefore cannot consume provider capacity or quota.

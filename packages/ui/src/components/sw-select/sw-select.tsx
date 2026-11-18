@@ -16,7 +16,11 @@ export type SwOption = {
   disabled?: boolean
 }
 
-export type SwSelectProps = {
+type Selection<Multiple extends boolean> = Multiple extends true
+  ? string[]
+  : string
+
+export type SwSelectProps<Multiple extends boolean = false> = {
   id?: string
   label?: React.ReactNode
   hideVisibleLabel?: boolean
@@ -24,13 +28,15 @@ export type SwSelectProps = {
   error?: React.ReactNode
   placeholder?: string
   options: SwOption[]
-  value?: string
-  defaultValue?: string
-  onValueChange?: (value: string) => void
+  multiple?: Multiple
+  value?: Selection<Multiple>
+  defaultValue?: Selection<Multiple>
+  onValueChange?: (value: Selection<Multiple>) => void
   disabled?: boolean
   name?: string
   required?: boolean
   surface?: 'default' | 'modal'
+  size?: 'sm' | 'default'
   className?: string
   'aria-label'?: string
 }
@@ -50,7 +56,7 @@ export type SwNativeSelectProps = Omit<
   onChange?: React.ChangeEventHandler<HTMLSelectElement>
 }
 
-export function SwSelect({
+export function SwSelect<Multiple extends boolean = false>({
   id,
   label,
   hideVisibleLabel = false,
@@ -58,6 +64,7 @@ export function SwSelect({
   error,
   placeholder,
   options,
+  multiple,
   value,
   defaultValue,
   onValueChange,
@@ -65,9 +72,10 @@ export function SwSelect({
   name,
   required,
   surface = 'default',
+  size,
   className,
   'aria-label': ariaLabel,
-}: SwSelectProps) {
+}: SwSelectProps<Multiple>) {
   const generatedId = React.useId()
   const selectId = id ?? generatedId
   const descriptionId =
@@ -78,8 +86,9 @@ export function SwSelect({
       {label && !hideVisibleLabel ? (
         <Label htmlFor={selectId}>{label}</Label>
       ) : null}
-      <Select
+      <Select<string, Multiple>
         items={options}
+        multiple={multiple}
         value={value}
         defaultValue={defaultValue}
         onValueChange={(nextValue) => {
@@ -91,6 +100,7 @@ export function SwSelect({
       >
         <SelectTrigger
           id={selectId}
+          size={size}
           className={className ?? 'w-full'}
           aria-label={
             ariaLabel ?? (typeof label === 'string' ? label : undefined)
@@ -128,6 +138,7 @@ export function SwSelect({
   )
 }
 
+/** @deprecated Use SwSelect for single and multiple selection. */
 export function SwNativeSelect({
   id,
   label,

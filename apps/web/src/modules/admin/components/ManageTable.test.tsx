@@ -174,9 +174,9 @@ describe('ManageTable', () => {
       />
     )
 
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: '每页条数' }),
-      '20'
+    await userEvent.click(screen.getByRole('combobox', { name: '每页条数' }))
+    await userEvent.click(
+      await screen.findByRole('option', { name: '20 条/页' })
     )
 
     expect(onPageSizeChange).toHaveBeenCalledWith(20)

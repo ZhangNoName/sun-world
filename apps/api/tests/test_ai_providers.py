@@ -520,6 +520,76 @@ class ProviderOutboundSecurityTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(resolver.calls), 2)
         self.assertEqual(len(captured["clients"]), 1)
 
+    async def test_guest_openai_pins_generation_parameters_and_requires_terminal_event(self):
+        from src.modules.ai.errors import AiDomainError
+        from src.modules.ai.local_openai import GuestOpenAiProvider
+        from src.modules.ai.providers import ProviderConfig
+
+        messages = [{"role": "user", "content": "hello"}]
+        captured = {}
+        delta = b'data: {"type":"response.output_text.delta","delta":"hello"}\n\n'
+        completed = (
+            b'data: {"type":"response.completed","response":{"status":"completed",'
+            b'"usage":{"input_tokens":16,"output_tokens":20,"total_tokens":36}}}\n\n'
+        )
+        config = ProviderConfig(
+            "openai", "gpt-6.1-sol", "https://api.openai.com/v1",
+            api_key="sk-synthetic-guest-test-key",
+        )
+        provider = GuestOpenAiProvider(
+            config,
+            allowed_hosts=("api.openai.com",),
+            resolver=FakeResolver(),
+            dependency_loader=lambda: fake_http_dependencies(captured, chunks=(delta, completed)),
+            max_output_tokens=2048,
+            reasoning_effort="high",
+        )
+        self.assertEqual([delta async for delta in provider.stream(messages)], ["hello"])
+        self.assertEqual(
+            provider.usage,
+            {"input_tokens": 16, "output_tokens": 20, "total_tokens": 36},
+        )
+        self.assertEqual(captured["request_call"], (
+            "POST",
+            "https://api.openai.com/v1/responses",
+            {"json": {
+                "model": "gpt-6.1-sol", "input": messages, "stream": True,
+                "max_output_tokens": 2048, "reasoning": {"effort": "high"}, "store": False,
+            }},
+        ))
+
+        for chunks in (
+            (completed,),
+            (delta,),
+        ):
+            with self.subTest(chunks=chunks):
+                incomplete = GuestOpenAiProvider(
+                    config, allowed_hosts=("api.openai.com",), resolver=FakeResolver(),
+                    dependency_loader=lambda: fake_http_dependencies({}, chunks=chunks),
+                )
+                with self.assertRaises(AiDomainError) as caught:
+                    await self._collect(incomplete)
+                self.assertEqual(caught.exception.code, "AI_PROVIDER_PROTOCOL_ERROR")
+
+    async def test_chat_completions_records_usage_only_chunks(self):
+        from src.modules.ai.providers import OpenAiCompatibleProvider
+
+        chunks = (
+            b'data: {"choices":[{"delta":{"content":"hello"}}],"usage":null}\n\n',
+            b'data: {"choices":[],"usage":{"prompt_tokens":16,"completion_tokens":20,"total_tokens":36}}\n\n',
+            b'data: [DONE]\n\n',
+        )
+        provider = OpenAiCompatibleProvider(
+            provider_config(), allowed_hosts=("models.example.com",), resolver=FakeResolver(),
+            dependency_loader=lambda: fake_http_dependencies({}, chunks=chunks),
+        )
+
+        self.assertEqual(await self._collect(provider), ["hello"])
+        self.assertEqual(
+            provider.usage,
+            {"input_tokens": 16, "output_tokens": 20, "total_tokens": 36},
+        )
+
     async def test_bounds_raw_stream_bytes_and_emitted_characters(self):
         from src.modules.ai.errors import AiDomainError
         from src.modules.ai.providers import OpenAiCompatibleProvider

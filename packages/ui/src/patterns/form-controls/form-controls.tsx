@@ -26,7 +26,7 @@ export function SelectField(props: SwSelectProps & { label: string }) {
   return <SwSelect {...props} />
 }
 
-/** @deprecated Use SwNativeSelect from @sun-world/ui/sw-select. */
+/** @deprecated Use SwSelect from @sun-world/ui/sw-select. */
 export function NativeSelectField(
   props: SwNativeSelectProps & { label: string }
 ) {

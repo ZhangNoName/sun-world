@@ -14,25 +14,90 @@ const message: AiUiMessage = {
 const actions = { onEdit: vi.fn(), onRegenerate: vi.fn(), onFeedback: vi.fn() }
 
 describe('AiMessageView', () => {
-  it('disables edits and regeneration while allowing copying during a run', () => {
-    const { rerender } = render(
-      <AiMessageView message={message} busy {...actions} />
-    )
+  it('disables editing an earlier user message during a run', () => {
+    render(<AiMessageView message={message} busy {...actions} />)
     expect(screen.getByRole('button', { name: '编辑消息' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '复制消息' })).toBeEnabled()
-    rerender(
+  })
+
+  it('replaces the thinking status with streamed text and shows actions after completion', () => {
+    const assistant = { ...message, role: 'assistant' as const }
+    const { rerender } = render(
       <AiMessageView
-        message={{ ...message, role: 'assistant', status: 'streaming' }}
+        message={{ ...assistant, blocks: [], status: 'streaming' }}
         busy
         {...actions}
       />
     )
-    expect(screen.getByRole('button', { name: '重新生成' })).toBeDisabled()
+    expect(screen.getByRole('status')).toHaveTextContent('正在思考…')
+    expect(screen.getByText('0 秒')).toBeVisible()
+    rerender(
+      <AiMessageView
+        message={{
+          ...assistant,
+          blocks: [{ type: 'text', text: '\n ' }],
+          status: 'streaming',
+        }}
+        busy
+        {...actions}
+      />
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('正在思考…')
+    rerender(
+      <AiMessageView
+        message={{ ...assistant, status: 'streaming' }}
+        busy
+        {...actions}
+      />
+    )
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Original question').closest('[aria-busy]')
+    ).toHaveAttribute('aria-busy', 'true')
+    expect(
+      screen.queryByRole('button', { name: '复制回答' })
+    ).not.toBeInTheDocument()
+    rerender(<AiMessageView message={assistant} {...actions} />)
+    expect(screen.getByRole('button', { name: '重新生成' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '复制回答' })).toBeEnabled()
+  })
+
+  it('displays reported tokens and duration while permitting missing usage', () => {
+    const assistant: AiUiMessage = { ...message, role: 'assistant' }
+    const { rerender } = render(
+      <AiMessageView
+        message={{
+          ...assistant,
+          metrics: {
+            durationMs: 2400,
+            tokenUsage: {
+              inputTokens: 1200,
+              outputTokens: 34,
+              totalTokens: 1234,
+            },
+          },
+        }}
+        {...actions}
+      />
+    )
+    expect(screen.getByText('1,234 tokens')).toHaveAttribute(
+      'title',
+      '输入 1,200 · 输出 34'
+    )
+    expect(screen.getByText('2.4 秒')).toBeVisible()
+    rerender(
+      <AiMessageView
+        message={{ ...assistant, metrics: { durationMs: 500 } }}
+        {...actions}
+      />
+    )
+    expect(screen.getByText('0.5 秒')).toBeVisible()
+    expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
   })
 
   it.each([
-    ['interrupted', '已停止 · 可重新生成'],
-    ['failed', '生成失败 · 可重试'],
+    ['interrupted', '已停止'],
+    ['failed', '生成失败'],
   ] as const)(
     'explains the %s state and permits regeneration',
     (status, label) => {

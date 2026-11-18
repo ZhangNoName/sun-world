@@ -34,6 +34,7 @@ import {
   updateAiSkill,
   type AiPersona,
   type AiPersonaPayload,
+  type AiRunPayload,
   type AiSkill,
   type AiSkillPayload,
 } from '../api'
@@ -43,6 +44,11 @@ export const MAX_SELECTED_AI_SKILLS = 8
 export type AiCapabilityStatus = 'guest' | 'loading' | 'ready' | 'error'
 export type AiPersonaDraft = AiPersonaPayload & { id?: string }
 export type AiSkillDraft = AiSkillPayload & { id?: string }
+
+const GUEST_PROVIDER_ID = 'openai-guest'
+const GUEST_MODEL = 'gpt-6.1-sol'
+const EMPTY_PROVIDERS: AiUiProvider[] = []
+export type AiReasoningEffort = NonNullable<AiRunPayload['reasoning_effort']>
 
 const now = () => new Date().toISOString()
 const localId = (prefix: string) =>
@@ -65,7 +71,12 @@ export function useAiChat() {
     Record<string, AiUiMessage[]>
   >({ [initialConversation.id]: [] })
   const [runState, setRunState] = useState<AiRunState>({ status: 'idle' })
-  const [providers, setProviders] = useState<AiUiProvider[]>([])
+  const [reasoningEffort, setReasoningEffort] =
+    useState<AiReasoningEffort>('medium')
+  const [providerCatalog, setProviderCatalog] = useState<{
+    userId: number | null
+    items: AiUiProvider[]
+  } | null>(null)
   const [providerProfiles, setProviderProfiles] = useState<
     AiUiProviderProfile[]
   >([])
@@ -84,27 +95,37 @@ export function useAiChat() {
   const historyGeneration = useRef(0)
   const pendingEdit = useRef<object | null>(null)
   const userId = user?.id ?? null
+  const providers =
+    providerCatalog?.userId === userId ? providerCatalog.items : EMPTY_PROVIDERS
 
   useEffect(() => {
     let cancelled = false
     void fetchAiProviders()
       .then((items) => {
         if (!cancelled && items)
-          setProviders(
-            items.map((item) => ({
-              id: item.id,
-              name: item.name,
-              defaultBaseUrl: item.default_base_url,
-              defaultModel: item.default_model,
-              isDefault: item.is_default === true,
-            }))
-          )
+          setProviderCatalog({
+            userId,
+            items: items
+              .filter(
+                (item) =>
+                  userId !== null ||
+                  (item.id === GUEST_PROVIDER_ID &&
+                    item.default_model === GUEST_MODEL)
+              )
+              .map((item) => ({
+                id: item.id,
+                name: item.name,
+                defaultBaseUrl: item.default_base_url,
+                defaultModel: item.default_model,
+                isDefault: item.is_default === true,
+              })),
+          })
       })
       .catch(() => undefined)
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [userId])
 
   useEffect(() => {
     const generation = ++workspaceGeneration.current
@@ -246,10 +267,25 @@ export function useAiChat() {
             workspaceGeneration.current !== workspace
           )
             return
-          setMessagesByConversation((current) => ({
-            ...current,
-            [conversationId]: (conversation.messages ?? []).map(mapMessage),
-          }))
+          setMessagesByConversation((current) => {
+            const previous = new Map(
+              current[conversationId]?.map((message) => [message.id, message])
+            )
+            return {
+              ...current,
+              [conversationId]: (conversation.messages ?? []).map((item) => {
+                const message = mapMessage(item)
+                const existing = previous.get(message.id)
+                return existing
+                  ? {
+                      ...message,
+                      renderKey: existing.renderKey,
+                      metrics: existing.metrics,
+                    }
+                  : message
+              }),
+            }
+          })
         })
         .catch((error: unknown) => {
           if (
@@ -305,6 +341,7 @@ export function useAiChat() {
       }
       const assistantMessage: AiUiMessage = {
         id: assistantMessageId,
+        renderKey: assistantMessageId,
         conversationId,
         role: 'assistant',
         blocks: [],
@@ -441,6 +478,7 @@ export function useAiChat() {
               id: event.message_id,
               blocks: blocks.length ? blocks : message.blocks,
               status: 'completed',
+              metrics: parseMessageMetrics(event.data),
             })
           )
           return
@@ -469,11 +507,14 @@ export function useAiChat() {
           {
             message: text,
             conversation_id: conversationId,
-            provider_profile_id: selectedProfileId,
-            model_id: selectedModelId,
-            parent_message_id: options?.parentMessageId ?? null,
+            provider_profile_id: userId ? selectedProfileId : null,
+            model_id: userId ? selectedModelId : null,
+            parent_message_id: userId
+              ? (options?.parentMessageId ?? null)
+              : null,
             persona_id: userId ? selectedPersonaId : null,
             skill_ids: userId ? selectedSkillIds : [],
+            ...(!userId && { reasoning_effort: reasoningEffort }),
           },
           {
             signal: requestController.signal,
@@ -562,6 +603,7 @@ export function useAiChat() {
       activeConversationId,
       providerProfiles,
       providers,
+      reasoningEffort,
       selectedPersonaId,
       selectedSkillIds,
       updateMessage,
@@ -801,6 +843,8 @@ export function useAiChat() {
     runState,
     providers,
     providerProfiles,
+    reasoningEffort,
+    setReasoningEffort,
     personas,
     skills,
     selectedPersonaId,
@@ -877,6 +921,34 @@ function mapMessage(value: {
         ? value.feedback
         : null,
   }
+}
+
+function parseMessageMetrics({
+  duration_ms,
+  usage,
+}: AiStreamEvent['data']): AiUiMessage['metrics'] {
+  const safeCount = (value: unknown) =>
+    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+      ? value
+      : undefined
+  const durationMs = safeCount(duration_ms)
+  const metrics: NonNullable<AiUiMessage['metrics']> = {}
+  if (durationMs !== undefined) metrics.durationMs = durationMs
+  if (usage && typeof usage === 'object' && !Array.isArray(usage)) {
+    const inputTokens = safeCount(usage.input_tokens)
+    const outputTokens = safeCount(usage.output_tokens)
+    const totalTokens = safeCount(usage.total_tokens)
+    if (
+      inputTokens !== undefined &&
+      outputTokens !== undefined &&
+      totalTokens === inputTokens + outputTokens
+    ) {
+      metrics.tokenUsage = { inputTokens, outputTokens, totalTokens }
+    }
+  }
+  return metrics.durationMs !== undefined || metrics.tokenUsage
+    ? metrics
+    : undefined
 }
 
 function parseBlocks(value: unknown): AiContentBlock[] {

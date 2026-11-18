@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/base-ui/button'
 import { Label } from '@sun-world/base-ui/label'
@@ -26,6 +26,16 @@ export function AiMessageView({
   const [draft, setDraft] = useState(() => messageText(message))
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'error'>('idle')
   const assistant = message.role === 'assistant'
+  const streaming = message.status === 'streaming'
+  const hasContent = message.blocks.some(
+    (block) => block.type !== 'text' || block.text.trim().length > 0
+  )
+  const label =
+    message.role === 'user'
+      ? '你的消息'
+      : assistant
+        ? 'Sun World AI 的回复'
+        : '系统消息'
 
   const copy = async () => {
     try {
@@ -37,23 +47,10 @@ export function AiMessageView({
   }
 
   return (
-    <article className={`sw-ai-message sw-ai-message--${message.role}`}>
-      <header>
-        <strong>
-          {assistant
-            ? 'Sun World AI'
-            : message.role === 'user'
-              ? '你'
-              : message.role}
-        </strong>
-        {message.status === 'streaming' ? (
-          <span role="status">正在生成</span>
-        ) : message.status === 'interrupted' ? (
-          <span role="status">已停止 · 可重新生成</span>
-        ) : message.status === 'failed' ? (
-          <span role="status">生成失败 · 可重试</span>
-        ) : null}
-      </header>
+    <article
+      className={`sw-ai-message sw-ai-message--${message.role}`}
+      aria-label={label}
+    >
       {editing ? (
         <div className="sw-ai-message-editor">
           <Label htmlFor={`edit-${message.id}`}>编辑消息内容</Label>
@@ -89,21 +86,24 @@ export function AiMessageView({
             </Button>
           </div>
         </div>
-      ) : (
-        <div className="sw-ai-message-content">
+      ) : streaming && !hasContent ? (
+        <ThinkingStatus />
+      ) : hasContent ? (
+        <div
+          className="sw-ai-message-content"
+          aria-busy={streaming || undefined}
+        >
           {message.blocks.map((block, index) => (
             <AiBlockRenderer key={index} block={block} renderers={renderers} />
           ))}
-          {message.status === 'streaming' && message.blocks.length === 0 ? (
-            <span className="sw-ai-thinking" aria-label="AI 正在思考">
-              <i />
-              <i />
-              <i />
-            </span>
-          ) : null}
         </div>
-      )}
-      {!editing ? (
+      ) : null}
+      {message.status === 'interrupted' || message.status === 'failed' ? (
+        <span className="sw-ai-message-status" role="status">
+          {message.status === 'interrupted' ? '已停止' : '生成失败'}
+        </span>
+      ) : null}
+      {!editing && hasContent && !streaming ? (
         <footer className="sw-ai-message-actions">
           <ActionButton
             label={assistant ? '复制回答' : '复制消息'}
@@ -160,9 +160,53 @@ export function AiMessageView({
                 ? '复制失败'
                 : ''}
           </span>
+          {message.metrics ? <MessageMetrics {...message.metrics} /> : null}
         </footer>
       ) : null}
     </article>
+  )
+}
+
+function ThinkingStatus() {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const startedAt = performance.now()
+    const timer = window.setInterval(() => {
+      setElapsed(Math.floor((performance.now() - startedAt) / 1_000))
+    }, 1_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="sw-ai-thinking">
+      <span role="status">正在思考…</span>
+      <span aria-hidden="true">{elapsed} 秒</span>
+    </div>
+  )
+}
+
+const tokenCount = new Intl.NumberFormat('zh-CN')
+const elapsedSeconds = new Intl.NumberFormat('zh-CN', {
+  maximumFractionDigits: 1,
+})
+
+function MessageMetrics({
+  durationMs,
+  tokenUsage,
+}: NonNullable<AiUiMessage['metrics']>) {
+  return (
+    <span className="sw-ai-message-metrics">
+      {tokenUsage ? (
+        <span
+          title={`输入 ${tokenCount.format(tokenUsage.inputTokens)} · 输出 ${tokenCount.format(tokenUsage.outputTokens)}`}
+        >
+          {tokenCount.format(tokenUsage.totalTokens)} tokens
+        </span>
+      ) : null}
+      {durationMs !== undefined ? (
+        <span>{elapsedSeconds.format(durationMs / 1_000)} 秒</span>
+      ) : null}
+    </span>
   )
 }
 

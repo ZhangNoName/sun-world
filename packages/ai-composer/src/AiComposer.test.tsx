@@ -31,6 +31,7 @@ function ComposerHarness({
   maxFileSize,
   speechAdapter,
   variant,
+  modelControl,
 }: {
   onSubmit?: AiComposerProps['onSubmit']
   onCancel?: AiComposerProps['onCancel']
@@ -44,6 +45,7 @@ function ComposerHarness({
   maxFileSize?: number
   speechAdapter?: SpeechInputAdapter
   variant?: AiComposerProps['variant']
+  modelControl?: AiComposerProps['modelControl']
 }) {
   const [value, setValue] = useState('')
   const [selectedModelId, setSelectedModelId] = useState(modelId)
@@ -56,6 +58,7 @@ function ComposerHarness({
       models={models}
       modelId={selectedModelId}
       onModelChange={setSelectedModelId}
+      modelControl={modelControl}
       commands={commands}
       onSubmit={onSubmit}
       onCancel={onCancel}
@@ -81,13 +84,11 @@ describe('AiComposer core', () => {
     )
     await user.type(screen.getByRole('textbox'), '/')
     await user.click(screen.getByRole('option', { name: /总结内容/ }))
-    expect(view.container.querySelector('form')).toHaveClass(
-      'sw-ai-composer--work'
-    )
+    const form = view.container.querySelector('form')
+    expect(form).toHaveClass('sw-ai-composer--chat')
+    expect(form).not.toHaveClass('sw-ai-composer--compact')
     await user.click(screen.getByRole('button', { name: '移除命令 总结内容' }))
-    expect(view.container.querySelector('form')).toHaveClass(
-      'sw-ai-composer--chat'
-    )
+    expect(form).toHaveClass('sw-ai-composer--compact')
   })
 
   it('keeps work as the default and exposes the compact chat variant', () => {
@@ -96,10 +97,14 @@ describe('AiComposer core', () => {
       'sw-ai-composer--work'
     )
 
-    view.rerender(<ComposerHarness variant="chat" />)
-    expect(view.container.querySelector('form')).toHaveClass(
-      'sw-ai-composer--chat'
+    view.rerender(
+      <ComposerHarness variant="chat" modelControl={<span>GPT-6.1 Sol</span>} />
     )
+    expect(view.container.querySelector('form')).toHaveClass(
+      'sw-ai-composer--chat',
+      'sw-ai-composer--compact'
+    )
+    expect(screen.getByText('GPT-6.1 Sol')).toBeInTheDocument()
   })
 
   it('renders interactive controls through the owned UI primitives', () => {
@@ -167,6 +172,7 @@ describe('AiComposer core', () => {
     const user = userEvent.setup()
     render(
       <ComposerHarness
+        variant="chat"
         onSubmit={() =>
           Promise.reject(
             new AiComposerSubmitError('当前服务暂不支持附件，请移除后重试。')
@@ -179,6 +185,24 @@ describe('AiComposer core', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       '当前服务暂不支持附件，请移除后重试。'
     )
+    expect(screen.getByRole('textbox')).toHaveValue('question')
+  })
+
+  it('clears the sent chat message and keeps the next draft', async () => {
+    const user = userEvent.setup()
+    let finish!: () => void
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    render(<ComposerHarness variant="chat" onSubmit={() => pending} />)
+    const textbox = screen.getByRole('textbox', { name: '消息' })
+
+    await user.type(textbox, 'first question')
+    await user.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(textbox).toHaveValue('')
+    await user.type(textbox, 'next question')
+    await act(async () => finish())
+    expect(textbox).toHaveValue('next question')
   })
 
   it('silently disables submission for empty, disabled, and unavailable model states', () => {

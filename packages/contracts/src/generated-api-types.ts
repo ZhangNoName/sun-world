@@ -2052,6 +2052,8 @@ export interface components {
       persona_id?: string | null
       /** Provider Profile Id */
       provider_profile_id?: string | null
+      /** Reasoning Effort */
+      reasoning_effort?: ('low' | 'medium' | 'high') | null
       /** Skill Ids */
       skill_ids?: string[]
     }

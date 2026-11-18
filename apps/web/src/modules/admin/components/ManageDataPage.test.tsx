@@ -171,9 +171,9 @@ describe('ManageDataPage', () => {
     )
 
     await screen.findByText('One')
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: '每页条数' }),
-      '20'
+    await userEvent.click(screen.getByRole('combobox', { name: '每页条数' }))
+    await userEvent.click(
+      await screen.findByRole('option', { name: '20 条/页' })
     )
     await waitFor(() => expect(fetchPage).toHaveBeenCalledTimes(2))
 

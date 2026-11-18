@@ -177,6 +177,8 @@ testing.
 | `AI_PROVIDER_ALLOWED_HOSTS` | Exact hosts or explicit `*.suffix` rules for HTTPS AI provider endpoints | Required to run AI; empty fails closed |
 | `AI_PROVIDER_ALLOWED_INSECURE_ORIGINS` | Exact reviewed HTTP origins for keyless managed catalog models only | No; empty disables every HTTP provider |
 | `AI_PROVIDER_MAX_OUTPUT_TOKENS` | Maximum output tokens sent to compatible providers (default `4096`, max `16384`) | No |
+| `AI_GUEST_OPENAI_API_KEY` or `AI_GUEST_OPENAI_API_KEY_FILE` | Dedicated guest chat credential. Set one source. The file must be regular, owned by the service user and mode `0600` | Required to enable guest chat |
+| `AI_GUEST_OPENAI_PROXY_URL` | Explicit loopback CONNECT proxy for guest chat during local development | No |
 | `AI_GUEST_RUN_RATE_LIMIT` / `AI_AUTHENTICATED_RUN_RATE_LIMIT` | Per-window AI run ceilings for guest IPs and signed-in accounts | No; defaults `20` / `60` |
 | `AI_GLOBAL_RUN_RATE_LIMIT` / `AI_RUN_RATE_WINDOW_SECONDS` | Site short-window ceiling and window, defaults `200` / `600` seconds | No |
 | `AI_GUEST_DAILY_RUN_LIMIT` / `AI_AUTHENTICATED_DAILY_RUN_LIMIT` | Per-principal 24-hour run budgets, defaults `50` / `300` | No |
@@ -193,6 +195,11 @@ and keep it stable across deployments. Rotating it requires an explicit
 credential migration or users must save their provider keys again. API profile
 responses contain only a boolean and masked suffix, never ciphertext or
 plaintext.
+
+Guest chat uses the server credential exclusively for GPT-6.1 Sol at
+`https://api.openai.com/v1/responses`. It accepts low, medium and high
+reasoning effort, defaults to medium and caps output at 2,048 tokens per run.
+Guest requests retain the existing Redis rate and concurrency limits.
 
 The same Fernet key encrypts optional per-user MCP bearer tokens. MCP API
 responses expose only `has_bearer_token` and a masked suffix. Keep the MCP host

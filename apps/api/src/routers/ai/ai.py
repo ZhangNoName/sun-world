@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app_instance import app
 from src.controller.ai_manager import AiManager
 from src.core.response import ApiResponse, ok, fail
+from src.routers.auth.auth import get_current_user
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -31,7 +32,7 @@ class ChatRequest(BaseModel):
     image_url: Optional[str] = None
 
 
-@router.post("/chat", response_model=ApiResponse[str])
+@router.post("/chat", response_model=ApiResponse[str], dependencies=[Depends(get_current_user)])
 async def get_answer(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
     # user_id = request.state.user_id
     user_id = 2
@@ -42,7 +43,7 @@ async def get_answer(request: Request, chat_data: ChatRequest, ai_manager: AiMan
     return ok(data=answer, msg="获取成功")
 
 
-@router.post("/chat_stream")
+@router.post("/chat_stream", dependencies=[Depends(get_current_user)])
 async def get_answer_stream(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
     user_id = 2
     ip = request.headers.get("x-forwarded-for") or request.client.host
@@ -59,7 +60,7 @@ async def get_answer_stream(request: Request, chat_data: ChatRequest, ai_manager
     )
 
 
-@router.post("/chat-chunk-stream")
+@router.post("/chat-chunk-stream", dependencies=[Depends(get_current_user)])
 async def chat_chunk_stream(request: Request, chat_data: ChatRequest, ai_manager: AiManager = Depends(get_ai_manager)):
     user_id = 2
     ip = request.headers.get("x-forwarded-for") or request.client.host

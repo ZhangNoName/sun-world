@@ -388,6 +388,9 @@ class AiSkill(AiSkillInput):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+AiReasoningEffort = Literal["low", "medium", "high"]
+
+
 class AiRunRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -401,6 +404,7 @@ class AiRunRequest(BaseModel):
         pattern=r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
     )
     parent_message_id: str | None = None
+    reasoning_effort: AiReasoningEffort | None = None
     persona_id: str | None = Field(default=None, min_length=1, max_length=64)
     skill_ids: list[str] = Field(default_factory=list, max_length=AI_MAX_SELECTED_SKILLS)
 

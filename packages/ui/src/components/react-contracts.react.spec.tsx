@@ -157,6 +157,30 @@ describe('@sun-world/ui React contracts', () => {
     expect(onValueChange).toHaveBeenCalledWith(['one', 'two'])
   })
 
+  it('uses the listbox for multiple SwSelect values', async () => {
+    const onValueChange = vi.fn()
+    render(
+      <SwSelect
+        multiple
+        label="Tags"
+        value={['one']}
+        options={[
+          { value: 'one', label: 'One' },
+          { value: 'two', label: 'Two' },
+        ]}
+        onValueChange={onValueChange}
+      />
+    )
+
+    const trigger = screen.getByRole('combobox', { name: 'Tags' })
+    expect(trigger).toHaveTextContent('One')
+    await userEvent.click(trigger)
+    const two = await screen.findByRole('option', { name: 'Two' })
+    await userEvent.click(two)
+
+    expect(onValueChange).toHaveBeenCalledWith(['one', 'two'])
+  })
+
   it('keeps the modal SwSelect surface marker while using Base UI portals', async () => {
     const onValueChange = vi.fn()
     render(

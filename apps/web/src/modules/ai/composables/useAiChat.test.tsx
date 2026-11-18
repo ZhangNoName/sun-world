@@ -200,10 +200,54 @@ describe('useAiChat', () => {
 
     await act(() => result.current.sendMessage(payload('hello')))
 
-    expect(stream.mock.calls[0]?.[0].conversation_id).toBe(localConversationId)
+    expect(stream.mock.calls[0]?.[0]).toMatchObject({
+      conversation_id: localConversationId,
+      model_id: null,
+      provider_profile_id: null,
+      reasoning_effort: 'medium',
+    })
   })
 
-  it('sends a public model id independently from personal profiles', async () => {
+  it('only shows the fixed visitor model and refetches the catalog after sign-in', async () => {
+    providers.mockResolvedValue([
+      {
+        id: 'openai-guest',
+        name: 'OpenAI',
+        default_model: 'gpt-6.1-sol',
+        is_default: true,
+      },
+      {
+        id: 'deepseek',
+        name: 'DeepSeek',
+        default_model: 'deepseek-chat',
+        is_default: false,
+      },
+    ])
+    const { result, rerender } = renderHook(() => useAiChat())
+    await act(async () => undefined)
+    expect(result.current.providers.map((item) => item.id)).toEqual([
+      'openai-guest',
+    ])
+    stream.mockResolvedValue(undefined)
+    act(() => result.current.setReasoningEffort('high'))
+    await act(() => result.current.sendMessage(payload('使用高思考')))
+    expect(stream.mock.calls[0]?.[0]).toMatchObject({
+      model_id: null,
+      reasoning_effort: 'high',
+    })
+    authState.user = { id: 7 }
+    providers.mockResolvedValueOnce([
+      { id: 'deepseek', name: 'DeepSeek', is_default: true },
+    ])
+    rerender()
+    await act(async () => undefined)
+    expect(result.current.providers.map((item) => item.id)).toEqual([
+      'deepseek',
+    ])
+  })
+
+  it('sends an account catalog model independently from personal profiles', async () => {
+    authState.user = { id: 7 }
     providers.mockResolvedValue([
       {
         id: 'legacy-chat',
@@ -237,13 +281,15 @@ describe('useAiChat', () => {
     })
   })
 
-  it('ignores empty prompts and maps versioned stream events into blocks', async () => {
+  it('maps versioned stream events into reply blocks and metrics', async () => {
     stream.mockImplementation(async (_payload, options) => {
       options.onEvent(aiEvent('run.started', 0, {}))
       options.onEvent(aiEvent('content.delta', 1, { delta: '你好' }))
       options.onEvent(
         aiEvent('message.completed', 2, {
           blocks: [{ type: 'text', text: '你好', format: 'markdown' }],
+          duration_ms: 2400,
+          usage: { input_tokens: 82, output_tokens: 44, total_tokens: 126 },
         })
       )
     })
@@ -259,6 +305,10 @@ describe('useAiChat', () => {
         role: 'assistant',
         blocks: [{ type: 'text', text: '你好', format: 'markdown' }],
         status: 'completed',
+        metrics: {
+          durationMs: 2400,
+          tokenUsage: { inputTokens: 82, outputTokens: 44, totalTokens: 126 },
+        },
       },
     ])
     expect(result.current.runState).toEqual({ status: 'idle' })
@@ -416,7 +466,6 @@ describe('useAiChat', () => {
     const { result } = renderHook(() => useAiChat())
 
     await act(() => result.current.sendMessage(payload('question')))
-    const sourceMessageId = result.current.messages[0]?.id
     await act(() => result.current.regenerate('assistant-server'))
 
     expect(result.current.messages.map((message) => message.role)).toEqual([
@@ -424,7 +473,7 @@ describe('useAiChat', () => {
       'assistant',
     ])
     expect(stream).toHaveBeenCalledTimes(2)
-    expect(stream.mock.calls[1]?.[0].parent_message_id).toBe(sourceMessageId)
+    expect(stream.mock.calls[1]?.[0].parent_message_id).toBeNull()
   })
 
   it('adopts the persistent conversation id before the next authenticated turn', async () => {

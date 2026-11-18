@@ -20,6 +20,9 @@ pnpm sun-ai read-image --uri "https://example.com/image.png"
 checks event ordering plus the terminal event. Omit `--model-id` to exercise the
 server-selected default. The ID is the catalog record ID returned by
 `pnpm sun ai models`, not the upstream model-name field.
+When guest chat is configured, its catalog ID is `openai-guest` and its
+upstream model is `gpt-6.1-sol`. The older unversioned chat routes require a
+signed-in site session.
 
 ## Base URL
 

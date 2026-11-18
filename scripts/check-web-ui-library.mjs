@@ -1,12 +1,18 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
+import ts from 'typescript'
+
 const root = process.cwd()
 const webSource = join(root, 'apps/web/src')
 const forbiddenTag =
   /<(button|input|textarea|select|option|label|dialog|table|thead|tbody|tfoot|tr|th|td)(?:\s|>)/g
 const forbiddenImport =
-  /(?:from\s+|import\s*\(\s*)['"](@base-ui\/react(?:\/[^'"]*)?|lucide-react|sonner|@radix-ui\/[^'"]+|element-plus|antd|@mui\/[^'"]+|@chakra-ui\/[^'"]+|react-bootstrap)['"]/g
+  /(?:from\s+|import\s*\(\s*)['"](@sun-world\/base-ui\/select|@base-ui\/react(?:\/[^'"]*)?|lucide-react|sonner|@radix-ui\/[^'"]+|element-plus|antd|@mui\/[^'"]+|@chakra-ui\/[^'"]+|react-bootstrap)['"]/g
+const legacySelectExports = new Map([
+  ['@sun-world/ui/sw-select', 'SwNativeSelect'],
+  ['@sun-world/ui/form-controls', 'NativeSelectField'],
+])
 const nativeControlExceptions = new Map([
   ['packages/ai-composer/src/attachments/AiFilePicker.tsx', new Set(['input'])],
 ])
@@ -14,6 +20,35 @@ const failures = []
 
 function normalize(path) {
   return path.split(sep).join('/')
+}
+
+function checkLegacySelectImports(repoPath, source) {
+  if (![...legacySelectExports.keys()].some((name) => source.includes(name))) {
+    return
+  }
+  const file = ts.createSourceFile(repoPath, source, ts.ScriptTarget.Latest)
+  for (const statement of file.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    const legacy = legacySelectExports.get(statement.moduleSpecifier.text)
+    const clause = statement.importClause
+    const bindings = clause?.namedBindings
+    if (!legacy || !bindings || clause.isTypeOnly) continue
+    if (
+      ts.isNamespaceImport(bindings) ||
+      bindings.elements.some(
+        (element) =>
+          !element.isTypeOnly &&
+          (element.propertyName ?? element.name).text === legacy
+      )
+    ) {
+      const { line } = file.getLineAndCharacterOfPosition(
+        statement.getStart(file)
+      )
+      failures.push(
+        `${repoPath}:${line + 1} must use SwSelect from @sun-world/ui/sw-select instead of importing ${legacy} or the full namespace`
+      )
+    }
+  }
 }
 
 function sourceRoots() {
@@ -49,9 +84,10 @@ function visit(directory) {
     for (const match of source.matchAll(forbiddenImport)) {
       const line = source.slice(0, match.index).split(/\r?\n/).length
       failures.push(
-        `${repoPath}:${line} imports third-party UI primitive "${match[1]}"`
+        `${repoPath}:${line} imports UI primitive "${match[1]}" directly`
       )
     }
+    checkLegacySelectImports(repoPath, source)
   }
 }
 

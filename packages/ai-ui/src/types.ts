@@ -9,11 +9,20 @@ export interface AiUiConversation {
 
 export interface AiUiMessage {
   id: string
+  renderKey?: string
   conversationId: string
   role: 'user' | 'assistant' | 'system' | 'tool'
   blocks: AiContentBlock[]
   status: 'pending' | 'streaming' | 'completed' | 'interrupted' | 'failed'
   feedback?: 'like' | 'dislike' | null
+  metrics?: {
+    durationMs?: number
+    tokenUsage?: {
+      inputTokens: number
+      outputTokens: number
+      totalTokens: number
+    }
+  }
 }
 
 export interface AiUiProvider {

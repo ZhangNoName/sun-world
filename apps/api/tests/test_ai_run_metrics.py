@@ -15,10 +15,14 @@ class AiRunMetricsTests(unittest.IsolatedAsyncioTestCase):
         metrics = AiRunMetrics()
         async def events(terminal):
             yield SimpleNamespace(type='content.delta', data={'delta': 'private'})
-            yield SimpleNamespace(type=terminal)
+            yield SimpleNamespace(type=terminal, data={})
         with patch('src.modules.ai.run_metrics.audit_log.record') as audit:
-            for terminal in ['message.completed', 'run.failed']:
-                _ = [event async for event in observe_run(events(terminal), metrics)]
+            completed = [
+                event async for event in observe_run(events('message.completed'), metrics)
+            ]
+            failed = [event async for event in observe_run(events('run.failed'), metrics)]
+        self.assertGreaterEqual(completed[-1].data['duration_ms'], 0)
+        self.assertEqual(failed[-1].data, {})
         result = metrics.snapshot()
         self.assertEqual((result.started, result.completed, result.failed, result.active), (2, 1, 1, 0))
         self.assertNotIn('private', str(audit.call_args_list))

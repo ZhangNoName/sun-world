@@ -1,6 +1,6 @@
 import { SwButton as Button } from '@sun-world/ui/sw-button'
 import { SwInput } from '@sun-world/ui/sw-input'
-import { SwNativeSelect } from '@sun-world/ui/sw-select'
+import { SwSelect } from '@sun-world/ui/sw-select'
 import { SunMarkdownEditor } from '@/shared/markdown'
 import { AdminRouteGuard } from '@/modules/admin/components/AdminRouteGuard'
 import { useBlogAuthoring } from '../composables/useBlogAuthoring'
@@ -35,10 +35,10 @@ function ArticleEditorContent() {
           placeholder="标题"
           maxLength={100}
         />
-        <SwNativeSelect
+        <SwSelect
           label="文章分类"
-          value={authoring.blogCategory}
-          onValueChange={(value) => authoring.setBlogCategory(String(value))}
+          value={String(authoring.blogCategory)}
+          onValueChange={authoring.setBlogCategory}
           options={[
             { value: '', label: '请选择文章分类' },
             ...authoring.categoryList.map((item) => ({
@@ -47,13 +47,12 @@ function ArticleEditorContent() {
             })),
           ]}
         />
-        <SwNativeSelect
+        <SwSelect
           multiple
           label="文章标签"
+          placeholder="请选择文章标签"
           value={authoring.blogTag.map(String)}
-          onValueChange={(value) =>
-            authoring.setBlogTag(Array.isArray(value) ? value : [value])
-          }
+          onValueChange={authoring.setBlogTag}
           options={authoring.tagList.map((item) => ({
             value: String(item.id),
             label: item.name,

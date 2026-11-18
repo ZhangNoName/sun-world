@@ -35,7 +35,8 @@ architecture decision changes them:
 - Vite for application and library builds.
 - Vitest and Testing Library for React tests.
 - Zustand for the existing shared client stores.
-- `@sun-world/ui`, a shadcn-style component layer built on Radix primitives.
+- shadcn Base UI primitives in `@sun-world/base-ui` and Sun World components
+  in `@sun-world/ui`.
 - `@sun-world/icons/react` for project icons.
 - pnpm 10.15.1 and Node.js 24.17.0 through Corepack.
 
@@ -163,9 +164,10 @@ import { SunIcon } from '@sun-world/icons/react';
 import { ROUTES } from '@sun-world/contracts/routes';
 ```
 
-Application pages MUST NOT import Radix primitives directly when
-`@sun-world/ui` owns the interaction. New icons MUST follow the icon repository
-skill and package boundary rather than embedding arbitrary SVG markup.
+Application pages MUST use the `@sun-world/ui` component when it owns the
+interaction. Shared components compose the frozen shadcn primitives in
+`@sun-world/base-ui`. Third-party UI primitives belong in the component
+packages. New icons MUST follow the icon repository skill and package boundary.
 
 Avoid broad barrels that make dependency direction invisible or pull
 route-only code into initial chunks.
@@ -420,10 +422,13 @@ They are recommended targets, not current enforced settings.
 
 ## 19. Styling and `@sun-world/ui`
 
-- Reusable controls MUST be built in `@sun-world/ui` from shadcn/Radix
+- Reusable controls MUST be built in `@sun-world/ui` from the shadcn Base UI
   primitives and exported through documented subpaths.
-- Application pages SHOULD compose those controls rather than restyle native
-  controls inconsistently.
+- Application code MUST use `SwSelect` from `@sun-world/ui/sw-select` for
+  single and multiple selection. `SwNativeSelect` and `NativeSelectField`
+  are compatibility exports. The Web UI library check rejects their use in
+  app and feature-package source along with raw controls and direct imports
+  of the base select.
 - Use design tokens and shared theme variables for color, spacing, radius, and
   typography where available.
 - Components MUST work in the supported light and dark themes.
@@ -437,7 +442,8 @@ They are recommended targets, not current enforced settings.
 
 ## 20. Accessibility
 
-- Interactive behavior MUST use native interactive elements whenever possible.
+- Interactive behavior MUST retain native semantics where applicable through
+  the shared components.
 - Icon-only controls MUST have an accessible name.
 - Inputs MUST have an associated label or an equivalent accessible name.
 - Keyboard users MUST be able to reach and operate every action.

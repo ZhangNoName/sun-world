@@ -8,6 +8,7 @@ description: Use when Codex needs to call Sun World project AI capabilities from
 Use `pnpm sun` for model discovery and versioned AI V1 chat. Keep `pnpm sun-ai`
 for the legacy image-generation and image-reading routes. Prefer a local API at
 `http://127.0.0.1:8000`; production calls require explicit user approval.
+For guest chat, use AI V1. Legacy chat routes require a signed-in site session.
 
 ## Workflow
 

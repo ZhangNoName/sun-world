@@ -59,7 +59,7 @@ async def observe_run(events, metrics=None):
     outcome = "cancelled"
     finished = False
 
-    def finish():
+    def finish() -> float:
         duration = (monotonic() - started) * 1000
         metrics.finish(outcome, duration)
         audit_log.record(
@@ -67,14 +67,17 @@ async def observe_run(events, metrics=None):
             severity="error" if outcome == "failed" else "info",
             request_id=get_request_id(), duration_ms=duration,
         )
+        return duration
 
     try:
         async with aclosing(events):
             async for event in events:
                 if not finished and event.type in {"message.completed", "run.failed"}:
                     outcome = "completed" if event.type == "message.completed" else "failed"
-                    finish()
+                    duration = finish()
                     finished = True
+                    if outcome == "completed":
+                        event.data["duration_ms"] = round(duration)
                 yield event
     except Exception:
         outcome = "failed"

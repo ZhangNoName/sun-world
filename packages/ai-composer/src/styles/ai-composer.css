@@ -36,6 +36,13 @@
   color: var(--composer-secondary);
 }
 
+.sw-ai-composer__body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
 .sw-ai-composer__icon-button {
   -webkit-tap-highlight-color: transparent;
   align-items: center;
@@ -281,32 +288,28 @@
 }
 
 .sw-ai-composer--chat {
+  container: ai-composer / inline-size;
   min-height: 52px;
-  padding: 5px 8px;
-  border-color: color-mix(in srgb, var(--composer-strong) 8%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--composer-strong) 4%, transparent),
-    0 2px 8px color-mix(in srgb, var(--composer-strong) 4%, transparent),
-    0 4px 80px 8px color-mix(in srgb, var(--composer-strong) 2.4%, transparent);
+  padding: 7px 8px;
+  border-color: var(--composer-border);
+  box-shadow: 0 2px 8px
+    color-mix(in srgb, var(--composer-strong) 4%, transparent);
+}
+
+.sw-ai-composer--chat:has(textarea:focus-visible) {
+  border-color: var(--ring, #2563eb);
 }
 
 .sw-ai-composer--chat textarea {
-  min-height: 40px;
-  padding: 7px 212px 7px 44px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 6px;
   font-size: 16px;
   line-height: 26px;
 }
 
-.sw-ai-composer--chat .sw-ai-composer__toolbar {
-  position: absolute;
-  inset: 7px 8px auto;
-  min-height: 36px;
-  margin: 0;
-  pointer-events: none;
-}
-
-.sw-ai-composer--chat .sw-ai-composer__tools {
-  pointer-events: auto;
+.sw-ai-composer--chat textarea:focus-visible {
+  box-shadow: none;
 }
 
 .sw-ai-composer--chat .sw-ai-composer__icon-button,
@@ -321,10 +324,45 @@
 }
 
 .sw-ai-composer--chat .sw-ai-composer__model-selector > button {
-  max-width: 112px;
+  max-width: 144px;
   height: 36px;
   padding: 5px 8px;
   font-size: 14px;
+}
+
+@container ai-composer (min-width: 34rem) {
+  .sw-ai-composer--compact .sw-ai-composer__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 6px;
+  }
+
+  .sw-ai-composer--compact textarea {
+    grid-area: 1 / 2;
+  }
+
+  .sw-ai-composer--compact .sw-ai-composer__toolbar {
+    display: contents;
+  }
+
+  .sw-ai-composer--compact .sw-ai-composer__tools--start {
+    grid-area: 1 / 1;
+  }
+
+  .sw-ai-composer--compact .sw-ai-composer__tools--end {
+    grid-area: 1 / 3;
+  }
+}
+
+@container ai-composer (max-width: 18rem) {
+  .sw-ai-composer--chat .sw-ai-composer__toolbar {
+    gap: 4px;
+  }
+
+  .sw-ai-composer--chat .sw-ai-composer__tools {
+    gap: 2px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -351,15 +389,7 @@
   }
 
   .sw-ai-composer--chat {
-    border-radius: 28px;
-  }
-
-  .sw-ai-composer--chat textarea {
-    padding-right: 92px;
-  }
-
-  .sw-ai-composer--chat .sw-ai-composer__model-selector {
-    display: none;
+    padding-inline: 7px;
   }
 }
 

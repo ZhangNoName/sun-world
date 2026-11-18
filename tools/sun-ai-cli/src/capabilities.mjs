@@ -11,7 +11,7 @@ export const AI_CAPABILITIES = {
     method: 'POST',
     path: '/ai/chat',
     body: 'chat-request',
-    description: 'Send one chat message and print response data as JSON.',
+    description: 'Legacy JSON chat route. Requires a signed-in site session.',
   },
   stream: {
     name: 'stream',
@@ -19,7 +19,7 @@ export const AI_CAPABILITIES = {
     path: '/ai/chat_stream',
     body: 'chat-request',
     stream: true,
-    description: 'Stream one chat response from the Sun World API.',
+    description: 'Legacy chat stream. Requires a signed-in site session.',
   },
   'generate-image': {
     name: 'generate-image',

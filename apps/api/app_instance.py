@@ -387,6 +387,7 @@ class Application(FastAPI):
         from src.modules.ai.mcp_gateway import McpGateway
         from src.modules.ai.mcp_repository import MySqlAiMcpRepository
         from src.modules.ai.mcp_service import AiMcpService
+        from src.modules.ai.local_openai import create_guest_openai_provider_factory
         from src.modules.ai.providers import ProviderRegistry
         from src.modules.ai.repositories import MySqlAiRepository
         from src.modules.ai.service import AiService
@@ -396,6 +397,7 @@ class Application(FastAPI):
             repository=MySqlAiRepository(self.mysql),
             providers=ProviderRegistry(),
             cipher=cipher,
+            guest_provider_factory=create_guest_openai_provider_factory(),
         )
         allowed_hosts = get_mcp_allowed_hosts(self.config)
         if not allowed_hosts:

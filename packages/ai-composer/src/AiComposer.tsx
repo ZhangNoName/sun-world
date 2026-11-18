@@ -44,6 +44,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       models,
       modelId,
       onModelChange,
+      modelControl,
       commands = [],
       onSubmit,
       onCancel,
@@ -125,19 +126,29 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       submittingRef.current = true
       setSubmitting(true)
       setSubmissionError(undefined)
+      const submittedEditor = textareaRef.current
       try {
-        await onSubmit({
+        const submission = onSubmit({
           markdown: nextMarkdown,
           files: overrides.files ?? files,
           modelId: nextModelId,
           commandId: overrides.commandId ?? selectedCommandId,
         })
-        onValueChange('')
+        if (variant === 'chat') onValueChange('')
+        await submission
+        if (variant !== 'chat') onValueChange('')
         setFiles([])
         setDuplicateFiles([])
         setSelectedCommandId(undefined)
         return true
       } catch (error) {
+        if (
+          variant === 'chat' &&
+          submittedEditor &&
+          textareaRef.current === submittedEditor &&
+          (!submittedEditor.value || submittedEditor.value === value)
+        )
+          onValueChange(value)
         setSubmissionError(
           error instanceof AiComposerSubmitError
             ? error.message
@@ -272,19 +283,17 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
       speech.status === 'error' ||
       Boolean(submissionError)
 
-    const layoutVariant =
+    const compact =
       variant === 'chat' &&
-      (selectedCommand ||
-        files.length > 0 ||
-        hasFeedback ||
-        speech.interimTranscript ||
-        duplicateFiles.length > 0)
-        ? 'work'
-        : variant
+      !selectedCommand &&
+      !files.length &&
+      !hasFeedback &&
+      !speech.interimTranscript &&
+      !duplicateFiles.length
 
     return (
       <form
-        className={`sw-ai-composer sw-ai-composer--${layoutVariant}`}
+        className={`sw-ai-composer sw-ai-composer--${variant}${compact ? ' sw-ai-composer--compact' : ''}`}
         onSubmit={handleSubmit}
       >
         {commandPaletteOpen ? (
@@ -307,118 +316,124 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
             重复文件：{duplicateFiles.join('、')}
           </div>
         ) : null}
-        <Textarea
-          ref={textareaRef}
-          aria-label={placeholder}
-          aria-describedby={
-            !canSubmit ? 'sw-ai-composer-disabled-reason' : undefined
-          }
-          value={value}
-          placeholder={placeholder}
-          disabled={disabled}
-          rows={1}
-          onChange={(event) => {
-            setCommandPaletteDismissed(false)
-            setActiveCommandIndex(-1)
-            setSubmissionError(undefined)
-            onValueChange(event.target.value)
-          }}
-          onInput={resize}
-          onKeyDown={handleKeyDown}
-        />
-        {speech.interimTranscript ? (
-          <div className="sw-ai-composer__speech-interim" role="status">
-            {speech.interimTranscript}
-          </div>
-        ) : null}
-        {hasFeedback ? (
-          <div className="sw-ai-composer__feedback">
-            {rejectedFiles ? (
-              <ComposerNotice tone="warning" role="status">
-                {rejectedFiles} 个文件未添加
-              </ComposerNotice>
-            ) : null}
-            {speechNotice ? (
-              <ComposerNotice tone="warning" role="status">
-                {speechNotice}
-              </ComposerNotice>
-            ) : null}
-            {speech.status === 'error' ? (
-              <ComposerNotice tone="error" role="alert">
-                语音识别失败，请重试。
-              </ComposerNotice>
-            ) : null}
-            {submissionError ? (
-              <ComposerNotice tone="error" role="alert">
-                {submissionError}
-              </ComposerNotice>
-            ) : null}
-          </div>
-        ) : null}
-        <div className="sw-ai-composer__toolbar">
-          <div className="sw-ai-composer__tools sw-ai-composer__tools--start">
-            <AiFilePicker
-              accept={accept}
-              disabled={disabled || loading}
-              onChange={addFiles}
-            />
-            {selectedCommand ? (
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label={`移除命令 ${selectedCommand.label}`}
-                onClick={() => setSelectedCommandId(undefined)}
-              >
-                <SunIcon name="square" size="xs" />
-                <span>{selectedCommand.label}</span>
-                <SunIcon name="x" size="xs" />
-              </Button>
-            ) : null}
-          </div>
-          <div className="sw-ai-composer__tools sw-ai-composer__tools--end">
-            <ModelSelector
-              models={models}
-              modelId={modelId}
-              onModelChange={onModelChange}
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              aria-label={
-                speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
-              }
-              disabled={disabled || loading || speech.status === 'checking'}
-              onClick={() => {
-                setSpeechNoticeVisible(true)
-                void speech.toggle()
-              }}
-            >
-              <SunIcon name="mic" />
-            </Button>
-            {primaryActionState === 'generating' ? (
+        <div className="sw-ai-composer__body">
+          <Textarea
+            ref={textareaRef}
+            aria-label={placeholder}
+            aria-describedby={
+              !canSubmit ? 'sw-ai-composer-disabled-reason' : undefined
+            }
+            value={value}
+            placeholder={placeholder}
+            disabled={disabled}
+            rows={1}
+            onChange={(event) => {
+              setCommandPaletteDismissed(false)
+              setActiveCommandIndex(-1)
+              setSubmissionError(undefined)
+              onValueChange(event.target.value)
+            }}
+            onInput={resize}
+            onKeyDown={handleKeyDown}
+          />
+          {speech.interimTranscript ? (
+            <div className="sw-ai-composer__speech-interim" role="status">
+              {speech.interimTranscript}
+            </div>
+          ) : null}
+          {hasFeedback ? (
+            <div className="sw-ai-composer__feedback">
+              {rejectedFiles ? (
+                <ComposerNotice tone="warning" role="status">
+                  {rejectedFiles} 个文件未添加
+                </ComposerNotice>
+              ) : null}
+              {speechNotice ? (
+                <ComposerNotice tone="warning" role="status">
+                  {speechNotice}
+                </ComposerNotice>
+              ) : null}
+              {speech.status === 'error' ? (
+                <ComposerNotice tone="error" role="alert">
+                  语音识别失败，请重试。
+                </ComposerNotice>
+              ) : null}
+              {submissionError ? (
+                <ComposerNotice tone="error" role="alert">
+                  {submissionError}
+                </ComposerNotice>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="sw-ai-composer__toolbar">
+            <div className="sw-ai-composer__tools sw-ai-composer__tools--start">
+              <AiFilePicker
+                accept={accept}
+                disabled={disabled || loading}
+                onChange={addFiles}
+              />
+              {selectedCommand ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label={`移除命令 ${selectedCommand.label}`}
+                  onClick={() => setSelectedCommandId(undefined)}
+                >
+                  <SunIcon name="square" size="xs" />
+                  <span>{selectedCommand.label}</span>
+                  <SunIcon name="x" size="xs" />
+                </Button>
+              ) : null}
+            </div>
+            <div className="sw-ai-composer__tools sw-ai-composer__tools--end">
+              {modelControl ?? (
+                <ModelSelector
+                  models={models}
+                  modelId={modelId}
+                  onModelChange={onModelChange}
+                />
+              )}
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
-                aria-label="停止生成"
-                onClick={cancel}
+                aria-label={
+                  speech.status === 'listening'
+                    ? '停止语音输入'
+                    : '开始语音输入'
+                }
+                disabled={disabled || loading || speech.status === 'checking'}
+                onClick={() => {
+                  setSpeechNoticeVisible(true)
+                  void speech.toggle()
+                }}
               >
-                <SunIcon name="square" size="xs" />
+                <SunIcon name="mic" />
               </Button>
-            ) : (
-              <Button
-                type="submit"
-                size="icon"
-                variant="ghost"
-                className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
-                aria-label="发送消息"
-                disabled={primaryActionState === 'disabled'}
-              >
-                <SunIcon name="send" size="sm" />
-              </Button>
-            )}
+              {primaryActionState === 'generating' ? (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
+                  aria-label="停止生成"
+                  onClick={cancel}
+                >
+                  <SunIcon name="square" size="xs" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="ghost"
+                  className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
+                  aria-label="发送消息"
+                  disabled={primaryActionState === 'disabled'}
+                >
+                  <SunIcon name="send" size="sm" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
         {!canSubmit ? (

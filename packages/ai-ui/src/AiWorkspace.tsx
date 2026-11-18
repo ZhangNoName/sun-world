@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -64,8 +65,10 @@ export interface AiWorkspaceProps {
   providers?: AiUiProvider[]
   providerProfiles?: AiUiProviderProfile[]
   commands?: AiComposerCommand[]
+  composerModelControl?: ReactNode
   renderers?: AiRendererRegistry
   sidebarNavigation?: ReactNode
+  sidebarFooterActions?: ReactNode
   toolbarActions?: ReactNode
   railBrand?: ReactNode
   railFooter?: ReactNode
@@ -93,8 +96,10 @@ export function AiWorkspace({
   providers = [],
   providerProfiles = [],
   commands = [],
+  composerModelControl,
   renderers,
   sidebarNavigation,
+  sidebarFooterActions,
   toolbarActions,
   railBrand,
   railFooter,
@@ -124,6 +129,8 @@ export function AiWorkspace({
   const [recentNewestFirst, setRecentNewestFirst] = useState(true)
   const [draft, setDraft] = useState('')
   const composerRef = useRef<AiComposerHandle>(null)
+  const transcriptRef = useRef<HTMLElement>(null)
+  const followTranscript = useRef(true)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const flyoutRef = useRef<HTMLDivElement>(null)
   const pluginsTriggerRef = useRef<HTMLButtonElement>(null)
@@ -156,6 +163,16 @@ export function AiWorkspace({
   const resizeFrame = useRef<number | null>(null)
 
   useEffect(() => setCurrentSidebarWidth(sidebarWidth), [sidebarWidth])
+
+  useLayoutEffect(() => {
+    followTranscript.current = true
+  }, [activeConversationId])
+
+  useLayoutEffect(() => {
+    const transcript = transcriptRef.current
+    if (transcript && followTranscript.current)
+      transcript.scrollTop = transcript.scrollHeight
+  }, [activeConversationId, messages, runState.status])
 
   useEffect(
     () => () => {
@@ -393,6 +410,7 @@ export function AiWorkspace({
       models={composerModels}
       modelId={selectedModelId}
       onModelChange={setSelectedModelId}
+      modelControl={composerModelControl}
       commands={commands}
       onSubmit={onSend}
       onCancel={onStop}
@@ -402,7 +420,6 @@ export function AiWorkspace({
   const renderError = () =>
     runState.status === 'error' ? (
       <div className="sw-ai-error" role="alert">
-        <strong>生成没有完成</strong>
         <p>{runState.message}</p>
         {runState.retryable ? (
           <Button
@@ -758,6 +775,7 @@ export function AiWorkspace({
               </span>
               <SunIcon name="settings" size="sm" />
             </a>
+            {sidebarFooterActions}
           </footer>
 
           <div
@@ -783,12 +801,6 @@ export function AiWorkspace({
         inert={isMobile && sidebarOpen ? true : undefined}
       >
         <header className="sw-ai-toolbar">
-          <div className="sw-ai-mode-switch sw-ai-centered">
-            <Button type="button" variant="ghost" aria-current="page">
-              聊天
-            </Button>
-            <a href="/canvas">工作</a>
-          </div>
           <Button
             type="button"
             size="icon-lg"
@@ -827,11 +839,23 @@ export function AiWorkspace({
           </section>
         ) : (
           <>
-            <section className="sw-ai-transcript" aria-live="polite">
+            <section
+              ref={transcriptRef}
+              className="sw-ai-transcript"
+              aria-live="polite"
+              onScroll={(event) => {
+                const transcript = event.currentTarget
+                followTranscript.current =
+                  transcript.scrollHeight -
+                    transcript.clientHeight -
+                    transcript.scrollTop <=
+                  40
+              }}
+            >
               <div className="sw-ai-transcript-inner sw-ai-centered">
                 {messages.map((message) => (
                   <AiMessageView
-                    key={message.id}
+                    key={message.renderKey ?? message.id}
                     message={message}
                     busy={runState.status === 'running'}
                     renderers={renderers}

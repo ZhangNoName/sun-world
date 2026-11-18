@@ -20,24 +20,23 @@ src/
 
 ## Usage
 
-Use canonical component names and explicit compound composition:
+Use the shared control that owns the interaction. For single or multiple
+selection, use `SwSelect`.
 
 ```tsx
-import { Button } from '@sun-world/base-ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@sun-world/base-ui/select'
+import { SwSelect } from '@sun-world/ui/sw-select'
 
-<Button variant="outline">Save</Button>
-<Select value={value} onValueChange={setValue}>
-  <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
-  <SelectContent><SelectItem value="tech">Tech</SelectItem></SelectContent>
-</Select>
+<SwSelect
+  label="Category"
+  options={[{ value: 'tech', label: 'Tech' }]}
+  value={category}
+  onValueChange={setCategory}
+/>
 ```
+
+`SwSelect multiple` accepts and emits `string[]`. Use `size="sm"` for a
+compact trigger. `SwNativeSelect` and `NativeSelectField` are compatibility
+exports.
 
 `Sun*` exports are deprecated compatibility adapters. New application code must
 not import them. The base primitives are intentionally not re-exported from
@@ -91,7 +90,8 @@ it is a real protocol or product composition.
 ## Verification
 
 ```bash
-corepack pnpm exec node scripts/check-ui-native-shadcn.mjs
+node scripts/check-ui-native-shadcn.mjs
+node scripts/check-web-ui-library.mjs
 corepack pnpm test:ui
 corepack pnpm check:web
 corepack pnpm build

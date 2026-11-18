@@ -12,13 +12,18 @@ vi.mock('../composables/useAiChat')
 describe('AigcPage', () => {
   it('renders the package-owned AI workspace', async () => {
     const user = userEvent.setup()
+    const setReasoningEffort = vi.fn()
     vi.mocked(useAiChat).mockReturnValue({
       conversations: [],
       activeConversationId: 'chat-local-test',
       messages: [],
       runState: { status: 'idle' },
-      providers: [{ id: 'deepseek', name: 'DeepSeek' }],
+      providers: [
+        { id: 'openai-guest', name: 'OpenAI', defaultModel: 'gpt-6.1-sol' },
+      ],
       providerProfiles: [],
+      reasoningEffort: 'medium',
+      setReasoningEffort,
       personas: [],
       skills: [],
       selectedPersonaId: null,
@@ -62,9 +67,24 @@ describe('AigcPage', () => {
       screen.getByRole('region', { name: 'Sun World AI 工作区' })
     ).toBeInTheDocument()
     expect(screen.getByText('今天有什么计划？')).toBeInTheDocument()
+    const reasoning = screen.getByRole('combobox', { name: '思考程度' })
+    expect(reasoning).toHaveAttribute('data-slot', 'select-trigger')
+    expect(reasoning).toHaveTextContent('思考：中')
+    await user.click(reasoning)
+    await user.click(await screen.findByRole('option', { name: '思考：高' }))
+    expect(setReasoningEffort).toHaveBeenCalledWith('high')
+    expect(screen.queryByRole('link', { name: '工作' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /登录/ })).toHaveAttribute(
       'href',
       '/login'
+    )
+    const themeSwitch = screen.getByRole('button', {
+      name: /切换到(深色|浅色)模式/,
+    })
+    const previousTheme = document.documentElement.dataset.colorMode
+    await user.click(themeSwitch)
+    expect(document.documentElement.dataset.colorMode).toBe(
+      previousTheme === 'dark' ? 'light' : 'dark'
     )
     await user.click(screen.getByRole('button', { name: '插件' }))
     expect(screen.getByRole('button', { name: '模型设置' })).toBeInTheDocument()

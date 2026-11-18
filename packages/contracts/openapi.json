@@ -1314,6 +1314,18 @@
             ],
             "title": "Provider Profile Id"
           },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "enum": ["low", "medium", "high"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
+          },
           "skill_ids": {
             "items": {
               "type": "string"
@@ -6861,6 +6873,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Answer",
         "tags": ["ai"]
       }
@@ -6898,6 +6915,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Chat Chunk Stream",
         "tags": ["ai"]
       }
@@ -6935,6 +6957,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
         "summary": "Get Answer Stream",
         "tags": ["ai"]
       }

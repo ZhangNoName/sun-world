@@ -1,4 +1,4 @@
-import type { Ref } from 'react'
+import type { ReactNode, Ref } from 'react'
 import type { SpeechInputAdapter } from './speech/types'
 
 export interface AiComposerModel {
@@ -48,6 +48,7 @@ export interface AiComposerProps {
   models: AiComposerModel[]
   modelId: string
   onModelChange(modelId: string): void
+  modelControl?: ReactNode
   commands?: AiComposerCommand[]
   onSubmit(payload: AiComposerSubmitPayload): void | Promise<void>
   onCancel?(): void
