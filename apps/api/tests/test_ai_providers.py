@@ -523,14 +523,21 @@ class ProviderOutboundSecurityTests(unittest.IsolatedAsyncioTestCase):
     async def test_guest_openai_pins_generation_parameters_and_requires_terminal_event(self):
         from src.modules.ai.errors import AiDomainError
         from src.modules.ai.local_openai import GuestOpenAiProvider
-        from src.modules.ai.providers import ProviderConfig
+        from src.modules.ai.providers import ProviderConfig, ReasoningSummaryPart
 
         messages = [{"role": "user", "content": "hello"}]
         captured = {}
         delta = b'data: {"type":"response.output_text.delta","delta":"hello"}\n\n'
+        summary_part = (
+            b'data: {"type":"response.reasoning_summary_part.done",'
+            b'"part":{"type":"summary_text","text":"public summary"}}\n\n'
+        )
+        raw_reasoning = b'data: {"type":"response.reasoning_text.delta","delta":"private"}\n\n'
         completed = (
             b'data: {"type":"response.completed","response":{"status":"completed",'
-            b'"usage":{"input_tokens":16,"output_tokens":20,"total_tokens":36}}}\n\n'
+            b'"usage":{"input_tokens":16,"output_tokens":20,"total_tokens":36},'
+            b'"output":[{"type":"reasoning","content":[{"type":"reasoning_text","text":"private"}],'
+            b'"summary":[{"type":"summary_text","text":"final summary"}]}]}}\n\n'
         )
         config = ProviderConfig(
             "openai", "gpt-6.1-sol", "https://api.openai.com/v1",
@@ -540,11 +547,17 @@ class ProviderOutboundSecurityTests(unittest.IsolatedAsyncioTestCase):
             config,
             allowed_hosts=("api.openai.com",),
             resolver=FakeResolver(),
-            dependency_loader=lambda: fake_http_dependencies(captured, chunks=(delta, completed)),
+            dependency_loader=lambda: fake_http_dependencies(
+                captured, chunks=(raw_reasoning, summary_part, delta, completed),
+            ),
             max_output_tokens=2048,
             reasoning_effort="high",
         )
-        self.assertEqual([delta async for delta in provider.stream(messages)], ["hello"])
+        self.assertEqual(
+            [chunk async for chunk in provider.stream(messages)],
+            [ReasoningSummaryPart("public summary"), "hello"],
+        )
+        self.assertEqual(provider.reasoning_summary, "final summary")
         self.assertEqual(
             provider.usage,
             {"input_tokens": 16, "output_tokens": 20, "total_tokens": 36},
@@ -554,12 +567,13 @@ class ProviderOutboundSecurityTests(unittest.IsolatedAsyncioTestCase):
             "https://api.openai.com/v1/responses",
             {"json": {
                 "model": "gpt-6.1-sol", "input": messages, "stream": True,
-                "max_output_tokens": 2048, "reasoning": {"effort": "high"}, "store": False,
+                "max_output_tokens": 2048, "reasoning": {"effort": "high", "summary": "concise"}, "store": False,
             }},
         ))
 
         for chunks in (
             (completed,),
+            (summary_part, completed),
             (delta,),
         ):
             with self.subTest(chunks=chunks):

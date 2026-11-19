@@ -8,6 +8,7 @@ const entries = [
   'button',
   'card',
   'checkbox',
+  'collapsible',
   'dialog',
   'dropdown-menu',
   'field',

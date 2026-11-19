@@ -15,6 +15,7 @@ export interface AiUiMessage {
   blocks: AiContentBlock[]
   status: 'pending' | 'streaming' | 'completed' | 'interrupted' | 'failed'
   createdAt?: string
+  reasoningSummary?: string
   feedback?: 'like' | 'dislike' | null
   metrics?: {
     durationMs?: number

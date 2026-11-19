@@ -19,6 +19,7 @@ const components = [
   'sw-dialog',
   'sw-dropdown-menu',
   'sw-sidebar',
+  'sw-collapsible',
   'sw-tooltip',
   'tag',
   'toast',

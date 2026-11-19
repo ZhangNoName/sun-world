@@ -11,12 +11,15 @@ from .providers import (
     AiProvider,
     GUEST_OPENAI_MODEL,
     GUEST_OPENAI_PROVIDER_ID,
+    MAX_REASONING_SUMMARY_CHARACTERS,
     OPENAI_API_BASE_URL,
     ProviderConfig,
     ProviderRegistry,
+    ReasoningSummaryPart,
 )
 from .repositories import AiRepository
 from .schemas import (
+    AiCustomBlock,
     AiPersona,
     AiPersonaInput,
     AiProviderCatalogInput,
@@ -685,11 +688,22 @@ class AiService:
         )
 
         content = ""
+        reasoning_summary = ""
         try:
             provider = self.providers.create(config) if config is not None else guest_provider
             assert provider is not None
             async for delta in provider.stream(provider_messages):
-                content += delta
+                if isinstance(delta, ReasoningSummaryPart):
+                    separator = "\n\n" if reasoning_summary else ""
+                    available = MAX_REASONING_SUMMARY_CHARACTERS - len(reasoning_summary) - len(separator)
+                    part = delta.text.strip()[:max(0, available)]
+                    if not part:
+                        continue
+                    reasoning_summary += separator + part
+                    event_data = {"delta": "", "reasoning_summary_part": part}
+                else:
+                    content += delta
+                    event_data = {"delta": delta}
                 sequence += 1
                 yield AiStreamEvent(
                     event_id=_id("evt"),
@@ -697,7 +711,7 @@ class AiService:
                     conversation_id=conversation_id,
                     message_id=message_id,
                     sequence=sequence,
-                    data={"delta": delta},
+                    data=event_data,
                 )
         except AiDomainError as error:
             sequence += 1
@@ -741,14 +755,21 @@ class AiService:
             )
             return
 
+        final_summary = getattr(provider, "reasoning_summary", None)
+        if isinstance(final_summary, str) and final_summary.strip():
+            reasoning_summary = final_summary.strip()[:MAX_REASONING_SUMMARY_CHARACTERS]
         block = AiTextBlock(text=content)
+        summary_block = (
+            AiCustomBlock(name="sun-world.reasoning-summary", payload=reasoning_summary)
+            if reasoning_summary else None
+        )
         try:
             if user_id is not None:
                 saved = await self.repository.append_message(
                     user_id,
                     conversation_id,
                     "assistant",
-                    [block],
+                    [block] if summary_block is None else [block, summary_block],
                 )
                 message_id = saved.id
             else:
@@ -797,6 +818,7 @@ class AiService:
             sequence=sequence,
             data={
                 "blocks": [block.model_dump(mode="json")],
+                **({"reasoning_summary": reasoning_summary} if reasoning_summary else {}),
                 **({"usage": usage} if usage is not None else {}),
             },
         )

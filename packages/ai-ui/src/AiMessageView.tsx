@@ -3,6 +3,7 @@ import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/base-ui/button'
 import { Label } from '@sun-world/base-ui/label'
 import { Textarea } from '@sun-world/base-ui/textarea'
+import { SwCollapsible } from '@sun-world/ui/sw-collapsible'
 import { SwTooltip } from '@sun-world/ui/sw-tooltip'
 
 import { AiBlockRenderer } from './AiBlockRenderer'
@@ -38,6 +39,7 @@ export function AiMessageView({
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'error'>('idle')
   const assistant = message.role === 'assistant'
   const streaming = message.status === 'streaming'
+  const reasoningSummary = assistant && message.reasoningSummary?.trim()
   const timestamp = message.createdAt ? Date.parse(message.createdAt) : NaN
   const showTime =
     Number.isFinite(timestamp) &&
@@ -66,6 +68,19 @@ export function AiMessageView({
       className={`sw-ai-message sw-ai-message--${message.role}`}
       aria-label={label}
     >
+      {reasoningSummary ? (
+        <SwCollapsible
+          className="sw-ai-reasoning"
+          trigger={
+            <>
+              思考摘要
+              <SunIcon name="chevron-down" size="xs" />
+            </>
+          }
+        >
+          <AiBlockRenderer block={{ type: 'text', text: reasoningSummary }} />
+        </SwCollapsible>
+      ) : null}
       {editing ? (
         <div className="sw-ai-message-editor">
           <Label htmlFor={`edit-${message.id}`}>编辑消息内容</Label>

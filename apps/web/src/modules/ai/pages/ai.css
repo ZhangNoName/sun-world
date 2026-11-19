@@ -10,7 +10,7 @@
 .sw-ai-model-control {
   gap: 0.4rem;
   padding-inline: 0.5rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   color: var(--text-strong);
   font-size: 0.875rem;
   max-width: min(100%, 10.5rem);
@@ -135,6 +135,7 @@
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-component) 96%, transparent);
   color: var(--text-default);
   box-shadow: 0 28px 90px color-mix(in srgb, black 22%, transparent);
@@ -195,7 +196,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   border: 1px solid var(--border-lighter);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-lg);
   background: var(--bg-fill);
   padding: 0.7rem 0.8rem;
   transition:
@@ -270,7 +271,7 @@
 .sw-ai-capability-empty {
   margin: 0.5rem 0;
   border: 1px dashed var(--border-lighter);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   color: var(--text-secondary);
   text-align: center;
@@ -520,7 +521,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   border: 1px solid var(--border-lighter);
-  border-radius: 0.8rem;
+  border-radius: var(--radius-lg);
   background: var(--bg-fill);
   padding: 0.7rem 0.8rem;
 }

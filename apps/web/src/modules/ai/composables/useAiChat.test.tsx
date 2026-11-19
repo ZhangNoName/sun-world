@@ -289,10 +289,14 @@ describe('useAiChat', () => {
   it('maps versioned stream events into reply blocks and metrics', async () => {
     stream.mockImplementation(async (_payload, options) => {
       options.onEvent(aiEvent('run.started', 0, {}))
-      options.onEvent(aiEvent('content.delta', 1, { delta: '你好' }))
       options.onEvent(
-        aiEvent('message.completed', 2, {
+        aiEvent('content.delta', 1, { reasoning_summary_part: '初步整理' })
+      )
+      options.onEvent(aiEvent('content.delta', 2, { delta: '你好' }))
+      options.onEvent(
+        aiEvent('message.completed', 3, {
           blocks: [{ type: 'text', text: '你好', format: 'markdown' }],
+          reasoning_summary: '整理思路后的摘要',
           duration_ms: 2400,
           usage: { input_tokens: 82, output_tokens: 44, total_tokens: 126 },
         })
@@ -315,6 +319,7 @@ describe('useAiChat', () => {
         blocks: [{ type: 'text', text: '你好', format: 'markdown' }],
         status: 'completed',
         createdAt: '2026-07-26T12:00:00Z',
+        reasoningSummary: '整理思路后的摘要',
         metrics: {
           durationMs: 2400,
           tokenUsage: { inputTokens: 82, outputTokens: 44, totalTokens: 126 },
@@ -723,7 +728,14 @@ describe('useAiChat', () => {
           sequence: 1,
           conversation_id: 'saved-chat',
           role: 'assistant',
-          blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
+          blocks: [
+            { type: 'text', text: 'answer', format: 'markdown' },
+            {
+              type: 'custom',
+              name: 'sun-world.reasoning-summary',
+              payload: 'saved summary',
+            },
+          ],
           status: 'completed',
           created_at: '2026-11-18T11:03:00Z',
           updated_at: '',
@@ -734,6 +746,10 @@ describe('useAiChat', () => {
     const { result } = renderHook(() => useAiChat())
     await act(async () => result.current.selectConversation('saved-chat'))
     const original = result.current.messages
+    expect(original[1]).toMatchObject({
+      reasoningSummary: 'saved summary',
+      blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
+    })
     expect(original.map((item) => item.createdAt)).toEqual([
       '2026-11-18T11:02:00Z',
       '2026-11-18T11:03:00Z',

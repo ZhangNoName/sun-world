@@ -7,7 +7,7 @@
   --composer-strong: var(--text-strong, #111827);
   background: var(--composer-surface);
   border: 1px solid var(--composer-border);
-  border-radius: 28px;
+  border-radius: var(--radius-xl, 16px);
   color: var(--composer-text);
   display: flex;
   flex-direction: column;
@@ -48,7 +48,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 8px);
   color: inherit;
   cursor: pointer;
   display: inline-flex;
@@ -88,7 +88,7 @@
   align-items: center;
   background: var(--composer-muted);
   border: 1px solid var(--composer-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md, 8px);
   display: flex;
   flex: 0 0 auto;
   gap: 8px;
@@ -177,7 +177,7 @@
 }
 
 .sw-ai-composer__tools--end .sw-ai-composer__primary-action {
-  border-radius: 999px;
+  border-radius: var(--radius-md, 8px);
   height: 40px;
   margin-left: 4px;
   width: 40px;
@@ -232,7 +232,7 @@
 .sw-ai-composer__command-palette {
   background: var(--composer-surface);
   border: 1px solid var(--composer-border);
-  border-radius: 18px;
+  border-radius: var(--radius-lg, 12px);
   bottom: calc(100% + 12px);
   left: 0;
   max-height: min(420px, 54vh);
@@ -332,7 +332,7 @@
   width: 36px;
   height: 36px;
   margin-left: 0;
-  border-radius: var(--radius-full, 9999px);
+  border-radius: var(--radius-md, 8px);
 }
 
 .sw-ai-composer--chat .sw-ai-composer__model-trigger {
@@ -379,7 +379,7 @@
 
 @media (max-width: 640px) {
   .sw-ai-composer {
-    border-radius: 20px;
+    border-radius: var(--radius-lg, 12px);
     padding-inline: 12px;
   }
 

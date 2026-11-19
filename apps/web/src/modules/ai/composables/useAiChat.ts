@@ -281,6 +281,8 @@ export function useAiChat() {
                       ...message,
                       renderKey: existing.renderKey,
                       createdAt: message.createdAt ?? existing.createdAt,
+                      reasoningSummary:
+                        message.reasoningSummary ?? existing.reasoningSummary,
                       metrics: existing.metrics,
                     }
                   : message
@@ -444,6 +446,20 @@ export function useAiChat() {
           return
         }
         if (event.type === 'content.delta') {
+          const summaryPart = event.data.reasoning_summary_part
+          if (typeof summaryPart === 'string' && summaryPart.trim()) {
+            updateMessage(
+              resolvedConversationId,
+              assistantMessageId,
+              (message) => ({
+                ...message,
+                reasoningSummary: message.reasoningSummary
+                  ? `${message.reasoningSummary}\n\n${summaryPart}`
+                  : summaryPart,
+              })
+            )
+            return
+          }
           const delta = event.data.delta
           if (typeof delta !== 'string') return
           updateMessage(
@@ -481,6 +497,9 @@ export function useAiChat() {
               blocks: blocks.length ? blocks : message.blocks,
               status: 'completed',
               createdAt: event.created_at,
+              reasoningSummary:
+                stringValue(event.data.reasoning_summary)?.trim() ||
+                message.reasoningSummary,
               metrics: parseMessageMetrics(event.data),
             })
           )
@@ -917,13 +936,22 @@ function mapMessage(value: {
   created_at?: string
   feedback?: string | null
 }): AiUiMessage {
+  const blocks = parseBlocks(value.blocks)
+  const isSummary = (block: AiContentBlock) =>
+    block.type === 'custom' && block.name === 'sun-world.reasoning-summary'
+  const summary =
+    value.role === 'assistant' ? blocks.find(isSummary) : undefined
   return {
     id: value.id,
     conversationId: value.conversation_id,
     role: isRole(value.role) ? value.role : 'assistant',
-    blocks: parseBlocks(value.blocks),
+    blocks: summary ? blocks.filter((block) => !isSummary(block)) : blocks,
     status: isMessageStatus(value.status) ? value.status : 'completed',
     createdAt: value.created_at,
+    reasoningSummary:
+      summary?.type === 'custom' && typeof summary.payload === 'string'
+        ? summary.payload.trim() || undefined
+        : undefined,
     feedback:
       value.feedback === 'like' || value.feedback === 'dislike'
         ? value.feedback

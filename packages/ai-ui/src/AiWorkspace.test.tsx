@@ -696,7 +696,7 @@ describe('AiWorkspace', () => {
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it('opens the ChatGPT-style More flyout and restores focus on Escape', async () => {
+  it('keeps plugin settings accessible without a More menu', async () => {
     const user = userEvent.setup()
     render(
       <AiWorkspace
@@ -715,20 +715,15 @@ describe('AiWorkspace', () => {
       />
     )
 
-    const more = screen.getByRole('button', { name: '更多' })
-    await user.click(more)
-    const menu = screen.getByRole('menu', { name: '更多功能' })
-    expect(
-      within(menu).getByRole('menuitem', { name: '图片' })
-    ).toHaveAttribute('href', '/canvas')
-    expect(within(menu).getByRole('menuitem', { name: /地图/ })).toBeVisible()
-    expect(within(menu).getByRole('menuitem', { name: '财务' })).toBeVisible()
-    expect(within(menu).getByRole('menuitem', { name: /站点/ })).toBeVisible()
-    expect(within(menu).getByRole('menuitem', { name: 'GPT' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: '更多' })).toBeNull()
+    const plugins = screen.getByRole('button', { name: '插件' })
+    await user.click(plugins)
+    const menu = screen.getByRole('menu', { name: '插件设置' })
+    expect(within(menu).getByRole('button', { name: '模型设置' })).toBeVisible()
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('menu', { name: '更多功能' })).toBeNull()
-    expect(more).toHaveFocus()
+    expect(screen.queryByRole('menu', { name: '插件设置' })).toBeNull()
+    expect(plugins).toHaveFocus()
 
     await user.click(screen.getByRole('button', { name: '收起对话列表' }))
     expect(

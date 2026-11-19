@@ -38,6 +38,11 @@
       "import": "./dist/checkbox.es.js",
       "default": "./dist/checkbox.es.js"
     },
+    "./collapsible": {
+      "types": "./dist/types/collapsible.d.ts",
+      "import": "./dist/collapsible.es.js",
+      "default": "./dist/collapsible.es.js"
+    },
     "./dialog": {
       "types": "./dist/types/dialog.d.ts",
       "import": "./dist/dialog.es.js",

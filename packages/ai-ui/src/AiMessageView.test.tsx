@@ -31,6 +31,7 @@ describe('AiMessageView', () => {
     )
     expect(screen.getByRole('status')).toHaveTextContent('正在思考…')
     expect(screen.getByText('0 秒')).toBeVisible()
+    expect(screen.queryByRole('button', { name: '思考摘要' })).toBeNull()
     rerender(
       <AiMessageView
         message={{
@@ -60,6 +61,38 @@ describe('AiMessageView', () => {
     rerender(<AiMessageView message={assistant} {...actions} />)
     expect(screen.getByRole('button', { name: '重新生成' })).toBeEnabled()
     expect(screen.getByRole('button', { name: '复制回答' })).toBeEnabled()
+  })
+
+  it('keeps the summary separate from the answer and collapsible', async () => {
+    const user = userEvent.setup()
+    const assistant: AiUiMessage = {
+      ...message,
+      role: 'assistant',
+      reasoningSummary: 'Summary from the provider',
+    }
+    const { rerender } = render(
+      <AiMessageView
+        message={{ ...assistant, blocks: [], status: 'streaming' }}
+        {...actions}
+      />
+    )
+
+    const trigger = screen.getByRole('button', { name: '思考摘要' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await user.tab()
+    expect(trigger).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(screen.getByText('Summary from the provider')).toBeVisible()
+
+    rerender(<AiMessageView message={assistant} {...actions} />)
+    const answer = screen.getByText('Original question')
+    expect(
+      trigger.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await user.keyboard(' ')
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(answer).toBeVisible()
   })
 
   it('displays reported tokens and shows their details on hover', async () => {

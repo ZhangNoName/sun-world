@@ -45,6 +45,11 @@
       "import": "./dist/sw-dropdown-menu.es.js",
       "default": "./dist/sw-dropdown-menu.es.js"
     },
+    "./sw-collapsible": {
+      "types": "./dist/types/sw-collapsible.d.ts",
+      "import": "./dist/sw-collapsible.es.js",
+      "default": "./dist/sw-collapsible.es.js"
+    },
     "./sw-sidebar": {
       "types": "./dist/types/sw-sidebar.d.ts",
       "import": "./dist/sw-sidebar.es.js",

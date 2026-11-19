@@ -5,6 +5,7 @@ const primitives = [
   'button',
   'card',
   'checkbox',
+  'collapsible',
   'dialog',
   'dropdown-menu',
   'field',

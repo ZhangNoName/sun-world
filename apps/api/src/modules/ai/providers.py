@@ -41,6 +41,15 @@ MAX_STREAM_LIMIT = 16 * 1024 * 1024
 GUEST_OPENAI_MODEL = "gpt-6.1-sol"
 GUEST_OPENAI_PROVIDER_ID = "openai-guest"
 OPENAI_API_BASE_URL = "https://api.openai.com/v1"
+MAX_REASONING_SUMMARY_CHARACTERS = 16_384
+
+
+@dataclass(frozen=True)
+class ReasoningSummaryPart:
+    text: str
+
+
+AiProviderChunk = str | ReasoningSummaryPart
 
 
 @dataclass(frozen=True)
@@ -68,7 +77,7 @@ class ProviderConnectionOptions:
 
 
 class AiProvider(Protocol):
-    async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]: ...
+    def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[AiProviderChunk]: ...
 
 
 def _environment_allowed_hosts() -> tuple[str, ...]:
@@ -189,6 +198,7 @@ class OpenAiCompatibleProvider:
     ):
         self.config = config
         self.usage: dict[str, int] | None = None
+        self.reasoning_summary: str | None = None
         self._allowed_hosts = _allowed_host_values(allowed_hosts)
         self._resolver = resolver
         self._dependency_loader = dependency_loader or _load_mcp_sdk_dependencies
@@ -419,7 +429,7 @@ class OpenAiCompatibleProvider:
                 "total_tokens": total_tokens,
             }
 
-    def _stream_event(self, raw: str) -> tuple[bool, str | None]:
+    def _stream_event(self, raw: str) -> tuple[bool, AiProviderChunk | None]:
         if raw == "[DONE]":
             return True, None
         try:
@@ -430,8 +440,9 @@ class OpenAiCompatibleProvider:
             return False, None
         return False, delta if isinstance(delta, str) else None
 
-    async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+    async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[AiProviderChunk]:
         self.usage = None
+        self.reasoning_summary = None
         if self.config.auth_mode not in {"none", "bearer"}:
             raise AiDomainError(
                 "AI_PROVIDER_CONFIGURATION_INVALID",
@@ -479,7 +490,9 @@ class OpenAiCompatibleProvider:
                                 if emitted_characters or not self._require_done:
                                     return
                                 break
-                            if delta:
+                            if isinstance(delta, ReasoningSummaryPart):
+                                yield delta
+                            elif delta:
                                 emitted_characters += len(delta)
                                 if emitted_characters > self._max_stream_characters:
                                     raise AiDomainError(

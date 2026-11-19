@@ -42,6 +42,10 @@ popup can flip above near the viewport edge. `SwNativeSelect` and
 Use `SwTooltip` from `@sun-world/ui/sw-tooltip` for short hints on hover and
 keyboard focus. Give icon-only controls their own accessible name.
 
+Use `SwCollapsible` from `@sun-world/ui/sw-collapsible` to reveal optional
+inline content. The `trigger` supplies the button label and `children` supplies
+the expandable panel.
+
 `Sun*` exports are deprecated compatibility adapters. New application code must
 not import them. The base primitives are intentionally not re-exported from
 this package, so an import path now identifies the owning layer.

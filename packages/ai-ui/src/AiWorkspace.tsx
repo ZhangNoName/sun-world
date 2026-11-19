@@ -6,7 +6,6 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent,
-  type CSSProperties,
   type ReactNode,
 } from 'react'
 import {
@@ -54,11 +53,6 @@ const sidebarRowLinkClass = buttonVariants({
   variant: 'ghost',
   className: 'sw-ai-sidebar-row',
 })
-const sidebarPanelLinkClass = buttonVariants({
-  variant: 'ghost',
-  className: 'sw-ai-sidebar-flyout-item',
-})
-
 export interface AiWorkspaceProps {
   conversations: AiUiConversation[]
   activeConversationId?: string
@@ -130,7 +124,6 @@ export function AiWorkspace({
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [pluginsOpen, setPluginsOpen] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
   const [recentOpen, setRecentOpen] = useState(true)
   const [recentNewestFirst, setRecentNewestFirst] = useState(true)
   const recentSortLabel = recentNewestFirst
@@ -143,7 +136,6 @@ export function AiWorkspace({
   const sidebarRef = useRef<HTMLDivElement>(null)
   const flyoutRef = useRef<HTMLDivElement>(null)
   const pluginsTriggerRef = useRef<HTMLButtonElement>(null)
-  const moreTriggerRef = useRef<HTMLButtonElement>(null)
   const railOpenRef = useRef<HTMLButtonElement>(null)
   const closeSidebarRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -278,7 +270,7 @@ export function AiWorkspace({
   }, [isMobile, sidebarOpen])
 
   useEffect(() => {
-    if (!pluginsOpen && !moreOpen) return
+    if (!pluginsOpen) return
     const closeFlyout = (event: globalThis.PointerEvent) => {
       const target = event.target as Node
       if (target instanceof Element && target.closest('[role="dialog"]')) {
@@ -286,23 +278,17 @@ export function AiWorkspace({
       }
       if (
         flyoutRef.current?.contains(target) ||
-        pluginsTriggerRef.current?.contains(target) ||
-        moreTriggerRef.current?.contains(target)
+        pluginsTriggerRef.current?.contains(target)
       ) {
         return
       }
       setPluginsOpen(false)
-      setMoreOpen(false)
     }
     const closeWithEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape') return
       event.preventDefault()
-      const trigger = pluginsOpen
-        ? pluginsTriggerRef.current
-        : moreTriggerRef.current
       setPluginsOpen(false)
-      setMoreOpen(false)
-      queueMicrotask(() => trigger?.focus())
+      queueMicrotask(() => pluginsTriggerRef.current?.focus())
     }
     document.addEventListener('pointerdown', closeFlyout)
     document.addEventListener('keydown', closeWithEscape)
@@ -310,7 +296,7 @@ export function AiWorkspace({
       document.removeEventListener('pointerdown', closeFlyout)
       document.removeEventListener('keydown', closeWithEscape)
     }
-  }, [moreOpen, pluginsOpen])
+  }, [pluginsOpen])
 
   const visibleConversations = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase()
@@ -378,7 +364,6 @@ export function AiWorkspace({
 
   const closeSidebar = () => {
     setPluginsOpen(false)
-    setMoreOpen(false)
     setSidebarOpen(false)
     queueMicrotask(() => railOpenRef.current?.focus())
   }
@@ -469,85 +454,25 @@ export function AiWorkspace({
               aria-label="关闭对话列表遮罩"
               onClick={closeSidebar}
             />
-            {pluginsOpen || moreOpen ? (
+            {pluginsOpen ? (
               <div
                 ref={flyoutRef}
                 id="sw-ai-sidebar-flyout"
                 className="sw-ai-sidebar-flyout"
-                style={
-                  {
-                    '--sw-ai-flyout-top': `${pluginsOpen ? 184 : 220}px`,
-                  } as CSSProperties
-                }
                 role="menu"
-                aria-label={pluginsOpen ? '插件设置' : '更多功能'}
+                aria-label="插件设置"
               >
-                {pluginsOpen ? (
-                  <>
-                    {toolbarActions}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="sw-ai-sidebar-flyout-item"
-                      aria-label="模型设置"
-                      onClick={() => {
-                        setSettingsOpen(true)
-                      }}
-                    >
-                      <SunIcon name="settings" />
-                      <span>模型与服务商</span>
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      className={sidebarPanelLinkClass}
-                      href="/canvas"
-                      role="menuitem"
-                    >
-                      <SunIcon name="image" />
-                      <span>图片</span>
-                    </a>
-                    <a
-                      className={sidebarPanelLinkClass}
-                      href="/tools?category=map"
-                      role="menuitem"
-                    >
-                      <SunIcon name="map-pin" />
-                      <span>地图</span>
-                      <small>新</small>
-                    </a>
-                    <a
-                      className={sidebarPanelLinkClass}
-                      href="/tools?category=finance"
-                      role="menuitem"
-                    >
-                      <SunIcon name="badge-dollar-sign" />
-                      <span>财务</span>
-                    </a>
-                    <a
-                      className={sidebarPanelLinkClass}
-                      href="/home"
-                      role="menuitem"
-                    >
-                      <SunIcon name="group" />
-                      <span>站点</span>
-                      <small>新</small>
-                    </a>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="sw-ai-sidebar-flyout-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setSettingsOpen(true)
-                      }}
-                    >
-                      <SunIcon name="box" />
-                      <span>GPT</span>
-                    </Button>
-                  </>
-                )}
+                {toolbarActions}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="sw-ai-sidebar-flyout-item"
+                  aria-label="模型设置"
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <SunIcon name="settings" />
+                  <span>模型与服务商</span>
+                </Button>
               </div>
             ) : null}
           </>
@@ -626,7 +551,6 @@ export function AiWorkspace({
             </a>
             <SwTooltip content="搜索聊天" side="bottom">
               <Button
-                ref={pluginsTriggerRef}
                 type="button"
                 size="icon-lg"
                 variant="ghost"
@@ -707,33 +631,16 @@ export function AiWorkspace({
               <span>已安排</span>
             </a>
             <Button
+              ref={pluginsTriggerRef}
               type="button"
               variant="ghost"
               className="sw-ai-sidebar-row"
               aria-expanded={pluginsOpen}
               aria-controls="sw-ai-sidebar-flyout"
-              onClick={() => {
-                setMoreOpen(false)
-                setPluginsOpen((value) => !value)
-              }}
+              onClick={() => setPluginsOpen((value) => !value)}
             >
               <SunIcon name="settings" />
               <span>插件</span>
-            </Button>
-            <Button
-              ref={moreTriggerRef}
-              type="button"
-              variant="ghost"
-              className="sw-ai-sidebar-row"
-              aria-expanded={moreOpen}
-              aria-controls="sw-ai-sidebar-flyout"
-              onClick={() => {
-                setPluginsOpen(false)
-                setMoreOpen((value) => !value)
-              }}
-            >
-              <SunIcon name="more-horizontal" />
-              <span>更多</span>
             </Button>
             {sidebarNavigation}
           </nav>

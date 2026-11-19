@@ -446,12 +446,23 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(hasattr(registry, "created_config"))
 
     async def test_authenticated_stream_persists_user_and_assistant_messages(self):
+        from src.modules.ai.providers import ReasoningSummaryPart
         from src.modules.ai.repositories import InMemoryAiRepository
         from src.modules.ai.schemas import AiRunRequest
-        from src.modules.ai.service import AiService
 
+        class SummaryProvider(FakeProvider):
+            reasoning_summary = "final reasoning summary"
+
+            async def stream(self, messages):
+                yield ReasoningSummaryPart("initial")
+                yield ReasoningSummaryPart("partial")
+                async for text in super().stream(messages):
+                    yield text
+
+        registry = FakeRegistry()
+        registry.provider = SummaryProvider()
         repository = InMemoryAiRepository()
-        service = await configured_service(repository, FakeRegistry())
+        service = await configured_service(repository, registry)
         events = [
             event
             async for event in service.stream_run(
@@ -462,6 +473,18 @@ class AiServiceTests(unittest.IsolatedAsyncioTestCase):
 
         detail = await repository.get_conversation(7, events[0].conversation_id)
         self.assertEqual([message.role for message in detail.messages], ["user", "assistant"])
+        self.assertEqual(events[1].data, {"delta": "", "reasoning_summary_part": "initial"})
+        self.assertEqual(events[2].data, {"delta": "", "reasoning_summary_part": "partial"})
+        self.assertEqual(events[-1].data["reasoning_summary"], "final reasoning summary")
+        self.assertEqual(events[-1].data["blocks"][0]["text"], "hello world")
+        self.assertEqual(detail.messages[-1].blocks[-1].payload, "final reasoning summary")
+
+        async for _ in service.stream_run(
+            7, AiRunRequest(message="Follow up", conversation_id=detail.id)
+        ):
+            pass
+        self.assertIn({"role": "assistant", "content": "hello world"}, registry.provider.messages)
+        self.assertNotIn("final reasoning summary", str(registry.provider.messages))
 
     async def test_initial_persistence_failure_is_a_terminal_run_failed_event(self):
         from src.modules.ai.repositories import InMemoryAiRepository

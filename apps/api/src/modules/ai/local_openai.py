@@ -12,7 +12,8 @@ from .errors import AiDomainError
 from .model_proxy import _invalid
 from .openai_responses import MODEL, OpenAiResponsesProxy
 from .providers import (
-    GUEST_OPENAI_MODEL, OPENAI_API_BASE_URL, OpenAiCompatibleProvider, ProviderConfig,
+    GUEST_OPENAI_MODEL, MAX_REASONING_SUMMARY_CHARACTERS, OPENAI_API_BASE_URL,
+    OpenAiCompatibleProvider, ProviderConfig, ReasoningSummaryPart,
 )
 
 INVALID = 'AGENT_OPENAI_CONFIG_INVALID'
@@ -98,7 +99,7 @@ class GuestOpenAiProvider(OpenAiCompatibleProvider):
             'input': messages,
             'stream': True,
             'max_output_tokens': self._max_output_tokens,
-            'reasoning': {'effort': self._reasoning_effort},
+            'reasoning': {'effort': self._reasoning_effort, 'summary': 'concise'},
             'store': False,
         }
 
@@ -113,16 +114,42 @@ class GuestOpenAiProvider(OpenAiCompatibleProvider):
         if kind in ('response.output_text.delta', 'response.refusal.delta'):
             delta = event.get('delta')
             return False, delta if isinstance(delta, str) else None
+        if kind == 'response.reasoning_summary_part.done':
+            part = event.get('part')
+            text = _summary_part_text(part)
+            return False, ReasoningSummaryPart(text) if text else None
         if kind == 'response.completed':
             response = event.get('response')
             if isinstance(response, dict) and response.get('status') == 'completed':
                 self._record_usage(response.get('usage'), 'input_tokens', 'output_tokens')
+                self.reasoning_summary = _response_reasoning_summary(response.get('output'))
                 return True, None
         if kind in ('error', 'response.failed', 'response.incomplete', 'response.completed'):
             raise AiDomainError(
                 'AI_PROVIDER_PROTOCOL_ERROR', 'AI 回复未完整生成，请重试。', status_code=502,
             )
         return False, None
+
+
+def _summary_part_text(part) -> str:
+    if not isinstance(part, dict) or part.get('type') != 'summary_text':
+        return ''
+    text = part.get('text')
+    return text[:MAX_REASONING_SUMMARY_CHARACTERS].strip() if isinstance(text, str) else ''
+
+
+def _response_reasoning_summary(output) -> str | None:
+    if not isinstance(output, list):
+        return None
+    parts = [
+        text
+        for item in output
+        if isinstance(item, dict) and item.get('type') == 'reasoning'
+        and isinstance(item.get('summary'), list)
+        for part in item['summary']
+        if (text := _summary_part_text(part))
+    ]
+    return '\n\n'.join(parts)[:MAX_REASONING_SUMMARY_CHARACTERS] or None
 
 
 def create_guest_openai_provider_factory():
