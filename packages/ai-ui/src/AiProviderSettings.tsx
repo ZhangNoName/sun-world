@@ -6,7 +6,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@sun-world/base-ui/dialog'
+import { SunIcon } from '@sun-world/icons/react'
 import { SwInput } from '@sun-world/ui/sw-input'
 import { SwSelect } from '@sun-world/ui/sw-select'
 
@@ -17,18 +19,15 @@ import type {
 } from './types'
 
 export function AiProviderSettings({
-  open,
   providers,
   profiles,
-  onOpenChange,
   onSave,
 }: {
-  open: boolean
   providers: AiUiProvider[]
   profiles: AiUiProviderProfile[]
-  onOpenChange: (open: boolean) => void
   onSave?: (draft: AiProviderDraft) => void | Promise<void>
 }) {
+  const [open, setOpen] = useState(false)
   const [provider, setProvider] = useState('')
   const [name, setName] = useState('')
   const [baseUrl, setBaseUrl] = useState('')
@@ -71,7 +70,7 @@ export function AiProviderSettings({
         isDefault: true,
       })
       setApiKey('')
-      onOpenChange(false)
+      setOpen(false)
     } catch (error) {
       setSaveError(
         error instanceof Error ? error.message : '保存失败，请重试。'
@@ -91,7 +90,11 @@ export function AiProviderSettings({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="ghost" aria-label="模型设置" />}>
+        <SunIcon name="settings" />
+        <span>模型与服务商</span>
+      </DialogTrigger>
       <DialogContent className="sw-ai-settings" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>模型与服务商</DialogTitle>
@@ -167,7 +170,7 @@ export function AiProviderSettings({
               type="button"
               variant="ghost"
               aria-label="关闭设置"
-              onClick={() => onOpenChange(false)}
+              onClick={() => setOpen(false)}
               disabled={isSaving}
             >
               取消

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@sun-world/base-ui/button'
 import {
   Dialog,
@@ -76,6 +76,7 @@ export function AiCapabilitySettings({
   onDeleteSkill,
 }: AiCapabilitySettingsProps) {
   const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const [activeTab, setActiveTab] = useState<CapabilityKind>('persona')
   const [editor, setEditor] = useState<EditorState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
@@ -171,10 +172,12 @@ export function AiCapabilitySettings({
   return (
     <>
       <Button
+        ref={triggerRef}
         type="button"
-        variant="outline"
+        variant="ghost"
         className="sw-ai-capability-trigger"
         aria-label={`角色与 Skills 设置：${summary}`}
+        aria-haspopup="dialog"
         onClick={() => setOpen(true)}
       >
         <SunIcon name="user" />
@@ -185,6 +188,7 @@ export function AiCapabilitySettings({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className="sw-ai-capability-dialog"
+          finalFocus={triggerRef}
           showCloseButton={false}
         >
           <DialogHeader>

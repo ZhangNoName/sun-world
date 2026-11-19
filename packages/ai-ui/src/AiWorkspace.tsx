@@ -16,9 +16,17 @@ import {
   type AiComposerSubmitPayload,
 } from '@sun-world/ai-composer'
 import { Button, buttonVariants } from '@sun-world/base-ui/button'
+import {
+  Dialog,
+  DialogClose,
+  DialogTitle,
+  DialogTrigger,
+} from '@sun-world/base-ui/dialog'
 import { Input } from '@sun-world/base-ui/input'
 import { SunIcon } from '@sun-world/icons/react'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
+import { SwButton } from '@sun-world/ui/sw-button'
+import { SwDialogContent } from '@sun-world/ui/sw-dialog'
 import { SwTooltip } from '@sun-world/ui/sw-tooltip'
 
 import { AiMessageView } from './AiMessageView'
@@ -120,7 +128,6 @@ export function AiWorkspace({
 }: AiWorkspaceProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [pluginsOpen, setPluginsOpen] = useState(false)
@@ -134,8 +141,6 @@ export function AiWorkspace({
   const transcriptRef = useRef<HTMLElement>(null)
   const followTranscript = useRef(true)
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const flyoutRef = useRef<HTMLDivElement>(null)
-  const pluginsTriggerRef = useRef<HTMLButtonElement>(null)
   const railOpenRef = useRef<HTMLButtonElement>(null)
   const closeSidebarRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -240,7 +245,7 @@ export function AiWorkspace({
   }, [isMobile, searchOpen, sidebarOpen])
 
   useEffect(() => {
-    if (!isMobile || !sidebarOpen) return
+    if (!isMobile || !sidebarOpen || pluginsOpen) return
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -267,36 +272,7 @@ export function AiWorkspace({
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isMobile, sidebarOpen])
-
-  useEffect(() => {
-    if (!pluginsOpen) return
-    const closeFlyout = (event: globalThis.PointerEvent) => {
-      const target = event.target as Node
-      if (target instanceof Element && target.closest('[role="dialog"]')) {
-        return
-      }
-      if (
-        flyoutRef.current?.contains(target) ||
-        pluginsTriggerRef.current?.contains(target)
-      ) {
-        return
-      }
-      setPluginsOpen(false)
-    }
-    const closeWithEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      event.preventDefault()
-      setPluginsOpen(false)
-      queueMicrotask(() => pluginsTriggerRef.current?.focus())
-    }
-    document.addEventListener('pointerdown', closeFlyout)
-    document.addEventListener('keydown', closeWithEscape)
-    return () => {
-      document.removeEventListener('pointerdown', closeFlyout)
-      document.removeEventListener('keydown', closeWithEscape)
-    }
-  }, [pluginsOpen])
+  }, [isMobile, pluginsOpen, sidebarOpen])
 
   const visibleConversations = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase()
@@ -445,37 +421,14 @@ export function AiWorkspace({
       sidebarCollapsed={!sidebarOpen}
       floating={
         sidebarOpen ? (
-          <>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="sw-ai-sidebar-scrim"
-              aria-label="关闭对话列表遮罩"
-              onClick={closeSidebar}
-            />
-            {pluginsOpen ? (
-              <div
-                ref={flyoutRef}
-                id="sw-ai-sidebar-flyout"
-                className="sw-ai-sidebar-flyout"
-                role="menu"
-                aria-label="插件设置"
-              >
-                {toolbarActions}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="sw-ai-sidebar-flyout-item"
-                  aria-label="模型设置"
-                  onClick={() => setSettingsOpen(true)}
-                >
-                  <SunIcon name="settings" />
-                  <span>模型与服务商</span>
-                </Button>
-              </div>
-            ) : null}
-          </>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="sw-ai-sidebar-scrim"
+            aria-label="关闭对话列表遮罩"
+            onClick={closeSidebar}
+          />
         ) : null
       }
       rail={
@@ -630,32 +583,59 @@ export function AiWorkspace({
               <SunIcon name="calendar" />
               <span>已安排</span>
             </a>
-            <Button
-              ref={pluginsTriggerRef}
-              type="button"
-              variant="ghost"
-              className="sw-ai-sidebar-row"
-              aria-expanded={pluginsOpen}
-              aria-controls="sw-ai-sidebar-flyout"
-              onClick={() => setPluginsOpen((value) => !value)}
-            >
-              <SunIcon name="settings" />
-              <span>插件</span>
-            </Button>
+            <Dialog open={pluginsOpen} onOpenChange={setPluginsOpen}>
+              <DialogTrigger
+                render={
+                  <SwButton variant="ghost" className="sw-ai-sidebar-row" />
+                }
+              >
+                <SunIcon name="settings" />
+                <span>插件</span>
+              </DialogTrigger>
+              <SwDialogContent
+                className="sw-ai-plugin-dialog"
+                showCloseButton={false}
+                finalFocus={() => (sidebarOpen ? true : railOpenRef.current)}
+              >
+                <div className="sw-ai-plugin-dialog-header">
+                  <DialogTitle>插件设置</DialogTitle>
+                  <DialogClose
+                    render={
+                      <SwButton
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="关闭插件设置"
+                      />
+                    }
+                  >
+                    <SunIcon name="x" size="sm" />
+                  </DialogClose>
+                </div>
+                <div className="sw-ai-plugin-options">
+                  {toolbarActions}
+                  <AiProviderSettings
+                    providers={enabledProviders}
+                    profiles={providerProfiles}
+                    onSave={onSaveProvider}
+                  />
+                </div>
+              </SwDialogContent>
+            </Dialog>
             {sidebarNavigation}
           </nav>
 
           <section className="sw-ai-sidebar-recents" aria-label="对话历史">
             <div className="sw-ai-sidebar-section-head">
-              <Button
+              <SwButton
                 ref={recentRef}
                 type="button"
                 variant="ghost"
+                className="sw-ai-recents-toggle"
                 aria-expanded={recentOpen}
                 onClick={() => setRecentOpen((value) => !value)}
               >
                 最近
-              </Button>
+              </SwButton>
               <SwTooltip content={recentSortLabel}>
                 <Button
                   type="button"
@@ -808,13 +788,6 @@ export function AiWorkspace({
           </>
         )}
       </main>
-      <AiProviderSettings
-        open={settingsOpen}
-        providers={enabledProviders}
-        profiles={providerProfiles}
-        onOpenChange={setSettingsOpen}
-        onSave={onSaveProvider}
-      />
     </SunChatShell>
   )
 }

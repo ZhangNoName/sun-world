@@ -143,9 +143,9 @@ describe('AiWorkspace', () => {
     await user.click(screen.getByRole('button', { name: '插件' }))
     await user.click(screen.getByRole('button', { name: '模型设置' }))
     await user.click(screen.getByRole('combobox', { name: '服务商' }))
-    expect(screen.getByRole('dialog')).not.toContainElement(
-      await screen.findByRole('listbox')
-    )
+    expect(
+      screen.getByRole('dialog', { name: '模型与服务商' })
+    ).not.toContainElement(await screen.findByRole('listbox'))
     await user.click(await screen.findByRole('option', { name: /^OpenAI$/ }))
 
     expect(screen.getByLabelText('配置名称')).toHaveValue('OpenAI')
@@ -188,8 +188,11 @@ describe('AiWorkspace', () => {
 
     await waitFor(() => expect(onSaveProvider).toHaveBeenCalledTimes(1))
     await waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('dialog', { name: '模型与服务商' })
+      ).not.toBeInTheDocument()
     )
+    expect(screen.getByRole('dialog', { name: '插件设置' })).toBeVisible()
   })
 
   it('shows a provider save failure inside settings', async () => {
@@ -223,7 +226,7 @@ describe('AiWorkspace', () => {
     await user.click(screen.getByRole('button', { name: /保存配置/ }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('保存请求失败')
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: '模型与服务商' })).toBeVisible()
   })
 
   it('resizes the conversation sidebar once per frame and with keyboard input', () => {
@@ -696,7 +699,7 @@ describe('AiWorkspace', () => {
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps plugin settings accessible without a More menu', async () => {
+  it('opens plugin settings and restores focus when nested settings close', async () => {
     const user = userEvent.setup()
     render(
       <AiWorkspace
@@ -718,11 +721,21 @@ describe('AiWorkspace', () => {
     expect(screen.queryByRole('button', { name: '更多' })).toBeNull()
     const plugins = screen.getByRole('button', { name: '插件' })
     await user.click(plugins)
-    const menu = screen.getByRole('menu', { name: '插件设置' })
-    expect(within(menu).getByRole('button', { name: '模型设置' })).toBeVisible()
+    const dialog = screen.getByRole('dialog', { name: '插件设置' })
+    const modelSettings = within(dialog).getByRole('button', {
+      name: '模型设置',
+    })
+    await user.click(modelSettings)
+    expect(screen.getByRole('dialog', { name: '模型与服务商' })).toBeVisible()
+    await user.keyboard('{Escape}')
+    expect(
+      screen.queryByRole('dialog', { name: '模型与服务商' })
+    ).not.toBeInTheDocument()
+    expect(dialog).toBeVisible()
+    expect(modelSettings).toHaveFocus()
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('menu', { name: '插件设置' })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: '插件设置' })).toBeNull()
     expect(plugins).toHaveFocus()
 
     await user.click(screen.getByRole('button', { name: '收起对话列表' }))

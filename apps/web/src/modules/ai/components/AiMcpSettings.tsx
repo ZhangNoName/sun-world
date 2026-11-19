@@ -62,6 +62,7 @@ export function AiMcpSettings({
   accountKey,
 }: AiMcpSettingsProps) {
   const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const [connections, setConnections] = useState<AiMcpConnection[]>([])
   const [connectionStatus, setConnectionStatus] = useState<LoadStatus>('idle')
   const [connectionError, setConnectionError] = useState<string | null>(null)
@@ -318,10 +319,12 @@ export function AiMcpSettings({
   return (
     <>
       <Button
+        ref={triggerRef}
         type="button"
-        variant="outline"
+        variant="ghost"
         className="sw-ai-capability-trigger sw-ai-mcp-trigger"
         aria-label={`MCP 设置：${summary}`}
+        aria-haspopup="dialog"
         onClick={() => setOpen(true)}
       >
         <SunIcon name="settings" />
@@ -330,7 +333,10 @@ export function AiMcpSettings({
       </Button>
 
       <Dialog open={open} onOpenChange={changeOpen}>
-        <DialogContent className="sw-ai-capability-dialog sw-ai-mcp-dialog">
+        <DialogContent
+          className="sw-ai-capability-dialog sw-ai-mcp-dialog"
+          finalFocus={triggerRef}
+        >
           <DialogHeader>
             <DialogTitle>MCP 远程工具</DialogTitle>
             <DialogDescription>

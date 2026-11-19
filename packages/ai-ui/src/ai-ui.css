@@ -164,23 +164,42 @@
   flex: 1;
 }
 
-.sw-ai-sidebar-flyout {
-  position: absolute;
-  top: 184px;
-  left: calc(var(--sun-chat-sidebar-width) - 12px);
-  width: 270px;
-  border: 1px solid color-mix(in srgb, var(--sw-ai-text) 10%, transparent);
+.sw-ai-plugin-dialog {
+  max-height: calc(100dvh - 2rem);
   border-radius: var(--radius-lg, 12px);
-  background: var(--bg-component);
-  padding: 10px;
-  box-shadow: 0 12px 32px #0002;
+  overflow: auto;
 }
 
-.sw-ai-sidebar-flyout-item {
+.sw-ai-plugin-dialog[data-nested-dialog-open] {
+  visibility: hidden;
+}
+
+.sw-ai-plugin-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sw-ai-plugin-options {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.sw-ai-plugin-options > button {
   width: 100%;
-  height: 36px;
+  max-width: 100%;
+  min-height: 44px;
+  height: auto;
   justify-content: flex-start;
-  padding: 10px 14px;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  text-align: start;
+}
+
+.sw-ai-plugin-options > button > small {
+  max-width: 45%;
+  margin-inline-start: auto;
 }
 
 .sw-ai-sidebar-recents {
@@ -199,11 +218,15 @@
   padding: 0 8px;
 }
 
-.sw-ai-sidebar-recents .sw-ai-sidebar-section-head > button:first-child {
-  flex: 1;
-  justify-content: flex-start;
+.sw-ai-sidebar-section-head .sw-ai-recents-toggle {
+  border-radius: 0;
+  background: transparent;
   padding: 6px 8px;
   color: var(--sw-ai-muted);
+}
+
+.sw-ai-sidebar-section-head .sw-ai-recents-toggle:is(:hover, :focus-visible) {
+  color: var(--sw-ai-text);
 }
 
 .sw-ai-sidebar-section-head > button:last-child {
@@ -624,13 +647,12 @@
 @media (hover: hover) and (pointer: fine) {
   :is(
       .sw-ai-sidebar,
-      .sw-ai-sidebar-flyout,
       .sw-ai-rail,
       .sw-ai-toolbar,
       .sw-ai-suggestions,
       .sw-ai-message-actions
     )
-    button:enabled:hover {
+    button:enabled:hover:where(:not(.sw-ai-recents-toggle)) {
     background: color-mix(in srgb, var(--sw-ai-text) 10%, transparent);
     color: var(--sw-ai-text);
   }
@@ -672,15 +694,6 @@
 }
 
 @media (max-width: 768px) {
-  .sun-chat-shell__floating:has(> .sw-ai-sidebar-flyout) {
-    z-index: 21;
-  }
-
-  .sw-ai-sidebar-flyout {
-    inset: auto 8px 12px;
-    width: auto;
-  }
-
   .sw-ai-sidebar-resizer {
     display: none;
   }

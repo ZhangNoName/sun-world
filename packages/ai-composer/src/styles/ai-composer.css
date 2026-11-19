@@ -7,7 +7,7 @@
   --composer-strong: var(--text-strong, #111827);
   background: var(--composer-surface);
   border: 1px solid var(--composer-border);
-  border-radius: var(--radius-xl, 16px);
+  border-radius: 28px;
   color: var(--composer-text);
   display: flex;
   flex-direction: column;
@@ -177,7 +177,7 @@
 }
 
 .sw-ai-composer__tools--end .sw-ai-composer__primary-action {
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-full, 9999px);
   height: 40px;
   margin-left: 4px;
   width: 40px;
@@ -332,6 +332,11 @@
   width: 36px;
   height: 36px;
   margin-left: 0;
+}
+
+.sw-ai-composer--chat
+  .sw-ai-composer__tools--end
+  > button:where(:not(.sw-ai-composer__primary-action)) {
   border-radius: var(--radius-md, 8px);
 }
 
@@ -379,7 +384,7 @@
 
 @media (max-width: 640px) {
   .sw-ai-composer {
-    border-radius: var(--radius-lg, 12px);
+    border-radius: 20px;
     padding-inline: 12px;
   }
 
