@@ -1,11 +1,6 @@
 import type { ReactElement, ReactNode } from 'react'
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@sun-world/base-ui/tooltip'
+import { SwTooltip } from '../../components/sw-tooltip'
 import '../../styles/base.css'
 
 export function SunTooltip({
@@ -16,13 +11,8 @@ export function SunTooltip({
   children: ReactElement
 }) {
   return (
-    <TooltipProvider delay={0}>
-      <Tooltip>
-        <TooltipTrigger render={children} />
-        <TooltipContent className="sun-tooltip" sideOffset={4} role="tooltip">
-          {content}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <SwTooltip content={content} delay={0}>
+      {children}
+    </SwTooltip>
   )
 }

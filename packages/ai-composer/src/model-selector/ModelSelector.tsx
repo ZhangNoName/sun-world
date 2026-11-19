@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import { SunIcon } from '@sun-world/icons/react'
-import { Button } from '@sun-world/base-ui/button'
+import { SwSelect } from '@sun-world/ui/sw-select'
 
 import type { AiComposerModel } from '../types'
 
@@ -15,69 +13,26 @@ export function ModelSelector({
   modelId,
   onModelChange,
 }: ModelSelectorProps) {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
   const current = models.find((model) => model.id === modelId)
-  const label = current?.label ?? '选择模型'
-
-  useEffect(() => {
-    if (!open) return
-    const closeOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
-    const closeWithEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      queueMicrotask(() => triggerRef.current?.focus())
-    }
-    document.addEventListener('pointerdown', closeOutside)
-    document.addEventListener('keydown', closeWithEscape)
-    return () => {
-      document.removeEventListener('pointerdown', closeOutside)
-      document.removeEventListener('keydown', closeWithEscape)
-    }
-  }, [open])
 
   return (
-    <div ref={rootRef} className="sw-ai-composer__model-selector">
-      <Button
-        ref={triggerRef}
-        type="button"
-        variant="ghost"
-        aria-label={`选择模型，当前 ${label}`}
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <span>{label}</span>
-        <SunIcon name="chevron-down" size="xs" />
-      </Button>
-      {open ? (
-        <div role="listbox" aria-label="模型">
-          {models.map((model) => (
-            <Button
-              type="button"
-              variant="ghost"
-              role="option"
-              aria-selected={model.id === modelId}
-              disabled={model.disabled}
-              key={model.id}
-              onClick={() => {
-                onModelChange(model.id)
-                setOpen(false)
-                queueMicrotask(() => triggerRef.current?.focus())
-              }}
-            >
-              <strong>{model.label}</strong>
-              {model.description ? (
-                <span className="sw-ai-model-provider-tag">
-                  {model.description}
-                </span>
-              ) : null}
-            </Button>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    <SwSelect
+      aria-label={current ? `选择模型，当前 ${current.label}` : '选择模型'}
+      placeholder="选择模型"
+      className="sw-ai-composer__model-trigger"
+      popupClassName="sw-ai-composer__model-options"
+      modal={false}
+      size="sm"
+      value={current?.id ?? ''}
+      onValueChange={onModelChange}
+      options={models.map((model) => ({
+        value: model.id,
+        label: model.label,
+        disabled: model.disabled,
+        description: model.description ? (
+          <span className="sw-ai-model-provider-tag">{model.description}</span>
+        ) : undefined,
+      }))}
+    />
   )
 }

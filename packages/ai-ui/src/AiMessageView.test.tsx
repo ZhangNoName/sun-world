@@ -62,7 +62,8 @@ describe('AiMessageView', () => {
     expect(screen.getByRole('button', { name: '复制回答' })).toBeEnabled()
   })
 
-  it('displays reported tokens and duration while permitting missing usage', () => {
+  it('displays reported tokens and shows their details on hover', async () => {
+    const user = userEvent.setup()
     const assistant: AiUiMessage = { ...message, role: 'assistant' }
     const { rerender } = render(
       <AiMessageView
@@ -80,11 +81,21 @@ describe('AiMessageView', () => {
         {...actions}
       />
     )
-    expect(screen.getByText('1,234 tokens')).toHaveAttribute(
-      'title',
+    const duration = screen.getByText('2.4 秒')
+    const tokens = screen.getByText('1,234 tokens')
+    expect(duration.nextElementSibling).toBe(tokens)
+    const copyButton = screen.getByRole('button', { name: '复制回答' })
+    await user.click(copyButton)
+    expect(
+      copyButton.querySelector('[data-icon-name="check"]')
+    ).toBeInTheDocument()
+    expect(screen.queryByText('已复制')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveClass('sr-only')
+    await user.hover(tokens)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
       '输入 1,200 · 输出 34'
     )
-    expect(screen.getByText('2.4 秒')).toBeVisible()
+    expect(duration).toBeVisible()
     rerender(
       <AiMessageView
         message={{ ...assistant, metrics: { durationMs: 500 } }}
@@ -93,6 +104,23 @@ describe('AiMessageView', () => {
     )
     expect(screen.getByText('0.5 秒')).toBeVisible()
     expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['user', '发送时间'],
+    ['assistant', '回复完成时间'],
+  ] as const)('shows the %s timestamp on hover', async (role, label) => {
+    const user = userEvent.setup()
+    const createdAt = '2026-11-18T11:03:00Z'
+    render(
+      <AiMessageView message={{ ...message, role, createdAt }} {...actions} />
+    )
+
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    await user.hover(screen.getByText('Original question'))
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent(label)
+    expect(tooltip.querySelector('time')).toHaveAttribute('datetime', createdAt)
   })
 
   it.each([

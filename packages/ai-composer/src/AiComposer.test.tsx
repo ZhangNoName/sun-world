@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -31,6 +31,7 @@ function ComposerHarness({
   maxFileSize,
   speechAdapter,
   variant,
+  layout,
   modelControl,
 }: {
   onSubmit?: AiComposerProps['onSubmit']
@@ -45,6 +46,7 @@ function ComposerHarness({
   maxFileSize?: number
   speechAdapter?: SpeechInputAdapter
   variant?: AiComposerProps['variant']
+  layout?: AiComposerProps['layout']
   modelControl?: AiComposerProps['modelControl']
 }) {
   const [value, setValue] = useState('')
@@ -53,6 +55,7 @@ function ComposerHarness({
     <AiComposer
       ref={composerRef}
       variant={variant}
+      layout={layout}
       value={value}
       onValueChange={setValue}
       models={models}
@@ -107,13 +110,32 @@ describe('AiComposer core', () => {
     expect(screen.getByText('GPT-6.1 Sol')).toBeInTheDocument()
   })
 
+  it('uses two rows for a draft and stays expanded in an existing chat', async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(<ComposerHarness variant="chat" />)
+    const textbox = screen.getByRole('textbox')
+    const form = textbox.closest('form')
+
+    expect(form).toHaveClass('sw-ai-composer--compact')
+    await user.type(textbox, '你好')
+    expect(form).not.toHaveClass('sw-ai-composer--compact')
+    await user.clear(textbox)
+    expect(form).toHaveClass('sw-ai-composer--compact')
+    rerender(<ComposerHarness variant="chat" layout="stacked" />)
+    expect(form).not.toHaveClass('sw-ai-composer--compact')
+  })
+
   it('renders interactive controls through the owned UI primitives', () => {
     render(<ComposerHarness />)
 
     expect(screen.getByRole('textbox')).toHaveAttribute('data-slot', 'textarea')
-    for (const button of screen.getAllByRole('button')) {
-      expect(button).toHaveAttribute('data-slot', 'button')
-    }
+    expect(screen.getByRole('combobox', { name: /DeepSeek/ })).toHaveAttribute(
+      'data-slot',
+      'select-trigger'
+    )
+    const send = screen.getByRole('button', { name: '发送消息' })
+    expect(send).toHaveAttribute('data-slot', 'button')
+    expect(send.parentElement).toHaveAttribute('data-slot', 'tooltip-trigger')
   })
 
   it('submits trimmed markdown and clears only after success', async () => {
@@ -386,14 +408,14 @@ describe('AiComposer core', () => {
     render(<ComposerHarness onSubmit={onSubmit} />)
 
     await user.click(
-      screen.getByRole('button', { name: '选择模型，当前 DeepSeek' })
+      screen.getByRole('combobox', { name: '选择模型，当前 DeepSeek' })
     )
-    await user.click(screen.getByRole('option', { name: 'Disabled' }))
+    await user.click(await screen.findByRole('option', { name: 'Disabled' }))
     expect(
-      screen.getByRole('button', { name: '选择模型，当前 DeepSeek' })
+      screen.getByRole('combobox', { name: '选择模型，当前 DeepSeek' })
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('option', { name: 'DeepSeek' }))
+    await user.click(await screen.findByRole('option', { name: 'DeepSeek' }))
     await user.type(screen.getByRole('textbox', { name: '消息' }), 'model')
     await user.click(screen.getByRole('button', { name: '发送消息' }))
     expect(onSubmit).toHaveBeenCalledWith(
@@ -404,36 +426,41 @@ describe('AiComposer core', () => {
   it('returns focus to the model trigger after choosing an option', async () => {
     const user = userEvent.setup()
     render(<ComposerHarness />)
-    const trigger = screen.getByRole('button', {
+    const trigger = screen.getByRole('combobox', {
       name: '选择模型，当前 DeepSeek',
     })
     await user.click(trigger)
-    await user.click(screen.getByRole('option', { name: 'DeepSeek' }))
-    expect(trigger).toHaveFocus()
+    await user.click(await screen.findByRole('option', { name: 'DeepSeek' }))
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 
   it('closes the model selector when the user clicks outside it', async () => {
     const user = userEvent.setup()
     render(<ComposerHarness />)
 
-    await user.click(screen.getByRole('button', { name: /DeepSeek/ }))
-    expect(screen.getByRole('listbox')).toBeInTheDocument()
+    await user.click(screen.getByRole('combobox', { name: /DeepSeek/ }))
+    expect(await screen.findByRole('listbox')).toBeInTheDocument()
 
     await user.click(screen.getByRole('textbox'))
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    )
   })
 
   it('closes the model selector with Escape and restores trigger focus', async () => {
     const user = userEvent.setup()
     render(<ComposerHarness />)
-    const trigger = screen.getByRole('button', { name: /DeepSeek/ })
+    const trigger = screen.getByRole('combobox', { name: /DeepSeek/ })
 
     await user.click(trigger)
+    expect(await screen.findByRole('listbox')).toBeInTheDocument()
     await user.keyboard('{Escape}')
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-    expect(trigger).toHaveFocus()
+    await waitFor(() => {
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(trigger).toHaveFocus()
+    })
   })
 
   it('selects a slash command with the keyboard and submits a structured id', async () => {

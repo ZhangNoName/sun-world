@@ -50,6 +50,7 @@ class SqliteHistoryDatabase:
         if self.fail_on and self.fail_on in statement:
             raise sqlite3.OperationalError('synthetic storage failure')
         statement = statement.replace('%s', '?').replace(' FOR UPDATE', '').replace('CURRENT_TIMESTAMP(6)', 'CURRENT_TIMESTAMP')
+        statement = statement.replace('UNIX_TIMESTAMP(', 'unixepoch(')
         statement = re.sub(r'LEFT\(([^,]+), 11\)', r'substr(\1, 1, 11)', statement)
         statement = statement.replace('ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = CURRENT_TIMESTAMP',
                                       'ON CONFLICT(message_id,user_id) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP')
@@ -276,7 +277,11 @@ class AgentHistoryTransactionTests(unittest.TestCase):
         repository = MySqlAiRepository(self.db)
         conversation = repository._create_conversation(1, 'normal')
         message = repository._append_message(1, conversation.id, 'user', [AiTextBlock(text='normal')])
-        self.assertEqual(repository._get_conversation(1, conversation.id).messages[0].id, message.id)
+        self.db.execute("UPDATE ai_messages SET created_at = %s WHERE id = %s",
+                        ('2026-11-18 11:03:00', message.id))
+        saved = repository._get_conversation(1, conversation.id).messages[0]
+        self.assertEqual(saved.id, message.id)
+        self.assertEqual(saved.created_at, datetime(2026, 11, 18, 11, 3, tzinfo=timezone.utc))
         self.assertEqual(repository._get_message_conversation_id(1, message.id), conversation.id)
         repository._set_feedback(1, message.id, 'like')
         self.assertEqual(repository._get_feedback(1, message.id), 'like')

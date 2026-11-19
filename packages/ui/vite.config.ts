@@ -14,6 +14,7 @@ const entries = [
   'sw-dialog',
   'sw-dropdown-menu',
   'sw-sidebar',
+  'sw-tooltip',
   'sw-input',
   'list',
   'loading-skeleton',
@@ -28,7 +29,7 @@ const entries = [
 const entryPath = (entry: (typeof entries)[number]) =>
   path.resolve(
     __dirname,
-    `src/${['sw-input', 'sw-select', 'sw-button', 'sw-dialog', 'sw-dropdown-menu', 'sw-sidebar', 'loading-skeleton', 'sonner', 'tag', 'toast'].includes(entry) ? 'components' : 'patterns'}/${entry}/index.ts`
+    `src/${['sw-input', 'sw-select', 'sw-button', 'sw-dialog', 'sw-dropdown-menu', 'sw-sidebar', 'sw-tooltip', 'loading-skeleton', 'sonner', 'tag', 'toast'].includes(entry) ? 'components' : 'patterns'}/${entry}/index.ts`
   )
 
 export default defineConfig({

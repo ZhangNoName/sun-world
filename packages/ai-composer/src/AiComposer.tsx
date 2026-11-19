@@ -12,6 +12,7 @@ import {
 import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/base-ui/button'
 import { Textarea } from '@sun-world/base-ui/textarea'
+import { SwTooltip } from '@sun-world/ui/sw-tooltip'
 
 import { AiFilePicker } from './attachments/AiFilePicker'
 import { AttachmentList } from './attachments/AttachmentList'
@@ -39,6 +40,7 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
   function AiComposer(
     {
       variant = 'work',
+      layout = 'auto',
       value,
       onValueChange,
       models,
@@ -97,6 +99,8 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
     const primaryActionState =
       submitting || loading ? 'generating' : sendReady ? 'ready' : 'disabled'
     const canSubmit = primaryActionState === 'ready'
+    const speechLabel =
+      speech.status === 'listening' ? '停止语音输入' : '开始语音输入'
 
     const resize = () => {
       const textarea = textareaRef.current
@@ -271,6 +275,18 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
         : !selectedModel || selectedModel.disabled
           ? '请选择可用模型'
           : '请输入消息'
+    const sendButton = (
+      <Button
+        type="submit"
+        size="icon"
+        variant="ghost"
+        className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
+        aria-label="发送消息"
+        disabled={!canSubmit}
+      >
+        <SunIcon name="send" size="sm" />
+      </Button>
+    )
     const speechNotice =
       speechNoticeVisible && speech.status === 'denied'
         ? '请在浏览器设置中允许麦克风权限。'
@@ -285,6 +301,8 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
 
     const compact =
       variant === 'chat' &&
+      layout === 'auto' &&
+      !value &&
       !selectedCommand &&
       !files.length &&
       !hasFeedback &&
@@ -393,45 +411,42 @@ export const AiComposer = forwardRef<AiComposerHandle, AiComposerProps>(
                   onModelChange={onModelChange}
                 />
               )}
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                aria-label={
-                  speech.status === 'listening'
-                    ? '停止语音输入'
-                    : '开始语音输入'
-                }
-                disabled={disabled || loading || speech.status === 'checking'}
-                onClick={() => {
-                  setSpeechNoticeVisible(true)
-                  void speech.toggle()
-                }}
-              >
-                <SunIcon name="mic" />
-              </Button>
-              {primaryActionState === 'generating' ? (
+              <SwTooltip content={speechLabel}>
                 <Button
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
-                  aria-label="停止生成"
-                  onClick={cancel}
+                  aria-label={speechLabel}
+                  disabled={disabled || loading || speech.status === 'checking'}
+                  onClick={() => {
+                    setSpeechNoticeVisible(true)
+                    void speech.toggle()
+                  }}
                 >
-                  <SunIcon name="square" size="xs" />
+                  <SunIcon name="mic" />
                 </Button>
+              </SwTooltip>
+              {primaryActionState === 'generating' ? (
+                <SwTooltip content="停止生成">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="sw-ai-composer__primary-action sw-ai-composer__primary-action--generating"
+                    aria-label="停止生成"
+                    onClick={cancel}
+                  >
+                    <SunIcon name="square" size="xs" />
+                  </Button>
+                </SwTooltip>
+              ) : canSubmit ? (
+                <SwTooltip content="发送消息">{sendButton}</SwTooltip>
               ) : (
-                <Button
-                  type="submit"
-                  size="icon"
-                  variant="ghost"
-                  className={`sw-ai-composer__primary-action sw-ai-composer__primary-action--${primaryActionState}`}
-                  aria-label="发送消息"
-                  disabled={primaryActionState === 'disabled'}
-                >
-                  <SunIcon name="send" size="sm" />
-                </Button>
+                <SwTooltip content={disabledReason}>
+                  <span className="sw-ai-composer__disabled-send">
+                    {sendButton}
+                  </span>
+                </SwTooltip>
               )}
             </div>
           </div>

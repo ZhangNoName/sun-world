@@ -280,6 +280,7 @@ export function useAiChat() {
                   ? {
                       ...message,
                       renderKey: existing.renderKey,
+                      createdAt: message.createdAt ?? existing.createdAt,
                       metrics: existing.metrics,
                     }
                   : message
@@ -338,6 +339,7 @@ export function useAiChat() {
         role: 'user',
         blocks: [{ type: 'text', text, format: 'markdown' }],
         status: 'completed',
+        createdAt: now(),
       }
       const assistantMessage: AiUiMessage = {
         id: assistantMessageId,
@@ -478,6 +480,7 @@ export function useAiChat() {
               id: event.message_id,
               blocks: blocks.length ? blocks : message.blocks,
               status: 'completed',
+              createdAt: event.created_at,
               metrics: parseMessageMetrics(event.data),
             })
           )
@@ -508,7 +511,10 @@ export function useAiChat() {
             message: text,
             conversation_id: conversationId,
             provider_profile_id: userId ? selectedProfileId : null,
-            model_id: userId ? selectedModelId : null,
+            model_id:
+              userId || selectedModelId === GUEST_PROVIDER_ID
+                ? selectedModelId
+                : null,
             parent_message_id: userId
               ? (options?.parentMessageId ?? null)
               : null,
@@ -908,6 +914,7 @@ function mapMessage(value: {
   role: string
   blocks: unknown[]
   status: string
+  created_at?: string
   feedback?: string | null
 }): AiUiMessage {
   return {
@@ -916,6 +923,7 @@ function mapMessage(value: {
     role: isRole(value.role) ? value.role : 'assistant',
     blocks: parseBlocks(value.blocks),
     status: isMessageStatus(value.status) ? value.status : 'completed',
+    createdAt: value.created_at,
     feedback:
       value.feedback === 'like' || value.feedback === 'dislike'
         ? value.feedback

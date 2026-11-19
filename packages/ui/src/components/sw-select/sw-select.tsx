@@ -14,6 +14,7 @@ export type SwOption = {
   value: string
   label: React.ReactNode
   disabled?: boolean
+  description?: React.ReactNode
 }
 
 type Selection<Multiple extends boolean> = Multiple extends true
@@ -35,9 +36,11 @@ export type SwSelectProps<Multiple extends boolean = false> = {
   disabled?: boolean
   name?: string
   required?: boolean
+  modal?: boolean
   surface?: 'default' | 'modal'
   size?: 'sm' | 'default'
   className?: string
+  popupClassName?: string
   'aria-label'?: string
 }
 
@@ -71,9 +74,11 @@ export function SwSelect<Multiple extends boolean = false>({
   disabled,
   name,
   required,
+  modal,
   surface = 'default',
   size,
   className,
+  popupClassName,
   'aria-label': ariaLabel,
 }: SwSelectProps<Multiple>) {
   const generatedId = React.useId()
@@ -97,6 +102,7 @@ export function SwSelect<Multiple extends boolean = false>({
         disabled={disabled}
         name={name}
         required={required}
+        modal={modal}
       >
         <SelectTrigger
           id={selectId}
@@ -111,9 +117,13 @@ export function SwSelect<Multiple extends boolean = false>({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent
-          className={
-            surface === 'modal' ? 'sun-select-content--modal' : undefined
-          }
+          side="bottom"
+          align="start"
+          alignItemWithTrigger={false}
+          className={cn(
+            surface === 'modal' && 'sun-select-content--modal',
+            popupClassName
+          )}
         >
           {options.map((option) => (
             <SelectItem
@@ -122,6 +132,7 @@ export function SwSelect<Multiple extends boolean = false>({
               disabled={option.disabled}
             >
               {option.label}
+              {option.description ? <> {option.description}</> : null}
             </SelectItem>
           ))}
         </SelectContent>

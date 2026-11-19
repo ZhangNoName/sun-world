@@ -119,6 +119,11 @@ describe('@sun-world/ui React contracts', () => {
     )
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Provider' }))
+    expect(
+      (await screen.findByRole('listbox')).closest(
+        '[data-slot="select-content"]'
+      )
+    ).toHaveAttribute('data-align-trigger', 'false')
     await userEvent.click(await screen.findByRole('option', { name: 'OpenAI' }))
 
     expect(onValueChange).toHaveBeenCalledWith('openai')
@@ -297,9 +302,15 @@ describe('@sun-world/ui React contracts', () => {
     const trigger = screen.getByRole('combobox', { name: 'Category' })
     trigger.focus()
     await user.keyboard('{Enter}')
-    await screen.findByRole('option', { name: 'Tech' })
-    await user.keyboard('{ArrowDown}{Enter}')
-    await waitFor(() => expect(onValueChange).toHaveBeenCalled())
+    const list = await screen.findByRole('listbox')
+    const popup = list.closest('[data-slot="select-content"]')
+    await waitFor(() => expect(popup).toContainElement(document.activeElement))
+    await user.keyboard('{Home}')
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Tech' })).toHaveFocus()
+    )
+    await user.keyboard('{Enter}')
+    expect(onValueChange).toHaveBeenCalledWith('tech')
   })
 
   it('changes checkbox and tabs through accessible controls', async () => {

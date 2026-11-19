@@ -43,6 +43,7 @@ export interface AiComposerHandle {
 export interface AiComposerProps {
   ref?: Ref<AiComposerHandle>
   variant?: 'work' | 'chat'
+  layout?: 'auto' | 'stacked'
   value: string
   onValueChange(value: string): void
   models: AiComposerModel[]

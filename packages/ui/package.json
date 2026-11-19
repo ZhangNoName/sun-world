@@ -50,6 +50,11 @@
       "import": "./dist/sw-sidebar.es.js",
       "default": "./dist/sw-sidebar.es.js"
     },
+    "./sw-tooltip": {
+      "types": "./dist/types/sw-tooltip.d.ts",
+      "import": "./dist/sw-tooltip.es.js",
+      "default": "./dist/sw-tooltip.es.js"
+    },
     "./sonner": {
       "types": "./dist/types/sonner.d.ts",
       "import": "./dist/sonner.es.js",

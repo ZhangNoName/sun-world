@@ -208,6 +208,9 @@ importers:
       '@sun-world/icons':
         specifier: workspace:*
         version: link:../icons
+      '@sun-world/ui':
+        specifier: workspace:*
+        version: link:../ui
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.9.1

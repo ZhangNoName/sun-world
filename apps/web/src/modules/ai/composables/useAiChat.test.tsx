@@ -230,9 +230,14 @@ describe('useAiChat', () => {
     ])
     stream.mockResolvedValue(undefined)
     act(() => result.current.setReasoningEffort('high'))
-    await act(() => result.current.sendMessage(payload('使用高思考')))
+    await act(() =>
+      result.current.sendMessage({
+        ...payload('使用高思考'),
+        modelId: 'model:openai-guest',
+      })
+    )
     expect(stream.mock.calls[0]?.[0]).toMatchObject({
-      model_id: null,
+      model_id: 'openai-guest',
       reasoning_effort: 'high',
     })
     authState.user = { id: 7 }
@@ -300,11 +305,16 @@ describe('useAiChat', () => {
 
     await act(() => result.current.sendMessage(payload('介绍太阳系')))
     expect(result.current.messages).toMatchObject([
-      { role: 'user', blocks: [{ type: 'text', text: '介绍太阳系' }] },
+      {
+        role: 'user',
+        blocks: [{ type: 'text', text: '介绍太阳系' }],
+        createdAt: expect.any(String),
+      },
       {
         role: 'assistant',
         blocks: [{ type: 'text', text: '你好', format: 'markdown' }],
         status: 'completed',
+        createdAt: '2026-07-26T12:00:00Z',
         metrics: {
           durationMs: 2400,
           tokenUsage: { inputTokens: 82, outputTokens: 44, totalTokens: 126 },
@@ -705,7 +715,7 @@ describe('useAiChat', () => {
           role: 'user',
           blocks: [{ type: 'text', text: 'original', format: 'markdown' }],
           status: 'completed',
-          created_at: '',
+          created_at: '2026-11-18T11:02:00Z',
           updated_at: '',
         },
         {
@@ -715,7 +725,7 @@ describe('useAiChat', () => {
           role: 'assistant',
           blocks: [{ type: 'text', text: 'answer', format: 'markdown' }],
           status: 'completed',
-          created_at: '',
+          created_at: '2026-11-18T11:03:00Z',
           updated_at: '',
         },
       ],
@@ -724,6 +734,10 @@ describe('useAiChat', () => {
     const { result } = renderHook(() => useAiChat())
     await act(async () => result.current.selectConversation('saved-chat'))
     const original = result.current.messages
+    expect(original.map((item) => item.createdAt)).toEqual([
+      '2026-11-18T11:02:00Z',
+      '2026-11-18T11:03:00Z',
+    ])
     await act(() => result.current.editMessage('saved-user', 'edited'))
     expect(result.current.messages).toEqual(original)
     expect(result.current.runState).toMatchObject({

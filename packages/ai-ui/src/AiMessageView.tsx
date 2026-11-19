@@ -3,9 +3,20 @@ import { SunIcon } from '@sun-world/icons/react'
 import { Button } from '@sun-world/base-ui/button'
 import { Label } from '@sun-world/base-ui/label'
 import { Textarea } from '@sun-world/base-ui/textarea'
+import { SwTooltip } from '@sun-world/ui/sw-tooltip'
 
 import { AiBlockRenderer } from './AiBlockRenderer'
 import type { AiRendererRegistry, AiUiMessage } from './types'
+
+const messageTime = new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+})
 
 export function AiMessageView({
   message,
@@ -27,6 +38,10 @@ export function AiMessageView({
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'error'>('idle')
   const assistant = message.role === 'assistant'
   const streaming = message.status === 'streaming'
+  const timestamp = message.createdAt ? Date.parse(message.createdAt) : NaN
+  const showTime =
+    Number.isFinite(timestamp) &&
+    (message.role === 'user' || (assistant && message.status === 'completed'))
   const hasContent = message.blocks.some(
     (block) => block.type !== 'text' || block.text.trim().length > 0
   )
@@ -89,14 +104,34 @@ export function AiMessageView({
       ) : streaming && !hasContent ? (
         <ThinkingStatus />
       ) : hasContent ? (
-        <div
-          className="sw-ai-message-content"
-          aria-busy={streaming || undefined}
+        <SwTooltip
+          disabled={!showTime}
+          trackCursorAxis="both"
+          content={
+            showTime ? (
+              <span>
+                {assistant ? '回复完成时间' : '发送时间'}{' '}
+                <time dateTime={message.createdAt}>
+                  {messageTime.format(timestamp)}
+                </time>
+              </span>
+            ) : null
+          }
         >
-          {message.blocks.map((block, index) => (
-            <AiBlockRenderer key={index} block={block} renderers={renderers} />
-          ))}
-        </div>
+          <div
+            className="sw-ai-message-content"
+            aria-busy={streaming || undefined}
+            tabIndex={showTime ? 0 : undefined}
+          >
+            {message.blocks.map((block, index) => (
+              <AiBlockRenderer
+                key={index}
+                block={block}
+                renderers={renderers}
+              />
+            ))}
+          </div>
+        </SwTooltip>
       ) : null}
       {message.status === 'interrupted' || message.status === 'failed' ? (
         <span className="sw-ai-message-status" role="status">
@@ -153,9 +188,12 @@ export function AiMessageView({
               />
             </>
           ) : null}
-          <span className="sw-ai-copy-status" role="status">
+          <span
+            className={copyState === 'error' ? undefined : 'sr-only'}
+            role="status"
+          >
             {copyState === 'done'
-              ? '已复制'
+              ? '复制成功'
               : copyState === 'error'
                 ? '复制失败'
                 : ''}
@@ -196,15 +234,17 @@ function MessageMetrics({
 }: NonNullable<AiUiMessage['metrics']>) {
   return (
     <span className="sw-ai-message-metrics">
-      {tokenUsage ? (
-        <span
-          title={`输入 ${tokenCount.format(tokenUsage.inputTokens)} · 输出 ${tokenCount.format(tokenUsage.outputTokens)}`}
-        >
-          {tokenCount.format(tokenUsage.totalTokens)} tokens
-        </span>
-      ) : null}
       {durationMs !== undefined ? (
         <span>{elapsedSeconds.format(durationMs / 1_000)} 秒</span>
+      ) : null}
+      {tokenUsage ? (
+        <SwTooltip
+          content={`输入 ${tokenCount.format(tokenUsage.inputTokens)} · 输出 ${tokenCount.format(tokenUsage.outputTokens)}`}
+        >
+          <span className="sw-ai-token-count" tabIndex={0}>
+            {tokenCount.format(tokenUsage.totalTokens)} tokens
+          </span>
+        </SwTooltip>
       ) : null}
     </span>
   )
@@ -224,17 +264,19 @@ function ActionButton({
   disabled?: boolean
 }) {
   return (
-    <Button
-      type="button"
-      size="icon-sm"
-      variant="ghost"
-      aria-label={label}
-      aria-pressed={pressed}
-      disabled={disabled}
-      onClick={() => void onClick()}
-    >
-      <SunIcon name={icon} size="sm" />
-    </Button>
+    <SwTooltip content={label}>
+      <Button
+        type="button"
+        size="icon-sm"
+        variant="ghost"
+        aria-label={label}
+        aria-pressed={pressed}
+        disabled={disabled}
+        onClick={() => void onClick()}
+      >
+        <SunIcon name={icon} size="sm" />
+      </Button>
+    </SwTooltip>
   )
 }
 

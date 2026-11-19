@@ -35,8 +35,12 @@ import { SwSelect } from '@sun-world/ui/sw-select'
 ```
 
 `SwSelect multiple` accepts and emits `string[]`. Use `size="sm"` for a
-compact trigger. `SwNativeSelect` and `NativeSelectField` are compatibility
-exports.
+compact trigger. The options open below the trigger when space permits. The
+popup can flip above near the viewport edge. `SwNativeSelect` and
+`NativeSelectField` are compatibility exports.
+
+Use `SwTooltip` from `@sun-world/ui/sw-tooltip` for short hints on hover and
+keyboard focus. Give icon-only controls their own accessible name.
 
 `Sun*` exports are deprecated compatibility adapters. New application code must
 not import them. The base primitives are intentionally not re-exported from

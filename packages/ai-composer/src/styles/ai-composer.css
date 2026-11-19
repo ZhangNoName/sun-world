@@ -64,6 +64,17 @@
   outline-offset: 1px;
 }
 
+.sw-ai-composer__attachment-trigger:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sw-ai-composer__attachment-trigger:has(input:enabled):hover {
+    background: var(--composer-muted);
+  }
+}
+
 .sw-ai-composer__attachments {
   display: flex;
   gap: 8px;
@@ -152,6 +163,7 @@
 }
 
 .sw-ai-composer__icon-button input {
+  cursor: inherit;
   height: 1px;
   opacity: 0;
   overflow: hidden;
@@ -164,63 +176,57 @@
   width: 34px;
 }
 
-.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action {
+.sw-ai-composer__tools--end .sw-ai-composer__primary-action {
   border-radius: 999px;
   height: 40px;
   margin-left: 4px;
   width: 40px;
 }
 
-.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action--ready,
-.sw-ai-composer__tools--end
-  > button.sw-ai-composer__primary-action--generating {
+.sw-ai-composer__primary-action--ready,
+.sw-ai-composer__primary-action--generating {
   background: var(--composer-strong);
   color: var(--composer-surface);
   opacity: 1;
 }
 
-.sw-ai-composer__tools--end > button.sw-ai-composer__primary-action--disabled {
+.sw-ai-composer__primary-action--disabled {
   background: color-mix(in srgb, var(--composer-strong) 42%, transparent);
   color: var(--composer-surface);
   opacity: 0.48;
 }
 
-.sw-ai-composer__model-selector {
-  position: relative;
+.sw-ai-composer__disabled-send {
+  display: inline-flex;
+  cursor: not-allowed;
 }
 
-.sw-ai-composer__model-selector > button {
+.sw-ai-composer__disabled-send > button {
+  pointer-events: none;
+}
+
+.sw-ai-composer__model-trigger {
   color: var(--composer-secondary);
   max-width: 170px;
 }
 
-.sw-ai-composer__model-selector [role='listbox'] {
-  background: var(--composer-surface);
-  border: 1px solid var(--composer-border);
-  border-radius: 14px;
-  bottom: calc(100% + 10px);
-  min-width: 220px;
-  padding: 6px;
-  position: absolute;
-  right: 0;
-  z-index: 20;
+.sw-ai-composer__model-trigger [data-slot='select-value'] {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sw-ai-composer__model-selector [role='option'] {
-  justify-content: space-between;
-  text-align: left;
-  width: 100%;
-}
-
-.sw-ai-composer__model-selector [role='option'][aria-selected='true'],
 .sw-ai-composer__command-palette [role='option'][aria-selected='true'] {
   background: var(--composer-muted);
 }
 
-.sw-ai-composer__model-selector [role='option'] strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.sw-ai-composer__model-options {
+  min-width: min(220px, var(--available-width));
+}
+
+.sw-ai-model-provider-tag {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
 }
 
 .sw-ai-composer__command-palette {
@@ -300,6 +306,14 @@
   border-color: var(--ring, #2563eb);
 }
 
+.sw-ai-composer--chat:not(.sw-ai-composer--compact) {
+  padding-block: 10px 8px;
+}
+
+.sw-ai-composer--chat:not(.sw-ai-composer--compact) .sw-ai-composer__body {
+  gap: 4px;
+}
+
 .sw-ai-composer--chat textarea {
   min-width: 0;
   min-height: 36px;
@@ -314,16 +328,14 @@
 
 .sw-ai-composer--chat .sw-ai-composer__icon-button,
 .sw-ai-composer--chat .sw-ai-composer__tools--end > button,
-.sw-ai-composer--chat
-  .sw-ai-composer__tools--end
-  > button.sw-ai-composer__primary-action {
+.sw-ai-composer--chat .sw-ai-composer__primary-action {
   width: 36px;
   height: 36px;
   margin-left: 0;
   border-radius: var(--radius-full, 9999px);
 }
 
-.sw-ai-composer--chat .sw-ai-composer__model-selector > button {
+.sw-ai-composer--chat .sw-ai-composer__model-trigger {
   max-width: 144px;
   height: 36px;
   padding: 5px 8px;
@@ -381,7 +393,7 @@
     max-width: 120px;
   }
 
-  .sw-ai-composer__model-selector > button span {
+  .sw-ai-composer__model-trigger [data-slot='select-value'] {
     max-width: 82px;
     overflow: hidden;
     text-overflow: ellipsis;

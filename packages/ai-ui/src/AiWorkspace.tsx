@@ -13,12 +13,14 @@ import {
   AiComposer,
   type AiComposerCommand,
   type AiComposerHandle,
+  type AiComposerProps,
   type AiComposerSubmitPayload,
 } from '@sun-world/ai-composer'
 import { Button, buttonVariants } from '@sun-world/base-ui/button'
 import { Input } from '@sun-world/base-ui/input'
 import { SunIcon } from '@sun-world/icons/react'
 import { SunChatShell } from '@sun-world/ui/chat-shell'
+import { SwTooltip } from '@sun-world/ui/sw-tooltip'
 
 import { AiMessageView } from './AiMessageView'
 import { AiProviderSettings } from './AiProviderSettings'
@@ -65,7 +67,11 @@ export interface AiWorkspaceProps {
   providers?: AiUiProvider[]
   providerProfiles?: AiUiProviderProfile[]
   commands?: AiComposerCommand[]
-  composerModelControl?: ReactNode
+  composerModelControl?:
+    | ReactNode
+    | ((
+        selection: Pick<AiComposerProps, 'models' | 'modelId' | 'onModelChange'>
+      ) => ReactNode)
   renderers?: AiRendererRegistry
   sidebarNavigation?: ReactNode
   sidebarFooterActions?: ReactNode
@@ -127,6 +133,9 @@ export function AiWorkspace({
   const [moreOpen, setMoreOpen] = useState(false)
   const [recentOpen, setRecentOpen] = useState(true)
   const [recentNewestFirst, setRecentNewestFirst] = useState(true)
+  const recentSortLabel = recentNewestFirst
+    ? '按最早会话排序'
+    : '按最近会话排序'
   const [draft, setDraft] = useState('')
   const composerRef = useRef<AiComposerHandle>(null)
   const transcriptRef = useRef<HTMLElement>(null)
@@ -403,6 +412,7 @@ export function AiWorkspace({
     <AiComposer
       ref={composerRef}
       variant="chat"
+      layout={messages.length ? 'stacked' : 'auto'}
       value={draft}
       onValueChange={setDraft}
       placeholder="询问 Sun World AI"
@@ -410,7 +420,15 @@ export function AiWorkspace({
       models={composerModels}
       modelId={selectedModelId}
       onModelChange={setSelectedModelId}
-      modelControl={composerModelControl}
+      modelControl={
+        typeof composerModelControl === 'function'
+          ? composerModelControl({
+              models: composerModels,
+              modelId: selectedModelId,
+              onModelChange: setSelectedModelId,
+            })
+          : composerModelControl
+      }
       commands={commands}
       onSubmit={onSend}
       onCancel={onStop}
@@ -537,60 +555,65 @@ export function AiWorkspace({
       }
       rail={
         <div className="sw-ai-rail" aria-label="收起的对话导航">
-          <Button
-            ref={railOpenRef}
-            type="button"
-            size="icon-lg"
-            variant="ghost"
-            className="sw-ai-rail-brand"
-            aria-label="打开对话列表"
-            aria-expanded={sidebarOpen}
-            aria-controls="sw-ai-sidebar"
-            title="打开侧边栏"
-            onClick={openSidebar}
-          >
-            {railBrand ?? <SunIcon name="panel-left-open" />}
-          </Button>
-          <Button
-            type="button"
-            size="icon-lg"
-            variant="ghost"
-            aria-label="新聊天"
-            title="新聊天"
-            onClick={startFreshConversation}
-          >
-            <SunIcon name="edit" />
-          </Button>
-          <Button
-            type="button"
-            size="icon-lg"
-            variant="ghost"
-            aria-label="搜索聊天"
-            title="搜索聊天"
-            onClick={openSearch}
-          >
-            <SunIcon name="search" />
-          </Button>
-          <Button
-            type="button"
-            size="icon-lg"
-            variant="ghost"
-            aria-label="最近聊天"
-            title="最近聊天"
-            onClick={openRecent}
-          >
-            <SunIcon name="message-circle" />
-          </Button>
+          <SwTooltip content="打开对话列表" side="right" disabled={isMobile}>
+            <Button
+              ref={railOpenRef}
+              type="button"
+              size="icon-lg"
+              variant="ghost"
+              className="sw-ai-rail-brand"
+              aria-label="打开对话列表"
+              aria-expanded={sidebarOpen}
+              aria-controls="sw-ai-sidebar"
+              onClick={openSidebar}
+            >
+              {railBrand ?? <SunIcon name="panel-left-open" />}
+            </Button>
+          </SwTooltip>
+          <SwTooltip content="新聊天" side="right">
+            <Button
+              type="button"
+              size="icon-lg"
+              variant="ghost"
+              aria-label="新聊天"
+              onClick={startFreshConversation}
+            >
+              <SunIcon name="edit" />
+            </Button>
+          </SwTooltip>
+          <SwTooltip content="搜索聊天" side="right">
+            <Button
+              type="button"
+              size="icon-lg"
+              variant="ghost"
+              aria-label="搜索聊天"
+              onClick={openSearch}
+            >
+              <SunIcon name="search" />
+            </Button>
+          </SwTooltip>
+          <SwTooltip content="最近聊天" side="right">
+            <Button
+              type="button"
+              size="icon-lg"
+              variant="ghost"
+              aria-label="最近聊天"
+              onClick={openRecent}
+            >
+              <SunIcon name="message-circle" />
+            </Button>
+          </SwTooltip>
           <div className="sw-ai-rail-footer">
             {railFooter ?? (
-              <a
-                className="sw-ai-rail-account"
-                href={accountHref}
-                aria-label={accountLabel}
-                title={accountLabel}
-              >
-                <SunIcon name="user" />
-              </a>
+              <SwTooltip content={accountLabel} side="right">
+                <a
+                  className="sw-ai-rail-account"
+                  href={accountHref}
+                  aria-label={accountLabel}
+                >
+                  <SunIcon name="user" />
+                </a>
+              </SwTooltip>
             )}
           </div>
         </div>
@@ -601,32 +624,36 @@ export function AiWorkspace({
             <a className="sw-ai-sidebar-brand" href="/home">
               Sun World
             </a>
-            <Button
-              ref={pluginsTriggerRef}
-              type="button"
-              size="icon-lg"
-              variant="ghost"
-              aria-label="搜索聊天"
-              aria-expanded={searchOpen}
-              onClick={() => {
-                setSearchOpen((value) => !value)
-                queueMicrotask(() => searchRef.current?.focus())
-              }}
-            >
-              <SunIcon name="search" />
-            </Button>
-            <Button
-              ref={closeSidebarRef}
-              type="button"
-              size="icon-lg"
-              variant="ghost"
-              aria-label="收起对话列表"
-              aria-expanded={sidebarOpen}
-              aria-controls="sw-ai-sidebar"
-              onClick={closeSidebar}
-            >
-              <SunIcon name="panel-left" />
-            </Button>
+            <SwTooltip content="搜索聊天" side="bottom">
+              <Button
+                ref={pluginsTriggerRef}
+                type="button"
+                size="icon-lg"
+                variant="ghost"
+                aria-label="搜索聊天"
+                aria-expanded={searchOpen}
+                onClick={() => {
+                  setSearchOpen((value) => !value)
+                  queueMicrotask(() => searchRef.current?.focus())
+                }}
+              >
+                <SunIcon name="search" />
+              </Button>
+            </SwTooltip>
+            <SwTooltip content="收起对话列表" side="bottom" disabled={isMobile}>
+              <Button
+                ref={closeSidebarRef}
+                type="button"
+                size="icon-lg"
+                variant="ghost"
+                aria-label="收起对话列表"
+                aria-expanded={sidebarOpen}
+                aria-controls="sw-ai-sidebar"
+                onClick={closeSidebar}
+              >
+                <SunIcon name="panel-left" />
+              </Button>
+            </SwTooltip>
           </div>
 
           {searchOpen ? (
@@ -722,19 +749,18 @@ export function AiWorkspace({
               >
                 最近
               </Button>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                aria-label={
-                  recentNewestFirst ? '按最早会话排序' : '按最近会话排序'
-                }
-                aria-pressed={!recentNewestFirst}
-                title="整理聊天"
-                onClick={() => setRecentNewestFirst((value) => !value)}
-              >
-                <SunIcon name="arrow-up-down" size="xs" />
-              </Button>
+              <SwTooltip content={recentSortLabel}>
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label={recentSortLabel}
+                  aria-pressed={!recentNewestFirst}
+                  onClick={() => setRecentNewestFirst((value) => !value)}
+                >
+                  <SunIcon name="arrow-up-down" size="xs" />
+                </Button>
+              </SwTooltip>
             </div>
             {recentOpen ? (
               <nav className="sw-ai-conversation-list" aria-label="最近聊天">
@@ -801,17 +827,18 @@ export function AiWorkspace({
         inert={isMobile && sidebarOpen ? true : undefined}
       >
         <header className="sw-ai-toolbar">
-          <Button
-            type="button"
-            size="icon-lg"
-            variant="ghost"
-            className="sw-ai-new-chat-top"
-            aria-label="开始新对话"
-            title="开始新对话"
-            onClick={startFreshConversation}
-          >
-            <SunIcon name="message-circle" />
-          </Button>
+          <SwTooltip content="开始新对话" side="bottom">
+            <Button
+              type="button"
+              size="icon-lg"
+              variant="ghost"
+              className="sw-ai-new-chat-top"
+              aria-label="开始新对话"
+              onClick={startFreshConversation}
+            >
+              <SunIcon name="message-circle" />
+            </Button>
+          </SwTooltip>
         </header>
 
         {messages.length === 0 ? (

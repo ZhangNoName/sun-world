@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@sun-world/base-ui": "workspace:*",
-    "@sun-world/icons": "workspace:*"
+    "@sun-world/icons": "workspace:*",
+    "@sun-world/ui": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

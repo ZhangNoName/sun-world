@@ -476,7 +476,7 @@ class MySqlAiRepository:
         require_ordinary_conversation(row["id"])
         message_rows = self.db.fetch_all(
             "SELECT m.id, m.conversation_id, m.role, m.blocks, m.sequence, m.status, "
-            "m.created_at, m.updated_at, f.value AS feedback "
+            "UNIX_TIMESTAMP(m.created_at) AS created_at_seconds, m.updated_at, f.value AS feedback "
             "FROM ai_messages m LEFT JOIN ai_message_feedback f "
             "ON f.message_id = m.id AND f.user_id = %s "
             "WHERE m.conversation_id = %s ORDER BY m.sequence ASC",
@@ -484,12 +484,14 @@ class MySqlAiRepository:
         )
         messages = []
         for message_row in message_rows:
-            raw_blocks = message_row["blocks"]
+            raw_blocks = message_row.pop("blocks")
+            created_at_seconds = message_row.pop("created_at_seconds")
             if isinstance(raw_blocks, str):
                 raw_blocks = json.loads(raw_blocks)
             messages.append(
                 AiMessage(
-                    **{key: value for key, value in message_row.items() if key != "blocks"},
+                    **message_row,
+                    created_at=datetime.fromtimestamp(float(created_at_seconds), tz=timezone.utc),
                     blocks=BLOCKS_ADAPTER.validate_python(raw_blocks),
                 )
             )

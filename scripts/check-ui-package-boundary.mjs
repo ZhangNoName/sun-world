@@ -42,6 +42,7 @@ const uiComponentSubpaths = [
   'sw-dialog',
   'sw-dropdown-menu',
   'sw-sidebar',
+  'sw-tooltip',
   'tag',
   'toast',
 ]

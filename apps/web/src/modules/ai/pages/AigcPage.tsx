@@ -1,19 +1,13 @@
 import { AiWorkspace } from '@sun-world/ai-ui'
-import { SwSelect } from '@sun-world/ui/sw-select'
 
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { AiCapabilitySettings } from '../components/AiCapabilitySettings'
+import { AiModelControl } from '../components/AiModelControl'
 import { AiMcpSettings } from '../components/AiMcpSettings'
 import { AiWorkspaceTools } from '../components/AiWorkspaceTools'
-import { useAiChat, type AiReasoningEffort } from '../composables/useAiChat'
+import { useAiChat } from '../composables/useAiChat'
 import { composerCommands } from '../composer-commands'
 import './ai.css'
-
-const reasoningOptions = [
-  { value: 'low', label: '思考：低' },
-  { value: 'medium', label: '思考：中' },
-  { value: 'high', label: '思考：高' },
-]
 
 export function AigcPage() {
   const chat = useAiChat()
@@ -26,20 +20,19 @@ export function AigcPage() {
       runState={chat.runState}
       providers={chat.providers}
       providerProfiles={chat.providerProfiles}
-      composerModelControl={
-        !chat.isAuthenticated && chat.providers.length > 0 ? (
-          <div className="sw-ai-guest-model">
-            <span>GPT-6.1 Sol</span>
-            <SwSelect
-              aria-label="思考程度"
-              size="sm"
-              value={chat.reasoningEffort}
-              options={reasoningOptions}
-              onValueChange={(value) =>
-                chat.setReasoningEffort(value as AiReasoningEffort)
-              }
-            />
-          </div>
+      composerModelControl={(selection) =>
+        selection.models.length ? (
+          <AiModelControl
+            {...selection}
+            reasoning={
+              chat.isAuthenticated
+                ? undefined
+                : {
+                    effort: chat.reasoningEffort,
+                    onEffortChange: chat.setReasoningEffort,
+                  }
+            }
+          />
         ) : undefined
       }
       commands={composerCommands}

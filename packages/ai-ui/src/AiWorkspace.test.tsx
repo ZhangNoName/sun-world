@@ -579,10 +579,10 @@ describe('AiWorkspace', () => {
     )
 
     expect(
-      screen.getByRole('button', { name: '选择模型，当前 qwen38_27b' })
+      screen.getByRole('combobox', { name: '选择模型，当前 qwen38_27b' })
     ).toBeInTheDocument()
     await user.click(
-      screen.getByRole('button', { name: '选择模型，当前 qwen38_27b' })
+      screen.getByRole('combobox', { name: '选择模型，当前 qwen38_27b' })
     )
     expect(
       screen.queryByRole('option', { name: /disabled-chat/i })
@@ -631,7 +631,7 @@ describe('AiWorkspace', () => {
     )
 
     expect(
-      screen.getByRole('button', { name: '选择模型，当前 deepseek-reasoner' })
+      screen.getByRole('combobox', { name: '选择模型，当前 deepseek-reasoner' })
     ).toBeInTheDocument()
     await user.type(
       screen.getByRole('textbox', { name: '询问 Sun World AI' }),
@@ -664,10 +664,10 @@ describe('AiWorkspace', () => {
     )
 
     await user.click(
-      screen.getByRole('button', { name: '选择模型，当前 deepseek-chat' })
+      screen.getByRole('combobox', { name: '选择模型，当前 deepseek-chat' })
     )
-    const option = screen.getByRole('option', {
-      name: 'deepseek-chat DeepSeek',
+    const option = await screen.findByRole('option', {
+      name: /deepseek-chat.*DeepSeek/,
     })
 
     expect(within(option).getByText('DeepSeek')).toHaveClass(

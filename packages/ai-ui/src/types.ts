@@ -14,6 +14,7 @@ export interface AiUiMessage {
   role: 'user' | 'assistant' | 'system' | 'tool'
   blocks: AiContentBlock[]
   status: 'pending' | 'streaming' | 'completed' | 'interrupted' | 'failed'
+  createdAt?: string
   feedback?: 'like' | 'dislike' | null
   metrics?: {
     durationMs?: number
